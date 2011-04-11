@@ -1,0 +1,107 @@
+DLT Viewer - Automotive Diagnostic Log and Trace Viewer
+
+Version: 2.2.0
+
+
+Introduction
+------------
+
+The DLT Viewer can send control messages to the daemon, e.g. to set individual log levels of applications and contexts or get the list of applications and contexts registered in the DLT daemon.
+
+License
+-------
+see file: License.txt
+
+Contact
+-------
+Alexander Wenzel
+BMW Group
+Alexander.AW.Wenzel@bmw.de
+
+
+Changes in this release
+-----------------------
+
+2.2.0:
+
+Improvements:
+
+   * Added version to window title
+   * Filtering of decoded messages by decode plugins now possible
+   * Negative filters and markers functionality added
+   * Moved to completely new decode plugin concept
+   * Rows in message table can now be selected with arrow keys
+   * Verbose mode configuration in ECU added
+   * New Plugin interface with Decoder and Viewer support
+   * Join and split DLT files
+   * Append DLT file functionality added
+   * Start DLT viewer with a DLT Viewer Project as argument.
+   * Colour marking of contexts, if synchronized with dlt daemon
+   * Import DLT Stream with serial header functionality addded incl. resync to serial header and error counter
+
+Bugfixes:
+
+   * Fixed bug when using COM ports bigger than 9
+   * Fixies big endian target
+   * DLT header parameter Timestaps was handled in the wrong endianes format, big endian is correct now
+   * Crashes when payload contains strings with corrupted length
+   * Corrected non verbose plugin "S_RAWD" signal type
+   * Non verbose plugin does not decode verbose messages any more
+   * Fixed bug in search with regular expressions, case sensitive/insensitive is used now in this combination
+   * ECU Configuration did not save sync to serial header option (TCP and Serial)
+
+2.1.0:
+
+Improvements:
+
+   * New Qt based implementation of viewer
+   * Indiviual columns for header fields
+   * Export to ASCII file
+   * Import of Raw DLT Stream files (Without DLT Storage Header)
+   * Search function added to find ASCII Text in Header and Payload
+   * Project based management of configurations
+   * Decoder Plugin support added as dynamic loaded libraries
+   * Optional syncing to serial header added
+   * Filter->Clear all added
+   * The application now has its own icon
+   * Scroll on/off button added
+   * Description additionally shows the TCP port number
+   * Search: Regular expressions can now be used 
+   * History for open files/projects/TCP Hostnames
+   * Enable/Disable timing messages per ECU is now possible
+   * Extended scrolling functionality (enable/disable scrolling by scrolling in list)
+
+Bugfixes:
+
+   * Changed serial library because of sporadic crashes of teh application
+   * Only one filter with same name can be added now
+   * Corrected initialization of resync mode
+   * Bug in Filter handling fixed (concerned Linux only)
+   * Bug in structure alignment fixed (concerned Windows only)
+   * Automatic sending of default log level, display status and request for timing packets fixed
+   * Displaying connection status fixed
+
+Known issues in this release
+----------------------------
+
+ * DLT Viewer: DLT Fibex plugin doesn't do any checks concerning length or messages validity
+
+
+Documents
+---------
+
+ * ...
+
+Notes
+-----
+
+ * ...
+
+Software/Hardware
+-----------------
+
+ * Developped with:
+ 	* QT 4.7.0 (http://qt.nokia.com/)
+    * Ubuntu Linux 10.10 32-bit / Intel PC
+ 	* MS Windows XP / Intel PC
+

@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/toolbar">
+        <file>png/document-new.png</file>
+        <file>png/document-open.png</file>
+        <file>png/document-save-as.png</file>
+        <file>png/edit-clear.png</file>
+        <file>png/preferences-desktop.png</file>
+        <file>png/network-transmit-receive.png</file>
+        <file>png/network-offline.png</file>
+        <file>png/go-bottom.png</file>
+        <file>png/system-search.png</file>
+        <file>png/go-previous.png</file>
+        <file>png/go-next.png</file>
+        <file>png/edit-cut.png</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>png/face-glasses.png</file>
+    </qresource>
+</RCC>

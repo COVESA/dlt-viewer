@@ -1,0 +1,75 @@
+TODO/Features:
+==============
+
+(11.2.2011)
+===========
+
+Tasks:
+
+- dlt-viewer looses DLT messages at beginning, when a traget containing dlt-daemon starts from power off
+- reconnect to dlt-viewer over TCP connection lasts too much time
+- dlt-viewer serial does not set all serial port parameters, fails on nbtserver2
+- Extend MOST plugin to display also MOST message parameters
+- Create Online HTML Help generated from doxygen
+- Create Debian install package for Ubuntu
+- Create Windows installer with Nullsoft Open Source Installer
+- Extend Injection message functionality to import configuration files and sent predefined Injection messages or provide Injection message plugin
+
+Old:
+
+- Plugin for CAN Messages importing Fibex or db file
+- Add second filter directly in DLT Viewer to allow more detailed filtering.
+- Save As of 100MB DLT file or bigger crashes DLT Viewer
+- DLT MOST plugin output is hardly readable 
+- Qt based DLT client lib
+- DLT Viewer as independent source package from DLT
+- Load multiple description files per plugin
+- Plugin: Decode Diagnostic messages
+- Filter: Show all messages above a specific log level, e.g. all above info, debug, ...
+- Verbose information of parameters including variable names and units
+- Enhance search function: Start from current position / start from beginning
+- Enhance search function: Search forward / backward
+
+Done:
+=====
+
+2.2.0:
+- Feature: New Plugin interface with Decoder and Viewer support
+- Bug: ECU Configuration did not save sync to serial header option (TCP and Serial)
+- Bug: Fixed bug in search with regular expressions, case sensitive/insensitive is used now in this combination
+- Feature: Join and split DLT files
+- Feature: Append DLT file functionality added
+- Feature: Start DLT viewer with a DLT Viewer Project as argument.
+- Feature: Colour marking of contexts, if synchronized with dlt daemon
+- Feature: Import DLT Stream with serial header functionality addded incl. resync to serial header and error counter
+
+2.1.0:
+- History for open files/projects/TCP Hostnames
+- Enable/Disable timing messages per ECU
+- Extended scrolling functionality (enable/disable scrolling by scrolling in list)
+- Fix sending of default log level/default trace status/timing packets, if project is added, edited, loaded, or
+  connection established
+
+2.1.0-PRE3:
+- added optional syncing to serial header
+- Fixed: Only one filter with same name can be added now
+- Filter Clear all added
+- Icon for application added
+- Scroll on/off button added
+- Description shows now also the TCP port number
+- Extended search to search with regexp
+- Fixed bug for initialization of resync mode
+- Fixed bug in filter (bug was Linux only)
+
+2.1.0-PRE2:
+- Search function for text within strings
+- Export to ASCII as in dlt-convert
+- Show descriptions of applications and contexts
+- Multiple ECU support
+- Configuration of viewer as project file
+- Small XML replacement for FIBEX file for non-verbose mode
+- Plugins as real plugins
+- Fixed bug: Clear html view on file->clear
+- Fixed additional line bug in mixed mode view
+
+

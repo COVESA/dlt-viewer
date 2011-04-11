@@ -1,0 +1,869 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1001</width>
+    <height>658</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
+  </property>
+  <property name="tabShape">
+   <enum>QTabWidget::Rounded</enum>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="margin">
+     <number>2</number>
+    </property>
+    <item>
+     <widget class="QTableView" name="tableView">
+      <property name="font">
+       <font>
+        <family>Courier 10 Pitch</family>
+        <pointsize>8</pointsize>
+       </font>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::ExtendedSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <attribute name="horizontalHeaderDefaultSectionSize">
+       <number>200</number>
+      </attribute>
+      <attribute name="horizontalHeaderStretchLastSection">
+       <bool>true</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderDefaultSectionSize">
+       <number>15</number>
+      </attribute>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1001</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <widget class="QMenu" name="menuRecent_files">
+     <property name="title">
+      <string>Recent files</string>
+     </property>
+    </widget>
+    <addaction name="actionNew"/>
+    <addaction name="actionOpen"/>
+    <addaction name="actionSaveAs"/>
+    <addaction name="actionClear"/>
+    <addaction name="separator"/>
+    <addaction name="menuRecent_files"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_DLT_Stream"/>
+    <addaction name="actionImport_DLT_Stream_with_Serial_Header"/>
+    <addaction name="actionAppend_DLT_File"/>
+    <addaction name="actionExport_ASCII"/>
+    <addaction name="actionExport_Selection"/>
+    <addaction name="separator"/>
+    <addaction name="actionSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuProject">
+    <property name="title">
+     <string>Project</string>
+    </property>
+    <widget class="QMenu" name="menuRecent_projects">
+     <property name="title">
+      <string>Recent projects</string>
+     </property>
+    </widget>
+    <addaction name="actionProjectNew"/>
+    <addaction name="actionProjectOpen"/>
+    <addaction name="actionProjectSave"/>
+    <addaction name="separator"/>
+    <addaction name="menuRecent_projects"/>
+   </widget>
+   <widget class="QMenu" name="menuConfig">
+    <property name="title">
+     <string>Config</string>
+    </property>
+    <addaction name="actionECU_Add"/>
+    <addaction name="actionECU_Edit"/>
+    <addaction name="actionECU_Delete"/>
+    <addaction name="actionECU_Delete_All_Contexts"/>
+    <addaction name="separator"/>
+    <addaction name="actionECU_Connect"/>
+    <addaction name="actionECU_Disconnect"/>
+    <addaction name="separator"/>
+    <addaction name="actionApplication_Add"/>
+    <addaction name="actionApplication_Edit"/>
+    <addaction name="actionApplication_Delete"/>
+    <addaction name="separator"/>
+    <addaction name="actionContext_Add"/>
+    <addaction name="actionContext_Edit"/>
+    <addaction name="actionContext_Delete"/>
+   </widget>
+   <widget class="QMenu" name="menuFilter">
+    <property name="title">
+     <string>Filter</string>
+    </property>
+    <addaction name="actionFilter_Add"/>
+    <addaction name="actionFilter_Edit"/>
+    <addaction name="actionFilter_Delete"/>
+    <addaction name="actionFilter_Clear_all"/>
+   </widget>
+   <widget class="QMenu" name="menuPlugin">
+    <property name="title">
+     <string>Plugin</string>
+    </property>
+    <addaction name="actionPlugin_Edit"/>
+    <addaction name="actionPlugin_Show"/>
+    <addaction name="actionPlugin_Hide"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="action_Info"/>
+   </widget>
+   <widget class="QMenu" name="menuDLT">
+    <property name="title">
+     <string>DLT</string>
+    </property>
+    <addaction name="actionGet_Default_Log_Level"/>
+    <addaction name="actionSet_Default_Log_Level"/>
+    <addaction name="actionGet_Log_Info"/>
+    <addaction name="actionSet_Log_Level"/>
+    <addaction name="actionSet_All_Log_Levels"/>
+    <addaction name="separator"/>
+    <addaction name="actionStore_Config"/>
+    <addaction name="actionReset_to_Factory_Default"/>
+    <addaction name="separator"/>
+    <addaction name="actionSend_Injection"/>
+    <addaction name="actionGet_Software_Version"/>
+    <addaction name="actionGet_Local_Time"/>
+   </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionSearch"/>
+    <addaction name="actionSearch_Continue"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
+   <addaction name="menuProject"/>
+   <addaction name="menuConfig"/>
+   <addaction name="menuDLT"/>
+   <addaction name="menuFilter"/>
+   <addaction name="menuPlugin"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+  <widget class="QDockWidget" name="dockWidget">
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>Project</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>1</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents">
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="margin">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="tabPosition">
+        <enum>QTabWidget::South</enum>
+       </property>
+       <property name="tabShape">
+        <enum>QTabWidget::Rounded</enum>
+       </property>
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <property name="elideMode">
+        <enum>Qt::ElideNone</enum>
+       </property>
+       <property name="movable">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="tabConfig">
+        <attribute name="title">
+         <string>Config</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <property name="margin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="configWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>true</bool>
+           </property>
+           <property name="animated">
+            <bool>true</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>true</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string notr="true">Id</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>Description</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>LogLevel</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>TraceStatus</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabPlugin">
+        <attribute name="title">
+         <string>Plugin</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <property name="margin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="pluginWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>true</bool>
+           </property>
+           <property name="allColumnsShowFocus">
+            <bool>true</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>true</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <property name="columnCount">
+            <number>1</number>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>Desription</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabPFilter">
+        <attribute name="title">
+         <string>PFilter</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <property name="margin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="pfilterWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>true</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>Configuration</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabNFilter">
+        <attribute name="title">
+         <string>NFilter</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <property name="margin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="nfilterWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>false</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <column>
+            <property name="text">
+             <string notr="true">Configuration</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="tabMarker">
+        <attribute name="title">
+         <string>Marker</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_8">
+         <property name="margin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeWidget" name="markerWidget">
+           <property name="contextMenuPolicy">
+            <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
+           <property name="headerHidden">
+            <bool>false</bool>
+           </property>
+           <property name="expandsOnDoubleClick">
+            <bool>false</bool>
+           </property>
+           <column>
+            <property name="text">
+             <string notr="true">Configuration</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetView">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="features">
+    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+   </property>
+   <property name="windowTitle">
+    <string>View</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetContents_2">
+    <layout class="QVBoxLayout" name="verticalLayout_3">
+     <property name="margin">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QTextBrowser" name="textBrowser">
+       <property name="frameShadow">
+        <enum>QFrame::Sunken</enum>
+       </property>
+       <property name="lineWidth">
+        <number>1</number>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;table border=&quot;0&quot; style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
+&lt;tr&gt;
+&lt;td style=&quot;border: none;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Select a DLT message to display detailed information here&lt;/span&gt;&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <action name="actionOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="actionSaveAs">
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="text">
+    <string>Clear</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
+  </action>
+  <action name="actionProjectOpen">
+   <property name="text">
+    <string>Open...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionProjectSave">
+   <property name="text">
+    <string>Save As...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionProjectNew">
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
+   </property>
+  </action>
+  <action name="actionECU_Add">
+   <property name="text">
+    <string>ECU Add...</string>
+   </property>
+  </action>
+  <action name="actionECU_Delete">
+   <property name="text">
+    <string>ECU Delete</string>
+   </property>
+  </action>
+  <action name="actionECU_Edit">
+   <property name="text">
+    <string>ECU Edit...</string>
+   </property>
+  </action>
+  <action name="actionApplication_Add">
+   <property name="text">
+    <string>Application Add...</string>
+   </property>
+  </action>
+  <action name="actionApplication_Edit">
+   <property name="text">
+    <string>Application Edit...</string>
+   </property>
+  </action>
+  <action name="actionApplication_Delete">
+   <property name="text">
+    <string>Application Delete</string>
+   </property>
+  </action>
+  <action name="actionContext_Add">
+   <property name="text">
+    <string>Context Add...</string>
+   </property>
+  </action>
+  <action name="actionContext_Edit">
+   <property name="text">
+    <string>Context Edit...</string>
+   </property>
+  </action>
+  <action name="actionContext_Delete">
+   <property name="text">
+    <string>Context Delete</string>
+   </property>
+  </action>
+  <action name="actionFilter_Add">
+   <property name="text">
+    <string>Filter Add...</string>
+   </property>
+  </action>
+  <action name="actionFilter_Edit">
+   <property name="text">
+    <string>Filter Edit...</string>
+   </property>
+  </action>
+  <action name="actionFilter_Delete">
+   <property name="text">
+    <string>Filter Delete</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Add">
+   <property name="text">
+    <string>Plugin Add...</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Edit">
+   <property name="text">
+    <string>Plugin Edit...</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Delete">
+   <property name="text">
+    <string>Plugin Delete</string>
+   </property>
+  </action>
+  <action name="action_Info">
+   <property name="text">
+    <string>&amp;Info...</string>
+   </property>
+   <property name="shortcut">
+    <string>F1</string>
+   </property>
+  </action>
+  <action name="actionECU_Connect">
+   <property name="text">
+    <string>ECU Connect</string>
+   </property>
+  </action>
+  <action name="actionECU_Disconnect">
+   <property name="text">
+    <string>ECU Disconnect</string>
+   </property>
+  </action>
+  <action name="actionGet_Default_Log_Level">
+   <property name="text">
+    <string>Get Default Log Level</string>
+   </property>
+  </action>
+  <action name="actionSet_Default_Log_Level">
+   <property name="text">
+    <string>Set Default Log Level</string>
+   </property>
+  </action>
+  <action name="actionGet_Log_Info">
+   <property name="text">
+    <string>Get Log Info</string>
+   </property>
+  </action>
+  <action name="actionSet_Log_Level">
+   <property name="text">
+    <string>Set Log Level</string>
+   </property>
+  </action>
+  <action name="actionSet_All_Log_Levels">
+   <property name="text">
+    <string>Set All Log Levels</string>
+   </property>
+  </action>
+  <action name="actionStore_Config">
+   <property name="text">
+    <string>Store Config</string>
+   </property>
+  </action>
+  <action name="actionReset_to_Factory_Default">
+   <property name="text">
+    <string>Reset to Factory Default</string>
+   </property>
+  </action>
+  <action name="actionGet_Software_Version">
+   <property name="text">
+    <string>Get Software Version</string>
+   </property>
+  </action>
+  <action name="actionGet_Local_Time">
+   <property name="text">
+    <string>Get Local Time</string>
+   </property>
+  </action>
+  <action name="actionSend_Injection">
+   <property name="text">
+    <string>Send Injection</string>
+   </property>
+  </action>
+  <action name="actionNew">
+   <property name="text">
+    <string>New...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionECU_Delete_All_Contexts">
+   <property name="text">
+    <string>ECU Delete All Contexts</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_Stream">
+   <property name="text">
+    <string>Import DLT Stream...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="actionExport_ASCII">
+   <property name="text">
+    <string>Export ASCII...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionSearch">
+   <property name="text">
+    <string>Search...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionSearch_Continue">
+   <property name="text">
+    <string>Search Continue</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="actionFilter_Clear_all">
+   <property name="text">
+    <string>Filter Clear all</string>
+   </property>
+  </action>
+  <action name="actionAppend_DLT_File">
+   <property name="text">
+    <string>Append DLT File...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionExport_Selection">
+   <property name="text">
+    <string>Export Selection...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_Stream_with_Serial_Header">
+   <property name="text">
+    <string>Import DLT Stream with Serial Header...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+J</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Show">
+   <property name="text">
+    <string>Plugin Show</string>
+   </property>
+  </action>
+  <action name="actionPlugin_Hide">
+   <property name="text">
+    <string>Plugin Hide</string>
+   </property>
+  </action>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>pfilterWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionFilter_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pluginWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionPlugin_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>configWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionECU_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>configWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionApplication_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>configWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionContext_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>133</x>
+     <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>nfilterWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionFilter_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>76</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>markerWidget</sender>
+   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
+   <receiver>actionFilter_Edit</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>76</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
