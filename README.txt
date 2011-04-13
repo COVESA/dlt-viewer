@@ -1,9 +1,10 @@
 License
 -------
-See file: LICENSE.txt
-The full LGPL license: LGPL.txt
+Full information on the license for this software
+is available in the "LICENSE.txt" file. 
+The full LGPL license is in "LGPL.txt."
 
-Dynamic linked open source software
+Dynamically linked open source software
 -----------------------------------
 * Qt 4.7 (LGPL)
 * GCC (GPL)
