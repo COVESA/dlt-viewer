@@ -1,0 +1,499 @@
+<?xml version="1.0"?>
+<!--                                                                                 -->
+<!-- DLT example for DLT non-verbose mode                                            -->
+<!--                                                                                 -->
+<!-- Author: Jens Levihn, 															 -->
+<!--         PEIKER acustic GmbH & Co. KG, Max-Planck-Str. 32, 61381 Friedrichsdorf  -->
+<!--                                                                                 -->
+<!--                                                                                 -->
+<fx:FIBEX xmlns:fx="http://www.asam.net/xml/fbx" xmlns:ho="http://www.asam.net/xml" xmlns:can="http://www.asam.net/xml/fbx/can" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.asam.net/xml/fbx xml_schema\fibex.xsd http://www.asam.net/xml/fbx/can  xml_schema\fibex4can.xsd" VERSION="3.1.0">
+	<fx:PROJECT ID="projectTCB">
+		<ho:SHORT-NAME>projectTCB</ho:SHORT-NAME>
+	</fx:PROJECT>
+	<fx:ELEMENTS>
+		<!--***************************** ECU ***************************-->
+		<fx:ECUS>
+			<fx:ECU ID="TCB">
+				<ho:SHORT-NAME>TCB</ho:SHORT-NAME>
+				<fx:MANUFACTURER-EXTENSION>
+					<SW_VERSION>001.004.062</SW_VERSION>
+					<APPLICATIONS>
+						<APPLICATION>
+							<APPLICATION_ID>APP1</APPLICATION_ID>
+							<APPLICATION_DESCRIPTION>Application 1</APPLICATION_DESCRIPTION>
+							<CONTEXTS>
+								<CONTEXT>
+			                		<CONTEXT_ID>CON1</CONTEXT_ID>
+			                		<CONTEXT_DESCRIPTION>Context 1</CONTEXT_DESCRIPTION>
+								</CONTEXT>
+							</CONTEXTS>
+						</APPLICATION>
+						<APPLICATION>
+							<APPLICATION_ID>TEST</APPLICATION_ID>
+							<APPLICATION_DESCRIPTION>Test Application</APPLICATION_DESCRIPTION>
+							<CONTEXTS>
+								<CONTEXT>
+			                		<CONTEXT_ID>CON1</CONTEXT_ID>
+			                		<CONTEXT_DESCRIPTION>Context 1</CONTEXT_DESCRIPTION>
+								</CONTEXT>
+							</CONTEXTS>
+						</APPLICATION>
+						<APPLICATION>
+							<APPLICATION_ID>LAT</APPLICATION_ID>
+							<APPLICATION_DESCRIPTION>Log And Trace</APPLICATION_DESCRIPTION>
+							<CONTEXTS>
+								<CONTEXT>
+			                		<CONTEXT_ID>NV</CONTEXT_ID>
+			                		<CONTEXT_DESCRIPTION>NV test</CONTEXT_DESCRIPTION>
+								</CONTEXT>
+							</CONTEXTS>
+						</APPLICATION>
+					</APPLICATIONS>
+				</fx:MANUFACTURER-EXTENSION>
+			</fx:ECU>
+		</fx:ECUS>
+		<!--*************************** PDUS ***************************-->
+		<fx:PDUS>
+			<!--=============== Message 10   ==================-->
+			<!--=============== 1. Parameter ==================-->
+			<fx:PDU ID="PDU_10_0">
+				<ho:SHORT-NAME>PDU_10_0</ho:SHORT-NAME>
+				<ho:DESC>DLT non verbose test message.</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== Message 11   ==================-->
+			<!--=============== 1. Parameter ==================-->
+			<fx:PDU ID="PDU_11_0">
+				<ho:SHORT-NAME>PDU_11_0</ho:SHORT-NAME>
+				<ho:DESC>Buffer near limit. Free size:</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== 2. Parameter ==================-->
+			<fx:PDU ID="PDU_11_1">
+				<ho:SHORT-NAME>PDU_11_1</ho:SHORT-NAME>
+                <fx:BYTE-LENGTH>2</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_11_1">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_UINT16"/>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+			<!--=============== Message 12   ==================-->
+			<!--=============== 1. Parameter ==================-->
+			<fx:PDU ID="PDU_12_0">
+				<ho:SHORT-NAME>PDU_12_0</ho:SHORT-NAME>
+				<ho:DESC>Buffer size exceeded.</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== 2. Parameter ==================-->
+			<fx:PDU ID="PDU_12_1">
+				<ho:SHORT-NAME>PDU_12_1</ho:SHORT-NAME>
+                <fx:BYTE-LENGTH>4</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_12_1">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_UINT32"/>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+			<!--=============== 3. Parameter ==================-->
+			<fx:PDU ID="PDU_12_2">
+				<ho:SHORT-NAME>PDU_12_2</ho:SHORT-NAME>
+                <fx:BYTE-LENGTH>4</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_12_2">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_UINT32"/>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+			<!--=============== 4. Parameter ==================-->
+			<fx:PDU ID="PDU_12_3">
+				<ho:SHORT-NAME>PDU_12_3</ho:SHORT-NAME>
+				<ho:DESC>Process terminated.</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== Message 13   ==================-->
+			<!--=============== 1. Parameter ==================-->
+			<fx:PDU ID="PDU_13_0">
+				<ho:SHORT-NAME>PDU_13_0</ho:SHORT-NAME>
+				<ho:DESC>Temperature measurement</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== 2. Parameter ==================-->
+			<fx:PDU ID="PDU_13_1">
+				<ho:SHORT-NAME>PDU_13_1</ho:SHORT-NAME>
+                <fx:BYTE-LENGTH>1</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_13_1">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_UINT8"/>
+                        <fx:MANUFACTURER-EXTENSION>
+                        	<VARI_NAME>measurement_point</VARI_NAME>
+                        	<VARI_UNIT></VARI_UNIT>
+                        </fx:MANUFACTURER-EXTENSION>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+			<!--=============== 3. Parameter ==================-->
+			<fx:PDU ID="PDU_13_2">
+				<ho:SHORT-NAME>PDU_13_2</ho:SHORT-NAME>
+                <fx:BYTE-LENGTH>4</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_13_2">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_FLOA32"/>
+                        <fx:MANUFACTURER-EXTENSION>
+                        	<VARI_NAME>reading</VARI_NAME>
+                        	<VARI_UNIT>Kelvin</VARI_UNIT>
+                        </fx:MANUFACTURER-EXTENSION>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+			<!--=============== Message 14   ==================-->
+			<!--=============== 1. Parameter ==================-->
+			<fx:PDU ID="PDU_14_0">
+				<ho:SHORT-NAME>PDU_14_0</ho:SHORT-NAME>
+				<ho:DESC>Build ID:</ho:DESC>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+			</fx:PDU>
+			<!--=============== 2. Parameter ==================-->
+			<fx:PDU ID="PDU_14_1">
+				<ho:SHORT-NAME>PDU_14_1</ho:SHORT-NAME>
+				<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+				<fx:PDU-TYPE>OTHER</fx:PDU-TYPE>
+                <fx:SIGNAL-INSTANCES>
+                    <fx:SIGNAL-INSTANCE ID="S_14_1">
+                        <fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+                        <fx:SIGNAL-REF ID-REF="S_STRG_ASCII"/>
+                    </fx:SIGNAL-INSTANCE>
+                </fx:SIGNAL-INSTANCES>
+			</fx:PDU>
+		</fx:PDUS>
+		<!--*************************** FRAMES ***************************-->
+		<fx:FRAMES>
+		    <!-- ================== 1. Log and Trace Message ============ -->
+		    <fx:FRAME ID="ID_10">
+		    	<ho:SHORT-NAME>ID_10</ho:SHORT-NAME>
+		    	<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+		        <fx:FRAME-TYPE>OTHER</fx:FRAME-TYPE>
+		        <fx:PDU-INSTANCES>
+		            <fx:PDU-INSTANCE ID="P_10_0">
+		            	<fx:PDU-REF ID-REF="PDU_10_0"/>
+		            	<fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		        </fx:PDU-INSTANCES>
+		        <fx:MANUFACTURER-EXTENSION>
+	                <MESSAGE_TYPE>DLT_TYPE_LOG</MESSAGE_TYPE>
+	                <MESSAGE_INFO>DLT_LOG_INFO</MESSAGE_INFO>
+	                <APPLICATION_ID>TEST</APPLICATION_ID>
+	                <CONTEXT_ID>CON1</CONTEXT_ID>
+	                <MESSAGE_SOURCE_FILE>dlt_test.c</MESSAGE_SOURCE_FILE>
+	                <MESSAGE_LINE_NUMBER>411</MESSAGE_LINE_NUMBER>
+		        </fx:MANUFACTURER-EXTENSION>
+		    </fx:FRAME>
+		    <!-- ================== 2. Log and Trace Message ============ -->
+		    <fx:FRAME ID="ID_11">
+		    	<ho:SHORT-NAME>ID_1001</ho:SHORT-NAME>
+		    	<fx:BYTE-LENGTH>2</fx:BYTE-LENGTH>
+		        <fx:FRAME-TYPE>OTHER</fx:FRAME-TYPE>
+		        <fx:PDU-INSTANCES>
+		            <fx:PDU-INSTANCE ID="P_11_0">
+		            	<fx:PDU-REF ID-REF="PDU_11_0"/>
+		            	<fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_1001_1">
+		            	<fx:PDU-REF ID-REF="PDU_11_1"/>
+		            	<fx:SEQUENCE-NUMBER>1</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		        </fx:PDU-INSTANCES>
+		        <fx:MANUFACTURER-EXTENSION>
+	                <MESSAGE_TYPE>DLT_TYPE_LOG</MESSAGE_TYPE>
+	                <MESSAGE_INFO>DLT_LOG_WARN</MESSAGE_INFO>
+	                <APPLICATION_ID>APP1</APPLICATION_ID>
+	                <CONTEXT_ID>CON1</CONTEXT_ID>
+	                <MESSAGE_SOURCE_FILE>application_file.c</MESSAGE_SOURCE_FILE>
+	                <MESSAGE_LINE_NUMBER>955</MESSAGE_LINE_NUMBER>
+		        </fx:MANUFACTURER-EXTENSION>
+		    </fx:FRAME>
+		    <!-- ================== 3. Log and Trace Message ============ -->
+		    <fx:FRAME ID="ID_12">
+		    	<ho:SHORT-NAME>ID_1002</ho:SHORT-NAME>
+		    	<fx:BYTE-LENGTH>2</fx:BYTE-LENGTH>
+		        <fx:FRAME-TYPE>OTHER</fx:FRAME-TYPE>
+		        <fx:PDU-INSTANCES>
+		            <fx:PDU-INSTANCE ID="P_12_0">
+		            	<fx:PDU-REF ID-REF="PDU_12_0"/>
+		            	<fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_12_1">
+		            	<fx:PDU-REF ID-REF="PDU_12_1"/>
+		            	<fx:SEQUENCE-NUMBER>1</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_12_2">
+		            	<fx:PDU-REF ID-REF="PDU_12_2"/>
+		            	<fx:SEQUENCE-NUMBER>2</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_12_3">
+		            	<fx:PDU-REF ID-REF="PDU_12_3"/>
+		            	<fx:SEQUENCE-NUMBER>3</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		        </fx:PDU-INSTANCES>
+		        <fx:MANUFACTURER-EXTENSION>
+	                <MESSAGE_TYPE>DLT_TYPE_LOG</MESSAGE_TYPE>
+                    <MESSAGE_INFO>DLT_LOG_ERROR</MESSAGE_INFO>
+	                <APPLICATION_ID>APP1</APPLICATION_ID>
+	                <CONTEXT_ID>CON1</CONTEXT_ID>
+	                <MESSAGE_SOURCE_FILE>application_file.c</MESSAGE_SOURCE_FILE>
+	                <MESSAGE_LINE_NUMBER>1058</MESSAGE_LINE_NUMBER>
+		        </fx:MANUFACTURER-EXTENSION>
+		    </fx:FRAME>
+		    <!-- ================== 4. Log and Trace Message ============ -->
+		    <fx:FRAME ID="ID_13">
+		    	<ho:SHORT-NAME>ID_1003</ho:SHORT-NAME>
+		    	<fx:BYTE-LENGTH>5</fx:BYTE-LENGTH>
+		        <fx:FRAME-TYPE>OTHER</fx:FRAME-TYPE>
+		        <fx:PDU-INSTANCES>
+		            <fx:PDU-INSTANCE ID="P_13_0">
+		            	<fx:PDU-REF ID-REF="PDU_13_0"/>
+		            	<fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_13_1">
+		            	<fx:PDU-REF ID-REF="PDU_13_1"/>
+		            	<fx:SEQUENCE-NUMBER>1</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_13_2">
+		            	<fx:PDU-REF ID-REF="PDU_13_2"/>
+		            	<fx:SEQUENCE-NUMBER>2</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		        </fx:PDU-INSTANCES>
+		        <fx:MANUFACTURER-EXTENSION>
+	                <MESSAGE_TYPE>DLT_TYPE_LOG</MESSAGE_TYPE>
+	                <MESSAGE_INFO>DLT_LOG_INFO</MESSAGE_INFO>
+	                <APPLICATION_ID>APP1</APPLICATION_ID>
+	                <CONTEXT_ID>CON1</CONTEXT_ID>
+	                <MESSAGE_SOURCE_FILE>temp_meas.c</MESSAGE_SOURCE_FILE>
+	                <MESSAGE_LINE_NUMBER>42</MESSAGE_LINE_NUMBER>
+		        </fx:MANUFACTURER-EXTENSION>
+		    </fx:FRAME>
+		    <!-- ================== 5. Log and Trace Message ============ -->
+		    <fx:FRAME ID="ID_14">
+		    	<ho:SHORT-NAME>ID_14</ho:SHORT-NAME>
+		    	<fx:BYTE-LENGTH>0</fx:BYTE-LENGTH>
+		        <fx:FRAME-TYPE>OTHER</fx:FRAME-TYPE>
+		        <fx:PDU-INSTANCES>
+		            <fx:PDU-INSTANCE ID="P_14_0">
+		            	<fx:PDU-REF ID-REF="PDU_14_0"/>
+		            	<fx:SEQUENCE-NUMBER>0</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		            <fx:PDU-INSTANCE ID="P_14_1">
+		            	<fx:PDU-REF ID-REF="PDU_14_1"/>
+		            	<fx:SEQUENCE-NUMBER>1</fx:SEQUENCE-NUMBER>
+		            </fx:PDU-INSTANCE>
+		        </fx:PDU-INSTANCES>
+		        <fx:MANUFACTURER-EXTENSION>
+	                <MESSAGE_TYPE>DLT_TYPE_LOG</MESSAGE_TYPE>
+	                <MESSAGE_INFO>DLT_LOG_INFO</MESSAGE_INFO>
+	                <APPLICATION_ID>LAT</APPLICATION_ID>
+	                <CONTEXT_ID>NV</CONTEXT_ID>
+	                <MESSAGE_SOURCE_FILE>latsTask.c</MESSAGE_SOURCE_FILE>
+	                <MESSAGE_LINE_NUMBER>421</MESSAGE_LINE_NUMBER>
+		        </fx:MANUFACTURER-EXTENSION>
+		    </fx:FRAME>
+		</fx:FRAMES>
+		
+		<!--*************************** signals **************************-->
+		<fx:SIGNALS>
+			<!--======================= BOOL =====================-->
+			<fx:SIGNAL ID="S_BOOL">
+				<ho:SHORT-NAME>S_BOOL</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="BOOL"/>
+			</fx:SIGNAL>
+			<!--======================= SINT8 =====================-->
+			<fx:SIGNAL ID="S_SINT8">
+				<ho:SHORT-NAME>S_SINT8</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="SINT8"/>
+			</fx:SIGNAL>
+			<!--======================= UINT8 =====================-->
+			<fx:SIGNAL ID="S_UINT8">
+				<ho:SHORT-NAME>S_UINT8</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="UINT8"/>
+			</fx:SIGNAL>
+			<!--======================= SINT16 =====================-->
+			<fx:SIGNAL ID="S_SINT16">
+				<ho:SHORT-NAME>S_SINT16</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="SINT16"/>
+			</fx:SIGNAL>
+			<!--======================= UINT16 =====================-->
+			<fx:SIGNAL ID="S_UINT16">
+				<ho:SHORT-NAME>S_UINT16</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="UINT16"/>
+			</fx:SIGNAL>
+			<!--======================= SINT32 =====================-->
+			<fx:SIGNAL ID="S_SINT32">
+				<ho:SHORT-NAME>S_SINT32</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="SINT32"/>
+			</fx:SIGNAL>
+			<!--======================= UINT32 =====================-->
+			<fx:SIGNAL ID="S_UINT32">
+				<ho:SHORT-NAME>S_UINT32</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="UINT32"/>
+			</fx:SIGNAL>
+			<!--======================= SINT64 =====================-->
+			<fx:SIGNAL ID="S_SINT64">
+				<ho:SHORT-NAME>S_SINT64</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="SINT64"/>
+			</fx:SIGNAL>
+			<!--======================= UINT64 =====================-->
+			<fx:SIGNAL ID="S_UINT64">
+				<ho:SHORT-NAME>S_UINT64</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="UINT64"/>
+			</fx:SIGNAL>
+			<!--======================= FLOA16 =====================-->
+			<fx:SIGNAL ID="S_FLOA16">
+				<ho:SHORT-NAME>S_FLOA16</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="FLOA16"/>
+			</fx:SIGNAL>
+			<!--======================= FLOA32 =====================-->
+			<fx:SIGNAL ID="S_FLOA32">
+				<ho:SHORT-NAME>S_FLOA32</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="FLOA32"/>
+			</fx:SIGNAL>
+			<!--======================= FLOA64 =====================-->
+			<fx:SIGNAL ID="S_FLOA64">
+				<ho:SHORT-NAME>S_FLOA64</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="FLOA64"/>
+			</fx:SIGNAL>
+			<!--======================= STRG_ASCII =====================-->
+			<fx:SIGNAL ID="S_STRG_ASCII">
+				<ho:SHORT-NAME>S_STRG_ASCII</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="STRG_ASCII"/>
+			</fx:SIGNAL>
+			<!--======================= STRG_UTF8 =====================-->
+			<fx:SIGNAL ID="S_STRG_UTF8">
+				<ho:SHORT-NAME>S_STRG_UTF8</ho:SHORT-NAME>
+				<fx:CODING-REF ID-REF="STRG_UTF8"/>
+			</fx:SIGNAL>
+		</fx:SIGNALS>
+	</fx:ELEMENTS>
+	
+	<!--********************* PROCESSING INFORMATION *********************-->
+	
+	<fx:PROCESSING-INFORMATION>
+		<!--*************************** codings ****************************-->
+		<fx:CODINGS>
+		    <fx:CODING ID="BOOL">
+		        <ho:SHORT-NAME>BOOL</ho:SHORT-NAME>
+		        <ho:DESC>Coding for boolean values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UINT8" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UNSIGNED">
+					<ho:BIT-LENGTH>8</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="SINT8">
+		        <ho:SHORT-NAME>SINT8</ho:SHORT-NAME>
+		        <ho:DESC>Coding for signel 8bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_INT8" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="SIGNED">
+					<ho:BIT-LENGTH>8</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="UINT8">
+		        <ho:SHORT-NAME>UINT8</ho:SHORT-NAME>
+		        <ho:DESC>Coding for unsignel 8bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UINT8" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UNSIGNED">
+					<ho:BIT-LENGTH>8</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="SINT16">
+		        <ho:SHORT-NAME>SINT16</ho:SHORT-NAME>
+		        <ho:DESC>Coding for signel 16bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_INT16" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="SIGNED">
+					<ho:BIT-LENGTH>16</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="UINT16">
+		        <ho:SHORT-NAME>UINT16</ho:SHORT-NAME>
+		        <ho:DESC>Coding for unsignel 16bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UINT16" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UNSIGNED">
+					<ho:BIT-LENGTH>16</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="SINT32">
+		        <ho:SHORT-NAME>SINT32</ho:SHORT-NAME>
+		        <ho:DESC>Coding for signel 32bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_INT32" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="SIGNED">
+					<ho:BIT-LENGTH>32</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="UINT32">
+		        <ho:SHORT-NAME>UINT32</ho:SHORT-NAME>
+		        <ho:DESC>Coding for unsignel 32bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UINT32" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UNSIGNED">
+					<ho:BIT-LENGTH>32</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="SINT64">
+		        <ho:SHORT-NAME>SINT64</ho:SHORT-NAME>
+		        <ho:DESC>Coding for signel 64bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_INT64" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="SIGNED">
+					<ho:BIT-LENGTH>64</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="UINT64">
+		        <ho:SHORT-NAME>UINT64</ho:SHORT-NAME>
+		        <ho:DESC>Coding for unsignel 64bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UINT64" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UNSIGNED">
+					<ho:BIT-LENGTH>64</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="FLOA16">
+		        <ho:SHORT-NAME>FLOA16</ho:SHORT-NAME>
+		        <ho:DESC>Coding for float 16bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_FLOAT32" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="IEEE-FLOATING-TYPE">
+					<ho:BIT-LENGTH>16</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="FLOA32">
+		        <ho:SHORT-NAME>FLOA32</ho:SHORT-NAME>
+		        <ho:DESC>Coding for float 32bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_FLOAT32" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="IEEE-FLOATING-TYPE">
+					<ho:BIT-LENGTH>32</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="FLOA64">
+		        <ho:SHORT-NAME>FLOA64</ho:SHORT-NAME>
+		        <ho:DESC>Coding for float 64bit values.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_FLOAT64" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="IEEE-FLOATING-TYPE">
+					<ho:BIT-LENGTH>64</ho:BIT-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="STRG_ASCII">
+		        <ho:SHORT-NAME>STRG_ASCII</ho:SHORT-NAME>
+		        <ho:DESC>Coding for ASCII string.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_ASCIISTRING" CATEGORY="STANDARD-LENGTH-TYPE" TERMINATION="ZERO">
+				    <ho:MIN-LENGTH>0</ho:MIN-LENGTH>
+				    <ho:MAX-LENGTH>255</ho:MAX-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		    <fx:CODING ID="STRG_UTF8">
+		        <ho:SHORT-NAME>STRG_UTF8</ho:SHORT-NAME>
+		        <ho:DESC>Coding for UTF8 string.</ho:DESC>
+				<ho:CODED-TYPE ho:BASE-DATA-TYPE="A_UNICODE2STRING" CATEGORY="STANDARD-LENGTH-TYPE" ENCODING="UTF-8" TERMINATION="ZERO">
+				    <ho:MIN-LENGTH>0</ho:MIN-LENGTH>
+				    <ho:MAX-LENGTH>255</ho:MAX-LENGTH>
+				</ho:CODED-TYPE>
+		    </fx:CODING>
+		</fx:CODINGS>
+	</fx:PROCESSING-INFORMATION>
+</fx:FIBEX>
