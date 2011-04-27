@@ -15,10 +15,7 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
 
-    void setMessages(int message);
-    void setSelectedMessage(int message);
-    void setVerboseMessages(int message);
-    void setNonVerboseMessages(int message);
+    void setSpeedLCD(QString currentSpeed);
 
 private:
     Ui::Form *ui;

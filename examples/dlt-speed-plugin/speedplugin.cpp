@@ -14,7 +14,7 @@ SpeedPlugin::~SpeedPlugin()
 
 QString SpeedPlugin::name()
 {
-    return QString("Dummy Viewer Plugin");
+    return QString("Speed Plugin");
 }
 
 QString SpeedPlugin::description()
@@ -52,26 +52,29 @@ bool SpeedPlugin::initFile(QDltFile *file)
 {
     dltFile = file;
 
-    form->setMessages(dltFile->size());
-
-    counterMessages = dltFile->size();
-
-    counterNonVerboseMessages = 0;
-    counterVerboseMessages = 0;
-
-    updateCounters(0,counterMessages-1);
-
     return true;
 }
 
 void SpeedPlugin::updateFile()
 {
+    QByteArray buffer;
+    QDltMsg msg;
+
     if(!dltFile)
         return;
 
-    updateCounters(counterMessages-1,dltFile->size()-1);
+    buffer =  dltFile->getMsg(dltFile->size()-1);
 
-    counterMessages = dltFile->size();
+    if(buffer.isEmpty())
+        return;
+
+    msg.setMsg(buffer);
+
+
+    if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
+    {
+        updateSpeed();
+    }
 }
 
 void SpeedPlugin::selectedIdxMsg(int index)
@@ -79,37 +82,27 @@ void SpeedPlugin::selectedIdxMsg(int index)
     if(!dltFile)
         return;
 
-    form->setSelectedMessage(index);
 }
 
-void SpeedPlugin::updateCounters(int start,int end)
+void SpeedPlugin::updateSpeed()
 {
-    QByteArray data;
+    QByteArray buffer;
     QDltMsg msg;
+    QDltArgument argument;
 
     if(!dltFile)
         return;
 
+    buffer =  dltFile->getMsg(dltFile->size()-1);
 
-    for(int num=start;num<=end;num++)
-    {
-        if(dltFile->getMsg(num,msg)==true)
-        {
-            if(msg.getMode() == QDltMsg::DltModeVerbose)
-            {
-                counterVerboseMessages++;
-            }
-            if(msg.getMode() == QDltMsg::DltModeNonVerbose)
-            {
-                counterNonVerboseMessages++;
-            }
-        }
+    if(buffer.isEmpty())
+        return;
+
+    msg.setMsg(buffer);
+
+    if(msg.getArgument(1,argument)) {
+        form->setSpeedLCD(argument.toString());
     }
-
-
-   form->setMessages(dltFile->size());
-   form->setVerboseMessages(counterVerboseMessages);
-   form->setNonVerboseMessages(counterNonVerboseMessages);
 
 }
 

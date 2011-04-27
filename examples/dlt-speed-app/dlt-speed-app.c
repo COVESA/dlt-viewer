@@ -45,7 +45,7 @@
 **  PROJECT   : DLT                                                           **
 **                                                                            **
 **  AUTHOR    : Alexander Wenzel Alexander.AW.Wenzel@bmw.de                   **
-**                                                                            **
+**              Christian Muck christian.muck@bmw.de                          **
 **  PURPOSE   :                                                               **
 **                                                                            **
 **  REMARKS   :                                                               **
@@ -63,6 +63,7 @@
 ** Initials     Name                       Company                            **
 ** --------     -------------------------  ---------------------------------- **
 **  aw          Alexander Wenzel           BMW                                **
+**  cm          Christian Muck             BMW 
 *******************************************************************************/
 
 /*******************************************************************************
@@ -70,30 +71,60 @@
 *******************************************************************************/
 
 /*
- * $LastChangedRevision: 1518 $
+ * $LastChangedRevision: xxxx $
  * $LastChangedDate: 2010-12-13 10:07:42 +0100 (Mo, 13. Dez 2010) $
  * $LastChangedBy$
  Initials    Date         Comment
  aw          13.01.2010   initial
+ cm          27.04.2011   fixing
  */
-#include <netdb.h>
-#include <ctype.h>
+ 
+ 
+#include <netdb.h>		/* Definitions for network database operations */
+#include <ctype.h>		/* ANSI C Standard Library for the C programming language contains declarations for character classification functions*/
 #include <stdio.h>      /* for printf() and fprintf() */
 #include <stdlib.h>     /* for atoi() and exit() */
 #include <string.h>     /* for memset() */
 #include <unistd.h>     /* for close() */
 
+
+/**
+ * Include the dlt header file for using dlt functions
+ */
 #include "dlt.h"
-#include "dlt_common.h" /* for dlt_get_version() */
 
+#define DEFAULT_DELAY 500
+#define DEFAULT_MESSAGES 1000
+
+/**
+ * 
+ */ 
+int maxMessageCount;
+int delay; 
+int hflag = 0;
+int gflag = 0;
+int aflag = 0;
+char *dvalue = 0;
+char *fvalue = 0;
+char *nvalue = 0;
+
+//For injection callback - delete if interface does not provide injection
+/*
+char *message = 0;
+char *text = 0;
 int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length);
+*/
 
+/**
+ * Create logging context 
+ */
 DLT_DECLARE_CONTEXT(mycontext);
+
 
 /**
  * Print usage information of tool.
  */
-void usage()
+void printUsage()
 {
     char version[255];
 
@@ -105,45 +136,31 @@ void usage()
     printf("Mode:\n");
     printf("  1             Ramp up and down from 0 - 100 km/h\n");
     printf("Options:\n");
-    printf("  -v            Verbose mode\n");
     printf("  -d delay      Milliseconds to wait between sending messages (Default: 500)\n");
-    printf("  -f filename   Use local log file instead of sending to daemon\n");
+    printf("  -f filename   Use local log file instead of sending to daemon (absolute path) - don't forget .dlt\n");
     printf("  -n count      Number of messages to be generated (Default: 1000)\n");
     printf("  -g            Switch to non-verbose mode (Default: verbose mode)\n");
     printf("  -a            Enable local printing of DLT messages (Default: disabled)\n");
+    printf("  -h            Print usage\n");
 }
 
+
 /**
- * Main function of tool.
- */
-int main(int argc, char* argv[])
-{
-    int vflag = 0;
-    int gflag = 0;
-    int aflag = 0;
-    char *dvalue = 0;
-    char *fvalue = 0;
-    char *nvalue = 0;
-    char *message = 0;
-    int speed = 0;
-    int direction = 1;
-
+ * Parse arguments from program start, see printUsage for possible options 
+ */ 
+int parseArguments(int argc, char* argv[]){
     int index;
-    int c;
-
-	char *text;
-	int num,maxnum;
-	int delay;
-
+	int c;
+	
     opterr = 0;
 
-    while ((c = getopt (argc, argv, "vgad:f:n:")) != -1)
+    while ((c = getopt (argc, argv, "hgad:f:n:")) != -1)
     {
         switch (c)
         {
-        case 'v':
+		case 'h':
         {
-            vflag = 1;
+            hflag = 1;
             break;
         }
         case 'g':
@@ -186,17 +203,20 @@ int main(int argc, char* argv[])
                 fprintf (stderr, "Unknown option character `\\x%x'.\n",optopt);
             }
 
-            /* unknown or wrong option used, show usage information and terminate */
-            usage();
-            return -1;
+            /* Unknown or wrong option used, show usage information and terminate */
+            printUsage();
+            return EXIT_FAILURE;
         }
         default:
         {
-            abort ();
+			/* Generate an abnormal process abort*/
+            abort();
         }
         }
     }
 
+	//For injection callback - delete if interface does not provide injection
+	/*
     for (index = optind; index < argc; index++)
     {
         message = argv[index];
@@ -204,68 +224,130 @@ int main(int argc, char* argv[])
 
     if (message == 0)
     {
-        /* no message, show usage and terminate */
+        //no message, show usage and terminate
         fprintf(stderr,"ERROR: No message selected\n");
         usage();
         return -1;
-    }
+    }*/
 
+	if (hflag)
+	{
+		printUsage();
+		return EXIT_SUCCESS;
+	}
+
+    /* DLT is intialised automatically, except another output target will be used (i.e. -f option is used to log into file - don't forget .dlt) */
     if (fvalue)
     {
-        /* DLT is intialised automatically, except another output target will be used */
-        if (dlt_init_file(fvalue)<0) /* log to file */
+        /* Log to file */
+        if (dlt_init_file(fvalue)<0) 
         {
-            return -1;
+            return EXIT_FAILURE;
         }
+		printf("- output: %s\n", fvalue);
     }
-
-    DLT_REGISTER_APP("SPEED","Speed Application");
-    DLT_REGISTER_CONTEXT(mycontext,"SIG","Speed signal");
-
-    DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0xFFF, dlt_user_injection_callback);
-
-    text = message;
-
+    else
+    {
+		printf("- output: daemon\n");
+	}	
+    
+    
     if (gflag)
     {
         DLT_NONVERBOSE_MODE();
     }
+	printf("- nonverbose mode: %i \n",gflag);
+
+
 
     if (aflag)
     {
         DLT_ENABLE_LOCAL_PRINT();
     }
+	printf("- local printing: %i \n",aflag);
 
-    if (nvalue)
+
+    if (nvalue && (atoi(nvalue)>0) )
     {
-        maxnum = atoi(nvalue);
+        maxMessageCount = atoi(nvalue);
     }
     else
     {
-		maxnum = 1000;
+		maxMessageCount = DEFAULT_MESSAGES;
     }
+	printf("- messages: %i \n",maxMessageCount);
 
-    if (dvalue)
+
+    if (dvalue && (atoi(dvalue)>0) )
     {
         delay = atoi(dvalue) * 1000;
     }
     else
     {
-        delay = 500 * 1000;
+        delay = DEFAULT_DELAY * 1000;
     }
+    printf("- delay: %i ms\n",delay/1000);
+    
+    
+    
+    return EXIT_SUCCESS;
+}
 
-    if (gflag)
-    {
-    }
+/**
+ * Main function
+ */
+int main(int argc, char* argv[])
+{
 
-    for (num=0;num<maxnum;num++)
+	// Current speed info
+	int speed = 0;
+	
+	// Increase or decrease speed
+	int direction = 1;
+	
+	// Generated messages
+	int generatedMessageCount;
+	
+	
+	if(parseArguments(argc,argv) == EXIT_FAILURE)
+	{
+			return EXIT_FAILURE;
+	}
+	else if(hflag)
+	{
+		return EXIT_SUCCESS;
+	}
+	
+	
+	
+	//Register the application to dlt
+    DLT_REGISTER_APP("SPEED","Speed Application");
+    
+    //Register the context to dlt
+    DLT_REGISTER_CONTEXT(mycontext,"SIG","Speed signal");
+	
+	//Register injection callback to dlt
+    //DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0xFFF, dlt_user_injection_callback);
+
+
+	//For injection callback - delete if interface does not provide injection
+    //text = message;
+
+   
+	//Loop for generate speed messages and log to dlt
+    for (generatedMessageCount=0; generatedMessageCount < maxMessageCount; generatedMessageCount++)
     {
-        printf("%d: Speed %d\n",num,speed);
+		// Output to console
+        printf("Message %d: Speed %d\n",generatedMessageCount,speed);
         
-        DLT_LOG(mycontext,DLT_LOG_INFO,DLT_INT(speed));
         
+        // Log to dlt
+        DLT_LOG(mycontext,DLT_LOG_INFO,DLT_STRING("Speed"),DLT_INT(speed));
+        
+        // Increase or decrease speed depending on direction value
 	    speed += direction;
 	    
+	    // Limitation: 0 < speed < 100
 	    if(speed>=100) {
 			direction = -1;
 		}
@@ -282,25 +364,24 @@ int main(int argc, char* argv[])
             /* Verbose mode */
         }
 
+		// Wait between sending messages 
         if (delay>0)
         {
             usleep(delay);
         }
     }
 
-    sleep(1);
-
+    // Unregister context from dlt
     DLT_UNREGISTER_CONTEXT(mycontext);
 
+	// Unregister application from dlt
     DLT_UNREGISTER_APP();
 
-    dlt_free();
 
-    return 0;
-
+    return EXIT_SUCCESS;
 }
 
-int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length)
+/*int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length)
 {
     char text[1024];
 
@@ -312,5 +393,5 @@ int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length
     }
 
     return 0;
-}
+}*/
 

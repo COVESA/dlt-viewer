@@ -36,46 +36,67 @@
 ########
 
 
+# Minimum cmake version required
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-cmake_minimum_required (VERSION 2.6)
 
+# Name for the entire project
 PROJECT(dlt-speed-app)
 
+
+# Set version parameters
+SET( ${PROJECT_NAME}_MAJOR_VERSION 0 )
+SET( ${PROJECT_NAME}_MINOR_VERSION 2 )
+SET( ${PROJECT_NAME}_PATCH_LEVEL 0 )
+SET( ${PROJECT_NAME}_VERSION_STATE "RELEASE" )
+SET( PRINT_VERSION ${${PROJECT_NAME}_MAJOR_VERSION}.${${PROJECT_NAME}_MINOR_VERSION}.${${PROJECT_NAME}_PATCH_LEVEL})
+SET( PRINT_VERSION_STATE ${${PROJECT_NAME}_VERSION_STATE})
+
+# Print version information
+MESSAGE("VERSION ${PRINT_VERSION}")
+MESSAGE("VERSION_STATE ${PRINT_VERSION_STATE}")
+
+
+
+# Use PkgConfig to check for automtoive-dlt
 FIND_PACKAGE(PkgConfig)
-FIND_PACKAGE(automotive-dlt)
+pkg_check_modules(DLT REQUIRED automotive-dlt)
+  
 
-###############################################################################
-# is using the 'pkg-config' tool
-pkg_check_modules(DLT	automotive-dlt)  
-set(CMAKE_CXX_FLAGS "-Wall")
-set(CMAKE_BUILD_TYPE Rlease)
+# Set CMAKE variables to given values
+SET(CMAKE_CXX_FLAGS "-Wall")
+SET(CMAKE_BUILD_TYPE Release)
 
-##############################################################################
-# general stuff
-#project(DLT Testsuite)
 
-include_directories(
-   src
+
+# Add include directories to the build
+INCLUDE_DIRECTORIES(
+  src
   ${GLIB_INCLUDE_DIRS}
   ${DLT_INCLUDE_DIRS}
 )
 
-link_directories(
+
+# Specify directories in which the linker will look for libraries
+LINK_DIRECTORIES(
     ${LINK_DIRECTORIES}
     ${DLT_LIBRARY_DIRS}
 )
 
 
-file(GLOB SOURCES
-   "*.cpp"
+# GLOB will generate a list of all files that match the globbing expressions and store it into "SOURCES"
+FILE(GLOB SOURCES
    "*.c"
 )
 
-add_executable(
+# Add an executable to the project using the specified source files
+ADD_EXECUTABLE(
    dlt-speed-app
     ${SOURCES}
 )
 
+
+# Link a target to given libraries
 TARGET_LINK_LIBRARIES(
    dlt-speed-app
    ${GLIB_LIBRARIES}
@@ -83,47 +104,7 @@ TARGET_LINK_LIBRARIES(
 )
 
 
-##############################################################################
-# installing files
-
+# Installing files
 INSTALL(TARGETS dlt-speed-app
-  RUNTIME DESTINATION usr/local/bin
+  RUNTIME DESTINATION bin
 )
-
-
-#INSTALL(FILES scripts/ergo-commander
-#	DESTINATION etc/rc.d/init.d
-#		PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-#			GROUP_EXECUTE GROUP_READ
-#			WORLD_EXECUTE WORLD_READ
-#)
-
-##############################################################################
-# rpm configuration
-set(CPACK_SET_DESTDIR "on")
-set(CPACK_INSTALL_PREFIX "/")
-#set(CPACK_RPM_PACKAGE_DEBUG "on")
-
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/package-description")
-set(CPACK_PACKAGE_VENDOR "BMW Car IT GmbH")
-set(CPACK_PACKAGE_VERSION 1.2.0)
-set(CPACK_SYSTEM_NAME "i586")
-
-set(CPACK_RPM_PACKAGE_NAME dlt-speed-app)
-set(CPACK_RPM_PACKAGE_RELEASE 1)
-set(CPACK_RPM_PACKAGE_SUMMARY "Adapter connecting a BMW ErgoCommander with a CAN-Interface to a virtual MOST")
-set(CPACK_RPM_PACKAGE_PACKAGER "Timo Mueller <timo.mueller@bmw-carit.de>")
-set(CPACK_RPM_PACKAGE_ARCHITECTURE i586)
-
-set(CPACK_RPM_PACKAGE_GROUP "Applications/BMW")
-set(CPACK_RPM_PACKAGE_BUILD_REQUIRES "glibmm-devel, cmake, automotive-dlt-devel")
-set(CPACK_RPM_PACKAGE_REQUIRES
-	"glibmm, automotive-dlt")
-
-set(CPACK_RPM_PACKAGE_CHANGELOG_FILE "${CMAKE_SOURCE_DIR}/changelog")
-
-set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CPACK_RPM_PACKAGE_RELEASE}.${CPACK_SYSTEM_NAME}")
-set(CPACK_GENERATOR "RPM")
-#include(CPack)
-
-

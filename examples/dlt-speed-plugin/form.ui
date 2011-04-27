@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>309</width>
-    <height>119</height>
+    <width>199</width>
+    <height>76</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,44 +15,27 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_5">
      <property name="text">
-      <string>Messages:</string>
+      <string>Speed:</string>
      </property>
     </widget>
    </item>
    <item row="0" column="1">
-    <widget class="QLineEdit" name="lineEditMessages"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Selected Message:</string>
+    <widget class="QLCDNumber" name="lcdNumber">
+     <property name="smallDecimalPoint">
+      <bool>false</bool>
+     </property>
+     <property name="numDigits">
+      <number>3</number>
+     </property>
+     <property name="value" stdset="0">
+      <double>0.000000000000000</double>
+     </property>
+     <property name="intValue" stdset="0">
+      <number>0</number>
      </property>
     </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditSelectedMessage"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Verbose Messages:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEditVerboseMessages"/>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Non-Verbose Messages:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QLineEdit" name="lineEditNonVerboseMessages"/>
    </item>
   </layout>
  </widget>

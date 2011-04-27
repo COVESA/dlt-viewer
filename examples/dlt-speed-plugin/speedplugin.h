@@ -1,5 +1,5 @@
-#ifndef DUMMYVIEWERPLUGIN_H
-#define DUMMYVIEWERPLUGIN_H
+#ifndef SPEEDPLUGIN_H
+#define SPEEDPLUGIN_H
 
 #include <QObject>
 #include "plugininterface.h"
@@ -31,17 +31,14 @@ public:
 
     /* internal variables */
     Form *form;
-    int counterMessages;
-    int counterNonVerboseMessages;
-    int counterVerboseMessages;
 
     void show(bool value);
 
-    void updateCounters(int start,int end);
+    void updateSpeed();
 
 private:
     QDltFile *dltFile;
     QString errorText;
 };
 
-#endif // DUMMYVIEWERPLUGIN_H
+#endif // SPEEDRPLUGIN_H

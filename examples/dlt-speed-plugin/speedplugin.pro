@@ -22,10 +22,10 @@ INCLUDEPATH += ../../src \
             ../../qdlt
 
 # Project files
-HEADERS += speedlugin.h \
-        plugininterface.h \
-    ../../qdlt/qdlt.h \
-    form.h
+HEADERS +=  plugininterface.h \
+            ../../qdlt/qdlt.h \
+            form.h \
+            speedplugin.h
 
 SOURCES += speedplugin.cpp \
     form.cpp

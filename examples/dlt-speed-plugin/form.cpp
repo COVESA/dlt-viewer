@@ -13,22 +13,7 @@ Form::~Form()
     delete ui;
 }
 
-void Form::setMessages(int message)
+void Form::setSpeedLCD(QString currentSpeed)
 {
-    ui->lineEditMessages->setText(QString("%1").arg(message));
-}
-
-void Form::setSelectedMessage(int message)
-{
-    ui->lineEditSelectedMessage->setText(QString("%1").arg(message));
-}
-
-void Form::setVerboseMessages(int message)
-{
-    ui->lineEditVerboseMessages->setText(QString("%1").arg(message));
-}
-
-void Form::setNonVerboseMessages(int message)
-{
-    ui->lineEditNonVerboseMessages->setText(QString("%1").arg(message));
+    ui->lcdNumber->display(currentSpeed);
 }
