@@ -1,20 +1,20 @@
 TEMPLATE  = lib
 
 CONFIG   += plugin
-CONFIG   += qwt
+#CONFIG   += qwt
 
 
 CONFIG(debug, debug|release) {
-    DESTDIR = ../../debug/plugins
-    QMAKE_LIBDIR += ../../debug
+    DESTDIR = debug/plugins
+    QMAKE_LIBDIR += debug
     LIBS += -lqdltd
 }
 else {
-    DESTDIR = ../../release/plugins
-    QMAKE_LIBDIR += ../../release
-    #QMAKE_LIBDIR +=  /usr/local/qwt-6.0.0/lib
+    DESTDIR = release/plugins
+    QMAKE_LIBDIR += release
+    QMAKE_LIBDIR +=  /usr/local/qwt-6.0.0/lib
     LIBS += -lqdlt
-   # LIBS += -lqwt
+    LIBS += -lqwt
 
 }
 
@@ -25,7 +25,7 @@ DEFINES  += QT_VIEWER
 
 INCLUDEPATH += ../../src \
             ../../qdlt \
-           # /usr/local/qwt-6.0.0/include
+            /usr/local/qwt-6.0.0/include
 
 # Project files
 HEADERS +=  plugininterface.h \

@@ -5,6 +5,7 @@
 SpeedPlugin::SpeedPlugin()
 {
     dltFile = 0;
+    msgIndex = 0;
 }
 
 SpeedPlugin::~SpeedPlugin()
@@ -59,21 +60,30 @@ void SpeedPlugin::updateFile()
 {
     QByteArray buffer;
     QDltMsg msg;
-
+    QDltArgument argument;
     if(!dltFile)
         return;
 
-    buffer =  dltFile->getMsg(dltFile->size()-1);
-
-    if(buffer.isEmpty())
-        return;
-
-    msg.setMsg(buffer);
 
 
-    if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
+
+   for(;msgIndex<dltFile->size();msgIndex++)
     {
-        updateSpeed();
+
+       buffer =  dltFile->getMsg(msgIndex);
+
+       if(buffer.isEmpty())
+           break;
+
+       msg.setMsg(buffer);
+
+        if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
+        {
+            if(msg.getArgument(1,argument)) {
+                            form->setSpeedLCD(argument,msg.getTimestamp());
+            }
+
+        }
     }
 }
 
@@ -81,28 +91,6 @@ void SpeedPlugin::selectedIdxMsg(int index)
 {
     if(!dltFile)
         return;
-
-}
-
-void SpeedPlugin::updateSpeed()
-{
-    QByteArray buffer;
-    QDltMsg msg;
-    QDltArgument argument;
-
-    if(!dltFile)
-        return;
-
-    buffer =  dltFile->getMsg(dltFile->size()-1);
-
-    if(buffer.isEmpty())
-        return;
-
-    msg.setMsg(buffer);
-
-    if(msg.getArgument(1,argument)) {
-        form->setSpeedLCD(argument,msg.getTimestamp());
-    }
 
 }
 

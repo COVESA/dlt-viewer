@@ -34,11 +34,11 @@ public:
 
     void show(bool value);
 
-    void updateSpeed();
-
 private:
     QDltFile *dltFile;
     QString errorText;
+
+    int msgIndex;
 };
 
 #endif // SPEEDRPLUGIN_H
