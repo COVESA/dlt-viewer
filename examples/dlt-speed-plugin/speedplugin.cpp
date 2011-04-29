@@ -101,7 +101,7 @@ void SpeedPlugin::updateSpeed()
     msg.setMsg(buffer);
 
     if(msg.getArgument(1,argument)) {
-        form->setSpeedLCD(argument.toString());
+        form->setSpeedLCD(argument,msg.getTimestamp());
     }
 
 }

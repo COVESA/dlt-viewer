@@ -1,6 +1,8 @@
 TEMPLATE  = lib
 
 CONFIG   += plugin
+CONFIG   += qwt
+
 
 CONFIG(debug, debug|release) {
     DESTDIR = ../../debug/plugins
@@ -10,7 +12,10 @@ CONFIG(debug, debug|release) {
 else {
     DESTDIR = ../../release/plugins
     QMAKE_LIBDIR += ../../release
+    #QMAKE_LIBDIR +=  /usr/local/qwt-6.0.0/lib
     LIBS += -lqdlt
+   # LIBS += -lqwt
+
 }
 
 TARGET = $$qtLibraryTarget(speedplugin)
@@ -19,7 +24,8 @@ TARGET = $$qtLibraryTarget(speedplugin)
 DEFINES  += QT_VIEWER
 
 INCLUDEPATH += ../../src \
-            ../../qdlt
+            ../../qdlt \
+           # /usr/local/qwt-6.0.0/include
 
 # Project files
 HEADERS +=  plugininterface.h \
