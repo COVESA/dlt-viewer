@@ -2,6 +2,9 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
+target.path = /usr/share/dlt/plugins
+INSTALLS += target
+
 CONFIG(debug, debug|release) {
     DESTDIR = ../../debug/plugins
     QMAKE_LIBDIR += ../../debug

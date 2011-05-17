@@ -5,7 +5,7 @@ unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = ../qextserialport ../qdlt
 
-target.path = /usr/local/bin
+target.path = /usr/bin
 INSTALLS += target
 
 CONFIG(debug, debug|release) {

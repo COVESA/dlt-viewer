@@ -4,7 +4,7 @@ TEMPLATE                = lib
 
 DEFINES += QT_VIEWER
 
-target.path = /usr/local/lib
+target.path = /usr/lib
 INSTALLS += target
 
 #CONFIG                 -= debug_and_release
