@@ -60,12 +60,12 @@ MESSAGE("VERSION_STATE ${PRINT_VERSION_STATE}")
 
 # Use PkgConfig to check for automtoive-dlt
 FIND_PACKAGE(PkgConfig)
-#pkg_check_modules(DLT REQUIRED automotive-dlt)
+pkg_check_modules(DLT REQUIRED automotive-dlt)
   
 
 # Set CMAKE variables to given values
 SET(CMAKE_CXX_FLAGS "-Wall")
-SET(CMAKE_LD_FLAGS "-ldlt")
+#SET(CMAKE_LD_FLAGS "-ldlt")
 SET(CMAKE_BUILD_TYPE Release)
 
 
