@@ -91,7 +91,7 @@
 /**
  * Include the dlt header file for using dlt functions
  */
-#include "dlt.h"
+#include <dlt/dlt.h>
 
 #define DEFAULT_DELAY 500
 #define DEFAULT_MESSAGES 1000

@@ -2,7 +2,7 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
-target.path = /usr/share/dlt/plugins
+target.path = /usr/share/dlt-viewer/plugins
 INSTALLS += target
 
 CONFIG(debug, debug|release) {

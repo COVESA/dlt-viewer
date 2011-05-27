@@ -4,6 +4,10 @@ TEMPLATE                = lib
 
 DEFINES += QT_VIEWER
 
+headers.path = /usr/include/qdlt
+headers.files = *.h
+INSTALLS += headers
+
 target.path = /usr/lib
 INSTALLS += target
 

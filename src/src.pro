@@ -5,6 +5,10 @@ unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = ../qextserialport ../qdlt
 
+headers.path = /usr/include/dlt-viewer
+headers.files = plugininterface.h
+INSTALLS += headers
+
 target.path = /usr/bin
 INSTALLS += target
 

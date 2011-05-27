@@ -2,8 +2,9 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
-target.path = /usr/share/dlt/plugins
-INSTALLS += target
+# only install optional, because only needed for testing purpose
+# target.path = /usr/share/dlt-viewer/plugins
+# INSTALLS += target
 
 CONFIG(debug, debug|release) {
     DESTDIR = ../../debug/plugins
