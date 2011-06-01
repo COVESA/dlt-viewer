@@ -790,9 +790,12 @@ QString QDltMsg::toStringPayload()
         data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         //text += toAscii(data);
         //text += toAsciiTable(data,false,false,true,8,64,false);
-        text += toAscii(data, true);
-        text += "|";
-        text += toAscii(data, false);
+        if(!data.isEmpty())
+        {
+            text += toAscii(data, true);
+            text += "|";
+            text += toAscii(data, false);
+        }
         return text;
     }
 
