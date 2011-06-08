@@ -8,6 +8,9 @@
 struct sDltFile;
 struct sDltMessage;
 
+class QextSerialPort;
+class QTcpSocket;
+
 //! Base class for all DLT classes.
 /*!
   This class contains helper functions needed for all DLT operations and classes.
@@ -83,7 +86,11 @@ public:
     */
     int getOffsetPayload();
 
-    void setOffsetPayload(int offset) { offsetPayload = offset; }
+    //! Set the byte offset of the parameter starting in the payload.
+    /*!
+      \param _offsetPayload The offset in bytes.
+    */
+    void setOffsetPayload(int _offsetPayload) { offsetPayload = _offsetPayload; }
 
     //! The size of the parameter data in bytes.
     /*!
@@ -91,14 +98,19 @@ public:
     */
     int getDataSize();
 
-    //! The type of the argument.
+    //! Get the type of the argument.
     /*!
       \sa DltTypeInfoDef
       \return The type of the argument.
     */
     DltTypeInfoDef getTypeInfo();
 
-    void setTypeInfo(unsigned char type) { typeInfo = (QDltArgument::DltTypeInfoDef) type; }
+    //! Set the type of the argument.
+    /*!
+      \sa DltTypeInfoDef
+      \param _typeInfo The type of the argument.
+    */
+    void setTypeInfo(DltTypeInfoDef _typeInfo) { typeInfo = _typeInfo; }
 
     //! The type of the argument as text output.
     /*!
@@ -120,12 +132,17 @@ public:
     */
     void setEndianness(DltEndiannessDef _endianess) { endianness = (QDlt::DltEndiannessDef)_endianess; }
 
-    //! Get the byte data of the parameter.
+    //! Get the byte data of the parameter.    
     /*!
+      The endianess of the parameter is as set in teh endianess parameter.
       \return The complete data of the parameter as byte array.
     */
     QByteArray getData();
 
+    //! Set the data of the parameter.
+    /*!
+      \param _data The new data of the parameter.
+    */
     void setData(QByteArray _data) { data = _data; }
 
     //! Get the name of the DLT parameter.
@@ -136,6 +153,14 @@ public:
     */
     QString getName();
 
+    //! Set the name of the DLT parameter.
+    /*!
+      The name of the DLT parameter is optional.
+      This value is empty if it is not used.
+      \param _name The name of the parameter.
+    */
+    void setName(QString _name) { name = _name; }
+
     //! Get the name of the unit of the DLT parameter.
     /*!
       The unit name of the parameter is optional.
@@ -144,7 +169,15 @@ public:
     */
     QString getUnit();
 
-    //! Get the name of the unit of the DLT parameter.
+    //! Set the name of the unit of the DLT parameter.
+    /*!
+      The unit name of the parameter is optional.
+      The unit name is only used in integer and float arguments.
+      \return The name of the unit of the variable.
+    */
+    void setUnit(QString _unit) { unit = _unit; }
+
+    //! Parse the payload of DLT message and extract argument.
     /*!
       Parses an argument of the DLT message payload and stores all parsed values in the corresponding variables.
       All variables are cleared before starting parsing.
@@ -165,6 +198,10 @@ public:
 
     //! Clears all variables of the class.
     void clear();
+
+    QVariant getValue();
+
+    bool setValue(QVariant value, bool verboseMode = true);
 
 protected:
 
@@ -239,17 +276,47 @@ public:
     */
     QDateTime getTime() { return time; }
 
+    //! Set the time of the DLT message, when the DLT message is logged.
+    /*!
+      \param _time The time when the DLT message is logged.
+    */
+    void setTime(QDateTime _time) { time = _time; }
+
     //! Get the time, microseconds part, of the DLT message, when the DLT message is logged.
     /*!
       \return The microseconds when the DLT message is logged.
     */
     unsigned int getMicroseconds() { return microseconds; }
 
+    //! Set the time, microseconds part, of the DLT message, when the DLT message is logged.
+    /*!
+      \param _microseconds The microseconds when the DLT message is logged.
+    */
+    void setMicroseconds(unsigned int _microseconds) { microseconds = _microseconds; }
+
     //! Get the uptime of the DLT message, when the DLT message is generated.
     /*!
       \return The uptime when the DLT message is generated.
     */
     unsigned int getTimestamp() { return timestamp; }
+
+    //! Get the uptime of the DLT message, when the DLT message is generated.
+    /*!
+      \param _timestamp The uptime when the DLT message is generated.
+    */
+    void setTimestamp(unsigned int _timestamp) { timestamp = _timestamp; }
+
+    //! Get the session id of the DLT message.
+    /*!
+      \return The session id of the DLT message.
+    */
+    unsigned int getSessionid() { return sessionid; }
+
+    //! Set the session id of the DLT message.
+    /*!
+      \param _sessionid The session id of the DLT message.
+    */
+    void setSessionid(unsigned int _sessionid) { sessionid = _sessionid; }
 
     //! Get the message counter of the DLT message.
     /*!
@@ -258,11 +325,24 @@ public:
     */
     unsigned char getMessageCounter() { return messageCounter; }
 
+    //! Set the message counter of the DLT message.
+    /*!
+      The message counter is increased by one for each message of a context.
+      \param _messageCounter The message counter.
+    */
+    void setMessageCounter(unsigned char _messageCounter) { messageCounter = _messageCounter; }
+
     //! Get the ecu id of the DLT message.
     /*!
       \return The ecu id of the DLT message.
     */
     QString getEcuid() { return ecuid; }
+
+    //! Set the ecu id of the DLT message.
+    /*!
+      \param _ecuid The ecu id of the DLT message.
+    */
+    void setEcuid(QString _ecuid) { ecuid = _ecuid; }
 
     //! Get the application id of the DLT message.
     /*!
@@ -302,7 +382,7 @@ public:
       \sa DltTypeDef
       \param _type The type of the DLT message.
     */
-    void setType(unsigned char _type) { type = (QDltMsg::DltTypeDef)_type; }
+    void setType(DltTypeDef _type) { type = _type; }
 
     //! Get the text of the type of the DLT message.
     /*!
@@ -316,6 +396,13 @@ public:
       \return The endianness of the DLT message.
     */
     DltEndiannessDef getEndianness() { return endianness; }
+
+    //! Set the endianness of the DLT message.
+    /*!
+      \sa DltEndiannessDef
+      \param _endianness The endianness of the DLT message.
+    */
+    void setEndianness(DltEndiannessDef _endianness) { endianness = _endianness; }
 
     //! Get the text of the endianness of the DLT message.
     /*!
@@ -354,6 +441,14 @@ public:
       \return The mode of the DLT message.
     */
     DltModeDef getMode() { return mode; }
+
+    //! Set the mode (verbose or non-verbose) of the DLT message.
+    /*!
+      Non-verbose messages contains not all valid variables.
+      DLT Ctrl messages are also in non-verbose mode.
+      \param _mode The mode of the DLT message.
+    */
+    void setMode(DltModeDef _mode) { mode = _mode; }
 
     //! Get the text of the mode (verbose or non-verbose).
     /*!
@@ -420,6 +515,21 @@ public:
     */
     QString getCtrlReturnTypeString();
 
+    //! Get argument size.
+    /*!
+      Get the number of arguments in the argument list.
+      This could be a different size of number of arguments, especially in the non verbose mode.
+      \return number of arguments in teh argument list.
+    */
+    int sizeArguments();
+
+    //! Clear the list of arguments.
+    /*!
+      Clear the list of arguments.
+      The number of arguments value is not changed.
+    */
+    void clearArguments();
+
     //! Get one of the arguments from the DLT message.
     /*!
       This is only possible if DLT message is in verbose mode or the DLT message is converted into verbose mode.
@@ -441,12 +551,23 @@ public:
     */
     void removeArgument(int index);
 
-    //! Set the message provided by a byte array congtauining the DLT message.
+    //! Set the message provided by a byte array containing the DLT message.
     /*!
       This function returns false, if an error in the decoded message was found.
+      \param buf the buffer containing the DLT messages.
+      \param withSH message to be parsed contains storage header, default true.
       \return True if the operation was succesfull, false if there was an error.
     */
-    bool setMsg(QByteArray buf);
+    bool setMsg(QByteArray buf,bool withStorageHeader = true);
+
+    //! Get the message written into a byte array containing the DLT message.
+    /*!
+      This function returns false, if an error in the data was found.
+      \param buf the buffer containing the DLT messages.
+      \param withStorageHeader message contains storage header, default true.
+      \return True if the operation was succesfull, false if there was an error.
+    */
+    bool getMsg(QByteArray &buf,bool withStorageHeader = true);
 
     //! Clears all variables of the message.
     void clear();
@@ -496,6 +617,9 @@ private:
 
     //! The timestamp generated by the ECU.
     unsigned int timestamp;
+
+    //! The session id of the DLT message.
+    unsigned int sessionid;
 
     //! The message counter of a context.
     unsigned char messageCounter;
@@ -722,6 +846,71 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
+
+};
+
+class QDltConnection
+{
+public:
+
+    QDltConnection();
+    ~QDltConnection();
+
+    void setSendSerialHeader(bool _sendSerialHeader);
+    bool getSendSerialHeader();
+
+    void setSyncSerialHeader(bool _syncSerialHeader);
+    bool getSyncSerialHeader();
+
+protected:
+
+    bool sendSerialHeader;
+    bool syncSerialHeader;
+
+};
+
+class QDltTCPConnection : public QDltConnection
+{
+public:
+
+    QDltTCPConnection();
+    ~QDltTCPConnection();
+
+    void setHostname(QString _hostname);
+    QString getHostname();
+
+    void setTcpPort(unsigned int _tcpport);
+    void setDefaultTcpPort();
+    unsigned int getTcpPort();
+
+private:
+
+    QString hostname;
+    unsigned int tcpport;
+
+    QTcpSocket *socket;
+
+};
+
+class QDltSerialConnection : public QDltConnection
+{
+public:
+
+    QDltSerialConnection();
+    ~QDltSerialConnection();
+
+    void setPort(QString _port);
+    QString getPort();
+
+    void setBaudrate(int _baudrate);
+    unsigned int getBaudrate();
+
+private:
+
+    QString port;
+    int baudrate;
+
+    QextSerialPort *serialport;
 
 };
 

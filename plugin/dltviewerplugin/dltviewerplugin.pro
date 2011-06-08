@@ -2,6 +2,8 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
+# QT += network
+
 target.path = /usr/share/dlt-viewer/plugins
 INSTALLS += target
 
@@ -26,8 +28,6 @@ INCLUDEPATH += ../../src \
 
 # Project files
 HEADERS += dltviewerplugin.h \
-        plugininterface.h \
-    ../../qdlt/qdlt.h \
     form.h
 
 SOURCES += dltviewerplugin.cpp \

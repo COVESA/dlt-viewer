@@ -2,6 +2,8 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
+# QT += network
+
 # only install optional, because only needed for testing purpose
 # target.path = /usr/share/dlt-viewer/plugins
 # INSTALLS += target
@@ -26,9 +28,7 @@ INCLUDEPATH += ../../src \
             ../../qdlt
 
 # Project files
-HEADERS += dummydecoderplugin.h \
-        plugininterface.h \
-        ../../qdlt/qdlt.h
+HEADERS += dummydecoderplugin.h
 
 SOURCES += dummydecoderplugin.cpp
 

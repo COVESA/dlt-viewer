@@ -1,6 +1,8 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+#include "qdlt.h"
+
 #include <QTreeWidgetItem>
 #include <QTcpSocket>
 #include <QDockWidget>
@@ -45,11 +47,15 @@ public:
     bool sendSerialHeaderTcp;
     bool syncSerialHeaderTcp;
 
+    QDltTCPConnection tcpcon;
+
     /* configuration serial */
     QString port;
     int baudrate;
     bool sendSerialHeaderSerial;
     bool syncSerialHeaderSerial;
+
+    QDltSerialConnection serialcon;
 
     /* configuration update */
     bool updateDataIfOnline;

@@ -6,23 +6,20 @@ DEFINES += QT_VIEWER
 
 headers.path = /usr/include/qdlt
 headers.files = *.h
+
 INSTALLS += headers
 
 target.path = /usr/lib
 INSTALLS += target
 
-#CONFIG                 -= debug_and_release
-#CONFIG                 += debug
-#CONFIG                 += release
 CONFIG                 += warn_on qt thread
-QT                     -= gui
+QT                     -= gui network
+QT                     += network
 
 OBJECTS_DIR             = build/obj
 MOC_DIR                 = build/moc
-#DEPENDDIR               = .
 
-#INCLUDEDIR              = .
-INCLUDEPATH = ../src
+INCLUDEPATH = ../qextserialport ../src
 
 SOURCES +=  dlt_common.c \
             qdlt.cpp
@@ -36,8 +33,12 @@ unix:VERSION            = 1.0.0
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
     TARGET  = qdltd
+    QMAKE_LIBDIR += ../debug
+    LIBS += -lqextserialportd
 }
 else {
     DESTDIR = ../release
     TARGET  = qdlt
+    QMAKE_LIBDIR += ../release
+    LIBS += -lqextserialport
 }

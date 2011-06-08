@@ -455,7 +455,7 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
     msg.setApid(frame->appid);
     msg.setCtid(frame->ctid);
     msg.setNumberOfArguments(frame->pdureflist.size());
-    msg.setType(frame->messageType);
+    msg.setType((QDltMsg::DltTypeDef)(frame->messageType));
     msg.setSubtype(frame->messageInfo);
     QByteArray payload = msg.getPayload();
 
@@ -475,7 +475,7 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
                 argument.setData(data);
             }
             else {
-                argument.setTypeInfo(pdu->typeInfo);
+                argument.setTypeInfo((QDltArgument::DltTypeInfoDef)(pdu->typeInfo));
                 argument.setOffsetPayload(offset);
 
                 if( (pdu->typeInfo == QDltArgument::DltTypeInfoStrg) || (pdu->typeInfo == QDltArgument::DltTypeInfoRawd))

@@ -2,6 +2,8 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
+# QT += network
+
 target.path = /usr/share/dlt-viewer/plugins
 INSTALLS += target
 
@@ -25,8 +27,7 @@ INCLUDEPATH += ../../src \
             ../../qdlt
 
 # Project files
-HEADERS += nonverboseplugin.h \
-    ../../src/plugininterface.h
+HEADERS += nonverboseplugin.h
 
 SOURCES += nonverboseplugin.cpp
 

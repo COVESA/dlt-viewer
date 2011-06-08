@@ -2,6 +2,9 @@
 #include <QFile>
 #include <QtDebug>
 
+#include <qextserialport.h>
+#include <QTcpSocket>
+
 #include "qdlt.h"
 
 extern "C"
@@ -376,12 +379,12 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
 
 void QDltArgument::clear()
 {
-    typeInfo = DltTypeInfoUnknown;
+    typeInfo = QDltArgument::DltTypeInfoUnknown;
     offsetPayload = 0;
     data.clear();
     name.clear();
     unit.clear();
-    endianness = DltEndiannessUnknown;
+    endianness = QDltArgument::DltEndiannessUnknown;
 
 }
 
@@ -398,16 +401,22 @@ QString QDltArgument::toString(bool binary)
         text += QString("?");
         break;
     case DltTypeInfoStrg:
-        text += QString("%1").arg(QString(getData()));
+        if(data.size()) {
+            text += QString("%1").arg(QString(getData()));
+        }
         break;
     case DltTypeInfoBool:
-        if(data.constData()[0])
-            text += QString("true");
+        if(data.size()) {
+            if(data.constData()[0])
+                text += QString("true");
+            else
+                text += QString("false");
+        }
         else
-            text += QString("false");
+            text += QString("?");
         break;
     case DltTypeInfoSInt:
-        switch(getData().size())
+        switch(data.size())
         {
         case 1:
             text += QString("%1").arg((short)(*(char*)(data.constData())));
@@ -436,7 +445,7 @@ QString QDltArgument::toString(bool binary)
 
         break;
     case DltTypeInfoUInt:
-        switch(getData().size())
+        switch(data.size())
         {
         case 1:
             text += QString("%1").arg((unsigned short)(*(unsigned char*)(data.constData())));
@@ -465,7 +474,7 @@ QString QDltArgument::toString(bool binary)
 
         break;
     case DltTypeInfoFloa:
-        switch(getData().size())
+        switch(data.size())
         {
         case 4:
             if(endianness == DltEndiannessLittleEndian)
@@ -501,6 +510,172 @@ QString QDltArgument::toString(bool binary)
     }
 
     return text;
+}
+
+QVariant QDltArgument::getValue()
+{
+    switch(typeInfo) {
+    case DltTypeInfoUnknown:
+        break;
+    case DltTypeInfoStrg:
+        if(data.size()) {
+            return QVariant(QString(getData()));
+        }
+        break;
+    case DltTypeInfoBool:
+        if(data.size()) {
+            return QVariant((bool)(data.constData()[0]));
+        }
+        break;
+    case DltTypeInfoSInt:
+        switch(data.size())
+        {
+        case 1:
+            return QVariant((short)(*(char*)(data.constData())));
+        case 2:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((short)(*(short*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_16((short)(*(short*)(data.constData()))));
+        case 4:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((int)(*(int*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_32((int)(*(int*)(data.constData()))));
+        case 8:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((long long)(*(long long*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_64((long long)(*(long long*)(data.constData()))));
+        default:
+            break;
+        }
+        break;
+    case DltTypeInfoUInt:
+        switch(data.size())
+        {
+        case 1:
+            return QVariant((unsigned short)(*(unsigned char*)(data.constData())));
+        case 2:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((unsigned short)(*(unsigned short*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
+        case 4:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((unsigned int)(*(unsigned int*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
+        case 8:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((unsigned long long)(*(unsigned long long*)(data.constData())));
+            else
+                return QVariant(DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
+        default:
+            break;
+        }
+
+        break;
+    case DltTypeInfoFloa:
+        switch(data.size())
+        {
+        case 4:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((double)(*(float*)(data.constData())));
+            else
+            {
+                unsigned int tmp;
+                tmp = DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData())));
+                return QVariant((double)(*(float*)((void*)&tmp)));
+            }
+        case 8:
+            if(endianness == DltEndiannessLittleEndian)
+                return QVariant((double)(*(double*)(data.constData())));
+            else {
+                unsigned int tmp;
+                tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
+                return QVariant((double)(*(double*)((void*)&tmp)));
+            }
+        default:
+            break;
+        }
+        break;
+    case DltTypeInfoRawd:
+        return QVariant(data);
+        break;
+    case DltTypeInfoTrai:
+        break;
+    default:
+        break;
+    }
+
+    return QVariant();
+}
+
+bool QDltArgument::setValue(QVariant value, bool verboseMode)
+{
+    endianness = QDltArgument::DltEndiannessLittleEndian;
+
+    switch(value.type())
+    {
+    case QVariant::ByteArray:
+        data = value.toByteArray();
+        typeInfo = QDltArgument::DltTypeInfoRawd;
+        return true;
+    case QVariant::String:
+        data = value.toByteArray();
+        typeInfo = QDltArgument::DltTypeInfoStrg;
+        return true;
+    case QVariant::Bool:
+        {
+        bool bvalue = value.toBool();
+        unsigned char cvalue = bvalue;
+        data = QByteArray((const char*)&cvalue,sizeof(unsigned char));
+        typeInfo = QDltArgument::DltTypeInfoSInt;
+        return true;
+        }
+        break;
+    case QVariant::Int:
+        {
+        int bvalue = value.toInt();
+        data = QByteArray((const char*)&bvalue,sizeof(int));
+        typeInfo = QDltArgument::DltTypeInfoSInt;
+        return true;
+        }
+    case QVariant::LongLong:
+        {
+        long long bvalue = value.toLongLong();
+        data = QByteArray((const char*)&bvalue,sizeof(long long));
+        typeInfo = QDltArgument::DltTypeInfoSInt;
+        return true;
+        }
+    case QVariant::UInt:
+        {
+        unsigned int bvalue = value.toUInt();
+        data = QByteArray((const char*)&bvalue,sizeof(int));
+        typeInfo = QDltArgument::DltTypeInfoUInt;
+        return true;
+        }
+    case QVariant::ULongLong:
+        {
+        unsigned long long bvalue = value.toULongLong();
+        data = QByteArray((const char*)&bvalue,sizeof(unsigned long long));
+        typeInfo = QDltArgument::DltTypeInfoUInt;
+        return true;
+        }
+    case QVariant::Double:
+        {
+        double bvalue = value.toInt();
+        data = QByteArray((const char*)&bvalue,sizeof(double));
+        typeInfo = QDltArgument::DltTypeInfoFloa;
+        return true;
+        }
+        break;
+    default:
+        break;
+    }
+
+    return false;
 }
 
 QDltMsg::QDltMsg()
@@ -569,7 +744,7 @@ QString QDltMsg::getCtrlReturnTypeString()
     return QString(( ctrlReturnType<=8 )?qDltCtrlReturnType[ctrlReturnType]:"");
 }
 
-bool QDltMsg::setMsg(QByteArray buf)
+bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 {
     unsigned int offset;
     QDltArgument argument;
@@ -578,32 +753,40 @@ bool QDltMsg::setMsg(QByteArray buf)
     DltExtendedHeader *extendedheader = 0;
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
+    int sizeStorageHeader = 0;
+
+    /* set offset of storage header */
+    if(withStorageHeader) {
+        sizeStorageHeader = sizeof(DltStorageHeader);
+    }
 
     /* empty message */
     clear();
 
-    if(buf.size() < (int)(sizeof(DltStorageHeader)+sizeof(DltStandardHeader))) {
+    if(buf.size() < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
         return false;
     }
 
-    storageheader = (DltStorageHeader*) buf.data();
-    standardheader = (DltStandardHeader*) (buf.data() + sizeof(DltStorageHeader));
+    if(withStorageHeader) {
+        storageheader = (DltStorageHeader*) buf.data();
+    }
+    standardheader = (DltStandardHeader*) (buf.data() + sizeStorageHeader);
 
     /* calculate complete size of headers */
     extra_size = DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp)+(DLT_IS_HTYP_UEH(standardheader->htyp) ? sizeof(DltExtendedHeader) : 0);
-    headersize = sizeof(DltStorageHeader) + sizeof(DltStandardHeader) + extra_size;
-    datasize =  DLT_SWAP_16(standardheader->len) - (headersize - sizeof(DltStorageHeader));
+    headersize = sizeStorageHeader + sizeof(DltStandardHeader) + extra_size;
+    datasize =  DLT_SWAP_16(standardheader->len) - (headersize - sizeStorageHeader);
 
     /* load standard header extra parameters and Extended header if used */
     if (extra_size>0)
     {
-        if (buf.size()  < (int)(headersize - sizeof(DltStorageHeader))) {
+        if (buf.size()  < (int)(headersize - sizeStorageHeader)) {
             return false;
         }
 
         /* set extended header ptr and get standard header extra parameters */
         if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
-            extendedheader = (DltExtendedHeader*) (buf.data() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader) +
+            extendedheader = (DltExtendedHeader*) (buf.data() + sizeStorageHeader + sizeof(DltStandardHeader) +
                                   DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp));
         }
         else {
@@ -612,19 +795,19 @@ bool QDltMsg::setMsg(QByteArray buf)
 
         if (DLT_IS_HTYP_WEID(standardheader->htyp))
         {
-            memcpy(headerextra.ecu,buf.data() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader),DLT_ID_SIZE);
+            memcpy(headerextra.ecu,buf.data() + sizeStorageHeader + sizeof(DltStandardHeader),DLT_ID_SIZE);
         }
 
         if (DLT_IS_HTYP_WSID(standardheader->htyp))
         {
-            memcpy(&(headerextra.seid),buf.data() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader)
+            memcpy(&(headerextra.seid),buf.data() + sizeStorageHeader + sizeof(DltStandardHeader)
                    + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0), DLT_SIZE_WSID);
             headerextra.seid = DLT_BETOH_32(headerextra.seid);
         }
 
         if (DLT_IS_HTYP_WTMS(standardheader->htyp))
         {
-            memcpy(&(headerextra.tmsp),buf.data() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader)
+            memcpy(&(headerextra.tmsp),buf.data() + sizeStorageHeader + sizeof(DltStandardHeader)
                    + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0)
                    + (DLT_IS_HTYP_WSID(standardheader->htyp) ? DLT_SIZE_WSID : 0),DLT_SIZE_WTMS);
             headerextra.tmsp = DLT_BETOH_32(headerextra.tmsp);
@@ -638,7 +821,8 @@ bool QDltMsg::setMsg(QByteArray buf)
     }
     else
     {
-        ecuid = QString(QByteArray(storageheader->ecu,4));
+        if(storageheader)
+            ecuid = QString(QByteArray(storageheader->ecu,4));
     }
 
     /* extract application id */
@@ -691,12 +875,19 @@ bool QDltMsg::setMsg(QByteArray buf)
     }
 
     /* extract time */
-    time.setTime_t(storageheader->seconds);
-    microseconds = storageheader->microseconds;
+    if(storageheader) {
+        time.setTime_t(storageheader->seconds);
+        microseconds = storageheader->microseconds;
+    }
 
     /* extract timestamp */
     if ( DLT_IS_HTYP_WTMS(standardheader->htyp) ) {
         timestamp = headerextra.tmsp; /* big endian to host little endian conversion already done */
+    }
+
+    /* extract session id */
+    if (DLT_IS_HTYP_WSID(standardheader->htyp)) {
+        sessionid = headerextra.tmsp;
     }
 
     /* extract message counter */
@@ -750,6 +941,81 @@ bool QDltMsg::setMsg(QByteArray buf)
     return true;
 }
 
+bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
+    DltStorageHeader storageheader;
+    DltStandardHeader standardheader;
+    DltStandardHeaderExtra headerextra;
+    DltExtendedHeader extendedheader;
+
+    /* empty return buffer */
+    buf.clear();
+
+    /* prepare payload */
+
+
+    /* write storageheader */
+    if(withStorageHeader)
+    {
+        storageheader.pattern[0] = 'D';
+        storageheader.pattern[1] = 'L';
+        storageheader.pattern[2] = 'T';
+        storageheader.pattern[3] = 0x01;
+        strncpy(storageheader.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
+        storageheader.microseconds = microseconds;
+        storageheader.seconds = time.toTime_t();
+        buf += QByteArray((const char *)&storageheader,sizeof(DltStorageHeader));
+    }
+
+    /* write standardheader */
+    standardheader.htyp = 0x01 << 5; /* intialise with version number 0x1 */
+    if(endianness == DltEndiannessBigEndian) {
+        standardheader.htyp |= DLT_HTYP_MSBF;
+    }
+    if(mode == DltModeVerbose) {
+        standardheader.htyp |= DLT_HTYP_UEH;
+        standardheader.htyp |= DLT_HTYP_WEID;
+        standardheader.htyp |= DLT_HTYP_WSID;
+        standardheader.htyp |= DLT_HTYP_WTMS;
+        standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + sizeof(headerextra.ecu) + sizeof(headerextra.seid) +
+                                     sizeof(headerextra.tmsp) + sizeof(DltExtendedHeader) + payload.size());
+    }
+    else {
+        standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + payload.size());
+    }
+    standardheader.mcnt = messageCounter;
+    buf += QByteArray((const char *)&standardheader,sizeof(DltStandardHeader));
+
+    /* write standard header extra */
+    if(mode == DltModeVerbose) {
+        strncpy(headerextra.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
+        buf += QByteArray((const char *)&(headerextra.ecu),sizeof(headerextra.ecu));
+        headerextra.seid = DLT_SWAP_32(sessionid);
+        buf += QByteArray((const char *)&(headerextra.seid),sizeof(headerextra.seid));
+        headerextra.tmsp = DLT_SWAP_32(timestamp);
+        buf += QByteArray((const char *)&(headerextra.tmsp),sizeof(headerextra.tmsp));
+    }
+
+    /* write extendedheader */
+    if(mode == DltModeVerbose) {
+        strncpy(extendedheader.apid,apid.toAscii().data(),apid.size()>3?4:apid.size()+1);
+        strncpy(extendedheader.ctid,ctid.toAscii().data(),ctid.size()>3?4:ctid.size()+1);
+        extendedheader.msin = 0;
+        if(mode == DltModeVerbose) {
+            extendedheader.msin |= DLT_MSIN_VERB;
+        }
+        extendedheader.msin |= (((unsigned char)type) << 1) & DLT_MSIN_MSTP;
+        extendedheader.msin |= (((unsigned char)subtype) << 4) & DLT_MSIN_MTIN;
+        extendedheader.noar = numberOfArguments;
+        buf += QByteArray((const char *)&extendedheader,sizeof(DltExtendedHeader));
+    }
+
+    /* write payload */
+    buf += payload;
+
+    return true;
+}
+
+
 void QDltMsg::clear()
 {
     ecuid.clear();
@@ -762,11 +1028,22 @@ void QDltMsg::clear()
     time = QDateTime();
     microseconds = 0;
     timestamp = 0;
+    sessionid = 0;
     numberOfArguments = 0;
     messageId = 0;
     ctrlServiceId = 0;
     ctrlReturnType = 0;
     arguments.clear();
+}
+
+void QDltMsg::clearArguments()
+{
+    arguments.clear();
+}
+
+int QDltMsg::sizeArguments()
+{
+    return arguments.size();
 }
 
 bool QDltMsg::getArgument(int index,QDltArgument &argument)
@@ -1253,4 +1530,106 @@ bool QDltFile::isFilter()
 void QDltFile::enableFilter(bool state)
 {
     filterFlag = state;
+}
+
+QDltConnection::QDltConnection()
+{
+    sendSerialHeader = false;
+    syncSerialHeader = false;
+}
+
+QDltConnection::~QDltConnection()
+{
+
+}
+
+void QDltConnection::setSendSerialHeader(bool _sendSerialHeader)
+{
+    sendSerialHeader = _sendSerialHeader;
+}
+
+bool QDltConnection::getSendSerialHeader()
+{
+    return sendSerialHeader;
+}
+
+void QDltConnection::setSyncSerialHeader(bool _syncSerialHeader)
+{
+    syncSerialHeader = _syncSerialHeader;
+}
+
+bool QDltConnection::getSyncSerialHeader()
+{
+    return syncSerialHeader;
+}
+
+QDltTCPConnection::QDltTCPConnection()
+    : QDltConnection()
+{
+
+}
+
+QDltTCPConnection::~QDltTCPConnection()
+{
+    hostname = "localhost";
+    tcpport = DLT_DAEMON_TCP_PORT;
+}
+
+void QDltTCPConnection::setHostname(QString _hostname)
+{
+    hostname = _hostname;
+}
+
+QString QDltTCPConnection::getHostname()
+{
+    return hostname;
+}
+
+void QDltTCPConnection::setTcpPort(unsigned int _tcpport)
+{
+    tcpport = _tcpport;
+}
+
+void QDltTCPConnection::setDefaultTcpPort()
+{
+    tcpport = DLT_DAEMON_TCP_PORT;
+}
+
+unsigned int QDltTCPConnection::getTcpPort()
+{
+    return tcpport;
+}
+
+QDltSerialConnection::QDltSerialConnection()
+    : QDltConnection()
+{
+    port = "";
+    baudrate = 0;
+
+    serialport = 0;
+}
+
+QDltSerialConnection::~QDltSerialConnection()
+{
+
+}
+
+void QDltSerialConnection::setPort(QString _port)
+{
+    port = _port;
+}
+
+QString QDltSerialConnection::getPort()
+{
+    return port;
+}
+
+void QDltSerialConnection::setBaudrate(int _baudrate)
+{
+    baudrate = _baudrate;
+}
+
+unsigned int QDltSerialConnection::getBaudrate()
+{
+    return baudrate;
 }

@@ -872,6 +872,16 @@ void MainWindow::on_actionECU_Add_triggered()
         ecuitem->sendGetLogInfo = dlg.sendGetLogInfo();
         ecuitem->updateDataIfOnline = dlg.update();
 
+        /* new qdlt library */
+        ecuitem->tcpcon.setTcpPort(dlg.tcpport());
+        ecuitem->tcpcon.setHostname(dlg.hostname());
+        ecuitem->tcpcon.setSendSerialHeader(dlg.sendSerialHeaderTcp());
+        ecuitem->tcpcon.setSyncSerialHeader(dlg.syncSerialHeaderSerial());
+        ecuitem->serialcon.setBaudrate(dlg.baudrate());
+        ecuitem->serialcon.setPort(dlg.port());
+        ecuitem->serialcon.setSendSerialHeader(dlg.sendSerialHeaderSerial());
+        ecuitem->serialcon.setSyncSerialHeader(dlg.syncSerialHeaderTcp());
+
         /* update ECU item */
         ecuitem->update();
 
@@ -946,6 +956,16 @@ void MainWindow::on_actionECU_Edit_triggered()
             ecuitem->timingPackets = dlg.timingPackets();
             ecuitem->sendGetLogInfo = dlg.sendGetLogInfo();
             ecuitem->updateDataIfOnline = dlg.update();
+
+            /* new qdlt library */
+            ecuitem->tcpcon.setTcpPort(dlg.tcpport());
+            ecuitem->tcpcon.setHostname(dlg.hostname());
+            ecuitem->tcpcon.setSendSerialHeader(dlg.sendSerialHeaderTcp());
+            ecuitem->tcpcon.setSyncSerialHeader(dlg.syncSerialHeaderSerial());
+            ecuitem->serialcon.setBaudrate(dlg.baudrate());
+            ecuitem->serialcon.setPort(dlg.port());
+            ecuitem->serialcon.setSendSerialHeader(dlg.sendSerialHeaderSerial());
+            ecuitem->serialcon.setSyncSerialHeader(dlg.syncSerialHeaderTcp());
 
             /* update ECU item */
             ecuitem->update();
@@ -1532,31 +1552,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                     sendUpdates(ecuitem);
                 }
             }
-#if 0
-            if(!ecuitem->serialport)
-                ecuitem->serialport = new AbstractSerial();
 
-            ecuitem->serialport->setDeviceName(ecuitem->port);
-
-            if(ecuitem->serialport->isOpen()
-                   ecuitem->serialport->close();
-
-            ecuitem->serialport->open(AbstractSerial::ReadWrite);
-
-
-            connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
-            if(ecuitem->serialport->isOpen())
-            {
-                ecuitem->serialport->setBaudRate((AbstractSerial::BaudRate)ecuitem->baudrate);
-                ecuitem->serialport->setDataBits(AbstractSerial::DataBits8);
-                ecuitem->serialport->setParity(AbstractSerial::ParityNone);
-                ecuitem->serialport->setStopBits(AbstractSerial::StopBits1);
-                ecuitem->serialport->setFlowControl(AbstractSerial::FlowControlOff);
-
-                ecuitem->connected = true;
-                ecuitem->update();
-            }
-#endif
         }
     }
 }
