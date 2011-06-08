@@ -2,7 +2,8 @@
 PROJECT                 = qdlt
 TEMPLATE                = lib
 
-DEFINES += QT_VIEWER
+unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
+win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 
 headers.path = /usr/include/qdlt
 headers.files = *.h
