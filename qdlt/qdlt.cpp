@@ -38,6 +38,29 @@ QDlt::~QDlt()
 
 }
 
+bool QDlt::swap(QByteArray &bytes,int size, int offset)
+{
+    char tmp;
+
+    if( (offset < 0)  || (offset >= bytes.size()) )
+        return false;
+
+    if(size == -1)
+        size = bytes.size()-offset;
+
+    if((size+offset) > bytes.size())
+        return false;
+
+    for(int num = 0;num<(size/2);num++)
+    {
+        tmp = bytes[offset+num];
+        bytes[offset+num] = bytes[offset+size-1-num];
+        bytes[offset+size-1-num] = tmp;
+    }
+
+    return true;
+}
+
 QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
 {
     QString text;
@@ -373,6 +396,77 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
         }
 
     }
+
+    return true;
+}
+
+bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
+{
+    unsigned int dltType = 0;
+    unsigned short length;
+
+    /* add the type info in verbose mode */
+    if(verboseMode) {
+        switch(typeInfo) {
+        case DltTypeInfoUnknown:
+            return false;
+        case DltTypeInfoStrg:
+            dltType |= DLT_TYPE_INFO_STRG;
+            break;
+        case DltTypeInfoBool:
+            dltType |= DLT_TYPE_INFO_BOOL;
+            break;
+        case DltTypeInfoSInt:
+            dltType |= DLT_TYPE_INFO_SINT;
+            break;
+        case DltTypeInfoUInt:
+            dltType |= DLT_TYPE_INFO_UINT;
+            break;
+        case DltTypeInfoFloa:
+            dltType |= DLT_TYPE_INFO_FLOA;
+            break;
+        case DltTypeInfoRawd:
+            dltType |= DLT_TYPE_INFO_RAWD;
+            break;
+        case DltTypeInfoTrai:
+            // dltType |= DLT_TYPE_INFO_TRAI;
+            return false;
+        default:
+            return false;
+        }
+        if((typeInfo == DLT_TYPE_INFO_SINT) || (typeInfo == DLT_TYPE_INFO_UINT) || (typeInfo == DLT_TYPE_INFO_FLOA)) {
+            switch(data.size())
+            {
+            case 1:
+                dltType |= DLT_TYLE_8BIT;
+                break;
+            case 2:
+                dltType |= DLT_TYLE_16BIT;
+                break;
+            case 4:
+                dltType |= DLT_TYLE_32BIT;
+                break;
+            case 8:
+                dltType |= DLT_TYLE_64BIT;
+                break;
+            case 16:
+                dltType |= DLT_TYLE_128BIT;
+                break;
+            default:
+                return false;
+            }
+        }
+        payload += QByteArray((const char*)&dltType,sizeof(unsigned int));
+    }
+
+    /* add the string or raw data size to the payload */
+    if((typeInfo == DLT_TYPE_INFO_RAWD) || (typeInfo == DLT_TYPE_INFO_STRG)) {
+        length = data.size();
+        payload += QByteArray((const char*)&dltType,sizeof(unsigned int));
+    }
+
+    /* add the value to the payload */
+    payload += data;
 
     return true;
 }
@@ -951,7 +1045,12 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
     buf.clear();
 
     /* prepare payload */
-
+    payload.clear();
+    for (int num = 0;num<arguments.size();num++)
+    {
+        if(!(arguments[num].getArgument(payload,mode==DltModeVerbose)))
+            return false;
+    }
 
     /* write storageheader */
     if(withStorageHeader)

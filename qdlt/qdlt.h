@@ -28,6 +28,14 @@ public:
     */
     ~QDlt();
 
+    //! Byte swap some bytes.
+    /*!
+      \param bytes The data to be swapped
+      \param size The number of bytes to be swapped, -1 if all bytes of teh byte array
+      \param offset Offset in the byte array where to begin to byte swap
+    */
+     bool swap(QByteArray &bytes,int size = -1, int offset = 0);
+
     //! Convert byte array to text or HTML output.
     /*!
       \param bytes The data to be converted
@@ -188,6 +196,14 @@ public:
       \return The name of the unit of the variable.
     */
     bool setArgument(QByteArray &payload,unsigned int &offset,DltEndiannessDef _endianess);
+
+    //! Get argument as byte array and appends it to data.
+    /*!
+      \param data byte array to be appended
+      \param verboseMode data should be returned in verboseMode
+      \return true if operation was succesful, false if there was an error.
+    */
+    bool getArgument(QByteArray &data, bool verboseMode = true);
 
     //! Print argument content into a string.
     /*!
