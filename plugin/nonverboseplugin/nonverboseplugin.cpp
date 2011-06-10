@@ -470,12 +470,14 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
         {
             if(!pdu->description.isEmpty()) {
                 argument.setTypeInfo(QDltArgument::DltTypeInfoStrg);
+                argument.setEndianness(msg.getEndianness());
                 argument.setOffsetPayload(offset);
                 data.append(pdu->description);
                 argument.setData(data);
             }
             else {
                 argument.setTypeInfo((QDltArgument::DltTypeInfoDef)(pdu->typeInfo));
+                argument.setEndianness(msg.getEndianness());
                 argument.setOffsetPayload(offset);
 
                 if( (pdu->typeInfo == QDltArgument::DltTypeInfoStrg) || (pdu->typeInfo == QDltArgument::DltTypeInfoRawd))
