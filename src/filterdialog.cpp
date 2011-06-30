@@ -122,3 +122,43 @@ int FilterDialog::getFilterColour()
 {
     return ui->comboBoxFilterColour->currentIndex();
 }
+
+void FilterDialog::setLogLevelMax(int value)
+{
+    ui->comboBoxLogLevelMax->setCurrentIndex(value);
+}
+
+int FilterDialog::getLogLevelMax()
+{
+    return ui->comboBoxLogLevelMax->currentIndex();
+}
+
+void FilterDialog::setEnableLogLevelMax(bool state)
+{
+    ui->checkBoxLogLevelMax->setCheckState(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableLogLevelMax()
+{
+    return (ui->checkBoxLogLevelMax->checkState() == Qt::Checked);
+}
+
+void FilterDialog::setLogLevelMin(int value)
+{
+    ui->comboBoxLogLevelMin->setCurrentIndex(value);
+}
+
+int FilterDialog::getLogLevelMin()
+{
+    return ui->comboBoxLogLevelMin->currentIndex();
+}
+
+void FilterDialog::setEnableLogLevelMin(bool state)
+{
+    ui->checkBoxLogLevelMin->setCheckState(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableLogLevelMin()
+{
+    return (ui->checkBoxLogLevelMin->checkState() == Qt::Checked);
+}

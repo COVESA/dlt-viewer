@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>361</width>
-    <height>350</height>
+    <width>271</width>
+    <height>454</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,6 +71,98 @@
    </item>
    <item>
     <widget class="QLineEdit" name="lineEditPayloadText"/>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxLogLevelMax">
+     <property name="text">
+      <string>Log Level Max</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboBoxLogLevelMax">
+     <item>
+      <property name="text">
+       <string>off</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>fatal</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>error</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>warn</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>info</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>debug</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>verbose</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkBoxLogLevelMin">
+     <property name="text">
+      <string>Log Level Min</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboBoxLogLevelMin">
+     <item>
+      <property name="text">
+       <string>off</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>fatal</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>error</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>warn</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>info</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>debug</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>verbose</string>
+      </property>
+     </item>
+    </widget>
    </item>
    <item>
     <widget class="QLabel" name="label">

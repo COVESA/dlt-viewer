@@ -43,6 +43,16 @@ public:
     void setFilterColour(int value);
     int getFilterColour();
 
+    void setLogLevelMax(int value);
+    int getLogLevelMax();
+    void setEnableLogLevelMax(bool state);
+    bool getEnableLogLevelMax();
+
+    void setLogLevelMin(int value);
+    int getLogLevelMin();
+    void setEnableLogLevelMin(bool state);
+    bool getEnableLogLevelMin();
+
 private:
     Ui::FilterDialog *ui;
 };

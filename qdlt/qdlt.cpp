@@ -1438,6 +1438,12 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
             foundFilter = false;
         }
+        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+            foundFilter = false;
+        }
+        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
+            foundFilter = false;
+        }
 
         if(foundFilter)
             found = true;
@@ -1461,6 +1467,12 @@ bool QDltFile::checkFilter(QDltMsg &msg)
             foundFilter = false;
         }
         if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+            foundFilter = false;
+        }
+        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+            foundFilter = false;
+        }
+        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
             foundFilter = false;
         }
 
@@ -1508,6 +1520,12 @@ int QDltFile::checkMarker(QDltMsg &msg)
             foundFilter = false;
         }
         if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+            foundFilter = false;
+        }
+        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+            foundFilter = false;
+        }
+        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
             foundFilter = false;
         }
 

@@ -185,8 +185,14 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     enableContextId = false;
     enableHeaderText = false;
     enablePayloadText = false;
+    enableLogLevelMax = false;
+    enableLogLevelMin = false;
 
     filterColour = 0;
+
+    logLevelMax = 6;
+    logLevelMin = 0;
+
 }
 
 FilterItem::~FilterItem()
@@ -212,6 +218,66 @@ void FilterItem::update()
     }
     if(enablePayloadText ) {
         text += QString("Payload: %1 ").arg(payloadText);
+    }
+    if(enableLogLevelMax ) {
+        text += "LogLevelMax: ";
+        switch(logLevelMax)
+        {
+        case 0:
+            text += "off";
+            break;
+        case 1:
+            text += "fatal";
+            break;
+        case 2:
+            text += "error";
+            break;
+        case 3:
+            text += "warn";
+            break;
+        case 4:
+            text += "info";
+            break;
+        case 5:
+            text += "debug";
+            break;
+        case 6:
+            text += "verbose";
+            break;
+        default:
+            break;
+        }
+        text += " ";
+    }
+    if(enableLogLevelMin ) {
+        text += "LogLevelMin: ";
+        switch(logLevelMin)
+        {
+        case 0:
+            text += "off";
+            break;
+        case 1:
+            text += "fatal";
+            break;
+        case 2:
+            text += "error";
+            break;
+        case 3:
+            text += "warn";
+            break;
+        case 4:
+            text += "info";
+            break;
+        case 5:
+            text += "debug";
+            break;
+        case 6:
+            text += "verbose";
+            break;
+        default:
+            break;
+        }
+        text += " ";
     }
     switch(filterColour)
     {
@@ -506,10 +572,30 @@ bool Project::Load(QString filename)
                   if(filteritem)
                     filteritem->enablePayloadText = xml.readElementText().toInt();;
               }
+              if(xml.name() == QString("enableLogLevelMax"))
+              {
+                  if(filteritem)
+                    filteritem->enableLogLevelMax = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("enableLogLevelMin"))
+              {
+                  if(filteritem)
+                    filteritem->enableLogLevelMin = xml.readElementText().toInt();;
+              }
               if(xml.name() == QString("filterColour"))
               {
                   if(filteritem)
                     filteritem->filterColour = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("logLevelMax"))
+              {
+                  if(filteritem)
+                    filteritem->logLevelMax = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("logLevelMin"))
+              {
+                  if(filteritem)
+                    filteritem->logLevelMin = xml.readElementText().toInt();;
               }
 
               if(xml.name() == QString("name"))
@@ -719,6 +805,11 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
+        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
+
+        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
+        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
 
         xml.writeEndElement(); // filter
     }
@@ -740,6 +831,11 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
+        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
+
+        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
+        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
 
         xml.writeEndElement(); // filter
     }
@@ -761,8 +857,13 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
+        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 
         xml.writeTextElement("filterColour",QString("%1").arg(item->filterColour));
+
+        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
+        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
 
         xml.writeEndElement(); // filter
     }

@@ -134,8 +134,13 @@ public:
     bool enableContextId;
     bool enableHeaderText;
     bool enablePayloadText;
+    bool enableLogLevelMin;
+    bool enableLogLevelMax;
 
     int filterColour;
+
+    int logLevelMax;
+    int logLevelMin;
 
     void update();
 

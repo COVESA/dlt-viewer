@@ -3393,8 +3393,13 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->enableContextId = dlg.getEnableContextId();
         item->enableHeaderText = dlg.getEnableHeaderText();
         item->enablePayloadText = dlg.getEnablePayloadText();
+        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
+        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
         item->filterColour = dlg.getFilterColour();
+
+        item->logLevelMax = dlg.getLogLevelMax();
+        item->logLevelMin = dlg.getLogLevelMin();
 
         /* update filter item */
         item->update();
@@ -3445,8 +3450,13 @@ void MainWindow::on_actionFilter_Edit_triggered() {
         dlg.setEnableContextId(item->enableContextId);
         dlg.setEnableHeaderText(item->enableHeaderText);
         dlg.setEnablePayloadText(item->enablePayloadText);
+        dlg.setEnableLogLevelMax(item->enableLogLevelMax);
+        dlg.setEnableLogLevelMin(item->enableLogLevelMin);
 
         dlg.setFilterColour(item->filterColour);
+
+        dlg.setLogLevelMax(item->logLevelMax);
+        dlg.setLogLevelMin(item->logLevelMin);
 
         if(dlg.exec())
         {
@@ -3461,8 +3471,13 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             item->enableContextId = dlg.getEnableContextId();
             item->enableHeaderText = dlg.getEnableHeaderText();
             item->enablePayloadText = dlg.getEnablePayloadText();
+            item->enableLogLevelMax = dlg.getEnableLogLevelMax();
+            item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
             item->filterColour = dlg.getFilterColour();
+
+            item->logLevelMax = dlg.getLogLevelMax();
+            item->logLevelMin = dlg.getLogLevelMin();
 
             /* update filter item */
             item->update();
@@ -3552,6 +3567,11 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableLogLevelMax = item->enableLogLevelMax;
+        afilter.enableLogLevelMin = item->enableLogLevelMin;
+
+        afilter.logLevelMax = item->logLevelMax;
+        afilter.logLevelMin = item->logLevelMin;
 
         qfile.addPFilter(afilter);
     }
@@ -3572,6 +3592,11 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableLogLevelMax = item->enableLogLevelMax;
+        afilter.enableLogLevelMin = item->enableLogLevelMin;
+
+        afilter.logLevelMax = item->logLevelMax;
+        afilter.logLevelMin = item->logLevelMin;
 
         qfile.addNFilter(afilter);
     }
@@ -3592,8 +3617,12 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableLogLevelMax = item->enableLogLevelMax;
+        afilter.enableLogLevelMin = item->enableLogLevelMin;
 
         afilter.filterColour = item->filterColour;
+        afilter.logLevelMax = item->logLevelMax;
+        afilter.logLevelMin = item->logLevelMin;
 
         qfile.addMarker(afilter);
     }

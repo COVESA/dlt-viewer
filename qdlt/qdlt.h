@@ -672,7 +672,11 @@ public:
     bool enableCtid;
     bool enableHeader;
     bool enablePayload;
+    bool enableLogLevelMax;
+    bool enableLogLevelMin;
     int filterColour;
+    int logLevelMax;
+    int logLevelMin;
 protected:
 private:
 };
