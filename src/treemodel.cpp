@@ -25,6 +25,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  {
      QDltMsg msg;
      QByteArray buf;
+     int colour;
 
      if (!index.isValid())
          return QVariant();
@@ -91,9 +92,34 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  item->plugindecoderinterface->decodeMsg(msg);
                  break;
              }
+         }        
+         if((colour = qfile->checkMarker(msg)))
+         {
+            switch(colour)
+            {
+            case 1:
+                /* green */
+                return QVariant(QBrush(QColor(0,255,0)));
+            case 2:
+                /* red */
+                return QVariant(QBrush(QColor(255,0,0)));
+            case 3:
+                /* yellow */
+                return QVariant(QBrush(QColor(255,255,0)));
+            case 4:
+                /* blue */
+                return QVariant(QBrush(QColor(0,0,255)));
+            case 5:
+                /* light grey */
+                return QVariant(QBrush(QColor(192,192,192)));
+            case 6:
+                /* dark grey */
+                return QVariant(QBrush(QColor(128,128,128)));
+            default:
+                /* green */
+                return QVariant(QBrush(QColor(0,255,0)));
+            }
          }
-         if(qfile->checkMarker(msg))
-            return QVariant(QBrush(QColor(0,255,0)));
          else
              return QVariant(QBrush(QColor(255,255,255)));
      }

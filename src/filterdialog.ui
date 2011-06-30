@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>361</width>
-    <height>305</height>
+    <height>350</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -71,6 +71,47 @@
    </item>
    <item>
     <widget class="QLineEdit" name="lineEditPayloadText"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Filter colour:</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboBoxFilterColour">
+     <item>
+      <property name="text">
+       <string>green</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>red</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>yellow</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>blue</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>light grey</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>dark grey</string>
+      </property>
+     </item>
+    </widget>
    </item>
    <item>
     <widget class="QDialogButtonBox" name="buttonBox">

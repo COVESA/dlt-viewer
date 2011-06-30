@@ -112,3 +112,13 @@ bool FilterDialog::getEnablePayloadText()
 {
     return (ui->checkBoxPayloadText->checkState() == Qt::Checked);
 }
+
+void FilterDialog::setFilterColour(int value)
+{
+   ui->comboBoxFilterColour->setCurrentIndex(value);
+}
+
+int FilterDialog::getFilterColour()
+{
+    return ui->comboBoxFilterColour->currentIndex();
+}

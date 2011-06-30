@@ -135,6 +135,8 @@ public:
     bool enableHeaderText;
     bool enablePayloadText;
 
+    int filterColour;
+
     void update();
 
 private:

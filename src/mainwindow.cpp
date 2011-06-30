@@ -3394,6 +3394,8 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->enableHeaderText = dlg.getEnableHeaderText();
         item->enablePayloadText = dlg.getEnablePayloadText();
 
+        item->filterColour = dlg.getFilterColour();
+
         /* update filter item */
         item->update();
 
@@ -3444,6 +3446,8 @@ void MainWindow::on_actionFilter_Edit_triggered() {
         dlg.setEnableHeaderText(item->enableHeaderText);
         dlg.setEnablePayloadText(item->enablePayloadText);
 
+        dlg.setFilterColour(item->filterColour);
+
         if(dlg.exec())
         {
             item->ecuId = dlg.getEcuId();
@@ -3457,6 +3461,8 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             item->enableContextId = dlg.getEnableContextId();
             item->enableHeaderText = dlg.getEnableHeaderText();
             item->enablePayloadText = dlg.getEnablePayloadText();
+
+            item->filterColour = dlg.getFilterColour();
 
             /* update filter item */
             item->update();
@@ -3586,6 +3592,8 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+
+        afilter.filterColour = item->filterColour;
 
         qfile.addMarker(afilter);
     }

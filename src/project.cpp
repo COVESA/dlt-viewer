@@ -185,6 +185,8 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     enableContextId = false;
     enableHeaderText = false;
     enablePayloadText = false;
+
+    filterColour = 0;
 }
 
 FilterItem::~FilterItem()
@@ -210,6 +212,27 @@ void FilterItem::update()
     }
     if(enablePayloadText ) {
         text += QString("Payload: %1 ").arg(payloadText);
+    }
+    switch(filterColour)
+    {
+    case 0:
+        text += "green";
+        break;
+    case 1:
+        text += "red";
+        break;
+    case 2:
+        text += "yellow";
+        break;
+    case 3:
+        text += "blue";
+        break;
+    case 4:
+        text += "light grey";
+        break;
+    case 5:
+        text += "dark grey";
+        break;
     }
 
     if(text.isEmpty()) {
@@ -483,6 +506,11 @@ bool Project::Load(QString filename)
                   if(filteritem)
                     filteritem->enablePayloadText = xml.readElementText().toInt();;
               }
+              if(xml.name() == QString("filterColour"))
+              {
+                  if(filteritem)
+                    filteritem->filterColour = xml.readElementText().toInt();;
+              }
 
               if(xml.name() == QString("name"))
               {
@@ -733,6 +761,8 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+
+        xml.writeTextElement("filterColour",QString("%1").arg(item->filterColour));
 
         xml.writeEndElement(); // filter
     }

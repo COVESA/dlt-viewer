@@ -40,6 +40,9 @@ public:
     void setEnablePayloadText(bool state);
     bool getEnablePayloadText();
 
+    void setFilterColour(int value);
+    int getFilterColour();
+
 private:
     Ui::FilterDialog *ui;
 };

@@ -672,6 +672,7 @@ public:
     bool enableCtid;
     bool enableHeader;
     bool enablePayload;
+    int filterColour;
 protected:
 private:
 };
@@ -823,10 +824,17 @@ public:
 
     //! Check if message will be marked.
     /*!
+      Colours used are:
+      1 = green
+      2 = red
+      3 = yellow
+      4 = blue
+      5 = light grey
+      6 = dark grey
       \param msg The messages to be marked
-      \return true if message wil be marked, false if message will not be marked
+      \return 0 if message will not be marked, colour if message will be marked
     */
-    bool checkMarker(QDltMsg &msg);
+    int checkMarker(QDltMsg &msg);
 
 protected:
 
