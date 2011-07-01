@@ -773,6 +773,13 @@ public:
     */
     QByteArray getMsgFilter(int index);
 
+    //! Get the poition in the log file of the filtered DLT log file selected by index
+    /*!
+      \param index position of the DLT message in the log file up to the number of DLT messages in the file
+      \return real position in log file, -1 if invalid.
+    */
+    int getMsgFilterPos(int index);
+
     //! Delete all filters and markers.
     /*!
       This includes all positive and negative filters and markers.

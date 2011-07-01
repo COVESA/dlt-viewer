@@ -1630,6 +1630,30 @@ QByteArray QDltFile::getMsgFilter(int index)
     }
 }
 
+int QDltFile::getMsgFilterPos(int index)
+{
+    if(filterFlag) {
+        /* check if index is in range */
+        if(index<0 || index>=indexFilter.size()) {
+            qDebug() << "getMsgFilter: Index is out of range";
+
+            /* return invalid */
+            return -1;
+        }
+        return indexFilter[index];
+    }
+    else {
+        /* check if index is in range */
+        if(index<0 || index>=indexAll.size()) {
+            qDebug() << "getMsgFilter: Index is out of range";
+
+            /* return invalid */
+            return -1;
+        }
+        return index;
+    }
+}
+
 void QDltFile::clearFilter()
 {
     pfilter.clear();

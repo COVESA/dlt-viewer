@@ -556,7 +556,7 @@ void MainWindow::on_actionExport_ASCII_triggered()
 
         /* get message ASCII text */
         text.clear();
-        text += QString("%1 ").arg(num);
+        text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
         text += msg.toStringHeader();
         text += " ";
         text += msg.toStringPayload();
