@@ -136,6 +136,7 @@ public:
     bool enablePayloadText;
     bool enableLogLevelMin;
     bool enableLogLevelMax;
+    bool enableCtrlMsgs;
 
     int filterColour;
 

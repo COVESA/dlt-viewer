@@ -162,3 +162,13 @@ bool FilterDialog::getEnableLogLevelMin()
 {
     return (ui->checkBoxLogLevelMin->checkState() == Qt::Checked);
 }
+
+void FilterDialog::setEnableCtrlMsgs(bool state)
+{
+    ui->checkBoxCtrlMsgs->setCheckState(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableCtrlMsgs()
+{
+    return (ui->checkBoxCtrlMsgs->checkState() == Qt::Checked);
+}

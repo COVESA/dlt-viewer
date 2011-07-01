@@ -3393,6 +3393,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->enableContextId = dlg.getEnableContextId();
         item->enableHeaderText = dlg.getEnableHeaderText();
         item->enablePayloadText = dlg.getEnablePayloadText();
+        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
         item->enableLogLevelMax = dlg.getEnableLogLevelMax();
         item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
@@ -3450,6 +3451,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
         dlg.setEnableContextId(item->enableContextId);
         dlg.setEnableHeaderText(item->enableHeaderText);
         dlg.setEnablePayloadText(item->enablePayloadText);
+        dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
         dlg.setEnableLogLevelMax(item->enableLogLevelMax);
         dlg.setEnableLogLevelMin(item->enableLogLevelMin);
 
@@ -3471,6 +3473,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             item->enableContextId = dlg.getEnableContextId();
             item->enableHeaderText = dlg.getEnableHeaderText();
             item->enablePayloadText = dlg.getEnablePayloadText();
+            item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
             item->enableLogLevelMax = dlg.getEnableLogLevelMax();
             item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
@@ -3567,6 +3570,7 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
         afilter.enableLogLevelMax = item->enableLogLevelMax;
         afilter.enableLogLevelMin = item->enableLogLevelMin;
 
@@ -3592,6 +3596,7 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
         afilter.enableLogLevelMax = item->enableLogLevelMax;
         afilter.enableLogLevelMin = item->enableLogLevelMin;
 
@@ -3617,6 +3622,7 @@ void MainWindow::filterUpdate() {
         afilter.enableCtid = item->enableContextId;
         afilter.enableHeader = item->enableHeaderText;
         afilter.enablePayload = item->enablePayloadText;
+        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
         afilter.enableLogLevelMax = item->enableLogLevelMax;
         afilter.enableLogLevelMin = item->enableLogLevelMin;
 

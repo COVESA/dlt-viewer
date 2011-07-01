@@ -672,6 +672,7 @@ public:
     bool enableCtid;
     bool enableHeader;
     bool enablePayload;
+    bool enableCtrlMsgs;
     bool enableLogLevelMax;
     bool enableLogLevelMin;
     int filterColour;

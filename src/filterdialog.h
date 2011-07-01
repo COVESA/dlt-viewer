@@ -53,6 +53,9 @@ public:
     void setEnableLogLevelMin(bool state);
     bool getEnableLogLevelMin();
 
+    void setEnableCtrlMsgs(bool state);
+    bool getEnableCtrlMsgs();
+
 private:
     Ui::FilterDialog *ui;
 };

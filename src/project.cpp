@@ -187,6 +187,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     enablePayloadText = false;
     enableLogLevelMax = false;
     enableLogLevelMin = false;
+    enableCtrlMsgs = false;
 
     filterColour = 0;
 
@@ -218,6 +219,9 @@ void FilterItem::update()
     }
     if(enablePayloadText ) {
         text += QString("Payload: %1 ").arg(payloadText);
+    }
+    if(enableCtrlMsgs ) {
+        text += QString("CtrlMsgs ").arg(payloadText);
     }
     if(enableLogLevelMax ) {
         text += "LogLevelMax: ";
@@ -572,6 +576,11 @@ bool Project::Load(QString filename)
                   if(filteritem)
                     filteritem->enablePayloadText = xml.readElementText().toInt();;
               }
+              if(xml.name() == QString("enablectrlmsgs"))
+              {
+                  if(filteritem)
+                    filteritem->enableCtrlMsgs = xml.readElementText().toInt();;
+              }
               if(xml.name() == QString("enableLogLevelMax"))
               {
                   if(filteritem)
@@ -805,6 +814,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
         xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
         xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 
@@ -831,6 +841,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
         xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
         xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 
@@ -857,6 +868,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
         xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
         xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
         xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
         xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 

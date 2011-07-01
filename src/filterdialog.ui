@@ -6,80 +6,56 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>271</width>
-    <height>454</height>
+    <width>349</width>
+    <height>299</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Filter Configuration</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="0" column="0">
     <widget class="QCheckBox" name="checkBoxEcuId">
      <property name="text">
       <string>ECU Id:</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="1" column="0">
     <widget class="QLineEdit" name="lineEditEcuId"/>
    </item>
-   <item>
+   <item row="2" column="0">
     <widget class="QCheckBox" name="checkBoxApplicationId">
      <property name="text">
       <string>Application Id:</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="3" column="0">
     <widget class="QLineEdit" name="lineEditApplicationId">
      <property name="maxLength">
       <number>4</number>
      </property>
     </widget>
    </item>
-   <item>
-    <widget class="QCheckBox" name="checkBoxContextId">
-     <property name="text">
-      <string>Context Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEditContextId">
-     <property name="maxLength">
-      <number>4</number>
-     </property>
-    </widget>
-   </item>
-   <item>
+   <item row="6" column="0">
     <widget class="QCheckBox" name="checkBoxHeaderText">
      <property name="text">
       <string>Header Text:</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="7" column="0">
     <widget class="QLineEdit" name="lineEditHeaderText"/>
    </item>
-   <item>
-    <widget class="QCheckBox" name="checkBoxPayloadText">
-     <property name="text">
-      <string>Payload Text:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QLineEdit" name="lineEditPayloadText"/>
-   </item>
-   <item>
+   <item row="10" column="0">
     <widget class="QCheckBox" name="checkBoxLogLevelMax">
      <property name="text">
       <string>Log Level Max</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="11" column="0">
     <widget class="QComboBox" name="comboBoxLogLevelMax">
      <item>
       <property name="text">
@@ -118,14 +94,89 @@
      </item>
     </widget>
    </item>
-   <item>
+   <item row="14" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Filter colour:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="0">
+    <widget class="QComboBox" name="comboBoxFilterColour">
+     <item>
+      <property name="text">
+       <string>green</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>red</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>yellow</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>blue</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>light grey</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>dark grey</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="16" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="checkBoxContextId">
+     <property name="text">
+      <string>Context Id:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QLineEdit" name="lineEditContextId">
+     <property name="maxLength">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="1">
+    <widget class="QCheckBox" name="checkBoxPayloadText">
+     <property name="text">
+      <string>Payload Text:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="1">
+    <widget class="QLineEdit" name="lineEditPayloadText"/>
+   </item>
+   <item row="10" column="1">
     <widget class="QCheckBox" name="checkBoxLogLevelMin">
      <property name="text">
       <string>Log Level Min</string>
      </property>
     </widget>
    </item>
-   <item>
+   <item row="11" column="1">
     <widget class="QComboBox" name="comboBoxLogLevelMin">
      <item>
       <property name="text">
@@ -164,54 +215,10 @@
      </item>
     </widget>
    </item>
-   <item>
-    <widget class="QLabel" name="label">
+   <item row="0" column="1">
+    <widget class="QCheckBox" name="checkBoxCtrlMsgs">
      <property name="text">
-      <string>Filter colour:</string>
-     </property>
-    </widget>
-   </item>
-   <item>
-    <widget class="QComboBox" name="comboBoxFilterColour">
-     <item>
-      <property name="text">
-       <string>green</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>red</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>yellow</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>blue</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>light grey</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>dark grey</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+      <string>Control Messages</string>
      </property>
     </widget>
    </item>
