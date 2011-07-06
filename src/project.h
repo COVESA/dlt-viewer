@@ -123,6 +123,10 @@ public:
     FilterItem(QTreeWidgetItem *parent = 0);
     ~FilterItem();
 
+    typedef enum { positive = 0, negative, marker } FilterType;
+
+    FilterType type;
+
     QString ecuId;
     QString applicationId;
     QString contextId;
@@ -189,8 +193,6 @@ public:
 
     QTreeWidget *ecu;
     QTreeWidget *pfilter;
-    QTreeWidget *nfilter;
-    QTreeWidget *marker;
     QTreeWidget *plugin;
 
 private:

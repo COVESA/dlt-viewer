@@ -180,6 +180,8 @@ void ContextItem::update()
 FilterItem::FilterItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,filter_type)
 {
+    type = FilterItem::positive;
+
     enableEcuId = false;
     enableApplicationId = false;
     enableContextId = false;
@@ -204,6 +206,19 @@ FilterItem::~FilterItem()
 void FilterItem::update()
 {
     QString text;
+
+    switch(type)
+    {
+    case FilterItem::positive:
+        text += QString("POSITIVE ");
+        break;
+    case FilterItem::negative:
+        text += QString("NEGATIVE ");
+        break;
+    case FilterItem::marker:
+        text += QString("MARKER ");
+        break;
+    }
 
     if(enableEcuId ) {
         text += QString("EcuId: %1 ").arg(ecuId);
@@ -283,26 +298,29 @@ void FilterItem::update()
         }
         text += " ";
     }
-    switch(filterColour)
+    if(type == FilterItem::marker)
     {
-    case 0:
-        text += "green";
-        break;
-    case 1:
-        text += "red";
-        break;
-    case 2:
-        text += "yellow";
-        break;
-    case 3:
-        text += "blue";
-        break;
-    case 4:
-        text += "light grey";
-        break;
-    case 5:
-        text += "dark grey";
-        break;
+        switch(filterColour)
+        {
+        case 0:
+            text += "green";
+            break;
+        case 1:
+            text += "red";
+            break;
+        case 2:
+            text += "yellow";
+            break;
+        case 3:
+            text += "blue";
+            break;
+        case 4:
+            text += "light grey";
+            break;
+        case 5:
+            text += "dark grey";
+            break;
+        }
     }
 
     if(text.isEmpty()) {
@@ -393,16 +411,6 @@ bool Project::Load(QString filename)
 
               }
               if(xml.name() == QString("pfilter"))
-              {
-                  filteritem = new FilterItem();
-
-              }
-              if(xml.name() == QString("nfilter"))
-              {
-                  filteritem = new FilterItem();
-
-              }
-              if(xml.name() == QString("marker"))
               {
                   filteritem = new FilterItem();
 
@@ -518,6 +526,12 @@ bool Project::Load(QString filename)
                       ecuitem->syncSerialHeaderSerial = xml.readElementText().toInt();
 
               }
+              if(xml.name() == QString("type"))
+              {
+                  if(filteritem)
+                      filteritem->type = (FilterItem::FilterType)(xml.readElementText().toInt());
+
+              }
               if(xml.name() == QString("ecuid"))
               {
                   if(filteritem)
@@ -550,7 +564,7 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("enableecuid"))
               {
                   if(filteritem)
-                    filteritem->enableEcuId = xml.readElementText().toInt();;
+                    filteritem->enableEcuId = xml.readElementText().toInt();
 
               }
               if(xml.name() == QString("enableapplicationid"))
@@ -683,26 +697,6 @@ bool Project::Load(QString filename)
                   filteritem = 0;
 
               }
-              if(xml.name() == QString("nfilter"))
-              {
-                  if(nfilter)
-                  {
-                    nfilter->addTopLevelItem(filteritem);
-                    filteritem->update();
-                  }
-                  filteritem = 0;
-
-              }
-              if(xml.name() == QString("marker"))
-              {
-                  if(marker)
-                  {
-                    marker->addTopLevelItem(filteritem);
-                    filteritem->update();
-                  }
-                  filteritem = 0;
-
-              }
               if(xml.name() == QString("plugin"))
               {
                   if(plugin)
@@ -803,59 +797,7 @@ bool Project::Save(QString filename)
         FilterItem *item = (FilterItem*)pfilter->topLevelItem(num);
         xml.writeStartElement("pfilter");
 
-        xml.writeTextElement("ecuid",item->ecuId);
-        xml.writeTextElement("applicationid",item->applicationId);
-        xml.writeTextElement("contextid",item->contextId);
-        xml.writeTextElement("headertext",item->headerText);
-        xml.writeTextElement("payloadtext",item->payloadText);
-
-        xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
-        xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
-        xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
-        xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
-        xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
-        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
-        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
-        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
-
-        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
-        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
-
-        xml.writeEndElement(); // filter
-    }
-
-    /* Write NFilter */
-    for(int num = 0; num < nfilter->topLevelItemCount (); num++)
-    {
-        FilterItem *item = (FilterItem*)nfilter->topLevelItem(num);
-        xml.writeStartElement("nfilter");
-
-        xml.writeTextElement("ecuid",item->ecuId);
-        xml.writeTextElement("applicationid",item->applicationId);
-        xml.writeTextElement("contextid",item->contextId);
-        xml.writeTextElement("headertext",item->headerText);
-        xml.writeTextElement("payloadtext",item->payloadText);
-
-        xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
-        xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
-        xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
-        xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
-        xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
-        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
-        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
-        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
-
-        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
-        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
-
-        xml.writeEndElement(); // filter
-    }
-
-    /* Write Marker */
-    for(int num = 0; num < marker->topLevelItemCount (); num++)
-    {
-        FilterItem *item = (FilterItem*)marker->topLevelItem(num);
-        xml.writeStartElement("marker");
+        xml.writeTextElement("type",QString("%1").arg((int)(item->type)));
 
         xml.writeTextElement("ecuid",item->ecuId);
         xml.writeTextElement("applicationid",item->applicationId);

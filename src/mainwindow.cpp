@@ -77,8 +77,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     /* initialise project configuration */
     project.ecu = ui->configWidget;
     project.pfilter = ui->pfilterWidget;
-    project.nfilter = ui->nfilterWidget;
-    project.marker = ui->markerWidget;
     project.plugin = ui->pluginWidget;
     ui->configWidget->setHeaderHidden(false);
     ui->pfilterWidget->setHeaderHidden(false);
@@ -1278,6 +1276,12 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionGet_Local_Time_triggered()));
         menu.addAction(action);
 
+        menu.addSeparator();
+
+        action = new QAction("&Filter Add", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
+        menu.addAction(action);
+
     }
     else if((list.count() == 1) && (list.at(0)->type() == application_type))
     {
@@ -1296,6 +1300,14 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         action = new QAction("&Context Add...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_Add_triggered()));
         menu.addAction(action);
+
+        menu.addSeparator();
+
+        action = new QAction("&Filter Add", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
+        menu.addAction(action);
+
+
     }
     else if((list.count() == 1) && (list.at(0)->type() == context_type))
     {
@@ -3308,79 +3320,59 @@ void MainWindow::on_actionPlugin_Hide_triggered() {
 // Filter functionalities
 //----------------------------------------------------------------------------
 
-void MainWindow::filterAdd() {
-    bool found;
+void MainWindow::filterAddTable() {
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+    QDltMsg msg;
+    QByteArray data;
 
-    /* add filter triggered from popupmenu in Context list */
-    /* get selected context from configuration */
-    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
-    if((list.count() == 1) && (list.at(0)->type() == context_type)) {
-        ContextItem* conitem = (ContextItem*) list.at(0);
-        ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
-
-        FilterItem* item = new FilterItem(0);
-        item->applicationId = appitem->id;
-        item->contextId = conitem->id;
-
-        /* update filter item */
-        item->update();
-
-        /* Check for duplicate items */
-        found=false;
-        for(int num = 0; num < project.pfilter->topLevelItemCount (); num++) {
-            FilterItem *listitem = (FilterItem*)project.pfilter->topLevelItem(num);
-
-            if ((listitem->applicationId == item->applicationId) &&
-                (listitem->contextId == item->contextId)) {
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            /* add new filter to filter list */
-            project.pfilter->addTopLevelItem(item);
-
-            /* update filter list in DLT log file */
-            filterUpdate();
-
-            /* reload DLT log file */
-            reloadLogFile();
-
-            //ui->actionFilter_Clear_all->setEnabled(true);
-        }
-        else {
-            QMessageBox::warning(0, QString("DLT Viewer"),
-                                 QString("Filter already in list!"));
-            delete item;
-        }
-    }
-    else {
-        QMessageBox::warning(0, QString("DLT Viewer"),
-                             QString("No Context selected in configuration!"));
-    }
-}
-
-void MainWindow::on_actionFilter_Add_triggered() {
-    QTreeWidget *widget;
-
-    /* get currently visible filter list in user interface */
-    if(ui->tabPFilter->isVisible()) {
-        widget = project.pfilter;
-    }
-    else if(ui->tabNFilter->isVisible()) {
-        widget = project.nfilter;
-    }
-    else if(ui->tabMarker->isVisible()) {
-        widget = project.marker;
-    }
-    else
+    if(list.count()<=0)
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                             QString("No message selected"));
         return;
+    }
+
+    QModelIndex index;
+    for(int num=0; num < list.count();num++)
+    {
+        index = list[num];
+        if(index.column()==0)
+        {
+            break;
+        }
+    }
+
+    data = qfile.getMsgFilter(index.row());
+    msg.setMsg(data);
+
+    /* decode message if necessary */
+    for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
+    {
+        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
+
+        if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+        {
+            item->plugindecoderinterface->decodeMsg(msg);
+            break;
+        }
+    }
 
     /* show filter dialog */
     FilterDialog dlg;
+
+    dlg.setEnableEcuId(!msg.getEcuid().isEmpty());
+    dlg.setEcuId(msg.getEcuid());
+    dlg.setEnableApplicationId(!msg.getApid().isEmpty());
+    dlg.setApplicationId(msg.getApid());
+    dlg.setEnableContextId(!msg.getCtid().isEmpty());
+    dlg.setContextId(msg.getCtid());
+    dlg.setHeaderText(msg.toStringHeader());
+    dlg.setPayloadText(msg.toStringPayload());
+
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
+
+        item->type = (FilterItem::FilterType)(dlg.getType());
 
         item->ecuId = dlg.getEcuId();
         item->applicationId = dlg.getApplicationId();
@@ -3406,7 +3398,142 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->update();
 
         /* add filter to list */
-        widget->addTopLevelItem(item);
+        project.pfilter->addTopLevelItem(item);
+
+        /* update filter list in DLT log file */
+        filterUpdate();
+
+        /* reload DLT log file */
+        reloadLogFile();
+    }
+}
+
+void MainWindow::filterAdd() {
+    EcuItem* ecuitem = 0;
+    ContextItem* conitem = 0;
+    ApplicationItem* appitem = 0;
+
+    /* add filter triggered from popupmenu in Context list */
+    /* get selected context from configuration */
+    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
+    if((list.count() == 1) && (list.at(0)->type() == ecu_type))
+    {
+        ecuitem = (EcuItem*) list.at(0);
+    }
+    if((list.count() == 1) && (list.at(0)->type() == application_type))
+    {
+        appitem = (ApplicationItem*) list.at(0);
+        ecuitem = (EcuItem*) appitem->parent();
+    }
+    if((list.count() == 1) && (list.at(0)->type() == context_type))
+    {
+        conitem = (ContextItem*) list.at(0);
+        appitem = (ApplicationItem*) conitem->parent();
+        ecuitem = (EcuItem*) appitem->parent();
+    }
+
+    /* show filter dialog */
+    FilterDialog dlg;
+
+    if(ecuitem)
+    {
+        dlg.setEnableEcuId(true);
+        dlg.setEcuId(ecuitem->id);
+    }
+
+    if(appitem)
+    {
+        dlg.setEnableApplicationId(true);
+        dlg.setApplicationId(appitem->id);
+    }
+
+    if(conitem)
+    {
+        dlg.setEnableContextId(true);
+        dlg.setContextId(conitem->id);
+    }
+
+    if(dlg.exec()==1) {
+        FilterItem* item = new FilterItem(0);
+
+        item->type = (FilterItem::FilterType)(dlg.getType());
+
+        item->ecuId = dlg.getEcuId();
+        item->applicationId = dlg.getApplicationId();
+        item->contextId = dlg.getContextId();
+        item->headerText = dlg.getHeaderText();
+        item->payloadText = dlg.getPayloadText();
+
+        item->enableEcuId = dlg.getEnableEcuId();
+        item->enableApplicationId = dlg.getEnableApplicationId();
+        item->enableContextId = dlg.getEnableContextId();
+        item->enableHeaderText = dlg.getEnableHeaderText();
+        item->enablePayloadText = dlg.getEnablePayloadText();
+        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
+        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
+        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
+
+        item->filterColour = dlg.getFilterColour();
+
+        item->logLevelMax = dlg.getLogLevelMax();
+        item->logLevelMin = dlg.getLogLevelMin();
+
+        /* update filter item */
+        item->update();
+
+        /* add filter to list */
+        project.pfilter->addTopLevelItem(item);
+
+        /* update filter list in DLT log file */
+        filterUpdate();
+
+        /* reload DLT log file */
+        reloadLogFile();
+    }
+}
+
+void MainWindow::on_actionFilter_Add_triggered() {
+    QTreeWidget *widget;
+
+    /* get currently visible filter list in user interface */
+    if(ui->tabPFilter->isVisible()) {
+        widget = project.pfilter;
+    }
+    else
+        return;
+
+    /* show filter dialog */
+    FilterDialog dlg;
+    if(dlg.exec()==1) {
+        FilterItem* item = new FilterItem(0);
+
+        item->type = (FilterItem::FilterType)(dlg.getType());
+
+        item->ecuId = dlg.getEcuId();
+        item->applicationId = dlg.getApplicationId();
+        item->contextId = dlg.getContextId();
+        item->headerText = dlg.getHeaderText();
+        item->payloadText = dlg.getPayloadText();
+
+        item->enableEcuId = dlg.getEnableEcuId();
+        item->enableApplicationId = dlg.getEnableApplicationId();
+        item->enableContextId = dlg.getEnableContextId();
+        item->enableHeaderText = dlg.getEnableHeaderText();
+        item->enablePayloadText = dlg.getEnablePayloadText();
+        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
+        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
+        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
+
+        item->filterColour = dlg.getFilterColour();
+
+        item->logLevelMax = dlg.getLogLevelMax();
+        item->logLevelMin = dlg.getLogLevelMin();
+
+        /* update filter item */
+        item->update();
+
+        /* add filter to list */
+        project.pfilter->addTopLevelItem(item);
 
         /* update filter list in DLT log file */
         filterUpdate();
@@ -3423,12 +3550,6 @@ void MainWindow::on_actionFilter_Edit_triggered() {
     if(ui->tabPFilter->isVisible()) {
         widget = project.pfilter;
     }
-    else if(ui->tabNFilter->isVisible()) {
-        widget = project.nfilter;
-    }
-    else if(ui->tabMarker->isVisible()) {
-        widget = project.marker;
-    }
     else
         return;
 
@@ -3439,6 +3560,8 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
         /* show filter dialog */
         FilterDialog dlg;
+
+        dlg.setType((int)(item->type));
 
         dlg.setEcuId(item->ecuId);
         dlg.setApplicationId(item->applicationId);
@@ -3462,6 +3585,8 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
         if(dlg.exec())
         {
+            item->type = (FilterItem::FilterType)(dlg.getType());
+
             item->ecuId = dlg.getEcuId();
             item->applicationId = dlg.getApplicationId();
             item->contextId = dlg.getContextId();
@@ -3505,12 +3630,6 @@ void MainWindow::on_actionFilter_Delete_triggered() {
     if(ui->tabPFilter->isVisible()) {
         widget = project.pfilter;
     }
-    else if(ui->tabNFilter->isVisible()) {
-        widget = project.nfilter;
-    }
-    else if(ui->tabMarker->isVisible()) {
-        widget = project.marker;
-    }
     else
         return;
 
@@ -3535,8 +3654,6 @@ void MainWindow::on_actionFilter_Delete_triggered() {
 void MainWindow::on_actionFilter_Clear_all_triggered() {
     /* delete complete filter list */
     project.pfilter->clear();
-    project.nfilter->clear();
-    project.marker->clear();
 
     /* update filter list in DLT log file */
     filterUpdate();
@@ -3577,61 +3694,21 @@ void MainWindow::filterUpdate() {
         afilter.logLevelMax = item->logLevelMax;
         afilter.logLevelMin = item->logLevelMin;
 
-        qfile.addPFilter(afilter);
+        switch(item->type)
+        {
+        case FilterItem::positive:
+            qfile.addPFilter(afilter);
+            break;
+        case FilterItem::negative:
+            qfile.addNFilter(afilter);
+            break;
+        case FilterItem::marker:
+            qfile.addMarker(afilter);
+            break;
+        }
+
     }
 
-    /* iterate through all negative filters */
-    for(int num = 0; num < project.nfilter->topLevelItemCount (); num++)
-    {
-        FilterItem *item = (FilterItem*)project.nfilter->topLevelItem(num);
-
-        afilter.ecuid = item->ecuId;
-        afilter.apid = item->applicationId;
-        afilter.ctid = item->contextId;
-        afilter.header = item->headerText;
-        afilter.payload = item->payloadText;
-
-        afilter.enableEcuid = item->enableEcuId;
-        afilter.enableApid = item->enableApplicationId;
-        afilter.enableCtid = item->enableContextId;
-        afilter.enableHeader = item->enableHeaderText;
-        afilter.enablePayload = item->enablePayloadText;
-        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
-        afilter.enableLogLevelMax = item->enableLogLevelMax;
-        afilter.enableLogLevelMin = item->enableLogLevelMin;
-
-        afilter.logLevelMax = item->logLevelMax;
-        afilter.logLevelMin = item->logLevelMin;
-
-        qfile.addNFilter(afilter);
-    }
-
-    /* iterate through all markers */
-    for(int num = 0; num < project.marker->topLevelItemCount (); num++)
-    {
-        FilterItem *item = (FilterItem*)project.marker->topLevelItem(num);
-
-        afilter.ecuid = item->ecuId;
-        afilter.apid = item->applicationId;
-        afilter.ctid = item->contextId;
-        afilter.header = item->headerText;
-        afilter.payload = item->payloadText;
-
-        afilter.enableEcuid = item->enableEcuId;
-        afilter.enableApid = item->enableApplicationId;
-        afilter.enableCtid = item->enableContextId;
-        afilter.enableHeader = item->enableHeaderText;
-        afilter.enablePayload = item->enablePayloadText;
-        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
-        afilter.enableLogLevelMax = item->enableLogLevelMax;
-        afilter.enableLogLevelMin = item->enableLogLevelMin;
-
-        afilter.filterColour = item->filterColour;
-        afilter.logLevelMax = item->logLevelMax;
-        afilter.logLevelMin = item->logLevelMin;
-
-        qfile.addMarker(afilter);
-    }
 }
 
 void MainWindow::filterToggled(bool state) {
@@ -3646,3 +3723,20 @@ void MainWindow::filterToggled(bool state) {
     tableModel->modelChanged();
 }
 
+
+void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
+{
+    /* show custom pop menu  for configuration */
+    QPoint globalPos = ui->tableView->mapToGlobal(pos);
+    QMenu menu(ui->tableView);
+    QAction *action;
+
+    // menu.addSeparator();
+
+    action = new QAction("&Filter Add", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(filterAddTable()));
+    menu.addAction(action);
+
+    /* show popup menu */
+    menu.exec(globalPos);
+}

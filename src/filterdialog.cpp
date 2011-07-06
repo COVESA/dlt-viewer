@@ -13,6 +13,16 @@ FilterDialog::~FilterDialog()
     delete ui;
 }
 
+void FilterDialog::setType(int value)
+{
+    ui->comboBoxType->setCurrentIndex(value);
+}
+
+int FilterDialog::getType()
+{
+    return ui->comboBoxType->currentIndex();
+}
+
 void FilterDialog::setEcuId(QString id)
 {
     ui->lineEditEcuId->setText(id);

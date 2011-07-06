@@ -15,6 +15,9 @@ public:
     explicit FilterDialog(QWidget *parent = 0);
     ~FilterDialog();
 
+    void setType(int value);
+    int getType();
+
     void setEcuId(QString id);
     QString getEcuId();
     void setEnableEcuId(bool state);

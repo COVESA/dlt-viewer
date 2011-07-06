@@ -35,6 +35,7 @@ private:
 
 private slots:
 
+    void on_tableView_customContextMenuRequested(QPoint pos);
     void on_markerWidget_customContextMenuRequested(QPoint pos);
     void on_nfilterWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_itemSelectionChanged();
@@ -44,6 +45,7 @@ private slots:
     void on_pfilterWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void filterAdd();
+    void filterAddTable();
 
     void on_actionPlugin_Hide_triggered();
     void on_actionPlugin_Show_triggered();

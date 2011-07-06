@@ -33,6 +33,9 @@
         <pointsize>8</pointsize>
        </font>
       </property>
+      <property name="contextMenuPolicy">
+       <enum>Qt::CustomContextMenu</enum>
+      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -210,6 +213,9 @@
      </property>
      <item>
       <widget class="QTabWidget" name="tabWidget">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>
@@ -319,7 +325,7 @@
        </widget>
        <widget class="QWidget" name="tabPFilter">
         <attribute name="title">
-         <string>PFilter</string>
+         <string>Filter</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
          <property name="margin">
@@ -345,68 +351,6 @@
            <column>
             <property name="text">
              <string>Configuration</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tabNFilter">
-        <attribute name="title">
-         <string>NFilter</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_7">
-         <property name="margin">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QTreeWidget" name="nfilterWidget">
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="rootIsDecorated">
-            <bool>false</bool>
-           </property>
-           <property name="headerHidden">
-            <bool>false</bool>
-           </property>
-           <property name="expandsOnDoubleClick">
-            <bool>false</bool>
-           </property>
-           <column>
-            <property name="text">
-             <string notr="true">Configuration</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tabMarker">
-        <attribute name="title">
-         <string>Marker</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_8">
-         <property name="margin">
-          <number>2</number>
-         </property>
-         <item>
-          <widget class="QTreeWidget" name="markerWidget">
-           <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
-           </property>
-           <property name="rootIsDecorated">
-            <bool>false</bool>
-           </property>
-           <property name="headerHidden">
-            <bool>false</bool>
-           </property>
-           <property name="expandsOnDoubleClick">
-            <bool>false</bool>
-           </property>
-           <column>
-            <property name="text">
-             <string notr="true">Configuration</string>
             </property>
            </column>
           </widget>
@@ -826,38 +770,6 @@ p, li { white-space: pre-wrap; }
     <hint type="sourcelabel">
      <x>133</x>
      <y>220</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>nfilterWidget</sender>
-   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionFilter_Edit</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>53</x>
-     <y>76</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>markerWidget</sender>
-   <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionFilter_Edit</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>53</x>
-     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
