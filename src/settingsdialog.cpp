@@ -190,10 +190,13 @@ void SettingsDialog::readSettings()
 void SettingsDialog::on_toolButtonDefaultLogFile_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open DLT Log file"), "", tr("DLT Files (*.dlt);;All files (*.*)"));
+        tr("Open DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
 
     ui->lineEditDefaultLogFile->setText(fileName);
 
@@ -202,10 +205,13 @@ void SettingsDialog::on_toolButtonDefaultLogFile_clicked()
 void SettingsDialog::on_toolButtonDefaultProjectFile_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open DLT Project file"), "", tr("DLT Project Files (*.dlp);;All files (*.*)"));
+        tr("Open DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
 
     ui->lineEditDefaultProjectFile->setText(fileName);
 }
@@ -213,15 +219,17 @@ void SettingsDialog::on_toolButtonDefaultProjectFile_clicked()
 void SettingsDialog::on_tooButtonPluginsPath_clicked()
 {
     QString fileName = QFileDialog::getExistingDirectory(this,
-        tr("Plugins directory"), pluginsPathName, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        tr("Plugins directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     if(fileName.isEmpty())
         return;
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
 
     ui->lineEditPluginsPath->setText(fileName);
 
     QMessageBox::warning(0, QString("DLT Viewer"),
                          QString("Plugins will only be reloaded after restart of DLT Viewer!"));
-
 
 }

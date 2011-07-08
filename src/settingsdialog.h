@@ -40,6 +40,8 @@ public:
     int showNoar;
     int showPayload;
 
+    QString workingDirectory;
+
     int writeControl;
 
     void writeDlg();

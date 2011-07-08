@@ -757,11 +757,14 @@ void MainWindow::on_actionSettings_triggered()
 {
     /* show settings dialog */
     settings.writeDlg();
+    settings.workingDirectory = workingDirectory;
+
     if(settings.exec()==1)
     {
         /* change settings and store settings persistently */
         settings.readDlg();
         settings.writeSettings();
+        workingDirectory = settings.workingDirectory;
 
         /* Apply settings to table */
         applySettings();
@@ -3263,9 +3266,11 @@ void MainWindow::on_actionPlugin_Edit_triggered() {
         PluginDialog dlg;
         dlg.setName(item->name);
         dlg.setFilename(item->filename);
-        dlg.setMode(item->mode);
+        dlg.setMode(item->mode);        
         dlg.setType(item->type);
+        dlg.workingDirectory = workingDirectory;
         if(dlg.exec()) {
+            workingDirectory = dlg.workingDirectory;
             item->filename = dlg.getFilename();
             item->mode = dlg.getMode();
             item->type = dlg.getType();

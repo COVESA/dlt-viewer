@@ -16,6 +16,8 @@ public:
     explicit PluginDialog(QWidget *parent = 0);
     ~PluginDialog();
 
+    QString workingDirectory;
+
     void setName(QString name);
     void setMode(int mode);
     void setType(int type);
