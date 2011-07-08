@@ -3694,6 +3694,8 @@ void MainWindow::filterUpdate() {
         afilter.logLevelMax = item->logLevelMax;
         afilter.logLevelMin = item->logLevelMin;
 
+        afilter.filterColour = item->filterColour;
+
         switch(item->type)
         {
         case FilterItem::positive:
