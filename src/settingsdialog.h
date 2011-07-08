@@ -22,11 +22,6 @@ public:
     int autoConnect;
     int autoScroll;
 
-    int showHeader;
-    int showPayloadAscii;
-    int showPayloadHex;
-    int showPayloadMixed;
-
     int showIndex;
     int showTime;
     int showTimestamp;

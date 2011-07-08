@@ -57,12 +57,6 @@ void SettingsDialog::writeDlg()
     ui->checkBoxNoar->setCheckState(showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(showPayload?Qt::Checked:Qt::Unchecked);
 
-    /* view */
-    ui->checkBoxShowHeader->setCheckState(showHeader?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxShowPayloadAscii->setCheckState(showPayloadAscii?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxShowPayloadHex->setCheckState(showPayloadHex?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxShowPayloadMixed->setCheckState(showPayloadMixed?Qt::Checked:Qt::Unchecked);
-
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
 }
@@ -94,12 +88,6 @@ void SettingsDialog::readDlg()
     showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
-
-    /* view */
-    showHeader = (ui->checkBoxShowHeader->checkState() == Qt::Checked);
-    showPayloadAscii = (ui->checkBoxShowPayloadAscii->checkState() == Qt::Checked);
-    showPayloadHex = (ui->checkBoxShowPayloadHex->checkState() == Qt::Checked);
-    showPayloadMixed = (ui->checkBoxShowPayloadMixed->checkState() == Qt::Checked);
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -136,12 +124,6 @@ void SettingsDialog::writeSettings()
     settings.setValue("startup/showNoar",showNoar);
     settings.setValue("startup/showPayload",showPayload);
 
-    /* view */
-    settings.setValue("startup/showHeader",showHeader);
-    settings.setValue("startup/showPayloadAscii",showPayloadAscii);
-    settings.setValue("startup/showPayloadHex",showPayloadHex);
-    settings.setValue("startup/showPayloadMixed",showPayloadMixed);
-
     /* other */
     settings.setValue("startup/writeControl",writeControl);
 }
@@ -175,12 +157,6 @@ void SettingsDialog::readSettings()
     showMode = settings.value("startup/showMode",1).toInt();
     showNoar = settings.value("startup/showNoar",1).toInt();
     showPayload = settings.value("startup/showPayload",1).toInt();
-
-    /* view */
-    showHeader = settings.value("startup/showHeader",1).toInt();
-    showPayloadAscii = settings.value("startup/showPayloadAscii",1).toInt();
-    showPayloadHex = settings.value("startup/showPayloadHex",1).toInt();
-    showPayloadMixed = settings.value("startup/showPayloadMixed",1).toInt();
 
     /* other */
     writeControl = settings.value("startup/writeControl",1).toInt();
