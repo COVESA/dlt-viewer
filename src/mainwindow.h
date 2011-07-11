@@ -206,6 +206,7 @@ public:
     void filterUpdate();
 
     void loadPlugins();
+    void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
 

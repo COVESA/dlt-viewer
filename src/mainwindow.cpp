@@ -231,6 +231,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     /* Load the plugins description files after loading default project */
     updatePlugins();
 
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
+
     /* load default log file */
     statusFilename->setText("no log file loaded");
     if(settings.defaultLogFile)
@@ -791,6 +794,9 @@ void MainWindow::on_actionProjectNew_triggered()
     this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
     project.Clear();
 
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
+
 }
 
 void MainWindow::on_actionProjectOpen_triggered()
@@ -813,6 +819,10 @@ void MainWindow::on_actionProjectOpen_triggered()
         updatePlugins();
 
         setCurrentProject(fileName);
+
+        /* Update the ECU list in control plugins */
+        updatePluginsECUList();
+
     }
 
 }
@@ -893,6 +903,9 @@ void MainWindow::on_actionECU_Add_triggered()
         /* Update settings for recent hostnames and ports */
         setCurrentHostname(ecuitem->hostname);
         setCurrentPort(ecuitem->port);
+
+        /* Update the ECU list in control plugins */
+        updatePluginsECUList();
     }
 }
 
@@ -987,6 +1000,10 @@ void MainWindow::on_actionECU_Edit_triggered()
             /* Update settings for recent hostnames and ports */
             setCurrentHostname(ecuitem->hostname);
             setCurrentPort(ecuitem->port);
+
+            /* Update the ECU list in control plugins */
+            updatePluginsECUList();
+
         }
     }
 }
@@ -1002,6 +1019,9 @@ void MainWindow::on_actionECU_Delete_triggered()
 
         /* delete ECU from configuration */
         delete project.ecu->takeTopLevelItem(project.ecu->indexOfTopLevelItem(list.at(0)));
+
+        /* Update the ECU list in control plugins */
+        updatePluginsECUList();
     }
 }
 
@@ -2562,54 +2582,47 @@ void MainWindow::getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,Co
 
 void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
 {
-    //QMessageBox::warning(0, QString("DLT Viewer"),
-    //                     QString("Injection slot works"));
-
-    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(0);
+    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
 
     injectionAplicationId = applicationId;
     injectionContextId = contextId;
-    //injectionServiceId = 4096;
-    //injectionData = data;
 
     if(ecuitem)
-        SendInjection(ecuitem);
-
-    unsigned int serviceID;
-    unsigned int size;
-    bool ok;
-
-    //if (injectionAplicationId.isEmpty() || injectionContextId.isEmpty() || injectionServiceId.isEmpty() )
-    //    return;
-
-    serviceID = serviceId;
-
-    if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
     {
-        DltMessage msg;
 
-        /* initialise new message */
-        dlt_message_init(&msg,0);
+        unsigned int serviceID;
+        unsigned int size;
+        bool ok;
 
-        // Request parameter:
-        // data_length uint32
-        // data        uint8[]
+        serviceID = serviceId;
 
-        /* prepare payload of data */
-        size = (data.size());
-        msg.datasize = 4 + 4 + size;
-        if (msg.databuffer) free(msg.databuffer);
-        msg.databuffer = (uint8_t *) malloc(msg.datasize);
+        if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
+        {
+            DltMessage msg;
 
-        memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
-        memcpy(msg.databuffer+4, &size, sizeof(size));
-        memcpy(msg.databuffer+8, data.constData(), data.size());
+            /* initialise new message */
+            dlt_message_init(&msg,0);
 
-        /* send message */
-        SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
+            // Request parameter:
+            // data_length uint32
+            // data        uint8[]
 
-        /* free message */
-        dlt_message_free(&msg,0);
+            /* prepare payload of data */
+            size = (data.size());
+            msg.datasize = 4 + 4 + size;
+            if (msg.databuffer) free(msg.databuffer);
+            msg.databuffer = (uint8_t *) malloc(msg.datasize);
+
+            memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
+            memcpy(msg.databuffer+4, &size, sizeof(size));
+            memcpy(msg.databuffer+8, data.constData(), data.size());
+
+            /* send message */
+            SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
+
+            /* free message */
+            dlt_message_free(&msg,0);
+        }
     }
 }
 
@@ -3280,6 +3293,26 @@ void MainWindow::loadPlugins()
                     item->plugincontrolinterface = plugincontrolinterface;
                 }
             }
+        }
+    }
+}
+
+void MainWindow::updatePluginsECUList()
+{
+    QStringList list;
+
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+
+        list.append(ecuitem->id + " (" + ecuitem->description + ")");
+    }
+    for(int num = 0; num < project.plugin->topLevelItemCount (); num++) {
+        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+
+        if(item->plugincontrolinterface)
+        {
+            item->plugincontrolinterface->initConnections(list);
         }
     }
 }
