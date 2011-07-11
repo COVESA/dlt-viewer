@@ -1,6 +1,7 @@
 #ifndef QDLT_H
 #define QDLT_H
 
+#include <QObject>
 #include <QString>
 #include <QFile>
 #include <QDateTime>
@@ -17,7 +18,8 @@ class QTcpSocket;
 */
 class QDlt
 {
-public:
+
+public:    
     //! Constructor.
     /*!
     */
@@ -882,6 +884,24 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
+
+};
+
+class QDltControl : public QObject
+{
+      Q_OBJECT
+public:
+    QDltControl(QObject *server);
+    ~QDltControl();
+
+    void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+
+signals:
+    void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+
+protected:
+private:
+    QObject *server;
 
 };
 

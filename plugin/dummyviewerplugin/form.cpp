@@ -1,5 +1,6 @@
 #include "form.h"
 #include "ui_form.h"
+#include "dummyviewerplugin.h"
 
 Form::Form(QWidget *parent) :
     QWidget(parent),
@@ -32,3 +33,4 @@ void Form::setNonVerboseMessages(int message)
 {
     ui->lineEditNonVerboseMessages->setText(QString("%1").arg(message));
 }
+

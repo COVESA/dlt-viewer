@@ -173,6 +173,7 @@ public:
     QDLTPluginInterface *plugininterface;
     QDLTPluginDecoderInterface *plugindecoderinterface;
     QDltPluginViewerInterface  *pluginviewerinterface;
+    QDltPluginControlInterface *plugincontrolinterface;
     QWidget *widget;
     QDockWidget *dockWidget;
 

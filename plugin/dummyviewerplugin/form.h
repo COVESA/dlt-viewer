@@ -22,6 +22,7 @@ public:
 
 private:
     Ui::Form *ui;
+
 };
 
 #endif // FORM_H

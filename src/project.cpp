@@ -336,6 +336,7 @@ PluginItem::PluginItem(QTreeWidgetItem *parent)
     plugininterface = 0;
     plugindecoderinterface = 0;
     pluginviewerinterface = 0;
+    plugincontrolinterface = 0;
 
     widget = 0;
     dockWidget = 0;

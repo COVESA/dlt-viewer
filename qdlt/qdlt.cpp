@@ -1690,6 +1690,24 @@ void QDltFile::enableFilter(bool state)
     filterFlag = state;
 }
 
+QDltControl::QDltControl(QObject *_server)
+{
+    server = _server;
+
+    connect(this, SIGNAL(sendInjectionSignal(int,QString,QString,int,QByteArray)),
+            server, SLOT(sendInjection(int,QString,QString,int,QByteArray)));
+}
+
+QDltControl::~QDltControl()
+{
+
+}
+
+void QDltControl::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
+{
+    emit sendInjectionSignal(index,applicationId,contextId,serviceId,data);
+}
+
 QDltConnection::QDltConnection()
 {
     sendSerialHeader = false;

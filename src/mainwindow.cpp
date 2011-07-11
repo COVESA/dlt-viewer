@@ -29,7 +29,8 @@ extern char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 MainWindow::MainWindow(QString filename, QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    timer(this)
+    timer(this),
+    qcontrol(this)
 {
     ui->setupUi(this);
 
@@ -2559,6 +2560,59 @@ void MainWindow::getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,Co
 
 }
 
+void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
+{
+    //QMessageBox::warning(0, QString("DLT Viewer"),
+    //                     QString("Injection slot works"));
+
+    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(0);
+
+    injectionAplicationId = applicationId;
+    injectionContextId = contextId;
+    //injectionServiceId = 4096;
+    //injectionData = data;
+
+    if(ecuitem)
+        SendInjection(ecuitem);
+
+    unsigned int serviceID;
+    unsigned int size;
+    bool ok;
+
+    //if (injectionAplicationId.isEmpty() || injectionContextId.isEmpty() || injectionServiceId.isEmpty() )
+    //    return;
+
+    serviceID = serviceId;
+
+    if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
+    {
+        DltMessage msg;
+
+        /* initialise new message */
+        dlt_message_init(&msg,0);
+
+        // Request parameter:
+        // data_length uint32
+        // data        uint8[]
+
+        /* prepare payload of data */
+        size = (data.size());
+        msg.datasize = 4 + 4 + size;
+        if (msg.databuffer) free(msg.databuffer);
+        msg.databuffer = (uint8_t *) malloc(msg.datasize);
+
+        memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
+        memcpy(msg.databuffer+4, &size, sizeof(size));
+        memcpy(msg.databuffer+8, data.constData(), data.size());
+
+        /* send message */
+        SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
+
+        /* free message */
+        dlt_message_free(&msg,0);
+    }
+}
+
 void MainWindow::on_actionSend_Injection_triggered()
 {
     /* get selected ECU from configuration */
@@ -3220,6 +3274,11 @@ void MainWindow::loadPlugins()
                 {
                     item->plugindecoderinterface = plugindecoderinterface;
                 }
+                QDltPluginControlInterface *plugincontrolinterface = qobject_cast<QDltPluginControlInterface *>(plugin);
+                if(plugincontrolinterface)
+                {
+                    item->plugincontrolinterface = plugincontrolinterface;
+                }
             }
         }
     }
@@ -3238,6 +3297,9 @@ void MainWindow::updatePlugin(PluginItem *item) {
     item->takeChildren();
 
     item->plugininterface->loadConfig(item->filename);
+
+    if(item->plugincontrolinterface)
+        item->plugincontrolinterface->initControl(&qcontrol);
 
     QStringList list = item->plugininterface->infoConfig();
     for(int num=0;num<list.size();num++) {

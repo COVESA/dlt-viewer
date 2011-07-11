@@ -115,6 +115,10 @@ private slots:
     void stateChanged(QAbstractSocket::SocketState socketState);
     void closeEvent(QCloseEvent *event);
 
+public slots:
+
+    void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+
 public:   
     /* Application settings */
     QSettings *bmwsettings;
@@ -125,6 +129,7 @@ public:
     /* DLT file handling */
     //DltFile file;
     QDltFile qfile;
+    QDltControl qcontrol;
     QFile outputfile;
     TreeModel *tableModel;
     QMutex mutex;

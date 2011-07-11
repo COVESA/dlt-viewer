@@ -158,4 +158,51 @@ public:
 Q_DECLARE_INTERFACE(QDltPluginViewerInterface,
                     "org.genivi.DLT.Plugin.DLTViewerPluginViewerInterface/1.0");
 
+//! Extended DLT Control Plugin Interface used by control plugins.
+/*!
+  This is an extended DLT Plugin Interface.
+  This interface must be used by control plugins.
+  The control plugin interface can send control requests to the DLT daemon and receives control responses from the DLT daemon.
+  The plugin gets informed about the available connections to DLT daemons.
+*/
+class QDltPluginControlInterface
+{
+public:
+
+    //! A control interface is provided to the pluign.
+    /*!
+      This function is called once during initialisation of the plugin.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param control The control interface.
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool initControl(QDltControl *control) = 0;
+
+    //! The connection table is initialised or changed.
+    /*!
+      This function is called by the the user changes the connection table to available targets.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param list The DLT log file handle.
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool initConnections(QStringList list) = 0;
+
+    //! control message received.
+    /*!
+      A control message was received.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param index The connection where the ctrl message was received.
+      \param msg The received control DLT message response.
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool controlMsg(int index, QDltMsg &msg) = 0;
+
+};
+
+Q_DECLARE_INTERFACE(QDltPluginControlInterface,
+                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.0");
+
 #endif // PLUGININTERFACE_H
