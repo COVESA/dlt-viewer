@@ -3232,20 +3232,35 @@ void MainWindow::loadPlugins()
 {
     QDir pluginsDir;
 
+    /* first load plugins in working directory */
+    pluginsDir.setPath(QDir().currentPath());
+    pluginsDir.cd("plugins");
+    loadPluginsPath(pluginsDir);
+
+    /* second load plugins from user set plugins directory */
     if(settings.pluginsPath)
     {
         pluginsDir.setPath(settings.pluginsPathName);
-    }
-    else
-    {
-        pluginsDir.setPath(QDir().currentPath());
+        if(pluginsDir.exists())
+        {
+            loadPluginsPath(pluginsDir);
+        }
     }
 
-    pluginsDir.cd("plugins");
-
-    foreach (QString fileName, pluginsDir.entryList(QDir::Files))
+    /* third load plugins from system directory in linux */
+    pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
+    if(pluginsDir.exists())
     {
-        QPluginLoader pluginLoader(pluginsDir.absoluteFilePath(fileName));
+        loadPluginsPath(pluginsDir);
+    }
+}
+
+void MainWindow::loadPluginsPath(QDir dir)
+{
+
+    foreach (QString fileName, dir.entryList(QDir::Files))
+    {
+        QPluginLoader pluginLoader(dir.absoluteFilePath(fileName));
         QObject *plugin = pluginLoader.instance();
         if (plugin)
         {

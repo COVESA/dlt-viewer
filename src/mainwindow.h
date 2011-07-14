@@ -6,6 +6,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QSettings>
+#include <QDir>
 
 #include "treemodel.h"
 #include "project.h"
@@ -206,6 +207,7 @@ public:
     void filterUpdate();
 
     void loadPlugins();
+    void loadPluginsPath(QDir dir);
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
