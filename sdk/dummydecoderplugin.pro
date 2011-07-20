@@ -1,0 +1,28 @@
+TEMPLATE  = lib
+
+CONFIG   += plugin
+
+CONFIG(debug, debug|release) {
+    DESTDIR = ../../../plugins
+    QMAKE_LIBDIR += ../../lib
+    LIBS += -lqdltd
+}
+else {
+    DESTDIR = ../../../plugins
+    QMAKE_LIBDIR += ../../lib
+    LIBS += -lqdlt
+}
+
+TARGET = $$qtLibraryTarget(dummydecoderplugin)
+
+# Defines and Header Directories
+DEFINES  += QT_VIEWER
+
+INCLUDEPATH += ../../include
+
+# Project files
+HEADERS += dummydecoderplugin.h \
+            ../../include/qdlt.h \
+            ../../include/plugininterface.h
+
+SOURCES += dummydecoderplugin.cpp
