@@ -1,6 +1,9 @@
-set TARGET_DIR=dlt_viewer_new_release
+set QT_DIR=C:\Qt\2010.05\qt\bin
+set SOURCE_DIR=C:\_src\git\DLT-viewer
+set BUILD_DIR=C:\_src\git\BuildDltViewer-build-desktop\release
+set TARGET_DIR=C:\dlt_viewer\releases\dlt_viewer_new
 
-cd ..\..\BuildDltViewer-build-desktop\release
+cd %BUILD_DIR%
 
 ECHO Create directories
 mkdir %TARGET_DIR%
@@ -14,40 +17,38 @@ mkdir %TARGET_DIR%\sdk\src\dummyviewerplugin
 mkdir %TARGET_DIR%\sdk\src\dummycontrolplugin
 
 ECHO Copy files
-copy mingwm10.dll %TARGET_DIR%
-copy libgcc_s_dw2-1.dll %TARGET_DIR%
-copy QtCore4.dll %TARGET_DIR%
-copy QtGui4.dll %TARGET_DIR%
-copy QtNetwork4.dll %TARGET_DIR%
+copy %QT_DIR%\mingwm10.dll %TARGET_DIR%
+copy %QT_DIR%\libgcc_s_dw2-1.dll %TARGET_DIR%
+copy %QT_DIR%\QtCore4.dll %TARGET_DIR%
+copy %QT_DIR%\QtGui4.dll %TARGET_DIR%
+copy %QT_DIR%\QtNetwork4.dll %TARGET_DIR%
 
-copy dlt_viewer.exe %TARGET_DIR%
-copy qextserialport.dll %TARGET_DIR%
-copy qdlt.dll %TARGET_DIR%
+copy %BUILD_DIR%\dlt_viewer.exe %TARGET_DIR%
+copy %BUILD_DIR%\qextserialport.dll %TARGET_DIR%
+copy %BUILD_DIR%\qdlt.dll %TARGET_DIR%
 
-copy plugins\dltviewerplugin.dll %TARGET_DIR%\plugins
-copy plugins\nonverboseplugin.dll %TARGET_DIR%\plugins
+copy %BUILD_DIR%\plugins\dltviewerplugin.dll %TARGET_DIR%\plugins
+copy %BUILD_DIR%\plugins\nonverboseplugin.dll %TARGET_DIR%\plugins
 
-copy ..\..\DLT-viewer\ReleaseNotes_Viewer.txt %TARGET_DIR%
+copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %TARGET_DIR%
 
-copy ..\..\DLT-viewer\qdlt\dlt.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\dlt_common.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\dlt_protocol.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\dlt_types.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\dlt_user.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\dlt_user_macros.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\qdlt\qdlt.h %TARGET_DIR%\sdk\include
-copy ..\..\DLT-viewer\src\plugininterface.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt_common.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt_protocol.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt_types.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt_user.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt_user_macros.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\qdlt.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\src\plugininterface.h %TARGET_DIR%\sdk\include
 
-copy libqdlt.a %TARGET_DIR%\sdk\lib
-copy libqextserialport.a %TARGET_DIR%\sdk\lib
+copy %BUILD_DIR%\libqdlt.a %TARGET_DIR%\sdk\lib
+copy %BUILD_DIR%\libqextserialport.a %TARGET_DIR%\sdk\lib
 
-copy ..\..\DLT-viewer\plugin\dummyviewerplugin %TARGET_DIR%\sdk\src\dummyviewerplugin
-copy ..\..\DLT-viewer\plugin\dummydecoderplugin %TARGET_DIR%\sdk\src\dummydecoderplugin
-copy ..\..\DLT-viewer\plugin\dummycontrolplugin %TARGET_DIR%\sdk\src\dummycontrolplugin
+copy %SOURCE_DIR%\plugin\dummyviewerplugin %TARGET_DIR%\sdk\src\dummyviewerplugin
+copy %SOURCE_DIR%\plugin\dummydecoderplugin %TARGET_DIR%\sdk\src\dummydecoderplugin
+copy %SOURCE_DIR%\plugin\dummycontrolplugin %TARGET_DIR%\sdk\src\dummycontrolplugin
 
-copy ..\..\DLT-viewer\sdk\BuildPlugins.pro %TARGET_DIR%\sdk\src
-copy ..\..\DLT-viewer\sdk\dummydecoderplugin.pro %TARGET_DIR%\sdk\src\dummydecoderplugin
-copy ..\..\DLT-viewer\sdk\dummyviewerplugin.pro %TARGET_DIR%\sdk\src\dummyviewerplugin
-copy ..\..\DLT-viewer\sdk\dummycontrolplugin.pro %TARGET_DIR%\sdk\src\dummycontrolplugin
-
-cd ..\..\DLT-viewer\sdk
+copy %SOURCE_DIR%\sdk\BuildPlugins.pro %TARGET_DIR%\sdk\src
+copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %TARGET_DIR%\sdk\src\dummydecoderplugin
+copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %TARGET_DIR%\sdk\src\dummyviewerplugin
+copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %TARGET_DIR%\sdk\src\dummycontrolplugin
