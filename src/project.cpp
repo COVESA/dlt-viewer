@@ -182,6 +182,8 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
 {
     type = FilterItem::positive;
 
+    name = "New Filter";
+
     enableEcuId = false;
     enableApplicationId = false;
     enableContextId = false;
@@ -203,6 +205,34 @@ FilterItem::~FilterItem()
 
 }
 
+void FilterItem:: operator = (FilterItem &item)
+{
+    type = item.type;
+
+    name = item.name;
+    ecuId = item.ecuId;
+    applicationId = item.applicationId;
+    contextId = item.contextId;
+    headerText = item.headerText;
+    payloadText = item.payloadText;
+
+    enableEcuId = item.enableEcuId;
+    enableApplicationId = item.enableApplicationId;
+    enableContextId = item.enableContextId;
+    enableHeaderText = item.enableHeaderText;
+    enablePayloadText = item.enablePayloadText;
+    enableLogLevelMax = item.enableLogLevelMax;
+    enableLogLevelMin = item.enableLogLevelMin;
+    enableCtrlMsgs = item.enableCtrlMsgs;
+
+    filterColour = item.filterColour;
+
+    logLevelMax = item.logLevelMax;
+    logLevelMin = item.logLevelMin;
+
+}
+
+
 void FilterItem::update()
 {
     QString text;
@@ -221,25 +251,24 @@ void FilterItem::update()
     }
 
     if(enableEcuId ) {
-        text += QString("EcuId: %1 ").arg(ecuId);
+        text += QString("%1 ").arg(ecuId);
     }
     if(enableApplicationId ) {
-        text += QString("AppId: %1 ").arg(applicationId);
+        text += QString("%1 ").arg(applicationId);
     }
     if(enableContextId ) {
-        text += QString("CtId: %1 ").arg(contextId);
+        text += QString("%1 ").arg(contextId);
     }
     if(enableHeaderText ) {
-        text += QString("Header: %1 ").arg(headerText);
+        text += QString("%1 ").arg(headerText);
     }
     if(enablePayloadText ) {
-        text += QString("Payload: %1 ").arg(payloadText);
+        text += QString("%1 ").arg(payloadText);
     }
     if(enableCtrlMsgs ) {
         text += QString("CtrlMsgs ").arg(payloadText);
     }
     if(enableLogLevelMax ) {
-        text += "LogLevelMax: ";
         switch(logLevelMax)
         {
         case 0:
@@ -269,7 +298,6 @@ void FilterItem::update()
         text += " ";
     }
     if(enableLogLevelMin ) {
-        text += "LogLevelMin: ";
         switch(logLevelMin)
         {
         case 0:
@@ -327,7 +355,7 @@ void FilterItem::update()
         text = QString("all");
     }
 
-    setData(0,0,text);
+    setData(0,0,QString("%1 (%2)").arg(name).arg(text));
 }
 
 PluginItem::PluginItem(QTreeWidgetItem *parent)
@@ -352,9 +380,17 @@ PluginItem::~PluginItem()
 
 void PluginItem::update()
 {
+    QStringList types;
     QStringList list = plugininterface->infoConfig();
 
-    setData(0,0,QString("%1 (%2 %3)").arg(name).arg(list.size()).arg(filename));
+    if(pluginviewerinterface)
+        types << "View";
+    if(plugindecoderinterface)
+        types << "Decode";
+    if(plugincontrolinterface)
+        types << "Ctrl";
+
+    setData(0,0,QString("%1 (%2|%3 %4)").arg(name).arg(types.join("")).arg(list.size()).arg(filename));
 }
 
 Project::Project()
@@ -636,6 +672,8 @@ bool Project::Load(QString filename)
                             }
                         }
                   }
+                  if(filteritem)
+                    filteritem->name = xml.readElementText();
               }
               if(xml.name() == QString("filename"))
               {
@@ -800,6 +838,7 @@ bool Project::Save(QString filename)
 
         xml.writeTextElement("type",QString("%1").arg((int)(item->type)));
 
+        xml.writeTextElement("name",item->name);
         xml.writeTextElement("ecuid",item->ecuId);
         xml.writeTextElement("applicationid",item->applicationId);
         xml.writeTextElement("contextid",item->contextId);

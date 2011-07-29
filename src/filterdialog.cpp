@@ -23,6 +23,16 @@ int FilterDialog::getType()
     return ui->comboBoxType->currentIndex();
 }
 
+void FilterDialog::setName(QString name)
+{
+    ui->lineEditName->setText(name);
+}
+
+QString FilterDialog::getName()
+{
+    return ui->lineEditName->text();
+}
+
 void FilterDialog::setEcuId(QString id)
 {
     ui->lineEditEcuId->setText(id);

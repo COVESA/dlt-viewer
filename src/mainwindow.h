@@ -34,8 +34,13 @@ public:
 private:
     Ui::MainWindow *ui;
 
+protected:
+
+    void keyPressEvent ( QKeyEvent * event );
+
 private slots:
 
+    void on_tableView_pressed(QModelIndex index);
     void on_tableView_customContextMenuRequested(QPoint pos);
     void on_markerWidget_customContextMenuRequested(QPoint pos);
     void on_nfilterWidget_customContextMenuRequested(QPoint pos);
@@ -43,6 +48,7 @@ private slots:
     void on_actionFilter_Delete_triggered();
     void on_actionFilter_Edit_triggered();
     void on_actionFilter_Add_triggered();
+    void on_actionFilter_Duplicate_triggered();
     void on_pfilterWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void filterAdd();
@@ -187,6 +193,8 @@ public:
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
     void reloadLogFile();
+
+    void exportSelection(bool ascii,bool file);
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);

@@ -20,6 +20,7 @@ public:
 
     void setName(QString name);
     void setMode(int mode);
+    void removeMode(int mode);
     void setType(int type);
     void setFilename(QString filename);
 

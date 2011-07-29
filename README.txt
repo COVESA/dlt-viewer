@@ -37,4 +37,16 @@ Compiling in Linux:
 - optional: sudo make install
 - optional: sudo ldconfig
 - start dlt_viewer
-- oprional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
+- optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
+
+Create Windows SDK:
+-------------------
+- Compile DLT Viewer as described in "Compiling in Windows"
+- Modify pathes in sdk\create_sdk.bat to your needs
+- Execute sdk\create_sdk.bat batch file
+
+Create Linux SDK:
+-----------------
+- Compile DLT Viewer as described in "Compiling in Linux"
+- Call "sudo make install" to install dlt_viewer including libraries and headers for SDK
+

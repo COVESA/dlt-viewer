@@ -6,6 +6,8 @@
 #include <qpluginloader.h>
 #include <QSettings>
 #include <QPushButton>
+#include <QKeyEvent>
+#include <QClipboard>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -619,6 +621,126 @@ void MainWindow::on_actionExport_Selection_triggered()
    }
 
     outfile.close();
+
+}
+
+void MainWindow::exportSelection(bool ascii,bool file)
+{
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+    QDltMsg msg;
+    QByteArray data;
+    QString textExport;
+    QString text;
+
+    if(list.count()<=0)
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                             QString("No messages selected"));
+        return;
+    }
+
+    QString fileName;
+
+    if(file)
+    {
+        if(ascii)
+        {
+            fileName = QFileDialog::getSaveFileName(this,
+                tr("Export Selection"), workingDirectory, tr("Text Files (*.txt)"));
+        }
+        else
+        {
+            fileName = QFileDialog::getSaveFileName(this,
+                tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
+        }
+        if(fileName.isEmpty())
+            return;
+    }
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
+
+    QFile outfile(fileName);
+    if(file)
+    {
+        if(!outfile.open(QIODevice::WriteOnly))
+            return;
+    }
+
+    QProgressDialog fileprogress("Export...", "Abort", 0, list.count(), this);
+    fileprogress.setWindowTitle("DLT Viewer");
+    fileprogress.setWindowModality(Qt::WindowModal);
+    fileprogress.show();
+    for(int num=0; num < list.count();num++)
+    {
+       fileprogress.setValue(num);
+
+       QModelIndex index = list[num];
+
+       /* get the message with the selected item id */
+       if(index.column()==0)
+       {
+           data = qfile.getMsgFilter(index.row());
+
+           if(ascii)
+           {
+               msg.setMsg(data);
+
+               /* decode message is necessary */
+               for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
+               {
+                   PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
+
+                   if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+                   {
+                       item->plugindecoderinterface->decodeMsg(msg);
+                       break;
+                   }
+               }
+
+               /* get message ASCII text */
+               text.clear();
+               text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
+               text += msg.toStringHeader();
+               text += " ";
+               text += msg.toStringPayload();
+               text += "\n";
+
+               if(file)
+               {
+                   // write to file
+                   outfile.write(text.toAscii().data());
+               }
+               else
+               {
+                   // write to clipboard
+                   textExport += text;
+               }
+           }
+           else
+           {
+               if(file)
+               {
+                   // write to file
+                   outfile.write(data);
+               }
+               else
+               {
+                   // write to clipboard
+               }
+           }
+       }
+   }
+
+    if(file)
+    {
+        outfile.close();
+    }
+    else
+    {
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(textExport);
+    }
 
 }
 
@@ -1415,6 +1537,12 @@ void MainWindow::on_pfilterWidget_customContextMenuRequested(QPoint pos)
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Delete_triggered()));
     menu.addAction(action);
 
+    menu.addSeparator();
+
+    action = new QAction("Filter Duplicate...", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Duplicate_triggered()));
+    menu.addAction(action);
+
     /* show popup menu */
     menu.exec(globalPos);
 
@@ -1428,19 +1556,25 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
     QAction *action;
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
-    action = new QAction("Plugin Edit...", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Edit_triggered()));
-    menu.addAction(action);
-    action = new QAction("Plugin Show", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Show_triggered()));
-    menu.addAction(action);
-    action = new QAction("Plugin Hide", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Hide_triggered()));
-    menu.addAction(action);
+    if((list.count() == 1) ) {
+        PluginItem* item = (PluginItem*) list.at(0);
 
-    /* show popup menu */
-    menu.exec(globalPos);
+        action = new QAction("Plugin Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Edit_triggered()));
+        menu.addAction(action);
+        if(item->pluginviewerinterface)
+        {
+            action = new QAction("Plugin Show", this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Show_triggered()));
+            menu.addAction(action);
+            action = new QAction("Plugin Hide", this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_actionPlugin_Hide_triggered()));
+            menu.addAction(action);
+        }
 
+        /* show popup menu */
+        menu.exec(globalPos);
+    }
 }
 
 void MainWindow::connectAll()
@@ -2592,7 +2726,6 @@ void MainWindow::sendInjection(int index,QString applicationId,QString contextId
 
         unsigned int serviceID;
         unsigned int size;
-        bool ok;
 
         serviceID = serviceId;
 
@@ -3285,7 +3418,7 @@ void MainWindow::loadPluginsPath(QDir dir)
                     {
                         item->dockWidget = new QDockWidget(item->name,this);
                         item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-                        item->dockWidget->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+                        item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
                         item->dockWidget->setWidget(item->widget);
                         item->dockWidget->setObjectName(item->name);
 
@@ -3377,6 +3510,8 @@ void MainWindow::on_actionPlugin_Edit_triggered() {
         dlg.setName(item->name);
         dlg.setFilename(item->filename);
         dlg.setMode(item->mode);        
+        if(!item->pluginviewerinterface)
+            dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->type);
         dlg.workingDirectory = workingDirectory;
         if(dlg.exec()) {
@@ -3624,6 +3759,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
 
         item->type = (FilterItem::FilterType)(dlg.getType());
 
+        item->name = dlg.getName();
         item->ecuId = dlg.getEcuId();
         item->applicationId = dlg.getApplicationId();
         item->contextId = dlg.getContextId();
@@ -3658,6 +3794,93 @@ void MainWindow::on_actionFilter_Add_triggered() {
     }
 }
 
+void MainWindow::on_actionFilter_Duplicate_triggered() {
+    QTreeWidget *widget;
+
+    /* get currently visible filter list in user interface */
+    if(ui->tabPFilter->isVisible()) {
+        widget = project.pfilter;
+    }
+    else
+        return;
+
+    /* get selected filter form list */
+    QList<QTreeWidgetItem *> list = widget->selectedItems();
+    if((list.count() == 1) ) {
+        FilterItem* item = (FilterItem*) list.at(0);
+
+        /* show filter dialog */
+        FilterDialog dlg;
+
+        dlg.setType((int)(item->type));
+
+        dlg.setName(item->name);
+        dlg.setEcuId(item->ecuId);
+        dlg.setApplicationId(item->applicationId);
+        dlg.setContextId(item->contextId);
+        dlg.setHeaderText(item->headerText);
+        dlg.setPayloadText(item->payloadText);
+
+        dlg.setEnableEcuId(item->enableEcuId);
+        dlg.setEnableApplicationId(item->enableApplicationId);
+        dlg.setEnableContextId(item->enableContextId);
+        dlg.setEnableHeaderText(item->enableHeaderText);
+        dlg.setEnablePayloadText(item->enablePayloadText);
+        dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
+        dlg.setEnableLogLevelMax(item->enableLogLevelMax);
+        dlg.setEnableLogLevelMin(item->enableLogLevelMin);
+
+        dlg.setFilterColour(item->filterColour);
+
+        dlg.setLogLevelMax(item->logLevelMax);
+        dlg.setLogLevelMin(item->logLevelMin);
+
+        if(dlg.exec())
+        {
+            FilterItem* newitem = new FilterItem(0);
+
+            newitem->type = (FilterItem::FilterType)(dlg.getType());
+
+            newitem->name = dlg.getName();
+            newitem->ecuId = dlg.getEcuId();
+            newitem->applicationId = dlg.getApplicationId();
+            newitem->contextId = dlg.getContextId();
+            newitem->headerText = dlg.getHeaderText();
+            newitem->payloadText = dlg.getPayloadText();
+
+            newitem->enableEcuId = dlg.getEnableEcuId();
+            newitem->enableApplicationId = dlg.getEnableApplicationId();
+            newitem->enableContextId = dlg.getEnableContextId();
+            newitem->enableHeaderText = dlg.getEnableHeaderText();
+            newitem->enablePayloadText = dlg.getEnablePayloadText();
+            newitem->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
+            newitem->enableLogLevelMax = dlg.getEnableLogLevelMax();
+            newitem->enableLogLevelMin = dlg.getEnableLogLevelMin();
+
+            newitem->filterColour = dlg.getFilterColour();
+
+            newitem->logLevelMax = dlg.getLogLevelMax();
+            newitem->logLevelMin = dlg.getLogLevelMin();
+
+            /* update filter item */
+            newitem->update();
+
+            /* add filter to list */
+            project.pfilter->addTopLevelItem(newitem);
+
+            /* update filter list in DLT log file */
+            filterUpdate();
+
+            /* reload DLT log file */
+            reloadLogFile();
+        }
+    }
+    else {
+        QMessageBox::warning(0, QString("DLT Viewer"),
+                            QString("No Filter selected!"));
+    }
+}
+
 void MainWindow::on_actionFilter_Edit_triggered() {
     QTreeWidget *widget;
 
@@ -3678,6 +3901,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
         dlg.setType((int)(item->type));
 
+        dlg.setName(item->name);
         dlg.setEcuId(item->ecuId);
         dlg.setApplicationId(item->applicationId);
         dlg.setContextId(item->contextId);
@@ -3702,6 +3926,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
         {
             item->type = (FilterItem::FilterType)(dlg.getType());
 
+            item->name = dlg.getName();
             item->ecuId = dlg.getEcuId();
             item->applicationId = dlg.getApplicationId();
             item->contextId = dlg.getContextId();
@@ -3856,4 +4081,31 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     /* show popup menu */
     menu.exec(globalPos);
+}
+
+void MainWindow::on_tableView_pressed(QModelIndex index)
+{
+
+}
+
+void MainWindow::keyPressEvent ( QKeyEvent * event )
+{
+    if(event->matches(QKeySequence::Copy))
+    {
+        QMessageBox::warning(this, QString("Copy"),
+                             QString("pressed"));
+
+    }
+    if(event->matches(QKeySequence::Paste))
+    {
+        QMessageBox::warning(this, QString("Paste"),
+                             QString("pressed"));
+    }
+    if(event->matches(QKeySequence::Cut))
+    {
+        QMessageBox::warning(this, QString("Cut"),
+                             QString("pressed"));
+    }
+
+    QMainWindow::keyPressEvent(event);
 }

@@ -21,6 +21,10 @@ void PluginDialog::setMode(int mode) {
     ui->comboBoxMode->setCurrentIndex(mode);
 }
 
+void PluginDialog::removeMode(int mode) {
+    ui->comboBoxMode->removeItem(mode);
+}
+
 void PluginDialog::setType(int type) {
     ui->comboBoxType->setCurrentIndex(type);
 }

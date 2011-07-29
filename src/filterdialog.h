@@ -18,6 +18,9 @@ public:
     void setType(int value);
     int getType();
 
+    void setName(QString name);
+    QString getName();
+
     void setEcuId(QString id);
     QString getEcuId();
     void setEnableEcuId(bool state);

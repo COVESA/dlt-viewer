@@ -123,10 +123,13 @@ public:
     FilterItem(QTreeWidgetItem *parent = 0);
     ~FilterItem();
 
+    void operator = (FilterItem &item);
+
     typedef enum { positive = 0, negative, marker } FilterType;
 
     FilterType type;
 
+    QString name;
     QString ecuId;
     QString applicationId;
     QString contextId;

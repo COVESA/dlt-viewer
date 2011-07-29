@@ -13,6 +13,10 @@
   <property name="windowTitle">
    <string>ECU Configuration</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout_4">
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
@@ -258,6 +262,9 @@
        </item>
        <item row="3" column="0">
         <widget class="QComboBox" name="comboBoxBaudrate">
+         <property name="currentIndex">
+          <number>17</number>
+         </property>
          <item>
           <property name="text">
            <string>50</string>
@@ -435,12 +442,18 @@
          <property name="text">
           <string>Send Serial Header</string>
          </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
         </widget>
        </item>
        <item row="5" column="0">
         <widget class="QCheckBox" name="checkBoxSyncToSerialHeaderSerial">
          <property name="text">
           <string>Sync to Serial Header when receiving</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
          </property>
         </widget>
        </item>
@@ -470,7 +483,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="resource.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>
