@@ -91,6 +91,7 @@
     <addaction name="actionAppend_DLT_File"/>
     <addaction name="actionExport_ASCII"/>
     <addaction name="actionExport_Selection"/>
+    <addaction name="actionExport_Selection_ASCII"/>
     <addaction name="separator"/>
     <addaction name="actionSettings"/>
     <addaction name="separator"/>
@@ -689,6 +690,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionPlugin_Hide">
    <property name="text">
     <string>Plugin Hide</string>
+   </property>
+  </action>
+  <action name="actionExport_Selection_ASCII">
+   <property name="text">
+    <string>Export Selection ASCII...</string>
    </property>
   </action>
  </widget>

@@ -40,6 +40,7 @@ protected:
 
 private slots:
 
+    void on_actionExport_Selection_ASCII_triggered();
     void on_tableView_pressed(QModelIndex index);
     void on_tableView_customContextMenuRequested(QPoint pos);
     void on_markerWidget_customContextMenuRequested(QPoint pos);

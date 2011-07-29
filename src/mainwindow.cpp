@@ -576,52 +576,12 @@ void MainWindow::on_actionExport_ASCII_triggered()
 
 void MainWindow::on_actionExport_Selection_triggered()
 {
-    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
-    QDltMsg msg;
-    QByteArray data;
+    exportSelection(false,true);
+}
 
-    if(list.count()<=0)
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("No messages selected"));
-        return;
-    }
-
-    QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
-
-    QFile outfile(fileName);
-    if(!outfile.open(QIODevice::WriteOnly))
-        return;
-
-    QProgressDialog fileprogress("Export...", "Abort", 0, list.count(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
-    for(int num=0; num < list.count();num++)
-    {
-        fileprogress.setValue(num);
-
-       QModelIndex index = list[num];
-
-       /* get the message with the selected item id */
-       if(index.column()==0)
-       {
-           data = qfile.getMsgFilter(index.row());
-           if(!data.isEmpty()) {
-                outfile.write(data);
-           }
-       }
-   }
-
-    outfile.close();
-
+void MainWindow::on_actionExport_Selection_ASCII_triggered()
+{
+    exportSelection(true,true);
 }
 
 void MainWindow::exportSelection(bool ascii,bool file)
@@ -700,7 +660,7 @@ void MainWindow::exportSelection(bool ascii,bool file)
 
                /* get message ASCII text */
                text.clear();
-               text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
+               text += QString("%1 ").arg(qfile.getMsgFilterPos(index.row()));
                text += msg.toStringHeader();
                text += " ";
                text += msg.toStringPayload();
@@ -4092,9 +4052,7 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
 {
     if(event->matches(QKeySequence::Copy))
     {
-        QMessageBox::warning(this, QString("Copy"),
-                             QString("pressed"));
-
+        exportSelection(true,false);
     }
     if(event->matches(QKeySequence::Paste))
     {
