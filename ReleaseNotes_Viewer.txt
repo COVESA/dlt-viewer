@@ -22,15 +22,32 @@ Alexander.AW.Wenzel@bmw.de
 Changes in this release
 -----------------------
 
-2.2.0:
+2.3.0 Beta 5:
 
 Improvements:
 
-   * xxx
+   * [GSW-58] Drag and Drop of DLT Files and project files Implemented.
+   * Start of application with DLT or project file improved.
+   * Export of selected messages improved, including export to Clipboard.
+   * Filter copy functionality added.
+   * Batch file for creating SDK added.
+   * [GSW-26] First implementation of injection interface in control plugin interface.
+   * [GSW-37] Filters can be added by context menu in ECU configuration or DLT log messages view.
+   * Filters and Markers aggregated to one configuration.
+   * [GSW-18][GSW-34]Filter parameters added.
+   * [GSW-6] Marker functionaliy added.
+   * Plugins are loaded now from three directories: Directory from settings, plugins directory and /usr/share/dlt-viewer directory.
+   * Linux: Plugins are loaded also from /usr/share/dlt-viewer directory
 
 Bugfixes:
 
-   * xxx
+   * Fixed crash when double clicking on child item below plugin item.
+   * All directory and file search dialog now use the same working directory.
+   * [GSW-35] Filtered messages have other message ids then unfiltered messages fixed.
+   * Fixed Endianess failures of non verbose plugin.
+   * [GSW-30] Byte order of payload is not diplayed correctly fixed.
+   * [GSW-24] Timestamp in ASCII Export is not correctly displayed fixed.
+   * [GSW-22] Plugin Non Verbose: Zero arguments displays "[Id]|" fixed.
 
 2.2.0:
 

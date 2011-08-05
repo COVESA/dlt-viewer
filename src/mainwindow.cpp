@@ -274,18 +274,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
                                  QString("No DLT log file or project file used!\n")+filename);
         }
 
-
-        /*
-        if(project.Load(filename))
-        {
-
-            this->setWindowTitle(QString("DLT Viewer - "+filename+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-        }
-        else
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                 QString("Cannot load provided project \"%1\"")
-                                 .arg(filename));
-                                 */
     }
 
     /* Load the plugins description files after loading default project */

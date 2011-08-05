@@ -136,8 +136,11 @@ public:
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
     Project project;
 
+    /* Timer for connecting to ECUs */
+    QTimer timer;
+    QTimer timerRead;
+
     /* DLT file handling */
-    //DltFile file;
     QDltFile qfile;
     QDltControl qcontrol;
     QFile outputfile;
@@ -168,10 +171,6 @@ public:
     QString injectionContextId;
     QString injectionServiceId;
     QString injectionData;
-
-    /* Timer for connecting to ECUs */
-    QTimer timer;
-    QTimer timerRead;
 
     /* Toggle button */
     QPushButton *scrollbutton;
