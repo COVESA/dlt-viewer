@@ -26,6 +26,16 @@ Changes in this release
 
 Improvements:
 
+   * xxx
+
+Bugfixes:
+
+   * xxx
+
+2.2.0:
+
+Improvements:
+
    * Added version to window title
    * Filtering of decoded messages by decode plugins now possible
    * Negative filters and markers functionality added
