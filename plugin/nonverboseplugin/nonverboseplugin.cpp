@@ -367,7 +367,7 @@ QStringList NonverbosePlugin::infoConfig()
     {
         QString text;
         DltFibexFrame *frame = framelist[pos];
-        text += frame->id;
+        text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
         for(int numref=0;numref<frame->pdureflist.size();numref++)
         {
             DltFibexPduRef *ref = frame->pdureflist[numref];
@@ -375,7 +375,7 @@ QStringList NonverbosePlugin::infoConfig()
                 text += " (";
             text += ref->id;
             if(ref->ref)
-                text += QString(":%1:%2").arg(ref->ref->description).arg(ref->ref->typeInfo);
+                text += QString(" Des:%1 TI:%2 Len:%3").arg(ref->ref->description).arg(ref->ref->typeInfo).arg(ref->ref->byteLength);
             if(numref == (frame->pdureflist.size()-1))
                 text += ")";
             else
@@ -484,7 +484,10 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
                 {
                     if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
                         break;
-                    length = *((unsigned short*) (payload.data()+offset));
+                    if(argument.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
+                        length = *((unsigned short*) (payload.data()+offset));
+                    else
+                        length = DLT_SWAP_16(*((unsigned short*) (payload.data()+offset)));
                     offset += sizeof(unsigned short);
                     argument.setData(payload.mid(offset,length));
                     offset += length;
