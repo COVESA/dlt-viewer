@@ -3463,7 +3463,13 @@ void MainWindow::on_actionPlugin_Edit_triggered() {
     /* get selected plugin */
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
     if((list.count() == 1) ) {
-        PluginItem* item = (PluginItem*) list.at(0);
+        QTreeWidgetItem *treeitem = list.at(0);
+        if(treeitem->parent())
+        {
+            /* This is not a plugin item */
+            return;
+        }
+        PluginItem* item = (PluginItem*) treeitem;
 
         /* show plugin dialog */
         PluginDialog dlg;
