@@ -36,6 +36,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
 {
     ui->setupUi(this);
 
+    /* Enable Drops */
+    setAcceptDrops(true);
+
     /* Initialize recent files */
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActs[i] = new QAction(this);
@@ -204,21 +207,8 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     applySettings();
 
     /* load default project file */
-
     this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-    if(!filename.isEmpty())
-    {
-        if(project.Load(filename))
-        {
-
-            this->setWindowTitle(QString("DLT Viewer - "+filename+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-        }
-        else
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                 QString("Cannot load provided project \"%1\"")
-                                 .arg(filename));
-    }
-    else if(settings.defaultProjectFile)
+    if(settings.defaultProjectFile)
     {
         if(project.Load(settings.defaultProjectFileName))
         {
@@ -229,12 +219,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
                                  QString("Cannot load default project \"%1\"")
                                  .arg(settings.defaultProjectFileName));
     }
-
-    /* Load the plugins description files after loading default project */
-    updatePlugins();
-
-    /* Update the ECU list in control plugins */
-    updatePluginsECUList();
 
     /* load default log file */
     statusFilename->setText("no log file loaded");
@@ -270,6 +254,45 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
         }
         file.close();
     }
+
+    /* load dlt or project file with program start */
+    if(!filename.isEmpty())
+    {
+        if(filename.endsWith(".dlt"))
+        {
+            /* DLT log file used */
+            logfileOpen(filename);
+        }
+        else if(filename.endsWith(".dlp"))
+        {
+            /* Project file used */
+            projectfileOpen(filename);
+        }
+        else
+        {
+            QMessageBox::warning(this, QString("Open File"),
+                                 QString("No DLT log file or project file used!\n")+filename);
+        }
+
+
+        /*
+        if(project.Load(filename))
+        {
+
+            this->setWindowTitle(QString("DLT Viewer - "+filename+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
+        }
+        else
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                 QString("Cannot load provided project \"%1\"")
+                                 .arg(filename));
+                                 */
+    }
+
+    /* Load the plugins description files after loading default project */
+    updatePlugins();
+
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
 
     /* auto connect */
     if(settings.autoConnect)
@@ -351,6 +374,12 @@ void MainWindow::on_actionOpen_triggered()
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
 
+    logfileOpen(fileName);
+
+}
+
+void MainWindow::logfileOpen(QString fileName)
+{
     /* close existing file */
     if(outputfile.isOpen())
         outputfile.close();
@@ -365,9 +394,7 @@ void MainWindow::on_actionOpen_triggered()
                              QString("Cannot open log file \"%1\"\n%2")
                              .arg(fileName)
                              .arg(outputfile.errorString()));
-
 }
-
 
 void MainWindow::on_actionImport_DLT_Stream_triggered()
 {
@@ -889,12 +916,21 @@ void MainWindow::on_actionProjectOpen_triggered()
         tr("Open DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
 
     /* open existing project */
-    if(!fileName.isEmpty() && project.Load(fileName))
+    if(!fileName.isEmpty())
     {
         /* change current working directory */
         workingDirectory = QFileInfo(fileName).absolutePath();
 
+        projectfileOpen(fileName);
+    }
 
+}
+
+void MainWindow::projectfileOpen(QString fileName)
+{
+    /* open existing project */
+    if(project.Load(fileName))
+    {
         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
         /* Load the plugins description files after loading project */
@@ -906,7 +942,6 @@ void MainWindow::on_actionProjectOpen_triggered()
         updatePluginsECUList();
 
     }
-
 }
 
 void MainWindow::on_actionProjectSave_triggered()
@@ -4072,4 +4107,41 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     }
 
     QMainWindow::keyPressEvent(event);
+}
+
+void MainWindow::dragEnterEvent(QDragEnterEvent *event)
+{
+    if (event->mimeData()->hasUrls())
+        event->acceptProposedAction();
+}
+
+void MainWindow::dropEvent(QDropEvent *event)
+{
+    QString filename;
+    if (event->mimeData()->hasUrls())
+    {
+        QUrl url = event->mimeData()->urls()[0];
+        filename = url.toLocalFile();
+
+        if(filename.endsWith(".dlt"))
+        {
+            /* DLT log file dropped */
+            logfileOpen(filename);
+        }
+        else if(filename.endsWith(".dlp"))
+        {
+            /* Project file dropped */
+            projectfileOpen(filename);
+        }
+        else
+        {
+            QMessageBox::warning(this, QString("Drag&Drop"),
+                                 QString("No DLT log file or project file dropped!\n")+filename);
+        }
+    }
+    else
+    {
+        QMessageBox::warning(this, QString("Drag&Drop"),
+                             QString("No DLT log file or project file dropped!\n")+filename);
+    }
 }

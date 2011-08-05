@@ -37,6 +37,8 @@ private:
 protected:
 
     void keyPressEvent ( QKeyEvent * event );
+    void dragEnterEvent(QDragEnterEvent *event);
+    void dropEvent(QDropEvent *event);
 
 private slots:
 
@@ -237,6 +239,10 @@ public:
     void setCurrentPort(const QString &portName);
 
     void sendUpdates(EcuItem* ecuitem);
+
+    void logfileOpen(QString fileName);
+    void projectfileOpen(QString filename);
+
 };
 
 #endif // MAINWINDOW_H
