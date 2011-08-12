@@ -6,6 +6,12 @@ FilterDialog::FilterDialog(QWidget *parent) :
     ui(new Ui::FilterDialog)
 {
     ui->setupUi(this);
+
+    connect(ui->buttonSelectColor, SIGNAL(pressed()), this, SLOT(on_buttonSelectColor_clicked()));
+    connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(on_comboBoxTypeIndex_changed(int)));
+
+    ui->buttonSelectColor->setEnabled(false);
+    ui->labelSelectedColor->setVisible(false);
 }
 
 FilterDialog::~FilterDialog()
@@ -133,14 +139,17 @@ bool FilterDialog::getEnablePayloadText()
     return (ui->checkBoxPayloadText->checkState() == Qt::Checked);
 }
 
-void FilterDialog::setFilterColour(int value)
+void FilterDialog::setFilterColour(QColor color)
 {
-   ui->comboBoxFilterColour->setCurrentIndex(value);
+   QPalette palette = ui->labelSelectedColor->palette();
+   palette.setColor(QPalette::Background,color);
+   ui->labelSelectedColor->setPalette(palette);
+
 }
 
-int FilterDialog::getFilterColour()
+QColor FilterDialog::getFilterColour()
 {
-    return ui->comboBoxFilterColour->currentIndex();
+    return ui->labelSelectedColor->palette().background().color();
 }
 
 void FilterDialog::setLogLevelMax(int value)
@@ -191,4 +200,32 @@ void FilterDialog::setEnableCtrlMsgs(bool state)
 bool FilterDialog::getEnableCtrlMsgs()
 {
     return (ui->checkBoxCtrlMsgs->checkState() == Qt::Checked);
+}
+
+void FilterDialog::on_buttonSelectColor_clicked()
+{
+    QColor selectedBackgroundColor = QColorDialog::getColor();
+    if(selectedBackgroundColor.isValid())
+    {
+        QPalette palette = ui->labelSelectedColor->palette();
+        palette.setColor(QPalette::Background,selectedBackgroundColor);
+        ui->labelSelectedColor->setPalette(palette);
+
+    }
+}
+
+void FilterDialog::on_comboBoxTypeIndex_changed(int index){
+
+    switch(index){
+    case 0:
+    case 1:
+            ui->buttonSelectColor->setEnabled(false);
+            ui->labelSelectedColor->setVisible(false);
+
+            break;
+    case 2:
+            ui->buttonSelectColor->setEnabled(true);
+            ui->labelSelectedColor->setVisible(true);
+            break;
+    }
 }

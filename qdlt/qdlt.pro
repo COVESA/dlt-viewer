@@ -14,8 +14,9 @@ target.path = /usr/lib
 INSTALLS += target
 
 CONFIG                 += warn_on qt thread
-QT                     -= gui network
+#QT                     -= gui network
 QT                     += network
+QT                     += gui
 
 OBJECTS_DIR             = build/obj
 MOC_DIR                 = build/moc

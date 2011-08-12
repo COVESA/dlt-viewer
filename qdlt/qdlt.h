@@ -5,6 +5,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
+#include <QColor>
 
 struct sDltFile;
 struct sDltMessage;
@@ -677,7 +678,7 @@ public:
     bool enableCtrlMsgs;
     bool enableLogLevelMax;
     bool enableLogLevelMin;
-    int filterColour;
+    QColor filterColour;
     int logLevelMax;
     int logLevelMin;
 protected:
@@ -848,7 +849,7 @@ public:
       \param msg The messages to be marked
       \return 0 if message will not be marked, colour if message will be marked
     */
-    int checkMarker(QDltMsg &msg);
+    QColor checkMarker(QDltMsg &msg);
 
 protected:
 

@@ -145,7 +145,7 @@ public:
     bool enableLogLevelMax;
     bool enableCtrlMsgs;
 
-    int filterColour;
+    QColor filterColour;
 
     int logLevelMax;
     int logLevelMin;

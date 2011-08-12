@@ -3630,6 +3630,7 @@ void MainWindow::filterAddTable() {
         item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
         item->filterColour = dlg.getFilterColour();
+        item->setBackground(0,dlg.getFilterColour());
 
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
@@ -3640,6 +3641,7 @@ void MainWindow::filterAddTable() {
         /* add filter to list */
         project.pfilter->addTopLevelItem(item);
 
+        qDebug() << "---------------1";
         /* update filter list in DLT log file */
         filterUpdate();
 
@@ -3714,6 +3716,7 @@ void MainWindow::filterAdd() {
         item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
         item->filterColour = dlg.getFilterColour();
+        item->setBackground(0,dlg.getFilterColour());
 
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
@@ -3766,6 +3769,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
         item->filterColour = dlg.getFilterColour();
+        item->setBackground(0,dlg.getFilterColour());
 
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
@@ -3848,6 +3852,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
             newitem->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
             newitem->filterColour = dlg.getFilterColour();
+            newitem->setBackground(0,dlg.getFilterColour());
 
             newitem->logLevelMax = dlg.getLogLevelMax();
             newitem->logLevelMin = dlg.getLogLevelMin();
@@ -3933,6 +3938,15 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             item->enableLogLevelMin = dlg.getEnableLogLevelMin();
 
             item->filterColour = dlg.getFilterColour();
+            switch(dlg.getType()){
+            case 2:
+                    item->setBackground(0,dlg.getFilterColour());
+                    break;
+            default:
+                    item->setBackground(0,QColor(255,255,255));
+                    break;
+            }
+
 
             item->logLevelMax = dlg.getLogLevelMax();
             item->logLevelMin = dlg.getLogLevelMin();

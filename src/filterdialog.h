@@ -2,6 +2,7 @@
 #define FILTERDIALOG_H
 
 #include <QDialog>
+#include <QColorDialog>
 
 namespace Ui {
     class FilterDialog;
@@ -46,8 +47,9 @@ public:
     void setEnablePayloadText(bool state);
     bool getEnablePayloadText();
 
-    void setFilterColour(int value);
-    int getFilterColour();
+    void setFilterColour(QColor color);
+    QColor getFilterColour();
+
 
     void setLogLevelMax(int value);
     int getLogLevelMax();
@@ -64,6 +66,10 @@ public:
 
 private:
     Ui::FilterDialog *ui;
+
+public slots:
+    void on_buttonSelectColor_clicked();
+    void on_comboBoxTypeIndex_changed(int index);
 };
 
 #endif // FILTERDIALOG_H

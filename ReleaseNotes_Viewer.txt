@@ -26,6 +26,8 @@ Changes in this release
 
 Improvements:
 
+   * [GSW-65] Using RGB colors via color picker for filter marker fixed.
+   * [GSW-36] Search dialog marks search text when opening search dialog.
    * [GSW-58] Drag and Drop of DLT Files and project files Implemented.
    * Start of application with DLT or project file improved.
    * Export of selected messages improved, including export to Clipboard.

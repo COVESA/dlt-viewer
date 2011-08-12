@@ -193,7 +193,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     enableLogLevelMin = false;
     enableCtrlMsgs = false;
 
-    filterColour = 0;
+    filterColour = QColor();
 
     logLevelMax = 6;
     logLevelMin = 0;
@@ -328,27 +328,7 @@ void FilterItem::update()
     }
     if(type == FilterItem::marker)
     {
-        switch(filterColour)
-        {
-        case 0:
-            text += "green";
-            break;
-        case 1:
-            text += "red";
-            break;
-        case 2:
-            text += "yellow";
-            break;
-        case 3:
-            text += "blue";
-            break;
-        case 4:
-            text += "light grey";
-            break;
-        case 5:
-            text += "dark grey";
-            break;
-        }
+        text += filterColour.name();
     }
 
     if(text.isEmpty()) {
@@ -645,7 +625,7 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("filterColour"))
               {
                   if(filteritem)
-                    filteritem->filterColour = xml.readElementText().toInt();;
+                    filteritem->filterColour = QColor(xml.readElementText());
               }
               if(xml.name() == QString("logLevelMax"))
               {
@@ -854,7 +834,8 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
         xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 
-        xml.writeTextElement("filterColour",QString("%1").arg(item->filterColour));
+        //xml.writeTextElement("filterColour",QString("%1").arg(item->filterColour));
+        xml.writeTextElement("filterColour",item->filterColour.name());
 
         xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
         xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));

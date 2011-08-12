@@ -1502,11 +1502,12 @@ void QDltFile::addFilterIndex (int index)
 
 }
 
-int QDltFile::checkMarker(QDltMsg &msg)
+QColor QDltFile::checkMarker(QDltMsg &msg)
 {
     QDltFilter filter;
     bool found = false, foundFilter;
-    int colour = 0;
+    //int colour = 0;
+    QColor color;
 
     for(int numfilter=0;numfilter<marker.size();numfilter++)
     {
@@ -1541,15 +1542,17 @@ int QDltFile::checkMarker(QDltMsg &msg)
         if(foundFilter)
         {
             found = true;
-            colour = filter.filterColour;
+            //colour = filter.filterColour;
+            color = filter.filterColour;
         }
     }
 
     /* marker was found; return colour of marker */
-    if(found)
-        return (colour + 1);
+    //if(found)
+        //return (colour + 1);
 
-    return found;
+    //return found;
+    return color;
 }
 
 void QDltFile::close()
