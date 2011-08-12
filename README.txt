@@ -31,7 +31,7 @@ Compiling in Linux:
 - Extract qextserialport package into DLT-viewer main directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
 - Create directory build
-- change into directory build
+- Change into directory build
 - qmake-qt4 ../BuildDltViewer.pro
 - make
 - optional: sudo make install
@@ -45,8 +45,22 @@ Create Windows SDK:
 - Modify pathes in sdk\create_sdk.bat to your needs
 - Execute sdk\create_sdk.bat batch file
 
+Create Windows SDK Documentation:
+-------------------------------
+- Install doxygen
+- Change into project directory
+- doxygen sdk/doxygen_linux.cfg
+- You will find the documentation in the doc directory
+
 Create Linux SDK:
 -----------------
 - Compile DLT Viewer as described in "Compiling in Linux"
 - Call "sudo make install" to install dlt_viewer including libraries and headers for SDK
+
+Create Linux SDK Documentation:
+-------------------------------
+- Install doxygen
+- Change into project directory
+- doxygen sdk/doxygen_linux.cfg
+- You will find the documentation in the doc directory
 
