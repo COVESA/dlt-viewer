@@ -39,6 +39,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     /* Enable Drops */
     setAcceptDrops(true);
 
+    ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
+    ui->configWidget->setSortingEnabled(true);             // should cause sort on add
+
     /* Initialize recent files */
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActs[i] = new QAction(this);
