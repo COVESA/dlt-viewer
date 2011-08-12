@@ -42,6 +42,9 @@ protected:
 
 private slots:
 
+    void on_actionFilter_Load_triggered();
+    void on_actionFilter_Save_As_triggered();
+
     void on_actionExport_Selection_ASCII_triggered();
     void on_tableView_pressed(QModelIndex index);
     void on_tableView_customContextMenuRequested(QPoint pos);

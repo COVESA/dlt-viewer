@@ -1506,7 +1506,6 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
 {
     QDltFilter filter;
     bool found = false, foundFilter;
-    //int colour = 0;
     QColor color;
 
     for(int numfilter=0;numfilter<marker.size();numfilter++)
@@ -1542,16 +1541,9 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
         if(foundFilter)
         {
             found = true;
-            //colour = filter.filterColour;
             color = filter.filterColour;
         }
     }
-
-    /* marker was found; return colour of marker */
-    //if(found)
-        //return (colour + 1);
-
-    //return found;
     return color;
 }
 

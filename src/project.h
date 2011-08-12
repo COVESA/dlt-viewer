@@ -195,6 +195,9 @@ public:
     bool Save(QString filename);
     void Clear();
 
+    bool SaveFilter(QString filename);
+    bool LoadFilter(QString filename);
+
     QTreeWidget *ecu;
     QTreeWidget *pfilter;
     QTreeWidget *plugin;

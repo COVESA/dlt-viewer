@@ -834,7 +834,6 @@ bool Project::Save(QString filename)
         xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
         xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
 
-        //xml.writeTextElement("filterColour",QString("%1").arg(item->filterColour));
         xml.writeTextElement("filterColour",item->filterColour.name());
 
         xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
@@ -866,3 +865,204 @@ bool Project::Save(QString filename)
     return true;
 }
 
+bool Project::SaveFilter(QString filename)
+{
+    QFile file(filename);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+    {
+            QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
+            return false;
+    }
+
+    QXmlStreamWriter xml(&file);
+
+    xml.setAutoFormatting(true);
+
+    xml.writeStartDocument();
+    xml.writeStartElement("dltfilter");
+
+
+    /* Write PFilter */
+    for(int num = 0; num < pfilter->topLevelItemCount (); num++)
+    {
+        FilterItem *item = (FilterItem*)pfilter->topLevelItem(num);
+        xml.writeStartElement("filter");
+
+        xml.writeTextElement("type",QString("%1").arg((int)(item->type)));
+
+        xml.writeTextElement("name",item->name);
+        xml.writeTextElement("ecuid",item->ecuId);
+        xml.writeTextElement("applicationid",item->applicationId);
+        xml.writeTextElement("contextid",item->contextId);
+        xml.writeTextElement("headertext",item->headerText);
+        xml.writeTextElement("payloadtext",item->payloadText);
+
+        xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
+        xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
+        xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
+        xml.writeTextElement("enableheadertext",QString("%1").arg(item->enableHeaderText));
+        xml.writeTextElement("enablepayloadtext",QString("%1").arg(item->enablePayloadText));
+        xml.writeTextElement("enablectrlmsgs",QString("%1").arg(item->enableCtrlMsgs));
+        xml.writeTextElement("enableLogLevelMin",QString("%1").arg(item->enableLogLevelMin));
+        xml.writeTextElement("enableLogLevelMax",QString("%1").arg(item->enableLogLevelMax));
+
+        xml.writeTextElement("filterColour",item->filterColour.name());
+
+        xml.writeTextElement("logLevelMax",QString("%1").arg(item->logLevelMax));
+        xml.writeTextElement("logLevelMin",QString("%1").arg(item->logLevelMin));
+
+        xml.writeEndElement(); // filter
+    }
+
+    xml.writeEndElement(); // dltfilter
+    xml.writeEndDocument();
+
+    file.close();
+
+    return true;
+}
+
+bool Project::LoadFilter(QString filename){
+
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+        return false;
+    }
+
+    FilterItem *filteritem = 0;
+
+
+    pfilter->clear();
+    QXmlStreamReader xml(&file);
+    while (!xml.atEnd()) {
+          xml.readNext();
+
+          if(xml.isStartElement())
+          {
+
+              if(xml.name() == QString("filter"))
+              {
+                  filteritem = new FilterItem();
+
+              }
+              if(xml.name() == QString("type"))
+              {
+                  if(filteritem)
+                      filteritem->type = (FilterItem::FilterType)(xml.readElementText().toInt());
+
+              }
+              if(xml.name() == QString("ecuid"))
+              {
+                  if(filteritem)
+                    filteritem->ecuId = xml.readElementText();
+
+              }
+              if(xml.name() == QString("applicationid"))
+              {
+                  if(filteritem)
+                    filteritem->applicationId = xml.readElementText();
+
+              }
+              if(xml.name() == QString("contextid"))
+              {
+                  if(filteritem)
+                    filteritem->contextId = xml.readElementText();
+
+              }
+              if(xml.name() == QString("headertext"))
+              {
+                  if(filteritem)
+                    filteritem->headerText = xml.readElementText();
+
+              }
+              if(xml.name() == QString("payloadtext"))
+              {
+                  if(filteritem)
+                    filteritem->payloadText = xml.readElementText();
+              }
+              if(xml.name() == QString("enableecuid"))
+              {
+                  if(filteritem)
+                    filteritem->enableEcuId = xml.readElementText().toInt();
+
+              }
+              if(xml.name() == QString("enableapplicationid"))
+              {
+                  if(filteritem)
+                    filteritem->enableApplicationId = xml.readElementText().toInt();;
+
+              }
+              if(xml.name() == QString("enablecontextid"))
+              {
+                  if(filteritem)
+                    filteritem->enableContextId = xml.readElementText().toInt();;
+
+              }
+              if(xml.name() == QString("enableheadertext"))
+              {
+                  if(filteritem)
+                    filteritem->enableHeaderText = xml.readElementText().toInt();;
+
+              }
+              if(xml.name() == QString("enablepayloadtext"))
+              {
+                  if(filteritem)
+                    filteritem->enablePayloadText = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("enablectrlmsgs"))
+              {
+                  if(filteritem)
+                    filteritem->enableCtrlMsgs = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("enableLogLevelMax"))
+              {
+                  if(filteritem)
+                    filteritem->enableLogLevelMax = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("enableLogLevelMin"))
+              {
+                  if(filteritem)
+                    filteritem->enableLogLevelMin = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("filterColour"))
+              {
+                  if(filteritem)
+                    filteritem->filterColour = QColor(xml.readElementText());
+              }
+              if(xml.name() == QString("logLevelMax"))
+              {
+                  if(filteritem)
+                    filteritem->logLevelMax = xml.readElementText().toInt();;
+              }
+              if(xml.name() == QString("logLevelMin"))
+              {
+                  if(filteritem)
+                    filteritem->logLevelMin = xml.readElementText().toInt();;
+              }
+          }
+          if(xml.isEndElement())
+          {
+              if(xml.name() == QString("filter"))
+              {
+                  if(pfilter)
+                  {
+                    pfilter->addTopLevelItem(filteritem);
+                    filteritem->update();
+                  }
+                  filteritem = 0;
+
+              }
+
+          }
+    }
+    if (xml.hasError()) {
+        QMessageBox::warning(0, QString("XML Parser error"),
+                             xml.errorString());
+    }
+
+    file.close();
+
+    return true;
+}

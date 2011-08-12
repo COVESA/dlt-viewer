@@ -8,6 +8,8 @@
 #include <QPushButton>
 #include <QKeyEvent>
 #include <QClipboard>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -913,6 +915,8 @@ void MainWindow::on_actionProjectOpen_triggered()
         workingDirectory = QFileInfo(fileName).absolutePath();
 
         projectfileOpen(fileName);
+
+        filterUpdate();
     }
 
 }
@@ -1510,6 +1514,16 @@ void MainWindow::on_pfilterWidget_customContextMenuRequested(QPoint pos)
     QMenu menu(project.ecu);
     QAction *action;
     QList<QTreeWidgetItem *> list = project.pfilter->selectedItems();
+
+    action = new QAction("Save Filter(s)...", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Save_As_triggered()));
+    menu.addAction(action);
+
+    action = new QAction("Load Filter(s)...", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Load_triggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
 
     action = new QAction("Filter Add...", this);
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Add_triggered()));
@@ -3738,6 +3752,30 @@ void MainWindow::filterAdd() {
     }
 }
 
+void MainWindow::on_actionFilter_Save_As_triggered()
+{
+
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save DLT Filters"), workingDirectory, tr("DLT Filter File (*.dlf);;All files (*.*)"));
+
+    if(!fileName.isEmpty())
+    {
+        project.SaveFilter(fileName);
+    }
+}
+
+
+void MainWindow::on_actionFilter_Load_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Load DLT Filter file"), workingDirectory, tr("DLT Files (*.dlf);;All files (*.*)"));
+
+    if(!fileName.isEmpty() &&project.LoadFilter(fileName))
+    {
+        filterUpdate();
+    }
+}
+
 void MainWindow::on_actionFilter_Add_triggered() {
     QTreeWidget *widget;
 
@@ -4080,10 +4118,14 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     QMenu menu(ui->tableView);
     QAction *action;
 
-    // menu.addSeparator();
-
     action = new QAction("&Filter Add", this);
     connect(action, SIGNAL(triggered()), this, SLOT(filterAddTable()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Load Filter(s)...", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Load_triggered()));
     menu.addAction(action);
 
     /* show popup menu */

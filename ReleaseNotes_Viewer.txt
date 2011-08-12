@@ -25,9 +25,9 @@ Changes in this release
 2.3.0 Beta 5:
 
 Improvements:
-
-   * [GSW-17] Sorting of Contexts and Applications by id or descriptions fixed.
-   * [GSW-65] Using RGB colors via color picker for filter marker fixed.
+   * [GSW-63] Load and Save Filter configuration
+   * [GSW-17] Sorting of Contexts and Applications by id or descriptions.
+   * [GSW-65] Using RGB colors via color picker for filter marker.
    * [GSW-36] Search dialog marks search text when opening search dialog.
    * [GSW-58] Drag and Drop of DLT Files and project files Implemented.
    * Start of application with DLT or project file improved.
