@@ -13,7 +13,8 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::setText(QString text) { ui->lineEditText->setText(text); }
+void SearchDialog::setText(QString text) { ui->lineEditText->setText(text);}
+void SearchDialog::selectText(){ui->lineEditText->selectAll();}
 void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}

@@ -3210,6 +3210,7 @@ void MainWindow::on_actionSearch_triggered()
     SearchDialog dlg(this);
 
     dlg.setText(searchText);
+    dlg.selectText();
     dlg.setHeader(searchHeader);
     dlg.setPayload(searchPayload);
     dlg.setCaseSensitive(searchCaseSensitive);

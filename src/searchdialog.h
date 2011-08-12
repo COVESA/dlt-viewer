@@ -19,6 +19,7 @@ public:
     ~SearchDialog();
 
     void setText(QString text);
+    void selectText();
     void setHeader(bool header);
     void setPayload(bool payload);
     void setCaseSensitive(bool caseSensitive);
