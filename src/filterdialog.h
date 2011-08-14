@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QColorDialog>
+#include <project.h>
 
 namespace Ui {
     class FilterDialog;
@@ -15,6 +16,8 @@ class FilterDialog : public QDialog
 public:
     explicit FilterDialog(QWidget *parent = 0);
     ~FilterDialog();
+
+    void setRecentFilters(QList<FilterItem> *rcFilters);
 
     void setType(int value);
     int getType();
@@ -67,9 +70,13 @@ public:
 private:
     Ui::FilterDialog *ui;
 
+    QList<FilterItem> *recentFilters;
+
 public slots:
     void on_buttonSelectColor_clicked();
-    void on_comboBoxTypeIndex_changed(int index);
+private slots:
+    void on_comboBoxRecentFilters_currentIndexChanged(int index);
+    void on_comboBoxType_currentIndexChanged(int index);
 };
 
 #endif // FILTERDIALOG_H

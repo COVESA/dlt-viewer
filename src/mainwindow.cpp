@@ -60,6 +60,8 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
         ui->menuRecent_projects->addAction(recentProjectActs[i]);
     }
 
+    recentFilters = new QList<FilterItem>();
+
     /* Settings */
     bmwsettings = new QSettings("BMW","DLT Viewer");
 
@@ -3616,7 +3618,7 @@ void MainWindow::filterAddTable() {
 
     /* show filter dialog */
     FilterDialog dlg;
-
+    dlg.setRecentFilters(recentFilters);
     dlg.setEnableEcuId(!msg.getEcuid().isEmpty());
     dlg.setEcuId(msg.getEcuid());
     dlg.setEnableApplicationId(!msg.getApid().isEmpty());
@@ -3658,6 +3660,9 @@ void MainWindow::filterAddTable() {
         /* add filter to list */
         project.pfilter->addTopLevelItem(item);
 
+        // add filter to recent filters list
+        recentFilters->push_front(*item);
+
         qDebug() << "---------------1";
         /* update filter list in DLT log file */
         filterUpdate();
@@ -3693,6 +3698,7 @@ void MainWindow::filterAdd() {
 
     /* show filter dialog */
     FilterDialog dlg;
+    dlg.setRecentFilters(recentFilters);
 
     if(ecuitem)
     {
@@ -3744,6 +3750,9 @@ void MainWindow::filterAdd() {
         /* add filter to list */
         project.pfilter->addTopLevelItem(item);
 
+        // add filter to recent filters list
+        recentFilters->push_front(*item);
+
         /* update filter list in DLT log file */
         filterUpdate();
 
@@ -3768,11 +3777,17 @@ void MainWindow::on_actionFilter_Save_As_triggered()
 void MainWindow::on_actionFilter_Load_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Load DLT Filter file"), workingDirectory, tr("DLT Files (*.dlf);;All files (*.*)"));
+        tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
-    if(!fileName.isEmpty() &&project.LoadFilter(fileName))
+    if(!fileName.isEmpty() && project.LoadFilter(fileName))
     {
         filterUpdate();
+
+        for(int num = 0; num < project.pfilter->topLevelItemCount(); num++)
+        {
+            FilterItem *item = (FilterItem*)project.pfilter->topLevelItem(num);
+            recentFilters->push_front(*item);
+        }
     }
 }
 
@@ -3788,6 +3803,8 @@ void MainWindow::on_actionFilter_Add_triggered() {
 
     /* show filter dialog */
     FilterDialog dlg;
+    dlg.setRecentFilters(recentFilters);
+
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
 
@@ -3821,6 +3838,9 @@ void MainWindow::on_actionFilter_Add_triggered() {
         /* add filter to list */
         project.pfilter->addTopLevelItem(item);
 
+        // add filter to recent filters list
+        recentFilters->push_front(*item);
+
         /* update filter list in DLT log file */
         filterUpdate();
 
@@ -3846,7 +3866,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
 
         /* show filter dialog */
         FilterDialog dlg;
-
+        dlg.setRecentFilters(recentFilters);
         dlg.setType((int)(item->type));
 
         dlg.setName(item->name);
@@ -3904,6 +3924,9 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
             /* add filter to list */
             project.pfilter->addTopLevelItem(newitem);
 
+            // add filter to recent filters list
+            recentFilters->push_front(*newitem);
+
             /* update filter list in DLT log file */
             filterUpdate();
 
@@ -3934,7 +3957,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
         /* show filter dialog */
         FilterDialog dlg;
-
+        dlg.setRecentFilters(recentFilters);
         dlg.setType((int)(item->type));
 
         dlg.setName(item->name);
@@ -3997,6 +4020,9 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
             /* update filter list in DLT log file */
             filterUpdate();
+
+            // add filter to recent filters list
+            recentFilters->push_front(*item);
 
             /* reload DLT log file */
             reloadLogFile();

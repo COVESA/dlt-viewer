@@ -49,7 +49,7 @@ Create Windows SDK Documentation:
 -------------------------------
 - Install doxygen
 - Change into project directory
-- doxygen sdk/doxygen_linux.cfg
+- doxygen sdk/doxygen.cfg
 - You will find the documentation in the doc directory
 
 Create Linux SDK:
@@ -61,6 +61,6 @@ Create Linux SDK Documentation:
 -------------------------------
 - Install doxygen
 - Change into project directory
-- doxygen sdk/doxygen_linux.cfg
+- doxygen sdk/doxygen.cfg
 - You will find the documentation in the doc directory
 

@@ -953,6 +953,12 @@ bool Project::LoadFilter(QString filename){
                       filteritem->type = (FilterItem::FilterType)(xml.readElementText().toInt());
 
               }
+              if(xml.name() == QString("name"))
+              {
+                  if(filteritem)
+                      filteritem->name = xml.readElementText();
+
+              }
               if(xml.name() == QString("ecuid"))
               {
                   if(filteritem)

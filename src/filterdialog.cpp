@@ -8,15 +8,37 @@ FilterDialog::FilterDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->buttonSelectColor, SIGNAL(pressed()), this, SLOT(on_buttonSelectColor_clicked()));
-    connect(ui->comboBoxType,SIGNAL(currentIndexChanged(int)),this,SLOT(on_comboBoxTypeIndex_changed(int)));
 
     ui->buttonSelectColor->setEnabled(false);
     ui->labelSelectedColor->setVisible(false);
+
+    recentFilters = new QList<FilterItem>();
 }
 
 FilterDialog::~FilterDialog()
 {
     delete ui;
+}
+void FilterDialog::setRecentFilters(QList<FilterItem> *rcFilters){
+
+    recentFilters = rcFilters;
+
+    ui->comboBoxRecentFilters->clear();
+    ui->comboBoxRecentFilters->addItem("");
+
+    if(recentFilters->isEmpty()){
+         ui->comboBoxRecentFilters->setEnabled(false);
+
+     } else {
+
+         ui->comboBoxRecentFilters->setEnabled(true);
+
+         for(int i=0; i < recentFilters->size();i++)
+         {
+             FilterItem item = recentFilters->at(i);
+             ui->comboBoxRecentFilters->addItem(item.name);
+         }
+     }
 }
 
 void FilterDialog::setType(int value)
@@ -214,7 +236,7 @@ void FilterDialog::on_buttonSelectColor_clicked()
     }
 }
 
-void FilterDialog::on_comboBoxTypeIndex_changed(int index){
+void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
 
     switch(index){
     case 0:
@@ -227,5 +249,50 @@ void FilterDialog::on_comboBoxTypeIndex_changed(int index){
             ui->buttonSelectColor->setEnabled(true);
             ui->labelSelectedColor->setVisible(true);
             break;
+    }
+}
+
+void FilterDialog::on_comboBoxRecentFilters_currentIndexChanged(int index)
+{
+    if(index>0)
+    {
+        FilterItem item = recentFilters->at(index-1);
+
+        switch(item.type){
+        case FilterItem::positive:
+                setType(FilterItem::positive);
+                on_comboBoxType_currentIndexChanged(FilterItem::positive);
+                break;
+        case FilterItem::negative:
+                setType(FilterItem::negative);
+                on_comboBoxType_currentIndexChanged(FilterItem::negative);
+                break;
+        case FilterItem::marker:
+                setFilterColour( item.filterColour);
+                setType(FilterItem::marker);
+                on_comboBoxType_currentIndexChanged(FilterItem::marker);
+                break;
+        default:
+                break;
+        }
+
+        setName(item.name);
+        setEcuId(item.ecuId );
+        setApplicationId(item.applicationId );
+        setContextId(item.contextId);
+        setHeaderText(item.headerText );
+        setPayloadText(item.payloadText );
+
+        setEnableEcuId(item.enableEcuId);
+        setEnableApplicationId(item.enableApplicationId );
+        setEnableContextId(item.enableContextId);
+        setEnableHeaderText(item.enableHeaderText );
+        setEnablePayloadText(item.enablePayloadText );
+        setEnableCtrlMsgs(item.enableCtrlMsgs);
+        setEnableLogLevelMax(item.enableLogLevelMax);
+        setEnableLogLevelMin(item.enableLogLevelMin );
+
+        setLogLevelMax(item.logLevelMax );
+        setLogLevelMin(item.logLevelMin );
     }
 }

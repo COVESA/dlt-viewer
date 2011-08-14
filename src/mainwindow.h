@@ -33,7 +33,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-
 protected:
 
     void keyPressEvent ( QKeyEvent * event );
@@ -194,6 +193,8 @@ public:
     QStringList recentHostnames;
     enum { MaxRecentPorts = 10 };
     QStringList recentPorts;
+
+    QList<FilterItem> *recentFilters;
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
