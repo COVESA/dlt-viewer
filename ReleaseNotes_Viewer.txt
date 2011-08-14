@@ -25,6 +25,7 @@ Changes in this release
 2.3.0 Beta 5:
 
 Improvements:
+   * [GSW-64] Select Filter from last used filter configuration.
    * [GSW-14] Doxygen based documentation of DLT Viewer
    * [GSW-63] Load and Save Filter configuration
    * [GSW-17] Sorting of Contexts and Applications by id or descriptions.
