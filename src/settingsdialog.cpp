@@ -48,8 +48,52 @@ void SettingsDialog::writeDlg()
     ui->checkBoxCount->setCheckState(showCount?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxEcuid->setCheckState(showEcuId?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAppid->setCheckState(showApId?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxConId->setCheckState(showCtId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxAppId->setChecked(showApId?Qt::Checked:Qt::Unchecked);
+    if(ui->groupBoxAppId->isChecked()){
+        ui->radioButtonAppId->setEnabled(true);
+        ui->radioButtonAppIdDesc->setEnabled(true);
+    }else{
+        ui->radioButtonAppId->setEnabled(false);
+        ui->radioButtonAppIdDesc->setEnabled(false);
+    }
+    switch(showApIdDesc){
+    case 0:
+        ui->radioButtonAppId->setChecked(true);
+        ui->radioButtonAppIdDesc->setChecked(false);
+        break;
+    case 1:
+        ui->radioButtonAppId->setChecked(false);
+        ui->radioButtonAppIdDesc->setChecked(true);
+        break;
+    default:
+        ui->radioButtonConId->setChecked(true);
+        ui->radioButtonConIdDesc->setChecked(false);
+        break;
+    }
+
+    ui->groupBoxConId->setChecked(showCtId?Qt::Checked:Qt::Unchecked);
+    if(ui->groupBoxConId->isChecked()){
+        ui->radioButtonConId->setEnabled(true);
+        ui->radioButtonConIdDesc->setEnabled(true);
+    }else{
+        ui->radioButtonConId->setEnabled(false);
+        ui->radioButtonConIdDesc->setEnabled(false);
+    }
+    switch(showCtIdDesc){
+    case 0:
+        ui->radioButtonConId->setChecked(true);
+        ui->radioButtonConIdDesc->setChecked(false);
+        break;
+    case 1:
+        ui->radioButtonConId->setChecked(false);
+        ui->radioButtonConIdDesc->setChecked(true);
+        break;
+    default:
+        ui->radioButtonConId->setChecked(true);
+        ui->radioButtonConIdDesc->setChecked(false);
+        break;
+    }
+
     ui->checkBoxType->setCheckState(showType?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxSubtype->setCheckState(showSubtype?Qt::Checked:Qt::Unchecked);
@@ -80,8 +124,10 @@ void SettingsDialog::readDlg()
     showCount =     ( ui->checkBoxCount->checkState() == Qt::Checked);
 
     showEcuId =     ( ui->checkBoxEcuid->checkState() == Qt::Checked);
-    showApId =      ( ui->checkBoxAppid->checkState() == Qt::Checked);
-    showCtId =      ( ui->checkBoxConId->checkState() == Qt::Checked);
+    showApId =      ( ui->groupBoxAppId->isChecked() == true ? 1:0);
+    showApIdDesc =  ( ui->radioButtonAppIdDesc->isChecked()== true ? 1:0);
+    showCtId =      ( ui->groupBoxConId->isChecked() == true ? 1:0);
+    showCtIdDesc =  ( ui->radioButtonConIdDesc->isChecked()== true ? 1:0);
     showType =      ( ui->checkBoxType->checkState() == Qt::Checked);
 
     showSubtype = ( ui->checkBoxSubtype->checkState() == Qt::Checked);
@@ -116,7 +162,9 @@ void SettingsDialog::writeSettings()
 
     settings.setValue("startup/showEcuId",showEcuId);
     settings.setValue("startup/showApId",showApId);
+    settings.setValue("startup/showApIdDesc",showApIdDesc);
     settings.setValue("startup/showCtId",showCtId);
+    settings.setValue("startup/showCtIdDesc",showCtIdDesc);
     settings.setValue("startup/showType",showType);
 
     settings.setValue("startup/showSubtype",showSubtype);
@@ -131,7 +179,6 @@ void SettingsDialog::writeSettings()
 void SettingsDialog::readSettings()
 {
     QSettings settings("BMW","DLT Viewer");
-
     /* startup */
     defaultProjectFile = settings.value("startup/defaultProjectFile",0).toInt();
     defaultProjectFileName = settings.value("startup/defaultProjectFileName",QString("")).toString();
@@ -150,7 +197,9 @@ void SettingsDialog::readSettings()
 
     showEcuId = settings.value("startup/showEcuId",1).toInt();
     showApId = settings.value("startup/showApId",1).toInt();
+    showApIdDesc = settings.value("startup/showApIdDesc",0).toInt();
     showCtId = settings.value("startup/showCtId",1).toInt();
+    showCtIdDesc = settings.value("startup/showCtIdDesc",0).toInt();
     showType = settings.value("startup/showType",1).toInt();
 
     showSubtype = settings.value("startup/showSubtype",1).toInt();
@@ -208,4 +257,26 @@ void SettingsDialog::on_tooButtonPluginsPath_clicked()
     QMessageBox::warning(0, QString("DLT Viewer"),
                          QString("Plugins will only be reloaded after restart of DLT Viewer!"));
 
+}
+
+void SettingsDialog::on_groupBoxConId_clicked(bool checked)
+{
+    if(checked){
+        ui->radioButtonConId->setEnabled(true);
+        ui->radioButtonConIdDesc->setEnabled(true);
+    }else{
+        ui->radioButtonConId->setEnabled(false);
+        ui->radioButtonConIdDesc->setEnabled(false);
+    }
+}
+
+void SettingsDialog::on_groupBoxAppId_clicked(bool checked)
+{
+    if(checked){
+        ui->radioButtonAppId->setEnabled(true);
+        ui->radioButtonAppIdDesc->setEnabled(true);
+    }else{
+        ui->radioButtonAppId->setEnabled(false);
+        ui->radioButtonAppIdDesc->setEnabled(false);
+    }
 }

@@ -852,13 +852,45 @@ void MainWindow::applySettings()
 
     settings.showEcuId?ui->tableView->showColumn(4):ui->tableView->hideColumn(4);
     settings.showApId?ui->tableView->showColumn(5):ui->tableView->hideColumn(5);
+    switch(settings.showApIdDesc){
+        case 0:
+            tableModel->showApIdDesc=0;
+            break;
+        case 1:
+            tableModel->showApIdDesc=1;
+            break;
+        }
+
     settings.showCtId?ui->tableView->showColumn(6):ui->tableView->hideColumn(6);
+    switch(settings.showCtIdDesc){
+       case 0:
+           tableModel->showCtIdDesc=0;
+           break;
+       case 1:
+           tableModel->showCtIdDesc=1;
+           break;
+       }
+
     settings.showType?ui->tableView->showColumn(7):ui->tableView->hideColumn(7);
 
     settings.showSubtype?ui->tableView->showColumn(8):ui->tableView->hideColumn(8);
     settings.showMode?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
     settings.showNoar?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
     settings.showPayload?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
+
+    if(  (settings.showCtId && settings.showCtIdDesc) || (settings.showApId && settings.showApIdDesc) ){
+            if(project.ecu->topLevelItemCount() > 0)
+            {
+                for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+                {
+                    EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+                    GetLogInfo(ecuitem);
+                }
+            }
+
+
+    }
+
 }
 
 void MainWindow::on_actionSettings_triggered()
@@ -1725,6 +1757,10 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 }
             }
 
+        }
+
+        if(  (settings.showCtId && settings.showCtIdDesc) || (settings.showApId && settings.showApIdDesc) ){
+            GetLogInfo(ecuitem);
         }
     }
 }

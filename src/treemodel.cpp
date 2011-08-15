@@ -8,6 +8,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  TreeModel::TreeModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
+     showApIdDesc=0;
+     showCtIdDesc=0;
      size = 0;
  }
 
@@ -62,9 +64,59 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case 4:
              return msg.getEcuid();
          case 5:
-             return msg.getApid();
+             switch(showApIdDesc){
+             case 0:
+                 return msg.getApid();
+                 break;
+             case 1:
+                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+                    {
+                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                     {
+                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                         if(appitem->id == msg.getApid() )
+                         {
+                            return appitem->description;
+                         }
+                         else
+                         {
+                            return QString("Apid: %1 (No description available. Try \"DLT get log info\".)").arg(msg.getApid());
+                         }
+                     }
+                 }
+                 break;
+             }
          case 6:
-             return msg.getCtid();
+             switch(showCtIdDesc){
+             case 0:
+                 return msg.getCtid();
+                 break;
+             case 1:
+                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+                    {
+                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                     {
+                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+
+                         for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+                         {
+                             ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+
+                             if(appitem->id == msg.getApid() && conitem->id == msg.getCtid())
+                             {
+                                 return conitem->description;
+                             }
+                             else
+                             {
+                                return QString("Ctid: %1 (No description available. Try \"DLT get log info\".)").arg(msg.getCtid());
+                             }
+                         }
+                     }
+                 }
+                 break;
+             }
          case 7:
              return msg.getTypeString();
          case 8:
@@ -158,9 +210,19 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
           case 4:
               return QString("Ecuid");
           case 5:
-              return QString("Apid");
+              switch(showApIdDesc){
+              case 0:
+                   return QString("Apid");
+              case 1:
+                   return QString("Apid Desc");
+              }
           case 6:
-              return QString("Ctid");
+              switch(showCtIdDesc){
+              case 0:
+                   return QString("Ctid");
+              case 1:
+                   return QString("Ctid Desc");
+              }
           case 7:
               return QString("Type");
           case 8:
