@@ -32,7 +32,7 @@ New Features:
    * [GSW-64] Select Filter from last used filter configuration.
 
 Improvements:
-
+   * [GSW-21] Enhance search function: Start from current position / start from beginning
    * [GSW-14] Doxygen based documentation of DLT Viewer
    * [GSW-65] Using RGB colors via color picker for filter marker.
    * [GSW-36] Search dialog marks search text when opening search dialog.

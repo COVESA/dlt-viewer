@@ -177,10 +177,9 @@
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
-     <string>Edit</string>
+     <string>Search</string>
     </property>
-    <addaction name="actionSearch"/>
-    <addaction name="actionSearch_Continue"/>
+    <addaction name="actionFind"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -640,17 +639,17 @@ p, li { white-space: pre-wrap; }
     <string>Ctrl+E</string>
    </property>
   </action>
-  <action name="actionSearch">
+  <action name="actionFind">
    <property name="text">
-    <string>Search...</string>
+    <string>Find</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
    </property>
   </action>
-  <action name="actionSearch_Continue">
+  <action name="actionFind_Next">
    <property name="text">
-    <string>Search Continue</string>
+    <string>Find Next</string>
    </property>
    <property name="shortcut">
     <string>F3</string>
@@ -708,6 +707,14 @@ p, li { white-space: pre-wrap; }
   <action name="actionFilter_Load">
    <property name="text">
     <string>Load Filter(s)...</string>
+   </property>
+  </action>
+  <action name="actionFind_Previous">
+   <property name="text">
+    <string>Find Previous</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
    </property>
   </action>
  </widget>

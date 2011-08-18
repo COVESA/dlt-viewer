@@ -11,6 +11,7 @@
 #include "treemodel.h"
 #include "project.h"
 #include "settingsdialog.h"
+#include "searchdialog.h"
 #include "qdlt.h"
 
 extern "C"
@@ -33,17 +34,15 @@ public:
 
 private:
     Ui::MainWindow *ui;
-protected:
 
+protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
     void dropEvent(QDropEvent *event);
 
 private slots:
-
     void on_actionFilter_Load_triggered();
     void on_actionFilter_Save_As_triggered();
-
     void on_actionExport_Selection_ASCII_triggered();
     void on_tableView_pressed(QModelIndex index);
     void on_tableView_customContextMenuRequested(QPoint pos);
@@ -69,8 +68,7 @@ private slots:
     void on_pluginWidget_itemSelectionChanged();
     void autoscrollToggled(bool state);
     void filterToggled(bool state);
-    void on_actionSearch_Continue_triggered();
-    void on_actionSearch_triggered();
+    void on_actionFind_triggered();
     void on_actionExport_ASCII_triggered();
     void on_actionImport_DLT_Stream_triggered();
     void on_action_Info_triggered();
@@ -128,7 +126,8 @@ private slots:
     void closeEvent(QCloseEvent *event);
 
 public slots:
-
+    //void on_pushButtonSearchPrevious_clicked();
+    //void on_pushButtonSearchNext_clicked();
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
 
 public:   
@@ -157,16 +156,12 @@ public:
     unsigned long totalBytesRcvd;
     unsigned long totalByteErrorsRcvd;
 
-    /* search text */
-    QString searchText;
-    int searchLine;
-    bool searchHeader;
-    bool searchPayload;
-    bool searchCaseSensitive;
-    bool searchRegExp;
+    /* Search */
+    SearchDialog *searchDlg;
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog settings;
+    QLineEdit *searchTextToolbar;
 
     /* injections */
     QString injectionAplicationId;
@@ -245,6 +240,8 @@ public:
 
     void logfileOpen(QString fileName);
     void projectfileOpen(QString filename);
+
+
 
 };
 

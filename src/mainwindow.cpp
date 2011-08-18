@@ -10,6 +10,7 @@
 #include <QClipboard>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <QLineEdit>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -21,7 +22,7 @@
 #include "plugindialog.h"
 #include "settingsdialog.h"
 #include "injectiondialog.h"
-#include "searchdialog.h"
+
 
 #include "version.h"
 #include "svnversion.h"
@@ -110,6 +111,13 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     statusByteErrorsReceived->setText("Recv Errors: 0");
     totalByteErrorsRcvd = 0;
 
+
+
+    searchDlg = new SearchDialog(this);
+    searchDlg->file = &qfile;
+    searchDlg->table = ui->tableView;
+    searchDlg->plugin = project.plugin;
+
     /* initialize tool bar */
     QAction *action;
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-new.png"), tr("&New"));
@@ -128,13 +136,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     ui->mainToolBar->addSeparator();
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/preferences-desktop.png"), tr("S&ettings"));
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionSettings_triggered()));
-    ui->mainToolBar->addSeparator();
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/system-search.png"), tr("Search"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_triggered()));
-    //action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Search previous"));
-    //connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-next.png"), tr("Search next"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
+
     ui->mainToolBar->addSeparator();
 
     scrollbutton = new QPushButton(QIcon(":/toolbar/png/go-bottom.png"),tr(""),this);
@@ -152,6 +154,20 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     action = ui->mainToolBar->addWidget(filterbutton);
     connect(filterbutton, SIGNAL(toggled(bool)), this, SLOT(filterToggled(bool)));
 
+    ui->mainToolBar->addSeparator();
+
+    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/system-search.png"), tr("Find"));
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionFind_triggered()));
+    //action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Search previous"));
+    //connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
+    searchTextToolbar = new QLineEdit(ui->mainToolBar);
+    searchDlg->appenLineEdit(searchTextToolbar);
+    connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(on_lineEditText_textEditedFromToolbar(QString)));
+    action = ui->mainToolBar->addWidget(searchTextToolbar);
+    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Find Previous"));
+    connect(action, SIGNAL(triggered()), searchDlg, SLOT(on_actionFind_Previous_triggered()));
+    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-next.png"), tr("Find Next"));
+    connect(action, SIGNAL(triggered()), searchDlg, SLOT(on_actionFind_Next_triggered()));
 
     updateScrollButton();
 
@@ -183,12 +199,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     ui->actionECU_Delete_All_Contexts->setEnabled(false);
     ui->actionECU_Connect->setEnabled(false);
     ui->actionECU_Disconnect->setEnabled(false);
-
-    /* initialise search */
-    searchLine = 0;
-    searchHeader = true;
-    searchPayload = true;
-    searchCaseSensitive = false;
 
     /* initialize injection */
     injectionAplicationId.clear();
@@ -319,6 +329,7 @@ MainWindow::~MainWindow()
 
     delete ui;
     delete tableModel;
+    delete searchDlg;
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -371,6 +382,9 @@ void MainWindow::on_actionOpen_triggered()
 
     logfileOpen(fileName);
 
+    searchDlg->setMatch(false);
+    searchDlg->setOnceClicked(false);
+    searchDlg->setStartLine(-1);
 }
 
 void MainWindow::logfileOpen(QString fileName)
@@ -3260,140 +3274,10 @@ void MainWindow::stateChanged(QAbstractSocket::SocketState socketState)
 // Search functionalities
 //----------------------------------------------------------------------------
 
-void MainWindow::on_actionSearch_triggered()
+void MainWindow::on_actionFind_triggered()
 {
-    SearchDialog dlg(this);
 
-    dlg.setText(searchText);
-    dlg.selectText();
-    dlg.setHeader(searchHeader);
-    dlg.setPayload(searchPayload);
-    dlg.setCaseSensitive(searchCaseSensitive);
-    dlg.setRegExp(searchRegExp);
-
-    if(dlg.exec())
-    {
-        searchLine = 0;
-        searchText = dlg.getText();
-        searchHeader = dlg.getHeader();
-        searchPayload = dlg.getPayload();
-        searchCaseSensitive = dlg.getCaseSensitive();
-        searchRegExp = dlg.getRegExp();
-
-        on_actionSearch_Continue_triggered();
-    }
-}
-
-void MainWindow::on_actionSearch_Continue_triggered()
-{
-    QRegExp searchTextRegExp;
-    QDltMsg msg;
-    QByteArray buf;
-    QString text;
-
-    int num;
-
-    if (searchRegExp)
-    {
-        searchTextRegExp.setPattern(searchText);
-        searchTextRegExp.setCaseSensitivity(searchCaseSensitive?Qt::CaseSensitive:Qt::CaseInsensitive);
-        if (!searchTextRegExp.isValid())
-        {
-            QMessageBox::warning(0, QString("Search"),
-                                    QString("Invalid regular expression!"));
-            return;
-        }
-    }
-
-
-    QProgressDialog fileprogress("Searching...", "Abort", 0, qfile.sizeFilter(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
-    for(num = searchLine;num< qfile.sizeFilter();num++)
-    {
-        fileprogress.setValue(num);
-        /* get the message with the selected item id */
-        buf = qfile.getMsgFilter(num);
-        msg.setMsg(buf);
-        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-            {
-                item->plugindecoderinterface->decodeMsg(msg);
-                break;
-            }
-        }
-
-        bool pluginFound = false;
-
-        /* search header */
-        if(!pluginFound || text.isEmpty())
-        {
-            text += msg.toStringHeader();
-        }
-
-        if(searchHeader)
-        {
-            if (searchRegExp)
-            {
-                if(text.contains(searchTextRegExp))
-                {
-                    searchLine = num+1;
-                    ui->tableView->selectRow(num);
-                    return;
-                }
-            }
-            else
-            {
-                if(text.contains(searchText,searchCaseSensitive? Qt::CaseSensitive : Qt::CaseInsensitive ))
-                {
-                    searchLine = num+1;
-                    ui->tableView->selectRow(num);
-                    return;
-                }
-            }
-        }
-
-        /* search payload */
-        text.clear();
-        if(!pluginFound || text.isEmpty())
-        {
-            text += msg.toStringPayload();
-        }
-
-        if(searchPayload)
-        {
-            if (searchRegExp)
-            {
-                if(text.contains(searchTextRegExp))
-                {
-                    searchLine = num+1;
-                    ui->tableView->selectRow(num);
-                    return;
-                }
-            }
-            else
-            {
-                if(text.contains(searchText,searchCaseSensitive?Qt::CaseSensitive:Qt::CaseInsensitive))
-                {
-                    searchLine = num+1;
-                    ui->tableView->selectRow(num);
-                    return;
-                }
-            }
-        }
-
-
-    }
-
-    searchLine = num;
-
-    QMessageBox::warning(0, QString("Search"),
-                         QString("End of file reached!"));
-
+    searchDlg->open();
 }
 
 //----------------------------------------------------------------------------
@@ -3828,14 +3712,14 @@ void MainWindow::on_actionFilter_Load_triggered()
 }
 
 void MainWindow::on_actionFilter_Add_triggered() {
-    QTreeWidget *widget;
+    //QTreeWidget *widget;
 
     /* get currently visible filter list in user interface */
-    if(ui->tabPFilter->isVisible()) {
-        widget = project.pfilter;
-    }
-    else
-        return;
+    //if(ui->tabPFilter->isVisible()) {
+    //    widget = project.pfilter;
+    //}
+    //else
+    //    return;
 
     /* show filter dialog */
     FilterDialog dlg;

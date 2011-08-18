@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>157</height>
+    <width>420</width>
+    <height>198</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -25,20 +25,43 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
+   <item row="0" column="1" colspan="2">
     <widget class="QLineEdit" name="lineEditText"/>
    </item>
-   <item row="2" column="0">
-    <widget class="QCheckBox" name="checkBoxHeader">
-     <property name="text">
-      <string>Header</string>
+   <item row="5" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="layoutDirection">
+      <enum>Qt::LeftToRight</enum>
      </property>
-     <property name="checked">
-      <bool>true</bool>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel</set>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
+   <item row="5" column="1">
+    <widget class="QPushButton" name="pushButtonPrevious">
+     <property name="text">
+      <string>Previous  (F2)</string>
+     </property>
+     <property name="shortcut">
+      <string>F2</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QPushButton" name="pushButtonNext">
+     <property name="text">
+      <string>Next  (F3)</string>
+     </property>
+     <property name="shortcut">
+      <string>F3</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="2">
     <widget class="QCheckBox" name="checkBoxPayload">
      <property name="text">
       <string>Payload</string>
@@ -48,17 +71,24 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+   <item row="2" column="1">
+    <widget class="QCheckBox" name="checkBoxHeader">
+     <property name="text">
+      <string>Header</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="4" column="2">
+    <widget class="QCheckBox" name="checkBoxRegExp">
+     <property name="text">
+      <string>Regular Expression</string>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1">
     <widget class="QCheckBox" name="checkBoxCaseSensitive">
      <property name="text">
       <string>Case Sensitive</string>
@@ -68,10 +98,62 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="1">
-    <widget class="QCheckBox" name="checkBoxRegExp">
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
      <property name="text">
-      <string>Regular Expression</string>
+      <string>Search in:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="title">
+      <string/>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLabel" name="label_3">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="text">
+         <string>Search from:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonPosBeginning">
+        <property name="layoutDirection">
+         <enum>Qt::LeftToRight</enum>
+        </property>
+        <property name="text">
+         <string>The beginning</string>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QRadioButton" name="radioButtonPosCurrent">
+        <property name="text">
+         <string>Current position</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Search options:</string>
      </property>
     </widget>
    </item>

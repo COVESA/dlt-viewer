@@ -2,7 +2,9 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-
+#include "qdlt.h"
+#include <QTableView>
+#include <QTreeWidget>
 namespace Ui {
     class SearchDialog;
 }
@@ -13,6 +15,11 @@ class SearchDialog : public QDialog
 
 private:
     Ui::SearchDialog *ui;
+    int startLine;
+    bool nextClicked;
+    bool match;
+    bool onceClicked;
+
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
@@ -24,13 +31,41 @@ public:
     void setPayload(bool payload);
     void setCaseSensitive(bool caseSensitive);
     void setRegExp(bool regExp);
+    void setMatch(bool matched);
+    void setStartLine(int start);
+    void setNextClicked(bool next);
+    void setSearchColour(QLineEdit *lineEdit,int result);
+    void setEnabledPrevious(bool enabled);
+    void setSearchPosition(bool beginning);
+    void setOnceClicked(bool clicked);
+    void appenLineEdit(QLineEdit *lineEdit);
 
     QString getText();
     bool getHeader();
     bool getPayload();
     bool getCaseSensitive();
     bool getRegExp();
+    bool getSearchFromBeginning();
+    bool getNextClicked();
+    bool getMatch();
+    bool getClicked();
+    bool getOnceClicked();
+    int getStartLine();
+    int find();
+    QDltFile *file;
+    QTableView *table;
+    QTreeWidget *plugin;
+    QList<QLineEdit*> *lineEdits;
 
+private slots:
+    void on_lineEditText_textEdited(QString newText);
+    void on_lineEditText_textEditedFromToolbar(QString newText);
+    void on_pushButtonPrevious_clicked();
+    void on_pushButtonNext_clicked();
+public slots:
+    void toolbarTextChanged(QString newText);
+    void on_actionFind_Next_triggered();
+    void on_actionFind_Previous_triggered();
 };
 
 #endif // SEARCHDIALOG_H
