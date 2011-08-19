@@ -892,20 +892,6 @@ void MainWindow::applySettings()
     settings.showMode?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
     settings.showNoar?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
     settings.showPayload?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
-
-    if(  (settings.showCtId && settings.showCtIdDesc) || (settings.showApId && settings.showApIdDesc) ){
-            if(project.ecu->topLevelItemCount() > 0)
-            {
-                for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-                {
-                    EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-                    GetLogInfo(ecuitem);
-                }
-            }
-
-
-    }
-
 }
 
 void MainWindow::on_actionSettings_triggered()

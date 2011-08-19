@@ -64,6 +64,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case 4:
              return msg.getEcuid();
          case 5:
+             qDebug()<<"showApIdDesc: "<<showApIdDesc;
              switch(showApIdDesc){
              case 0:
                  return msg.getApid();
@@ -72,33 +73,49 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     if(ecuitem->childCount()==0){
+                        return QString("Apid: %1 (No description)").arg(msg.getApid());
+                     }
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
                          if(appitem->id == msg.getApid() )
                          {
-                            return appitem->description;
+                            if(appitem->description.isEmpty())
+                                return QString("Apid: %1 (No description)").arg(msg.getApid());
+                             else
+                                return appitem->description;
                          }
                          else
                          {
-                            return QString("Apid: %1 (No description available. Try \"DLT get log info\".)").arg(msg.getApid());
+                            return QString("Apid: %1 (No description)").arg(msg.getApid());
                          }
                      }
-                 }
+                    }
+                   return QString("Apid: %1 (No description)").arg(msg.getApid());
                  break;
+              default:
+                 return msg.getApid();
              }
          case 6:
+             qDebug()<<"showCtIdDesc: "<<showCtIdDesc;
              switch(showCtIdDesc){
              case 0:
                  return msg.getCtid();
                  break;
              case 1:
+
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     if(ecuitem->childCount()==0){
+                        return QString("Ctid: %1 (No description)").arg(msg.getCtid());
+                     }
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                         if( appitem->childCount() == 0)
+                            return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
 
                          for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
                          {
@@ -106,16 +123,22 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
                              if(appitem->id == msg.getApid() && conitem->id == msg.getCtid())
                              {
-                                 return conitem->description;
+                                 if(conitem->description.isEmpty())
+                                     return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
+                                  else
+                                     return conitem->description;
                              }
                              else
                              {
-                                return QString("Ctid: %1 (No description available. Try \"DLT get log info\".)").arg(msg.getCtid());
+                                return QString("Ctid: %1 (No description)").arg(msg.getCtid());
                              }
                          }
                      }
-                 }
+                    }
+                   return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
                  break;
+              default:
+                 return msg.getCtid();
              }
          case 7:
              return msg.getTypeString();
