@@ -136,8 +136,16 @@
     <property name="title">
      <string>Filter</string>
     </property>
+    <widget class="QMenu" name="menuRecent_Filters">
+     <property name="title">
+      <string>Recent Filter(s)...</string>
+     </property>
+     <addaction name="separator"/>
+    </widget>
     <addaction name="actionFilter_Save_As"/>
     <addaction name="actionFilter_Load"/>
+    <addaction name="separator"/>
+    <addaction name="menuRecent_Filters"/>
     <addaction name="separator"/>
     <addaction name="actionFilter_Add"/>
     <addaction name="actionFilter_Edit"/>

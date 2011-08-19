@@ -121,6 +121,7 @@ private slots:
     void updateScrollButton();
     void openRecentFile();
     void openRecentProject();
+    void openRecentFilters();
     void tableViewValueChanged(int value);
     void stateChanged(QAbstractSocket::SocketState socketState);
     void closeEvent(QCloseEvent *event);
@@ -183,13 +184,16 @@ public:
     QAction *recentProjectActs[MaxRecentProjects];
     QStringList recentProjects;
 
+    /* Recent filters */
+    enum { MaxRecentFilters = 5 };
+    QAction *recentFiltersActs[MaxRecentFilters];
+    QStringList recentFilters;
+
     /* Recent hostnames and ports */
     enum { MaxRecentHostnames = 10 };
     QStringList recentHostnames;
     enum { MaxRecentPorts = 10 };
     QStringList recentPorts;
-
-    QList<FilterItem> *recentFilters;
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
@@ -232,6 +236,10 @@ public:
     void updateRecentProjectActions();
     void setCurrentProject(const QString &projectName);
     void removeCurrentProject(const QString &projectName);
+
+    void updateRecentFiltersActions();
+    void setCurrentFilters(const QString &filtersName);
+    void removeCurrentFilters(const QString &filtersName);
 
     void setCurrentHostname(const QString &hostName);
     void setCurrentPort(const QString &portName);

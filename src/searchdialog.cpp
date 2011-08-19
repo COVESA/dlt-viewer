@@ -154,9 +154,9 @@ int SearchDialog::find()
             }
         }
 
-        qDebug()<<"startLine: "<<getStartLine();
-        qDebug()<<"searchBorder: "<<searchBorder;
-        qDebug()<<"searchLine: "<<searchLine;
+        //qDebug()<<"startLine: "<<getStartLine();
+        //qDebug()<<"searchBorder: "<<searchBorder;
+        //qDebug()<<"searchLine: "<<searchLine;
 
         if(getNextClicked()){
             fileprogress.setValue(searchLine+1);

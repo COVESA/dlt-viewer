@@ -64,7 +64,6 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case 4:
              return msg.getEcuid();
          case 5:
-             qDebug()<<"showApIdDesc: "<<showApIdDesc;
              switch(showApIdDesc){
              case 0:
                  return msg.getApid();
@@ -98,7 +97,6 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  return msg.getApid();
              }
          case 6:
-             qDebug()<<"showCtIdDesc: "<<showCtIdDesc;
              switch(showCtIdDesc){
              case 0:
                  return msg.getCtid();
