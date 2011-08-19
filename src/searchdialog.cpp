@@ -4,6 +4,7 @@
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QProgressDialog>
+
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SearchDialog)
@@ -24,7 +25,7 @@ SearchDialog::~SearchDialog()
 }
 
 void SearchDialog::setText(QString text) { ui->lineEditText->setText(text);}
-void SearchDialog::selectText(){ui->lineEditText->selectAll();}
+void SearchDialog::selectText(){ui->lineEditText->setFocus();ui->lineEditText->selectAll();}
 void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
@@ -33,7 +34,7 @@ void SearchDialog::setNextClicked(bool next){nextClicked = next;}
 void SearchDialog::setMatch(bool matched){match=matched;}
 void SearchDialog::setStartLine(int start){startLine=start;}
 void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
-void SearchDialog::appenLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
+void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
 
 QString SearchDialog::getText() { return ui->lineEditText->text(); }
 bool SearchDialog::getHeader() { return (ui->checkBoxHeader->checkState() == Qt::Checked); }

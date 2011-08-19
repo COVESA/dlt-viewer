@@ -9,6 +9,7 @@ namespace Ui {
     class SearchDialog;
 }
 
+
 class SearchDialog : public QDialog
 {
     Q_OBJECT
@@ -38,7 +39,7 @@ public:
     void setEnabledPrevious(bool enabled);
     void setSearchPosition(bool beginning);
     void setOnceClicked(bool clicked);
-    void appenLineEdit(QLineEdit *lineEdit);
+    void appendLineEdit(QLineEdit *lineEdit);
 
     QString getText();
     bool getHeader();

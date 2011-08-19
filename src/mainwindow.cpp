@@ -161,8 +161,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     //action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Search previous"));
     //connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
     searchTextToolbar = new QLineEdit(ui->mainToolBar);
-    searchDlg->appenLineEdit(searchTextToolbar);
+    searchDlg->appendLineEdit(searchTextToolbar);
     connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(on_lineEditText_textEditedFromToolbar(QString)));
+    connect(searchTextToolbar, SIGNAL(returnPressed()),searchDlg,SLOT(on_actionFind_Next_triggered()));
     action = ui->mainToolBar->addWidget(searchTextToolbar);
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Find Previous"));
     connect(action, SIGNAL(triggered()), searchDlg, SLOT(on_actionFind_Previous_triggered()));
@@ -3278,6 +3279,7 @@ void MainWindow::on_actionFind_triggered()
 {
 
     searchDlg->open();
+    searchDlg->selectText();
 }
 
 //----------------------------------------------------------------------------
