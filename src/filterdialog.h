@@ -70,6 +70,7 @@ private:
 
 public slots:
     void on_buttonSelectColor_clicked();
+    void on_comboBoxType_currentIndexChanged(int index);
 };
 
 #endif // FILTERDIALOG_H

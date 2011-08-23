@@ -4057,6 +4057,7 @@ void MainWindow::filterUpdate() {
         afilter.logLevelMin = item->logLevelMin;
 
         afilter.filterColour = item->filterColour;
+        item->setBackground(0,item->filterColour);
 
         switch(item->type)
         {

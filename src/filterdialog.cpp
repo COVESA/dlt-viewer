@@ -213,3 +213,18 @@ void FilterDialog::on_buttonSelectColor_clicked()
 
     }
 }
+
+void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
+    switch(index){
+    case 0:
+    case 1:
+            ui->buttonSelectColor->setEnabled(false);
+            ui->labelSelectedColor->setVisible(false);
+
+            break;
+    case 2:
+            ui->buttonSelectColor->setEnabled(true);
+            ui->labelSelectedColor->setVisible(true);
+            break;
+    }
+}

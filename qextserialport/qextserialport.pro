@@ -2,7 +2,7 @@
 PROJECT                 = qextserialport
 TEMPLATE                = lib
 
-target.path = /usr/lib
+target.path = /usr/local/lib
 INSTALLS += target
 
 #CONFIG                 -= debug_and_release
