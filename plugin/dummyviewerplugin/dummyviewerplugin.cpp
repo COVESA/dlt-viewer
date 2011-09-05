@@ -17,6 +17,14 @@ QString DummyViewerPlugin::name()
     return QString("Dummy Viewer Plugin");
 }
 
+QString DummyViewerPlugin::pluginVersion(){
+    return DUMMY_VIEWER_PLUGIN_VERSION;
+}
+
+QString DummyViewerPlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
 QString DummyViewerPlugin::description()
 {
     return QString();

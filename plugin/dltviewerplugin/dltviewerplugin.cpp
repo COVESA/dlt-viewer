@@ -14,6 +14,14 @@ QString DltViewerPlugin::name() {
     return QString("DLT Viewer Plugin");
 }
 
+QString DltViewerPlugin::pluginVersion(){
+    return DLT_VIEWER_PLUGIN_VERSION;
+}
+
+QString DltViewerPlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
 QString DltViewerPlugin::description() {
     return QString();
 }

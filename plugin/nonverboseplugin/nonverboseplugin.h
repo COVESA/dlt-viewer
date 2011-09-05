@@ -5,6 +5,8 @@
 #include "nonverboseplugin.h"
 #include "plugininterface.h"
 
+#define NON_VERBOSE_PLUGIN_VERSION "1.0.0"
+
 /**
  * The structure of a Fibex PDU information.
  */
@@ -56,6 +58,8 @@ class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderI
 public:
     /* QDLTPluginInterface interface */
     QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
     QString description();
     QString error();
     bool loadConfig(QString filename);

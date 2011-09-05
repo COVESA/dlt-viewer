@@ -167,6 +167,8 @@ public:
     enum { TypeFile, TypeDirectory };
 
     QString name;
+    QString pluginVersion;
+    QString pluginInterfaceVersion;
     QString filename;
     int mode;
     int type;

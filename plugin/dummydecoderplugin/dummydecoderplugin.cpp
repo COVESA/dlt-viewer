@@ -16,6 +16,14 @@ QString DummyDecoderPlugin::name()
     return QString("Dummy Decoder Plugin");
 }
 
+QString DummyDecoderPlugin::pluginVersion(){
+    return DUMMY_DECODER_PLUGIN_VERSION;
+}
+
+QString DummyDecoderPlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
 QString DummyDecoderPlugin::description()
 {
     return QString();

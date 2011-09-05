@@ -3380,46 +3380,56 @@ void MainWindow::loadPluginsPath(QDir dir)
             QDLTPluginInterface *plugininterface = qobject_cast<QDLTPluginInterface *>(plugin);
             if (plugininterface)
             {
-                PluginItem* item = new PluginItem(0);
-                item->plugininterface = plugininterface;
-                item->name = plugininterface->name();
+                if(QString::compare( plugininterface->pluginInterfaceVersion(),PLUGIN_INTERFACE_VERSION, Qt::CaseSensitive) == 0){
 
-                item->update();
+                    PluginItem* item = new PluginItem(0);
+                    item->plugininterface = plugininterface;
+                    item->name = plugininterface->name();
+                    item->pluginVersion = plugininterface->pluginVersion();
+                    item->pluginInterfaceVersion = plugininterface->pluginInterfaceVersion();
+                    item->update();
 
-                project.plugin->addTopLevelItem(item);
+                    project.plugin->addTopLevelItem(item);
 
-                QDltPluginViewerInterface *pluginviewerinterface = qobject_cast<QDltPluginViewerInterface *>(plugin);
-                if(pluginviewerinterface)
-                {
-                    item->pluginviewerinterface = pluginviewerinterface;
-                    item->widget = item->pluginviewerinterface->initViewer();
-
-                    if(item->widget)
+                    QDltPluginViewerInterface *pluginviewerinterface = qobject_cast<QDltPluginViewerInterface *>(plugin);
+                    if(pluginviewerinterface)
                     {
-                        item->dockWidget = new QDockWidget(item->name,this);
-                        item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-                        item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-                        item->dockWidget->setWidget(item->widget);
-                        item->dockWidget->setObjectName(item->name);
+                        item->pluginviewerinterface = pluginviewerinterface;
+                        item->widget = item->pluginviewerinterface->initViewer();
 
-                        addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
-
-                        if(item->mode != PluginItem::ModeShow)
+                        if(item->widget)
                         {
-                            item->dockWidget->hide();
+                            item->dockWidget = new QDockWidget(item->name,this);
+                            item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+                            item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+                            item->dockWidget->setWidget(item->widget);
+                            item->dockWidget->setObjectName(item->name);
+
+                            addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
+
+                            if(item->mode != PluginItem::ModeShow)
+                            {
+                                item->dockWidget->hide();
+                            }
                         }
                     }
+                    QDLTPluginDecoderInterface *plugindecoderinterface = qobject_cast<QDLTPluginDecoderInterface *>(plugin);
+                    if(plugindecoderinterface)
+                    {
+                        item->plugindecoderinterface = plugindecoderinterface;
+                    }
+                    QDltPluginControlInterface *plugincontrolinterface = qobject_cast<QDltPluginControlInterface *>(plugin);
+                    if(plugincontrolinterface)
+                    {
+                        item->plugincontrolinterface = plugincontrolinterface;
+                    }
+
+                } else {
+
+                    QMessageBox::warning(0, QString("DLT Viewer"),QString(tr("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5")).arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
                 }
-                QDLTPluginDecoderInterface *plugindecoderinterface = qobject_cast<QDLTPluginDecoderInterface *>(plugin);
-                if(plugindecoderinterface)
-                {
-                    item->plugindecoderinterface = plugindecoderinterface;
-                }
-                QDltPluginControlInterface *plugincontrolinterface = qobject_cast<QDltPluginControlInterface *>(plugin);
-                if(plugincontrolinterface)
-                {
-                    item->plugincontrolinterface = plugincontrolinterface;
-                }
+
+
             }
         }
     }
@@ -3494,6 +3504,8 @@ void MainWindow::on_actionPlugin_Edit_triggered() {
         /* show plugin dialog */
         PluginDialog dlg;
         dlg.setName(item->name);
+        dlg.setPluginVersion(item->pluginVersion);
+        dlg.setPluginInterfaceVersion(item->pluginInterfaceVersion);
         dlg.setFilename(item->filename);
         dlg.setMode(item->mode);        
         if(!item->pluginviewerinterface)
