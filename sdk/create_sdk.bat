@@ -1,6 +1,6 @@
-set QT_DIR=C:\Qt\2010.05\qt\bin
-set SOURCE_DIR=C:\_src\git\DLT-viewer
-set BUILD_DIR=C:\_src\git\BuildDltViewer-build-desktop\release
+set QT_DIR=C:\Qt\qt\bin
+set SOURCE_DIR=C:\00_Git\tmp\DLT-viewer
+set BUILD_DIR=C:\00_Git\tmp\BuildDltViewer-build-desktop\release
 set TARGET_DIR=C:\dlt_viewer\releases\dlt_viewer_new
 
 cd %BUILD_DIR%

@@ -17,6 +17,14 @@ void PluginDialog::setName(QString name) {
     ui->lineEditName->setText(name);
 }
 
+void PluginDialog::setPluginVersion(QString version){
+    ui->lineEditPluginVersion->setText(version);
+}
+
+void PluginDialog::setPluginInterfaceVersion(QString version){
+    ui->lineEditPluginInterfaceVersion->setText(version);
+}
+
 void PluginDialog::setMode(int mode) {
     ui->comboBoxMode->setCurrentIndex(mode);
 }

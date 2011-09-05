@@ -5,6 +5,8 @@
 #include "dlt.h"
 #include "qdlt.h"
 
+#define PLUGIN_INTERFACE_VERSION "1.0.0"
+
 //! Standard DLT Viewer Plugin Interface.
 /*!
   This is the standard DLT Viewer Plugin Interface.
@@ -29,6 +31,25 @@ public:
       \return The description of the plugin
     */
     virtual QString description() = 0;
+
+    //! The version number of the plugin.
+    /*!
+      The plugin has to return a version number with formt X.Y.Z.
+      X counts up in case of real heavy changes (API changes or purpose changes)
+      Y counts up when the module is reworked internally, functions are added etc
+      Z counts up whenever a bug is fixed
+      Recommondation: define <plugin name>_PLUGIN_VERSION "X.Y.Z" in your plugin header file.
+      \return The version number of the plugin
+    */
+    virtual QString pluginVersion() = 0;
+
+    //! The used plugin interface version number of the plugin.
+    /*!
+      The plugin has to return a version number of the used plugin interface.
+      The plugin interface provides for this purpose the PLUGIN_INTERFACE_VERSION definition.
+      \return The version number of the used plugin interface - PLUGIN_INTERFACE_VERSION in plugininterface.h
+    */
+    virtual QString pluginInterfaceVersion() = 0;
 
     //! The error message of the last plugin interface call.
     /*!

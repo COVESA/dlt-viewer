@@ -15,6 +15,14 @@ QString NonverbosePlugin::name()
     return QString("Non Verbose Mode Plugin");
 }
 
+QString NonverbosePlugin::pluginVersion(){
+    return NON_VERBOSE_PLUGIN_VERSION;
+}
+
+QString NonverbosePlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
 QString NonverbosePlugin::description()
 {
     return QString();

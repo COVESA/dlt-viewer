@@ -30,6 +30,7 @@ New Features:
    * [GSW-63] Load and Save Filter configurations  
    * [GSW-17] Sorting of Contexts and Applications by id or descriptions.
    * [GSW-64] Select Filter from last used filter configuration.
+   * [GSW-8] Version and interface check of plugins
 
 Improvements:
    * [GSW-21] Enhance search function: Start from current position / start from beginning

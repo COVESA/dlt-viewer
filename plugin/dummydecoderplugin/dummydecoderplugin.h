@@ -4,6 +4,8 @@
 #include <QObject>
 #include "plugininterface.h"
 
+#define DUMMY_DECODER_PLUGIN_VERSION "1.0.0"
+
 class DummyDecoderPlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface
 {
     Q_OBJECT
@@ -16,6 +18,8 @@ public:
 
     /* QDLTPluginInterface interface */
     QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
     QString description();
     QString error();
     bool loadConfig(QString filename);

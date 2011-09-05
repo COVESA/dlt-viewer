@@ -19,6 +19,8 @@ public:
     QString workingDirectory;
 
     void setName(QString name);
+    void setPluginVersion(QString version);
+    void setPluginInterfaceVersion(QString version);
     void setMode(int mode);
     void removeMode(int mode);
     void setType(int type);

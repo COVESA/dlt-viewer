@@ -5,6 +5,8 @@
 #include "plugininterface.h"
 #include "form.h"
 
+#define DUMMY_VIEWER_PLUGIN_VERSION "1.0.0"
+
 class DummyViewerPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface
 {
     Q_OBJECT
@@ -17,6 +19,8 @@ public:
 
     /* QDLTPluginInterface interface */
     QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
     QString description();
     QString error();
     bool loadConfig(QString filename);

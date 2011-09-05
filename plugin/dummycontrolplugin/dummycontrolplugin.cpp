@@ -18,6 +18,14 @@ QString DummyControlPlugin::name()
     return QString("Dummy Control Plugin");
 }
 
+QString DummyControlPlugin::pluginVersion(){
+    return DUMMY_CONTROL_PLUGIN_VERSION;
+}
+
+QString DummyControlPlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
 QString DummyControlPlugin::description()
 {
     return QString();
