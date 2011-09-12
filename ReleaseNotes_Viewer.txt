@@ -1,6 +1,6 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version: 2.2.0
+Version: 2.3.0
 
 
 Introduction
@@ -22,7 +22,7 @@ Alexander.AW.Wenzel@bmw.de
 Changes in this release
 -----------------------
 
-2.3.0 Beta 5:
+2.3.0:
 
 New Features:
 
