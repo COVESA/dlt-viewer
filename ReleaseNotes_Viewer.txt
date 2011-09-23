@@ -27,18 +27,11 @@ Improvements:
 
    * [GSW-84] User hast to confirm to clear the log table
    * [GSW-85] Change button icon of Enable filter to a filter symbol and enable filter by default
+   * [GSW-89] Resize payload column of DLT message view. Double click on table header resizes the column.
 
-
-2.4.0 Beta:
 
 New Features:
    * [GSW-88] Set log level/trace status for multiple contexts at once (multiple selection with "Shift" or "Crtl").
-
-2.4.0 Beta:
-
-Improvements:
-
-   * [GSW-89] Resize payload column of DLT message view. Double click on table header resizes the column.
 
 
 2.3.0:
