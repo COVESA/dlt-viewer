@@ -155,7 +155,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     connect(scrollbutton, SIGNAL(toggled(bool)), this, SLOT(autoscrollToggled(bool)));
     ui->mainToolBar->addSeparator();
 
-    filterbutton = new QPushButton(QIcon(":/toolbar/png/edit-cut.png"),tr(""),this);
+    filterbutton = new QPushButton(QIcon(":/toolbar/png/filter.png"),tr(""),this);
     filterbutton->setFlat(true);
     filterbutton->setCheckable(true);
     filterbutton->setToolTip(tr("Enable Filter"));
@@ -3669,6 +3669,8 @@ void MainWindow::filterAddTable() {
 
         /* reload DLT log file */
         reloadLogFile();
+
+        filterToggled(true);
     }
 }
 
@@ -3756,6 +3758,8 @@ void MainWindow::filterAdd() {
 
         /* reload DLT log file */
         reloadLogFile();
+
+        filterToggled(true);
     }
 }
 
@@ -3836,6 +3840,8 @@ void MainWindow::on_actionFilter_Add_triggered() {
 
         /* reload DLT log file */
         reloadLogFile();
+
+        filterToggled(true);
     }
 }
 
@@ -4105,6 +4111,12 @@ void MainWindow::filterUpdate() {
 }
 
 void MainWindow::filterToggled(bool state) {
+
+    if(state && !filterbutton->isChecked())
+    {
+        filterbutton->setChecked(state);
+    }
+
     /* enable/disable filter */
     qfile.enableFilter(state?Qt::Checked:Qt::Unchecked);
 

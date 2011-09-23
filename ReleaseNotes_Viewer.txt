@@ -26,6 +26,8 @@ Changes in this release
 Improvements:
 
    * [GSW-84] User hast to confirm to clear the log table
+   * [GSW-85] Change button icon of Enable filter to a filter symbol and enable filter by default
+
 
 2.3.0:
 
