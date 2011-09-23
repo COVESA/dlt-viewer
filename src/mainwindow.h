@@ -126,6 +126,7 @@ private slots:
     void tableViewValueChanged(int value);
     void stateChanged(QAbstractSocket::SocketState socketState);
     void closeEvent(QCloseEvent *event);
+    void sectionInTableDoubleClicked(int logicalIndex);
 
 public slots:
     //void on_pushButtonSearchPrevious_clicked();
