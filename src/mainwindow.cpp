@@ -87,6 +87,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     tableModel->size = 0;
     tableModel->qfile = &qfile;
     ui->tableView->setModel(tableModel);
+
     tableModel->mutex = &mutex;
     tableModel->project = &project;
     connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
@@ -228,6 +229,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     ui->tableView->setColumnWidth(9,40);
     ui->tableView->setColumnWidth(10,40);
     ui->tableView->setColumnWidth(11,400);
+    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
     /* Apply loaded settings */
     applySettings();
@@ -4182,4 +4184,8 @@ void MainWindow::dropEvent(QDropEvent *event)
         QMessageBox::warning(this, QString("Drag&Drop"),
                              QString("No DLT log file or project file dropped!\n")+filename);
     }
+}
+
+void MainWindow::sectionInTableDoubleClicked(int logicalIndex){
+        ui->tableView->resizeColumnToContents(logicalIndex);
 }

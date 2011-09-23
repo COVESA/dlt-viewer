@@ -22,6 +22,13 @@ Alexander.AW.Wenzel@bmw.de
 Changes in this release
 -----------------------
 
+2.4.0 Beta:
+
+Improvements:
+
+   * [GSW-89] Resize payload column of DLT message view. Double click on table header resizes the column.
+
+
 2.3.0:
 
 New Features:
@@ -33,6 +40,7 @@ New Features:
    * [GSW-8] Version and interface check of plugins
 
 Improvements:
+
    * [GSW-21] Enhance search function: Start from current position / start from beginning
    * [GSW-14] Doxygen based documentation of DLT Viewer
    * [GSW-65] Using RGB colors via color picker for filter marker.
