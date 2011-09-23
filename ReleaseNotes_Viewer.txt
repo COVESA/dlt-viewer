@@ -24,7 +24,7 @@ Changes in this release
 
 2.4.0 Beta:
 
-Improvements:
+New Features:
    * [GSW-88] Set log level/trace status for multiple contexts at once (multiple selection with "Shift" or "Crtl").
 
 2.3.0:
