@@ -12,6 +12,7 @@
         <file>png/go-previous.png</file>
         <file>png/go-next.png</file>
         <file>png/edit-cut.png</file>
+        <file>png/filter.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>

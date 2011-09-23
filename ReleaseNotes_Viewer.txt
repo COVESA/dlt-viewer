@@ -21,6 +21,11 @@ Alexander.AW.Wenzel@bmw.de
 
 Changes in this release
 -----------------------
+2.4.0 Beta:
+
+Improvements:
+   * [GSW-85] Change button icon of Enable filter to a filter symbol and enable filter by default
+
 
 2.3.0:
 
