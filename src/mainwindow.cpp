@@ -793,21 +793,37 @@ void MainWindow::on_actionSaveAs_triggered()
 
 void MainWindow::on_actionClear_triggered()
 {
-    /* close existing file */
-    if(outputfile.isOpen())
-        outputfile.close();
 
-    /* reopen file and truncate */
-    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-    {
-        reloadLogFile();
-        ui->textBrowser->setText("");
-    }
-    else
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("Cannot clear log file \"%1\"\n%2")
-                             .arg(outputfile.fileName())
-                             .arg(outputfile.errorString()));
+    int ret = QMessageBox::question(this, tr("Please confirm"),
+                                   tr("Are you sure to clear the table (the dlt file will be cleared too)?"),
+                                   QMessageBox::Cancel | QMessageBox::Ok);
+
+     switch (ret) {
+               case QMessageBox::Cancel:
+                   // Cancel was clicked
+                   break;
+               case QMessageBox::Ok:
+
+                   /* close existing file */
+                   if(outputfile.isOpen())
+                       outputfile.close();
+
+                   /* reopen file and truncate */
+                   if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+                   {
+                       reloadLogFile();
+                       ui->textBrowser->setText("");
+                   }
+                   else
+                       QMessageBox::critical(0, QString("DLT Viewer"),
+                                            QString("Cannot clear log file \"%1\"\n%2")
+                                            .arg(outputfile.fileName())
+                                            .arg(outputfile.errorString()));
+                   break;
+               default:
+                   // should never be reached
+                   break;
+      }
 }
 
 void MainWindow::reloadLogFile()

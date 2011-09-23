@@ -21,6 +21,11 @@ Alexander.AW.Wenzel@bmw.de
 
 Changes in this release
 -----------------------
+2.4.0 Beta:
+
+Improvements:
+
+   * [GSW-84] User hast to confirm to clear the log table
 
 2.3.0:
 
