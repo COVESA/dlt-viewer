@@ -18,6 +18,7 @@
 #include "ecudialog.h"
 #include "applicationdialog.h"
 #include "contextdialog.h"
+#include "multiplecontextdialog.h"
 #include "filterdialog.h"
 #include "plugindialog.h"
 #include "settingsdialog.h"
@@ -1337,6 +1338,52 @@ void MainWindow::on_actionContext_Edit_triggered()
     }
 }
 
+void MainWindow::on_actionContext_MultipleContextsEdit_triggered()
+{
+    /* find selected context in configuration */
+    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
+    if((list.count() > 1))
+    {
+        ContextItem* conitem = (ContextItem*) list.at(0);
+
+        /* show Context configuration dialog */
+        MultipleContextDialog dlg(conitem->loglevel,conitem->tracestatus);
+        if(dlg.exec())
+        {
+            for(int i=0; i<list.count(); i++){
+                if(list.at(i)->type() == context_type){
+
+                     conitem = (ContextItem*) list.at(i);
+
+                     conitem->loglevel = dlg.loglevel();
+                     conitem->tracestatus = dlg.tracestatus();
+
+                     /* update context item */
+                     conitem->update();
+
+                     /* send new log level to ECU, if connected and if selected in dlg */
+                     if(dlg.update())
+                     {
+                         ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
+                         EcuItem* ecuitem = (EcuItem*) appitem->parent();
+
+                         if(ecuitem->connected)
+                         {
+                             SetLogLevel(ecuitem,appitem->id,conitem->id,conitem->loglevel);
+                             SetTraceStatus(ecuitem,appitem->id,conitem->id,conitem->tracestatus);
+
+                             /* update status */
+                             conitem->status = ContextItem::valid;
+                             conitem->update();
+                         }
+                     }
+                }
+            }
+
+        }
+    }
+}
+
 void MainWindow::on_actionContext_Delete_triggered()
 {
     /* find selected context in configuration */
@@ -1377,7 +1424,21 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
     QAction *action;
     QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
 
-    if((list.count() == 1) && (list.at(0)->type() == ecu_type))
+    if(list.count() > 1 && (list.at(0)->type() == context_type))
+    {
+        /* Multiple contexts are selected */
+
+        action = new QAction("&Multiple Contexts Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
+        menu.addAction(action);
+
+        menu.addSeparator();
+
+        action = new QAction("DLT &Set Log Levels...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionSet_Log_Level_triggered()));
+        menu.addAction(action);
+    }
+    else if((list.count() == 1) && (list.at(0)->type() == ecu_type))
     {
         /* ECU is selected */
 
@@ -2376,6 +2437,25 @@ void MainWindow::on_actionSet_Log_Level_triggered()
         conitem->status = ContextItem::valid;
         conitem->update();
 
+    }else if( (list.count() > 1) && (list.at(0)->type() == context_type) ){
+        ContextItem* conitem;
+
+        for(int i=0; i<list.count(); i++){
+            if(list.at(i)->type() == context_type){
+                conitem = (ContextItem*) list.at(i);
+
+                ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
+                EcuItem* ecuitem = (EcuItem*) appitem->parent();
+
+                /* send set log level and trace status request */
+                SetLogLevel(ecuitem,appitem->id,conitem->id,conitem->loglevel);
+                SetTraceStatus(ecuitem,appitem->id,conitem->id,conitem->tracestatus);
+
+                /* update status */
+                conitem->status = ContextItem::valid;
+                conitem->update();
+            }
+        }
     }
     else
         QMessageBox::warning(0, QString("DLT Viewer"),

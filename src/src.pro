@@ -41,7 +41,8 @@ SOURCES += main.cpp \
     plugindialog.cpp \
     settingsdialog.cpp \
     injectiondialog.cpp \
-    searchdialog.cpp
+    searchdialog.cpp \
+    multiplecontextdialog.cpp
 
 HEADERS += mainwindow.h \
     treemodel.h \
@@ -59,7 +60,8 @@ HEADERS += mainwindow.h \
     dlt_user_shared.h \
     qdlt.h \
     plugininterface.h \
-    version.h
+    version.h \
+    multiplecontextdialog.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \
@@ -69,7 +71,8 @@ FORMS += mainwindow.ui \
     plugindialog.ui \
     settingsdialog.ui \
     injectiondialog.ui \
-    searchdialog.ui
+    searchdialog.ui \
+    multiplecontextdialog.ui
 
 OTHER_FILES += project.dlp \
     png/edit-clear.png \

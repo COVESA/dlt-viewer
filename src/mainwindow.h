@@ -91,6 +91,7 @@ private slots:
     void on_pluginWidget_customContextMenuRequested(QPoint pos);
     void on_actionContext_Delete_triggered();
     void on_actionContext_Edit_triggered();
+    void on_actionContext_MultipleContextsEdit_triggered();
     void on_actionContext_Add_triggered();
     void on_actionApplication_Delete_triggered();
     void on_actionApplication_Edit_triggered();
