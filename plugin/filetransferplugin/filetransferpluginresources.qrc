@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>list-add.png</file>
+        <file>list-remove.png</file>
+        <file>document-save-as.png</file>
+        <file>go-first.png</file>
+        <file>go-last.png</file>
+    </qresource>
+</RCC>
