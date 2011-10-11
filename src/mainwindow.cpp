@@ -232,6 +232,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     ui->tableView->setColumnWidth(11,400);
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
+    //ui->tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+    //ui->tableView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+
     /* Apply loaded settings */
     applySettings();
 
@@ -887,6 +890,12 @@ void MainWindow::reloadLogFile()
 
 void MainWindow::applySettings()
 {
+    QFont tableViewFont = ui->tableView->font();
+    tableViewFont.setPointSize(settings.fontSize);
+    ui->tableView->setFont(tableViewFont);
+    // Rescale the height of a row to choosen font size + 8 pixels
+    ui->tableView->verticalHeader()->setDefaultSectionSize(settings.fontSize+8);
+
     settings.showIndex?ui->tableView->showColumn(0):ui->tableView->hideColumn(0);
     settings.showTime?ui->tableView->showColumn(1):ui->tableView->hideColumn(1);
     settings.showTimestamp?ui->tableView->showColumn(2):ui->tableView->hideColumn(2);
@@ -2082,6 +2091,8 @@ void MainWindow::read(EcuItem* ecuitem)
             }
             tableModel->size = qfile.sizeFilter();
             tableModel->modelChanged();
+            //Line below would resize the payload column automatically so that the whole content is readable
+            //ui->tableView->resizeColumnToContents(11); //Column 11 is the payload column
             if(settings.autoScroll) {
                 ui->tableView->scrollToBottom();
             }

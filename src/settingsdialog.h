@@ -22,6 +22,7 @@ public:
     int autoConnect;
     int autoScroll;
 
+    int fontSize;
     int showIndex;
     int showTime;
     int showTimestamp;

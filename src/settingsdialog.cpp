@@ -42,12 +42,14 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
 
     /* table */
+    ui->spinBoxFontSize->setValue(fontSize);
     ui->checkBoxIndex->setCheckState(showIndex?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTime->setCheckState(showTime?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTimestamp->setCheckState(showTimestamp?Qt::Checked:Qt::Unchecked);
     ui->checkBoxCount->setCheckState(showCount?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxEcuid->setCheckState(showEcuId?Qt::Checked:Qt::Unchecked);
+
     ui->groupBoxAppId->setChecked(showApId?Qt::Checked:Qt::Unchecked);
     if(ui->groupBoxAppId->isChecked()){
         ui->radioButtonAppId->setEnabled(true);
@@ -118,6 +120,7 @@ void SettingsDialog::readDlg()
     autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
 
     /* table */
+    fontSize = ui->spinBoxFontSize->value();
     showIndex =     ( ui->checkBoxIndex->checkState() == Qt::Checked);
     showTime =      ( ui->checkBoxTime->checkState() == Qt::Checked);
     showTimestamp = ( ui->checkBoxTimestamp->checkState() == Qt::Checked);
@@ -155,6 +158,7 @@ void SettingsDialog::writeSettings()
     settings.setValue("startup/autoScroll",autoScroll);
 
     /* table */
+    settings.setValue("startup/fontSize",fontSize);
     settings.setValue("startup/showIndex",showIndex);
     settings.setValue("startup/showTime",showTime);
     settings.setValue("startup/showTimestamp",showTimestamp);
@@ -190,6 +194,7 @@ void SettingsDialog::readSettings()
     autoScroll = settings.value("startup/autoScroll",1).toInt();
 
     /* table */
+    fontSize = settings.value("startup/fontSize",8).toInt();
     showIndex = settings.value("startup/showIndex",1).toInt();
     showTime = settings.value("startup/showTime",1).toInt();
     showTimestamp = settings.value("startup/showTimestamp",1).toInt();
