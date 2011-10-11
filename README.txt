@@ -26,7 +26,7 @@ Compiling in Linux:
 -------------------
 - Install package Qt4 including developer tools
 - Optional: Install Qt Creator
-- Download qextserialport V1.1 from http://qextserialport.sourceforge.net/
+- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/
 - Save file qextserialport/qextserialport.pro
 - Extract qextserialport package into DLT-viewer main directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
