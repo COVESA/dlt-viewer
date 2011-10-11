@@ -61,6 +61,8 @@ Create Linux SDK Documentation:
 -------------------------------
 - Install doxygen
 - Change into project directory
-- doxygen sdk/doxygen.cfg
+- doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
+- (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
+- (Optional) doxygen sdk/doxygen_dlt_viewer_qdlt.cfg
 - You will find the documentation in the doc directory
 
