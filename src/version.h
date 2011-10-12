@@ -3,5 +3,5 @@
 
 #define PACKAGE_VERSION_STATE "Beta"
 #define PACKAGE_VERSION "2.4.0"
-
+#define PACKAGE_REVISION ""
 #endif

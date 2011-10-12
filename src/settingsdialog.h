@@ -19,8 +19,10 @@ public:
     QString defaultProjectFileName;
     int pluginsPath;
     QString pluginsPathName;
+
     int autoConnect;
     int autoScroll;
+    int writeControl;
 
     int fontSize;
     int showIndex;
@@ -39,8 +41,6 @@ public:
     int showPayload;
 
     QString workingDirectory;
-
-    int writeControl;
 
     void writeDlg();
     void readDlg();

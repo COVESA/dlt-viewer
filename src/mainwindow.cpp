@@ -1,9 +1,9 @@
-#include <qtreeview.h>
-#include <qmessagebox.h>
-#include <qfiledialog.h>
-#include <qprogressdialog.h>
-#include <qtemporaryfile.h>
-#include <qpluginloader.h>
+#include <QTreeView>
+#include <QMessageBox>
+#include <QFileDialog>
+#include <QProgressDialog>
+#include <QTemporaryFile>
+#include <QPluginLoader>
 #include <QSettings>
 #include <QPushButton>
 #include <QKeyEvent>
@@ -24,9 +24,7 @@
 #include "settingsdialog.h"
 #include "injectiondialog.h"
 
-
 #include "version.h"
-#include "svnversion.h"
 
 #define DLT_VIEWER_LIST_BUFFER_SIZE 100024
 
@@ -102,6 +100,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     project.ecu = ui->configWidget;
     project.pfilter = ui->pfilterWidget;
     project.plugin = ui->pluginWidget;
+    project.settings = &settings;
     ui->configWidget->setHeaderHidden(false);
     ui->pfilterWidget->setHeaderHidden(false);
     ui->pluginWidget->setHeaderHidden(false);
@@ -238,12 +237,16 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     /* Apply loaded settings */
     applySettings();
 
-    /* load default project file */
+    /* Load default project file */
     this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
     if(settings.defaultProjectFile)
     {
         if(project.Load(settings.defaultProjectFileName))
         {
+            /* Applies project settings and save it to registry */
+            applySettings();
+            settings.writeSettings();
+
             this->setWindowTitle(QString("DLT Viewer - "+settings.defaultProjectFileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
         }
         else
@@ -330,9 +333,9 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
 
     /* show settings */
     ui->dockWidgetView->hide();
-    QSettings settings("BMW","DLT Viewer");
-    restoreGeometry(settings.value("geometry").toByteArray());
-    restoreState(settings.value("windowState").toByteArray());
+
+    restoreGeometry(bmwsettings->value("geometry").toByteArray());
+    restoreState(bmwsettings->value("windowState").toByteArray());
 }
 
 MainWindow::~MainWindow()
@@ -994,9 +997,13 @@ void MainWindow::on_actionProjectOpen_triggered()
 
 void MainWindow::projectfileOpen(QString fileName)
 {
-    /* open existing project */
+    /* Open existing project */
     if(project.Load(fileName))
     {
+        /* Applies project settings and save it to registry */
+        applySettings();
+        settings.writeSettings();
+
         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
         /* Load the plugins description files after loading project */
@@ -3061,7 +3068,7 @@ void MainWindow::on_action_Info_triggered()
 {
     QMessageBox::information(0, QString("DLT Viewer"),
                              QString("Package Version : %1 %2\n").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE)+
-                             QString("Package Revision: %1\n\n").arg(SVN_VERSION)+
+                             QString("Package Revision: %1\n\n").arg(PACKAGE_REVISION)+
                              QString("Build Date: %1\n").arg(__DATE__)+
                              QString("Build Time: %1\n\n").arg(__TIME__)+
 #if (BYTE_ORDER==BIG_ENDIAN)
@@ -3226,10 +3233,14 @@ void MainWindow::openRecentProject()
     {
         projectName = action->data().toString();
 
-        /* open existing project */
+        /* Open existing project */
         if(!projectName.isEmpty() && project.Load(projectName))
         {
-            /* change current working directory */
+            /* Applies project settings and save it to registry */
+            applySettings();
+            settings.writeSettings();
+
+            /* Change current working directory */
             workingDirectory = QFileInfo(projectName).absolutePath();
 
             this->setWindowTitle(QString("DLT Viewer - "+projectName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
