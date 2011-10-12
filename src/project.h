@@ -7,6 +7,7 @@
 #include <QTcpSocket>
 #include <QDockWidget>
 #include <qextserialport.h>
+#include "settingsdialog.h"
 
 extern "C"
 {
@@ -203,6 +204,7 @@ public:
     QTreeWidget *ecu;
     QTreeWidget *pfilter;
     QTreeWidget *plugin;
+    SettingsDialog *settings;
 
 private:
 

@@ -373,6 +373,7 @@ void PluginItem::update()
     setData(0,0,QString("%1 (%2|%3 %4)").arg(name).arg(types.join("")).arg(list.size()).arg(filename));
 }
 
+
 Project::Project()
 {
 
@@ -412,6 +413,82 @@ bool Project::Load(QString filename)
 
           if(xml.isStartElement())
           {
+              /* Project settings */
+              if(xml.name() == QString("autoConnect"))
+              {
+                  settings->autoConnect = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("autoScroll"))
+              {
+                  settings->autoScroll = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("writeControl"))
+              {
+                  settings->writeControl = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("fontSize"))
+              {
+                  settings->fontSize = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showIndex"))
+              {
+                  settings->showIndex = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showTime"))
+              {
+                  settings->showTime = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showTimestamp"))
+              {
+                  settings->showTimestamp = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showCount"))
+              {
+                  settings->showCount = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showEcuId"))
+              {
+                  settings->showEcuId = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showApId"))
+              {
+                  settings->showApId = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showApIdDesc"))
+              {
+                  settings->showApIdDesc = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showCtId"))
+              {
+                  settings->showCtId = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showCtIdDesc"))
+              {
+                  settings->showCtIdDesc = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showType"))
+              {
+                  settings->showType = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showSubtype"))
+              {
+                  settings->showSubtype = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showMode"))
+              {
+                  settings->showMode = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showNoar"))
+              {
+                  settings->showNoar = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showPayload"))
+              {
+                  settings->showPayload = xml.readElementText().toInt();
+              }
+
+
+              /* Connection, plugin and filter */
               if(xml.name() == QString("ecu"))
               {
                   ecuitem = new EcuItem();
@@ -758,6 +835,34 @@ bool Project::Save(QString filename)
 
     xml.writeStartDocument();
     xml.writeStartElement("dltproject");
+
+    /* Write project settings */
+    xml.writeStartElement("settings");
+        xml.writeStartElement("table");
+            xml.writeTextElement("fontSize",QString("%1").arg(settings->fontSize));
+            xml.writeTextElement("showIndex",QString("%1").arg(settings->showIndex));
+            xml.writeTextElement("showTime",QString("%1").arg(settings->showTime));
+            xml.writeTextElement("showTimestamp",QString("%1").arg(settings->showTimestamp));
+            xml.writeTextElement("showCount",QString("%1").arg(settings->showCount));
+            xml.writeTextElement("showEcuId",QString("%1").arg(settings->showEcuId));
+            xml.writeTextElement("showApId",QString("%1").arg(settings->showApId));
+            xml.writeTextElement("showApIdDesc",QString("%1").arg(settings->showApIdDesc));
+            xml.writeTextElement("showCtId",QString("%1").arg(settings->showCtId));
+            xml.writeTextElement("showCtIdDesc",QString("%1").arg(settings->showCtIdDesc));
+            xml.writeTextElement("showType",QString("%1").arg(settings->showType));
+            xml.writeTextElement("showSubtype",QString("%1").arg(settings->showSubtype));
+            xml.writeTextElement("showMode",QString("%1").arg(settings->showMode));
+            xml.writeTextElement("showNoar",QString("%1").arg(settings->showNoar));
+            xml.writeTextElement("showPayload",QString("%1").arg(settings->showPayload));
+        xml.writeEndElement(); // table
+
+        xml.writeStartElement("other");
+            xml.writeTextElement("autoConnect",QString("%1").arg(settings->autoConnect));
+            xml.writeTextElement("autoScroll",QString("%1").arg(settings->autoScroll));
+            xml.writeTextElement("writeControl",QString("%1").arg(settings->writeControl));
+        xml.writeEndElement(); // other
+    xml.writeEndElement(); // settings
+
 
     /* Write Configuration */
     for(int num = 0; num < ecu->topLevelItemCount (); num++)

@@ -46,7 +46,6 @@ SOURCES += main.cpp \
 
 HEADERS += mainwindow.h \
     treemodel.h \
-    svnversion.h \
     project.h \
     ecudialog.h \
     applicationdialog.h \

@@ -1,8 +1,22 @@
+DLT Viewer - Automotive Diagnostic Log and Trace Viewer
+
+The DLT Viewer can send control messages to the daemon, e.g. to set 
+individual log levels of applications and contexts or get the list of 
+applications and contexts registered in the DLT daemon.
+
+
 License
 -------
 Full information on the license for this software
 is available in the "LICENSE.txt" file. 
 The full LGPL license is in "LGPL.txt."
+
+
+Contact
+-------
+Alexander Wenzel (Alexander.AW.Wenzel@bmw.de)
+Christian Muck (christian.muck@bmw.de)
+
 
 Dynamically linked open source software
 -----------------------------------
@@ -10,6 +24,7 @@ Dynamically linked open source software
 * GCC (GPL)
 * Mingw (GPL + BSD Variante + Public Domain)
 * QextSerialPort (New BSD licence)
+
 
 Compiling in Windows:
 ---------------------
@@ -21,6 +36,7 @@ Compiling in Windows:
 - Overwrite file qextserialport/qextserialport.pro with saved file before
 - Open project BuildDltViewer.pro in Qt Creator
 - Build Release in Qt Creator
+
 
 Compiling in Linux:
 -------------------
@@ -45,6 +61,7 @@ Create Windows SDK:
 - Modify pathes in sdk\create_sdk.bat to your needs
 - Execute sdk\create_sdk.bat batch file
 
+
 Create Windows SDK Documentation:
 -------------------------------
 - Install doxygen
@@ -52,10 +69,12 @@ Create Windows SDK Documentation:
 - doxygen sdk/doxygen.cfg
 - You will find the documentation in the doc directory
 
+
 Create Linux SDK:
 -----------------
 - Compile DLT Viewer as described in "Compiling in Linux"
 - Call "sudo make install" to install dlt_viewer including libraries and headers for SDK
+
 
 Create Linux SDK Documentation:
 -------------------------------
