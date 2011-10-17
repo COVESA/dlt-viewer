@@ -5,14 +5,16 @@
 #include <QTreeWidgetItem>
 #include <QFile>
 #include <QDir>
+#include <QList>
 #include "globals.h"
+#include "qdlt.h"
 
 class File : public QTreeWidgetItem
 {
 
 public:
      File();
-     File(QTreeWidgetItem *parent=0);
+     File(QDltFile *qfile,QTreeWidgetItem *parent=0);
      ~File();
 
      QString getFilename();
@@ -24,7 +26,6 @@ public:
      unsigned int getReceivedPackages();
      unsigned int getSizeInBytes();
      unsigned int getBufferSize();
-     int getWrittenBytes();
 
      void setFilename(QString f);
      void setFileCreationDate(QString f);
@@ -35,20 +36,19 @@ public:
      void setBuffersize(QString b);
      void setComplete();
 
+     void freeFile();
+
      void errorHappens(QString filename, QString errorCode1, QString errorCode2, QString time);
 
      bool isComplete();
-
-     void appendData(QString packageNumber,int size, const QByteArray& ba);
+     void setQFileIndexForPackage(QString packageNumber, int index);
 
      bool saveFile(QString newFile);
 
-     QByteArray getData();
+     QByteArray* getFileData();
 
-     QString saveAsTmpFile();
-     bool removeTmpFile(QString tmp);
 private:
-    QString filename;
+    QString filenameWithPath;
     QString fileCreationDate;
     unsigned int fileSerialNumber;
     unsigned int packages;
@@ -56,11 +56,9 @@ private:
     unsigned int sizeInBytes;
     unsigned int buffer;
 
-
-    QByteArray *data;
-    QByteArray *fullData;
-    int *dataSize;
-    int writtenBytes;
+    QList<int> *dltFileIndex;
+    QDltFile *dltFile;
+    QByteArray *fileData;
 };
 
 #endif // FILE_H

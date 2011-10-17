@@ -15,23 +15,28 @@ class Form : public QWidget
 public:
     explicit Form(QWidget *parent = 0);
     ~Form();
-    void makeConnections();
     QTreeWidget* getTreeWidget();
 
-public slots:
-    void expandClicked();
-    void collapseClicked();
+private:
+    Ui::Form *ui;
 
+    int selectedFiles;
+
+public slots:
     void selectAllClicked();
     void deselectAllClicked();
+    void clearAllClicked();
 
     void saveClicked();
 
     void itemChanged(QTreeWidgetItem* item,int);
     void itemDoubleClicked ( QTreeWidgetItem * item, int column );
+    void sectionInTableDoubleClicked(int logicalIndex);
 
-private:
-    Ui::Form *ui;
+private slots:
+    void on_treeWidget_customContextMenuRequested(QPoint pos);
+    void on_actionDelete_triggered();
+    void on_actionSave_triggered();
 };
 
 #endif // FORM_H

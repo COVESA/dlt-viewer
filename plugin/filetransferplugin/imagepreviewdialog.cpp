@@ -1,13 +1,13 @@
 #include "imagepreviewdialog.h"
 #include "ui_imagepreviewdialog.h"
 
-ImagePreviewDialog::ImagePreviewDialog(QString file, QByteArray imageData, QWidget *parent) :
+ImagePreviewDialog::ImagePreviewDialog(QString file, QByteArray *imageData, QWidget *parent) :
         QDialog(parent),
         ui(new Ui::ImagePreviewDialog)
 {
     ui->setupUi(this);
 
-    if(pixmap.loadFromData(imageData))
+    if(pixmap.loadFromData(*imageData))
     {
         scene = new QGraphicsScene(ui->graphicsView);
         scene->setBackgroundBrush(Qt::lightGray);

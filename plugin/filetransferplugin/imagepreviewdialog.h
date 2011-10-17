@@ -19,7 +19,7 @@ class ImagePreviewDialog : public QDialog
     Q_OBJECT
 
 public:
-    ImagePreviewDialog(QString file,  QByteArray imageData, QWidget *parent = 0);
+    ImagePreviewDialog(QString file,  QByteArray *imageData, QWidget *parent = 0);
     ~ImagePreviewDialog();
     bool isFileSupported();
 

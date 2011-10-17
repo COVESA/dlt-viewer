@@ -13,7 +13,7 @@ class TextviewDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit TextviewDialog(QString file,  QByteArray data, QWidget *parent = 0);
+    explicit TextviewDialog(QString file,  QByteArray *data, QWidget *parent = 0);
     ~TextviewDialog();
 public slots:
     void print();

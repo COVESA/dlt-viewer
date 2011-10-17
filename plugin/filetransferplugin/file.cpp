@@ -1,6 +1,7 @@
 #include "file.h"
 #include <iostream>
 #include <fstream>
+#include <QDebug>
 using namespace std;
 
 
@@ -9,16 +10,17 @@ File::File():QTreeWidgetItem()
 
 }
 
-File::File(QTreeWidgetItem *parent):QTreeWidgetItem(parent)
+File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
 {
+    dltFile = qfile;
+
     receivedPackages = 0;
-    writtenBytes=0;
     //fileSerialNumber = -1;
     //packages = -1;
     //receivedPackages = -1;
     //sizeInBytes = -1;
     //buffer = -1;
-    this->setText(COLUMN_STATUS, "In progress");
+    this->setText(COLUMN_STATUS, "Incomplete");
     this->setTextColor(COLUMN_STATUS,Qt::white);
     this->setBackgroundColor(COLUMN_STATUS,Qt::red);
     this->setText(COLUMN_RECPACKAGES, "0");
@@ -31,7 +33,7 @@ File::~File()
 }
 
 QString File::getFilename(){
-    QStringList pathList = filename.split("/");
+    QStringList pathList = filenameWithPath.split("/");
     return pathList.last();
 }
 QString File::getFileCreationDate(){
@@ -39,7 +41,7 @@ QString File::getFileCreationDate(){
 }
 
 QString File::getFilenameOnTarget(){
-    return filename;
+    return filenameWithPath;
 }
 QString File::getFileSerialNumber(){
     QString str;
@@ -63,8 +65,8 @@ unsigned int File::getBufferSize(){
 
 
 void File::setFilename(QString f){
-    filename = f;
-    this->setText(COLUMN_FILENAME, filename);
+    filenameWithPath = f;
+    this->setText(COLUMN_FILENAME, filenameWithPath);
 }
 
 void File::setFileCreationDate(QString f){
@@ -80,9 +82,7 @@ void File::setFileSerialNumber(QString s){
 
 void File::setPackages(QString p){
     packages = p.toInt();
-    data = new QByteArray[packages];
-    fullData = new QByteArray();
-    dataSize = new int[packages];
+    dltFileIndex = new QList<int>[packages];
     this->setText(COLUMN_PACKAGES, p);
 }
 void File::increaseReceivedPackages(){
@@ -119,7 +119,7 @@ void File::errorHappens(QString filename, QString errorCode1, QString errorCode2
     buffer = 5;
 
     QString str = errorCode1+", "+errorCode2;
-    this->setText(COLUMN_APID,str);
+    this->setText(COLUMN_FILEID,str);
 
     this->setText(COLUMN_FILEDATE,time);
     this->setText(COLUMN_STATUS, "ERROR");
@@ -132,62 +132,36 @@ bool File::isComplete(){
     return receivedPackages==packages;
 }
 
-void File::appendData(QString packageNumber, int size, const QByteArray& ba)
-{
-    //Prints every incoming byte
-    /*const char *data22 = ba.data();
-     while (*data22) {
-         cout << "[" << *data22 << "]" << endl;
-         ++data22;
-     }*/
-
+void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    data[i-1] = ba;
-    dataSize[i-1] = size;
+    dltFileIndex->insert(i-1,index);
     increaseReceivedPackages();
-    //Prints every stored byte
-    /*const char *data23 = data[i-1].data();
-    while (*data23) {
-         cout << "[" << *data23 << "]" << endl;
-         ++data23;
-     }*/
-
 }
+
 
 bool File::saveFile(QString newFile){
 
     //QString newFile = directory.append("/").append(getFilename());
+
     if(QFile::exists(newFile)){
         if(!QFile::remove(newFile)){
-            std::cout << "couldnt remove file" <<std::endl;
             return false;
         }
     }
+
+    QByteArray *completeFileData = getFileData();
 
     QFile file(newFile);
-    if (!file.open(QIODevice::WriteOnly))
+    if (!file.open(QIODevice::WriteOnly)){
         return false;
-    QDataStream stream( &file );
-    writtenBytes=0;
-    for(unsigned int i=0; i<packages;i++){
-        int actuallyWrittenBytes = stream.writeRawData(data[i],data[i].size());
-        writtenBytes+=actuallyWrittenBytes;
-
-        if(actuallyWrittenBytes != dataSize[i]){
-            return false;
-        }
-
-        //std::cout << "writtenBytes(" << i <<") : " << writtenBytes << std::endl;
-        //stream<<data[i];
-        //std::cout << data[i].data() << std::endl;
-        /*char *data2 = data[i].data();
-        while (*data2) {
-            cout << "[" << *data2 << "]" << endl;
-            ++data2;
-        }*/
     }
 
+    QDataStream stream( &file );
+    int writtenBytes = stream.writeRawData(*completeFileData,completeFileData->size());
+
     file.close();
+
+    freeFile();
 
     if((unsigned int)writtenBytes != sizeInBytes){
         return false;
@@ -196,48 +170,24 @@ bool File::saveFile(QString newFile){
     return true;
 }
 
-QString File::saveAsTmpFile()
-{
-    QString tmpFileName = QDir::tempPath();
-    tmpFileName += "/";
-    tmpFileName += getFilename();
-
-    if(saveFile(tmpFileName)){
-        return tmpFileName;
-    }
-    else
-    {
-        return QString();
-    }
-}
-bool File::removeTmpFile(QString tmp)
-{
-    if(QFile::exists(tmp))
-    {
-        if(!QFile::remove(tmp))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
-    else
-    {
-        return false;
-    }
-
-}
-int File::getWrittenBytes()
-{
-    return writtenBytes;
+void File::freeFile(){
+    delete fileData;
 }
 
-QByteArray File::getData(){
-   QByteArray tmp;
+QByteArray* File::getFileData(){
+   QDltMsg msg;
+   QByteArray msgBuffer;
+   QDltArgument data;
+
+   fileData = new QByteArray();
+
     for(unsigned int i=0; i<packages;i++){
-       tmp.append(data[i]);
+       int qfileIdx = dltFileIndex->value(i);
+       msgBuffer =  dltFile->getMsg(qfileIdx);
+       msg.setMsg(msgBuffer);
+       msg.getArgument(PROTOCOL_FLDA_DATA,data);
+       fileData->append(data.getData());
     }
-    return tmp;
+
+    return fileData;
 }

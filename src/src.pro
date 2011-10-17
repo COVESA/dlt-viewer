@@ -73,17 +73,15 @@ FORMS += mainwindow.ui \
     searchdialog.ui \
     multiplecontextdialog.ui
 
-OTHER_FILES += project.dlp \
-    png/edit-clear.png \
+OTHER_FILES += png/edit-clear.png \
     png/document-save-as.png \
     png/document-open.png \
     png/document-new.png \
     png/preferences-desktop.png \
     png/network-transmit-receive.png \
     png/network-offline.png \
-    ../TODO \
-    ../../../doc/ReleaseNotes_Viewer.txt \
     png/edit-cut.png
 
-RESOURCES += \
-    resource.qrc
+RESOURCES += resource.qrc
+
+RC_FILE = icon/dlt_viewer.rc

@@ -2,8 +2,6 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
-# QT += network
-
 target.path = /usr/share/dlt-viewer/plugins
 INSTALLS += target
 
@@ -28,8 +26,7 @@ INCLUDEPATH += ../../src \
 
 # Project files
 HEADERS += filetransferplugin.h \
-			form.h \
-    filemodel.h \
+    form.h \
     file.h \
     imagepreviewdialog.h \
     textviewdialog.h \
@@ -37,20 +34,10 @@ HEADERS += filetransferplugin.h \
 
 SOURCES += filetransferplugin.cpp \
     form.cpp \
-    filemodel.cpp \
     file.cpp \
     imagepreviewdialog.cpp \
     textviewdialog.cpp
 
-FORMS += \
-    form.ui \
+FORMS += form.ui \
     imagepreviewdialog.ui \
     textviewdialog.ui
-
-OTHER_FILES += list-add.png\
-                list-remove.png\
-            edit-redo.png\
-            edit-undo.png\
-        document-save-as.png
-RESOURCES += \
-    filetransferpluginresources.qrc

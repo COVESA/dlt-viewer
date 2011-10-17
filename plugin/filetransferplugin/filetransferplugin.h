@@ -5,7 +5,7 @@
 #include "plugininterface.h"
 #include "form.h"
 #include "globals.h"
-#include "filemodel.h"
+
 
 #define FILETRANSFER_PLUGIN_VERSION "1.0.0"
 
@@ -34,19 +34,19 @@ public:
     bool initFile(QDltFile *file);
     void updateFile();
     void selectedIdxMsg(int index);
-
-    /* internal variables */
-    Form *form;
-
     void show(bool value);
 
-
 private:
-
+    Form *form;
     QDltFile *dltFile;
     QString errorText;
-    FileModel *fModel;
     int msgIndex;
+
+    void doFLST(QDltMsg *msg);
+    void doFLDA(int index, QDltMsg *msg);
+    void doFLFI(QDltMsg *msg);
+    void doFLIF(QDltMsg *msg);
+    void doFLER(QDltMsg *msg);
 };
 
 #endif // DLTVIEWERPLUGIN_H
