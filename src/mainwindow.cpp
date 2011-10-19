@@ -26,11 +26,7 @@
 
 #include "version.h"
 
-#define DLT_VIEWER_LIST_BUFFER_SIZE 100024
-
-extern char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
-
-MainWindow::MainWindow(QString filename, QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     timer(this),
@@ -38,11 +34,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
 {
     ui->setupUi(this);
 
-    /* Enable Drops */
-    setAcceptDrops(true);
-
-    ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
-    ui->configWidget->setSortingEnabled(true);             // should cause sort on add
+    optManager = OptManager::getInstance();
 
     /* Initialize recent files */
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -74,6 +66,7 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     recentFiles = bmwsettings->value("other/recentFileList").toStringList();
     recentProjects = bmwsettings->value("other/recentProjectList").toStringList();
     recentFilters = bmwsettings->value("other/recentFiltersList").toStringList();
+    workingDirectory = bmwsettings->value("work/workingDirectory",QDir::currentPath()).toString();
     settings.readSettings();
 
     /* Update recent file and project actions */
@@ -81,28 +74,41 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     updateRecentProjectActions();
     updateRecentFiltersActions();
 
+    /* Enable column sorting of config widget */
+    ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
+    ui->configWidget->setSortingEnabled(true);             // should cause sort on add
+
     /* initialise DLT file handling */
     tableModel = new TreeModel("Hello Tree");
     tableModel->size = 0;
     tableModel->qfile = &qfile;
-    ui->tableView->setModel(tableModel);
-
     tableModel->mutex = &mutex;
     tableModel->project = &project;
-    connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
-    QItemSelectionModel *sm = ui->tableView->selectionModel();
-    connect(sm, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this, SLOT(on_tableViewTriggerSelectionModel(QModelIndex,QModelIndex)));
 
+    /* set table size and en */
+    ui->tableView->setModel(tableModel);
+    ui->tableView->setColumnWidth(0,50);
+    ui->tableView->setColumnWidth(1,150);
+    ui->tableView->setColumnWidth(2,70);
+    ui->tableView->setColumnWidth(3,40);
+    ui->tableView->setColumnWidth(4,40);
+    ui->tableView->setColumnWidth(5,40);
+    ui->tableView->setColumnWidth(6,40);
+    ui->tableView->setColumnWidth(7,50);
+    ui->tableView->setColumnWidth(8,50);
+    ui->tableView->setColumnWidth(9,40);
+    ui->tableView->setColumnWidth(10,40);
+    ui->tableView->setColumnWidth(11,400);
+    setAcceptDrops(true);
 
-    workingDirectory = bmwsettings->value("work/workingDirectory",QDir::currentPath()).toString();
 
     /* initialise project configuration */
     project.ecu = ui->configWidget;
-    project.pfilter = ui->pfilterWidget;
+    project.filter = ui->filterWidget;
     project.plugin = ui->pluginWidget;
     project.settings = &settings;
     ui->configWidget->setHeaderHidden(false);
-    ui->pfilterWidget->setHeaderHidden(false);
+    ui->filterWidget->setHeaderHidden(false);
     ui->pluginWidget->setHeaderHidden(false);
 
     /* Load Plugins before loading default project */
@@ -119,8 +125,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     statusBar()->addWidget(statusByteErrorsReceived);
     statusByteErrorsReceived->setText("Recv Errors: 0");
     totalByteErrorsRcvd = 0;
-
-
 
     searchDlg = new SearchDialog(this);
     searchDlg->file = &qfile;
@@ -171,13 +175,13 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     //connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
     searchTextToolbar = new QLineEdit(ui->mainToolBar);
     searchDlg->appendLineEdit(searchTextToolbar);
-    connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(on_lineEditText_textEditedFromToolbar(QString)));
-    connect(searchTextToolbar, SIGNAL(returnPressed()),searchDlg,SLOT(on_actionFind_Next_triggered()));
+    connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
+    connect(searchTextToolbar, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     action = ui->mainToolBar->addWidget(searchTextToolbar);
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Find Previous"));
-    connect(action, SIGNAL(triggered()), searchDlg, SLOT(on_actionFind_Previous_triggered()));
+    connect(action, SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-next.png"), tr("Find Next"));
-    connect(action, SIGNAL(triggered()), searchDlg, SLOT(on_actionFind_Next_triggered()));
+    connect(action, SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
 
     updateScrollButton();
 
@@ -216,106 +220,82 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     injectionServiceId.clear();
     injectionData.clear();
 
-    /* set table size */
-    ui->tableView->setColumnWidth(0,50);
-    ui->tableView->setColumnWidth(1,150);
-    ui->tableView->setColumnWidth(2,70);
-    ui->tableView->setColumnWidth(3,40);
-    ui->tableView->setColumnWidth(4,40);
-    ui->tableView->setColumnWidth(5,40);
-    ui->tableView->setColumnWidth(6,40);
-    ui->tableView->setColumnWidth(7,50);
-    ui->tableView->setColumnWidth(8,50);
-    ui->tableView->setColumnWidth(9,40);
-    ui->tableView->setColumnWidth(10,40);
-    ui->tableView->setColumnWidth(11,400);
-    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
-
-    //ui->tableView->horizontalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-    //ui->tableView->verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
-
     /* Apply loaded settings */
     applySettings();
 
-    /* Load default project file */
-    this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-    if(settings.defaultProjectFile)
+    QItemSelectionModel *sm = ui->tableView->selectionModel();
+    connect(sm, SIGNAL(currentRowChanged(QModelIndex,QModelIndex)),this, SLOT(tableViewTriggerSelectionModel(QModelIndex,QModelIndex)));
+    connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
+    connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
+
+
+    /* Process Project */
+    if(optManager->isProjectFile())
     {
-        if(project.Load(settings.defaultProjectFileName))
+        projectfileOpen(optManager->getProjectFile());
+
+    } else {
+        /* Load default project file */
+        this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
+        if(settings.defaultProjectFile)
         {
-            /* Applies project settings and save it to registry */
-            applySettings();
-            settings.writeSettings();
-
-            this->setWindowTitle(QString("DLT Viewer - "+settings.defaultProjectFileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-        }
-        else
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                 QString("Cannot load default project \"%1\"")
-                                 .arg(settings.defaultProjectFileName));
-    }
-
-    /* load default log file */
-    statusFilename->setText("no log file loaded");
-    if(settings.defaultLogFile)
-    {
-        outputfile.setFileName(settings.defaultLogFileName);
-        if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
-            reloadLogFile();
-        else
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                 QString("Cannot load default log file \"%1\"\n%2")
-                                 .arg(settings.defaultLogFileName)
-                                 .arg(outputfile.errorString()));
-
-    }
-    else
-    {
-        /* create temporary file */
-        QTemporaryFile file;
-        if (file.open()) {
-            QString filename;
-            filename = file.fileName();
-            file.setAutoRemove(false);
-            file.close();
-            outputfile.setFileName(filename);
-            if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-                reloadLogFile();
-            else
+            if(!projectfileOpen(settings.defaultProjectFileName)){
                 QMessageBox::critical(0, QString("DLT Viewer"),
-                                     QString("Cannot load temporary log file \"%1\"\n%2")
-                                     .arg(filename)
-                                     .arg(outputfile.errorString()));
+                                     QString("Cannot load default project \"%1\"")
+                                     .arg(settings.defaultProjectFileName));
+            }
         }
-        file.close();
     }
 
-    /* load dlt or project file with program start */
-    if(!filename.isEmpty())
+    /* Process Logfile */
+    if(optManager->isLogFile())
     {
-        if(filename.endsWith(".dlt"))
+        logfileOpen(optManager->getLogFile());
+    } else {
+        /* load default log file */
+        statusFilename->setText("no log file loaded");
+        if(settings.defaultLogFile)
         {
-            /* DLT log file used */
-            logfileOpen(filename);
-        }
-        else if(filename.endsWith(".dlp"))
-        {
-            /* Project file used */
-            projectfileOpen(filename);
+            logfileOpen(settings.defaultLogFileName);
         }
         else
         {
-            QMessageBox::warning(this, QString("Open File"),
-                                 QString("No DLT log file or project file used!\n")+filename);
+            /* create temporary file */
+            QTemporaryFile file;
+            if (file.open()) {
+                QString filename;
+                filename = file.fileName();
+                file.setAutoRemove(false);
+                file.close();
+                outputfile.setFileName(filename);
+                if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+                    reloadLogFile();
+                else
+                    QMessageBox::critical(0, QString("DLT Viewer"),
+                                         QString("Cannot load temporary log file \"%1\"\n%2")
+                                         .arg(filename)
+                                         .arg(outputfile.errorString()));
+            }
+            file.close();
         }
 
     }
 
-    /* Load the plugins description files after loading default project */
-    updatePlugins();
+    if(optManager->isFilterFile()){
+        if(project.LoadFilter(optManager->getFilterFile()))
+        {
+            filterUpdate();
+            setCurrentFilters(optManager->getFilterFile());
+        }
+    }
 
-    /* Update the ECU list in control plugins */
-    updatePluginsECUList();
+
+    if(optManager->isConvert())
+    {
+        commandLineConvertToASCII();
+        exit(0);
+    }
+
 
     /* auto connect */
     if(settings.autoConnect)
@@ -331,9 +311,6 @@ MainWindow::MainWindow(QString filename, QWidget *parent) :
     connect(&timerRead, SIGNAL(timeout()), this, SLOT(timeoutRead()));
     timerRead.start(100);
 
-    /* show settings */
-    ui->dockWidgetView->hide();
-
     restoreGeometry(bmwsettings->value("geometry").toByteArray());
     restoreState(bmwsettings->value("windowState").toByteArray());
 }
@@ -348,6 +325,55 @@ MainWindow::~MainWindow()
     delete ui;
     delete tableModel;
     delete searchDlg;
+}
+
+void MainWindow::commandLineConvertToASCII(){
+    QByteArray data;
+    QDltMsg msg;
+    QString text;
+
+    logfileOpen(optManager->getConvertSourceFile());
+
+    QFile asciiFile(optManager->getConvertDestFile());
+    if(!asciiFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+       //Error output
+       exit(0);
+    }
+
+    for(int num = 0;num< qfile.sizeFilter();num++)
+    {
+
+        /* get message form log file */
+        data = qfile.getMsgFilter(num);
+        msg.setMsg(data);
+
+        /* decode message is necessary */
+        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
+        {
+            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
+
+            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+            {
+                item->plugindecoderinterface->decodeMsg(msg);
+                break;
+            }
+        }
+
+        /* get message ASCII text */
+        text.clear();
+        text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
+        text += msg.toStringHeader();
+        text += " ";
+        text += msg.toStringPayload();
+        text += "\n";
+
+        /* write to file */
+        asciiFile.write(text.toAscii().data());
+
+    }
+
+    asciiFile.close();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -995,7 +1021,7 @@ void MainWindow::on_actionProjectOpen_triggered()
 
 }
 
-void MainWindow::projectfileOpen(QString fileName)
+bool MainWindow::projectfileOpen(QString fileName)
 {
     /* Open existing project */
     if(project.Load(fileName))
@@ -1014,6 +1040,9 @@ void MainWindow::projectfileOpen(QString fileName)
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
 
+        return true;
+    } else {
+        return false;
     }
 }
 
@@ -1628,30 +1657,14 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 }
 
 
-
-void MainWindow::on_filterWidget_customContextMenuRequested(QPoint /* pos */ )
-{
-
-}
-
-void MainWindow::on_nfilterWidget_customContextMenuRequested(QPoint pos)
-{
-    on_pfilterWidget_customContextMenuRequested(pos);
-}
-
-void MainWindow::on_markerWidget_customContextMenuRequested(QPoint pos)
-{
-    on_pfilterWidget_customContextMenuRequested(pos);
-}
-
-void MainWindow::on_pfilterWidget_customContextMenuRequested(QPoint pos)
+void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {
 
     /* show custom pop menu  for filter configuration */
-    QPoint globalPos = ui->pfilterWidget->mapToGlobal(pos);
+    QPoint globalPos = ui->filterWidget->mapToGlobal(pos);
     QMenu menu(project.ecu);
     QAction *action;
-    QList<QTreeWidgetItem *> list = project.pfilter->selectedItems();
+    QList<QTreeWidgetItem *> list = project.filter->selectedItems();
 
     action = new QAction("Save Filter(s)...", this);
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionFilter_Save_As_triggered()));
@@ -2120,7 +2133,7 @@ void MainWindow::read(EcuItem* ecuitem)
     }
 }
 
-void MainWindow::on_tableViewTriggerSelectionModel(QModelIndex indexNew,QModelIndex /* indexOld */)
+void MainWindow::tableViewTriggerSelectionModel(QModelIndex indexNew,QModelIndex /* indexOld */)
 {
     on_tableView_clicked(indexNew);
 }
@@ -3080,7 +3093,14 @@ void MainWindow::on_action_Info_triggered()
 #else
                              QString("Architecture: Little Endian\n\n")+
 #endif
-                             QString("(C) 2010 BMW AG\n"));
+
+#if (WIN32)
+                            QString("Print usage:   dlt_viewer.exe -h\n\n")+
+#else
+                            QString("Print usage:   dlt_viewer -h\n\n")+
+#endif
+
+                            QString("(C) 2010 BMW AG\n"));
 }
 
 
@@ -3088,13 +3108,6 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
     ui->actionPlugin_Edit->setEnabled(list.count() == 1);
-}
-
-void MainWindow::on_filterWidget_itemSelectionChanged()
-{
-    //QList<QTreeWidgetItem *> list = project.pfilter->selectedItems();
-    //ui->actionFilter_Delete->setEnabled(list.count() == 1);
-    //ui->actionFilter_Edit->setEnabled(list.count() == 1);
 }
 
 void MainWindow::on_configWidget_itemSelectionChanged()
@@ -3770,7 +3783,7 @@ void MainWindow::filterAddTable() {
         item->update();
 
         /* add filter to list */
-        project.pfilter->addTopLevelItem(item);
+        project.filter->addTopLevelItem(item);
 
         /* update filter list in DLT log file */
         filterUpdate();
@@ -3859,7 +3872,7 @@ void MainWindow::filterAdd() {
         item->update();
 
         /* add filter to list */
-        project.pfilter->addTopLevelItem(item);
+        project.filter->addTopLevelItem(item);
 
         /* update filter list in DLT log file */
         filterUpdate();
@@ -3941,7 +3954,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->update();
 
         /* add filter to list */
-        project.pfilter->addTopLevelItem(item);
+        project.filter->addTopLevelItem(item);
 
         /* update filter list in DLT log file */
         filterUpdate();
@@ -3958,7 +3971,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
 
     /* get currently visible filter list in user interface */
     if(ui->tabPFilter->isVisible()) {
-        widget = project.pfilter;
+        widget = project.filter;
     }
     else
         return;
@@ -4042,7 +4055,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
 
     /* get currently visible filter list in user interface */
     if(ui->tabPFilter->isVisible()) {
-        widget = project.pfilter;
+        widget = project.filter;
     }
     else
         return;
@@ -4132,7 +4145,7 @@ void MainWindow::on_actionFilter_Delete_triggered() {
 
     /* get currently visible filter list in user interface */
     if(ui->tabPFilter->isVisible()) {
-        widget = project.pfilter;
+        widget = project.filter;
     }
     else
         return;
@@ -4157,7 +4170,7 @@ void MainWindow::on_actionFilter_Delete_triggered() {
 
 void MainWindow::on_actionFilter_Clear_all_triggered() {
     /* delete complete filter list */
-    project.pfilter->clear();
+    project.filter->clear();
 
     /* update filter list in DLT log file */
     filterUpdate();
@@ -4176,9 +4189,9 @@ void MainWindow::filterUpdate() {
     qfile.clearFilter();
 
     /* iterate through all positive filters */
-    for(int num = 0; num < project.pfilter->topLevelItemCount (); num++)
+    for(int num = 0; num < project.filter->topLevelItemCount (); num++)
     {
-        FilterItem *item = (FilterItem*)project.pfilter->topLevelItem(num);
+        FilterItem *item = (FilterItem*)project.filter->topLevelItem(num);
 
         afilter.ecuid = item->ecuId;
         afilter.apid = item->applicationId;
@@ -4256,11 +4269,6 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     /* show popup menu */
     menu.exec(globalPos);
-}
-
-void MainWindow::on_tableView_pressed(QModelIndex index)
-{
-
 }
 
 void MainWindow::keyPressEvent ( QKeyEvent * event )

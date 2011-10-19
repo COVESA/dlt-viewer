@@ -279,22 +279,19 @@ void SearchDialog::on_pushButtonPrevious_clicked()
        setSearchColour(lineEdits->at(i),result);
     }
 }
-void SearchDialog::on_actionFind_Next_triggered(){
+void SearchDialog::findNextClicked(){
     setNextClicked(true);
     int result = find();
     for(int i=0; i<lineEdits->size();i++){
        setSearchColour(lineEdits->at(i),result);
     }
 }
-void SearchDialog::on_actionFind_Previous_triggered(){
+void SearchDialog::findPreviousClicked(){
     setNextClicked(false);
     int result = find();
     for(int i=0; i<lineEdits->size();i++){
        setSearchColour(lineEdits->at(i),result);
     }
-}
-void SearchDialog::toolbarTextChanged(QString newText){
-    //setText(newText);
 }
 
 void SearchDialog::on_lineEditText_textEdited(QString newText)
@@ -305,7 +302,7 @@ void SearchDialog::on_lineEditText_textEdited(QString newText)
                 setSearchColour(lineEdits->at(i),1);
         }
 }
-void SearchDialog::on_lineEditText_textEditedFromToolbar(QString newText){
+void SearchDialog::textEditedFromToolbar(QString newText){
         lineEdits->at(0)->setText(newText);
         for(int i=0; i<lineEdits->size();i++){
             if(lineEdits->at(0)->text().isEmpty())

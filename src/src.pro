@@ -42,7 +42,8 @@ SOURCES += main.cpp \
     settingsdialog.cpp \
     injectiondialog.cpp \
     searchdialog.cpp \
-    multiplecontextdialog.cpp
+    multiplecontextdialog.cpp \
+    optmanager.cpp
 
 HEADERS += mainwindow.h \
     treemodel.h \
@@ -60,7 +61,8 @@ HEADERS += mainwindow.h \
     qdlt.h \
     plugininterface.h \
     version.h \
-    multiplecontextdialog.h
+    multiplecontextdialog.h \
+    optmanager.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \
