@@ -1884,6 +1884,10 @@ void MainWindow::connected()
             ecuitem->connectError.clear();
             ecuitem->update();
             on_configWidget_itemSelectionChanged();
+
+            /* reset receive buffer */
+            ecuitem->totalBytesRcvd = 0;
+            ecuitem->data.clear();
         }
     }
 }
