@@ -3089,7 +3089,14 @@ void MainWindow::on_action_Info_triggered()
 #else
                              QString("Architecture: Little Endian\n\n")+
 #endif
-                             QString("(C) 2010 BMW AG\n"));
+
+#if (WIN32)
+                            QString("Print usage:   dlt_viewer.exe -h\n\n")+
+#else
+                            QString("Print usage:   dlt_viewer -h\n\n")+
+#endif
+
+                            QString("(C) 2010 BMW AG\n"));
 }
 
 
