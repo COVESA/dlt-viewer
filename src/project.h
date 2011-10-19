@@ -202,7 +202,7 @@ public:
     bool LoadFilter(QString filename);
 
     QTreeWidget *ecu;
-    QTreeWidget *pfilter;
+    QTreeWidget *filter;
     QTreeWidget *plugin;
     SettingsDialog *settings;
 

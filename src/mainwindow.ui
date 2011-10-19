@@ -349,7 +349,7 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QTreeWidget" name="pfilterWidget">
+          <widget class="QTreeWidget" name="filterWidget">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -731,6 +731,16 @@ p, li { white-space: pre-wrap; }
     <string>F2</string>
    </property>
   </action>
+  <action name="actionFilter_Duplicate">
+   <property name="text">
+    <string>Filter Duplicate</string>
+   </property>
+  </action>
+  <action name="actionContext_MultipleContextsEdit">
+   <property name="text">
+    <string>Context_MultipleContextsEdit</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -738,7 +748,7 @@ p, li { white-space: pre-wrap; }
  </resources>
  <connections>
   <connection>
-   <sender>pfilterWidget</sender>
+   <sender>filterWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
    <receiver>actionFilter_Edit</receiver>
    <slot>trigger()</slot>

@@ -12,6 +12,7 @@
 #include "project.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
+#include "optmanager.h"
 #include "qdlt.h"
 
 extern "C"
@@ -29,11 +30,13 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit MainWindow(QString filename, QWidget *parent = 0);
+    explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
+
+    void commandLineConvertToASCII();
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
@@ -44,16 +47,11 @@ private slots:
     void on_actionFilter_Load_triggered();
     void on_actionFilter_Save_As_triggered();
     void on_actionExport_Selection_ASCII_triggered();
-    void on_tableView_pressed(QModelIndex index);
     void on_tableView_customContextMenuRequested(QPoint pos);
-    void on_markerWidget_customContextMenuRequested(QPoint pos);
-    void on_nfilterWidget_customContextMenuRequested(QPoint pos);
-    void on_filterWidget_itemSelectionChanged();
     void on_actionFilter_Delete_triggered();
     void on_actionFilter_Edit_triggered();
     void on_actionFilter_Add_triggered();
     void on_actionFilter_Duplicate_triggered();
-    void on_pfilterWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void filterAdd();
     void filterAddTable();
@@ -105,7 +103,7 @@ private slots:
     void on_actionProjectOpen_triggered();
     void on_actionProjectNew_triggered();
     void on_tableView_clicked(QModelIndex index);
-    void on_tableViewTriggerSelectionModel(QModelIndex indexNew,QModelIndex indexOld);
+    void tableViewTriggerSelectionModel(QModelIndex indexNew,QModelIndex indexOld);
     void on_actionQuit_triggered();
     void on_actionSettings_triggered();
     void on_actionClear_triggered();
@@ -129,11 +127,13 @@ private slots:
     void sectionInTableDoubleClicked(int logicalIndex);
 
 public slots:
-    //void on_pushButtonSearchPrevious_clicked();
-    //void on_pushButtonSearchNext_clicked();
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
 
 public:   
+
+    /* Command line manager */
+    OptManager *optManager;
+
     /* Application settings */
     QSettings *bmwsettings;
 
@@ -249,7 +249,7 @@ public:
     void sendUpdates(EcuItem* ecuitem);
 
     void logfileOpen(QString fileName);
-    void projectfileOpen(QString filename);
+    bool projectfileOpen(QString filename);
 
 
 

@@ -387,7 +387,7 @@ Project::~Project()
 void Project::Clear()
 {
     ecu->clear();
-    pfilter->clear();
+    filter->clear();
 }
 
 bool Project::Load(QString filename)
@@ -404,7 +404,7 @@ bool Project::Load(QString filename)
     PluginItem *pluginitemexist = 0;
 
     ecu->clear();
-    pfilter->clear();
+    filter->clear();
     //plugin->clear();
 
     QXmlStreamReader xml(&file);
@@ -785,9 +785,9 @@ bool Project::Load(QString filename)
               }
               if(xml.name() == QString("pfilter"))
               {
-                  if(pfilter)
+                  if(filter)
                   {
-                    pfilter->addTopLevelItem(filteritem);
+                    filter->addTopLevelItem(filteritem);
                     filteritem->update();
                   }
                   filteritem = 0;
@@ -916,9 +916,9 @@ bool Project::Save(QString filename)
     }
 
     /* Write PFilter */
-    for(int num = 0; num < pfilter->topLevelItemCount (); num++)
+    for(int num = 0; num < filter->topLevelItemCount (); num++)
     {
-        FilterItem *item = (FilterItem*)pfilter->topLevelItem(num);
+        FilterItem *item = (FilterItem*)filter->topLevelItem(num);
         xml.writeStartElement("pfilter");
 
         xml.writeTextElement("type",QString("%1").arg((int)(item->type)));
@@ -988,9 +988,9 @@ bool Project::SaveFilter(QString filename)
 
 
     /* Write PFilter */
-    for(int num = 0; num < pfilter->topLevelItemCount (); num++)
+    for(int num = 0; num < filter->topLevelItemCount (); num++)
     {
-        FilterItem *item = (FilterItem*)pfilter->topLevelItem(num);
+        FilterItem *item = (FilterItem*)filter->topLevelItem(num);
         xml.writeStartElement("filter");
 
         xml.writeTextElement("type",QString("%1").arg((int)(item->type)));
@@ -1039,7 +1039,7 @@ bool Project::LoadFilter(QString filename){
     FilterItem *filteritem = 0;
 
 
-    pfilter->clear();
+    filter->clear();
     QXmlStreamReader xml(&file);
     while (!xml.atEnd()) {
           xml.readNext();
@@ -1157,9 +1157,9 @@ bool Project::LoadFilter(QString filename){
           {
               if(xml.name() == QString("filter"))
               {
-                  if(pfilter)
+                  if(filter)
                   {
-                    pfilter->addTopLevelItem(filteritem);
+                    filter->addTopLevelItem(filteritem);
                     filteritem->update();
                   }
                   filteritem = 0;

@@ -60,13 +60,12 @@ public:
 
 private slots:
     void on_lineEditText_textEdited(QString newText);
-    void on_lineEditText_textEditedFromToolbar(QString newText);
     void on_pushButtonPrevious_clicked();
     void on_pushButtonNext_clicked();
 public slots:
-    void toolbarTextChanged(QString newText);
-    void on_actionFind_Next_triggered();
-    void on_actionFind_Previous_triggered();
+    void textEditedFromToolbar(QString newText);
+    void findNextClicked();
+    void findPreviousClicked();
 };
 
 #endif // SEARCHDIALOG_H

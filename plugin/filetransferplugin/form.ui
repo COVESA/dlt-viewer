@@ -135,6 +135,16 @@
     </layout>
    </item>
   </layout>
+  <action name="actionSave">
+   <property name="text">
+    <string>save</string>
+   </property>
+  </action>
+  <action name="actionDelete">
+   <property name="text">
+    <string>delete</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
