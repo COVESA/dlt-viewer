@@ -1,6 +1,6 @@
 Changes in this release
 -----------------------
-2.4.0 Beta:
+2.4.0:
 
 New Features:
 
