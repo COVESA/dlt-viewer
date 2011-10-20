@@ -1,3 +1,24 @@
+DLT Viewer - Automotive Diagnostic Log and Trace Viewer
+
+Version: 2.4.0
+
+
+Introduction
+------------
+
+The DLT Viewer can send control messages to the daemon, e.g. to set individual log levels of applications and contexts or get the list of applications and contexts registered in the DLT daemon.
+
+License
+-------
+see file: License.txt
+
+Contact
+-------
+Alexander Wenzel
+BMW Group
+Alexander.AW.Wenzel@bmw.de
+
+
 Changes in this release
 -----------------------
 2.4.0:
