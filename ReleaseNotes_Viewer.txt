@@ -1,22 +1,31 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version: 2.4.0
+Version 2.4.0
 
+The DLT Viewer can send control messages to the daemon, e.g. to set 
+individual log levels of applications and contexts or get the list of 
+applications and contexts registered in the DLT daemon.
 
-Introduction
-------------
-
-The DLT Viewer can send control messages to the daemon, e.g. to set individual log levels of applications and contexts or get the list of applications and contexts registered in the DLT daemon.
 
 License
 -------
-see file: License.txt
+Full information on the license for this software
+is available in the "LICENSE.txt" file. 
+The full LGPL license is in "LGPL.txt."
+
 
 Contact
 -------
-Alexander Wenzel
-BMW Group
-Alexander.AW.Wenzel@bmw.de
+Alexander Wenzel (Alexander.AW.Wenzel@bmw.de)
+Christian Muck (christian.muck@bmw.de)
+
+
+Dynamically linked open source software
+-----------------------------------
+* Qt 4.7 (LGPL - Qt SDK version 1.1.3)
+* GCC (GPL)
+* Mingw (GPL + BSD Variante + Public Domain)
+* qextserialport (New BSD licence - Version 1.1)
 
 
 Changes in this release

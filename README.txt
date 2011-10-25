@@ -1,5 +1,7 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
+Version 2.4.0
+
 The DLT Viewer can send control messages to the daemon, e.g. to set 
 individual log levels of applications and contexts or get the list of 
 applications and contexts registered in the DLT daemon.
@@ -20,17 +22,17 @@ Christian Muck (christian.muck@bmw.de)
 
 Dynamically linked open source software
 -----------------------------------
-* Qt 4.7 (LGPL)
+* Qt 4.7 (LGPL - Qt SDK version 1.1.3)
 * GCC (GPL)
 * Mingw (GPL + BSD Variante + Public Domain)
-* QextSerialPort (New BSD licence)
+* qextserialport (New BSD licence - Version 1.1)
 
 
 Compiling in Windows:
 ---------------------
-- Download "Qt SDK for Windows" from http://qt.nokia.com/downloads
+- Download "Qt SDK version 1.1.3" for Windows from http://qt.nokia.com/downloads
 - Download qextserialport V1.1 from http://qextserialport.sourceforge.net/
-- Install "Qt SDK for Windows"
+- Install "Qt SDK version 1.1.3"
 - Save file qextserialport/qextserialport.pro
 - Extract qextserialport package into DLT-viewer main directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
@@ -52,7 +54,7 @@ Compiling in Linux:
 - make
 - optional: sudo make install
 - optional: sudo ldconfig
-- start dlt_viewer
+- Run dlt_viewer (if you installed the viewer) or change into the release directory and run ./dlt_viewer 
 - optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
 
 Create Windows SDK:
@@ -78,7 +80,7 @@ Create Linux SDK:
 
 Create Linux SDK Documentation:
 -------------------------------
-- Install doxygen
+- Install doxygen and graphviz
 - Change into project directory
 - doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
 - (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
