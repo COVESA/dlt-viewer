@@ -1403,16 +1403,57 @@ void MainWindow::on_actionContext_Edit_triggered()
 
 void MainWindow::on_actionContext_MultipleContextsEdit_triggered()
 {
-    /* find selected context in configuration */
-    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
-    if((list.count() > 1))
-    {
-        ContextItem* conitem = (ContextItem*) list.at(0);
 
-        /* show Context configuration dialog */
-        MultipleContextDialog dlg(conitem->loglevel,conitem->tracestatus);
-        if(dlg.exec())
-        {
+    MultipleContextDialog dlg(0,0);
+
+    if(dlg.exec())
+    {
+
+    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
+
+    if(list.at(0)->type() == context_type){
+        //Nothing to do
+    }
+
+    if(list.at(0)->type() == application_type){
+        //qDebug()<<"Application selected";
+        ApplicationItem *applicationItem;
+        for(int i=0; i<list.count(); i++){
+             applicationItem = (ApplicationItem*) list.at(i);
+             ContextItem *contextItem;
+             for(int j=0; j<applicationItem->childCount();j++){
+                contextItem = (ContextItem*)applicationItem->child(j);
+                contextItem->setSelected(true);
+             }
+             applicationItem->setSelected(false);
+        }
+    }
+
+
+    if(list.at(0)->type() == ecu_type){
+        //qDebug()<<"ECU selected";
+        EcuItem *ecuItem;
+        for(int i=0; i<list.count(); i++){
+            ecuItem = (EcuItem*) list.at(i);
+            ApplicationItem *applicationItem;
+            for(int j=0; j<ecuItem->childCount(); j++){
+                applicationItem = (ApplicationItem*) ecuItem->child(j);
+                ContextItem *contextItem;
+                for(int k=0; k<applicationItem->childCount();k++){
+                    contextItem = (ContextItem*)applicationItem->child(k);
+                    contextItem->setSelected(true);
+                 }
+
+            }
+            ecuItem->setSelected(false);
+        }
+    }
+
+    list = project.ecu->selectedItems();
+
+    if((list.count() >= 1))
+    {
+        ContextItem *conitem;
             for(int i=0; i<list.count(); i++){
                 if(list.at(i)->type() == context_type){
 
@@ -1440,6 +1481,7 @@ void MainWindow::on_actionContext_MultipleContextsEdit_triggered()
                              conitem->update();
                          }
                      }
+                     conitem->setSelected(false);
                 }
             }
 
@@ -1489,8 +1531,6 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
     if(list.count() > 1 && (list.at(0)->type() == context_type))
     {
-        /* Multiple contexts are selected */
-
         action = new QAction("&Multiple Contexts Edit...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
         menu.addAction(action);
@@ -1499,6 +1539,12 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
         action = new QAction("DLT &Set Log Levels...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionSet_Log_Level_triggered()));
+        menu.addAction(action);
+    }
+    else if((list.count() > 1) && (list.at(0)->type() == ecu_type))
+    {
+        action = new QAction("&Multiple Contexts Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
         menu.addAction(action);
     }
     else if((list.count() == 1) && (list.at(0)->type() == ecu_type))
@@ -1585,6 +1631,18 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
 
+        menu.addSeparator();
+
+        action = new QAction("&Multiple Contexts Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
+        menu.addAction(action);
+
+    }
+    else if((list.count() > 1) && (list.at(0)->type() == application_type))
+    {
+        action = new QAction("&Multiple Contexts Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
+        menu.addAction(action);
     }
     else if((list.count() == 1) && (list.at(0)->type() == application_type))
     {
@@ -1602,6 +1660,10 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
         action = new QAction("&Context Add...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_Add_triggered()));
+        menu.addAction(action);
+
+        action = new QAction("&Multiple Contexts Edit...", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionContext_MultipleContextsEdit_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
@@ -1645,10 +1707,10 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
     else
     {
         /* nothing is selected */
-
         action = new QAction("ECU Add...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionECU_Add_triggered()));
         menu.addAction(action);
+
     }
 
     /* show popup menu */

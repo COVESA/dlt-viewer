@@ -6,8 +6,8 @@ MultipleContextDialog::MultipleContextDialog(int loglevel, int tracestatus, QWid
     ui(new Ui::MultipleContextDialog)
 {
     ui->setupUi(this);
-    ui->loglevelComboBox->setCurrentIndex(loglevel+1);
-    ui->tracestatusComboBox->setCurrentIndex(tracestatus+1);
+    ui->loglevelComboBox->setCurrentIndex(loglevel);
+    ui->tracestatusComboBox->setCurrentIndex(tracestatus);
 }
 
 MultipleContextDialog::~MultipleContextDialog()
