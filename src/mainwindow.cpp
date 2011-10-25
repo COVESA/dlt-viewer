@@ -4037,6 +4037,9 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
             /* update filter item */
             newitem->update();
 
+            /* add filter to list */
+            project.filter->addTopLevelItem(newitem);
+
             /* update filter list in DLT log file */
             filterUpdate();
 
