@@ -1359,8 +1359,15 @@ bool QDltFile::updateIndex()
                 indexAll.append(pos+num-3);
                 found = 0;
             }
-            else
-                found = 0;
+            else{
+                if((found == 1) && (buf[num]=='D')) // Exception Handling for the character ..DDLT0x01 in a log message
+                {
+                   found = 1;
+                }else{
+                   found = 0;
+                }
+            }
+
 
         }
         pos += 1000;
