@@ -32,6 +32,9 @@ Changes in this release
 -----------------------
 2.4.1:
 
+Improvements:
+   * [GSW-103] Prove if the plugins directory in the dlt-viewer directory exists and is readable before loading plugins
+   
 Bugfixes:
 
    * [GSW-102] The dlt viewer plugin snips a part of the payload if < is in the payload

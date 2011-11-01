@@ -1890,6 +1890,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
         /* start socket connection to host */
         if(ecuitem->interfacetype == 0)
+
         {
             /* TCP */
             /* connect socket signals with window slots */
@@ -3546,8 +3547,11 @@ void MainWindow::loadPlugins()
 
     /* first load plugins in working directory */
     pluginsDir.setPath(QDir().currentPath());
-    pluginsDir.cd("plugins");
-    loadPluginsPath(pluginsDir);
+    bool ret = pluginsDir.cd("plugins");
+    if (ret)
+    {
+        loadPluginsPath(pluginsDir);
+    }
 
     /* second load plugins from user set plugins directory */
     if(settings.pluginsPath)
