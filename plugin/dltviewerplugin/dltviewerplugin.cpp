@@ -123,7 +123,14 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
             text += QString("<td>%1</td>").arg(argument.getName());
             text += QString("<td>%1</td>").arg(argument.getUnit());
             text += QString("<td>");
-            text += argument.toString(); /* text output */
+
+            // Necessary to display < and > as characters in a HTML context.
+            // Otherwise < and > would be handled as HTML tags and not the complete payload would be displayed.
+            QString payloadText = argument.toString(); /* text output */
+            payloadText = payloadText.replace("<","&lt;");
+            payloadText = payloadText.replace(">","&gr;");
+            text += payloadText;
+
             text += QString("</td>");
             text += QString("<td>");
             text += argument.toString(true); /* Binary output */

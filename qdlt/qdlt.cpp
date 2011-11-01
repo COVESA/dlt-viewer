@@ -99,9 +99,22 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
             {
                 char ch = (bytes.constData())[line*linesize+num];
                 if( ((line*linesize+num) < bytes.size()) && (ch >= ' ') && (ch <= '~') )
-                    text += QString(QChar(ch));
+                {
+                    // Necessary to display < and > as characters in a HTML context.
+                    // Otherwise < and > would be handled as HTML tags and not the complete payload would be displayed.
+                    if(toHtml && ch == '<')
+                    {
+                        text += "&lt;";
+                    }else if(toHtml && ch == '>'){
+                        text += "&gt;";
+                    }else{
+                        text += QString(QChar(ch));
+                    }
+                }
                 else
+                {
                     text += QString("-");
+                }
             }
         }
         if(line!=lines-1)

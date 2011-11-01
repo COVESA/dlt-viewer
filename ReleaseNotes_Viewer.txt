@@ -30,6 +30,12 @@ Dynamically linked open source software
 
 Changes in this release
 -----------------------
+2.4.1:
+
+Bugfixes:
+
+   * [GSW-102] The dlt viewer plugin snips a part of the payload if < is in the payload
+
 2.4.0:
 
 New Features:
