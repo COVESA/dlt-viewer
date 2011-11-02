@@ -1891,6 +1891,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         /* start socket connection to host */
         if(ecuitem->interfacetype == 0)
 
+
         {
             /* TCP */
             /* connect socket signals with window slots */
@@ -3156,16 +3157,29 @@ void MainWindow::on_action_Info_triggered()
 #else
                              QString("Architecture: Little Endian\n\n")+
 #endif
-
-#if (WIN32)
-                            QString("Print usage:   dlt_viewer.exe -h\n\n")+
-#else
-                            QString("Print usage:   dlt_viewer -h\n\n")+
-#endif
-
-                            QString("(C) 2010 BMW AG\n"));
+                             QString("(C) 2010 BMW AG\n"));
 }
 
+
+void MainWindow::on_actionCommand_Line_triggered()
+{
+    // Please copy changes to optmanager.cpp - printUsage()
+
+    QMessageBox::information(0, QString("DLT Viewer - Command line usage"),
+#if (WIN32)
+                             QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
+                             QString("Options:\n")+
+#else
+                             QString("Usage: dlt_viewer [OPTIONS]\n\n")+
+                             QString("Options:\n")+
+                             QString(" -h \t\tPrint usage\n")+
+#endif
+                             QString(" -p projectfile \t\tLoading project file on startup (must end with .dlp)\n")+
+                             QString(" -l logfile \t\tLoading logfile on startup (must end with .dlt)\n")+
+                             QString(" -f filterfile \t\tLoading filterfile on startup (must end with .dlf)\n")+
+                             QString(" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)\n")
+                             );
+}
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
 {
@@ -4400,3 +4414,5 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::sectionInTableDoubleClicked(int logicalIndex){
         ui->tableView->resizeColumnToContents(logicalIndex);
 }
+
+

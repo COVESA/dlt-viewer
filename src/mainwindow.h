@@ -126,6 +126,8 @@ private slots:
     void closeEvent(QCloseEvent *event);
     void sectionInTableDoubleClicked(int logicalIndex);
 
+    void on_actionCommand_Line_triggered();
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
 

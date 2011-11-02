@@ -57,6 +57,19 @@ Compiling in Linux:
 - Run dlt_viewer (if you installed the viewer) or change into the release directory and run ./dlt_viewer 
 - optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
 
+
+Command line usage:
+-------------------
+Usage windows: dlt_viewer.exe [OPTIONS] 
+Usage Linux: dlt_viewer [OPTIONS] 
+Options: 
+ -h 			Print usage (only in Linux)
+ -p projectfile 	Loading project file on startup (must end with .dlp) 
+ -l logfile 		Loading logfile on startup (must end with .dlt) 
+ -f filterfile 		Loading filterfile on startup (must end with .dlf) 
+ -c logfile textfile 	Convert logfile file to textfile (logfile must end with .dlt) 
+
+
 Create Windows SDK:
 -------------------
 - Compile DLT Viewer as described in "Compiling in Windows"

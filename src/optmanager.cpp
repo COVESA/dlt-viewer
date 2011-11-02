@@ -36,6 +36,8 @@ void OptManager::OptManager::printUsage(){
     qDebug()<<" -l logfile \tLoading logfile on startup (must end with .dlt)";
     qDebug()<<" -f filterfile \tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)";
+
+    // Please copy changes to mainwindow.cpp - on_actionCommand_Line_triggered()
 }
 
 void OptManager::parse(QStringList *opt){
