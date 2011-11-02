@@ -4,6 +4,7 @@
 #include "qdlt.h"
 
 #include <QTreeWidgetItem>
+#include <QHeaderView>
 #include <QTcpSocket>
 #include <QDockWidget>
 #include <qextserialport.h>
@@ -77,8 +78,7 @@ public:
     QByteArray data;
 
 private:
-
-
+    bool operator< ( const QTreeWidgetItem & other ) const;
 };
 
 class ApplicationItem  : public QTreeWidgetItem
@@ -94,7 +94,7 @@ public:
     void update();
 
 private:
-
+    bool operator< ( const QTreeWidgetItem & other ) const;
 };
 
 class ContextItem  : public QTreeWidgetItem
@@ -114,7 +114,7 @@ public:
     void update();
 
 private:
-
+    bool operator< ( const QTreeWidgetItem & other ) const;
 };
 
 class FilterItem  : public QTreeWidgetItem

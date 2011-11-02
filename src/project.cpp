@@ -122,6 +122,24 @@ void EcuItem::InvalidAll()
 
 }
 
+bool EcuItem::operator< ( const QTreeWidgetItem & other ) const {
+
+    int column = treeWidget()->header()->sortIndicatorSection();
+
+    int fieldWidth = 0;
+
+    if(column==0){
+        fieldWidth=4;
+    }
+
+    QString currentItem = QString("%1").arg(text(column),fieldWidth,QLatin1Char('0'));
+    QString otherItem = QString("%1").arg(other.text(column),fieldWidth,QLatin1Char('0'));
+
+//    qDebug()<<"currentItemEcu: "<<currentItem <<" otherItemEcu: "<<otherItem;
+
+    return currentItem.toLower() < otherItem.toLower();
+}
+
 ApplicationItem::ApplicationItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,application_type)
 {
@@ -138,6 +156,25 @@ void ApplicationItem::update()
     setData(0,0,id);
     setData(1,0,description);
 }
+
+bool ApplicationItem::operator< ( const QTreeWidgetItem & other ) const {
+
+    int column = treeWidget()->header()->sortIndicatorSection();
+
+    int fieldWidth = 0;
+
+    if(column==0){
+        fieldWidth=4;
+    }
+
+    QString currentItem = QString("%1").arg(text(column),fieldWidth,QLatin1Char('0'));
+    QString otherItem = QString("%1").arg(other.text(column),fieldWidth,QLatin1Char('0'));
+
+//    qDebug()<<"currentItemApp: "<<currentItem <<" otherItemApp: "<<otherItem;
+
+    return currentItem.toLower() < otherItem.toLower();
+}
+
 
 ContextItem::ContextItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,context_type)
@@ -176,6 +213,26 @@ void ContextItem::update()
         setBackground(3,QBrush(QColor(Qt::green)));
     }
 }
+
+
+bool ContextItem::operator< ( const QTreeWidgetItem & other ) const {
+
+    int column = treeWidget()->header()->sortIndicatorSection();
+
+    int fieldWidth = 0;
+
+    if(column==0){
+        fieldWidth=4;
+    }
+
+    QString currentItem = QString("%1").arg(text(column),fieldWidth,QLatin1Char('0'));
+    QString otherItem = QString("%1").arg(other.text(column),fieldWidth,QLatin1Char('0'));
+
+//    qDebug()<<"currentItemCt: "<<currentItem <<" otherItemCt: "<<otherItem;
+
+    return currentItem.toLower() < otherItem.toLower();
+}
+
 
 FilterItem::FilterItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,filter_type)

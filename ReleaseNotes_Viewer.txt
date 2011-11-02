@@ -37,6 +37,7 @@ Improvements:
    
 Bugfixes:
    * [GSW-109] Printing of dlt-viewer usage not visibile in windows. Command line usage for windows added to the help menu of the dlt viewer.
+   * [GSW-104] Overload operator< for detailed sorting of appIds and ctIds in the configWidget of the viewer
    * [GSW-102] The dlt viewer plugin snips a part of the payload if < is in the payload
 
 2.4.0:
