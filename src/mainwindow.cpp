@@ -139,8 +139,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionOpen_triggered()));
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/edit-clear.png"), tr("&Clear"));
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionClear_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-save-as.png"), tr("&Save As"));
+    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-save-as3.png"), tr("&Save logfile"));
     connect(action, SIGNAL(triggered()), this, SLOT(on_actionSaveAs_triggered()));
+    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-save-as2.png"), tr("&Save project"));
+    connect(action, SIGNAL(triggered()), this, SLOT(on_actionProjectSave_triggered()));
     ui->mainToolBar->addSeparator();
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/network-transmit-receive.png"), tr("Connec&t"));
     connect(action, SIGNAL(triggered()), this, SLOT(connectAll()));
@@ -1890,6 +1892,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
         /* start socket connection to host */
         if(ecuitem->interfacetype == 0)
+
 
 
         {

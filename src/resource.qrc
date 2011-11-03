@@ -13,6 +13,8 @@
         <file>png/go-next.png</file>
         <file>png/edit-cut.png</file>
         <file>png/filter.png</file>
+        <file>png/document-save-as2.png</file>
+        <file>png/document-save-as3.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>

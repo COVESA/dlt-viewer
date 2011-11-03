@@ -34,7 +34,8 @@ Changes in this release
 
 Improvements:
    * [GSW-103] Prove if the plugins directory in the dlt-viewer directory exists and is readable before loading plugins
-   
+   * [GSW-70] Button for save project in the toolbar
+
 Bugfixes:
    * [GSW-109] Printing of dlt-viewer usage not visibile in windows. Command line usage for windows added to the help menu of the dlt viewer.
    * [GSW-104] Overload operator< for detailed sorting of appIds and ctIds in the configWidget of the viewer
