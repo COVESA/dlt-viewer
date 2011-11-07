@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=DLT Viewer
+Name[xx]=Diagnostic Log and Trace Viewer
+GenericName=DLT Viewer - Diagnostic Log and Trace Viewer needed for devices running DLT daemon
+Exec=dlt_viewer
+Icon=face-glasses
+Terminal=false
+Categories=Qt;KDE;Development;
