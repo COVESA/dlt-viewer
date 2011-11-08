@@ -11,6 +11,7 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QLineEdit>
+#include <QUrl>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -849,7 +850,7 @@ void MainWindow::on_actionClear_triggered()
                    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
                    {
                        reloadLogFile();
-                       ui->textBrowser->setText("");
+                       //ui->textBrowser->setText("");
                    }
                    else
                        QMessageBox::critical(0, QString("DLT Viewer"),
