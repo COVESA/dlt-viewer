@@ -7,6 +7,11 @@ individual log levels of applications and contexts or get the list of
 applications and contexts registered in the DLT daemon.
 
 
+Homepage
+--------
+https://collab.genivi.org/wiki/display/geniviproj/Automotive+DLT+%28Diagnostic+Log+and+Trace%29
+
+
 License
 -------
 Full information on the license for this software
@@ -31,8 +36,8 @@ Dynamically linked open source software
 Compiling in Windows:
 ---------------------
 - Download "Qt SDK version 1.1.3" for Windows from http://qt.nokia.com/downloads
-- Download qextserialport V1.1 from http://qextserialport.sourceforge.net/
-- Install "Qt SDK version 1.1.3"
+- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/files/qextserialport
+- Install "Qt SDK version 1.1.3" (use custom install, normally symbian stuff and emulators not needed, select MinGW if needed)
 - Save file qextserialport/qextserialport.pro
 - Extract qextserialport package into DLT-viewer main directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
@@ -81,7 +86,9 @@ Create Windows SDK Documentation:
 -------------------------------
 - Install doxygen
 - Change into project directory
-- doxygen sdk/doxygen.cfg
+- doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
+- (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
+- (Optional) doxygen sdk/doxygen_dlt_viewer_qdlt.cfg
 - You will find the documentation in the doc directory
 
 

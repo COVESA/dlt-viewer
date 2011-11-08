@@ -7,6 +7,11 @@ individual log levels of applications and contexts or get the list of
 applications and contexts registered in the DLT daemon.
 
 
+Homepage
+--------
+https://collab.genivi.org/wiki/display/geniviproj/Automotive+DLT+%28Diagnostic+Log+and+Trace%29
+
+
 License
 -------
 Full information on the license for this software
@@ -33,6 +38,8 @@ Changes in this release
 2.4.1:
 
 Improvements:
+   * Deleted unnecessary widget of mainwindow 
+   * Added Linux Desktop Icon and Description
    * [GSW-103] Prove if the plugins directory in the dlt-viewer directory exists and is readable before loading plugins
    * [GSW-70] Button for save project in the toolbar
 

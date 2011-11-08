@@ -30,7 +30,7 @@ void Form::addProcesses(int pid, QString data,QDltMsg &msg)
     QStringList datalist;
     ProcessItem *widget;
     int found = 0;
-    int procent;
+    int procent = 0;
 
     datalist = data.split(" ");
 
