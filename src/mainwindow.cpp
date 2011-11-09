@@ -3671,6 +3671,7 @@ void MainWindow::updatePluginsECUList()
 
         if(item->plugincontrolinterface)
         {
+			item->plugincontrolinterface->initControl(&qcontrol);
             item->plugincontrolinterface->initConnections(list);
         }
     }
@@ -3690,9 +3691,9 @@ void MainWindow::updatePlugin(PluginItem *item) {
 
     item->plugininterface->loadConfig(item->filename);
 
-    if(item->plugincontrolinterface)
+/*    if(item->plugincontrolinterface)
         item->plugincontrolinterface->initControl(&qcontrol);
-
+*/
     QStringList list = item->plugininterface->infoConfig();
     for(int num=0;num<list.size();num++) {
         item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
