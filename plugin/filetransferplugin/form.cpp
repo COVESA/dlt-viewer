@@ -19,10 +19,6 @@ Form::Form(QWidget *parent) :
     ui->treeWidget->setSortingEnabled(true);             // should cause sort on add
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->selectButton, SIGNAL(clicked()),this, SLOT(selectAllClicked()));
-    connect(ui->deselectButton, SIGNAL(clicked()),this, SLOT(deselectAllClicked()));
-    connect(ui->clearAllButton, SIGNAL(clicked()),this, SLOT(clearAllClicked()));
-    connect(ui->saveButton, SIGNAL(clicked()),this, SLOT(saveClicked()));
     connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)),this, SLOT(itemChanged(QTreeWidgetItem*,int)));
     connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this, SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
     connect(ui->treeWidget->header(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
@@ -38,7 +34,7 @@ QTreeWidget* Form::getTreeWidget(){
     return ui->treeWidget;
 }
 
-void Form::selectAllClicked(){
+void Form::on_selectButton_clicked(){
     QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NotChecked|QTreeWidgetItemIterator::NoChildren);
     while (*it) {
         File *tmp = dynamic_cast<File*>(*it);
@@ -55,7 +51,7 @@ void Form::selectAllClicked(){
 }
 
 
-void Form::deselectAllClicked(){
+void Form::on_deselectButton_clicked(){
     QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );//| QTreeWidgetItemIterator::Checked);
 
     while (*it) {
@@ -72,10 +68,6 @@ void Form::deselectAllClicked(){
         ++it;
     }
     selectedFiles=0;
-}
-
-void Form::clearAllClicked(){
-    getTreeWidget()->clear();
 }
 
 void Form::itemChanged(QTreeWidgetItem* item,int i){
@@ -101,7 +93,7 @@ void Form::itemChanged(QTreeWidgetItem* item,int i){
 
 }
 
-void Form::saveClicked(){
+void Form::on_saveButton_clicked(){
 
     if(selectedFiles <= 0){
         QMessageBox msgBox;
@@ -220,10 +212,10 @@ void Form::on_actionSave_triggered(){
     QList<QTreeWidgetItem *> list = ui->treeWidget->selectedItems();
     if((list.count() == 1))
     {
-        deselectAllClicked();
+        on_deselectButton_clicked();
         File* tmpFile = (File*)list.at(0);
         itemChanged(tmpFile,COLUMN_CHECK);
-        saveClicked();
+        on_saveButton_clicked();
         itemChanged(tmpFile,COLUMN_CHECK);
     }
 }
@@ -237,4 +229,9 @@ void Form::on_actionDelete_triggered(){
         int index = ui->treeWidget->indexOfTopLevelItem(tmpFile);
         ui->treeWidget->takeTopLevelItem(index);
     }
+}
+
+void Form::on_clearAllButton_clicked()
+{
+    getTreeWidget()->clear();
 }

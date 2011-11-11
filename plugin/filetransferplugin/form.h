@@ -23,12 +23,6 @@ private:
     int selectedFiles;
 
 public slots:
-    void selectAllClicked();
-    void deselectAllClicked();
-    void clearAllClicked();
-
-    void saveClicked();
-
     void itemChanged(QTreeWidgetItem* item,int);
     void itemDoubleClicked ( QTreeWidgetItem * item, int column );
     void sectionInTableDoubleClicked(int logicalIndex);
@@ -37,6 +31,10 @@ private slots:
     void on_treeWidget_customContextMenuRequested(QPoint pos);
     void on_actionDelete_triggered();
     void on_actionSave_triggered();
+    void on_clearAllButton_clicked();
+    void on_saveButton_clicked();
+    void on_selectButton_clicked();
+    void on_deselectButton_clicked();
 };
 
 #endif // FORM_H
