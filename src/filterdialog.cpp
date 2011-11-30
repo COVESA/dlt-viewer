@@ -202,6 +202,14 @@ bool FilterDialog::getEnableCtrlMsgs()
     return (ui->checkBoxCtrlMsgs->checkState() == Qt::Checked);
 }
 
+void FilterDialog::setActive(bool state){
+    ui->checkBoxActive->setCheckState(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableActive(){
+    return (ui->checkBoxActive->checkState() == Qt::Checked);
+}
+
 void FilterDialog::on_buttonSelectColor_clicked()
 {
     QColor selectedBackgroundColor = QColorDialog::getColor();

@@ -716,7 +716,6 @@ void MainWindow::exportSelection(bool ascii,bool file)
     for(int num=0; num < list.count();num++)
     {
        fileprogress.setValue(num);
-
        QModelIndex index = list[num];
 
        /* get the message with the selected item id */
@@ -883,7 +882,7 @@ void MainWindow::reloadLogFile()
         if (fileprogress.wasCanceled()){
            break;
         }
-        fileprogress.setValue(num);
+        fileprogress.setValue(num+1);
         data = qfile.getMsg(num);
         msg.setMsg(data);
         for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
@@ -921,8 +920,7 @@ void MainWindow::reloadLogFile()
            break;
         }
         pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->name));
-        pluginprogress.setValue(num);
-
+        pluginprogress.setValue(num+1);
 
         if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable))
         {
@@ -3403,6 +3401,7 @@ void MainWindow::openRecentFilters()
         {
             filterUpdate();
             setCurrentFilters(fileName);
+            reloadLogFile();
         }
     }
 }
@@ -3563,7 +3562,6 @@ void MainWindow::loadPlugins()
        loosk in the relativ to the executable in the ./plugins directory */
     if(settings.pluginsPath)
     {
-        qDebug()<<"Plugin path is set";
         pluginsDir.setPath(settings.pluginsPathName);
         if(pluginsDir.exists())
         {
@@ -3838,7 +3836,6 @@ void MainWindow::filterAddTable() {
 
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
-
         item->type = (FilterItem::FilterType)(dlg.getType());
 
         item->ecuId = dlg.getEcuId();
@@ -3847,6 +3844,7 @@ void MainWindow::filterAddTable() {
         item->headerText = dlg.getHeaderText();
         item->payloadText = dlg.getPayloadText();
 
+        item->enableFilter = dlg.getEnableActive();
         item->enableEcuId = dlg.getEnableEcuId();
         item->enableApplicationId = dlg.getEnableApplicationId();
         item->enableContextId = dlg.getEnableContextId();
@@ -3858,7 +3856,7 @@ void MainWindow::filterAddTable() {
 
         item->filterColour = dlg.getFilterColour();
         item->setBackground(0,dlg.getFilterColour());
-
+        item->setBackground(1,dlg.getFilterColour());
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
 
@@ -3936,6 +3934,7 @@ void MainWindow::filterAdd() {
         item->headerText = dlg.getHeaderText();
         item->payloadText = dlg.getPayloadText();
 
+        item->enableFilter = dlg.getEnableActive();
         item->enableEcuId = dlg.getEnableEcuId();
         item->enableApplicationId = dlg.getEnableApplicationId();
         item->enableContextId = dlg.getEnableContextId();
@@ -3947,7 +3946,7 @@ void MainWindow::filterAdd() {
 
         item->filterColour = dlg.getFilterColour();
         item->setBackground(0,dlg.getFilterColour());
-
+        item->setBackground(1,dlg.getFilterColour());
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
 
@@ -3990,6 +3989,7 @@ void MainWindow::on_actionFilter_Load_triggered()
     {
         filterUpdate();
         setCurrentFilters(fileName);
+        reloadLogFile();
     }
 }
 
@@ -4018,6 +4018,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
         item->headerText = dlg.getHeaderText();
         item->payloadText = dlg.getPayloadText();
 
+        item->enableFilter = dlg.getEnableActive();
         item->enableEcuId = dlg.getEnableEcuId();
         item->enableApplicationId = dlg.getEnableApplicationId();
         item->enableContextId = dlg.getEnableContextId();
@@ -4029,7 +4030,7 @@ void MainWindow::on_actionFilter_Add_triggered() {
 
         item->filterColour = dlg.getFilterColour();
         item->setBackground(0,dlg.getFilterColour());
-
+        item->setBackground(1,dlg.getFilterColour());
         item->logLevelMax = dlg.getLogLevelMax();
         item->logLevelMin = dlg.getLogLevelMin();
 
@@ -4075,6 +4076,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
         dlg.setHeaderText(item->headerText);
         dlg.setPayloadText(item->payloadText);
 
+        dlg.setActive(item->enableFilter);
         dlg.setEnableEcuId(item->enableEcuId);
         dlg.setEnableApplicationId(item->enableApplicationId);
         dlg.setEnableContextId(item->enableContextId);
@@ -4102,6 +4104,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
             newitem->headerText = dlg.getHeaderText();
             newitem->payloadText = dlg.getPayloadText();
 
+            newitem->enableFilter = dlg.getEnableActive();
             newitem->enableEcuId = dlg.getEnableEcuId();
             newitem->enableApplicationId = dlg.getEnableApplicationId();
             newitem->enableContextId = dlg.getEnableContextId();
@@ -4113,7 +4116,7 @@ void MainWindow::on_actionFilter_Duplicate_triggered() {
 
             newitem->filterColour = dlg.getFilterColour();
             newitem->setBackground(0,dlg.getFilterColour());
-
+            newitem->setBackground(1,dlg.getFilterColour());
             newitem->logLevelMax = dlg.getLogLevelMax();
             newitem->logLevelMin = dlg.getLogLevelMin();
 
@@ -4162,6 +4165,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
         dlg.setHeaderText(item->headerText);
         dlg.setPayloadText(item->payloadText);
 
+        dlg.setActive(item->enableFilter);
         dlg.setEnableEcuId(item->enableEcuId);
         dlg.setEnableApplicationId(item->enableApplicationId);
         dlg.setEnableContextId(item->enableContextId);
@@ -4187,6 +4191,7 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             item->headerText = dlg.getHeaderText();
             item->payloadText = dlg.getPayloadText();
 
+            item->enableFilter = dlg.getEnableActive();
             item->enableEcuId = dlg.getEnableEcuId();
             item->enableApplicationId = dlg.getEnableApplicationId();
             item->enableContextId = dlg.getEnableContextId();
@@ -4200,9 +4205,11 @@ void MainWindow::on_actionFilter_Edit_triggered() {
             switch(dlg.getType()){
             case 2:
                     item->setBackground(0,dlg.getFilterColour());
+                    item->setBackground(1,dlg.getFilterColour());
                     break;
             default:
                     item->setBackground(0,QColor(255,255,255));
+                    item->setBackground(1,QColor(255,255,255));
                     break;
             }
 
@@ -4285,6 +4292,7 @@ void MainWindow::filterUpdate() {
         afilter.header = item->headerText;
         afilter.payload = item->payloadText;
 
+        afilter.enableFilter = item->enableFilter;
         afilter.enableEcuid = item->enableEcuId;
         afilter.enableApid = item->enableApplicationId;
         afilter.enableCtid = item->enableContextId;
@@ -4299,6 +4307,7 @@ void MainWindow::filterUpdate() {
 
         afilter.filterColour = item->filterColour;
         item->setBackground(0,item->filterColour);
+        item->setBackground(1,item->filterColour);
 
         switch(item->type)
         {
@@ -4425,5 +4434,24 @@ void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
     QStringList list = plugin->plugininterface->infoConfig();
     for(int num=0;num<list.size();num++) {
         plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
+    }
+}
+
+void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
+{
+    if(column == 0){
+            FilterItem *tmp = (FilterItem*)item;
+            if(tmp->checkState(column) == Qt::Unchecked)
+            {
+                tmp->enableFilter = 0;
+            }
+            else{
+                tmp->enableFilter = 1;
+            }
+            /* update filter list in DLT log file */
+            filterUpdate();
+
+            /* reload DLT log file */
+            reloadLogFile();
     }
 }

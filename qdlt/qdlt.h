@@ -670,6 +670,7 @@ public:
     QString ctid;
     QString header;
     QString payload;
+    bool enableFilter;
     bool enableEcuid;
     bool enableApid;
     bool enableCtid;

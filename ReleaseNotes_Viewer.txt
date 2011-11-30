@@ -38,7 +38,7 @@ Changes in this release
 2.4.2 BETA:
 
 New Features:
-
+   * [GSW-112] Possibility to enable/disable filters with a check-box in the filter widget
    * [GSW-111] Checkbox in project settings for automatically color errors and wanrings in the viewer
 
 Improvements:

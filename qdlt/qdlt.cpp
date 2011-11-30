@@ -1432,78 +1432,93 @@ bool QDltFile::checkFilter(QDltMsg &msg)
 {
     QDltFilter filter;
     bool found = false, foundFilter;
+    bool filterActivated = false;
 
-    if(pfilter.isEmpty())
+    for(int numfilter=0;numfilter<pfilter.size();numfilter++)
+    {
+        filter = pfilter[numfilter];
+        if(filter.enableFilter){
+            filterActivated = true;
+        }
+    }
+
+    if(pfilter.isEmpty() || filterActivated==false)
         found = true;
     else
         found = false;
+
 
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
         filter = pfilter[numfilter];
 
-        foundFilter = true;
-        if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
-            foundFilter = false;
-        }
-        if(filter.enableApid && (msg.getApid() != filter.apid)) {
-            foundFilter = false;
-        }
-        if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
-            foundFilter = false;
-        }
-        if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-            foundFilter = false;
-        }
-        if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-            foundFilter = false;
-        }
-        if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-            foundFilter = false;
-        }
+        if(filter.enableFilter){
+            foundFilter = true;
 
-        if(foundFilter)
-            found = true;
-
+            if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
+                foundFilter = false;
+            }
+            if(filter.enableApid && (msg.getApid() != filter.apid)) {
+                foundFilter = false;
+            }
+            if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
+                foundFilter = false;
+            }
+            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                foundFilter = false;
+            }
+            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                foundFilter = false;
+            }
+            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
+                foundFilter = false;
+            }
+            if(foundFilter)
+                found = true;
+        }
     }
+
     for(int numfilter=0;numfilter<nfilter.size();numfilter++)
     {
         filter = nfilter[numfilter];
 
-        foundFilter = true;
-        if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
-            foundFilter = false;
-        }
-        if(filter.enableApid && (msg.getApid() != filter.apid)) {
-            foundFilter = false;
-        }
-        if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
-            foundFilter = false;
-        }
-        if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-            foundFilter = false;
-        }
-        if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-            foundFilter = false;
-        }
-        if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-            foundFilter = false;
+        if(filter.enableFilter){
+            foundFilter = true;
+
+            if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
+                foundFilter = false;
+            }
+            if(filter.enableApid && (msg.getApid() != filter.apid)) {
+                foundFilter = false;
+            }
+            if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
+                foundFilter = false;
+            }
+            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                foundFilter = false;
+            }
+            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                foundFilter = false;
+            }
+            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
+                foundFilter = false;
+            }
+            if(foundFilter)
+                found = false;
         }
 
-        if(foundFilter)
-            found = false;
     }
 
     return found;
@@ -1532,36 +1547,38 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
     {
         filter = marker[numfilter];
 
-        foundFilter = true;
-        if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
-            foundFilter = false;
-        }
-        if(filter.enableApid && (msg.getApid() != filter.apid)) {
-            foundFilter = false;
-        }
-        if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
-            foundFilter = false;
-        }
-        if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-            foundFilter = false;
-        }
-        if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-            foundFilter = false;
-        }
-        if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-            foundFilter = false;
-        }
-        if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-            foundFilter = false;
-        }
+        if(filter.enableFilter){
+            foundFilter = true;
+            if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
+                foundFilter = false;
+            }
+            if(filter.enableApid && (msg.getApid() != filter.apid)) {
+                foundFilter = false;
+            }
+            if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
+                foundFilter = false;
+            }
+            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                foundFilter = false;
+            }
+            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                foundFilter = false;
+            }
+            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
+                foundFilter = false;
+            }
+            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
+                foundFilter = false;
+            }
 
-        if(foundFilter)
-        {
-            found = true;
-            color = filter.filterColour;
+            if(foundFilter)
+            {
+                found = true;
+                color = filter.filterColour;
+            }
         }
     }
     return color;

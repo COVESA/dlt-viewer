@@ -137,6 +137,7 @@ public:
     QString headerText;
     QString payloadText;
 
+    bool enableFilter;
     bool enableEcuId;
     bool enableApplicationId;
     bool enableContextId;

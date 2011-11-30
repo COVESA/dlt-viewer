@@ -23,6 +23,9 @@ public:
     void setName(QString name);
     QString getName();
 
+    void setActive(bool state);
+    bool getEnableActive();
+
     void setEcuId(QString id);
     QString getEcuId();
     void setEnableEcuId(bool state);

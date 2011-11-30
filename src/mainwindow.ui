@@ -67,7 +67,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -352,6 +352,12 @@
          </property>
          <item>
           <widget class="QTreeWidget" name="filterWidget">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -359,7 +365,7 @@
             <bool>false</bool>
            </property>
            <property name="headerHidden">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="expandsOnDoubleClick">
             <bool>false</bool>
@@ -367,6 +373,23 @@
            <attribute name="headerVisible">
             <bool>false</bool>
            </attribute>
+           <attribute name="headerCascadingSectionResizes">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="headerDefaultSectionSize">
+            <number>26</number>
+           </attribute>
+           <attribute name="headerMinimumSectionSize">
+            <number>26</number>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>Active</string>
+            </property>
+            <property name="textAlignment">
+             <set>AlignLeft|AlignVCenter</set>
+            </property>
+           </column>
            <column>
             <property name="text">
              <string>Configuration</string>

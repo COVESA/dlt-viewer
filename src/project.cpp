@@ -241,6 +241,8 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
 
     name = "New Filter";
 
+    setCheckState(0,Qt::Checked);
+    enableFilter = false;
     enableEcuId = false;
     enableApplicationId = false;
     enableContextId = false;
@@ -254,7 +256,6 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
 
     logLevelMax = 6;
     logLevelMin = 0;
-
 }
 
 FilterItem::~FilterItem()
@@ -273,6 +274,7 @@ void FilterItem:: operator = (FilterItem &item)
     headerText = item.headerText;
     payloadText = item.payloadText;
 
+    enableFilter = item.enableFilter;
     enableEcuId = item.enableEcuId;
     enableApplicationId = item.enableApplicationId;
     enableContextId = item.enableContextId;
@@ -305,6 +307,12 @@ void FilterItem::update()
     case FilterItem::marker:
         text += QString("MARKER ");
         break;
+    }
+
+    if(enableFilter){
+        setCheckState(0,Qt::Checked);
+    }else{
+        setCheckState(0,Qt::Unchecked);
     }
 
     if(enableEcuId ) {
@@ -392,7 +400,7 @@ void FilterItem::update()
         text = QString("all");
     }
 
-    setData(0,0,QString("%1 (%2)").arg(name).arg(text));
+    setData(1,0,QString("%1 (%2)").arg(name).arg(text));
 }
 
 PluginItem::PluginItem(QTreeWidgetItem *parent)
@@ -716,6 +724,12 @@ bool Project::Load(QString filename)
                   if(filteritem)
                     filteritem->payloadText = xml.readElementText();
               }
+              if(xml.name() == QString("enablefilter"))
+              {
+                  if(filteritem)
+                    filteritem->enableFilter = xml.readElementText().toInt();
+
+              }
               if(xml.name() == QString("enableecuid"))
               {
                   if(filteritem)
@@ -993,6 +1007,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("headertext",item->headerText);
         xml.writeTextElement("payloadtext",item->payloadText);
 
+        xml.writeTextElement("enablefilter",QString("%1").arg(item->enableFilter));
         xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
         xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
@@ -1065,6 +1080,7 @@ bool Project::SaveFilter(QString filename)
         xml.writeTextElement("headertext",item->headerText);
         xml.writeTextElement("payloadtext",item->payloadText);
 
+        xml.writeTextElement("enablefilter",QString("%1").arg(item->enableFilter));
         xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
         xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
         xml.writeTextElement("enablecontextid",QString("%1").arg(item->enableContextId));
@@ -1155,6 +1171,12 @@ bool Project::LoadFilter(QString filename){
               {
                   if(filteritem)
                     filteritem->payloadText = xml.readElementText();
+              }
+              if(xml.name() == QString("enablefilter"))
+              {
+                  if(filteritem)
+                    filteritem->enableFilter = xml.readElementText().toInt();
+
               }
               if(xml.name() == QString("enableecuid"))
               {
