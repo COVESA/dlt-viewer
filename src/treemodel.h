@@ -36,8 +36,6 @@ int columnCount(const QModelIndex &parent = QModelIndex()) const;
 /* pointer to the current loaded file */
 QDltFile *qfile;
 int size;
-int showApIdDesc;
-int showCtIdDesc;
 QMutex *mutex;
 Project *project;
 void modelChanged();

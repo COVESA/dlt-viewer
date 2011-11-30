@@ -8,8 +8,6 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  TreeModel::TreeModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
-     showApIdDesc=0;
-     showCtIdDesc=0;
      size = 0;
  }
 
@@ -64,7 +62,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case 4:
              return msg.getEcuid();
          case 5:
-             switch(showApIdDesc){
+             switch(project->settings->showApIdDesc){
              case 0:
                  return msg.getApid();
                  break;
@@ -97,7 +95,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  return msg.getApid();
              }
          case 6:
-             switch(showCtIdDesc){
+             switch(project->settings->showCtIdDesc){
              case 0:
                  return msg.getCtid();
                  break;
@@ -152,6 +150,16 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
      }
 
+     if ( role == Qt::ForegroundRole ) {
+         buf = qfile->getMsgFilter(index.row());
+         msg.setMsg(buf);
+         if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
+            return QVariant(QBrush(QColor(255,255,255)));
+         } else {
+            return QVariant(QBrush(QColor(0,0,0)));
+         }
+     }
+
      if ( role == Qt::BackgroundRole ) {
          buf = qfile->getMsgFilter(index.row());
          msg.setMsg(buf);
@@ -173,7 +181,14 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
          else
          {
-            return QVariant(QBrush(QColor(255,255,255)));
+             if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") ){
+                return QVariant(QBrush(QColor(255,0,0)));
+             }
+             if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn"){
+                return QVariant(QBrush(QColor(255,255,0)));
+             }
+
+             return QVariant(QBrush(QColor(255,255,255)));
          }
      }
 
@@ -231,14 +246,14 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
           case 4:
               return QString("Ecuid");
           case 5:
-              switch(showApIdDesc){
+              switch(project->settings->showApIdDesc){
               case 0:
                    return QString("Apid");
               case 1:
                    return QString("Apid Desc");
               }
           case 6:
-              switch(showCtIdDesc){
+              switch(project->settings->showCtIdDesc){
               case 0:
                    return QString("Ctid");
               case 1:

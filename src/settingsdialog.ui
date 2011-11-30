@@ -31,7 +31,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_1">
       <attribute name="title">
@@ -385,10 +385,24 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="4" column="0">
            <widget class="QCheckBox" name="checkBoxWriteControl">
             <property name="text">
              <string>Write Control Messages to Log File</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
+            <property name="text">
+             <string>Auto mark fatal/error messages</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
+            <property name="text">
+             <string>Auto mark warn messages</string>
             </property>
            </widget>
           </item>

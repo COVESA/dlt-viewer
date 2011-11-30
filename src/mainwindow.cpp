@@ -949,25 +949,6 @@ void MainWindow::applySettings()
 
     settings.showEcuId?ui->tableView->showColumn(4):ui->tableView->hideColumn(4);
     settings.showApId?ui->tableView->showColumn(5):ui->tableView->hideColumn(5);
-    switch(settings.showApIdDesc){
-        case 0:
-            tableModel->showApIdDesc=0;
-            break;
-        case 1:
-            tableModel->showApIdDesc=1;
-            break;
-        }
-
-    settings.showCtId?ui->tableView->showColumn(6):ui->tableView->hideColumn(6);
-    switch(settings.showCtIdDesc){
-       case 0:
-           tableModel->showCtIdDesc=0;
-           break;
-       case 1:
-           tableModel->showCtIdDesc=1;
-           break;
-       }
-
     settings.showType?ui->tableView->showColumn(7):ui->tableView->hideColumn(7);
 
     settings.showSubtype?ui->tableView->showColumn(8):ui->tableView->hideColumn(8);
@@ -3578,8 +3559,8 @@ void MainWindow::loadPlugins()
 {
     QDir pluginsDir;
 
-    qDebug()<<"load Plugins";
-    /* second load plugins from user set plugins directory */
+    /* When the plugin path is not activated in the settings, the viewer
+       loosk in the relativ to the executable in the ./plugins directory */
     if(settings.pluginsPath)
     {
         qDebug()<<"Plugin path is set";
@@ -3598,7 +3579,7 @@ void MainWindow::loadPlugins()
 
     }
 
-    /* third load plugins from system directory in linux */
+    /* Load plugins from system directory in linux */
     pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
     if(pluginsDir.exists())
     {

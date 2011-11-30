@@ -479,9 +479,13 @@ bool Project::Load(QString filename)
               {
                   settings->autoScroll = xml.readElementText().toInt();
               }
-              if(xml.name() == QString("writeControl"))
+              if(xml.name() == QString("autoMarkFatalError"))
               {
-                  settings->writeControl = xml.readElementText().toInt();
+                  settings->autoMarkFatalError = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("autoMarkWarn"))
+              {
+                  settings->autoMarkWarn = xml.readElementText().toInt();
               }
               if(xml.name() == QString("fontSize"))
               {
@@ -916,6 +920,8 @@ bool Project::Save(QString filename)
         xml.writeStartElement("other");
             xml.writeTextElement("autoConnect",QString("%1").arg(settings->autoConnect));
             xml.writeTextElement("autoScroll",QString("%1").arg(settings->autoScroll));
+            xml.writeTextElement("autoMarkFatalError",QString("%1").arg(settings->autoMarkFatalError));
+            xml.writeTextElement("autoMarkWarn",QString("%1").arg(settings->autoMarkWarn));
             xml.writeTextElement("writeControl",QString("%1").arg(settings->writeControl));
         xml.writeEndElement(); // other
     xml.writeEndElement(); // settings

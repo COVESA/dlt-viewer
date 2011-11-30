@@ -22,6 +22,8 @@ public:
 
     int autoConnect;
     int autoScroll;
+    int autoMarkFatalError;
+    int autoMarkWarn;
     int writeControl;
 
     int fontSize;
