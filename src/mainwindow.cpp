@@ -111,7 +111,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->configWidget->setHeaderHidden(false);
     ui->filterWidget->setHeaderHidden(false);
     ui->pluginWidget->setHeaderHidden(false);
-
     /* Load Plugins before loading default project */
     loadPlugins();
 
@@ -4420,4 +4419,12 @@ void MainWindow::sectionInTableDoubleClicked(int logicalIndex){
         ui->tableView->resizeColumnToContents(logicalIndex);
 }
 
-
+void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
+{
+    PluginItem *plugin = (PluginItem*)item;
+    plugin->takeChildren();
+    QStringList list = plugin->plugininterface->infoConfig();
+    for(int num=0;num<list.size();num++) {
+        plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
+    }
+}

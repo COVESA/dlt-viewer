@@ -44,6 +44,7 @@ protected:
     void dropEvent(QDropEvent *event);
 
 private slots:
+    void on_pluginWidget_itemExpanded(QTreeWidgetItem* item);
     void on_actionFilter_Load_triggered();
     void on_actionFilter_Save_As_triggered();
     void on_actionExport_Selection_ASCII_triggered();
