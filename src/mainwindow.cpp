@@ -1017,8 +1017,6 @@ void MainWindow::on_actionProjectOpen_triggered()
         workingDirectory = QFileInfo(fileName).absolutePath();
 
         projectfileOpen(fileName);
-
-        filterUpdate();
     }
 
 }
@@ -1041,6 +1039,9 @@ bool MainWindow::projectfileOpen(QString fileName)
 
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
+
+        /* After loading the project file update the filters */
+        filterUpdate();
 
         return true;
     } else {
