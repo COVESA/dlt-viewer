@@ -3578,22 +3578,24 @@ void MainWindow::loadPlugins()
 {
     QDir pluginsDir;
 
-    /* first load plugins in working directory */
-    pluginsDir.setPath(QDir().currentPath());
-    bool ret = pluginsDir.cd("plugins");
-    if (ret)
-    {
-        loadPluginsPath(pluginsDir);
-    }
-
+    qDebug()<<"load Plugins";
     /* second load plugins from user set plugins directory */
     if(settings.pluginsPath)
     {
+        qDebug()<<"Plugin path is set";
         pluginsDir.setPath(settings.pluginsPathName);
         if(pluginsDir.exists())
         {
             loadPluginsPath(pluginsDir);
         }
+    } else {
+        pluginsDir.setPath(QCoreApplication::applicationDirPath());
+        bool ret = pluginsDir.cd("plugins");
+        if(ret)
+        {
+            loadPluginsPath(pluginsDir);
+        }
+
     }
 
     /* third load plugins from system directory in linux */

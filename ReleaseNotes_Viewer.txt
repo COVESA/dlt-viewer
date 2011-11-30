@@ -38,7 +38,7 @@ Changes in this release
 2.4.2 BETA:
 
 Improvements:
-
+   * [GSW-131] When the plugin path is not activated in the settings, the viewer looks in relativ to the executable in the ./plugins directory
    * Double klick on .dlt or .dlp opens dlt_viewer and loads automatically logfile or projectfile when dlt_viewer is defined as the standard program for .dlt or .dlp files in Windows
    * Plugininformation is called when the Pluginitem is expanded and not only when the Plugin is loaded
 
