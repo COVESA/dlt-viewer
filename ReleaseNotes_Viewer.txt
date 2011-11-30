@@ -36,8 +36,10 @@ Dynamically linked open source software
 Changes in this release
 -----------------------
 2.4.2 BETA:
+
 Improvements:
 
+   * Double klick on .dlt or .dlp opens dlt_viewer and loads automatically logfile or projectfile when dlt_viewer is defined as the standard program for .dlt or .dlp files in Windows
    * Plugininformation is called when the Pluginitem is expanded and not only when the Plugin is loaded
 
 
@@ -51,6 +53,7 @@ Improvements:
    * [GSW-70] Button for save project in the toolbar
 
 Bugfixes:
+   * Fixed Bug in Filetransferplugin - Clear list button
    * Fixed initialisation of injection plugin interface.
    * [GSW-109] Printing of dlt-viewer usage not visibile in windows. Command line usage for windows added to the help menu of the dlt viewer.
    * [GSW-104] Overload operator< for detailed sorting of appIds and ctIds in the configWidget of the viewer

@@ -43,6 +43,21 @@ void OptManager::OptManager::printUsage(){
 void OptManager::parse(QStringList *opt){
     QString str;
 
+    if(opt->size()==2)
+    {
+//        qDebug() << QString(" [%1]").arg(opt->at(1));
+        if(opt->at(1).endsWith(".dlp")){
+            projectFile = QString("%1").arg(opt->at(1));
+            project = true;
+        }
+        if(opt->at(1).endsWith(".dlt")){
+            logFile = QString("%1").arg(opt->at(1));
+            log = true;
+        }
+    }
+    else
+    {
+        // 0==Binary 1==First Argument
         for (int i = 0; i < opt->size(); ++i){
             str = opt->at(i);
 
@@ -105,6 +120,7 @@ void OptManager::parse(QStringList *opt){
                 }
             }
         }
+     }
 }
 
 bool OptManager::isProjectFile(){ return project;}
