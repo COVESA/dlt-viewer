@@ -43,7 +43,7 @@ Improvements:
    * Plugininformation is called when the Pluginitem is expanded and not only when the Plugin is loaded
 
 Bugfixes:
-
+   * [GSW-118] When changing filters a popup with an abort button appears this button seems to do nothing
    * [GSW-130] The filer and marker won't be activated after loading a project file
 
 

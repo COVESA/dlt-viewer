@@ -880,6 +880,9 @@ void MainWindow::reloadLogFile()
     fileprogress.show();
     qfile.clearFilterIndex();
     for(int num=0;num<qfile.size();num++) {
+        if (fileprogress.wasCanceled()){
+           break;
+        }
         fileprogress.setValue(num);
         data = qfile.getMsg(num);
         msg.setMsg(data);
@@ -904,10 +907,22 @@ void MainWindow::reloadLogFile()
     tableModel->size = qfile.sizeFilter();
     tableModel->modelChanged();
 
+
+    QProgressDialog pluginprogress("Applying plugins (0/0)...", "Abort", 0, project.plugin->topLevelItemCount (), this);
+    pluginprogress.setWindowTitle("DLT Viewer");
+    pluginprogress.setWindowModality(Qt::WindowModal);
+    pluginprogress.show();
     /* update plugins */
-    for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+    for(int num = 0; num < project.plugin->topLevelItemCount(); num++)
     {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+
+        if (pluginprogress.wasCanceled()){
+           break;
+        }
+        pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->name));
+        pluginprogress.setValue(num);
+
 
         if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable))
         {
