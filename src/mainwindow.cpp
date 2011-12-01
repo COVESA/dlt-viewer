@@ -86,6 +86,12 @@ MainWindow::MainWindow(QWidget *parent) :
     tableModel->mutex = &mutex;
     tableModel->project = &project;
 
+    /* initialise project configuration */
+    project.ecu = ui->configWidget;
+    project.filter = ui->filterWidget;
+    project.plugin = ui->pluginWidget;
+    project.settings = &settings;
+
     /* set table size and en */
     ui->tableView->setModel(tableModel);
     ui->tableView->setColumnWidth(0,50);
@@ -102,12 +108,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->tableView->setColumnWidth(11,400);
     setAcceptDrops(true);
 
-
-    /* initialise project configuration */
-    project.ecu = ui->configWidget;
-    project.filter = ui->filterWidget;
-    project.plugin = ui->pluginWidget;
-    project.settings = &settings;
     ui->configWidget->setHeaderHidden(false);
     ui->filterWidget->setHeaderHidden(false);
     ui->pluginWidget->setHeaderHidden(false);
