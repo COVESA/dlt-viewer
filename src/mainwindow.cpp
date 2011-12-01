@@ -882,7 +882,7 @@ void MainWindow::reloadLogFile()
         if (fileprogress.wasCanceled()){
            break;
         }
-        fileprogress.setValue(num+1);
+        fileprogress.setValue(num);
         data = qfile.getMsg(num);
         msg.setMsg(data);
         for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
@@ -920,7 +920,7 @@ void MainWindow::reloadLogFile()
            break;
         }
         pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->name));
-        pluginprogress.setValue(num+1);
+        pluginprogress.setValue(num);
 
         if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable))
         {
