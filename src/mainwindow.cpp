@@ -3557,9 +3557,14 @@ void MainWindow::on_actionFind_triggered()
 void MainWindow::loadPlugins()
 {
     QDir pluginsDir;
+    /* The viewer loosk in the relativ to the executable in the ./plugins directory */
+    pluginsDir.setPath(QCoreApplication::applicationDirPath());
+    if(pluginsDir.cd("plugins"))
+    {
+        loadPluginsPath(pluginsDir);
+    }
 
-    /* When the plugin path is not activated in the settings, the viewer
-       loosk in the relativ to the executable in the ./plugins directory */
+
     if(settings.pluginsPath)
     {
         pluginsDir.setPath(settings.pluginsPathName);
@@ -3567,14 +3572,6 @@ void MainWindow::loadPlugins()
         {
             loadPluginsPath(pluginsDir);
         }
-    } else {
-        pluginsDir.setPath(QCoreApplication::applicationDirPath());
-        bool ret = pluginsDir.cd("plugins");
-        if(ret)
-        {
-            loadPluginsPath(pluginsDir);
-        }
-
     }
 
     /* Load plugins from system directory in linux */
