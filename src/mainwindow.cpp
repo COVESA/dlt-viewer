@@ -215,7 +215,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionECU_Delete_All_Contexts->setEnabled(false);
     ui->actionECU_Connect->setEnabled(false);
     ui->actionECU_Disconnect->setEnabled(false);
-
+    ui->actionExpand_All_ECUs->setEnabled(false);
+    ui->actionCollapse_All_ECUs->setEnabled(false);
     /* initialize injection */
     injectionAplicationId.clear();
     injectionContextId.clear();
@@ -3668,6 +3669,14 @@ void MainWindow::updatePluginsECUList()
             item->plugincontrolinterface->initConnections(list);
         }
     }
+
+    if(project.ecu->topLevelItemCount() > 0){
+        ui->actionExpand_All_ECUs->setEnabled(true);
+        ui->actionCollapse_All_ECUs->setEnabled(true);
+    }else{
+        ui->actionExpand_All_ECUs->setEnabled(false);
+        ui->actionCollapse_All_ECUs->setEnabled(false);
+    }
 }
 
 void MainWindow::updatePlugins() {
@@ -4451,4 +4460,14 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
             /* reload DLT log file */
             reloadLogFile();
     }
+}
+
+void MainWindow::on_actionCollapse_All_ECUs_triggered()
+{
+    ui->configWidget->collapseAll();
+}
+
+void MainWindow::on_actionExpand_All_ECUs_triggered()
+{
+    ui->configWidget->expandAll();
 }

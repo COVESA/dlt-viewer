@@ -131,6 +131,10 @@ private slots:
 
     void on_filterWidget_itemClicked(QTreeWidgetItem *item, int column);
 
+    void on_actionCollapse_All_ECUs_triggered();
+
+    void on_actionExpand_All_ECUs_triggered();
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
 
