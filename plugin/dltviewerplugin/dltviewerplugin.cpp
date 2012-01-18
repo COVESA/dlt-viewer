@@ -84,7 +84,7 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
     text += QString("<table border=\"1\">");
     text += QString("<tr><th>Index</th><th>Time</th><th>Timestamp</th><th>Count</th><th>Ecuid</th><th>Apid</th><th>Ctid</th>");
     text += QString("<th>Type</th><th>Subtype</th><th>Mode</th><th>Endianness</th><th>#Args</th></tr>");
-    text += QString("<tr><td>%1</td>").arg(index);
+    text += QString("<tr><td>%1</td>").arg(dltFile->getMsgFilterPos(index));
     text += QString("<td>%1.%2</td>").arg(msg.getTime().toString("yyyy/MM/dd hh:mm:ss")).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
     text += QString("<td>%1.%2</td>").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
     text += QString("<td>%1</td>").arg(msg.getMessageCounter());
