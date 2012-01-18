@@ -1,3 +1,4 @@
 .gitconfig
 *.pro.user
 qextserialport/
+build/

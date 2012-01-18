@@ -47,8 +47,12 @@ Compiling in Windows:
 
 Compiling in Linux:
 -------------------
+Precondition
 - Install package Qt4 including developer tools
 - Optional: Install Qt Creator
+
+Please run "./DLT_Viewer_Helper.sh" which is a simple helper script and perform the options 1 to 7.
+Alternative you could do the steps manual:
 - Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/
 - Save file qextserialport/qextserialport.pro
 - Extract qextserialport package into DLT-viewer main directory 
@@ -60,7 +64,7 @@ Compiling in Linux:
 - optional: sudo make install
 - optional: sudo ldconfig
 - Run dlt_viewer (if you installed the viewer) or change into the release directory and run ./dlt_viewer 
-- optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
+- Optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
 
 
 Command line usage:
