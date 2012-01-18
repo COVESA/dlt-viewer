@@ -1186,7 +1186,7 @@ QString QDltMsg::toStringHeader()
     QString text;
 
     text += QString("%1.%2").arg(getTime().toString("yyyy/MM/dd hh:mm:ss")).arg(getMicroseconds(),6,10,QLatin1Char('0'));
-    text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,5,10,QLatin1Char('0'));
+    text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
     text += QString(" %1").arg(getMessageCounter());
     text += QString(" %1").arg(getEcuid());
     text += QString(" %1").arg(getApid());
