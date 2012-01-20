@@ -438,6 +438,20 @@ void PluginItem::update()
     setData(0,0,QString("%1 (%2|%3 %4)").arg(name).arg(types.join("")).arg(list.size()).arg(filename));
 }
 
+void PluginItem::dockVisibilityChanged(bool visible)
+{
+    // Disable visible plugin when closing it.
+    // Do not disable plugins that are hidden but enabled.
+    // (Initially called on program start)
+    if(visible == false && this->mode != ModeEnable)
+    {
+        this->mode = PluginItem::ModeDisable;
+    }
+    else
+    {
+        this->mode = PluginItem::ModeShow;
+    }
+}
 
 Project::Project()
 {

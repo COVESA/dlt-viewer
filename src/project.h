@@ -7,6 +7,7 @@
 #include <QHeaderView>
 #include <QTcpSocket>
 #include <QDockWidget>
+#include <QObject>
 #include <qextserialport.h>
 #include "settingsdialog.h"
 
@@ -158,8 +159,9 @@ private:
 
 };
 
-class PluginItem  : public QTreeWidgetItem
+class PluginItem  : public QObject, public QTreeWidgetItem
 {
+    Q_OBJECT
 public:
 
     PluginItem(QTreeWidgetItem *parent = 0);
@@ -185,6 +187,9 @@ public:
     QDockWidget *dockWidget;
 
 private:
+
+public slots:
+    void dockVisibilityChanged(bool);
 
 };
 

@@ -351,16 +351,7 @@ void MainWindow::commandLineConvertToASCII(){
         msg.setMsg(data);
 
         /* decode message is necessary */
-        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-            {
-                item->plugindecoderinterface->decodeMsg(msg);
-                break;
-            }
-        }
+        iterateDecodersForMsg(msg);
 
         /* get message ASCII text */
         text.clear();
@@ -629,16 +620,7 @@ void MainWindow::on_actionExport_ASCII_triggered()
         msg.setMsg(data);
 
         /* decode message is necessary */
-        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-            {
-                item->plugindecoderinterface->decodeMsg(msg);
-                break;
-            }
-        }
+        iterateDecodersForMsg(msg);
 
         /* get message ASCII text */
         text.clear();
@@ -728,16 +710,7 @@ void MainWindow::exportSelection(bool ascii,bool file)
                msg.setMsg(data);
 
                /* decode message is necessary */
-               for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-               {
-                   PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-                   if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-                   {
-                       item->plugindecoderinterface->decodeMsg(msg);
-                       break;
-                   }
-               }
+               iterateDecodersForMsg(msg);
 
                /* get message ASCII text */
                text.clear();
@@ -885,16 +858,7 @@ void MainWindow::reloadLogFile()
         fileprogress.setValue(num);
         data = qfile.getMsg(num);
         msg.setMsg(data);
-        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-            {
-                item->plugindecoderinterface->decodeMsg(msg);
-                break;
-            }
-        }
+        iterateDecodersForMsg(msg);
         if(qfile.checkFilter(msg)) {
             qfile.addFilterIndex(num);
         }
@@ -2161,16 +2125,7 @@ void MainWindow::read(EcuItem* ecuitem)
             for(int num=oldsize;num<qfile.size();num++) {
                 data = qfile.getMsg(num);
                 qmsg.setMsg(data);
-                for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-                {
-                    PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-                    if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(qmsg))
-                    {
-                        item->plugindecoderinterface->decodeMsg(qmsg);
-                        break;
-                    }
-                }
+                iterateDecodersForMsg(qmsg);
                 if(qfile.checkFilter(qmsg)) {
                     qfile.addFilterIndex(num);
                 }
@@ -2475,16 +2430,7 @@ void MainWindow::SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString ap
     for(int num=oldsize;num<qfile.size();num++) {
         data = qfile.getMsg(num);
         qmsg.setMsg(data);
-        for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-            if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(qmsg))
-            {
-                item->plugindecoderinterface->decodeMsg(qmsg);
-                break;
-            }
-        }
+        iterateDecodersForMsg(qmsg);
         if(qfile.checkFilter(qmsg)) {
             qfile.addFilterIndex(num);
         }
@@ -3625,6 +3571,7 @@ void MainWindow::loadPluginsPath(QDir dir)
                             {
                                 item->dockWidget->hide();
                             }
+                            connect(item->dockWidget, SIGNAL(visibilityChanged(bool)), item, SLOT(dockVisibilityChanged(bool)));
                         }
                     }
                     QDLTPluginDecoderInterface *plugindecoderinterface = qobject_cast<QDLTPluginDecoderInterface *>(plugin);
@@ -3809,16 +3756,7 @@ void MainWindow::filterAddTable() {
     msg.setMsg(data);
 
     /* decode message if necessary */
-    for(int num2 = 0; num2 < project.plugin->topLevelItemCount (); num2++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num2);
-
-        if(item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
-        {
-            item->plugindecoderinterface->decodeMsg(msg);
-            break;
-        }
-    }
+    iterateDecodersForMsg(msg);
 
     /* show filter dialog */
     FilterDialog dlg;
@@ -4450,5 +4388,21 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
             /* reload DLT log file */
             reloadLogFile();
+    }
+}
+
+void MainWindow::iterateDecodersForMsg(QDltMsg msg)
+{
+    for(int i = 0; i < project.plugin->topLevelItemCount (); i++)
+    {
+        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
+
+        if(item->mode != item->ModeDisable &&
+           item->plugindecoderinterface &&
+           item->plugindecoderinterface->isMsg(msg))
+        {
+            item->plugindecoderinterface->decodeMsg(msg);
+            break;
+        }
     }
 }
