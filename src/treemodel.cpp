@@ -70,22 +70,12 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(ecuitem->childCount()==0){
-                        return QString("Apid: %1 (No description)").arg(msg.getApid());
-                     }
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem->id == msg.getApid() )
+                         if(appitem->id == msg.getApid() && !appitem->description.isEmpty())
                          {
-                            if(appitem->description.isEmpty())
-                                return QString("Apid: %1 (No description)").arg(msg.getApid());
-                             else
-                                return appitem->description;
-                         }
-                         else
-                         {
-                            return QString("Apid: %1 (No description)").arg(msg.getApid());
+                            return appitem->description;
                          }
                      }
                     }
@@ -104,29 +94,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(ecuitem->childCount()==0){
-                        return QString("Ctid: %1 (No description)").arg(msg.getCtid());
-                     }
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if( appitem->childCount() == 0)
-                            return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
-
                          for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
                          {
                              ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
 
-                             if(appitem->id == msg.getApid() && conitem->id == msg.getCtid())
+                             if(appitem->id == msg.getApid() && conitem->id == msg.getCtid()
+                                     && !conitem->description.isEmpty())
                              {
-                                 if(conitem->description.isEmpty())
-                                     return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
-                                  else
-                                     return conitem->description;
-                             }
-                             else
-                             {
-                                return QString("Ctid: %1 (No description)").arg(msg.getCtid());
+                                return conitem->description;
                              }
                          }
                      }
