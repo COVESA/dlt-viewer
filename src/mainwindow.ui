@@ -124,6 +124,9 @@
     <addaction name="actionECU_Connect"/>
     <addaction name="actionECU_Disconnect"/>
     <addaction name="separator"/>
+    <addaction name="actionExpand_All_ECUs"/>
+    <addaction name="actionCollapse_All_ECUs"/>
+    <addaction name="separator"/>
     <addaction name="actionApplication_Add"/>
     <addaction name="actionApplication_Edit"/>
     <addaction name="actionApplication_Delete"/>
@@ -365,7 +368,7 @@
             <bool>false</bool>
            </property>
            <property name="headerHidden">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="expandsOnDoubleClick">
             <bool>false</bool>
@@ -728,6 +731,22 @@
   <action name="actionCommand_Line">
    <property name="text">
     <string>Command Line Options...</string>
+   </property>
+  </action>
+  <action name="actionCollapse_All_ECUs">
+   <property name="text">
+    <string>Collapse All ECUs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="actionExpand_All_ECUs">
+   <property name="text">
+    <string>Expand All ECUs</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl++</string>
    </property>
   </action>
  </widget>
