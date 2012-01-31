@@ -53,6 +53,7 @@ Bugfixes:
    * [GSW-118] When changing filters a popup with an abort button appears this button seems to do nothing
    * [GSW-130] The filer and marker won't be activated after loading a project file
    * [GSW-144] No second iteration to search and return the correct application and context description is possible
+   * [GENDLT-12] DLT Viewer Crashes fixed
 
 2.4.1:
 
