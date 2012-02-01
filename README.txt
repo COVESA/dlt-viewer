@@ -1,6 +1,6 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version 2.4.1
+Version 2.4.2
 
 The DLT Viewer can send control messages to the daemon, e.g. to set 
 individual log levels of applications and contexts or get the list of 
@@ -26,7 +26,7 @@ Christian Muck (christian.muck@bmw.de)
 
 
 Dynamically linked open source software
------------------------------------
+--------------------------------------
 * Qt 4.7 (LGPL - Qt SDK version 1.1.3)
 * GCC (GPL)
 * Mingw (GPL + BSD Variante + Public Domain)
@@ -36,7 +36,7 @@ Dynamically linked open source software
 Compiling in Windows:
 ---------------------
 - Download "Qt SDK version 1.1.3" for Windows from http://qt.nokia.com/downloads
-- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/files/qextserialport
+- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/files/qextserialport/1.1/
 - Install "Qt SDK version 1.1.3" (use custom install, normally symbian stuff and emulators not needed, select MinGW if needed)
 - Save file qextserialport/qextserialport.pro
 - Extract qextserialport package into DLT-viewer main directory 
@@ -86,15 +86,6 @@ Create Windows SDK:
 - Execute sdk\create_sdk.bat batch file
 
 
-Create Windows SDK Documentation:
--------------------------------
-- Install doxygen
-- Change into project directory
-- doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
-- (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
-- (Optional) doxygen sdk/doxygen_dlt_viewer_qdlt.cfg
-- You will find the documentation in the doc directory
-
 
 Create Linux SDK:
 -----------------
@@ -102,12 +93,11 @@ Create Linux SDK:
 - Call "sudo make install" to install dlt_viewer including libraries and headers for SDK
 
 
-Create Linux SDK Documentation:
--------------------------------
-- Install doxygen and graphviz
+Create SDK Documentation for Linux and Windows:
+-----------------------------------------------
+- Install doxygen
 - Change into project directory
 - doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
 - (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
 - (Optional) doxygen sdk/doxygen_dlt_viewer_qdlt.cfg
 - You will find the documentation in the doc directory
-

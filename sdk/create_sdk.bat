@@ -1,4 +1,4 @@
-set QT_DIR=C:\Qt\bin
+set QT_DIR=C:\QtSDK\QtCreator\bin
 set SOURCE_DIR=C:\00_Git\DLT-viewer
 set BUILD_DIR=C:\00_Git\BuildDltViewer-build-desktop-Qt_4_7_4_for_Desktop_-_MinGW_4_4__Qt_SDK__Release\release
 set TARGET_DIR=C:\dlt_viewer\releases\dlt_viewer_new
