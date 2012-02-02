@@ -37,7 +37,7 @@ private:
     Ui::MainWindow *ui;
 
     void commandLineConvertToASCII();
-    void iterateDecodersForMsg(QDltMsg);
+    void iterateDecodersForMsg(QDltMsg &);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );

@@ -4401,7 +4401,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 }
 
 
-void MainWindow::iterateDecodersForMsg(QDltMsg msg)
+void MainWindow::iterateDecodersForMsg(QDltMsg &msg)
 {
     for(int i = 0; i < project.plugin->topLevelItemCount (); i++)
     {
