@@ -4,6 +4,7 @@
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
+#include "version.h"
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -26,6 +27,58 @@ void SettingsDialog::changeEvent(QEvent *e)
         break;
     default:
         break;
+    }
+}
+
+void SettingsDialog::assertSettingsVersion()
+{
+    QSettings settings("BMW","DLT Viewer");
+
+    int major = settings.value("startup/versionMajor").toInt();
+    int minor = settings.value("startup/versionMinor").toInt();
+
+    if(major == 0 && minor == 0)
+        return; // The settings were empty already
+
+    if(major < QString(PACKAGE_MAJOR_VERSION).toInt() ||
+       minor < QString(PACKAGE_MINOR_VERSION).toInt())
+    {
+        QString msg;
+        msg.append("Application version has changed. Settings might be incompatible.\n");
+        msg.append("Would you like to remove all old settings and initialize new ones?\n");
+        msg.append("Yes    - Reset settings to factory defaults.\n");
+        msg.append("No     - Continue loading settings and risk crashing the application.\n");
+        msg.append("Cancel - Exit the viewer now.\n");
+        QMessageBox dlg("Warning", msg, QMessageBox::Warning,
+                        QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+        int btn = dlg.exec();
+        if(btn == QMessageBox::Yes)
+        {
+            resetSettings();
+        }
+        else if(btn == QMessageBox::Cancel)
+        {
+            exit(-1);
+        }
+    }
+}
+
+void SettingsDialog::resetSettings()
+{
+    QSettings settings("BMW","DLT Viewer");
+    settings.clear();
+    QString fn(settings.fileName());
+    QFile fh(fn);
+    if(fh.exists())
+    {
+        if(!fh.open(QIODevice::ReadWrite))
+            return; // Could be a registry key on windows
+        fh.close();
+        if(!fh.remove())
+        {
+            QMessageBox err("Error", "Could not remove the settings file", QMessageBox::Critical, QMessageBox::Ok, 0, 0);
+            err.exec();
+        }
     }
 }
 
@@ -184,6 +237,11 @@ void SettingsDialog::writeSettings()
 
     /* other */
     settings.setValue("startup/writeControl",writeControl);
+
+    /* For settings integrity validation */
+    settings.setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
+    settings.setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
+    settings.setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
 }
 
 void SettingsDialog::readSettings()

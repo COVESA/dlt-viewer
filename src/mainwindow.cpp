@@ -53,7 +53,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->menuRecent_projects->addAction(recentProjectActs[i]);
     }
 
-    /* Initialize recent projects */
+    /* Initialize recent filters */
     for (int i = 0; i < MaxRecentFilters; ++i) {
         recentFiltersActs[i] = new QAction(this);
         recentFiltersActs[i]->setVisible(false);
@@ -62,6 +62,8 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* Settings */
+    settings.assertSettingsVersion();
+
     bmwsettings = new QSettings("BMW","DLT Viewer");
 
     recentFiles = bmwsettings->value("other/recentFileList").toStringList();
@@ -376,6 +378,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 
     settings.setValue("geometry", saveGeometry());
     settings.setValue("windowState", saveState());
+
+    this->settings.writeSettings();
 
     QMainWindow::closeEvent(event);
 }

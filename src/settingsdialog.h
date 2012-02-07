@@ -44,11 +44,15 @@ public:
 
     QString workingDirectory;
 
+    void assertSettingsVersion();
+
     void writeDlg();
     void readDlg();
 
     void writeSettings();
     void readSettings();
+
+    void resetSettings();
 
 protected:
     void changeEvent(QEvent *e);
