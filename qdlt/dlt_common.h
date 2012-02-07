@@ -336,7 +336,7 @@ typedef char ID4[DLT_ID_SIZE];
 typedef struct
 {
     char pattern[DLT_ID_SIZE];		/**< This pattern should be DLT0x01 */
-    time_t seconds;				    /**< seconds since 1.1.1970 */
+    uint32_t seconds;			    /**< seconds since 1.1.1970 */
     int32_t microseconds;			/**< Microseconds */
     char ecu[DLT_ID_SIZE];			/**< The ECU id is added, if it is not already in the DLT message itself */
 } PACKED DltStorageHeader;
