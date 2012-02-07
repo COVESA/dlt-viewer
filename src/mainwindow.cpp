@@ -70,6 +70,8 @@ MainWindow::MainWindow(QWidget *parent) :
     recentFilters = bmwsettings->value("other/recentFiltersList").toStringList();
     workingDirectory = bmwsettings->value("work/workingDirectory",QDir::currentPath()).toString();
     settings.readSettings();
+    qfile.hideFileTransfer = settings.hideFiletransfer;
+    qfile.createIndexFilter();
 
     /* Update recent file and project actions */
     updateRecentFileActions();
@@ -922,6 +924,13 @@ void MainWindow::applySettings()
     settings.showMode?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
     settings.showNoar?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
     settings.showPayload?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
+
+    qfile.hideFileTransfer = settings.hideFiletransfer;
+
+    qfile.createIndexFilter();
+    ui->tableView->selectionModel()->clear();
+    tableModel->size = qfile.sizeFilter();
+    tableModel->modelChanged();
 }
 
 void MainWindow::on_actionSettings_triggered()

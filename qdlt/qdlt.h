@@ -603,6 +603,7 @@ public:
     */
     QString toStringPayload();
 
+
 protected:
 
 private:
@@ -852,6 +853,20 @@ public:
     */
     QColor checkMarker(QDltMsg &msg);
 
+    //! Check if a message is a type of file transfer message that we want to hide
+    /*!
+        \return True if we want to hide this message, false if we want to show it.
+    */
+    bool isFileTransferMessage(QDltMsg &msg);
+
+    //! Filter file transfer messages?
+    /*!
+      true, hide file transfer messages
+      false, show file transfer messages
+    */
+    bool hideFileTransfer;
+
+
 protected:
 
 private:
@@ -886,7 +901,6 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
-
 };
 
 class QDltControl : public QObject

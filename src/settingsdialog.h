@@ -25,6 +25,7 @@ public:
     int autoMarkFatalError;
     int autoMarkWarn;
     int writeControl;
+    int hideFiletransfer;
 
     int fontSize;
     int showIndex;

@@ -1274,7 +1274,7 @@ int QDltFile::size()
 
 int QDltFile::sizeFilter()
 {
-    if(filterFlag)
+    if(filterFlag || hideFileTransfer)
         return indexFilter.size();
     else
         return indexAll.size();
@@ -1433,12 +1433,28 @@ bool QDltFile::updateIndexFilter()
 
     return true;
 }
+bool QDltFile::isFileTransferMessage(QDltMsg &msg)
+{
+    QDltArgument protocolStartFlag;
+    msg.getArgument(0,protocolStartFlag);
+    if(protocolStartFlag.toString().compare("FLDA") == 0 ||
+       protocolStartFlag.toString().compare("FLFI") == 0)
+    {
+        return true;
+    }
+    return false;
+}
 
 bool QDltFile::checkFilter(QDltMsg &msg)
 {
     QDltFilter filter;
     bool found = false, foundFilter;
     bool filterActivated = false;
+
+    if(hideFileTransfer && isFileTransferMessage(msg))
+    {
+        return false;
+    }
 
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
@@ -1646,7 +1662,7 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
 
 QByteArray QDltFile::getMsgFilter(int index)
 {
-    if(filterFlag) {
+    if(filterFlag || hideFileTransfer) {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size()) {
             qDebug() << "getMsgFilter: Index is out of range";
@@ -1670,7 +1686,7 @@ QByteArray QDltFile::getMsgFilter(int index)
 
 int QDltFile::getMsgFilterPos(int index)
 {
-    if(filterFlag) {
+    if(filterFlag || hideFileTransfer) {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size()) {
             qDebug() << "getMsgFilter: Index is out of range";

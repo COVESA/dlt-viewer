@@ -162,6 +162,7 @@ void SettingsDialog::writeDlg()
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxHideFiletransfer->setCheckState(hideFiletransfer?Qt::Checked:Qt::Unchecked);
 }
 
 void SettingsDialog::readDlg()
@@ -199,6 +200,7 @@ void SettingsDialog::readDlg()
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
+    hideFiletransfer = (ui->checkBoxHideFiletransfer->checkState() == Qt::Checked);
 
 }
 
@@ -239,6 +241,7 @@ void SettingsDialog::writeSettings()
 
     /* other */
 	settings->setValue("startup/writeControl",writeControl);
+	settings->setValue("startup/hideFiletransfer",hideFiletransfer);
 
     /* For settings integrity validation */
 	settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
@@ -282,6 +285,7 @@ void SettingsDialog::readSettings()
 
     /* other */
 	writeControl = settings->value("startup/writeControl",1).toInt();
+	hideFiletransfer = settings->value("startup/hideFiletransfer",1).toInt();
 }
 
 
