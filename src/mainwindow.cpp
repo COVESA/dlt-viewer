@@ -4,7 +4,6 @@
 #include <QProgressDialog>
 #include <QTemporaryFile>
 #include <QPluginLoader>
-#include <QSettings>
 #include <QPushButton>
 #include <QKeyEvent>
 #include <QClipboard>
@@ -64,7 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Settings */
     settings.assertSettingsVersion();
 
-    bmwsettings = new QSettings("BMW","DLT Viewer");
+    bmwsettings = DltSettingsManager::instance();
 
     recentFiles = bmwsettings->value("other/recentFileList").toStringList();
     recentProjects = bmwsettings->value("other/recentProjectList").toStringList();
@@ -322,10 +321,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    QSettings settings("BMW","DLT Viewer");
+    DltSettingsManager *settings = DltSettingsManager::instance();
 
     /* store last working directory */
-    settings.setValue("work/workingDirectory",workingDirectory);
+    settings->setValue("work/workingDirectory",workingDirectory);
+    DltSettingsManager::close();
 
     delete ui;
     delete tableModel;
@@ -374,10 +374,10 @@ void MainWindow::commandLineConvertToASCII(){
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    QSettings settings("BMW","DLT Viewer");
+    DltSettingsManager *settings = DltSettingsManager::instance();
 
-    settings.setValue("geometry", saveGeometry());
-    settings.setValue("windowState", saveState());
+    settings->setValue("geometry", saveGeometry());
+    settings->setValue("windowState", saveState());
 
     this->settings.writeSettings();
 

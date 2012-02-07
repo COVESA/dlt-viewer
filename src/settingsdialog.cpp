@@ -5,6 +5,7 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 #include "version.h"
+#include "dltsettingsmanager.h"
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
@@ -32,10 +33,10 @@ void SettingsDialog::changeEvent(QEvent *e)
 
 void SettingsDialog::assertSettingsVersion()
 {
-    QSettings settings("BMW","DLT Viewer");
+	DltSettingsManager *settings = DltSettingsManager::instance();
 
-    int major = settings.value("startup/versionMajor").toInt();
-    int minor = settings.value("startup/versionMinor").toInt();
+	int major = settings->value("startup/versionMajor").toInt();
+	int minor = settings->value("startup/versionMinor").toInt();
 
     if(major == 0 && minor == 0)
         return; // The settings were empty already
@@ -65,10 +66,11 @@ void SettingsDialog::assertSettingsVersion()
 
 void SettingsDialog::resetSettings()
 {
-    QSettings settings("BMW","DLT Viewer");
-    settings.clear();
-    QString fn(settings.fileName());
-    QFile fh(fn);
+	DltSettingsManager *settings = DltSettingsManager::instance();
+	settings->clear();
+	QString fn(settings->fileName());
+	DltSettingsManager::close();
+	QFile fh(fn);
     if(fh.exists())
     {
         if(!fh.open(QIODevice::ReadWrite))
@@ -202,84 +204,84 @@ void SettingsDialog::readDlg()
 
 void SettingsDialog::writeSettings()
 {
-    QSettings settings("BMW","DLT Viewer");
+	DltSettingsManager *settings = DltSettingsManager::instance();
 
     /* startup */
-    settings.setValue("startup/defaultProjectFile",defaultProjectFile);
-    settings.setValue("startup/defaultProjectFileName",defaultProjectFileName);
-    settings.setValue("startup/defaultLogFile",defaultLogFile);
-    settings.setValue("startup/defaultLogFileName",defaultLogFileName);
-    settings.setValue("startup/pluginsPath",pluginsPath);
-    settings.setValue("startup/pluginsPathName",pluginsPathName);
-    settings.setValue("startup/autoConnect",autoConnect);
-    settings.setValue("startup/autoScroll",autoScroll);
-    settings.setValue("startup/autoMarkFatalError",autoMarkFatalError);
-    settings.setValue("startup/autoMarkWarn",autoMarkWarn);
+	settings->setValue("startup/defaultProjectFile",defaultProjectFile);
+	settings->setValue("startup/defaultProjectFileName",defaultProjectFileName);
+	settings->setValue("startup/defaultLogFile",defaultLogFile);
+	settings->setValue("startup/defaultLogFileName",defaultLogFileName);
+	settings->setValue("startup/pluginsPath",pluginsPath);
+	settings->setValue("startup/pluginsPathName",pluginsPathName);
+	settings->setValue("startup/autoConnect",autoConnect);
+	settings->setValue("startup/autoScroll",autoScroll);
+	settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
+	settings->setValue("startup/autoMarkWarn",autoMarkWarn);
 
     /* table */
-    settings.setValue("startup/fontSize",fontSize);
-    settings.setValue("startup/showIndex",showIndex);
-    settings.setValue("startup/showTime",showTime);
-    settings.setValue("startup/showTimestamp",showTimestamp);
-    settings.setValue("startup/showCount",showCount);
+	settings->setValue("startup/fontSize",fontSize);
+	settings->setValue("startup/showIndex",showIndex);
+	settings->setValue("startup/showTime",showTime);
+	settings->setValue("startup/showTimestamp",showTimestamp);
+	settings->setValue("startup/showCount",showCount);
 
-    settings.setValue("startup/showEcuId",showEcuId);
-    settings.setValue("startup/showApId",showApId);
-    settings.setValue("startup/showApIdDesc",showApIdDesc);
-    settings.setValue("startup/showCtId",showCtId);
-    settings.setValue("startup/showCtIdDesc",showCtIdDesc);
-    settings.setValue("startup/showType",showType);
+	settings->setValue("startup/showEcuId",showEcuId);
+	settings->setValue("startup/showApId",showApId);
+	settings->setValue("startup/showApIdDesc",showApIdDesc);
+	settings->setValue("startup/showCtId",showCtId);
+	settings->setValue("startup/showCtIdDesc",showCtIdDesc);
+	settings->setValue("startup/showType",showType);
 
-    settings.setValue("startup/showSubtype",showSubtype);
-    settings.setValue("startup/showMode",showMode);
-    settings.setValue("startup/showNoar",showNoar);
-    settings.setValue("startup/showPayload",showPayload);
+	settings->setValue("startup/showSubtype",showSubtype);
+	settings->setValue("startup/showMode",showMode);
+	settings->setValue("startup/showNoar",showNoar);
+	settings->setValue("startup/showPayload",showPayload);
 
     /* other */
-    settings.setValue("startup/writeControl",writeControl);
+	settings->setValue("startup/writeControl",writeControl);
 
     /* For settings integrity validation */
-    settings.setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
-    settings.setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
-    settings.setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
+	settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
+	settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
+	settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
 }
 
 void SettingsDialog::readSettings()
 {
-    QSettings settings("BMW","DLT Viewer");
+	DltSettingsManager *settings = DltSettingsManager::instance();
     /* startup */
-    defaultProjectFile = settings.value("startup/defaultProjectFile",0).toInt();
-    defaultProjectFileName = settings.value("startup/defaultProjectFileName",QString("")).toString();
-    defaultLogFile = settings.value("startup/defaultLogFile",0).toInt();
-    defaultLogFileName = settings.value("startup/defaultLogFileName",QString("")).toString();
-    pluginsPath = settings.value("startup/pluginsPath",0).toInt();
-    pluginsPathName = settings.value("startup/pluginsPathName",QDir().currentPath()).toString();
-    autoConnect = settings.value("startup/autoConnect",0).toInt();
-    autoScroll = settings.value("startup/autoScroll",1).toInt();
-    autoMarkFatalError = settings.value("startup/autoMarkFatalError",0).toInt();
-    autoMarkWarn = settings.value("startup/autoMarkWarn",0).toInt();
+	defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
+	defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
+	defaultLogFile = settings->value("startup/defaultLogFile",0).toInt();
+	defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
+	pluginsPath = settings->value("startup/pluginsPath",0).toInt();
+	pluginsPathName = settings->value("startup/pluginsPathName",QDir().currentPath()).toString();
+	autoConnect = settings->value("startup/autoConnect",0).toInt();
+	autoScroll = settings->value("startup/autoScroll",1).toInt();
+	autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
+	autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
 
     /* table */
-    fontSize = settings.value("startup/fontSize",8).toInt();
-    showIndex = settings.value("startup/showIndex",1).toInt();
-    showTime = settings.value("startup/showTime",1).toInt();
-    showTimestamp = settings.value("startup/showTimestamp",1).toInt();
-    showCount = settings.value("startup/showCount",1).toInt();
+	fontSize = settings->value("startup/fontSize",8).toInt();
+	showIndex = settings->value("startup/showIndex",1).toInt();
+	showTime = settings->value("startup/showTime",1).toInt();
+	showTimestamp = settings->value("startup/showTimestamp",1).toInt();
+	showCount = settings->value("startup/showCount",1).toInt();
 
-    showEcuId = settings.value("startup/showEcuId",1).toInt();
-    showApId = settings.value("startup/showApId",1).toInt();
-    showApIdDesc = settings.value("startup/showApIdDesc",0).toInt();
-    showCtId = settings.value("startup/showCtId",1).toInt();
-    showCtIdDesc = settings.value("startup/showCtIdDesc",0).toInt();
-    showType = settings.value("startup/showType",1).toInt();
+	showEcuId = settings->value("startup/showEcuId",1).toInt();
+	showApId = settings->value("startup/showApId",1).toInt();
+	showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
+	showCtId = settings->value("startup/showCtId",1).toInt();
+	showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
+	showType = settings->value("startup/showType",1).toInt();
 
-    showSubtype = settings.value("startup/showSubtype",1).toInt();
-    showMode = settings.value("startup/showMode",1).toInt();
-    showNoar = settings.value("startup/showNoar",1).toInt();
-    showPayload = settings.value("startup/showPayload",1).toInt();
+	showSubtype = settings->value("startup/showSubtype",1).toInt();
+	showMode = settings->value("startup/showMode",1).toInt();
+	showNoar = settings->value("startup/showNoar",1).toInt();
+	showPayload = settings->value("startup/showPayload",1).toInt();
 
     /* other */
-    writeControl = settings.value("startup/writeControl",1).toInt();
+	writeControl = settings->value("startup/writeControl",1).toInt();
 }
 
 

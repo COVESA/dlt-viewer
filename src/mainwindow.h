@@ -5,7 +5,6 @@
 #include <QFile>
 #include <QLabel>
 #include <QTimer>
-#include <QSettings>
 #include <QDir>
 
 #include "treemodel.h"
@@ -14,6 +13,7 @@
 #include "searchdialog.h"
 #include "optmanager.h"
 #include "qdlt.h"
+#include "dltsettingsmanager.h"
 
 extern "C"
 {
@@ -145,7 +145,7 @@ public:
     OptManager *optManager;
 
     /* Application settings */
-    QSettings *bmwsettings;
+    DltSettingsManager *bmwsettings;
 
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
     Project project;
