@@ -856,6 +856,14 @@ QString QDltMsg::getCtrlReturnTypeString()
 {
     return QString(( ctrlReturnType<=8 )?qDltCtrlReturnType[ctrlReturnType]:"");
 }
+QString QDltMsg::getTimeString()
+{
+    char strtime[256];
+    struct tm *time_tm;
+    time_tm = localtime(&time);
+    strftime(strtime, 256, "%Y/%m/%d %H:%M:%S", time_tm);
+    return QString(strtime);
+}
 
 bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 {
@@ -989,7 +997,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 
     /* extract time */
     if(storageheader) {
-        time.setTime_t(storageheader->seconds);
+        time = storageheader->seconds;
         microseconds = storageheader->microseconds;
     }
 
@@ -1080,7 +1088,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
         storageheader.pattern[3] = 0x01;
         strncpy(storageheader.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
         storageheader.microseconds = microseconds;
-        storageheader.seconds = time.toTime_t();
+        storageheader.seconds = time;
         buf += QByteArray((const char *)&storageheader,sizeof(DltStorageHeader));
     }
 
@@ -1143,7 +1151,7 @@ void QDltMsg::clear()
     subtype = DltLogUnknown;
     mode = DltModeUnknown;
     endianness = DltEndiannessUnknown;
-    time = QDateTime();
+    time = 0;
     microseconds = 0;
     timestamp = 0;
     sessionid = 0;
@@ -1187,11 +1195,12 @@ void QDltMsg::removeArgument(int index)
     arguments.removeAt(index);
 }
 
+
 QString QDltMsg::toStringHeader()
 {
     QString text;
 
-    text += QString("%1.%2").arg(getTime().toString("yyyy/MM/dd hh:mm:ss")).arg(getMicroseconds(),6,10,QLatin1Char('0'));
+    text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
     text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
     text += QString(" %1").arg(getMessageCounter());
     text += QString(" %1").arg(getEcuid());
