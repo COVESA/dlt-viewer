@@ -618,9 +618,11 @@ void MainWindow::on_actionExport_ASCII_triggered()
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
-    for(int num = 0;num< qfile.sizeFilter();num++)
+    const int qsz = qfile.sizeFilter();
+    for(int num = 0;num< qsz;num++)
     {
-        fileprogress.setValue(num);
+        if(!(num%(qsz/100)))
+            fileprogress.setValue(num);
 
         /* get message form log file */
         data = qfile.getMsgFilter(num);
@@ -858,11 +860,15 @@ void MainWindow::reloadLogFile()
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
     qfile.clearFilterIndex();
-    for(int num=0;num<qfile.size();num++) {
+    const int qsz = qfile.size();
+    for(int num=0;num<qsz;num++) {
         if (fileprogress.wasCanceled()){
            break;
         }
-        fileprogress.setValue(num);
+
+        if(!(num%(qsz/300)))
+            fileprogress.setValue(num); // This is expensive
+
         data = qfile.getMsg(num);
         msg.setMsg(data);
         iterateDecodersForMsg(msg);
