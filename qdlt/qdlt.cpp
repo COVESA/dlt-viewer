@@ -64,6 +64,7 @@ bool QDlt::swap(QByteArray &bytes,int size, int offset)
 QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
 {
     QString text;
+    text.reserve(1024+bytes.size());
 
     /* create HTML text to show */
     if(toHtml)
@@ -144,6 +145,7 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
 QString QDlt::toAscii(QByteArray &bytes, bool ascii)
 {
     QString text;
+    text.reserve(bytes.size()*2);
 
     /* create text to show */
     for(int num=0;num<bytes.size();num++)
@@ -504,6 +506,7 @@ void QDltArgument::clear()
 QString QDltArgument::toString(bool binary)
 {
     QString text;
+    text.reserve(1024);
 
     if(binary) {
         return toAscii(data);
@@ -1199,6 +1202,7 @@ void QDltMsg::removeArgument(int index)
 QString QDltMsg::toStringHeader()
 {
     QString text;
+    text.reserve(1024);
 
     text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
     text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
@@ -1219,6 +1223,8 @@ QString QDltMsg::toStringPayload()
     QString text;
     QDltArgument argument;
     QByteArray data;
+
+    text.reserve(1024);
 
     if((getMode()==QDltMsg::DltModeNonVerbose) && (getType()!=QDltMsg::DltTypeControl) && (getNumberOfArguments() == 0)) {
         text += QString("[%1] ").arg(getMessageId());
