@@ -1450,10 +1450,11 @@ bool QDltFile::updateIndexFilter()
 }
 bool QDltFile::isFileTransferMessage(QDltMsg &msg)
 {
-    QDltArgument protocolStartFlag;
-    msg.getArgument(0,protocolStartFlag);
-    if(protocolStartFlag.toString().compare("FLDA") == 0 ||
-       protocolStartFlag.toString().compare("FLFI") == 0)
+    QDltArgument arg;
+    msg.getArgument(0, arg);
+    QString txt = arg.toString();
+    if(txt.startsWith("FLDA") ||
+       txt.startsWith("FLFI"))
     {
         return true;
     }
