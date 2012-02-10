@@ -621,7 +621,7 @@ void MainWindow::on_actionExport_ASCII_triggered()
     const int qsz = qfile.sizeFilter();
     for(int num = 0;num< qsz;num++)
     {
-        if(!(num%(qsz/100)))
+        if(!(num%(qsz/100+1)))
             fileprogress.setValue(num);
 
         /* get message form log file */
@@ -866,7 +866,7 @@ void MainWindow::reloadLogFile()
            break;
         }
 
-        if(!(num%(qsz/300)))
+        if(!(num%(qsz/300+1)))
             fileprogress.setValue(num); // This is expensive
 
         data = qfile.getMsg(num);

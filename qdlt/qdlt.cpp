@@ -864,7 +864,8 @@ QString QDltMsg::getTimeString()
     char strtime[256];
     struct tm *time_tm;
     time_tm = localtime(&time);
-    strftime(strtime, 256, "%Y/%m/%d %H:%M:%S", time_tm);
+    if(time_tm)
+        strftime(strtime, 256, "%Y/%m/%d %H:%M:%S", time_tm);
     return QString(strtime);
 }
 
@@ -1348,7 +1349,6 @@ bool QDltFile::createIndex()
 bool QDltFile::updateIndex()
 {
     QByteArray buf;
-    int found = 0;
     unsigned long pos = 0;
     int lastSize = 0;
 
@@ -1376,11 +1376,11 @@ bool QDltFile::updateIndex()
     /* walk through the whole file and find all DLT0x01 markers */
     /* store the found positions in the indexAll */
     while(true) {
-
+        char lastFound = 0;
         /* read buffer from file */
         buf = infile.read(READ_BUF_SZ);
         if(buf.isEmpty())
-            return true; // EOF
+            break; // EOF
 
         /* Use primitive buffer for faster access */
         int cbuf_sz = buf.size();
@@ -1388,18 +1388,29 @@ bool QDltFile::updateIndex()
 
         /* find marker in buffer */
         for(int num=0;num<cbuf_sz;num++) {
-            if(cbuf[num]=='D')
-                found = 1;
-            else if((found == 1) && (cbuf[num]=='L'))
-                found = 2;
-            else if((found == 2) && (cbuf[num]=='T'))
-                found = 3;
-            else if((found == 3) && (cbuf[num]==(char)0x01)) {
+            if(cbuf[num] == 'D')
+            {
+                lastFound = 'D';
+            }
+            else if(lastFound == 'D' && cbuf[num] == 'L')
+            {
+                lastFound = 'L';
+            }
+            else if(lastFound == 'L' && cbuf[num] == 'T')
+            {
+                lastFound = 'T';
+            }
+            else if(lastFound == 'T' && cbuf[num] == 0x01)
+            {
                 indexAll.append(pos+num-3);
-                found = 0;
+                lastFound = 0;
+            }
+            else
+            {
+                lastFound = 0;
             }
         }
-        pos += READ_BUF_SZ;
+        pos += cbuf_sz;
     }
 
     /* success */
