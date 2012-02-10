@@ -1452,11 +1452,14 @@ bool QDltFile::isFileTransferMessage(QDltMsg &msg)
 {
     QDltArgument arg;
     msg.getArgument(0, arg);
-    QString txt = arg.toString();
-    if(txt.startsWith("FLDA") ||
-       txt.startsWith("FLFI"))
+    if(arg.getTypeInfo() == 0) // Is string.
     {
-        return true;
+        QString txt = arg.toString();
+        if(txt.startsWith("FLDA") ||
+           txt.startsWith("FLFI"))
+        {
+            return true;
+        }
     }
     return false;
 }
