@@ -1370,41 +1370,36 @@ bool QDltFile::updateIndex()
         infile.seek(0);
     }
 
+    /* Align kbytes, 1MB read at a time */
+    static const int READ_BUF_SZ = 1024 * 1024;
+
     /* walk through the whole file and find all DLT0x01 markers */
     /* store the found positions in the indexAll */
     while(true) {
 
         /* read buffer from file */
-        buf = infile.read(1000);
-
-        /* check if data was read */
+        buf = infile.read(READ_BUF_SZ);
         if(buf.isEmpty())
-            break;
+            return true; // EOF
+
+        /* Use primitive buffer for faster access */
+        int cbuf_sz = buf.size();
+        const char *cbuf = buf.constData();
 
         /* find marker in buffer */
-        for(int num=0;num<buf.size();num++) {
-            if((found == 0) && (buf[num]=='D'))
+        for(int num=0;num<cbuf_sz;num++) {
+            if(cbuf[num]=='D')
                 found = 1;
-            else if((found == 1) && (buf[num]=='L'))
+            else if((found == 1) && (cbuf[num]=='L'))
                 found = 2;
-            else if((found == 2) && (buf[num]=='T'))
+            else if((found == 2) && (cbuf[num]=='T'))
                 found = 3;
-            else if((found == 3) && (buf[num]==(char)0x01)) {
+            else if((found == 3) && (cbuf[num]==(char)0x01)) {
                 indexAll.append(pos+num-3);
                 found = 0;
             }
-            else{
-                if((found == 1) && (buf[num]=='D')) // Exception Handling for the character ..DDLT0x01 in a log message
-                {
-                   found = 1;
-                }else{
-                   found = 0;
-                }
-            }
-
-
         }
-        pos += 1000;
+        pos += READ_BUF_SZ;
     }
 
     /* success */
