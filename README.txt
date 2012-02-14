@@ -35,9 +35,8 @@ Dynamically linked/open source software
 
 Compiling in Windows:
 ---------------------
-- Download "Qt SDK version 1.1.3" for Windows from http://qt.nokia.com/downloads
+- Download and install "Qt SDK version 1.2" for Windows from http://qt.nokia.com/downloads
 - Download qextserialport (REL_1_1) from http://code.google.com/p/qextserialport/
-- Install "Qt SDK version 1.1.3" (use custom install, normally symbian stuff and emulators not needed, select MinGW if needed)
 - Save file <DLT-viewer-Root>/qextserialport/qextserialport.pro
 - Copy qextserialport (REL_1_1) into <DLT-viewer-Root>/qextserialport directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
