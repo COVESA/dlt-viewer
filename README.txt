@@ -25,21 +25,21 @@ Alexander Wenzel (Alexander.AW.Wenzel@bmw.de)
 Christian Muck (christian.muck@bmw.de)
 
 
-Dynamically linked open source software
+Dynamically linked/open source software
 --------------------------------------
-* Qt 4.7 (LGPL - Qt SDK version 1.1.3)
+* Qt 4.7.4 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
-* Mingw (GPL + BSD Variante + Public Domain)
 * qextserialport (New BSD licence - Version 1.1)
+* (Optional) Mingw (GPL + BSD Variante + Public Domain)
 
 
 Compiling in Windows:
 ---------------------
 - Download "Qt SDK version 1.1.3" for Windows from http://qt.nokia.com/downloads
-- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/files/qextserialport/1.1/
+- Download qextserialport (REL_1_1) from http://code.google.com/p/qextserialport/
 - Install "Qt SDK version 1.1.3" (use custom install, normally symbian stuff and emulators not needed, select MinGW if needed)
-- Save file qextserialport/qextserialport.pro
-- Extract qextserialport package into DLT-viewer main directory 
+- Save file <DLT-viewer-Root>/qextserialport/qextserialport.pro
+- Copy qextserialport (REL_1_1) into <DLT-viewer-Root>/qextserialport directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
 - Open project BuildDltViewer.pro in Qt Creator
 - Build Release in Qt Creator
@@ -51,11 +51,10 @@ Precondition
 - Install package Qt4 including developer tools
 - Optional: Install Qt Creator
 
-Please run "./DLT_Viewer_Helper.sh" which is a simple helper script and perform the options 1 to 7.
-Alternative you could do the steps manual:
-- Download qextserialport V1.1 from http://sourceforge.net/projects/qextserialport/
+Steps
+- Download qextserialport (REL_1_1) from http://code.google.com/p/qextserialport/
 - Save file qextserialport/qextserialport.pro
-- Extract qextserialport package into DLT-viewer main directory 
+- Copy qextserialport (REL_1_1) into <DLT-viewer-Root>/qextserialport directory 
 - Overwrite file qextserialport/qextserialport.pro with saved file before
 - Create directory build
 - Change into directory build
