@@ -3109,7 +3109,8 @@ void MainWindow::on_action_Info_triggered()
                              QString("Package Version : %1 %2\n").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE)+
                              QString("Package Revision: %1\n\n").arg(PACKAGE_REVISION)+
                              QString("Build Date: %1\n").arg(__DATE__)+
-                             QString("Build Time: %1\n\n").arg(__TIME__)+
+                             QString("Build Time: %1\n").arg(__TIME__)+
+                             QString("Qt Version: %1\n\n").arg(QT_VERSION_STR)+
 #if (BYTE_ORDER==BIG_ENDIAN)
                              QString("Architecture: Big Endian\n\n")+
 #else
