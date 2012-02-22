@@ -3833,10 +3833,11 @@ void MainWindow::filterAddTable() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -3923,10 +3924,11 @@ void MainWindow::filterAdd() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -4007,10 +4009,11 @@ void MainWindow::on_actionFilter_Add_triggered() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -4290,18 +4293,16 @@ void MainWindow::filterUpdate() {
 
 }
 
-void MainWindow::filterToggled(bool state) {
-
-    if(state && !filterbutton->isChecked())
-    {
-        filterbutton->setChecked(state);
-    }
-
+void MainWindow::filterToggled(bool state)
+{
     /* enable/disable filter */
-    qfile.enableFilter(state?Qt::Checked:Qt::Unchecked);
+    qfile.enableFilter(state);
 
     /* remove any selection made before */
     ui->tableView->selectionModel()->clear();
+
+    /* reload DLT log file */
+    reloadLogFile();
 
     /* update table of log messages */
     tableModel->size = qfile.sizeFilter();

@@ -1481,6 +1481,11 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         return false;
     }
 
+    if(hideFileTransfer && !filterFlag)
+    {
+        return true;
+    }
+
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
         filter = pfilter[numfilter];
