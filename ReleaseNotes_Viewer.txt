@@ -47,6 +47,7 @@ Improvements:
 	
 Bugfixes:
 	* GDLT-31	Tracefile content stored different under Ubuntu 64 bit version compared to Ubuntu/Win 32 Bit version
+	* GDLT-43   Filter on/off toggle button is broken when "Hide file transfer messages" is selected in settings
 
 2.4.3:
 
