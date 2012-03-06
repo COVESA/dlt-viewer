@@ -236,7 +236,7 @@ void FiletransferPlugin::doFLER(QDltMsg *msg){
        form->getTreeWidget()->addTopLevelItem(file);
     }
 
-    file->errorHappens(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTime().toString());
+    file->errorHappens(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTimeString());
     file->setFlags(Qt::NoItemFlags );
 }
 

@@ -54,7 +54,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              /* display index */
              return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
          case 1:
-             return QString("%1.%2").arg(msg.getTime().toString("yyyy/MM/dd hh:mm:ss")).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+             return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
          case 2:
              return QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
          case 3:

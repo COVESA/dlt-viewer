@@ -25,9 +25,9 @@ Alexander Wenzel (Alexander.AW.Wenzel@bmw.de)
 Christian Muck (christian.muck@bmw.de)
 
 
-Dynamically linked/open source software
---------------------------------------
-* Qt 4.7.4 (LGPL - Qt SDK version 1.2)
+Dynamically linked open source software
+---------------------------------------
+* Qt 4.7/4.8 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
 * qextserialport (New BSD licence - Version 1.1)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
@@ -37,14 +37,16 @@ Changes in this release
 -----------------------
 2.5.0
 Improvements:
-   * [GDLT-31] Tracefile content stored different under Ubuntu 64 bit version compared to Ubuntu/Win 32 Bit version 
+
    * [GDLT-32] Store DLT Viewer configuration in an ini file instead of using the registry 
    * [GDLT-34] Save the DLT-viewr version to config/registry and delete specific values when a new minor version of the viewer is started 
    * [GDLT-7 + GDLT-6] DLT Viewer and plugin performance enhanced
    * [GDLT-33] Checkbox in the project settings to hide file transfer messages 
+   * [GDLT-45] Improve detection of filetransferMessages (Related to GDLT-33)
    * [GENDLT-14] DLT Viewer tested with Qt SDK version 1.2 
 
 Bugfixes: 
+   * [GDLT-31] Tracefile content stored different under Ubuntu 64 bit version compared to Ubuntu/Win 32 Bit version 
    * [GDLT-43]  Filter on/off toggle button is broken when "Hide file transfer messages" is selected in settings 
  
 NOTE: Because of the switch to Qt SDK version 1.2 and GDLT-31 it is recommended to recompile implemented plugins.

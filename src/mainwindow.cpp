@@ -618,9 +618,11 @@ void MainWindow::on_actionExport_ASCII_triggered()
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
-    for(int num = 0;num< qfile.sizeFilter();num++)
+    const int qsz = qfile.sizeFilter();
+    for(int num = 0;num< qsz;num++)
     {
-        fileprogress.setValue(num);
+        if(!(num%(qsz/100+1)))
+            fileprogress.setValue(num);
 
         /* get message form log file */
         data = qfile.getMsgFilter(num);
@@ -858,11 +860,15 @@ void MainWindow::reloadLogFile()
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
     qfile.clearFilterIndex();
-    for(int num=0;num<qfile.size();num++) {
+    const int qsz = qfile.size();
+    for(int num=0;num<qsz;num++) {
         if (fileprogress.wasCanceled()){
            break;
         }
-        fileprogress.setValue(num);
+
+        if(!(num%(qsz/300+1)))
+            fileprogress.setValue(num); // This is expensive
+
         data = qfile.getMsg(num);
         msg.setMsg(data);
         iterateDecodersForMsg(msg);
@@ -3827,10 +3833,11 @@ void MainWindow::filterAddTable() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -3917,10 +3924,11 @@ void MainWindow::filterAdd() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -4001,10 +4009,11 @@ void MainWindow::on_actionFilter_Add_triggered() {
         /* update filter list in DLT log file */
         filterUpdate();
 
-        /* reload DLT log file */
-        reloadLogFile();
-
-        filterToggled(true);
+        /* reload DLT log file or enable filters */
+        if(filterbutton->isChecked())
+            reloadLogFile();
+        else
+            filterbutton->setChecked(true);
     }
 }
 
@@ -4284,18 +4293,16 @@ void MainWindow::filterUpdate() {
 
 }
 
-void MainWindow::filterToggled(bool state) {
-
-    if(state && !filterbutton->isChecked())
-    {
-        filterbutton->setChecked(state);
-    }
-
+void MainWindow::filterToggled(bool state)
+{
     /* enable/disable filter */
-    qfile.enableFilter(state?Qt::Checked:Qt::Unchecked);
+    qfile.enableFilter(state);
 
     /* remove any selection made before */
     ui->tableView->selectionModel()->clear();
+
+    /* reload DLT log file */
+    reloadLogFile();
 
     /* update table of log messages */
     tableModel->size = qfile.sizeFilter();

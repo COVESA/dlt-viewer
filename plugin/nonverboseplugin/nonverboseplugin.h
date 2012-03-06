@@ -2,6 +2,7 @@
 #define NONVERBOSEPLUGIN_H
 
 #include <QObject>
+#include <QHash>
 #include "nonverboseplugin.h"
 #include "plugininterface.h"
 
@@ -70,9 +71,9 @@ public:
     bool isMsg(QDltMsg &msg);
     bool decodeMsg(QDltMsg &msg);
 
-    QList<DltFibexPdu*> pdulist;
-    QList<DltFibexFrame*> framelist;
-
+    /* Faster lookup */
+    QHash<QString, DltFibexPdu *> pdumap;
+    QHash<QString, DltFibexFrame *> framemap;
 };
 
 #endif // NONVERBOSEPLUGIN_H

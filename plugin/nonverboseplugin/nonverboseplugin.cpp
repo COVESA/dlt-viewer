@@ -36,12 +36,13 @@ QString NonverbosePlugin::error()
 bool NonverbosePlugin::loadConfig(QString filename)
 {
     /* remove all stored items */
-    for(int num=0;num<pdulist.count();num++)
-        delete pdulist.at(num);
-    pdulist.clear();
-    for(int num=0;num<framelist.count();num++)
-        delete framelist.at(num);
-    framelist.clear();
+    foreach(DltFibexPdu *pdu, pdumap)
+        delete pdu;
+    pdumap.clear();
+
+    foreach(DltFibexFrame *frame, framemap)
+        delete frame;
+    framemap.clear();
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -285,7 +286,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
               {
                   if(pdu)
                   {
-                      pdulist.append(pdu);
+                      pdumap[pdu->id] = pdu;
                       pdu = 0;
                   }
               }
@@ -305,7 +306,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
               {
                   if(frame)
                   {
-                      framelist.append(frame);
+                      framemap[frame->id] = frame;
                       frame = 0;
                   }
               }
@@ -340,22 +341,20 @@ bool NonverbosePlugin::loadConfig(QString filename)
 
     file.close();
 
+
     /* create PDU Ref links */
-    for(int numframe=0;numframe<framelist.size();numframe++)
+    foreach(DltFibexFrame *frame, framemap)
     {
-        DltFibexFrame *frame = framelist[numframe];
-        for(int numref=0;numref<frame->pdureflist.size();numref++)
+        foreach(DltFibexPduRef *ref, frame->pdureflist)
         {
-               DltFibexPduRef *ref = frame->pdureflist[numref];
-               for(int numpdu=0;numpdu<pdulist.size();numpdu++)
-               {
-                   DltFibexPdu *pdu = pdulist[numpdu];
-                   if(pdu->id == ref->id)
-                   {
-                       ref->ref = pdu;
-                       break;
-                   }
-               }
+            foreach(DltFibexPdu *pdu, pdumap)
+            {
+                if(pdu->id == ref->id)
+                {
+                    ref->ref = pdu;
+                    break;
+                }
+            }
         }
     }
 
@@ -371,20 +370,19 @@ QStringList NonverbosePlugin::infoConfig()
 {
     QStringList list;
 
-    for(int pos=0;pos<framelist.size();pos++)
+    foreach(DltFibexFrame *frame, framemap)
     {
         QString text;
-        DltFibexFrame *frame = framelist[pos];
         text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
-        for(int numref=0;numref<frame->pdureflist.size();numref++)
+        int c = 0;
+        foreach(DltFibexPduRef *ref, frame->pdureflist)
         {
-            DltFibexPduRef *ref = frame->pdureflist[numref];
-            if(numref == 0)
+            if(c == 0)
                 text += " (";
             text += ref->id;
             if(ref->ref)
                 text += QString(" Des:%1 TI:%2 Len:%3").arg(ref->ref->description).arg(ref->ref->typeInfo).arg(ref->ref->byteLength);
-            if(numref == (frame->pdureflist.size()-1))
+            if(c == (frame->pdureflist.size()-1))
                 text += ")";
             else
                 text += ", ";
@@ -396,8 +394,6 @@ QStringList NonverbosePlugin::infoConfig()
 
 bool NonverbosePlugin::isMsg(QDltMsg &msg)
 {
-    bool found = false;
-
     if((msg.getMode() != QDltMsg::DltModeNonVerbose))
     {
         /* message is not a non-verbose message */
@@ -410,24 +406,11 @@ bool NonverbosePlugin::isMsg(QDltMsg &msg)
     }
 
     QString idtext = QString("ID_%1").arg(msg.getMessageId());
-    /* Look for id in frames */
-    DltFibexFrame *frame=0;
-    for(int num=0;num<framelist.size();num++)
-    {
-        frame = framelist[num];
-        if(idtext == frame->id)
-        {
-            found = true;
-            break;
-        }
-    }
-
-    return found;
+    return framemap.contains(idtext);
 }
 
 bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
 {
-    bool found = false;
     int offset = 4;
 
     if((msg.getMode() != QDltMsg::DltModeNonVerbose))
@@ -442,22 +425,10 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
     }
 
     QString idtext = QString("ID_%1").arg(msg.getMessageId());
-    /* Look for id in frames */
-    DltFibexFrame *frame=0;
-    for(int num=0;num<framelist.size();num++)
-    {
-        frame = framelist[num];
-        if(idtext == frame->id)
-        {
-            found = true;
-            break;
-        }
-    }
-
-    if(!found) {
-        /* message not found in list */
+    if(!framemap.contains(idtext))
         return false;
-    }
+
+    DltFibexFrame *frame = framemap[idtext];
 
     /* set message data */
     msg.setApid(frame->appid);

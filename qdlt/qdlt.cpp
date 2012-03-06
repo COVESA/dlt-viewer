@@ -64,6 +64,7 @@ bool QDlt::swap(QByteArray &bytes,int size, int offset)
 QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
 {
     QString text;
+    text.reserve(1024+bytes.size());
 
     /* create HTML text to show */
     if(toHtml)
@@ -144,6 +145,7 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
 QString QDlt::toAscii(QByteArray &bytes, bool ascii)
 {
     QString text;
+    text.reserve(bytes.size()*2);
 
     /* create text to show */
     for(int num=0;num<bytes.size();num++)
@@ -504,6 +506,7 @@ void QDltArgument::clear()
 QString QDltArgument::toString(bool binary)
 {
     QString text;
+    text.reserve(1024);
 
     if(binary) {
         return toAscii(data);
@@ -856,6 +859,15 @@ QString QDltMsg::getCtrlReturnTypeString()
 {
     return QString(( ctrlReturnType<=8 )?qDltCtrlReturnType[ctrlReturnType]:"");
 }
+QString QDltMsg::getTimeString()
+{
+    char strtime[256];
+    struct tm *time_tm;
+    time_tm = localtime(&time);
+    if(time_tm)
+        strftime(strtime, 256, "%Y/%m/%d %H:%M:%S", time_tm);
+    return QString(strtime);
+}
 
 bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 {
@@ -989,7 +1001,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 
     /* extract time */
     if(storageheader) {
-        time.setTime_t(storageheader->seconds);
+        time = storageheader->seconds;
         microseconds = storageheader->microseconds;
     }
 
@@ -1080,7 +1092,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
         storageheader.pattern[3] = 0x01;
         strncpy(storageheader.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
         storageheader.microseconds = microseconds;
-        storageheader.seconds = time.toTime_t();
+        storageheader.seconds = time;
         buf += QByteArray((const char *)&storageheader,sizeof(DltStorageHeader));
     }
 
@@ -1143,7 +1155,7 @@ void QDltMsg::clear()
     subtype = DltLogUnknown;
     mode = DltModeUnknown;
     endianness = DltEndiannessUnknown;
-    time = QDateTime();
+    time = 0;
     microseconds = 0;
     timestamp = 0;
     sessionid = 0;
@@ -1187,11 +1199,13 @@ void QDltMsg::removeArgument(int index)
     arguments.removeAt(index);
 }
 
+
 QString QDltMsg::toStringHeader()
 {
     QString text;
+    text.reserve(1024);
 
-    text += QString("%1.%2").arg(getTime().toString("yyyy/MM/dd hh:mm:ss")).arg(getMicroseconds(),6,10,QLatin1Char('0'));
+    text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
     text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
     text += QString(" %1").arg(getMessageCounter());
     text += QString(" %1").arg(getEcuid());
@@ -1210,6 +1224,8 @@ QString QDltMsg::toStringPayload()
     QString text;
     QDltArgument argument;
     QByteArray data;
+
+    text.reserve(1024);
 
     if((getMode()==QDltMsg::DltModeNonVerbose) && (getType()!=QDltMsg::DltTypeControl) && (getNumberOfArguments() == 0)) {
         text += QString("[%1] ").arg(getMessageId());
@@ -1333,7 +1349,6 @@ bool QDltFile::createIndex()
 bool QDltFile::updateIndex()
 {
     QByteArray buf;
-    int found = 0;
     unsigned long pos = 0;
     int lastSize = 0;
 
@@ -1355,41 +1370,47 @@ bool QDltFile::updateIndex()
         infile.seek(0);
     }
 
+    /* Align kbytes, 1MB read at a time */
+    static const int READ_BUF_SZ = 1024 * 1024;
+
     /* walk through the whole file and find all DLT0x01 markers */
     /* store the found positions in the indexAll */
     while(true) {
-
+        char lastFound = 0;
         /* read buffer from file */
-        buf = infile.read(1000);
-
-        /* check if data was read */
+        buf = infile.read(READ_BUF_SZ);
         if(buf.isEmpty())
-            break;
+            break; // EOF
+
+        /* Use primitive buffer for faster access */
+        int cbuf_sz = buf.size();
+        const char *cbuf = buf.constData();
 
         /* find marker in buffer */
-        for(int num=0;num<buf.size();num++) {
-            if((found == 0) && (buf[num]=='D'))
-                found = 1;
-            else if((found == 1) && (buf[num]=='L'))
-                found = 2;
-            else if((found == 2) && (buf[num]=='T'))
-                found = 3;
-            else if((found == 3) && (buf[num]==(char)0x01)) {
+        for(int num=0;num<cbuf_sz;num++) {
+            if(cbuf[num] == 'D')
+            {
+                lastFound = 'D';
+            }
+            else if(lastFound == 'D' && cbuf[num] == 'L')
+            {
+                lastFound = 'L';
+            }
+            else if(lastFound == 'L' && cbuf[num] == 'T')
+            {
+                lastFound = 'T';
+            }
+            else if(lastFound == 'T' && cbuf[num] == 0x01)
+            {
                 indexAll.append(pos+num-3);
-                found = 0;
+                lastFound = 0;
             }
-            else{
-                if((found == 1) && (buf[num]=='D')) // Exception Handling for the character ..DDLT0x01 in a log message
-                {
-                   found = 1;
-                }else{
-                   found = 0;
-                }
+            else
+            {
+                lastFound = 0;
             }
-
-
         }
-        pos += 1000;
+        pos += cbuf_sz;
     }
 
     /* success */
@@ -1435,12 +1456,16 @@ bool QDltFile::updateIndexFilter()
 }
 bool QDltFile::isFileTransferMessage(QDltMsg &msg)
 {
-    QDltArgument protocolStartFlag;
-    msg.getArgument(0,protocolStartFlag);
-    if(protocolStartFlag.toString().compare("FLDA") == 0 ||
-       protocolStartFlag.toString().compare("FLFI") == 0)
+    QDltArgument arg;
+    msg.getArgument(0, arg);
+    if(arg.getTypeInfo() == 0) // Is string.
     {
-        return true;
+        QString txt = arg.toString();
+        if(txt.startsWith("FLDA") ||
+           txt.startsWith("FLFI"))
+        {
+            return true;
+        }
     }
     return false;
 }
@@ -1454,6 +1479,11 @@ bool QDltFile::checkFilter(QDltMsg &msg)
     if(hideFileTransfer && isFileTransferMessage(msg))
     {
         return false;
+    }
+
+    if(hideFileTransfer && !filterFlag)
+    {
+        return true;
     }
 
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
