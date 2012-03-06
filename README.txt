@@ -1,11 +1,11 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version 2.5.0_BETA
+Version 2.5.0
 
-The DLT Viewer can send control messages to the daemon, e.g. to set 
+The DLT Viewer can send control messages to the DLT daemon, e.g. to set 
 individual log levels of applications and contexts or get the list of 
 applications and contexts registered in the DLT daemon.
-
+More features are listed on the Homepage.
 
 Homepage
 --------
@@ -82,7 +82,6 @@ Create Windows SDK:
 - Compile DLT Viewer as described in "Compiling in Windows"
 - Modify pathes in sdk\create_sdk.bat to your needs
 - Execute sdk\create_sdk.bat batch file
-
 
 
 Create Linux SDK:
