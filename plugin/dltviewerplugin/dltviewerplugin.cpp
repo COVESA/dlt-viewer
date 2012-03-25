@@ -122,10 +122,8 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
         return;
 
     /* get message */
-    buf = dltFile->getMsgFilter(index);
-    if(buf.isEmpty())
+    if (!dltFile->getMsg(dltFile->getMsgFilterPos(index), msg))
         return;
-    msg.setMsg(buf);
 
     //if(dltFile->getMsg(index,msg)==false)
     //    return;

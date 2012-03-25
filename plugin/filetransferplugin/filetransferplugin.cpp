@@ -84,7 +84,6 @@ bool FiletransferPlugin::initFile(QDltFile *file) {
 }
 
 void FiletransferPlugin::updateFile() {
-    QByteArray buffer;
     QDltMsg msg;
     QDltArgument protocolStartFlag;
     QDltArgument protocolEndFlag;
@@ -94,12 +93,8 @@ void FiletransferPlugin::updateFile() {
 
     for(;msgIndex<dltFile->size();msgIndex++)
     {
-        buffer =  dltFile->getMsg(msgIndex);
-
-        if(buffer.isEmpty())
+        if (!dltFile->getMsg(msgIndex, msg))
             break;
-
-        msg.setMsg(buffer);
 
         msg.getArgument(PROTOCOL_ALL_STARTFLAG,protocolStartFlag);
 

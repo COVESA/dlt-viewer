@@ -27,6 +27,7 @@
 #include <QFile>
 #include <QDateTime>
 #include <QColor>
+#include <QCache>
 
 #include <time.h>
 
@@ -930,6 +931,10 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
+
+    // cache for faster getMsg
+    QCache<int, QByteArray> ba_cache;
+    QCache<int, QDltMsg> msg_cache;
 };
 
 class QDltControl : public QObject

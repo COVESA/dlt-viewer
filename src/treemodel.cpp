@@ -54,8 +54,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         buf = qfile->getMsgFilter(index.row());
-         msg.setMsg(buf);
+         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
          for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
@@ -148,8 +147,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      }
 
      if ( role == Qt::ForegroundRole ) {
-         buf = qfile->getMsgFilter(index.row());
-         msg.setMsg(buf);
+         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
          if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
             return QVariant(QBrush(QColor(255,255,255)));
          } else {
@@ -158,8 +156,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      }
 
      if ( role == Qt::BackgroundRole ) {
-         buf = qfile->getMsgFilter(index.row());
-         msg.setMsg(buf);
+         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
          for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
