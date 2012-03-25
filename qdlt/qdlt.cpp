@@ -255,9 +255,9 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     if((unsigned int)payload.size()<(offset+sizeof(unsigned int)))
         return false;
     if(endianness == DltEndiannessLittleEndian)
-        dltType = *((unsigned int*) (payload.data()+offset));
+        dltType = *((unsigned int*) (payload.constData()+offset));
     else
-        dltType = DLT_SWAP_32((*((unsigned int*) (payload.data()+offset))));
+        dltType = DLT_SWAP_32((*((unsigned int*) (payload.constData()+offset))));
     offset += sizeof(unsigned int);
 
     if (dltType& DLT_TYPE_INFO_STRG)
@@ -300,9 +300,9 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
         if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
             return false;
         if(endianness == DltEndiannessLittleEndian)
-            length = *((unsigned short*) (payload.data()+offset));
+            length = *((unsigned short*) (payload.constData()+offset));
         else
-            length = DLT_SWAP_16((*((unsigned short*) (payload.data()+offset))));
+            length = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
 
         offset += sizeof(unsigned short);
     }
@@ -313,18 +313,18 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
         if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
             return false;
         if(endianness == DltEndiannessLittleEndian)
-            length2 = *((unsigned short*) (payload.data()+offset));
+            length2 = *((unsigned short*) (payload.constData()+offset));
         else
-            length2 = DLT_SWAP_16((*((unsigned short*) (payload.data()+offset))));
+            length2 = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
         offset += sizeof(unsigned short);
         if(typeInfo == DltTypeInfoSInt || typeInfo == DltTypeInfoUInt || typeInfo == DltTypeInfoFloa)
         {
             if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
                 return false;
             if(endianness == DltEndiannessLittleEndian)
-                length3 = *((unsigned short*) (payload.data()+offset));
+                length3 = *((unsigned short*) (payload.constData()+offset));
             else
-                length3 = DLT_SWAP_16((*((unsigned short*) (payload.data()+offset))));
+                length3 = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
             offset += sizeof(unsigned short);
         }
         name = QString(payload.mid(offset,length2));
@@ -896,9 +896,9 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 {
     unsigned int offset;
     QDltArgument argument;
-    DltStorageHeader *storageheader = 0;
-    DltStandardHeader *standardheader = 0;
-    DltExtendedHeader *extendedheader = 0;
+    const DltStorageHeader *storageheader = 0;
+    const DltStandardHeader *standardheader = 0;
+    const DltExtendedHeader *extendedheader = 0;
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
@@ -916,9 +916,9 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     }
 
     if(withStorageHeader) {
-        storageheader = (DltStorageHeader*) buf.data();
+        storageheader = (DltStorageHeader*) buf.constData();
     }
-    standardheader = (DltStandardHeader*) (buf.data() + sizeStorageHeader);
+    standardheader = (DltStandardHeader*) (buf.constData() + sizeStorageHeader);
 
     /* calculate complete size of headers */
     extra_size = DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp)+(DLT_IS_HTYP_UEH(standardheader->htyp) ? sizeof(DltExtendedHeader) : 0);
@@ -934,7 +934,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 
         /* set extended header ptr and get standard header extra parameters */
         if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
-            extendedheader = (DltExtendedHeader*) (buf.data() + sizeStorageHeader + sizeof(DltStandardHeader) +
+            extendedheader = (DltExtendedHeader*) (buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader) +
                                   DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp));
         }
         else {
@@ -943,19 +943,19 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 
         if (DLT_IS_HTYP_WEID(standardheader->htyp))
         {
-            memcpy(headerextra.ecu,buf.data() + sizeStorageHeader + sizeof(DltStandardHeader),DLT_ID_SIZE);
+            memcpy(headerextra.ecu,buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader),DLT_ID_SIZE);
         }
 
         if (DLT_IS_HTYP_WSID(standardheader->htyp))
         {
-            memcpy(&(headerextra.seid),buf.data() + sizeStorageHeader + sizeof(DltStandardHeader)
+            memcpy(&(headerextra.seid),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
                    + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0), DLT_SIZE_WSID);
             headerextra.seid = DLT_BETOH_32(headerextra.seid);
         }
 
         if (DLT_IS_HTYP_WTMS(standardheader->htyp))
         {
-            memcpy(&(headerextra.tmsp),buf.data() + sizeStorageHeader + sizeof(DltStandardHeader)
+            memcpy(&(headerextra.tmsp),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
                    + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0)
                    + (DLT_IS_HTYP_WSID(standardheader->htyp) ? DLT_SIZE_WSID : 0),DLT_SIZE_WTMS);
             headerextra.tmsp = DLT_BETOH_32(headerextra.tmsp);
@@ -1053,24 +1053,24 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     if(!DLT_IS_HTYP_UEH(standardheader->htyp) && payload.size()>=4) {
         /* message id is always in big endian format */
         if(endianness == DltEndiannessLittleEndian) {
-            messageId = (*((unsigned int*) payload.data()));
+            messageId = (*((unsigned int*) payload.constData()));
         }
         else {
-            messageId = DLT_SWAP_32((*((unsigned int*) payload.data())));
+            messageId = DLT_SWAP_32((*((unsigned int*) payload.constData())));
         }
     }
 
     /* set service id if message of type control */
     if((type == DltTypeControl) && payload.size()>=4) {
         if(endianness == DltEndiannessLittleEndian)
-            ctrlServiceId = *((unsigned int*) payload.data());
+            ctrlServiceId = *((unsigned int*) payload.constData());
         else
-            ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.data()));
+            ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
     }
 
     /* set return type if message of type control response */
     if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=6) {
-        ctrlReturnType = *((unsigned char*) &(payload.data()[4]));
+        ctrlReturnType = *((unsigned char*) &(payload.constData()[4]));
     }
 
     /* get the arguments of the payload */
@@ -1113,7 +1113,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
         storageheader.pattern[1] = 'L';
         storageheader.pattern[2] = 'T';
         storageheader.pattern[3] = 0x01;
-        strncpy(storageheader.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
+        strncpy(storageheader.ecu,ecuid.toAscii().constData(),ecuid.size()>3?4:ecuid.size()+1);
         storageheader.microseconds = microseconds;
         storageheader.seconds = time;
         buf += QByteArray((const char *)&storageheader,sizeof(DltStorageHeader));
@@ -1140,7 +1140,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
     /* write standard header extra */
     if(mode == DltModeVerbose) {
-        strncpy(headerextra.ecu,ecuid.toAscii().data(),ecuid.size()>3?4:ecuid.size()+1);
+        strncpy(headerextra.ecu,ecuid.toAscii().constData(),ecuid.size()>3?4:ecuid.size()+1);
         buf += QByteArray((const char *)&(headerextra.ecu),sizeof(headerextra.ecu));
         headerextra.seid = DLT_SWAP_32(sessionid);
         buf += QByteArray((const char *)&(headerextra.seid),sizeof(headerextra.seid));
@@ -1150,8 +1150,8 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
     /* write extendedheader */
     if(mode == DltModeVerbose) {
-        strncpy(extendedheader.apid,apid.toAscii().data(),apid.size()>3?4:apid.size()+1);
-        strncpy(extendedheader.ctid,ctid.toAscii().data(),ctid.size()>3?4:ctid.size()+1);
+        strncpy(extendedheader.apid,apid.toAscii().constData(),apid.size()>3?4:apid.size()+1);
+        strncpy(extendedheader.ctid,ctid.toAscii().constData(),ctid.size()>3?4:ctid.size()+1);
         extendedheader.msin = 0;
         if(mode == DltModeVerbose) {
             extendedheader.msin |= DLT_MSIN_VERB;

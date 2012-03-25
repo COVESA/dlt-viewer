@@ -386,7 +386,7 @@ void MainWindow::commandLineConvertToASCII(){
         text += "\n";
 
         /* write to file */
-        asciiFile.write(text.toAscii().data());
+        asciiFile.write(text.toAscii().constData());
 
     }
 
@@ -654,7 +654,7 @@ void MainWindow::on_actionExport_ASCII_triggered()
         text += "\n";
 
         /* write to file */
-        outfile.write(text.toAscii().data());
+        outfile.write(text.toAscii().constData());
 
     }
 
@@ -746,7 +746,7 @@ void MainWindow::exportSelection(bool ascii,bool file)
                if(file)
                {
                    // write to file
-                   outfile.write(text.toAscii().data());
+                   outfile.write(text.toAscii().constData());
                }
                else
                {
