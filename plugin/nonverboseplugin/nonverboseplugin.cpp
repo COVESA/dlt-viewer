@@ -69,6 +69,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
              return false;
     }
 
+    QString warning_text;
     DltFibexPdu *pdu = 0;
     DltFibexFrame *frame = 0;
 
@@ -325,7 +326,13 @@ bool NonverbosePlugin::loadConfig(QString filename)
               {
                   if(frame)
                   {
-                      framemap[frame->id] = frame;
+                      if (framemap.contains(frame->id)){
+                          // we don't add another instance but add a warning msgbox.
+                          warning_text+=frame->id + ", ";
+                          delete frame;
+                      }else{
+                        framemap[frame->id] = frame;
+                      }
                       frame = 0;
                   }
               }
@@ -360,6 +367,11 @@ bool NonverbosePlugin::loadConfig(QString filename)
 
     file.close();
 
+    if (warning_text.length()){
+        warning_text.chop(2); // remove last ", "
+        QMessageBox::warning(0, QString("Duplicated FRAMES ignored:"),
+                              warning_text);
+    }
 
     /* create PDU Ref links */
     foreach(DltFibexFrame *frame, framemap)
