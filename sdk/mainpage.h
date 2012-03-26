@@ -14,7 +14,7 @@
  *
  * \author Christian Muck <christian.muck@bmw.de> 2011-2012
  *
- * \file <FILE>
+ * \file mainpage.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */

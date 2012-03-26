@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.wenzel@bmw.de> 2011-2012
  * 
- * \file <FILE>
+ * \file dlt.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */

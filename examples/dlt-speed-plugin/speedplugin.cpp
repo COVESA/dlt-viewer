@@ -15,7 +15,7 @@
  *
  * \author Alexander Wenzel <alexander.wenzel@bmw.de> BMW 2011,2012
  *
- * \file <FILE>
+ * \file speedplugin.cpp
  * For further information see http://www.genivi.org/.
  * @licence end@
  */

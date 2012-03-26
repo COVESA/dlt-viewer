@@ -14,7 +14,7 @@
  *
  * \author Lassi Marttala <Lassi.LM.Marttala@partner.bmw.de
  *
- * \file <FILE>
+ * \file dltsettingsmanager.cpp
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
