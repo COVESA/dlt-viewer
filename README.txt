@@ -1,6 +1,6 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version 2.5.0
+Version 2.5.1
 
 The DLT Viewer can send control messages to the DLT daemon, e.g. to set 
 individual log levels of applications and contexts or get the list of 
