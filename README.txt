@@ -1,6 +1,6 @@
 DLT Viewer - Automotive Diagnostic Log and Trace Viewer
 
-Version 2.5.0
+Version 2.5.1
 
 The DLT Viewer can send control messages to the DLT daemon, e.g. to set 
 individual log levels of applications and contexts or get the list of 
@@ -16,7 +16,7 @@ License
 -------
 Full information on the license for this software
 is available in the "LICENSE.txt" file. 
-The full LGPL license is in "LGPL.txt."
+The full MPL license is in "MPL.txt."
 
 
 Contact
