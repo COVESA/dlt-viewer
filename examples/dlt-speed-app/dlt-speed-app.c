@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  *
- * \author Alexander Wenzel <alexander.wenzel@bmw.de> BMW 2011,2012
+ * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> BMW 2011,2012
  *
  * \file dlt-speed-app.c
  * For further information see http://www.genivi.org/.

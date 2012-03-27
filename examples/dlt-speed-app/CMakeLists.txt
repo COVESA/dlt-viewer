@@ -2,9 +2,9 @@
 # Dlt Speed App - Example Spped Application
 # @licence make begin@
 #
-# Copyright (C) 2011, BMW AG - Alexander Wenzel <alexander.wenzel@bmw.de>
+# Copyright (C) 2011, BMW AG - Alexander Wenzel <alexander.aw.wenzel@bmw.de>
 # 
-# Copyright (C) 2011-2012, BMW AG - Alexander Wenzel <alexander.wenzel@bmw.de>
+# Copyright (C) 2011-2012, BMW AG - Alexander Wenzel <alexander.aw.wenzel@bmw.de>
 #
 # Contributions are licensed to the GENIVI Alliance under one or more
 # Contribution License Agreements.

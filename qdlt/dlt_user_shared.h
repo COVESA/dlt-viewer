@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \author Alexander Wenzel <alexander.wenzel@bmw.de> 2011-2012
+ * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  * 
  * \file dlt_user_shared.h
  * For further information see http://www.genivi.org/.
