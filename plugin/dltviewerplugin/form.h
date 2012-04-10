@@ -39,6 +39,7 @@ public:
     void setTextBrowserAscii(QString text);
     void setTextBrowserBinary(QString text);
     void setTextBrowserMixed(QString text);
+    void setTextBrowserStatistics(QString text);
 
 /*
     void setMessages(int message);

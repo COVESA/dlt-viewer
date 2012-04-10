@@ -57,3 +57,7 @@ void Form::setTextBrowserMixed(QString text)
     ui->textBrowserMixed->setText(text);
 }
 
+void Form::setTextBrowserStatistics(QString text)
+{
+    ui->textBrowserStatistics->setText(text);
+}

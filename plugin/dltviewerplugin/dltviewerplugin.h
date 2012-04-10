@@ -57,11 +57,21 @@ public:
 
     //void show(bool value);
 
+    /* statistics functions */
+    void resetStatistics();
+    void updateStatistics(int begin,int end);
+    void printStatistics();
 
 private:
 
     QDltFile *dltFile;
     QString errorText;
+
+    unsigned int counterMessages;
+    unsigned int counterLogs;
+    unsigned int counterTraces;
+
+    unsigned int countersLog[QDltMsg::DltLogVerbose];
 };
 
 #endif // DLTVIEWERPLUGIN_H

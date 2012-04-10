@@ -69,6 +69,13 @@ QWidget* DltViewerPlugin::initViewer() {
 bool DltViewerPlugin::initFile(QDltFile *file) {
     dltFile = file;
 
+    resetStatistics();
+
+    counterMessages = dltFile->size();
+    counterLogs = 0;
+    counterTraces = 0;
+    updateStatistics(0,dltFile->size()-1);
+
     return true;
 }
 
@@ -76,6 +83,10 @@ void DltViewerPlugin::updateFile() {
     if(!dltFile)
         return;
 
+    if((dltFile->size()-1)>=counterMessages)
+        updateStatistics(counterMessages,dltFile->size()-1);
+
+    counterMessages = dltFile->size();
 }
 
 void DltViewerPlugin::selectedIdxMsg(int index) {
@@ -169,6 +180,74 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
 
     /* Show Mixed output */
     form->setTextBrowserMixed(msg.toAsciiTable(bytes,true,true,true));
+}
+
+void DltViewerPlugin::resetStatistics() {
+    for(int num=0;num<=QDltMsg::DltLogVerbose;num++) {
+        countersLog[num] = 0;
+    }
+
+    printStatistics();
+}
+
+void DltViewerPlugin::updateStatistics(int begin,int end) {
+    QDltMsg msg;
+
+    if(!dltFile)
+        return;
+
+    for(int num=begin;num<=end;num++)
+    {
+        if(dltFile->getMsg(num,msg)==true)
+        {
+            if(msg.getType() == QDltMsg::DltTypeLog)
+            {
+                counterLogs++;
+                if((msg.getSubtype() >= QDltMsg::DltLogOff) && (msg.getSubtype() <= QDltMsg::DltLogVerbose))
+                {
+                    countersLog[msg.getSubtype()]++;
+                }
+            }
+            if(msg.getType() == QDltMsg::DltTypeNwTrace)
+            {
+                counterTraces++;
+            }
+        }
+    }
+
+    printStatistics();
+}
+
+extern const char *qDltLogInfo[];
+
+void DltViewerPlugin::printStatistics() {
+    QString text;
+
+    text = QString("<html><body>");
+    text += QString("<table border=\"1\">");
+
+    text += QString("<tr><th>Total</th><th>Log</th><th>NwTrace</th></tr>");
+    text += QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(counterLogs+counterTraces).arg(counterLogs).arg(counterTraces);
+
+    text += QString("</table>");
+    text += QString("<table border=\"1\">");
+
+    text += QString("<tr>");
+    for(int num=1;num<=QDltMsg::DltLogVerbose;num++) {
+        text += QString("<th>%1</th>").arg(qDltLogInfo[num]);
+    }
+    text += QString("</tr>");
+
+    text += QString("<tr>");
+    for(int num=1;num<=QDltMsg::DltLogVerbose;num++) {
+        text += QString("<td>%1</td>").arg(countersLog[num]);
+    }
+    text += QString("</tr>");
+
+    text += QString("</table>");
+    text += QString("</body></html>");
+
+    form->setTextBrowserStatistics(text);
 }
 
 Q_EXPORT_PLUGIN2(dltviewerplugin, DltViewerPlugin);
