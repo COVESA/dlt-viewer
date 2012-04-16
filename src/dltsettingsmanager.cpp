@@ -20,6 +20,7 @@
  */
 
 #include "dltsettingsmanager.h"
+#include <QApplication>
 
 DltSettingsManager *DltSettingsManager::m_instance = NULL;
 
@@ -40,7 +41,7 @@ void DltSettingsManager::close()
 #ifdef __WIN32__
 DltSettingsManager::DltSettingsManager()
 {
-    settings = new QSettings("config.ini", QSettings::IniFormat);
+    settings = new QSettings(QApplication::applicationDirPath()+"/config.ini", QSettings::IniFormat);
 }
 #else
 DltSettingsManager::DltSettingsManager()
