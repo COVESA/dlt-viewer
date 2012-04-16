@@ -23,6 +23,23 @@
 
 DltViewerPlugin::DltViewerPlugin() {
     dltFile = 0;
+
+    counterMessages = 0;
+    counterVerboseLogs = 0;
+    counterVerboseTraces = 0;
+    counterNonVerboseControl = 0;
+
+    for(int num=0; num <= QDltMsg::DltLogVerbose; num++) {
+        countersVerboseLogs[num] = 0;
+    }
+
+    for(int num=0; num <= QDltMsg::DltNetworkTraceMost; num++) {
+        countersVerboseTraces[num] = 0;
+    }
+
+    for(int num=0; num <= QDltMsg::DltControlTime; num++) {
+        countersNonVerboseControl[num] = 0;
+    }
 }
 
 DltViewerPlugin::~DltViewerPlugin() {
@@ -69,11 +86,17 @@ QWidget* DltViewerPlugin::initViewer() {
 bool DltViewerPlugin::initFile(QDltFile *file) {
     dltFile = file;
 
+    //if(!dltFile)
+        counterMessages = dltFile->size();
+    //else
+    //    counterMessages = 0;
+
+    counterVerboseLogs = 0;
+    counterVerboseTraces = 0;
+    counterNonVerboseControl = 0;
+
     resetStatistics();
 
-    counterMessages = dltFile->size();
-    counterLogs = 0;
-    counterTraces = 0;
     updateStatistics(0,dltFile->size()-1);
 
     return true;
@@ -183,8 +206,16 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
 }
 
 void DltViewerPlugin::resetStatistics() {
-    for(int num=0;num<=QDltMsg::DltLogVerbose;num++) {
-        countersLog[num] = 0;
+    for(int num=0; num <= QDltMsg::DltLogVerbose; num++) {
+        countersVerboseLogs[num] = 0;
+    }
+
+    for(int num=0; num <= QDltMsg::DltNetworkTraceMost; num++) {
+        countersVerboseTraces[num] = 0;
+    }
+
+    for(int num=0; num <= QDltMsg::DltControlTime; num++) {
+        countersNonVerboseControl[num] = 0;
     }
 
     printStatistics();
@@ -200,17 +231,40 @@ void DltViewerPlugin::updateStatistics(int begin,int end) {
     {
         if(dltFile->getMsg(num,msg)==true)
         {
-            if(msg.getType() == QDltMsg::DltTypeLog)
+            if(msg.getMode()==QDltMsg::DltModeVerbose)
             {
-                counterLogs++;
-                if((msg.getSubtype() >= QDltMsg::DltLogOff) && (msg.getSubtype() <= QDltMsg::DltLogVerbose))
+
+                if(msg.getType() == QDltMsg::DltTypeLog)
                 {
-                    countersLog[msg.getSubtype()]++;
+                    counterVerboseLogs++;
+
+                    if((msg.getSubtype() >= QDltMsg::DltLogOff) && (msg.getSubtype() <= QDltMsg::DltLogVerbose))
+                    {
+                        countersVerboseLogs[msg.getSubtype()]++;
+                    }
+                }
+                if(msg.getType() == QDltMsg::DltTypeNwTrace)
+                {
+                    counterVerboseTraces++;
+
+                    if((msg.getSubtype() >= QDltMsg::DltNetworkTraceIpc) && (msg.getSubtype() <= QDltMsg::DltNetworkTraceMost))
+                    {
+                        countersVerboseTraces[msg.getSubtype()]++;
+                    }
                 }
             }
-            if(msg.getType() == QDltMsg::DltTypeNwTrace)
+            if(msg.getMode() == QDltMsg::DltModeNonVerbose )
             {
-                counterTraces++;
+                if(msg.getType() == QDltMsg::DltTypeControl )
+                {
+                    counterNonVerboseControl++;
+
+                    if((msg.getSubtype() >= QDltMsg::DltControlRequest) && (msg.getSubtype() <= QDltMsg::DltControlTime))
+                    {
+                        countersNonVerboseControl[msg.getSubtype()]++;
+                    }
+                }
+
             }
         }
     }
@@ -219,32 +273,75 @@ void DltViewerPlugin::updateStatistics(int begin,int end) {
 }
 
 extern const char *qDltLogInfo[];
+extern const char *qDltNwTraceType[];
+extern const char *qDltControlType[];
 
 void DltViewerPlugin::printStatistics() {
     QString text;
 
     text = QString("<html><body>");
-    text += QString("<table border=\"1\">");
 
+    text += QString("<h3>Total messages: %1</h3>").arg(counterMessages);
+
+    text += QString("<h3>Verbose log</h3>");
+
+    text += QString("<table border=\"1\">");
     text += QString("<tr><th>Total</th><th>Log</th><th>NwTrace</th></tr>");
-    text += QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(counterLogs+counterTraces).arg(counterLogs).arg(counterTraces);
-
+    text += QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(counterVerboseLogs+counterVerboseTraces).arg(counterVerboseLogs).arg(counterVerboseTraces);
     text += QString("</table>");
-    text += QString("<table border=\"1\">");
 
+    text += QString("<table border=\"1\">");
     text += QString("<tr>");
     for(int num=1;num<=QDltMsg::DltLogVerbose;num++) {
         text += QString("<th>%1</th>").arg(qDltLogInfo[num]);
     }
     text += QString("</tr>");
-
     text += QString("<tr>");
     for(int num=1;num<=QDltMsg::DltLogVerbose;num++) {
-        text += QString("<td>%1</td>").arg(countersLog[num]);
+        text += QString("<td>%1</td>").arg(countersVerboseLogs[num]);
     }
     text += QString("</tr>");
-
     text += QString("</table>");
+
+
+    text += QString("<table border=\"1\">");
+    text += QString("<tr>");
+    for(int num=1;num<=QDltMsg::DltNetworkTraceMost;num++) {
+        text += QString("<th>%1</th>").arg(qDltNwTraceType[num]);
+    }
+    text += QString("</tr>");
+    text += QString("<tr>");
+    for(int num=1;num<=QDltMsg::DltNetworkTraceMost;num++) {
+        text += QString("<td>%1</td>").arg(countersVerboseTraces[num]);
+    }
+    text += QString("</tr>");
+    text += QString("</table>");
+
+    text += QString("<h3>Control</h3>");
+
+//    text += QString("<table border=\"1\">");
+//    text += QString("<tr><th>Total</th><th>Control</th></tr>");
+//    text += QString("<tr><td>%1</td><td>%2</td></tr>").arg(counterNonVerboseControl).arg(counterNonVerboseControl);
+//    text += QString("</table>");
+
+    text += QString("<table border=\"1\">");
+    text += QString("<tr>");
+    text += QString("<th>Total</th>");
+    for(int num=1;num<=QDltMsg::DltControlTime;num++) {
+        text += QString("<th>%1</th>").arg(qDltControlType[num]);
+    }
+    text += QString("</tr>");
+    text += QString("<tr>");
+    text += QString("<td>%1</td>").arg(counterNonVerboseControl);
+    for(int num=1;num<=QDltMsg::DltControlTime;num++) {
+        text += QString("<td>%1</td>").arg(countersNonVerboseControl[num]);
+    }
+    text += QString("</tr>");
+    text += QString("</table>");
+
+    text += QString("<h3>Non-Verbose log</h3>");
+    text += QString("TBD");
+
     text += QString("</body></html>");
 
     form->setTextBrowserStatistics(text);

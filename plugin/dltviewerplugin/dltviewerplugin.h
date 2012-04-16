@@ -55,8 +55,6 @@ public:
     /* internal variables */
     Form *form;
 
-    //void show(bool value);
-
     /* statistics functions */
     void resetStatistics();
     void updateStatistics(int begin,int end);
@@ -67,11 +65,17 @@ private:
     QDltFile *dltFile;
     QString errorText;
 
-    unsigned int counterMessages;
-    unsigned int counterLogs;
-    unsigned int counterTraces;
+    int counterMessages;
 
-    unsigned int countersLog[QDltMsg::DltLogVerbose];
+    int counterVerboseLogs;
+    int counterVerboseTraces;
+    int countersVerboseLogs[QDltMsg::DltLogVerbose+1];
+    int countersVerboseTraces[QDltMsg::DltNetworkTraceMost+1];
+
+
+    int counterNonVerboseControl;
+    int countersNonVerboseControl[QDltMsg::DltControlTime+1];
+
 };
 
 #endif // DLTVIEWERPLUGIN_H
