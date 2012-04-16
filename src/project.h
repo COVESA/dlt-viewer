@@ -178,6 +178,9 @@ private:
 
 };
 
+//Forward declaration
+class MyPluginDockWidget;
+
 class PluginItem  : public QObject, public QTreeWidgetItem
 {
     Q_OBJECT
@@ -186,30 +189,57 @@ public:
     PluginItem(QTreeWidgetItem *parent = 0);
     ~PluginItem();
 
-    enum { ModeDisable, ModeEnable, ModeShow };
+    enum { ModeDisable=0, ModeEnable, ModeShow };
     enum { TypeFile, TypeDirectory };
 
-    QString name;
-    QString pluginVersion;
-    QString pluginInterfaceVersion;
-    QString filename;
-    int mode;
-    int type;
+    QString getName();
+    void setName(QString n);
+
+    QString getPluginVersion();
+    void setPluginVersion(QString v);
+
+    QString getPluginInterfaceVersion();
+    void setPluginInterfaceVersion(QString iv);
+
+    QString getFilename();
+    void setFilename(QString f);
+
+    int getType();
+    void setType(int t);
+
+    int getMode();
+    void setMode(int m);
 
     void update();
+    void savePluginModeToSettings();
 
     QDLTPluginInterface *plugininterface;
     QDLTPluginDecoderInterface *plugindecoderinterface;
     QDltPluginViewerInterface  *pluginviewerinterface;
     QDltPluginControlInterface *plugincontrolinterface;
     QWidget *widget;
-    QDockWidget *dockWidget;
+    MyPluginDockWidget *dockWidget;
 
 private:
+    QString name;
+    QString pluginVersion;
+    QString pluginInterfaceVersion;
+    QString filename;
 
-public slots:
-    void dockVisibilityChanged(bool);
+    int type;
+    int mode;
 
+};
+
+class MyPluginDockWidget : public QDockWidget{
+
+public:
+    MyPluginDockWidget();
+    MyPluginDockWidget(PluginItem *i, QWidget *parent=0);
+    ~MyPluginDockWidget();
+private:
+    PluginItem *pluginitem;
+    void closeEvent(QCloseEvent *event);
 };
 
 class Project

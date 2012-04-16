@@ -223,9 +223,12 @@ void SettingsDialog::readDlg()
 
 }
 
-void SettingsDialog::writeSettings()
+void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 {
 	DltSettingsManager *settings = DltSettingsManager::instance();
+
+    settings->setValue("geometry", mainwindow->saveGeometry());
+    settings->setValue("windowState", mainwindow->saveState());
 
     /* startup */
 	settings->setValue("startup/defaultProjectFile",defaultProjectFile);

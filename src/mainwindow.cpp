@@ -395,12 +395,7 @@ void MainWindow::commandLineConvertToASCII(){
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    DltSettingsManager *settings = DltSettingsManager::instance();
-
-    settings->setValue("geometry", saveGeometry());
-    settings->setValue("windowState", saveState());
-
-    this->settings.writeSettings();
+    this->settings.writeSettings(this);
 
     QMainWindow::closeEvent(event);
 }
@@ -915,10 +910,10 @@ void MainWindow::reloadLogFile()
         if (pluginprogress.wasCanceled()){
            break;
         }
-        pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->name));
+        pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->getName()));
         pluginprogress.setValue(num);
 
-        if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable))
+        if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
         {
             item->pluginviewerinterface->initFile(&qfile);
         }
@@ -968,7 +963,7 @@ void MainWindow::on_actionSettings_triggered()
     {
         /* change settings and store settings persistently */
         settings.readDlg();
-        settings.writeSettings();
+        settings.writeSettings(this);
         workingDirectory = settings.workingDirectory;
 
         /* Apply settings to table */
@@ -1025,7 +1020,7 @@ bool MainWindow::projectfileOpen(QString fileName)
     {
         /* Applies project settings and save it to registry */
         applySettings();
-        settings.writeSettings();
+        settings.writeSettings(this);
 
         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
@@ -2181,7 +2176,7 @@ void MainWindow::read(EcuItem* ecuitem)
             for(int num = 0; num < project.plugin->topLevelItemCount (); num++) {
                 PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
 
-                if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable)) {
+                if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable)) {
                     item->pluginviewerinterface->updateFile();
                 }
             }
@@ -2201,7 +2196,7 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
     {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
 
-        if(item->pluginviewerinterface && (item->mode != PluginItem::ModeDisable))
+        if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
         {
             item->pluginviewerinterface->selectedIdxMsg(index.row());
         }
@@ -3215,7 +3210,7 @@ void MainWindow::autoscrollToggled(bool state)
     settings.autoScroll = (state?Qt::Checked:Qt::Unchecked);
 
     if (autoScrollOld!=settings.autoScroll)
-        settings.writeSettings();
+        settings.writeSettings(this);
 }
 
 void MainWindow::updateScrollButton()
@@ -3316,7 +3311,7 @@ void MainWindow::openRecentProject()
         {
             /* Applies project settings and save it to registry */
             applySettings();
-            settings.writeSettings();
+            settings.writeSettings(this);
 
             /* Change current working directory */
             workingDirectory = QFileInfo(projectName).absolutePath();
@@ -3570,6 +3565,7 @@ void MainWindow::loadPlugins()
 
 void MainWindow::loadPluginsPath(QDir dir)
 {
+    DltSettingsManager *settings = DltSettingsManager::instance();
 
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
@@ -3584,12 +3580,10 @@ void MainWindow::loadPluginsPath(QDir dir)
 
                     PluginItem* item = new PluginItem(0);
                     item->plugininterface = plugininterface;
-                    item->name = plugininterface->name();
-                    item->pluginVersion = plugininterface->pluginVersion();
-                    item->pluginInterfaceVersion = plugininterface->pluginInterfaceVersion();
-                    item->update();
-
-                    project.plugin->addTopLevelItem(item);
+                    item->setName(plugininterface->name());
+                    item->setPluginVersion( plugininterface->pluginVersion() );
+                    item->setPluginInterfaceVersion( plugininterface->pluginInterfaceVersion() );
+                    item->setMode( settings->value("pluginmode/"+item->getName(),QVariant(PluginItem::ModeDisable)).toInt() );
 
                     QDltPluginViewerInterface *pluginviewerinterface = qobject_cast<QDltPluginViewerInterface *>(plugin);
                     if(pluginviewerinterface)
@@ -3599,19 +3593,19 @@ void MainWindow::loadPluginsPath(QDir dir)
 
                         if(item->widget)
                         {
-                            item->dockWidget = new QDockWidget(item->name,this);
+                            //item->dockWidget = new QDockWidget(item->getName(),this);
+                            item->dockWidget = new MyPluginDockWidget(item,this);
                             item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
                             item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
                             item->dockWidget->setWidget(item->widget);
-                            item->dockWidget->setObjectName(item->name);
+                            item->dockWidget->setObjectName(item->getName());
 
                             addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
 
-                            if(item->mode != PluginItem::ModeShow)
+                            if(item->getMode() != PluginItem::ModeShow)
                             {
                                 item->dockWidget->hide();
                             }
-                            connect(item->dockWidget, SIGNAL(visibilityChanged(bool)), item, SLOT(dockVisibilityChanged(bool)));
                         }
                     }
                     QDLTPluginDecoderInterface *plugindecoderinterface = qobject_cast<QDLTPluginDecoderInterface *>(plugin);
@@ -3624,6 +3618,10 @@ void MainWindow::loadPluginsPath(QDir dir)
                     {
                         item->plugincontrolinterface = plugincontrolinterface;
                     }
+
+                    item->update();
+
+                    project.plugin->addTopLevelItem(item);
 
                 } else {
 
@@ -3677,7 +3675,7 @@ void MainWindow::updatePlugins() {
 void MainWindow::updatePlugin(PluginItem *item) {
     item->takeChildren();
 
-    item->plugininterface->loadConfig(item->filename);
+    item->plugininterface->loadConfig(item->getFilename());
 
 /*    if(item->plugincontrolinterface)
         item->plugincontrolinterface->initControl(&qcontrol);
@@ -3690,7 +3688,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
     item->update();
 
     if(item->dockWidget) {
-        if(item->mode == PluginItem::ModeShow) {
+        if(item->getMode() == PluginItem::ModeShow) {
             item->dockWidget->show();
         }
         else {
@@ -3713,23 +3711,26 @@ void MainWindow::on_actionPlugin_Edit_triggered() {
 
         /* show plugin dialog */
         PluginDialog dlg;
-        dlg.setName(item->name);
-        dlg.setPluginVersion(item->pluginVersion);
-        dlg.setPluginInterfaceVersion(item->pluginInterfaceVersion);
-        dlg.setFilename(item->filename);
-        dlg.setMode(item->mode);        
+        dlg.setName(item->getName());
+        dlg.setPluginVersion(item->getPluginVersion());
+        dlg.setPluginInterfaceVersion(item->getPluginInterfaceVersion());
+        dlg.setFilename(item->getFilename());
+        dlg.setMode(item->getMode());
         if(!item->pluginviewerinterface)
             dlg.removeMode(2); // remove show mode, if no viewer plugin
-        dlg.setType(item->type);
+        dlg.setType(item->getType());
         dlg.workingDirectory = workingDirectory;
         if(dlg.exec()) {
             workingDirectory = dlg.workingDirectory;
-            item->filename = dlg.getFilename();
-            item->mode = dlg.getMode();
-            item->type = dlg.getType();
+            item->setFilename( dlg.getFilename() );
+            item->setMode( dlg.getMode() );
+            item->setType( dlg.getType() );
+
+            item->savePluginModeToSettings();
 
             /* update plugin item */
             updatePlugin(item);
+
         }
     }
     else
@@ -4447,7 +4448,7 @@ void MainWindow::iterateDecodersForMsg(QDltMsg &msg)
     {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
 
-        if(item->mode != item->ModeDisable &&
+        if(item->getMode() != item->ModeDisable &&
            item->plugindecoderinterface &&
            item->plugindecoderinterface->isMsg(msg))
         {

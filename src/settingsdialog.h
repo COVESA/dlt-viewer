@@ -21,6 +21,7 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QMainWindow>
 
 namespace Ui {
     class SettingsDialog;
@@ -69,7 +70,7 @@ public:
     void writeDlg();
     void readDlg();
 
-    void writeSettings();
+    void writeSettings(QMainWindow *mainwindow);
     void readSettings();
 
     void resetSettings();

@@ -60,7 +60,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
 
-             if(item->mode != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
              {
                  item->plugindecoderinterface->decodeMsg(msg);
                  break;
@@ -164,7 +164,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
 
-             if(item->mode != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
              {
                  item->plugindecoderinterface->decodeMsg(msg);
                  break;

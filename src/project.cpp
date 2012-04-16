@@ -23,6 +23,7 @@
 #include <QMessageBox>
 
 #include "project.h"
+#include "dltsettingsmanager.h"
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *traceinfo[] = {"default","off","on"};
@@ -422,6 +423,37 @@ void FilterItem::update()
     setData(1,0,QString("%1 (%2)").arg(name).arg(text));
 }
 
+
+MyPluginDockWidget::MyPluginDockWidget(){
+
+}
+
+MyPluginDockWidget::MyPluginDockWidget(PluginItem *i, QWidget *parent){
+
+        this->pluginitem = i;
+
+        QDockWidget(this->pluginitem->getName(),parent);
+
+}
+
+MyPluginDockWidget::~MyPluginDockWidget(){
+
+}
+
+
+void MyPluginDockWidget::closeEvent(QCloseEvent *event)
+{
+    pluginitem->setMode(PluginItem::ModeDisable);
+
+    pluginitem->update();
+
+    pluginitem->savePluginModeToSettings();
+
+    QDockWidget::closeEvent(event);
+}
+
+
+
 PluginItem::PluginItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,plugin_type)
 {
@@ -454,22 +486,77 @@ void PluginItem::update()
     if(plugincontrolinterface)
         types << "Ctrl";
 
-    setData(0,0,QString("%1 (%2|%3 %4)").arg(name).arg(types.join("")).arg(list.size()).arg(filename));
+    QString *modeString;
+    switch(mode){
+        case 0:
+            modeString = new QString("Disabled");
+            break;
+        case 1:
+            modeString = new QString("Enabled&Not visible");
+            break;
+        case 2:
+            modeString = new QString("Enabled&Visible");
+            break;
+    }
+
+    //setData(0,0,QString("%1 (%2:%3|%4 %5)").arg(this->getName()).arg(types.join("")).arg(*modeString).arg(list.size()).arg(this->getFilename()));
+    setData(0,0,QString("%1").arg(this->getName()));
+    setData(1,0,QString("%1").arg(types.join("")));
+    setData(2,0,QString("%1").arg(*modeString));
+    setData(3,0,QString("%1").arg(list.size()));
+    setData(4,0,QString("%1").arg(this->getFilename()));
+
+    delete modeString;
 }
 
-void PluginItem::dockVisibilityChanged(bool visible)
-{
-    // Disable visible plugin when closing it.
-    // Do not disable plugins that are hidden but enabled.
-    // (Initially called on program start)
-    if(visible == false && this->mode != ModeEnable)
-    {
-        this->mode = PluginItem::ModeDisable;
-    }
-    else
-    {
-        this->mode = PluginItem::ModeShow;
-    }
+QString PluginItem::getName(){
+    return name;
+}
+void PluginItem::setName(QString n){
+    name = n;
+}
+
+QString PluginItem::getPluginVersion(){
+    return pluginVersion;
+}
+void PluginItem::setPluginVersion(QString v){
+    pluginVersion = v;
+}
+
+QString PluginItem::getPluginInterfaceVersion(){
+    return pluginInterfaceVersion;
+}
+void PluginItem::setPluginInterfaceVersion(QString iv){
+    pluginInterfaceVersion = iv;
+}
+
+QString PluginItem::getFilename(){
+    return filename;
+}
+void PluginItem::setFilename(QString f){
+    filename = f;
+}
+
+
+int PluginItem::getType(){
+    return type;
+}
+void PluginItem::setType(int t){
+    type = t;
+}
+
+int PluginItem::getMode(){
+    return mode;
+}
+void PluginItem::setMode(int m){
+
+    mode = m;
+
+}
+
+void PluginItem::savePluginModeToSettings(){
+    DltSettingsManager *bmwsettings = DltSettingsManager::instance();
+    bmwsettings->setValue("plugin/pluginmodefor"+this->getName(),QVariant(mode));
 }
 
 Project::Project()
@@ -831,7 +918,7 @@ bool Project::Load(QString filename)
                         for(int num = 0; num < plugin->topLevelItemCount (); num++)
                         {
                             PluginItem *item = (PluginItem*)plugin->topLevelItem(num);
-                            if(item->name == name)
+                            if(item->getName() == name)
                             {
                                 pluginitemexist = item;
                             }
@@ -843,19 +930,19 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("filename"))
               {
                   if(pluginitemexist)
-                    pluginitemexist->filename = xml.readElementText();
+                    pluginitemexist->setFilename( xml.readElementText() );
 
               }
               if(xml.name() == QString("mode"))
               {
                   if(pluginitemexist)
-                    pluginitemexist->mode = xml.readElementText().toInt();
+                    pluginitemexist->setMode( xml.readElementText().toInt() );
 
               }
               if(xml.name() == QString("type"))
               {
                   if(pluginitemexist)
-                    pluginitemexist->type = xml.readElementText().toInt();
+                    pluginitemexist->setType(xml.readElementText().toInt() );
 
               }
           }
@@ -1064,11 +1151,11 @@ bool Project::Save(QString filename)
         PluginItem *item = (PluginItem*)plugin->topLevelItem(num);
         xml.writeStartElement("plugin");
 
-        xml.writeTextElement("name",item->name);
-        xml.writeTextElement("filename",item->filename);
+        xml.writeTextElement("name",item->getName());
+        xml.writeTextElement("filename",item->getFilename());
 
-        xml.writeTextElement("mode",QString("%1").arg(item->mode));
-        xml.writeTextElement("type",QString("%1").arg(item->type));
+        xml.writeTextElement("mode",QString("%1").arg(item->getMode()));
+        xml.writeTextElement("type",QString("%1").arg(item->getType()));
 
         xml.writeEndElement(); // plugin
     }
