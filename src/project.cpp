@@ -434,6 +434,8 @@ MyPluginDockWidget::MyPluginDockWidget(PluginItem *i, QWidget *parent){
 
         QDockWidget(this->pluginitem->getName(),parent);
 
+        this->setWindowTitle(this->pluginitem->getName());
+
 }
 
 MyPluginDockWidget::~MyPluginDockWidget(){
