@@ -39,6 +39,7 @@ Changes in this release
 !!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
    * [GDLT-66] Plugin is deactivated but after restarting the DLT Viewer the plugin will be called to handle/parse messages fixed.
    * [GDLT-77] Open a .dlt file with double click creates a config.ini file fixed.
+   * [Dxxxx] (Can't find issue number) Mostplugin crashes on incorrect property and method entries fixed. 
    * Added some statistics as a single tab to the dlt-viewer plugin.
    * Fixed bug in statisticstab of dltviewerplugin and extended with more statistics.
    * Fixed bug in window title of plugins
