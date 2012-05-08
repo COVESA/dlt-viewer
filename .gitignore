@@ -2,3 +2,5 @@
 *.pro.user
 qextserialport/
 build/
+.project
+
