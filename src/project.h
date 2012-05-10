@@ -212,6 +212,7 @@ public:
 
     void update();
     void savePluginModeToSettings();
+    int getPluginModeFromSettings();
 
     QDLTPluginInterface *plugininterface;
     QDLTPluginDecoderInterface *plugindecoderinterface;

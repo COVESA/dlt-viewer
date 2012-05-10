@@ -2191,6 +2191,7 @@ void MainWindow::tableViewTriggerSelectionModel(QModelIndex indexNew,QModelIndex
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {
+
     /* update plugins */
     for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
     {
@@ -3583,7 +3584,7 @@ void MainWindow::loadPluginsPath(QDir dir)
                     item->setName(plugininterface->name());
                     item->setPluginVersion( plugininterface->pluginVersion() );
                     item->setPluginInterfaceVersion( plugininterface->pluginInterfaceVersion() );
-                    item->setMode( settings->value("pluginmode/"+item->getName(),QVariant(PluginItem::ModeDisable)).toInt() );
+                    item->setMode( item->getPluginModeFromSettings());
 
                     QDltPluginViewerInterface *pluginviewerinterface = qobject_cast<QDltPluginViewerInterface *>(plugin);
                     if(pluginviewerinterface)

@@ -561,6 +561,11 @@ void PluginItem::savePluginModeToSettings(){
     bmwsettings->setValue("plugin/pluginmodefor"+this->getName(),QVariant(mode));
 }
 
+int PluginItem::getPluginModeFromSettings(){
+    DltSettingsManager *bmwsettings = DltSettingsManager::instance();
+    return bmwsettings->value("plugin/pluginmodefor"+this->getName(),QVariant(PluginItem::ModeDisable)).toInt();
+}
+
 Project::Project()
 {
 
