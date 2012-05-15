@@ -57,6 +57,7 @@ public:
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
     bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState);
 
     /* internal variables */
     Form *form;
@@ -73,6 +74,7 @@ public:
 private:
     QDltFile *dltFile;
     QString errorText;
+    QStringList *ecuList;
 };
 
 #endif // DUMMYCONTROLPLUGIN_H

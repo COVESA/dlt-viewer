@@ -25,6 +25,7 @@ DummyControlPlugin::DummyControlPlugin()
 {
     dltFile = 0;
     dltControl = 0;
+    ecuList = 0;
 }
 
 DummyControlPlugin::~DummyControlPlugin()
@@ -106,6 +107,7 @@ bool DummyControlPlugin::initControl(QDltControl *control)
 
 bool DummyControlPlugin::initConnections(QStringList list)
 {
+    ecuList = new QStringList(list);
     form->setConnections(list);
 
     return false;
@@ -119,6 +121,13 @@ bool DummyControlPlugin::controlMsg(int index, QDltMsg &msg)
 void DummyControlPlugin::updateCounters(int start,int end)
 {
 
+}
+
+bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState){
+
+    qDebug() << ecuList->at(index) << "ConnectionState: " << connectionState << endl;
+
+    return true;
 }
 
 Q_EXPORT_PLUGIN2(dummycontrolplugin, DummyControlPlugin);

@@ -144,7 +144,8 @@ private slots:
     void openRecentProject();
     void openRecentFilters();
     void tableViewValueChanged(int value);
-    void stateChanged(QAbstractSocket::SocketState socketState);
+    void stateChangedTCP(QAbstractSocket::SocketState socketState);
+    void stateChangedSerial(bool dsrChanged);
     void closeEvent(QCloseEvent *event);
     void sectionInTableDoubleClicked(int logicalIndex);
 

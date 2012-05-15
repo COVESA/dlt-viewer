@@ -952,7 +952,10 @@ private:
 
 class QDltConnection
 {
+
 public:
+    //! The possible DLT connection states of an ECU
+    enum QDltConnectionState{QDltConnectionOffline=0, QDltConnectionConnecting, QDltConnectionOnline, QDltConnectionError};
 
     QDltConnection();
     ~QDltConnection();

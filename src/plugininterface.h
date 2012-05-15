@@ -240,6 +240,15 @@ public:
     */
     virtual bool controlMsg(int index, QDltMsg &msg) = 0;
 
+    //! TCP connection state changed
+    /*!
+      The TCP connection state changed for a specific ECU item.
+
+      \param ecuItem The ecuItem changed the connection state
+      \param connectionState The new connection state of the ecuItem
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState) = 0;
 };
 
 Q_DECLARE_INTERFACE(QDltPluginControlInterface,

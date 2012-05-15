@@ -1108,6 +1108,16 @@ void MainWindow::on_actionECU_Add_triggered()
 
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
+
+        for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
+            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
+
+            if(item->plugincontrolinterface)
+            {
+                item->plugincontrolinterface->stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline);
+            }
+
+        }
     }
 }
 
@@ -1854,7 +1864,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 connect(&ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
                 connect(&ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
                 connect(&ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
-                connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChanged(QAbstractSocket::SocketState)));
+                connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
+
                 ecuitem->socket.connectToHost(ecuitem->hostname,ecuitem->tcpport);
             }
         }
@@ -1867,6 +1878,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
                 ecuitem->serialport = new QextSerialPort(ecuitem->port,settings);
                 connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
+                connect(ecuitem->serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
+
             }
 
             if(ecuitem->serialport->isOpen())
@@ -1888,6 +1901,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 {
                     sendUpdates(ecuitem);
                 }
+
             }
 
         }
@@ -1995,6 +2009,16 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
             /* update connection state */
             ecuitem->connected = false;
             ecuitem->update();
+
+//            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
+//                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
+
+//                if(item->plugincontrolinterface)
+//                {
+//                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionError);
+//                }
+//            }
+
             on_configWidget_itemSelectionChanged();
         }
 
@@ -3452,7 +3476,46 @@ void MainWindow::sendUpdates(EcuItem* ecuitem)
 
 }
 
-void MainWindow::stateChanged(QAbstractSocket::SocketState socketState)
+void MainWindow::stateChangedSerial(bool dsrChanged){
+    /* signal emited when connection state changed */
+
+    /* find socket which emited signal */
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if( ecuitem->serialport == sender())
+        {
+            /* update ECU item */
+            ecuitem->update();
+
+            if(dsrChanged)
+            {
+                /* send new default log level to ECU, if selected in dlg */
+                if (ecuitem->updateDataIfOnline)
+                {
+                    sendUpdates(ecuitem);
+                }
+            }
+
+            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
+                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
+
+                if(item->plugincontrolinterface)
+                {
+                    if(dsrChanged){
+                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
+                    }else{
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
+                    }
+
+                }
+            }
+
+        }
+    }
+}
+
+void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
 {
     /* signal emited when connection state changed */
 
@@ -3473,6 +3536,33 @@ void MainWindow::stateChanged(QAbstractSocket::SocketState socketState)
                     sendUpdates(ecuitem);
                 }
             }
+
+            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
+                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
+
+                if(item->plugincontrolinterface)
+                {
+                    switch(socketState){
+                    case QAbstractSocket::UnconnectedState:
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
+                        break;
+                    case QAbstractSocket::ConnectingState:
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionConnecting);
+                        break;
+                    case QAbstractSocket::ConnectedState:
+                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
+                        break;
+                    case QAbstractSocket::ClosingState:
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
+                        break;
+                    default:
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
+                        break;
+                    }
+
+                }
+            }
+
         }
     }
 }
@@ -3522,8 +3612,6 @@ void MainWindow::loadPlugins()
 
 void MainWindow::loadPluginsPath(QDir dir)
 {
-    DltSettingsManager *settings = DltSettingsManager::instance();
-
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
         QPluginLoader pluginLoader(dir.absoluteFilePath(fileName));
