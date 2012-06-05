@@ -21,7 +21,7 @@ QT                     += gui
 OBJECTS_DIR             = build/obj
 MOC_DIR                 = build/moc
 
-INCLUDEPATH = ../qextserialport ../src
+INCLUDEPATH = ../qextserialport/src ../src
 
 SOURCES +=  dlt_common.c \
             qdlt.cpp

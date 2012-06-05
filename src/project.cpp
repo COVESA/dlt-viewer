@@ -45,7 +45,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
 
     this->sendSerialHeaderTcp = false;
 
-    baudrate = 19; /* default 115200 */
+    baudrate = BAUD115200; /* default 115200 */
     sendSerialHeaderSerial = true;
 
     serialport = 0;
@@ -788,8 +788,9 @@ bool Project::Load(QString filename)
               }
               if(xml.name() == QString("baudrate"))
               {
+                  //TODO (BaudRateType)?
                   if(ecuitem)
-                      ecuitem->baudrate = xml.readElementText().toInt();
+                      ecuitem->baudrate = (BaudRateType)xml.readElementText().toInt();
 
               }
               if(xml.name() == QString("sendserialheadertcp"))

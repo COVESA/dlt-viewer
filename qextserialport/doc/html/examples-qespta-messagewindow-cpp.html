@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : MessageWindow.cpp Example File (examples/qespta/MessageWindow.cpp)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">MessageWindow.cpp Example File</h1>
+<span class="small-subtitle">examples/qespta/MessageWindow.cpp</span>
+<!-- $$$examples/qespta/MessageWindow.cpp-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="comment">/**
+     * @file MessageWindow.cpp
+     * @brief MessageWindow Implementation.
+     * @see MessageWindow.h
+     * @author Micha? Policht
+     */</span>
+
+    <span class="preprocessor">#include &lt;stdio.h&gt;</span>
+    <span class="preprocessor">#include &quot;MessageWindow.h&quot;</span>
+    <span class="preprocessor">#include &lt;QMessageBox&gt;</span>
+    <span class="preprocessor">#include &lt;QCoreApplication&gt;</span>
+    <span class="preprocessor">#include &lt;QMutexLocker&gt;</span>
+
+    <span class="keyword">const</span> <span class="type">char</span><span class="operator">*</span> MessageWindow<span class="operator">::</span>WINDOW_TITLE <span class="operator">=</span> <span class="string">&quot;Message Window&quot;</span>;
+    MessageWindow<span class="operator">*</span> MessageWindow<span class="operator">::</span>MsgHandler <span class="operator">=</span> NULL;
+
+    MessageWindow<span class="operator">::</span>MessageWindow(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span><span class="operator">*</span> parent<span class="operator">,</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qt.html">Qt</a></span><span class="operator">::</span>WFlags flags)
+            : <span class="type"><a href="http://qt.nokia.com/doc/4.8/qdockwidget.html">QDockWidget</a></span>(parent<span class="operator">,</span> flags)<span class="operator">,</span>
+                    msgTextEdit(<span class="keyword">this</span>)
+    {
+            setWindowTitle(tr(WINDOW_TITLE));
+            msgTextEdit<span class="operator">.</span>setReadOnly(<span class="keyword">true</span>);
+            setWidget(<span class="operator">&amp;</span>msgTextEdit);
+
+            MessageWindow<span class="operator">::</span>MsgHandler <span class="operator">=</span> <span class="keyword">this</span>;
+    }
+
+    <span class="comment">//static</span>
+    <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> MessageWindow<span class="operator">::</span><span class="type">QtMsgToQString</span>(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtMsgType</a></span> type<span class="operator">,</span> <span class="keyword">const</span> <span class="type">char</span> <span class="operator">*</span>msg)
+    {
+            <span class="keyword">switch</span> (type) {
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtDebugMsg</a></span>:
+                            <span class="keyword">return</span> QLatin1String(<span class="string">&quot;Debug: &quot;</span>)<span class="operator">+</span>QLatin1String(msg);
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtWarningMsg</a></span>:
+                            <span class="keyword">return</span> QLatin1String(<span class="string">&quot;Warning: &quot;</span>)<span class="operator">+</span>QLatin1String(msg);
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtCriticalMsg</a></span>:
+                            <span class="keyword">return</span> QLatin1String(<span class="string">&quot;Critical: &quot;</span>)<span class="operator">+</span>QLatin1String(msg);
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtFatalMsg</a></span>:
+                            <span class="keyword">return</span> QLatin1String(<span class="string">&quot;Fatal: &quot;</span>)<span class="operator">+</span>QLatin1String(msg);
+                    <span class="keyword">default</span>:
+                            <span class="keyword">return</span> QLatin1String(<span class="string">&quot;Unrecognized message type: &quot;</span>)<span class="operator">+</span>QLatin1String(msg);
+            }
+    }
+
+    <span class="comment">//static</span>
+    <span class="type">void</span> MessageWindow<span class="operator">::</span>AppendMsgWrapper(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtMsgType</a></span> type<span class="operator">,</span> <span class="keyword">const</span> <span class="type">char</span><span class="operator">*</span> msg)
+    {
+            <span class="keyword">static</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmutex.html">QMutex</a></span> mutex;
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmutexlocker.html">QMutexLocker</a></span> locker(<span class="operator">&amp;</span>mutex);
+
+            <span class="keyword">if</span> (MessageWindow<span class="operator">::</span>MsgHandler <span class="operator">!</span><span class="operator">=</span> NULL)
+                    <span class="keyword">return</span> MessageWindow<span class="operator">::</span>MsgHandler<span class="operator">-</span><span class="operator">&gt;</span>postMsgEvent(type<span class="operator">,</span> msg);
+            <span class="keyword">else</span>
+            fprintf(stderr<span class="operator">,</span> <span class="string">&quot;%s&quot;</span><span class="operator">,</span> MessageWindow<span class="operator">::</span><span class="type">QtMsgToQString</span>(type<span class="operator">,</span> msg)<span class="operator">.</span>toLatin1()<span class="operator">.</span>data());
+    }
+
+    <span class="type">void</span> MessageWindow<span class="operator">::</span>customEvent(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qevent.html">QEvent</a></span><span class="operator">*</span> event)
+    {
+            <span class="keyword">if</span> (<span class="keyword">static_cast</span><span class="operator">&lt;</span>MessageWindow<span class="operator">::</span>EventType<span class="operator">&gt;</span>(event<span class="operator">-</span><span class="operator">&gt;</span>type()) <span class="operator">=</span><span class="operator">=</span> MessageWindow<span class="operator">::</span>MessageEventType)
+                    msgTextEdit<span class="operator">.</span>append(<span class="keyword">dynamic_cast</span><span class="operator">&lt;</span>MessageEvent<span class="operator">*</span> <span class="operator">&gt;</span>(event)<span class="operator">-</span><span class="operator">&gt;</span>msg);
+    }
+
+    <span class="type">void</span> MessageWindow<span class="operator">::</span>postMsgEvent(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtMsgType</a></span> type<span class="operator">,</span> <span class="keyword">const</span> <span class="type">char</span><span class="operator">*</span> msg)
+    {
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> qmsg <span class="operator">=</span> MessageWindow<span class="operator">::</span><span class="type">QtMsgToQString</span>(type<span class="operator">,</span> msg);
+            <span class="keyword">switch</span> (type) {
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtDebugMsg</a></span>:
+                            <span class="keyword">break</span>;
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtWarningMsg</a></span>:
+                            qmsg<span class="operator">.</span>prepend(QLatin1String(<span class="string">&quot;&lt;FONT color=\&quot;#FF0000\&quot;&gt;&quot;</span>));
+                            qmsg<span class="operator">.</span>append(QLatin1String(<span class="string">&quot;&lt;/FONT&gt;&quot;</span>));
+                            <span class="keyword">break</span>;
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtCriticalMsg</a></span>:
+                            <span class="keyword">if</span> (<span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>critical(<span class="keyword">this</span><span class="operator">,</span> QLatin1String(<span class="string">&quot;Critical Error&quot;</span>)<span class="operator">,</span> qmsg<span class="operator">,</span>
+                                            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>Ignore<span class="operator">,</span>
+                                            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>Abort<span class="operator">,</span>
+                                            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>NoButton) <span class="operator">=</span><span class="operator">=</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>Abort)
+                                    abort(); <span class="comment">// core dump</span>
+                            qmsg<span class="operator">.</span>prepend(QLatin1String(<span class="string">&quot;&lt;B&gt;&lt;FONT color=\&quot;#FF0000\&quot;&gt;&quot;</span>));
+                            qmsg<span class="operator">.</span>append(QLatin1String(<span class="string">&quot;&lt;/FONT&gt;&lt;/B&gt;&quot;</span>));
+                            <span class="keyword">break</span>;
+                    <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#QtMsgType-enum">QtFatalMsg</a></span>:
+                            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>critical(<span class="keyword">this</span><span class="operator">,</span> QLatin1String(<span class="string">&quot;Fatal Error&quot;</span>)<span class="operator">,</span> qmsg<span class="operator">,</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>Ok<span class="operator">,</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>NoButton<span class="operator">,</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>NoButton);
+                            abort(); <span class="comment">// deliberately core dump</span>
+            }
+            <span class="comment">//it's impossible to change GUI directly from thread other than the main thread</span>
+            <span class="comment">//so post message encapsulated by MessageEvent to the main thread's event queue</span>
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qcoreapplication.html">QCoreApplication</a></span><span class="operator">::</span>postEvent(<span class="keyword">this</span><span class="operator">,</span> <span class="keyword">new</span> MessageEvent(qmsg));
+    }
+
+    MessageEvent<span class="operator">::</span>MessageEvent(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> <span class="operator">&amp;</span> msg):
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qevent.html">QEvent</a></span>(<span class="keyword">static_cast</span><span class="operator">&lt;</span><span class="type"><a href="http://qt.nokia.com/doc/4.8/qevent.html">QEvent</a></span><span class="operator">::</span>Type<span class="operator">&gt;</span>(MessageWindow<span class="operator">::</span>MessageEventType))
+    {
+            <span class="keyword">this</span><span class="operator">-</span><span class="operator">&gt;</span>msg <span class="operator">=</span> msg;
+    }</pre>
+</div>
+<!-- @@@examples/qespta/MessageWindow.cpp -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

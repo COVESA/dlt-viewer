@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE QDOCINDEX>
+<INDEX url="http://code.google.com/p/qextserialport" title="QextSerialPort Reference Documentation" version="">
+    <namespace access="public" threadsafety="unspecified" status="commendable" name="" href="" location="" module="">
+        <page access="public" status="commendable" name="all-examples.html" href="all-examples.html" subtype="page" title="" fulltitle="" subtitle="" location="index.qdoc"/>
+        <page access="public" status="commendable" name="classes.html" href="classes.html" subtype="page" title="" fulltitle="" subtitle="" location="index.qdoc"/>
+        <page access="public" status="commendable" name="examples/enumerator" href="examples-enumerator.html" subtype="example" title="enumerator Demo" fulltitle="enumerator Demo" subtitle="" location="enumerator.qdoc">
+            <page access="public" status="commendable" name="examples/enumerator/enumerator.pro" href="examples-enumerator-enumerator-pro.html" subtype="file" title="" fulltitle="enumerator.pro Example File" subtitle="examples/enumerator/enumerator.pro" location=""/>
+            <page access="public" status="commendable" name="examples/enumerator/main.cpp" href="examples-enumerator-main-cpp.html" subtype="file" title="" fulltitle="main.cpp Example File" subtitle="examples/enumerator/main.cpp" location=""/>
+        </page>
+        <page access="public" status="commendable" name="examples/qespta" href="examples-qespta.html" subtype="example" title="qespta Demo" fulltitle="qespta Demo" subtitle="" location="qespta.qdoc">
+            <page access="public" status="commendable" name="examples/qespta/MainWindow.cpp" href="examples-qespta-mainwindow-cpp.html" subtype="file" title="" fulltitle="MainWindow.cpp Example File" subtitle="examples/qespta/MainWindow.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/MainWindow.h" href="examples-qespta-mainwindow-h.html" subtype="file" title="" fulltitle="MainWindow.h Example File" subtitle="examples/qespta/MainWindow.h" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/MessageWindow.cpp" href="examples-qespta-messagewindow-cpp.html" subtype="file" title="" fulltitle="MessageWindow.cpp Example File" subtitle="examples/qespta/MessageWindow.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/MessageWindow.h" href="examples-qespta-messagewindow-h.html" subtype="file" title="" fulltitle="MessageWindow.h Example File" subtitle="examples/qespta/MessageWindow.h" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/QespTest.cpp" href="examples-qespta-qesptest-cpp.html" subtype="file" title="" fulltitle="QespTest.cpp Example File" subtitle="examples/qespta/QespTest.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/QespTest.h" href="examples-qespta-qesptest-h.html" subtype="file" title="" fulltitle="QespTest.h Example File" subtitle="examples/qespta/QespTest.h" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/main.cpp" href="examples-qespta-main-cpp.html" subtype="file" title="" fulltitle="main.cpp Example File" subtitle="examples/qespta/main.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/qespta/qespta.pro" href="examples-qespta-qespta-pro.html" subtype="file" title="" fulltitle="qespta.pro Example File" subtitle="examples/qespta/qespta.pro" location=""/>
+        </page>
+        <page access="public" status="commendable" name="examples/uartassistant" href="examples-uartassistant.html" subtype="example" title="UartAssistant Demo" fulltitle="UartAssistant Demo" subtitle="" location="uartassistant.qdoc">
+            <page access="public" status="commendable" name="examples/uartassistant/dialog.cpp" href="examples-uartassistant-dialog-cpp.html" subtype="file" title="" fulltitle="dialog.cpp Example File" subtitle="examples/uartassistant/dialog.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/dialog.h" href="examples-uartassistant-dialog-h.html" subtype="file" title="" fulltitle="dialog.h Example File" subtitle="examples/uartassistant/dialog.h" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/dialog.ui" href="examples-uartassistant-dialog-ui.html" subtype="file" title="" fulltitle="dialog.ui Example File" subtitle="examples/uartassistant/dialog.ui" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/hled.cpp" href="examples-uartassistant-hled-cpp.html" subtype="file" title="" fulltitle="hled.cpp Example File" subtitle="examples/uartassistant/hled.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/hled.h" href="examples-uartassistant-hled-h.html" subtype="file" title="" fulltitle="hled.h Example File" subtitle="examples/uartassistant/hled.h" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/main.cpp" href="examples-uartassistant-main-cpp.html" subtype="file" title="" fulltitle="main.cpp Example File" subtitle="examples/uartassistant/main.cpp" location=""/>
+            <page access="public" status="commendable" name="examples/uartassistant/uartassistant.pro" href="examples-uartassistant-uartassistant-pro.html" subtype="file" title="" fulltitle="uartassistant.pro Example File" subtitle="examples/uartassistant/uartassistant.pro" location=""/>
+        </page>
+        <page access="public" status="commendable" name="functions.html" href="functions.html" subtype="page" title="" fulltitle="" subtitle="" location="index.qdoc"/>
+        <page access="public" status="commendable" name="index.html" href="index.html" subtype="page" title="QextSerialPort Manual" fulltitle="QextSerialPort Manual" subtitle="" location="index.qdoc">
+            <contents name="description" title="Description" level="1"/>
+            <contents name="classes" title="Classes" level="1"/>
+            <contents name="usage" title="Usage" level="1"/>
+            <contents name="using-qexserialport-library" title="Using QexSerialPort library" level="2"/>
+            <contents name="build-documents" title="Build documents" level="2"/>
+            <contents name="examples" title="Examples" level="1"/>
+            <contents name="resources" title="Resources" level="1"/>
+            <contents name="nokia-trolltech" title="Nokia(Trolltech)" level="2"/>
+            <contents name="msdn" title="MSDN" level="2"/>
+            <contents name="tldp" title="TLDP" level="2"/>
+            <contents name="other" title="Other" level="2"/>
+        </page>
+        <class access="public" threadsafety="unspecified" status="commendable" name="QextPortInfo" href="qextportinfo.html" location="qextserialenumerator.h" bases="" module="">
+            <variable access="public" threadsafety="unspecified" status="commendable" name="enumName" fullname="QextPortInfo::enumName" href="qextportinfo.html#enumName-var" location="qextserialenumerator.h" type="QString" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="friendName" fullname="QextPortInfo::friendName" href="qextportinfo.html#friendName-var" location="qextserialenumerator.h" type="QString" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="physName" fullname="QextPortInfo::physName" href="qextportinfo.html#physName-var" location="qextserialenumerator.h" type="QString" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="portName" fullname="QextPortInfo::portName" href="qextportinfo.html#portName-var" location="qextserialenumerator.h" type="QString" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="productID" fullname="QextPortInfo::productID" href="qextportinfo.html#productID-var" location="qextserialenumerator.h" type="int" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="vendorID" fullname="QextPortInfo::vendorID" href="qextportinfo.html#vendorID-var" location="qextserialenumerator.h" type="int" static="false"/>
+        </class>
+        <class access="public" threadsafety="unspecified" status="commendable" name="QextSerialEnumerator" href="qextserialenumerator.html" location="qextserialenumerator.h" bases="QObject" module="">
+            <contents name="usage" title="Usage" level="1"/>
+            <contents name="credits" title="Credits" level="1"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QextSerialEnumerator" fullname="QextSerialEnumerator::QextSerialEnumerator" href="qextserialenumerator.html#QextSerialEnumerator" location="qextserialenumerator.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QextSerialEnumerator(QObject * parent)">
+                <parameter left="QObject *" right="" name="parent" default="0"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="deviceDiscovered" fullname="QextSerialEnumerator::deviceDiscovered" href="qextserialenumerator.html#deviceDiscovered" location="qextserialenumerator.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="deviceDiscovered(const QextPortInfo &amp; info)">
+                <parameter left="const QextPortInfo &amp;" right="" name="info" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="deviceRemoved" fullname="QextSerialEnumerator::deviceRemoved" href="qextserialenumerator.html#deviceRemoved" location="qextserialenumerator.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="deviceRemoved(const QextPortInfo &amp; info)">
+                <parameter left="const QextPortInfo &amp;" right="" name="info" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="getPorts" fullname="QextSerialEnumerator::getPorts" href="qextserialenumerator.html#getPorts" location="qextserialenumerator.h" virtual="non" meta="plain" const="false" static="true" overload="false" type="QList&lt;QextPortInfo&gt;" signature="getPorts()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setUpNotifications" fullname="QextSerialEnumerator::setUpNotifications" href="qextserialenumerator.html#setUpNotifications" location="qextserialenumerator.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="setUpNotifications()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="~QextSerialEnumerator" fullname="QextSerialEnumerator::~QextSerialEnumerator" href="qextserialenumerator.html#dtor.QextSerialEnumerator" location="qextserialenumerator.h" virtual="non" meta="destructor" const="false" static="false" overload="false" type="" signature="~QextSerialEnumerator()"/>
+        </class>
+        <class access="public" threadsafety="unspecified" status="commendable" name="PortSettings" href="portsettings.html" location="qextserialport.h" bases="" module="">
+            <variable access="public" threadsafety="unspecified" status="commendable" name="BaudRate" fullname="PortSettings::BaudRate" href="portsettings.html#BaudRate-var" location="qextserialport.h" type="BaudRateType" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="DataBits" fullname="PortSettings::DataBits" href="portsettings.html#DataBits-var" location="qextserialport.h" type="DataBitsType" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="FlowControl" fullname="PortSettings::FlowControl" href="portsettings.html#FlowControl-var" location="qextserialport.h" type="FlowType" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="Parity" fullname="PortSettings::Parity" href="portsettings.html#Parity-var" location="qextserialport.h" type="ParityType" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="StopBits" fullname="PortSettings::StopBits" href="portsettings.html#StopBits-var" location="qextserialport.h" type="StopBitsType" static="false"/>
+            <variable access="public" threadsafety="unspecified" status="commendable" name="Timeout_Millisec" fullname="PortSettings::Timeout_Millisec" href="portsettings.html#Timeout_Millisec-var" location="qextserialport.h" type="long" static="false"/>
+        </class>
+        <class access="public" threadsafety="unspecified" status="commendable" name="QextSerialPort" href="qextserialport.html" location="qextserialport.h" bases="QIODevice" module="">
+            <contents name="usage" title="Usage" level="1"/>
+            <contents name="compatibility" title="Compatibility" level="1"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="queryMode" fullname="QextSerialPort::queryMode" href="qextserialport.html#queryMode" location="qextserialport.cpp" virtual="non" meta="plain" const="true" static="false" overload="false" type="QueryMode" signature="queryMode() const"/>
+            <enum access="public" threadsafety="unspecified" status="commendable" name="QueryMode" fullname="QextSerialPort::QueryMode" href="qextserialport.html#QueryMode-enum" location="qextserialport.h">
+                <value name="Polling" value="0"/>
+                <value name="EventDriven" value="1"/>
+            </enum>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QextSerialPort" fullname="QextSerialPort::QextSerialPort" href="qextserialport.html#QextSerialPort" location="qextserialport.h" virtual="non" meta="constructor" const="false" static="false" overload="false" type="" signature="QextSerialPort(QueryMode mode, QObject * parent)">
+                <parameter left="QueryMode" right="" name="mode" default="EventDriven"/>
+                <parameter left="QObject *" right="" name="parent" default="0"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QextSerialPort" fullname="QextSerialPort::QextSerialPort" href="qextserialport.html#QextSerialPort-3" location="qextserialport.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="3" type="" signature="QextSerialPort(const PortSettings &amp; settings, QueryMode mode, QObject * parent)">
+                <parameter left="const PortSettings &amp;" right="" name="settings" default=""/>
+                <parameter left="QueryMode" right="" name="mode" default="EventDriven"/>
+                <parameter left="QObject *" right="" name="parent" default="0"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QextSerialPort" fullname="QextSerialPort::QextSerialPort" href="qextserialport.html#QextSerialPort-2" location="qextserialport.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="2" type="" signature="QextSerialPort(const QString &amp; name, QueryMode mode, QObject * parent)">
+                <parameter left="const QString &amp;" right="" name="name" default=""/>
+                <parameter left="QueryMode" right="" name="mode" default="EventDriven"/>
+                <parameter left="QObject *" right="" name="parent" default="0"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="QextSerialPort" fullname="QextSerialPort::QextSerialPort" href="qextserialport.html#QextSerialPort-4" location="qextserialport.h" virtual="non" meta="constructor" const="false" static="false" overload="true" overload-number="4" type="" signature="QextSerialPort(const QString &amp; name, const PortSettings &amp; settings, QueryMode mode, QObject * parent)">
+                <parameter left="const QString &amp;" right="" name="name" default=""/>
+                <parameter left="const PortSettings &amp;" right="" name="settings" default=""/>
+                <parameter left="QueryMode" right="" name="mode" default="EventDriven"/>
+                <parameter left="QObject *" right="" name="parent" default="0"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="baudRate" fullname="QextSerialPort::baudRate" href="qextserialport.html#baudRate" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="BaudRateType" signature="baudRate() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="bytesAvailable" fullname="QextSerialPort::bytesAvailable" href="qextserialport.html#bytesAvailable" location="qextserialport.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="qint64" signature="bytesAvailable() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="close" fullname="QextSerialPort::close" href="qextserialport.html#close" location="qextserialport.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="void" signature="close()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="dataBits" fullname="QextSerialPort::dataBits" href="qextserialport.html#dataBits" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="DataBitsType" signature="dataBits() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="dsrChanged" fullname="QextSerialPort::dsrChanged" href="qextserialport.html#dsrChanged" location="qextserialport.h" virtual="non" meta="signal" const="false" static="false" overload="false" type="void" signature="dsrChanged(bool status)">
+                <parameter left="bool" right="" name="status" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="errorString" fullname="QextSerialPort::errorString" href="qextserialport.html#errorString" location="qextserialport.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QString" signature="errorString()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="flowControl" fullname="QextSerialPort::flowControl" href="qextserialport.html#flowControl" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="FlowType" signature="flowControl() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="flush" fullname="QextSerialPort::flush" href="qextserialport.html#flush" location="qextserialport.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="void" signature="flush()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="isSequential" fullname="QextSerialPort::isSequential" href="qextserialport.html#isSequential" location="qextserialport.h" virtual="impure" meta="plain" const="true" static="false" overload="false" type="bool" signature="isSequential() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lastError" fullname="QextSerialPort::lastError" href="qextserialport.html#lastError" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="ulong" signature="lastError() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="lineStatus" fullname="QextSerialPort::lineStatus" href="qextserialport.html#lineStatus" location="qextserialport.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="ulong" signature="lineStatus()"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="open" fullname="QextSerialPort::open" href="qextserialport.html#open" location="qextserialport.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="bool" signature="open(OpenMode mode)">
+                <parameter left="OpenMode" right="" name="mode" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="parity" fullname="QextSerialPort::parity" href="qextserialport.html#parity" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="ParityType" signature="parity() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="portName" fullname="QextSerialPort::portName" href="qextserialport.html#portName" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="QString" signature="portName() const"/>
+            <function access="public" threadsafety="unspecified" status="commendable" name="readAll" fullname="QextSerialPort::readAll" href="qextserialport.html#readAll" location="qextserialport.h" virtual="non" meta="plain" const="false" static="false" overload="false" type="QByteArray" signature="readAll()"/>
+            <function access="protected" threadsafety="unspecified" status="commendable" name="readData" fullname="QextSerialPort::readData" href="qextserialport.html#readData" location="qextserialport.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="qint64" signature="readData(char * data, qint64 maxSize)">
+                <parameter left="char *" right="" name="data" default=""/>
+                <parameter left="qint64" right="" name="maxSize" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setBaudRate" fullname="QextSerialPort::setBaudRate" href="qextserialport.html#setBaudRate" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setBaudRate(BaudRateType baudRate)">
+                <parameter left="BaudRateType" right="" name="baudRate" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setDataBits" fullname="QextSerialPort::setDataBits" href="qextserialport.html#setDataBits" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setDataBits(DataBitsType dataBits)">
+                <parameter left="DataBitsType" right="" name="dataBits" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setDtr" fullname="QextSerialPort::setDtr" href="qextserialport.html#setDtr" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setDtr(bool set)">
+                <parameter left="bool" right="" name="set" default="true"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setFlowControl" fullname="QextSerialPort::setFlowControl" href="qextserialport.html#setFlowControl" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setFlowControl(FlowType flow)">
+                <parameter left="FlowType" right="" name="flow" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setParity" fullname="QextSerialPort::setParity" href="qextserialport.html#setParity" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setParity(ParityType parity)">
+                <parameter left="ParityType" right="" name="parity" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setPortName" fullname="QextSerialPort::setPortName" href="qextserialport.html#setPortName" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setPortName(const QString &amp; name)">
+                <parameter left="const QString &amp;" right="" name="name" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setQueryMode" fullname="QextSerialPort::setQueryMode" href="qextserialport.html#setQueryMode" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setQueryMode(QueryMode mode)">
+                <parameter left="QueryMode" right="" name="mode" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setRts" fullname="QextSerialPort::setRts" href="qextserialport.html#setRts" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setRts(bool set)">
+                <parameter left="bool" right="" name="set" default="true"/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setStopBits" fullname="QextSerialPort::setStopBits" href="qextserialport.html#setStopBits" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setStopBits(StopBitsType stopBits)">
+                <parameter left="StopBitsType" right="" name="stopBits" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="setTimeout" fullname="QextSerialPort::setTimeout" href="qextserialport.html#setTimeout" location="qextserialport.h" virtual="non" meta="slot" const="false" static="false" overload="false" type="void" signature="setTimeout(long millisec)">
+                <parameter left="long" right="" name="millisec" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="stopBits" fullname="QextSerialPort::stopBits" href="qextserialport.html#stopBits" location="qextserialport.h" virtual="non" meta="plain" const="true" static="false" overload="false" type="StopBitsType" signature="stopBits() const"/>
+            <function access="protected" threadsafety="unspecified" status="commendable" name="writeData" fullname="QextSerialPort::writeData" href="qextserialport.html#writeData" location="qextserialport.h" virtual="impure" meta="plain" const="false" static="false" overload="false" type="qint64" signature="writeData(const char * data, qint64 maxSize)">
+                <parameter left="const char *" right="" name="data" default=""/>
+                <parameter left="qint64" right="" name="maxSize" default=""/>
+            </function>
+            <function access="public" threadsafety="unspecified" status="commendable" name="~QextSerialPort" fullname="QextSerialPort::~QextSerialPort" href="qextserialport.html#dtor.QextSerialPort" location="qextserialport.h" virtual="non" meta="destructor" const="false" static="false" overload="false" type="" signature="~QextSerialPort()"/>
+        </class>
+        <enum access="public" threadsafety="unspecified" status="commendable" name="BaudRateType" href="#BaudRateType-enum" location="qextserialport.h">
+            <value name="BAUD50" value="50"/>
+            <value name="BAUD75" value="75"/>
+            <value name="BAUD134" value="134"/>
+            <value name="BAUD150" value="150"/>
+            <value name="BAUD200" value="200"/>
+            <value name="BAUD1800" value="1800"/>
+            <value name="BAUD76800" value="76800"/>
+            <value name="BAUD230400" value="230400"/>
+            <value name="BAUD460800" value="460800"/>
+            <value name="BAUD500000" value="500000"/>
+            <value name="BAUD576000" value="576000"/>
+            <value name="BAUD921600" value="921600"/>
+            <value name="BAUD1000000" value="1000000"/>
+            <value name="BAUD1152000" value="1152000"/>
+            <value name="BAUD1500000" value="1500000"/>
+            <value name="BAUD2000000" value="2000000"/>
+            <value name="BAUD2500000" value="2500000"/>
+            <value name="BAUD3000000" value="3000000"/>
+            <value name="BAUD3500000" value="3500000"/>
+            <value name="BAUD4000000" value="4000000"/>
+            <value name="BAUD14400" value="14400"/>
+            <value name="BAUD56000" value="56000"/>
+            <value name="BAUD128000" value="128000"/>
+            <value name="BAUD256000" value="256000"/>
+            <value name="BAUD110" value="110"/>
+            <value name="BAUD300" value="300"/>
+            <value name="BAUD600" value="600"/>
+            <value name="BAUD1200" value="1200"/>
+            <value name="BAUD2400" value="2400"/>
+            <value name="BAUD4800" value="4800"/>
+            <value name="BAUD9600" value="9600"/>
+            <value name="BAUD19200" value="19200"/>
+            <value name="BAUD38400" value="38400"/>
+            <value name="BAUD57600" value="57600"/>
+            <value name="BAUD115200" value="115200"/>
+        </enum>
+        <enum access="public" threadsafety="unspecified" status="commendable" name="DataBitsType" href="#DataBitsType-enum" location="qextserialport.h">
+            <value name="DATA_5" value="5"/>
+            <value name="DATA_6" value="6"/>
+            <value name="DATA_7" value="7"/>
+            <value name="DATA_8" value="8"/>
+        </enum>
+        <enum access="public" threadsafety="unspecified" status="commendable" name="FlowType" href="#FlowType-enum" location="qextserialport.h">
+            <value name="FLOW_OFF" value="0"/>
+            <value name="FLOW_HARDWARE" value="1"/>
+            <value name="FLOW_XONXOFF" value="2"/>
+        </enum>
+        <enum access="public" threadsafety="unspecified" status="commendable" name="ParityType" href="#ParityType-enum" location="qextserialport.h">
+            <value name="PAR_NONE" value="0"/>
+            <value name="PAR_ODD" value="1"/>
+            <value name="PAR_EVEN" value="2"/>
+            <value name="PAR_MARK" value="3"/>
+            <value name="PAR_SPACE" value="4"/>
+        </enum>
+        <enum access="public" threadsafety="unspecified" status="commendable" name="StopBitsType" href="#StopBitsType-enum" location="qextserialport.h">
+            <value name="STOP_1" value="0"/>
+            <value name="STOP_1_5" value="1"/>
+            <value name="STOP_2" value="2"/>
+        </enum>
+    </namespace>
+</INDEX>

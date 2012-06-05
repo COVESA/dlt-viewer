@@ -1,0 +1,9 @@
+/*!
+    \example examples/enumerator
+    \title enumerator Demo
+
+    The example demonstrates how to use QextSerialEnumerator.
+
+    \snippet examples/enumerator/main.cpp 0
+*/
+

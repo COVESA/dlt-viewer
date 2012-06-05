@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : main.cpp Example File (examples/enumerator/main.cpp)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">main.cpp Example File</h1>
+<span class="small-subtitle">examples/enumerator/main.cpp</span>
+<!-- $$$examples/enumerator/main.cpp-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="comment">/**
+     * @file main.cpp
+     * @brief Main file.
+     * @author Micha? Policht
+     */</span>
+
+    <span class="preprocessor">#include &quot;qextserialenumerator.h&quot;</span>
+    <span class="preprocessor">#include &lt;QtCore/QList&gt;</span>
+    <span class="preprocessor">#include &lt;QtCore/QDebug&gt;</span>
+    <span class="type">int</span> main()
+    {
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qlist.html">QList</a></span><span class="operator">&lt;</span>QextPortInfo<span class="operator">&gt;</span> ports <span class="operator">=</span> QextSerialEnumerator<span class="operator">::</span>getPorts();
+        <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;List of ports:&quot;</span>;
+        <span class="keyword">for</span> (<span class="type">int</span> i <span class="operator">=</span> <span class="number">0</span>; i <span class="operator">&lt;</span> ports<span class="operator">.</span>size(); i<span class="operator">+</span><span class="operator">+</span>) {
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;port name:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> ports<span class="operator">.</span>at(i)<span class="operator">.</span>portName;
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;friendly name:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> ports<span class="operator">.</span>at(i)<span class="operator">.</span>friendName;
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;physical name:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> ports<span class="operator">.</span>at(i)<span class="operator">.</span>physName;
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;enumerator name:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> ports<span class="operator">.</span>at(i)<span class="operator">.</span>enumName;
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;vendor ID:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span><span class="operator">::</span>number(ports<span class="operator">.</span>at(i)<span class="operator">.</span>vendorID<span class="operator">,</span> <span class="number">16</span>);
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;product ID:&quot;</span> <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span><span class="operator">::</span>number(ports<span class="operator">.</span>at(i)<span class="operator">.</span>productID<span class="operator">,</span> <span class="number">16</span>);
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>() <span class="operator">&lt;</span><span class="operator">&lt;</span> <span class="string">&quot;===================================&quot;</span>;
+        }
+        <span class="keyword">return</span> <span class="number">0</span>;
+    }</pre>
+</div>
+<!-- @@@examples/enumerator/main.cpp -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

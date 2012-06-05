@@ -73,7 +73,7 @@ public:
 
     /* configuration serial */
     QString port;
-    int baudrate;
+    BaudRateType baudrate;
     bool sendSerialHeaderSerial;
     bool syncSerialHeaderSerial;
 

@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : dialog.cpp Example File (examples/uartassistant/dialog.cpp)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">dialog.cpp Example File</h1>
+<span class="small-subtitle">examples/uartassistant/dialog.cpp</span>
+<!-- $$$examples/uartassistant/dialog.cpp-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="preprocessor">#include &quot;dialog.h&quot;</span>
+    <span class="preprocessor">#include &quot;ui_dialog.h&quot;</span>
+    <span class="preprocessor">#include &lt;QtCore/QStringList&gt;</span>
+    <span class="preprocessor">#include &lt;QtCore/QTimer&gt;</span>
+    <span class="preprocessor">#include &lt;QtCore/QVariant&gt;</span>
+    <span class="preprocessor">#include &quot;qextserialport.h&quot;</span>
+
+    Dialog<span class="operator">::</span>Dialog(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span> <span class="operator">*</span>parent) :
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qdialog.html">QDialog</a></span>(parent)<span class="operator">,</span>
+        ui(<span class="keyword">new</span> Ui<span class="operator">::</span>Dialog)
+    {
+        ui<span class="operator">-</span><span class="operator">&gt;</span>setupUi(<span class="keyword">this</span>);
+
+    <span class="preprocessor">#ifdef Q_OS_WIN</span>
+        ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">-</span><span class="operator">&gt;</span>addItems(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstringlist.html">QStringList</a></span>()<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;COM1&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;COM2&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;COM3&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;COM4&quot;</span>));
+    <span class="preprocessor">#else</span>
+        ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">-</span><span class="operator">&gt;</span>addItems(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstringlist.html">QStringList</a></span>()<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;/dev/ttyS0&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;/dev/ttyS1&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;/dev/ttyUSB0&quot;</span>)<span class="operator">&lt;</span><span class="operator">&lt;</span>QLatin1String(<span class="string">&quot;/dev/ttyUSB1&quot;</span>));
+    <span class="preprocessor">#endif</span>
+        <span class="comment">//make sure user can input their own port name!</span>
+        ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">-</span><span class="operator">&gt;</span>setEditable(<span class="keyword">true</span>);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;1200&quot;</span>)<span class="operator">,</span> BAUD1200);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;2400&quot;</span>)<span class="operator">,</span> BAUD2400);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;4800&quot;</span>)<span class="operator">,</span> BAUD4800);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;9600&quot;</span>)<span class="operator">,</span> BAUD9600);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;19200&quot;</span>)<span class="operator">,</span> BAUD19200);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>setCurrentIndex(<span class="number">3</span>);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>parityBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;NONE&quot;</span>)<span class="operator">,</span> PAR_NONE);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>parityBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;ODD&quot;</span>)<span class="operator">,</span> PAR_ODD);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>parityBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;EVEN&quot;</span>)<span class="operator">,</span> PAR_EVEN);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;5&quot;</span>)<span class="operator">,</span> DATA_5);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;6&quot;</span>)<span class="operator">,</span> DATA_6);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;7&quot;</span>)<span class="operator">,</span> DATA_7);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;8&quot;</span>)<span class="operator">,</span> DATA_8);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>setCurrentIndex(<span class="number">3</span>);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>stopBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;1&quot;</span>)<span class="operator">,</span> STOP_1);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>stopBitsBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;2&quot;</span>)<span class="operator">,</span> STOP_2);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>queryModeBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;Polling&quot;</span>)<span class="operator">,</span> QextSerialPort<span class="operator">::</span>Polling);
+        ui<span class="operator">-</span><span class="operator">&gt;</span>queryModeBox<span class="operator">-</span><span class="operator">&gt;</span>addItem(QLatin1String(<span class="string">&quot;EventDriven&quot;</span>)<span class="operator">,</span> QextSerialPort<span class="operator">::</span>EventDriven);
+
+        ui<span class="operator">-</span><span class="operator">&gt;</span>led<span class="operator">-</span><span class="operator">&gt;</span>turnOff();
+
+        timer <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtimer.html">QTimer</a></span>(<span class="keyword">this</span>);
+        timer<span class="operator">-</span><span class="operator">&gt;</span>setInterval(<span class="number">40</span>);
+        PortSettings settings <span class="operator">=</span> {BAUD9600<span class="operator">,</span> DATA_8<span class="operator">,</span> PAR_NONE<span class="operator">,</span> STOP_1<span class="operator">,</span> FLOW_OFF<span class="operator">,</span> <span class="number">10</span>};
+        port <span class="operator">=</span> <span class="keyword">new</span> QextSerialPort(ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">-</span><span class="operator">&gt;</span>currentText()<span class="operator">,</span> settings<span class="operator">,</span> QextSerialPort<span class="operator">::</span>Polling);
+
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">,</span> SIGNAL(currentIndexChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onBaudRateChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>parityBox<span class="operator">,</span> SIGNAL(currentIndexChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onParityChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">,</span> SIGNAL(currentIndexChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onDataBitsChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>stopBitsBox<span class="operator">,</span> SIGNAL(currentIndexChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onStopBitsChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>queryModeBox<span class="operator">,</span> SIGNAL(currentIndexChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onQueryModeChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>timeoutBox<span class="operator">,</span> SIGNAL(valueChanged(<span class="type">int</span>))<span class="operator">,</span> SLOT(onTimeoutChanged(<span class="type">int</span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">,</span> SIGNAL(editTextChanged(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span>))<span class="operator">,</span> SLOT(onPortNameChanged(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span>)));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>openCloseButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(onOpenCloseButtonClicked()));
+        connect(ui<span class="operator">-</span><span class="operator">&gt;</span>sendButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(onSendButtonClicked()));
+        connect(timer<span class="operator">,</span> SIGNAL(timeout())<span class="operator">,</span> SLOT(onReadyRead()));
+        connect(port<span class="operator">,</span> SIGNAL(readyRead())<span class="operator">,</span> SLOT(onReadyRead()));
+
+        setWindowTitle(QLatin1String(<span class="string">&quot;QextSerialPort Demo&quot;</span>));
+    }
+
+    Dialog<span class="operator">::</span><span class="operator">~</span>Dialog()
+    {
+        <span class="keyword">delete</span> ui;
+        <span class="keyword">delete</span> port;
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>changeEvent(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qevent.html">QEvent</a></span> <span class="operator">*</span>e)
+    {
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qdialog.html">QDialog</a></span><span class="operator">::</span>changeEvent(e);
+        <span class="keyword">switch</span> (e<span class="operator">-</span><span class="operator">&gt;</span>type()) {
+        <span class="keyword">case</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qevent.html">QEvent</a></span><span class="operator">::</span>LanguageChange:
+            ui<span class="operator">-</span><span class="operator">&gt;</span>retranslateUi(<span class="keyword">this</span>);
+            <span class="keyword">break</span>;
+        <span class="keyword">default</span>:
+            <span class="keyword">break</span>;
+        }
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onPortNameChanged(<span class="keyword">const</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> <span class="operator">&amp;</span> <span class="comment">/*name*/</span>)
+    {
+        <span class="keyword">if</span> (port<span class="operator">-</span><span class="operator">&gt;</span>isOpen()) {
+            port<span class="operator">-</span><span class="operator">&gt;</span>close();
+            ui<span class="operator">-</span><span class="operator">&gt;</span>led<span class="operator">-</span><span class="operator">&gt;</span>turnOff();
+        }
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onBaudRateChanged(<span class="type">int</span> idx)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setBaudRate((BaudRateType)ui<span class="operator">-</span><span class="operator">&gt;</span>baudRateBox<span class="operator">-</span><span class="operator">&gt;</span>itemData(idx)<span class="operator">.</span>toInt());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onParityChanged(<span class="type">int</span> idx)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setParity((ParityType)ui<span class="operator">-</span><span class="operator">&gt;</span>parityBox<span class="operator">-</span><span class="operator">&gt;</span>itemData(idx)<span class="operator">.</span>toInt());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onDataBitsChanged(<span class="type">int</span> idx)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setDataBits((DataBitsType)ui<span class="operator">-</span><span class="operator">&gt;</span>dataBitsBox<span class="operator">-</span><span class="operator">&gt;</span>itemData(idx)<span class="operator">.</span>toInt());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onStopBitsChanged(<span class="type">int</span> idx)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setStopBits((StopBitsType)ui<span class="operator">-</span><span class="operator">&gt;</span>stopBitsBox<span class="operator">-</span><span class="operator">&gt;</span>itemData(idx)<span class="operator">.</span>toInt());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onQueryModeChanged(<span class="type">int</span> idx)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setQueryMode((QextSerialPort<span class="operator">::</span>QueryMode)ui<span class="operator">-</span><span class="operator">&gt;</span>queryModeBox<span class="operator">-</span><span class="operator">&gt;</span>itemData(idx)<span class="operator">.</span>toInt());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onTimeoutChanged(<span class="type">int</span> val)
+    {
+        port<span class="operator">-</span><span class="operator">&gt;</span>setTimeout(val);
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onOpenCloseButtonClicked()
+    {
+        <span class="keyword">if</span> (<span class="operator">!</span>port<span class="operator">-</span><span class="operator">&gt;</span>isOpen()) {
+            port<span class="operator">-</span><span class="operator">&gt;</span>setPortName(ui<span class="operator">-</span><span class="operator">&gt;</span>portBox<span class="operator">-</span><span class="operator">&gt;</span>currentText());
+            port<span class="operator">-</span><span class="operator">&gt;</span>open(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qiodevice.html">QIODevice</a></span><span class="operator">::</span>ReadWrite);
+        }
+        <span class="keyword">else</span> {
+            port<span class="operator">-</span><span class="operator">&gt;</span>close();
+        }
+
+        <span class="keyword">if</span> (port<span class="operator">-</span><span class="operator">&gt;</span>isOpen()) {
+            <span class="keyword">if</span> (port<span class="operator">-</span><span class="operator">&gt;</span>queryMode() <span class="operator">=</span><span class="operator">=</span> QextSerialPort<span class="operator">::</span>Polling)
+                timer<span class="operator">-</span><span class="operator">&gt;</span>start();
+            ui<span class="operator">-</span><span class="operator">&gt;</span>led<span class="operator">-</span><span class="operator">&gt;</span>turnOn();
+        }
+        <span class="keyword">else</span> {
+            timer<span class="operator">-</span><span class="operator">&gt;</span>stop();
+            ui<span class="operator">-</span><span class="operator">&gt;</span>led<span class="operator">-</span><span class="operator">&gt;</span>turnOff();
+        }
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onSendButtonClicked()
+    {
+        <span class="keyword">if</span> (port<span class="operator">-</span><span class="operator">&gt;</span>isOpen() <span class="operator">&amp;</span><span class="operator">&amp;</span> <span class="operator">!</span>ui<span class="operator">-</span><span class="operator">&gt;</span>sendEdit<span class="operator">-</span><span class="operator">&gt;</span>toPlainText()<span class="operator">.</span>isEmpty())
+            port<span class="operator">-</span><span class="operator">&gt;</span>write(ui<span class="operator">-</span><span class="operator">&gt;</span>sendEdit<span class="operator">-</span><span class="operator">&gt;</span>toPlainText()<span class="operator">.</span>toLatin1());
+    }
+
+    <span class="type">void</span> Dialog<span class="operator">::</span>onReadyRead()
+    {
+        <span class="comment">//EventDriven test.</span>
+        <span class="keyword">if</span> (qApp<span class="operator">-</span><span class="operator">&gt;</span>arguments()<span class="operator">.</span>contains(QLatin1String(<span class="string">&quot;--debug&quot;</span>)) <span class="operator">&amp;</span><span class="operator">&amp;</span> port<span class="operator">-</span><span class="operator">&gt;</span>queryMode()<span class="operator">=</span><span class="operator">=</span>QextSerialPort<span class="operator">::</span>EventDriven){
+            ui<span class="operator">-</span><span class="operator">&gt;</span>recvEdit<span class="operator">-</span><span class="operator">&gt;</span>appendPlainText(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span><span class="operator">::</span>number(port<span class="operator">-</span><span class="operator">&gt;</span>bytesAvailable()));
+            <span class="keyword">return</span>;
+        }
+
+        <span class="keyword">if</span> (port<span class="operator">-</span><span class="operator">&gt;</span>bytesAvailable()) {
+            ui<span class="operator">-</span><span class="operator">&gt;</span>recvEdit<span class="operator">-</span><span class="operator">&gt;</span>moveCursor(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qtextcursor.html">QTextCursor</a></span><span class="operator">::</span>End);
+            ui<span class="operator">-</span><span class="operator">&gt;</span>recvEdit<span class="operator">-</span><span class="operator">&gt;</span>insertPlainText(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span><span class="operator">::</span>fromLatin1(port<span class="operator">-</span><span class="operator">&gt;</span>readAll()));
+        }
+    }</pre>
+</div>
+<!-- @@@examples/uartassistant/dialog.cpp -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

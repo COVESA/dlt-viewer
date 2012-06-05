@@ -1,0 +1,9 @@
+/*!
+    \example examples/uartassistant
+    \title UartAssistant Demo
+
+    The example demonstrates how to use QextSerialPort.
+
+    \image uartassistant.png
+*/
+

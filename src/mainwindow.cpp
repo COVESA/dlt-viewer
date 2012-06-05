@@ -42,7 +42,7 @@
 #include "plugindialog.h"
 #include "settingsdialog.h"
 #include "injectiondialog.h"
-
+#include "qextserialenumerator.h"
 #include "version.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -1057,17 +1057,31 @@ void MainWindow::on_actionProjectSave_triggered()
         setCurrentProject(fileName);
     }
 }
+QStringList MainWindow::getSerialPortsWithQextEnumartor(){
+
+    QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
+    QStringList portList;
+#ifdef Q_OS_WIN
+    for (int i = 0; i < ports.size(); i++) {
+        portList << ports.at(i).portName;
+    }
+#else
+    for (int i = 0; i < ports.size(); i++) {
+        portList << ports.at(i).physName;
+    }
+#endif
+    return portList;
+}
 
 void MainWindow::on_actionECU_Add_triggered()
 {   
     QStringList hostnameListPreset;
     hostnameListPreset << "localhost";
 
-    QStringList portListPreset;
-    portListPreset << "COM0" << "COM1" << "/dev/ttyUSB0" << "/dev/ttyUSB1" << "/dev/ttyS0" << "/dev/ttyS1";
+    QStringList portListPreset = getSerialPortsWithQextEnumartor();
 
     /* show ECU configuration dialog */
-    EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",19,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,false,true,false,false,false,false,true);
+    EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,false,true,false,false,false,false,true);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = bmwsettings->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -1080,33 +1094,7 @@ void MainWindow::on_actionECU_Add_triggered()
     {
         /* add new ECU to configuration */
         EcuItem* ecuitem = new EcuItem(0);
-        ecuitem->id = dlg.id();
-        ecuitem->description = dlg.description();
-        ecuitem->interfacetype = dlg.interfacetype();
-        ecuitem->hostname = dlg.hostname();
-        ecuitem->tcpport = dlg.tcpport();
-        ecuitem->port = dlg.port();
-        ecuitem->baudrate = dlg.baudrate();
-        ecuitem->loglevel = dlg.loglevel();
-        ecuitem->tracestatus = dlg.tracestatus();
-        ecuitem->verbosemode = dlg.verbosemode();
-        ecuitem->sendSerialHeaderSerial = dlg.sendSerialHeaderSerial();
-        ecuitem->sendSerialHeaderTcp = dlg.sendSerialHeaderTcp();
-        ecuitem->syncSerialHeaderSerial = dlg.syncSerialHeaderSerial();
-        ecuitem->syncSerialHeaderTcp = dlg.syncSerialHeaderTcp();
-        ecuitem->timingPackets = dlg.timingPackets();
-        ecuitem->sendGetLogInfo = dlg.sendGetLogInfo();
-        ecuitem->updateDataIfOnline = dlg.update();
-
-        /* new qdlt library */
-        ecuitem->tcpcon.setTcpPort(dlg.tcpport());
-        ecuitem->tcpcon.setHostname(dlg.hostname());
-        ecuitem->tcpcon.setSendSerialHeader(dlg.sendSerialHeaderTcp());
-        ecuitem->tcpcon.setSyncSerialHeader(dlg.syncSerialHeaderSerial());
-        ecuitem->serialcon.setBaudrate(dlg.baudrate());
-        ecuitem->serialcon.setPort(dlg.port());
-        ecuitem->serialcon.setSendSerialHeader(dlg.sendSerialHeaderSerial());
-        ecuitem->serialcon.setSyncSerialHeader(dlg.syncSerialHeaderTcp());
+        dlg.setDialogToEcuItem(ecuitem);
 
         /* update ECU item */
         ecuitem->update();
@@ -1132,8 +1120,7 @@ void MainWindow::on_actionECU_Edit_triggered()
         QStringList hostnameListPreset;
         hostnameListPreset << "localhost";
 
-        QStringList portListPreset;
-        portListPreset << "COM0" << "COM1" << "/dev/ttyUSB0" << "/dev/ttyUSB1" << "/dev/ttyS0" << "/dev/ttyS1";
+        QStringList portListPreset = getSerialPortsWithQextEnumartor();
 
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
@@ -1154,10 +1141,6 @@ void MainWindow::on_actionECU_Edit_triggered()
 
         if(dlg.exec())
         {
-            /* change settings of ECU configuration */
-            ecuitem->id = dlg.id();
-            ecuitem->description = dlg.description();
-
             bool interfaceChanged = false;
             if((ecuitem->interfacetype != dlg.interfacetype() ||
                ecuitem->hostname != dlg.hostname() ||
@@ -1170,31 +1153,7 @@ void MainWindow::on_actionECU_Edit_triggered()
                 disconnectECU(ecuitem);
             }
 
-            ecuitem->interfacetype = dlg.interfacetype();
-            ecuitem->hostname = dlg.hostname();
-            ecuitem->tcpport = dlg.tcpport();
-            ecuitem->port = dlg.port();
-            ecuitem->baudrate = dlg.baudrate();
-            ecuitem->loglevel = dlg.loglevel();
-            ecuitem->tracestatus = dlg.tracestatus();
-            ecuitem->verbosemode = dlg.verbosemode();
-            ecuitem->sendSerialHeaderSerial = dlg.sendSerialHeaderSerial();
-            ecuitem->sendSerialHeaderTcp = dlg.sendSerialHeaderTcp();
-            ecuitem->syncSerialHeaderSerial = dlg.syncSerialHeaderSerial();
-            ecuitem->syncSerialHeaderTcp = dlg.syncSerialHeaderTcp();
-            ecuitem->timingPackets = dlg.timingPackets();
-            ecuitem->sendGetLogInfo = dlg.sendGetLogInfo();
-            ecuitem->updateDataIfOnline = dlg.update();
-
-            /* new qdlt library */
-            ecuitem->tcpcon.setTcpPort(dlg.tcpport());
-            ecuitem->tcpcon.setHostname(dlg.hostname());
-            ecuitem->tcpcon.setSendSerialHeader(dlg.sendSerialHeaderTcp());
-            ecuitem->tcpcon.setSyncSerialHeader(dlg.syncSerialHeaderSerial());
-            ecuitem->serialcon.setBaudrate(dlg.baudrate());
-            ecuitem->serialcon.setPort(dlg.port());
-            ecuitem->serialcon.setSendSerialHeader(dlg.sendSerialHeaderSerial());
-            ecuitem->serialcon.setSyncSerialHeader(dlg.syncSerialHeaderTcp());
+            dlg.setDialogToEcuItem(ecuitem);
 
             /* update ECU item */
             ecuitem->update();
@@ -1885,9 +1844,6 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
         /* start socket connection to host */
         if(ecuitem->interfacetype == 0)
-
-
-
         {
             /* TCP */
             /* connect socket signals with window slots */
@@ -1906,23 +1862,23 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         {
             /* Serial */
             if(!ecuitem->serialport)
-                ecuitem->serialport = new QextSerialPort(ecuitem->port);
+            {
+                PortSettings settings = {ecuitem->baudrate, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
 
-            if(ecuitem->serialport->isOpen())
-                   ecuitem->serialport->close();
-            ecuitem->serialport->open(QIODevice::ReadWrite);
+                ecuitem->serialport = new QextSerialPort(ecuitem->port,settings);
+                connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
+            }
 
-            //connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
             if(ecuitem->serialport->isOpen())
             {
-                ecuitem->serialport->setBaudRate((BaudRateType)ecuitem->baudrate);
-                ecuitem->serialport->setDataBits(DATA_8);
-                ecuitem->serialport->setParity(PAR_NONE);
-                ecuitem->serialport->setStopBits(STOP_1);
-                ecuitem->serialport->setFlowControl(FLOW_OFF);
+                ecuitem->serialport->close();
+                ecuitem->serialport->setBaudRate(ecuitem->baudrate);
+            }
 
-                ecuitem->serialport->setTimeout(0,1);
+            ecuitem->serialport->open(QIODevice::ReadWrite);
 
+            if(ecuitem->serialport->isOpen())
+            {
                 ecuitem->connected = true;
                 ecuitem->update();
                 on_configWidget_itemSelectionChanged();

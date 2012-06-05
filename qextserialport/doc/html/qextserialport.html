@@ -1,0 +1,425 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- qextserialport.cpp -->
+  <title>qesp : QextSerialPort Class Reference</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><li><a href="http://qt.nokia.com/doc/4.8/modules.html">Modules</a></li>
+<li>QextSerialPort</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#public-types">Public Types</a></li>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#public-slots">Public Slots</a></li>
+<li class="level1"><a href="#signals">Signals</a></li>
+<li class="level1"><a href="#protected-functions">Protected Functions</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+<li class="level2"><a href="#usage">Usage</a></li>
+<li class="level2"><a href="#compatibility">Compatibility</a></li>
+</ul>
+</div>
+<h1 class="title">QextSerialPort Class Reference</h1>
+<!-- $$$QextSerialPort-brief -->
+<p>The QextSerialPort class encapsulates a serial port on both POSIX and Windows systems. <a href="#details">More...</a></p>
+<!-- @@@QextSerialPort -->
+<pre class="cpp">    <span class="preprocessor">#include &lt;QextSerialPort&gt;</span></pre><p><b>Inherits: </b><a href="http://qt.nokia.com/doc/4.8/qiodevice.html">QIODevice</a>.</p>
+<ul>
+<li><a href="qextserialport-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="public-types"></a>
+<h2>Public Types</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> enum </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#QueryMode-enum">QueryMode</a></b> { Polling, EventDriven }</td></tr>
+</table>
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#QextSerialPort">QextSerialPort</a></b> ( QueryMode <i>mode</i> = EventDriven, QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#QextSerialPort-2">QextSerialPort</a></b> ( const QString &amp; <i>name</i>, QueryMode <i>mode</i> = EventDriven, QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#QextSerialPort-3">QextSerialPort</a></b> ( const PortSettings &amp; <i>settings</i>, QueryMode <i>mode</i> = EventDriven, QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#QextSerialPort-4">QextSerialPort</a></b> ( const QString &amp; <i>name</i>, const PortSettings &amp; <i>settings</i>, QueryMode <i>mode</i> = EventDriven, QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#dtor.QextSerialPort">~QextSerialPort</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> BaudRateType </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#baudRate">baudRate</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> DataBitsType </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#dataBits">dataBits</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#errorString">errorString</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> FlowType </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#flowControl">flowControl</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#flush">flush</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> ulong </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#lastError">lastError</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> ulong </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#lineStatus">lineStatus</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> bool </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#open">open</a></b> ( OpenMode <i>mode</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> ParityType </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#parity">parity</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QString </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#portName">portName</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QueryMode </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#queryMode">queryMode</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> QByteArray </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#readAll">readAll</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> StopBitsType </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#stopBits">stopBits</a></b> () const</td></tr>
+</table>
+<a name="reimplemented-public-functions"></a>
+<h2>Reimplemented Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> virtual qint64 </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#bytesAvailable">bytesAvailable</a></b> () const</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#close">close</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual bool </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#isSequential">isSequential</a></b> () const</td></tr>
+</table>
+<ul>
+<li class="fn">33 public functions inherited from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#public-functions">QIODevice</a></li>
+<li class="fn">29 public functions inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-functions">QObject</a></li>
+</ul>
+<a name="public-slots"></a>
+<h2>Public Slots</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setBaudRate">setBaudRate</a></b> ( BaudRateType <i>baudRate</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setDataBits">setDataBits</a></b> ( DataBitsType <i>dataBits</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setDtr">setDtr</a></b> ( bool <i>set</i> = true )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setFlowControl">setFlowControl</a></b> ( FlowType <i>flow</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setParity">setParity</a></b> ( ParityType <i>parity</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setPortName">setPortName</a></b> ( const QString &amp; <i>name</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setQueryMode">setQueryMode</a></b> ( QueryMode <i>mode</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setRts">setRts</a></b> ( bool <i>set</i> = true )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setStopBits">setStopBits</a></b> ( StopBitsType <i>stopBits</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#setTimeout">setTimeout</a></b> ( long <i>millisec</i> )</td></tr>
+</table>
+<ul>
+<li class="fn">1 public slot inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-slots">QObject</a></li>
+</ul>
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#dsrChanged">dsrChanged</a></b> ( bool <i>status</i> )</td></tr>
+</table>
+<ul>
+<li class="fn">4 signals inherited from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#signals">QIODevice</a></li>
+<li class="fn">1 signal inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#signals">QObject</a></li>
+</ul>
+<a name="reimplemented-protected-functions"></a>
+<h2>Reimplemented Protected Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> virtual qint64 </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#readData">readData</a></b> ( char * <i>data</i>, qint64 <i>maxSize</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> virtual qint64 </td><td class="memItemRight bottomAlign"><b><a href="qextserialport.html#writeData">writeData</a></b> ( const char * <i>data</i>, qint64 <i>maxSize</i> )</td></tr>
+</table>
+<ul>
+<li class="fn">5 protected functions inherited from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#protected-functions">QIODevice</a></li>
+<li class="fn">8 protected functions inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#protected-functions">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li class="fn">1 property inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#properties">QObject</a></li>
+<li class="fn">1 public variable inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-variables">QObject</a></li>
+<li class="fn">6 static public members inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#static-public-members">QObject</a></li>
+<li class="fn">5 protected functions inherited from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#protected-functions">QIODevice</a></li>
+<li class="fn">8 protected functions inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#protected-functions">QObject</a></li>
+<li class="fn">2 protected variables inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<!-- $$$QextSerialPort-description -->
+<div class="descr">
+<h2>Detailed Description</h2>
+<p>The QextSerialPort class encapsulates a serial port on both POSIX and Windows systems.</p>
+<a name="usage"></a>
+<h3>Usage</h3>
+<p>QextSerialPort offers both a polling and event driven API. Event driven is typically easier to use, since you never have to worry about checking for new data.</p>
+<p><b>Example</b></p>
+<pre class="cpp">    QextSerialPort<span class="operator">*</span> port <span class="operator">=</span> <span class="keyword">new</span> <a href="qextserialport.html#QextSerialPort">QextSerialPort</a>(<span class="string">&quot;COM1&quot;</span>);
+    <a href="http://qt.nokia.com/doc/4.8/qobject.html#connect">connect</a>(port<span class="operator">,</span> SIGNAL(readyRead())<span class="operator">,</span> myClass<span class="operator">,</span> SLOT(onDataAvailable()));
+    port<span class="operator">-</span><span class="operator">&gt;</span><a href="qextserialport.html#open">open</a>();
+
+    <span class="type">void</span> MyClass<span class="operator">::</span>onDataAvailable() {
+        <span class="type">int</span> avail <span class="operator">=</span> port<span class="operator">-</span><span class="operator">&gt;</span>bytesAvailable();
+        <span class="keyword">if</span>( avail <span class="operator">&gt;</span> <span class="number">0</span> ) {
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qbytearray.html">QByteArray</a></span> usbdata;
+            usbdata<span class="operator">.</span>resize(avail);
+            <span class="type">int</span> read <span class="operator">=</span> port<span class="operator">-</span><span class="operator">&gt;</span>read(usbdata<span class="operator">.</span>data()<span class="operator">,</span> usbdata<span class="operator">.</span>size());
+            <span class="keyword">if</span>( read <span class="operator">&gt;</span> <span class="number">0</span> ) {
+                processNewData(usbdata);
+            }
+        }
+    }</pre>
+<a name="compatibility"></a>
+<h3>Compatibility</h3>
+<p>The user will be notified of errors and possible portability conflicts at run-time by default.</p>
+<p>For example, if a application has used BAUD1800, when it is runing under unix, you will get following message.</p>
+<pre class="cpp">    QextSerialPort Portability Warning: Windows does <span class="keyword">not</span> support baudRate:<span class="number">1800</span></pre>
+<p>This behavior can be turned off by defining macro QESP_NO_WARN (to turn off all warnings) or QESP_NO_PORTABILITY_WARN (to turn off portability warnings) in the project.</p>
+<p><b>Author</b>: Stefan Sander, Michal Policht, Brandon Fosdick, Liam Staskawicz, Debao Zhang</p>
+</div>
+<!-- @@@QextSerialPort -->
+<div class="types">
+<h2>Member Type Documentation</h2>
+<!-- $$$QueryMode$$$Polling$$$EventDriven -->
+<h3 class="fn"><a name="QueryMode-enum"></a>enum QextSerialPort::<span class="name">QueryMode</span></h3>
+<p>This enum type specifies query mode used in a serial port:</p>
+<table class="valuelist"><tr valign="top" class="odd"><th class="tblConst">Constant</th><th class="tblval">Value</th><th class="tbldscr">Description</th></tr>
+<tr><td class="topAlign"><tt>QextSerialPort::Polling</tt></td><td class="topAlign"><tt>0</tt></td><td class="topAlign">asynchronously read and write</td></tr>
+<tr><td class="topAlign"><tt>QextSerialPort::EventDriven</tt></td><td class="topAlign"><tt>1</tt></td><td class="topAlign">synchronously read and write</td></tr>
+</table>
+<!-- @@@QueryMode -->
+</div>
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$QextSerialPort[overload1]$$$QextSerialPortQueryModeQObject* -->
+<h3 class="fn"><a name="QextSerialPort"></a>QextSerialPort::<span class="name">QextSerialPort</span> ( <span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> <i>mode</i> = EventDriven, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a></span> * <i>parent</i> = 0 )</h3>
+<p>Default constructor. Note that the name of the device used by a <a href="qextserialport.html">QextSerialPort</a> is dependent on your OS. Possible naming conventions and their associated OS are:</p>
+<pre class="cpp">    OS Constant       Used By         Naming Convention
+    <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>     <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>   <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>
+    Q_OS_WIN          Windows         COM1<span class="operator">,</span> COM2
+    Q_OS_IRIX         SGI<span class="operator">/</span>IRIX        <span class="operator">/</span>dev<span class="operator">/</span>ttyf1<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>ttyf2
+    Q_OS_HPUX         HP<span class="operator">-</span>UX           <span class="operator">/</span>dev<span class="operator">/</span>tty1p0<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>tty2p0
+    Q_OS_SOLARIS      SunOS<span class="operator">/</span>Slaris    <span class="operator">/</span>dev<span class="operator">/</span>ttya<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>ttyb
+    Q_OS_OSF          Digital UNIX    <span class="operator">/</span>dev<span class="operator">/</span>tty01<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>tty02
+    Q_OS_FREEBSD      FreeBSD         <span class="operator">/</span>dev<span class="operator">/</span>ttyd0<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>ttyd1
+    Q_OS_OPENBSD      OpenBSD         <span class="operator">/</span>dev<span class="operator">/</span>tty00<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>tty01
+    Q_OS_LINUX        Linux           <span class="operator">/</span>dev<span class="operator">/</span>ttyS0<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>ttyS1
+    <span class="operator">&lt;</span>none<span class="operator">&gt;</span>                            <span class="operator">/</span>dev<span class="operator">/</span>ttyS0<span class="operator">,</span> <span class="operator">/</span>dev<span class="operator">/</span>ttyS1</pre>
+<p>This constructor assigns the device name to the name of the first port on the specified system. See the other constructors if you need to open a different port. Default <i>mode</i> is <a href="qextserialport.html#QueryMode-enum">EventDriven</a>. As a subclass of <a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a>, <i>parent</i> can be specified.</p>
+<!-- @@@QextSerialPort -->
+<!-- $$$QextSerialPort$$$QextSerialPortconstQString&QueryModeQObject* -->
+<h3 class="fn"><a name="QextSerialPort-2"></a>QextSerialPort::<span class="name">QextSerialPort</span> ( const <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> &amp; <i>name</i>, <span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> <i>mode</i> = EventDriven, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a></span> * <i>parent</i> = 0 )</h3>
+<p>Constructs a serial port attached to the port specified by name. <i>name</i> is the name of the device, which is windowsystem-specific, e.g&#x2e;&quot;COM1&quot; or &quot;/dev/ttyS0&quot;. <i>mode</i></p>
+<!-- @@@QextSerialPort -->
+<!-- $$$QextSerialPort$$$QextSerialPortconstPortSettings&QueryModeQObject* -->
+<h3 class="fn"><a name="QextSerialPort-3"></a>QextSerialPort::<span class="name">QextSerialPort</span> ( const <span class="type"><a href="portsettings.html">PortSettings</a></span> &amp; <i>settings</i>, <span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> <i>mode</i> = EventDriven, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a></span> * <i>parent</i> = 0 )</h3>
+<p>Constructs a port with default name and specified <i>settings</i>.</p>
+<!-- @@@QextSerialPort -->
+<!-- $$$QextSerialPort$$$QextSerialPortconstQString&constPortSettings&QueryModeQObject* -->
+<h3 class="fn"><a name="QextSerialPort-4"></a>QextSerialPort::<span class="name">QextSerialPort</span> ( const <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> &amp; <i>name</i>, const <span class="type"><a href="portsettings.html">PortSettings</a></span> &amp; <i>settings</i>, <span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> <i>mode</i> = EventDriven, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a></span> * <i>parent</i> = 0 )</h3>
+<p>Constructs a port with specified <i>name</i> , <i>mode</i> and <i>settings</i>.</p>
+<!-- @@@QextSerialPort -->
+<!-- $$$~QextSerialPort[overload1]$$$~QextSerialPort -->
+<h3 class="fn"><a name="dtor.QextSerialPort"></a>QextSerialPort::<span class="name">~QextSerialPort</span> ()</h3>
+<p>Destructs the <a href="qextserialport.html">QextSerialPort</a> object.</p>
+<!-- @@@~QextSerialPort -->
+<!-- $$$baudRate[overload1]$$$baudRate -->
+<h3 class="fn"><a name="baudRate"></a><span class="type">BaudRateType</span> QextSerialPort::<span class="name">baudRate</span> () const</h3>
+<p>Returns the baud rate of the serial port. For a list of possible return values see the definition of the enum BaudRateType.</p>
+<p><b>See also </b><a href="qextserialport.html#setBaudRate">setBaudRate</a>().</p>
+<!-- @@@baudRate -->
+<!-- $$$bytesAvailable[overload1]$$$bytesAvailable -->
+<h3 class="fn"><a name="bytesAvailable"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qint64-typedef">qint64</a></span> QextSerialPort::<span class="name">bytesAvailable</span> () const<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#bytesAvailable">QIODevice::bytesAvailable</a>().</p>
+<p>Returns the number of bytes waiting in the port's receive queue. This function will return 0 if the port is not currently open, or -1 on error.</p>
+<!-- @@@bytesAvailable -->
+<!-- $$$close[overload1]$$$close -->
+<h3 class="fn"><a name="close"></a><span class="type">void</span> QextSerialPort::<span class="name">close</span> ()<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#close">QIODevice::close</a>().</p>
+<p>Closes a serial port. This function has no effect if the serial port associated with the class is not currently open.</p>
+<!-- @@@close -->
+<!-- $$$dataBits[overload1]$$$dataBits -->
+<h3 class="fn"><a name="dataBits"></a><span class="type">DataBitsType</span> QextSerialPort::<span class="name">dataBits</span> () const</h3>
+<p>Returns the number of data bits used by the port. For a list of possible values returned by this function, see the definition of the enum DataBitsType.</p>
+<p><b>See also </b><a href="qextserialport.html#setDataBits">setDataBits</a>().</p>
+<!-- @@@dataBits -->
+<!-- $$$dsrChanged[overload1]$$$dsrChangedbool -->
+<h3 class="fn"><a name="dsrChanged"></a><span class="type">void</span> QextSerialPort::<span class="name">dsrChanged</span> ( <span class="type">bool</span> <i>status</i> )<tt> [signal]</tt></h3>
+<p>This signal is emitted whenever dsr line has changed its state. You may use this signal to check if device is connected.</p>
+<p><i>status</i> true when DSR signal is on, false otherwise.</p>
+<!-- @@@dsrChanged -->
+<!-- $$$errorString[overload1]$$$errorString -->
+<h3 class="fn"><a name="errorString"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> QextSerialPort::<span class="name">errorString</span> ()</h3>
+<p>Returns a human-readable description of the last device error that occurred.</p>
+<!-- @@@errorString -->
+<!-- $$$flowControl[overload1]$$$flowControl -->
+<h3 class="fn"><a name="flowControl"></a><span class="type">FlowType</span> QextSerialPort::<span class="name">flowControl</span> () const</h3>
+<p>Returns the type of flow control used by the port. For a list of possible values returned by this function, see the definition of the enum FlowType.</p>
+<p><b>See also </b><a href="qextserialport.html#setFlowControl">setFlowControl</a>().</p>
+<!-- @@@flowControl -->
+<!-- $$$flush[overload1]$$$flush -->
+<h3 class="fn"><a name="flush"></a><span class="type">void</span> QextSerialPort::<span class="name">flush</span> ()</h3>
+<p>Flushes all pending I/O to the serial port. This function has no effect if the serial port associated with the class is not currently open.</p>
+<!-- @@@flush -->
+<!-- $$$isSequential[overload1]$$$isSequential -->
+<h3 class="fn"><a name="isSequential"></a><span class="type">bool</span> QextSerialPort::<span class="name">isSequential</span> () const<tt> [virtual]</tt></h3>
+<p>Reimplemented from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#isSequential">QIODevice::isSequential</a>().</p>
+<p>Returns true if device is sequential, otherwise returns false. Serial port is sequential device so this function always returns true. Check <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#isSequential">QIODevice::isSequential</a>() documentation for more information.</p>
+<!-- @@@isSequential -->
+<!-- $$$lastError[overload1]$$$lastError -->
+<h3 class="fn"><a name="lastError"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#ulong-typedef">ulong</a></span> QextSerialPort::<span class="name">lastError</span> () const</h3>
+<p>Return the error number, or 0 if no error occurred.</p>
+<!-- @@@lastError -->
+<!-- $$$lineStatus[overload1]$$$lineStatus -->
+<h3 class="fn"><a name="lineStatus"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#ulong-typedef">ulong</a></span> QextSerialPort::<span class="name">lineStatus</span> ()</h3>
+<p>Returns the line status as stored by the port function. This function will retrieve the states of the following lines: DCD, CTS, DSR, and RI. On POSIX systems, the following additional lines can be monitored: DTR, RTS, Secondary TXD, and Secondary RXD. The value returned is an unsigned long with specific bits indicating which lines are high. The following constants should be used to examine the states of individual lines:</p>
+<pre class="cpp">    Mask        Line
+    <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>      <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>
+    LS_CTS      CTS
+    LS_DSR      DSR
+    LS_DCD      DCD
+    LS_RI       RI
+    LS_RTS      RTS (POSIX only)
+    LS_DTR      DTR (POSIX only)
+    LS_ST       Secondary TXD (POSIX only)
+    LS_SR       Secondary RXD (POSIX only)</pre>
+<p>This function will return 0 if the port associated with the class is not currently open.</p>
+<!-- @@@lineStatus -->
+<!-- $$$open[overload1]$$$openOpenMode -->
+<h3 class="fn"><a name="open"></a><span class="type">bool</span> QextSerialPort::<span class="name">open</span> ( <span class="type"><a href="http://qt.nokia.com/doc/4.8/qiodevice.html#OpenMode-typedef">OpenMode</a></span> <i>mode</i> )</h3>
+<p>Opens a serial port and sets its <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#OpenMode-typedef">OpenMode</a> to <i>mode</i>. Note that this function does not specify which device to open. Returns true if successful; otherwise returns false.This function has no effect if the port associated with the class is already open. The port is also configured to the current settings, as stored in the Settings structure.</p>
+<!-- @@@open -->
+<!-- $$$parity[overload1]$$$parity -->
+<h3 class="fn"><a name="parity"></a><span class="type">ParityType</span> QextSerialPort::<span class="name">parity</span> () const</h3>
+<p>Returns the type of parity used by the port. For a list of possible values returned by this function, see the definition of the enum ParityType.</p>
+<p><b>See also </b><a href="qextserialport.html#setParity">setParity</a>().</p>
+<!-- @@@parity -->
+<!-- $$$portName[overload1]$$$portName -->
+<h3 class="fn"><a name="portName"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> QextSerialPort::<span class="name">portName</span> () const</h3>
+<p>Returns the name set by <a href="qextserialport.html#setPortName">setPortName</a>().</p>
+<p><b>See also </b><a href="qextserialport.html#setPortName">setPortName</a>().</p>
+<!-- @@@portName -->
+<!-- $$$queryMode[overload1]$$$queryMode -->
+<h3 class="fn"><a name="queryMode"></a><span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> QextSerialPort::<span class="name">queryMode</span> () const</h3>
+<p>Get query mode.</p>
+<p><b>See also </b><a href="qextserialport.html#setQueryMode">setQueryMode</a>().</p>
+<!-- @@@queryMode -->
+<!-- $$$readAll[overload1]$$$readAll -->
+<h3 class="fn"><a name="readAll"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qbytearray.html">QByteArray</a></span> QextSerialPort::<span class="name">readAll</span> ()</h3>
+<p>Reads all available data from the device, and returns it as a <a href="http://qt.nokia.com/doc/4.8/qbytearray.html">QByteArray</a>. This function has no way of reporting errors; returning an empty <a href="http://qt.nokia.com/doc/4.8/porting4.html">QByteArray</a>() can mean either that no data was currently available for reading, or that an error occurred.</p>
+<!-- @@@readAll -->
+<!-- $$$readData[overload1]$$$readDatachar*qint64 -->
+<h3 class="fn"><a name="readData"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qint64-typedef">qint64</a></span> QextSerialPort::<span class="name">readData</span> ( <span class="type">char</span> * <i>data</i>, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qint64-typedef">qint64</a></span> <i>maxSize</i> )<tt> [virtual protected]</tt></h3>
+<p>Reimplemented from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#readData">QIODevice::readData</a>().</p>
+<p>Reads a block of data from the serial port. This function will read at most maxlen bytes from the serial port and place them in the buffer pointed to by data. Return value is the number of bytes actually read, or -1 on error.</p>
+<p><b>Warning:</b> before calling this function ensure that serial port associated with this class is currently open (use <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#isOpen">isOpen</a>() function to check if port is open).</p>
+<!-- @@@readData -->
+<!-- $$$setBaudRate[overload1]$$$setBaudRateBaudRateType -->
+<h3 class="fn"><a name="setBaudRate"></a><span class="type">void</span> QextSerialPort::<span class="name">setBaudRate</span> ( <span class="type">BaudRateType</span> <i>baudRate</i> )<tt> [slot]</tt></h3>
+<p>Sets the baud rate of the serial port to <i>baudRate</i>. Note that not all rates are applicable on all platforms. The following table shows translations of the various baud rate constants on Windows(including NT/2000) and POSIX platforms. Speeds marked with an * are speeds that are usable on both Windows and POSIX.</p>
+<pre class="cpp">    RATE          Windows Speed   POSIX Speed
+    <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>   <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>   <span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span><span class="operator">-</span>
+     BAUD50                   X          <span class="number">50</span>
+     BAUD75                   X          <span class="number">75</span>
+    <span class="operator">*</span>BAUD110                <span class="number">110</span>         <span class="number">110</span>
+     BAUD134                  X         <span class="number">134.5</span>
+     BAUD150                  X         <span class="number">150</span>
+     BAUD200                  X         <span class="number">200</span>
+    <span class="operator">*</span>BAUD300                <span class="number">300</span>         <span class="number">300</span>
+    <span class="operator">*</span>BAUD600                <span class="number">600</span>         <span class="number">600</span>
+    <span class="operator">*</span>BAUD1200              <span class="number">1200</span>        <span class="number">1200</span>
+     BAUD1800                 X        <span class="number">1800</span>
+    <span class="operator">*</span>BAUD2400              <span class="number">2400</span>        <span class="number">2400</span>
+    <span class="operator">*</span>BAUD4800              <span class="number">4800</span>        <span class="number">4800</span>
+    <span class="operator">*</span>BAUD9600              <span class="number">9600</span>        <span class="number">9600</span>
+     BAUD14400            <span class="number">14400</span>           X
+    <span class="operator">*</span>BAUD19200            <span class="number">19200</span>       <span class="number">19200</span>
+    <span class="operator">*</span>BAUD38400            <span class="number">38400</span>       <span class="number">38400</span>
+     BAUD56000            <span class="number">56000</span>           X
+    <span class="operator">*</span>BAUD57600            <span class="number">57600</span>       <span class="number">57600</span>
+     BAUD76800                X       <span class="number">76800</span>
+    <span class="operator">*</span>BAUD115200          <span class="number">115200</span>      <span class="number">115200</span>
+     BAUD128000          <span class="number">128000</span>           X
+     BAUD230400               X      <span class="number">230400</span>
+     BAUD256000          <span class="number">256000</span>           X
+     BAUD460800               X      <span class="number">460800</span>
+     BAUD500000               X      <span class="number">500000</span>
+     BAUD576000               X      <span class="number">576000</span>
+     BAUD921600               X      <span class="number">921600</span>
+     BAUD1000000              X     <span class="number">1000000</span>
+     BAUD1152000              X     <span class="number">1152000</span>
+     BAUD1500000              X     <span class="number">1500000</span>
+     BAUD2000000              X     <span class="number">2000000</span>
+     BAUD2500000              X     <span class="number">2500000</span>
+     BAUD3000000              X     <span class="number">3000000</span>
+     BAUD3500000              X     <span class="number">3500000</span>
+     BAUD4000000              X     <span class="number">4000000</span></pre>
+<p><b>See also </b><a href="qextserialport.html#baudRate">baudRate</a>().</p>
+<!-- @@@setBaudRate -->
+<!-- $$$setDataBits[overload1]$$$setDataBitsDataBitsType -->
+<h3 class="fn"><a name="setDataBits"></a><span class="type">void</span> QextSerialPort::<span class="name">setDataBits</span> ( <span class="type">DataBitsType</span> <i>dataBits</i> )<tt> [slot]</tt></h3>
+<p>Sets the number of data bits used by the serial port to <i>dataBits</i>. Possible values of dataBits are:</p>
+<pre class="cpp">    DATA_5      <span class="number">5</span> data bits
+    DATA_6      <span class="number">6</span> data bits
+    DATA_7      <span class="number">7</span> data bits
+    DATA_8      <span class="number">8</span> data bits</pre>
+<p><b>note</b>: This function is subject to the following restrictions:</p>
+<ul>
+<li>5 data bits cannot be used with 2 stop bits.</li>
+<li>1.5 stop bits can only be used with 5 data bits.</li>
+<li>8 data bits cannot be used with space parity on POSIX systems.</li>
+</ul>
+<p><b>See also </b><a href="qextserialport.html#dataBits">dataBits</a>().</p>
+<!-- @@@setDataBits -->
+<!-- $$$setDtr[overload1]$$$setDtrbool -->
+<h3 class="fn"><a name="setDtr"></a><span class="type">void</span> QextSerialPort::<span class="name">setDtr</span> ( <span class="type">bool</span> <i>set</i> = true )<tt> [slot]</tt></h3>
+<p>Sets DTR line to the requested state (<i>set</i> default to high). This function will have no effect if the port associated with the class is not currently open.</p>
+<!-- @@@setDtr -->
+<!-- $$$setFlowControl[overload1]$$$setFlowControlFlowType -->
+<h3 class="fn"><a name="setFlowControl"></a><span class="type">void</span> QextSerialPort::<span class="name">setFlowControl</span> ( <span class="type">FlowType</span> <i>flow</i> )<tt> [slot]</tt></h3>
+<p>Sets the flow control used by the port to <i>flow</i>. Possible values of flow are:</p>
+<pre class="cpp">    FLOW_OFF            No flow control
+    FLOW_HARDWARE       Hardware (RTS<span class="operator">/</span>CTS) flow control
+    FLOW_XONXOFF        Software (XON<span class="operator">/</span>XOFF) flow control</pre>
+<p><b>See also </b><a href="qextserialport.html#flowControl">flowControl</a>().</p>
+<!-- @@@setFlowControl -->
+<!-- $$$setParity[overload1]$$$setParityParityType -->
+<h3 class="fn"><a name="setParity"></a><span class="type">void</span> QextSerialPort::<span class="name">setParity</span> ( <span class="type">ParityType</span> <i>parity</i> )<tt> [slot]</tt></h3>
+<p>Sets the parity associated with the serial port to <i>parity</i>. The possible values of parity are:</p>
+<pre class="cpp">    PAR_SPACE       Space Parity
+    PAR_MARK        Mark Parity
+    PAR_NONE        No Parity
+    PAR_EVEN        Even Parity
+    PAR_ODD         Odd Parity</pre>
+<p><b>See also </b><a href="qextserialport.html#parity">parity</a>().</p>
+<!-- @@@setParity -->
+<!-- $$$setPortName[overload1]$$$setPortNameconstQString& -->
+<h3 class="fn"><a name="setPortName"></a><span class="type">void</span> QextSerialPort::<span class="name">setPortName</span> ( const <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> &amp; <i>name</i> )<tt> [slot]</tt></h3>
+<p>Sets the <i>name</i> of the device associated with the object, e.g&#x2e; &quot;COM1&quot;, or &quot;/dev/ttyS0&quot;.</p>
+<p><b>See also </b><a href="qextserialport.html#portName">portName</a>().</p>
+<!-- @@@setPortName -->
+<!-- $$$setQueryMode[overload1]$$$setQueryModeQueryMode -->
+<h3 class="fn"><a name="setQueryMode"></a><span class="type">void</span> QextSerialPort::<span class="name">setQueryMode</span> ( <span class="type"><a href="qextserialport.html#QueryMode-enum">QueryMode</a></span> <i>mode</i> )<tt> [slot]</tt></h3>
+<p>Set desired serial communication handling style. You may choose from polling or event driven approach. This function does nothing when port is open; to apply changes port must be reopened.</p>
+<p>In event driven approach <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#read">read</a>() and <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#write">write</a>() functions are acting asynchronously. They return immediately and the operation is performed in the background, so they doesn't freeze the calling thread. To determine when operation is finished, <a href="qextserialport.html">QextSerialPort</a> runs separate thread and monitors serial port events. Whenever the event occurs, adequate signal is emitted.</p>
+<p>When polling is set, <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#read">read</a>() and <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#write">write</a>() are acting synchronously. Signals are not working in this mode and some functions may not be available. The advantage of polling is that it generates less overhead due to lack of signals emissions and it doesn't start separate thread to monitor events.</p>
+<p>Generally event driven approach is more capable and friendly, although some applications may need as low overhead as possible and then polling comes.</p>
+<p><i>mode</i> query mode.</p>
+<p><b>See also </b><a href="qextserialport.html#queryMode">queryMode</a>().</p>
+<!-- @@@setQueryMode -->
+<!-- $$$setRts[overload1]$$$setRtsbool -->
+<h3 class="fn"><a name="setRts"></a><span class="type">void</span> QextSerialPort::<span class="name">setRts</span> ( <span class="type">bool</span> <i>set</i> = true )<tt> [slot]</tt></h3>
+<p>Sets RTS line to the requested state <i>set</i> (high by default). This function will have no effect if the port associated with the class is not currently open.</p>
+<!-- @@@setRts -->
+<!-- $$$setStopBits[overload1]$$$setStopBitsStopBitsType -->
+<h3 class="fn"><a name="setStopBits"></a><span class="type">void</span> QextSerialPort::<span class="name">setStopBits</span> ( <span class="type">StopBitsType</span> <i>stopBits</i> )<tt> [slot]</tt></h3>
+<p>Sets the number of stop bits used by the serial port to <i>stopBits</i>. Possible values of stopBits are:</p>
+<pre class="cpp">    STOP_1      <span class="number">1</span> stop bit
+    STOP_1_5    <span class="number">1.5</span> stop bits
+    STOP_2      <span class="number">2</span> stop bits</pre>
+<p><b>note</b>: This function is subject to the following restrictions:</p>
+<ul>
+<li>2 stop bits cannot be used with 5 data bits.</li>
+<li>1.5 stop bits cannot be used with 6 or more data bits.</li>
+<li>POSIX does not support 1.5 stop bits.</li>
+</ul>
+<p><b>See also </b><a href="qextserialport.html#stopBits">stopBits</a>().</p>
+<!-- @@@setStopBits -->
+<!-- $$$setTimeout[overload1]$$$setTimeoutlong -->
+<h3 class="fn"><a name="setTimeout"></a><span class="type">void</span> QextSerialPort::<span class="name">setTimeout</span> ( <span class="type">long</span> <i>millisec</i> )<tt> [slot]</tt></h3>
+<p>For Unix:</p>
+<p>Sets the read and write timeouts for the port to <i>millisec</i> milliseconds. Note that this is a per-character timeout, i.e&#x2e; the port will wait this long for each individual character, not for the whole read operation. This timeout also applies to the bytesWaiting() function.</p>
+<p><b>note</b>: POSIX does not support millisecond-level control for I/O timeout values. Any timeout set using this function will be set to the next lowest tenth of a second for the purposes of detecting read or write timeouts. For example a timeout of 550 milliseconds will be seen by the class as a timeout of 500 milliseconds for the purposes of reading and writing the port. However millisecond-level control is allowed by the select() system call, so for example a 550-millisecond timeout will be seen as 550 milliseconds on POSIX systems for the purpose of detecting available bytes in the read buffer.</p>
+<p>For Windows:</p>
+<p>Sets the read and write timeouts for the port to <i>millisec</i> milliseconds. Setting 0 indicates that timeouts are not used for read nor write operations; however <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#read">read</a>() and <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#write">write</a>() functions will still block. Set -1 to provide non-blocking behaviour (<a href="http://qt.nokia.com/doc/4.8/qiodevice.html#read">read</a>() and <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#write">write</a>() will return immediately).</p>
+<p><b>note</b>: this function does nothing in event driven mode.</p>
+<!-- @@@setTimeout -->
+<!-- $$$stopBits[overload1]$$$stopBits -->
+<h3 class="fn"><a name="stopBits"></a><span class="type">StopBitsType</span> QextSerialPort::<span class="name">stopBits</span> () const</h3>
+<p>Returns the number of stop bits used by the port. For a list of possible return values, see the definition of the enum StopBitsType.</p>
+<p><b>See also </b><a href="qextserialport.html#setStopBits">setStopBits</a>().</p>
+<!-- @@@stopBits -->
+<!-- $$$writeData[overload1]$$$writeDataconstchar*qint64 -->
+<h3 class="fn"><a name="writeData"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qint64-typedef">qint64</a></span> QextSerialPort::<span class="name">writeData</span> ( const <span class="type">char</span> * <i>data</i>, <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qint64-typedef">qint64</a></span> <i>maxSize</i> )<tt> [virtual protected]</tt></h3>
+<p>Reimplemented from <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#writeData">QIODevice::writeData</a>().</p>
+<p>Writes a block of data to the serial port. This function will write len bytes from the buffer pointed to by data to the serial port. Return value is the number of bytes actually written, or -1 on error.</p>
+<p><b>Warning:</b> before calling this function ensure that serial port associated with this class is currently open (use <a href="http://qt.nokia.com/doc/4.8/qiodevice.html#isOpen">isOpen</a>() function to check if port is open).</p>
+<!-- @@@writeData -->
+</div>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

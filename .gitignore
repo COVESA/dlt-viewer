@@ -1,6 +1,5 @@
 .gitconfig
 *.pro.user
-qextserialport/
 build/
 .project
 

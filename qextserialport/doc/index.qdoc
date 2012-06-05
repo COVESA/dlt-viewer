@@ -1,0 +1,109 @@
+/*!
+    \page index.html
+    \title QextSerialPort Manual
+
+    \section1 Description
+      QextSerialPort provides an interface to old fashioned serial ports for
+      Qt-based applications. It currently supports Mac OS X, Windows, Linux, FreeBSD. 
+
+      From QextSerialPort 1.2-beta on, license of the project has been changed to MIT.
+
+      \list
+         \o Revision 0.9.x is Qt 2 & 3 compatible.
+         \o Revision 1.x.x is Qt 4 compatible.
+      \endlist
+
+        
+    \section1 Classes
+      \list
+      \o \l QextSerialPort encapsulates a serial port on both POSIX and Windows systems.
+      \o \l QextSerialEnumerator enumerates ports currently available in the system.
+      \endlist
+    
+    \section1 Usage
+      The package contains a qextserialport.pri file that allows you to integrate the 
+      component into programs that use qmake for the build step.
+
+      All you need is adding following line to your qmake project file:
+      \code
+      include(pathToPri/qextserialport.pri)
+      \endcode
+
+    \section2 Using QexSerialPort library
+      Although QextSerialPort can be directly compiled into your application, You may prefer
+      to use QextSerailPort as an library, which is very easy too.
+
+      1. Write a config.pri file.(read config_example.pri for reference):
+
+      \list
+        \o shared library
+        \o static library
+      \endlist
+
+      2. Changed to subdirectory 'buildlib', run
+      \code
+      qmake
+      make
+      \endcode
+      shared or static library will be generated.
+
+      3.  Add following line to your qmake project file:
+      \code
+      include(pathToPri/qextserialport.pri)
+      \endcode
+
+     \section2 Build documents
+      Run qdoc3 from the doc directory.
+      \code
+        qdoc3 qextserialport.qdocconf
+      \endcode
+      Note: qdoc3 has been renamed to qdoc under Qt5.
+
+    \section1 Examples
+      \list
+      \o \l examples/enumerator
+      \o \l examples/qespta
+      \o \l examples/uartassistant
+      \endlist
+
+    \section1 Resources
+        \section2  Nokia(Trolltech)
+        \list
+          \o  \l {http://doc.trolltech.com/qq/qq12-iodevice.html} {Writing a Custom I/O Device}
+          \o  \l {http://doc.trolltech.com/3.3/qiodevice.html} {Qt 3.3: QIODevice Class Reference}
+          \o  \l {http://doc.trolltech.com/4.7/qiodevice.html} {Qt 4.7: QIODevice Class Reference}
+        \endlist
+        \section2  MSDN
+        \list
+          \o \l {http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_resources.asp} {Communications Resources}
+           \o \l {http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/about_communications_resources.asp} {About Communications Resources}
+           \o \l {http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/using_communications_resources.asp}{Using Communications Resources}
+           \o \l {http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_functions.asp} {Communications Functions}
+           \o \l {http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_structures.asp} {Communications Structures}
+        \endlist
+        \section2  TLDP
+        \list
+           \o \l {http://www.tldp.org/HOWTO/Serial-HOWTO.html}{Serial HOWTO}
+           \o \l {http://www.tldp.org/HOWTO/Serial-Programming-HOWTO/}{Serial Programming HOWTO}
+        \endlist
+        \section2  Other
+        \list
+           \o \l {http://www.easysw.com/~mike/serial/serial.html} {Serial Programming Guide for POSIX Operating Systems}
+        \endlist
+
+*/
+
+/*!
+  \page classes.html
+  \generatelist annotatedclasses
+  */
+
+/*!
+  \page functions.html
+  \generatelist functionindex
+*/
+
+/*!
+  \page all-examples.html
+*/
+

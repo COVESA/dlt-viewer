@@ -117,6 +117,7 @@ private slots:
     void on_actionApplication_Add_triggered();
     void on_configWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_itemClicked(QTreeWidgetItem* item, int column);
+    QStringList getSerialPortsWithQextEnumartor();
     void on_actionECU_Edit_triggered();
     void on_actionECU_Delete_triggered();
     void on_actionECU_Add_triggered();

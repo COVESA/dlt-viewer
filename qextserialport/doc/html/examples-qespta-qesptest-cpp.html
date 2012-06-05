@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : QespTest.cpp Example File (examples/qespta/QespTest.cpp)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">QespTest.cpp Example File</h1>
+<span class="small-subtitle">examples/qespta/QespTest.cpp</span>
+<!-- $$$examples/qespta/QespTest.cpp-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="comment">/* QespTest.cpp
+    **************************************/</span>
+    <span class="preprocessor">#include &quot;QespTest.h&quot;</span>
+    <span class="preprocessor">#include &quot;qextserialport.h&quot;</span>
+    <span class="preprocessor">#include &lt;QLayout&gt;</span>
+    <span class="preprocessor">#include &lt;QLineEdit&gt;</span>
+    <span class="preprocessor">#include &lt;QTextEdit&gt;</span>
+    <span class="preprocessor">#include &lt;QPushButton&gt;</span>
+    <span class="preprocessor">#include &lt;QSpinBox&gt;</span>
+
+    QespTest<span class="operator">::</span>QespTest(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span><span class="operator">*</span> parent)
+            : <span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span>(parent)
+
+    {
+            <span class="comment">//modify the port settings on your own</span>
+        <span class="preprocessor">#ifdef Q_OS_UNIX</span>
+                    port <span class="operator">=</span> <span class="keyword">new</span> QextSerialPort(QLatin1String(<span class="string">&quot;/dev/ttyS0&quot;</span>)<span class="operator">,</span> QextSerialPort<span class="operator">::</span>Polling);
+            <span class="preprocessor">#else</span>
+                    port <span class="operator">=</span> <span class="keyword">new</span> QextSerialPort(QLatin1String(<span class="string">&quot;COM1&quot;</span>)<span class="operator">,</span> QextSerialPort<span class="operator">::</span>Polling);
+        <span class="preprocessor">#endif /*Q_OS_UNIX*/</span>
+            port<span class="operator">-</span><span class="operator">&gt;</span>setBaudRate(BAUD19200);
+            port<span class="operator">-</span><span class="operator">&gt;</span>setFlowControl(FLOW_OFF);
+            port<span class="operator">-</span><span class="operator">&gt;</span>setParity(PAR_NONE);
+            port<span class="operator">-</span><span class="operator">&gt;</span>setDataBits(DATA_8);
+            port<span class="operator">-</span><span class="operator">&gt;</span>setStopBits(STOP_2);
+            <span class="comment">//set timeouts to 500 ms</span>
+            port<span class="operator">-</span><span class="operator">&gt;</span>setTimeout(<span class="number">500</span>);
+
+            message <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qlineedit.html">QLineEdit</a></span>(<span class="keyword">this</span>);
+
+            <span class="comment">// transmit receive</span>
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>transmitButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;Transmit&quot;</span>));
+            connect(transmitButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(transmitMsg()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>receiveButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;Receive&quot;</span>));
+            connect(receiveButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(receiveMsg()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span><span class="operator">*</span> trLayout <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span>;
+            trLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(transmitButton);
+            trLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(receiveButton);
+
+            <span class="comment">//CR LF</span>
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>CRButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;CR&quot;</span>));
+            connect(CRButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(appendCR()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>LFButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;LF&quot;</span>));
+            connect(LFButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(appendLF()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span> <span class="operator">*</span>crlfLayout <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span>;
+            crlfLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(CRButton);
+            crlfLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(LFButton);
+
+            <span class="comment">//open close</span>
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>openButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;Open&quot;</span>));
+            connect(openButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(openPort()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span> <span class="operator">*</span>closeButton <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qpushbutton.html">QPushButton</a></span>(tr(<span class="string">&quot;Close&quot;</span>));
+            connect(closeButton<span class="operator">,</span> SIGNAL(clicked())<span class="operator">,</span> SLOT(closePort()));
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span> <span class="operator">*</span>ocLayout <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qhboxlayout.html">QHBoxLayout</a></span>;
+            ocLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(openButton);
+            ocLayout<span class="operator">-</span><span class="operator">&gt;</span>addWidget(closeButton);
+
+            received_msg <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtextedit.html">QTextEdit</a></span>();
+
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qvboxlayout.html">QVBoxLayout</a></span> <span class="operator">*</span>myVBox <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qvboxlayout.html">QVBoxLayout</a></span>;
+            myVBox<span class="operator">-</span><span class="operator">&gt;</span>addWidget(message);
+            myVBox<span class="operator">-</span><span class="operator">&gt;</span>addLayout(crlfLayout);
+            myVBox<span class="operator">-</span><span class="operator">&gt;</span>addLayout(trLayout);
+            myVBox<span class="operator">-</span><span class="operator">&gt;</span>addLayout(ocLayout);
+            myVBox<span class="operator">-</span><span class="operator">&gt;</span>addWidget(received_msg);
+            setLayout(myVBox);
+
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;isOpen : %d&quot;</span><span class="operator">,</span> port<span class="operator">-</span><span class="operator">&gt;</span>isOpen());
+    }
+
+    QespTest<span class="operator">::</span><span class="operator">~</span>QespTest()
+    {
+        <span class="keyword">delete</span> port;
+        port <span class="operator">=</span> NULL;
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>transmitMsg()
+    {
+      <span class="type">int</span> i <span class="operator">=</span> port<span class="operator">-</span><span class="operator">&gt;</span>write((message<span class="operator">-</span><span class="operator">&gt;</span>text())<span class="operator">.</span>toAscii()<span class="operator">,</span>
+                           (message<span class="operator">-</span><span class="operator">&gt;</span>text())<span class="operator">.</span>length());
+      <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;trasmitted : %d&quot;</span><span class="operator">,</span> i);
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>receiveMsg()
+    {
+            <span class="type">char</span> buff<span class="operator">[</span><span class="number">1024</span><span class="operator">]</span>;
+            <span class="type">int</span> numBytes;
+
+            numBytes <span class="operator">=</span> port<span class="operator">-</span><span class="operator">&gt;</span>bytesAvailable();
+        <span class="keyword">if</span>(numBytes <span class="operator">&gt;</span> <span class="number">1024</span>)
+            numBytes <span class="operator">=</span> <span class="number">1024</span>;
+
+        <span class="type">int</span> i <span class="operator">=</span> port<span class="operator">-</span><span class="operator">&gt;</span>read(buff<span class="operator">,</span> numBytes);
+        <span class="keyword">if</span> (i <span class="operator">!</span><span class="operator">=</span> <span class="operator">-</span><span class="number">1</span>)
+                    buff<span class="operator">[</span>i<span class="operator">]</span> <span class="operator">=</span> <span class="char">'\0'</span>;
+            <span class="keyword">else</span>
+                    buff<span class="operator">[</span><span class="number">0</span><span class="operator">]</span> <span class="operator">=</span> <span class="char">'\0'</span>;
+            <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> msg <span class="operator">=</span> QLatin1String(buff);
+
+            received_msg<span class="operator">-</span><span class="operator">&gt;</span>append(msg);
+            received_msg<span class="operator">-</span><span class="operator">&gt;</span>ensureCursorVisible();
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;bytes available: %d&quot;</span><span class="operator">,</span> numBytes);
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;received: %d&quot;</span><span class="operator">,</span> i);
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>appendCR()
+    {
+            message<span class="operator">-</span><span class="operator">&gt;</span>insert(QLatin1String(<span class="string">&quot;\x0D&quot;</span>));
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>appendLF()
+    {
+            message<span class="operator">-</span><span class="operator">&gt;</span>insert(QLatin1String(<span class="string">&quot;\x0A&quot;</span>));
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>closePort()
+    {
+            port<span class="operator">-</span><span class="operator">&gt;</span>close();
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;is open: %d&quot;</span><span class="operator">,</span> port<span class="operator">-</span><span class="operator">&gt;</span>isOpen());
+    }
+
+    <span class="type">void</span> QespTest<span class="operator">::</span>openPort()
+    {
+            port<span class="operator">-</span><span class="operator">&gt;</span>open(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qiodevice.html">QIODevice</a></span><span class="operator">::</span>ReadWrite <span class="operator">|</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qiodevice.html">QIODevice</a></span><span class="operator">::</span>Unbuffered);
+            <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#qDebug">qDebug</a>(<span class="string">&quot;is open: %d&quot;</span><span class="operator">,</span> port<span class="operator">-</span><span class="operator">&gt;</span>isOpen());
+    }</pre>
+</div>
+<!-- @@@examples/qespta/QespTest.cpp -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

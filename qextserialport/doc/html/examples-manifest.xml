@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<instructionals module="qesp">
+    <examples>
+        <example name="UartAssistant Demo" docUrl="qthelp:////examples-uartassistant.html" projectPath="examples/uartassistant/uartassistant.pro" imageUrl="qthelp:////images/uartassistant.png">
+            <description><![CDATA[No description available]]></description>
+            <tags>uartassistant,demo</tags>
+            <fileToOpen>examples/uartassistant/main.cpp</fileToOpen>
+        </example>
+    </examples>
+</instructionals>

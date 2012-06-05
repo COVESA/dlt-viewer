@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QtHelpProject version="1.0">
+    <namespace>com.google.code.qextserialport.120</namespace>
+    <virtualFolder>qdoc</virtualFolder>
+    <filterSection>
+        <toc>
+            <section ref="index.html" title="QextSerialPort Reference Documentation"/>
+        </toc>
+        <keywords>
+            <keyword name="BaudRateType" id="BaudRateType" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD50" id="BAUD50" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD75" id="BAUD75" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD134" id="BAUD134" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD150" id="BAUD150" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD200" id="BAUD200" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD1800" id="BAUD1800" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD76800" id="BAUD76800" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD230400" id="BAUD230400" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD460800" id="BAUD460800" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD500000" id="BAUD500000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD576000" id="BAUD576000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD921600" id="BAUD921600" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD1000000" id="BAUD1000000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD1152000" id="BAUD1152000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD1500000" id="BAUD1500000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD2000000" id="BAUD2000000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD2500000" id="BAUD2500000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD3000000" id="BAUD3000000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD3500000" id="BAUD3500000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD4000000" id="BAUD4000000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD14400" id="BAUD14400" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD56000" id="BAUD56000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD128000" id="BAUD128000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD256000" id="BAUD256000" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD110" id="BAUD110" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD300" id="BAUD300" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD600" id="BAUD600" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD1200" id="BAUD1200" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD2400" id="BAUD2400" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD4800" id="BAUD4800" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD9600" id="BAUD9600" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD19200" id="BAUD19200" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD38400" id="BAUD38400" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD57600" id="BAUD57600" ref="ABaudRateType-enum"/>
+            <keyword name="BAUD115200" id="BAUD115200" ref="ABaudRateType-enum"/>
+            <keyword name="DataBitsType" id="DataBitsType" ref="ADataBitsType-enum"/>
+            <keyword name="DATA_5" id="DATA_5" ref="ADataBitsType-enum"/>
+            <keyword name="DATA_6" id="DATA_6" ref="ADataBitsType-enum"/>
+            <keyword name="DATA_7" id="DATA_7" ref="ADataBitsType-enum"/>
+            <keyword name="DATA_8" id="DATA_8" ref="ADataBitsType-enum"/>
+            <keyword name="FlowType" id="FlowType" ref="AFlowType-enum"/>
+            <keyword name="FLOW_OFF" id="FLOW_OFF" ref="AFlowType-enum"/>
+            <keyword name="FLOW_HARDWARE" id="FLOW_HARDWARE" ref="AFlowType-enum"/>
+            <keyword name="FLOW_XONXOFF" id="FLOW_XONXOFF" ref="AFlowType-enum"/>
+            <keyword name="ParityType" id="ParityType" ref="AParityType-enum"/>
+            <keyword name="PAR_NONE" id="PAR_NONE" ref="AParityType-enum"/>
+            <keyword name="PAR_ODD" id="PAR_ODD" ref="AParityType-enum"/>
+            <keyword name="PAR_EVEN" id="PAR_EVEN" ref="AParityType-enum"/>
+            <keyword name="PAR_MARK" id="PAR_MARK" ref="AParityType-enum"/>
+            <keyword name="PAR_SPACE" id="PAR_SPACE" ref="AParityType-enum"/>
+            <keyword name="PortSettings" id="PortSettings" ref="portsettings.html"/>
+            <keyword name="BaudRate" id="PortSettings::BaudRate" ref="portsettings.html#BaudRate-var"/>
+            <keyword name="DataBits" id="PortSettings::DataBits" ref="portsettings.html#DataBits-var"/>
+            <keyword name="FlowControl" id="PortSettings::FlowControl" ref="portsettings.html#FlowControl-var"/>
+            <keyword name="Parity" id="PortSettings::Parity" ref="portsettings.html#Parity-var"/>
+            <keyword name="StopBits" id="PortSettings::StopBits" ref="portsettings.html#StopBits-var"/>
+            <keyword name="Timeout_Millisec" id="PortSettings::Timeout_Millisec" ref="portsettings.html#Timeout_Millisec-var"/>
+            <keyword name="QextPortInfo" id="QextPortInfo" ref="qextportinfo.html"/>
+            <keyword name="enumName" id="QextPortInfo::enumName" ref="qextportinfo.html#enumName-var"/>
+            <keyword name="friendName" id="QextPortInfo::friendName" ref="qextportinfo.html#friendName-var"/>
+            <keyword name="physName" id="QextPortInfo::physName" ref="qextportinfo.html#physName-var"/>
+            <keyword name="portName" id="QextPortInfo::portName" ref="qextportinfo.html#portName-var"/>
+            <keyword name="productID" id="QextPortInfo::productID" ref="qextportinfo.html#productID-var"/>
+            <keyword name="vendorID" id="QextPortInfo::vendorID" ref="qextportinfo.html#vendorID-var"/>
+            <keyword name="QextSerialEnumerator" id="QextSerialEnumerator" ref="qextserialenumerator.html"/>
+            <keyword name="deviceDiscovered" id="QextSerialEnumerator::deviceDiscovered" ref="qextserialenumerator.html#deviceDiscovered"/>
+            <keyword name="deviceRemoved" id="QextSerialEnumerator::deviceRemoved" ref="qextserialenumerator.html#deviceRemoved"/>
+            <keyword name="getPorts" id="QextSerialEnumerator::getPorts" ref="qextserialenumerator.html#getPorts"/>
+            <keyword name="setUpNotifications" id="QextSerialEnumerator::setUpNotifications" ref="qextserialenumerator.html#setUpNotifications"/>
+            <keyword name="~QextSerialEnumerator" id="QextSerialEnumerator::~QextSerialEnumerator" ref="qextserialenumerator.html#dtor.QextSerialEnumerator"/>
+            <keyword name="QextSerialPort" id="QextSerialPort" ref="qextserialport.html"/>
+            <keyword name="QextSerialPort::QueryMode" id="QextSerialPort::QueryMode" ref="qextserialport.html#QueryMode-enum"/>
+            <keyword name="QextSerialPort::Polling" id="QextSerialPort::Polling" ref="qextserialport.html#QueryMode-enum"/>
+            <keyword name="QextSerialPort::EventDriven" id="QextSerialPort::EventDriven" ref="qextserialport.html#QueryMode-enum"/>
+            <keyword name="baudRate" id="QextSerialPort::baudRate" ref="qextserialport.html#baudRate"/>
+            <keyword name="bytesAvailable" id="QextSerialPort::bytesAvailable" ref="qextserialport.html#bytesAvailable"/>
+            <keyword name="close" id="QextSerialPort::close" ref="qextserialport.html#close"/>
+            <keyword name="dataBits" id="QextSerialPort::dataBits" ref="qextserialport.html#dataBits"/>
+            <keyword name="dsrChanged" id="QextSerialPort::dsrChanged" ref="qextserialport.html#dsrChanged"/>
+            <keyword name="errorString" id="QextSerialPort::errorString" ref="qextserialport.html#errorString"/>
+            <keyword name="flowControl" id="QextSerialPort::flowControl" ref="qextserialport.html#flowControl"/>
+            <keyword name="flush" id="QextSerialPort::flush" ref="qextserialport.html#flush"/>
+            <keyword name="isSequential" id="QextSerialPort::isSequential" ref="qextserialport.html#isSequential"/>
+            <keyword name="lastError" id="QextSerialPort::lastError" ref="qextserialport.html#lastError"/>
+            <keyword name="lineStatus" id="QextSerialPort::lineStatus" ref="qextserialport.html#lineStatus"/>
+            <keyword name="open" id="QextSerialPort::open" ref="qextserialport.html#open"/>
+            <keyword name="parity" id="QextSerialPort::parity" ref="qextserialport.html#parity"/>
+            <keyword name="portName" id="QextSerialPort::portName" ref="qextserialport.html#portName"/>
+            <keyword name="queryMode" id="QextSerialPort::queryMode" ref="qextserialport.html#queryMode"/>
+            <keyword name="readAll" id="QextSerialPort::readAll" ref="qextserialport.html#readAll"/>
+            <keyword name="readData" id="QextSerialPort::readData" ref="qextserialport.html#readData"/>
+            <keyword name="setBaudRate" id="QextSerialPort::setBaudRate" ref="qextserialport.html#setBaudRate"/>
+            <keyword name="setDataBits" id="QextSerialPort::setDataBits" ref="qextserialport.html#setDataBits"/>
+            <keyword name="setDtr" id="QextSerialPort::setDtr" ref="qextserialport.html#setDtr"/>
+            <keyword name="setFlowControl" id="QextSerialPort::setFlowControl" ref="qextserialport.html#setFlowControl"/>
+            <keyword name="setParity" id="QextSerialPort::setParity" ref="qextserialport.html#setParity"/>
+            <keyword name="setPortName" id="QextSerialPort::setPortName" ref="qextserialport.html#setPortName"/>
+            <keyword name="setQueryMode" id="QextSerialPort::setQueryMode" ref="qextserialport.html#setQueryMode"/>
+            <keyword name="setRts" id="QextSerialPort::setRts" ref="qextserialport.html#setRts"/>
+            <keyword name="setStopBits" id="QextSerialPort::setStopBits" ref="qextserialport.html#setStopBits"/>
+            <keyword name="setTimeout" id="QextSerialPort::setTimeout" ref="qextserialport.html#setTimeout"/>
+            <keyword name="stopBits" id="QextSerialPort::stopBits" ref="qextserialport.html#stopBits"/>
+            <keyword name="writeData" id="QextSerialPort::writeData" ref="qextserialport.html#writeData"/>
+            <keyword name="~QextSerialPort" id="QextSerialPort::~QextSerialPort" ref="qextserialport.html#dtor.QextSerialPort"/>
+            <keyword name="QextSerialPort Manual" id="QextSerialPort Manual" ref="index.html"/>
+            <keyword name="StopBitsType" id="StopBitsType" ref="AStopBitsType-enum"/>
+            <keyword name="STOP_1" id="STOP_1" ref="AStopBitsType-enum"/>
+            <keyword name="STOP_1_5" id="STOP_1_5" ref="AStopBitsType-enum"/>
+            <keyword name="STOP_2" id="STOP_2" ref="AStopBitsType-enum"/>
+            <keyword name="UartAssistant Demo" id="UartAssistant Demo" ref="examples-uartassistant.html"/>
+            <keyword name="enumerator Demo" id="enumerator Demo" ref="examples-enumerator.html"/>
+            <keyword name="qespta Demo" id="qespta Demo" ref="examples-qespta.html"/>
+        </keywords>
+        <files>
+            <file>examples-uartassistant-hled-h.html</file>
+            <file>examples-uartassistant-dialog-ui.html</file>
+            <file>examples-uartassistant-dialog-cpp.html</file>
+            <file>examples-qespta-qesptest-cpp.html</file>
+            <file>examples-uartassistant-main-cpp.html</file>
+            <file>examples-enumerator.html</file>
+            <file>examples-qespta-main-cpp.html</file>
+            <file>index.html</file>
+            <file>examples-qespta-qespta-pro.html</file>
+            <file>examples-qespta-qesptest-h.html</file>
+            <file>examples-uartassistant-hled-cpp.html</file>
+            <file>qextserialenumerator.html</file>
+            <file>examples-qespta-mainwindow-cpp.html</file>
+            <file>examples-enumerator-main-cpp.html</file>
+            <file>qextserialport.html</file>
+            <file>portsettings.html</file>
+            <file>examples-qespta.html</file>
+            <file>examples-uartassistant-dialog-h.html</file>
+            <file>images/uartassistant.png</file>
+            <file>examples-uartassistant-uartassistant-pro.html</file>
+            <file>examples-qespta-mainwindow-h.html</file>
+            <file>examples-enumerator-enumerator-pro.html</file>
+            <file>examples-uartassistant.html</file>
+            <file>qextportinfo.html</file>
+            <file>examples-qespta-messagewindow-h.html</file>
+            <file>examples-qespta-messagewindow-cpp.html</file>
+            <file>style/style.css</file>
+            <file>images/uartassistant.png</file>
+        </files>
+    </filterSection>
+</QtHelpProject>

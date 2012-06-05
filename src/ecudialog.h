@@ -21,6 +21,7 @@
 #define ECUDIALOG_H
 
 #include <QDialog>
+#include "project.h"
 
 namespace Ui {
     class EcuDialog;
@@ -29,7 +30,7 @@ namespace Ui {
 class EcuDialog : public QDialog {
     Q_OBJECT
 public:
-    EcuDialog(QString id,QString description,int interfacetype,QString hostname,unsigned int tcpport,QString port,int baudrate,
+    EcuDialog(QString id,QString description,int interfacetype,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
               int loglevel, int tracestatus, int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
               bool timingPackets, bool sendGetLogInfo, bool update, QWidget *parent = 0);
     ~EcuDialog();
@@ -40,7 +41,7 @@ public:
     QString hostname();
     unsigned int tcpport();
     QString port();
-    int baudrate();
+    BaudRateType baudrate();
     int loglevel();
     int tracestatus();
     int verbosemode();
@@ -58,6 +59,8 @@ public:
 
     QStringList getPortList();
     void setPortList(QStringList ports);
+
+    void setDialogToEcuItem(EcuItem *item);
 
 protected:
     void changeEvent(QEvent *e);

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : MainWindow.cpp Example File (examples/qespta/MainWindow.cpp)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">MainWindow.cpp Example File</h1>
+<span class="small-subtitle">examples/qespta/MainWindow.cpp</span>
+<!-- $$$examples/qespta/MainWindow.cpp-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="comment">/**
+     * @file MainWindow.cpp
+     * @brief MainWindow Implementation.
+     * @see MainWindow.h
+     * @author Micha? Policht
+     */</span>
+
+    <span class="preprocessor">#include &lt;QMessageBox&gt;</span>
+    <span class="preprocessor">#include &lt;QMenuBar&gt;</span>
+    <span class="preprocessor">#include &quot;MainWindow.h&quot;</span>
+    <span class="preprocessor">#include &quot;MessageWindow.h&quot;</span>
+    <span class="preprocessor">#include &quot;QespTest.h&quot;</span>
+
+    MainWindow<span class="operator">::</span>MainWindow(<span class="keyword">const</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qstring.html">QString</a></span> <span class="operator">&amp;</span>title)
+    {
+            setWindowTitle(title);
+        <span class="comment">//central widget</span>
+            QespTest<span class="operator">*</span> qespTest <span class="operator">=</span> <span class="keyword">new</span> QespTest();
+        setCentralWidget(qespTest);
+            <span class="comment">//bottom dock widget</span>
+            MessageWindow<span class="operator">*</span> msgWindow <span class="operator">=</span> <span class="keyword">new</span> MessageWindow();
+            addDockWidget(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qt.html">Qt</a></span><span class="operator">::</span>BottomDockWidgetArea<span class="operator">,</span> msgWindow);
+
+            createActions();
+            createMenus();
+    }
+
+    <span class="type">void</span> MainWindow<span class="operator">::</span>about()
+    {
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qmessagebox.html">QMessageBox</a></span><span class="operator">::</span>about(<span class="keyword">this</span><span class="operator">,</span> tr(<span class="string">&quot;About &quot;</span>)<span class="operator">,</span>
+                tr(<span class="string">&quot;&lt;B&gt;&quot;</span><span class="string">&quot;&lt;/B&gt;&lt;BR&gt;&quot;</span>
+                                    <span class="string">&quot;author: Michal Policht&lt;br&gt;&quot;</span>
+                    <span class="string">&quot;&lt;a href='mailto:xpolik@users.sourceforge.net'&gt;xpolik@users.sourceforge.net&lt;/a&gt;&quot;</span>));
+    }
+
+    <span class="type">void</span> MainWindow<span class="operator">::</span>createActions()
+    {
+            <span class="comment">//File actions</span>
+            exitAct <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qaction.html">QAction</a></span>(tr(<span class="string">&quot;E&amp;xit&quot;</span>)<span class="operator">,</span> <span class="keyword">this</span>);
+            exitAct<span class="operator">-</span><span class="operator">&gt;</span>setShortcut(tr(<span class="string">&quot;CTRL+D&quot;</span>));
+            exitAct<span class="operator">-</span><span class="operator">&gt;</span>setStatusTip(tr(<span class="string">&quot;Exit the application&quot;</span>));
+            connect(exitAct<span class="operator">,</span> SIGNAL(triggered())<span class="operator">,</span> <span class="keyword">this</span><span class="operator">,</span> SLOT(close()));
+
+            <span class="comment">//Help actions</span>
+            aboutAct <span class="operator">=</span> <span class="keyword">new</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qaction.html">QAction</a></span>(tr(<span class="string">&quot;&amp;About&quot;</span>)<span class="operator">,</span> <span class="keyword">this</span>);
+            aboutAct<span class="operator">-</span><span class="operator">&gt;</span>setShortcut(tr(<span class="string">&quot;CTRL+A&quot;</span>));
+            aboutAct<span class="operator">-</span><span class="operator">&gt;</span>setStatusTip(tr(<span class="string">&quot;About application&quot;</span>));
+            connect(aboutAct<span class="operator">,</span> SIGNAL(triggered())<span class="operator">,</span> <span class="keyword">this</span><span class="operator">,</span> SLOT(about()));
+    }
+
+    <span class="type">void</span> MainWindow<span class="operator">::</span>createMenus()
+    {
+            fileMenu <span class="operator">=</span> menuBar()<span class="operator">-</span><span class="operator">&gt;</span>addMenu(tr(<span class="string">&quot;&amp;File&quot;</span>));
+            fileMenu<span class="operator">-</span><span class="operator">&gt;</span>addAction(exitAct);
+
+            helpMenu <span class="operator">=</span> menuBar()<span class="operator">-</span><span class="operator">&gt;</span>addMenu(tr(<span class="string">&quot;&amp;Help&quot;</span>));
+            helpMenu<span class="operator">-</span><span class="operator">&gt;</span>addAction(aboutAct);
+    }</pre>
+</div>
+<!-- @@@examples/qespta/MainWindow.cpp -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

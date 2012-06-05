@@ -19,8 +19,8 @@
 
 #include "ecudialog.h"
 #include "ui_ecudialog.h"
-
-EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostname,unsigned int tcpport,QString port,int baudrate,
+#include "qextserialenumerator.h"
+EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
                      int loglevel, int tracestatus,int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
                      bool timingPackets, bool sendGetLogInfo, bool update, QWidget *parent) :
     QDialog(parent),
@@ -34,7 +34,57 @@ EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostna
     ui->comboBoxHostname->setEditText(hostname);
     ui->lineEditTcpPort->setText(QString("%1").arg(tcpport));
     ui->comboBoxPort->setEditText(port);
-    ui->comboBoxBaudrate->setCurrentIndex(baudrate);
+    ui->comboBoxPort->setEditable(true);
+    //ui->comboBoxBaudrate->setCurrentIndex(baudrate);
+
+#if defined(Q_OS_UNIX) || defined(qdoc)
+    ui->comboBoxBaudrate->addItem(QLatin1String("50"), BAUD50 );                //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("75"), BAUD75 );                //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("134"), BAUD134 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("150"), BAUD150 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("200"), BAUD200 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("1800"), BAUD1800 );            //POSIX ONLY
+#  if (defined(B230400) && defined(B4000000)) || defined(qdoc)
+    ui->comboBoxBaudrate->addItem(QLatin1String("230400"), BAUD230400 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("460800"), BAUD460800 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("500000"), BAUD500000 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("576000"), BAUD576000 );       //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("921600"), BAUD921600 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("100000"), BAUD1000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), BAUD1152000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("150000"), BAUD1500000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("200000"), BAUD2000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("250000"), BAUD2500000 );     //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("300000"), BAUD3000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("350000"), BAUD3500000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("400000"), BAUD4000000 );      //POSIX ONLY
+#  endif
+#endif //Q_OS_UNIX
+
+#if defined(Q_OS_WIN) || defined(qdoc)
+    ui->comboBoxBaudrate->addItem(QLatin1String("14400"), BAUD14400 );          //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("56000"), BAUD56000 );          //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("28000"), BAUD128000 );        //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("256000"), BAUD256000 );       //WINDOWS ONLY
+#endif  //Q_OS_WIN
+    ui->comboBoxBaudrate->addItem(QLatin1String("110"), BAUD110 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("300"), BAUD300 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("600"), BAUD600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("1200"), BAUD1200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("2400"), BAUD2400 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("4800"), BAUD4800 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("9600"), BAUD9600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("19200"), BAUD19200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("38400"),  BAUD38400 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("57600"), BAUD57600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), BAUD115200 );
+
+    ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
+    for(int i=0; i<ui->comboBoxBaudrate->count(); i++){
+        if(baudrate == (BaudRateType)ui->comboBoxBaudrate->itemData(i).toInt())
+            ui->comboBoxBaudrate->setCurrentIndex(i);
+    }
+
     ui->loglevelComboBox->setCurrentIndex(loglevel);
     ui->tracestatusComboBox->setCurrentIndex(tracestatus);
     ui->comboBoxVerboseMode->setCurrentIndex(verbosemode);
@@ -105,9 +155,9 @@ QString EcuDialog::port()
     }
 }
 
-int EcuDialog::baudrate()
+BaudRateType EcuDialog::baudrate()
 {
-    return  ui->comboBoxBaudrate->currentIndex();
+    return (BaudRateType)ui->comboBoxBaudrate->itemData(ui->comboBoxBaudrate->currentIndex()).toInt();
 }
 
 int EcuDialog::loglevel()
@@ -194,4 +244,35 @@ void EcuDialog::setPortList(QStringList ports)
 {
     ui->comboBoxPort->clear();
     ui->comboBoxPort->addItems(ports);
+}
+
+void EcuDialog::setDialogToEcuItem(EcuItem *item){
+    item->id = this->id();
+    item->description = this->description();
+    item->interfacetype = this->interfacetype();
+    item->hostname = this->hostname();
+    item->tcpport = this->tcpport();
+    item->port = this->port();
+    item->baudrate = this->baudrate();
+    item->loglevel = this->loglevel();
+    item->tracestatus = this->tracestatus();
+    item->verbosemode = this->verbosemode();
+    item->sendSerialHeaderSerial = this->sendSerialHeaderSerial();
+    item->sendSerialHeaderTcp = this->sendSerialHeaderTcp();
+    item->syncSerialHeaderSerial = this->syncSerialHeaderSerial();
+    item->syncSerialHeaderTcp = this->syncSerialHeaderTcp();
+    item->timingPackets = this->timingPackets();
+    item->sendGetLogInfo = this->sendGetLogInfo();
+    item->updateDataIfOnline = this->update();
+
+    /* new qdlt library */
+    item->tcpcon.setTcpPort(this->tcpport());
+    item->tcpcon.setHostname(this->hostname());
+    item->tcpcon.setSendSerialHeader(this->sendSerialHeaderTcp());
+    item->tcpcon.setSyncSerialHeader(this->syncSerialHeaderSerial());
+    item->serialcon.setBaudrate(this->baudrate());
+    item->serialcon.setPort(this->port());
+    item->serialcon.setSendSerialHeader(this->sendSerialHeaderSerial());
+    item->serialcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
+
 }

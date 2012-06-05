@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : hled.h Example File (examples/uartassistant/hled.h)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">hled.h Example File</h1>
+<span class="small-subtitle">examples/uartassistant/hled.h</span>
+<!-- $$$examples/uartassistant/hled.h-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    <span class="preprocessor">#ifndef HLED_H</span>
+    <span class="preprocessor">#define HLED_H</span>
+
+    <span class="preprocessor">#include &lt;QWidget&gt;</span>
+
+    <span class="keyword">class</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qcolor.html">QColor</a></span>;
+    <span class="keyword">class</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qtimer.html">QTimer</a></span>;
+
+    <span class="keyword">class</span> HLed : <span class="keyword">public</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span>
+    {
+        Q_OBJECT
+    <span class="keyword">public</span>:
+        <span class="keyword">enum</span> State {Off<span class="operator">,</span> On<span class="operator">,</span> Blink};
+        HLed(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qwidget.html">QWidget</a></span> <span class="operator">*</span>parent <span class="operator">=</span> <span class="number">0</span>);
+        <span class="operator">~</span>HLed();
+
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qcolor.html">QColor</a></span> color() <span class="keyword">const</span>;
+        State state() <span class="keyword">const</span>;
+        <span class="type">int</span> darkerFactor() <span class="keyword">const</span>;
+
+        <span class="type">void</span> setColor(<span class="keyword">const</span> <span class="type"><a href="http://qt.nokia.com/doc/4.8/qcolor.html">QColor</a></span> <span class="operator">&amp;</span> color);
+        <span class="type">void</span> setState(State state);
+        <span class="type">void</span> setDarkerFactor(<span class="type">int</span> darkerFactor);
+
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qsize.html">QSize</a></span> sizeHint() <span class="keyword">const</span>;
+        <span class="type"><a href="http://qt.nokia.com/doc/4.8/qsize.html">QSize</a></span> minimumSizeHint() <span class="keyword">const</span>;
+
+    <span class="keyword">public</span> <span class="keyword">slots</span>:
+        <span class="type">void</span> toggle();
+        <span class="type">void</span> turnOn(<span class="type">bool</span> on<span class="operator">=</span><span class="keyword">true</span>);
+        <span class="type">void</span> turnOff(<span class="type">bool</span> off<span class="operator">=</span><span class="keyword">true</span>);
+        <span class="type">void</span> blink();
+
+    <span class="keyword">private</span> <span class="keyword">slots</span>:
+        <span class="type">void</span> blinkToggle();
+
+    <span class="keyword">protected</span>:
+        <span class="type">void</span> paintEvent(<span class="type"><a href="http://qt.nokia.com/doc/4.8/qpaintevent.html">QPaintEvent</a></span><span class="operator">*</span>);
+        <span class="type">bool</span> paintCachedPixmap();
+        <span class="type">int</span> ledWidth() <span class="keyword">const</span>;
+        <span class="type">void</span> paintSunken();
+
+    <span class="keyword">private</span>:
+        <span class="keyword">class</span> Private;
+        Private <span class="operator">*</span> <span class="keyword">const</span> m_d;
+    };
+
+    <span class="preprocessor">#endif // HLED_H</span></pre>
+</div>
+<!-- @@@examples/uartassistant/hled.h -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

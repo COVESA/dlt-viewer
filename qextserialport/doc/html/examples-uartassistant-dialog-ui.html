@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>qesp : dialog.ui Example File (examples/uartassistant/dialog.ui)</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><h1 class="title">dialog.ui Example File</h1>
+<span class="small-subtitle">examples/uartassistant/dialog.ui</span>
+<!-- $$$examples/uartassistant/dialog.ui-description -->
+<div class="descr"> <a name="details"></a>
+<pre class="cpp">    &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+    &lt;ui version=&quot;4.0&quot;&gt;
+     &lt;class&gt;Dialog&lt;/class&gt;
+     &lt;widget class=&quot;QDialog&quot; name=&quot;Dialog&quot;&gt;
+      &lt;property name=&quot;geometry&quot;&gt;
+       &lt;rect&gt;
+        &lt;x&gt;0&lt;/x&gt;
+        &lt;y&gt;0&lt;/y&gt;
+        &lt;width&gt;604&lt;/width&gt;
+        &lt;height&gt;485&lt;/height&gt;
+       &lt;/rect&gt;
+      &lt;/property&gt;
+      &lt;property name=&quot;windowTitle&quot;&gt;
+       &lt;string&gt;Dialog&lt;/string&gt;
+      &lt;/property&gt;
+      &lt;layout class=&quot;QHBoxLayout&quot; name=&quot;horizontalLayout_2&quot;&gt;
+       &lt;item&gt;
+        &lt;layout class=&quot;QVBoxLayout&quot; name=&quot;verticalLayout&quot; stretch=&quot;3,1&quot;&gt;
+         &lt;item&gt;
+          &lt;widget class=&quot;QPlainTextEdit&quot; name=&quot;recvEdit&quot;&gt;
+           &lt;property name=&quot;maximumBlockCount&quot;&gt;
+            &lt;number&gt;800&lt;/number&gt;
+           &lt;/property&gt;
+          &lt;/widget&gt;
+         &lt;/item&gt;
+         &lt;item&gt;
+          &lt;widget class=&quot;QPlainTextEdit&quot; name=&quot;sendEdit&quot;/&gt;
+         &lt;/item&gt;
+        &lt;/layout&gt;
+       &lt;/item&gt;
+       &lt;item&gt;
+        &lt;layout class=&quot;QVBoxLayout&quot; name=&quot;verticalLayout_2&quot;&gt;
+         &lt;item&gt;
+          &lt;layout class=&quot;QFormLayout&quot; name=&quot;formLayout&quot;&gt;
+           &lt;item row=&quot;0&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;Port:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;0&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;portBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;1&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_2&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;BaudRate:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;1&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;baudRateBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;2&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_3&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;DataBits:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;2&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;dataBitsBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;3&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_4&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;Parity:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;3&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;parityBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;4&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_5&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;StopBits:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;4&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;stopBitsBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;6&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_6&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;QueryMode:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;6&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QComboBox&quot; name=&quot;queryModeBox&quot;/&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;5&quot; column=&quot;0&quot;&gt;
+            &lt;widget class=&quot;QLabel&quot; name=&quot;label_7&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;Timeout:&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item row=&quot;5&quot; column=&quot;1&quot;&gt;
+            &lt;widget class=&quot;QSpinBox&quot; name=&quot;timeoutBox&quot;&gt;
+             &lt;property name=&quot;suffix&quot;&gt;
+              &lt;string&gt; ms&lt;/string&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;minimum&quot;&gt;
+              &lt;number&gt;-1&lt;/number&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;maximum&quot;&gt;
+              &lt;number&gt;10000&lt;/number&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;singleStep&quot;&gt;
+              &lt;number&gt;10&lt;/number&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;value&quot;&gt;
+              &lt;number&gt;10&lt;/number&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+          &lt;/layout&gt;
+         &lt;/item&gt;
+         &lt;item&gt;
+          &lt;layout class=&quot;QHBoxLayout&quot; name=&quot;horizontalLayout&quot;&gt;
+           &lt;item&gt;
+            &lt;widget class=&quot;HLed&quot; name=&quot;led&quot; native=&quot;true&quot;&gt;
+             &lt;property name=&quot;sizePolicy&quot;&gt;
+              &lt;sizepolicy hsizetype=&quot;Fixed&quot; vsizetype=&quot;Fixed&quot;&gt;
+               &lt;horstretch&gt;0&lt;/horstretch&gt;
+               &lt;verstretch&gt;0&lt;/verstretch&gt;
+              &lt;/sizepolicy&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;minimumSize&quot;&gt;
+              &lt;size&gt;
+               &lt;width&gt;20&lt;/width&gt;
+               &lt;height&gt;20&lt;/height&gt;
+              &lt;/size&gt;
+             &lt;/property&gt;
+             &lt;property name=&quot;maximumSize&quot;&gt;
+              &lt;size&gt;
+               &lt;width&gt;25&lt;/width&gt;
+               &lt;height&gt;25&lt;/height&gt;
+              &lt;/size&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+           &lt;item&gt;
+            &lt;widget class=&quot;QPushButton&quot; name=&quot;openCloseButton&quot;&gt;
+             &lt;property name=&quot;text&quot;&gt;
+              &lt;string&gt;Open/Close&lt;/string&gt;
+             &lt;/property&gt;
+            &lt;/widget&gt;
+           &lt;/item&gt;
+          &lt;/layout&gt;
+         &lt;/item&gt;
+         &lt;item&gt;
+          &lt;spacer name=&quot;verticalSpacer&quot;&gt;
+           &lt;property name=&quot;orientation&quot;&gt;
+            &lt;enum&gt;Qt::Vertical&lt;/enum&gt;
+           &lt;/property&gt;
+           &lt;property name=&quot;sizeHint&quot; stdset=&quot;0&quot;&gt;
+            &lt;size&gt;
+             &lt;width&gt;20&lt;/width&gt;
+             &lt;height&gt;40&lt;/height&gt;
+            &lt;/size&gt;
+           &lt;/property&gt;
+          &lt;/spacer&gt;
+         &lt;/item&gt;
+         &lt;item&gt;
+          &lt;widget class=&quot;QPushButton&quot; name=&quot;sendButton&quot;&gt;
+           &lt;property name=&quot;text&quot;&gt;
+            &lt;string&gt;Send&lt;/string&gt;
+           &lt;/property&gt;
+          &lt;/widget&gt;
+         &lt;/item&gt;
+        &lt;/layout&gt;
+       &lt;/item&gt;
+      &lt;/layout&gt;
+     &lt;/widget&gt;
+     &lt;layoutdefault spacing=&quot;6&quot; margin=&quot;11&quot;/&gt;
+     &lt;customwidgets&gt;
+      &lt;customwidget&gt;
+       &lt;class&gt;HLed&lt;/class&gt;
+       &lt;extends&gt;QWidget&lt;/extends&gt;
+       &lt;header&gt;hled.h&lt;/header&gt;
+       &lt;container&gt;1&lt;/container&gt;
+      &lt;/customwidget&gt;
+     &lt;/customwidgets&gt;
+     &lt;resources/&gt;
+     &lt;connections/&gt;
+    &lt;/ui&gt;</pre>
+</div>
+<!-- @@@examples/uartassistant/dialog.ui -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

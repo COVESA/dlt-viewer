@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- qextserialenumerator.cpp -->
+  <title>qesp : QextSerialEnumerator Class Reference</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><li><a href="http://qt.nokia.com/doc/4.8/modules.html">Modules</a></li>
+<li>QextSerialEnumerator</li>
+<div class="toc">
+<h3><a name="toc">Contents</a></h3>
+<ul>
+<li class="level1"><a href="#public-functions">Public Functions</a></li>
+<li class="level1"><a href="#signals">Signals</a></li>
+<li class="level1"><a href="#static-public-members">Static Public Members</a></li>
+<li class="level1"><a href="#details">Detailed Description</a></li>
+<li class="level2"><a href="#usage">Usage</a></li>
+<li class="level2"><a href="#credits">Credits</a></li>
+</ul>
+</div>
+<h1 class="title">QextSerialEnumerator Class Reference</h1>
+<!-- $$$QextSerialEnumerator-brief -->
+<p>The QextSerialEnumerator class provides list of ports available in the system. <a href="#details">More...</a></p>
+<!-- @@@QextSerialEnumerator -->
+<pre class="cpp">    <span class="preprocessor">#include &lt;QextSerialEnumerator&gt;</span></pre><p><b>Inherits: </b><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a>.</p>
+<ul>
+<li><a href="qextserialenumerator-members.html">List of all members, including inherited members</a></li>
+</ul>
+<a name="public-functions"></a>
+<h2>Public Functions</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#QextSerialEnumerator">QextSerialEnumerator</a></b> ( QObject * <i>parent</i> = 0 )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#dtor.QextSerialEnumerator">~QextSerialEnumerator</a></b> ()</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#setUpNotifications">setUpNotifications</a></b> ()</td></tr>
+</table>
+<ul>
+<li class="fn">29 public functions inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-functions">QObject</a></li>
+</ul>
+<a name="signals"></a>
+<h2>Signals</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#deviceDiscovered">deviceDiscovered</a></b> ( const QextPortInfo &amp; <i>info</i> )</td></tr>
+<tr><td class="memItemLeft rightAlign topAlign"> void </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#deviceRemoved">deviceRemoved</a></b> ( const QextPortInfo &amp; <i>info</i> )</td></tr>
+</table>
+<ul>
+<li class="fn">1 signal inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#signals">QObject</a></li>
+</ul>
+<a name="static-public-members"></a>
+<h2>Static Public Members</h2>
+<table class="alignedsummary">
+<tr><td class="memItemLeft rightAlign topAlign"> QList&lt;QextPortInfo&gt; </td><td class="memItemRight bottomAlign"><b><a href="qextserialenumerator.html#getPorts">getPorts</a></b> ()</td></tr>
+</table>
+<ul>
+<li class="fn">6 static public members inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#static-public-members">QObject</a></li>
+</ul>
+<h3>Additional Inherited Members</h3>
+<ul>
+<li class="fn">1 property inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#properties">QObject</a></li>
+<li class="fn">1 public slot inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-slots">QObject</a></li>
+<li class="fn">1 public variable inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#public-variables">QObject</a></li>
+<li class="fn">8 protected functions inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#protected-functions">QObject</a></li>
+<li class="fn">2 protected variables inherited from <a href="http://qt.nokia.com/doc/4.8/qobject.html#protected-variables">QObject</a></li>
+</ul>
+<a name="details"></a>
+<!-- $$$QextSerialEnumerator-description -->
+<div class="descr">
+<h2>Detailed Description</h2>
+<p>The QextSerialEnumerator class provides list of ports available in the system.</p>
+<a name="usage"></a>
+<h3>Usage</h3>
+<p>To poll the system for a list of connected devices, simply use <a href="qextserialenumerator.html#getPorts">getPorts</a>(). Each <a href="qextportinfo.html">QextPortInfo</a> structure will populated with information about the corresponding device.</p>
+<p><b>Example</b></p>
+<pre class="cpp">    <span class="type"><a href="http://qt.nokia.com/doc/4.8/qlist.html">QList</a></span><span class="operator">&lt;</span>QextPortInfo<span class="operator">&gt;</span> ports <span class="operator">=</span> QextSerialEnumerator<span class="operator">::</span><a href="qextserialenumerator.html#getPorts">getPorts</a>();
+    <a href="http://qt.nokia.com/doc/4.8/qtglobal.html#foreach">foreach</a>( QextPortInfo port<span class="operator">,</span> ports ) {
+        <span class="comment">// inspect port...</span>
+    }</pre>
+<p>To enable event-driven notification of device connection events, first call <a href="qextserialenumerator.html#setUpNotifications">setUpNotifications</a>() and then connect to the <a href="qextserialenumerator.html#deviceDiscovered">deviceDiscovered</a>() and <a href="qextserialenumerator.html#deviceRemoved">deviceRemoved</a>() signals. Event-driven behavior is currently available only on Windows and OS X.</p>
+<p><b>Example</b></p>
+<pre class="cpp">    QextSerialEnumerator<span class="operator">*</span> enumerator <span class="operator">=</span> <span class="keyword">new</span> <a href="qextserialenumerator.html#QextSerialEnumerator">QextSerialEnumerator</a>();
+    <a href="http://qt.nokia.com/doc/4.8/qobject.html#connect">connect</a>(enumerator<span class="operator">,</span> SIGNAL(deviceDiscovered(<span class="keyword">const</span> QextPortInfo <span class="operator">&amp;</span>))<span class="operator">,</span>
+               myClass<span class="operator">,</span> SLOT(onDeviceDiscovered(<span class="keyword">const</span> QextPortInfo <span class="operator">&amp;</span>)));
+    <a href="http://qt.nokia.com/doc/4.8/qobject.html#connect">connect</a>(enumerator<span class="operator">,</span> SIGNAL(deviceRemoved(<span class="keyword">const</span> QextPortInfo <span class="operator">&amp;</span>))<span class="operator">,</span>
+               myClass<span class="operator">,</span> SLOT(onDeviceRemoved(<span class="keyword">const</span> QextPortInfo <span class="operator">&amp;</span>)));</pre>
+<a name="credits"></a>
+<h3>Credits</h3>
+<p>Windows implementation is based on Zach Gorman's work from <a href="http://www.codeproject.com">The Code Project</a> (<a href="http://www.codeproject.com/system/setupdi.asp">http://www.codeproject.com/system/setupdi.asp</a>).</p>
+<p>OS X implementation, see <a href="http://developer.apple.com/documentation/DeviceDrivers/Conceptual/AccessingHardware/AH_Finding_Devices/chapter_4_section_2.html">http://developer.apple.com/documentation/DeviceDrivers/Conceptual/AccessingHardware/AH_Finding_Devices/chapter_4_section_2.html</a></p>
+<p><b>author</b> Michal Policht, Liam Staskawicz</p>
+</div>
+<!-- @@@QextSerialEnumerator -->
+<div class="func">
+<h2>Member Function Documentation</h2>
+<!-- $$$QextSerialEnumerator[overload1]$$$QextSerialEnumeratorQObject* -->
+<h3 class="fn"><a name="QextSerialEnumerator"></a>QextSerialEnumerator::<span class="name">QextSerialEnumerator</span> ( <span class="type"><a href="http://qt.nokia.com/doc/4.8/qobject.html">QObject</a></span> * <i>parent</i> = 0 )</h3>
+<p>Constructs a <a href="qextserialenumerator.html">QextSerialEnumerator</a> object with the given <i>parent</i>.</p>
+<!-- @@@QextSerialEnumerator -->
+<!-- $$$~QextSerialEnumerator[overload1]$$$~QextSerialEnumerator -->
+<h3 class="fn"><a name="dtor.QextSerialEnumerator"></a>QextSerialEnumerator::<span class="name">~QextSerialEnumerator</span> ()</h3>
+<p>Destructs the <a href="qextserialenumerator.html">QextSerialEnumerator</a> object.</p>
+<!-- @@@~QextSerialEnumerator -->
+<!-- $$$deviceDiscovered[overload1]$$$deviceDiscoveredconstQextPortInfo& -->
+<h3 class="fn"><a name="deviceDiscovered"></a><span class="type">void</span> QextSerialEnumerator::<span class="name">deviceDiscovered</span> ( const <span class="type"><a href="qextportinfo.html">QextPortInfo</a></span> &amp; <i>info</i> )<tt> [signal]</tt></h3>
+<p>A new device has been connected to the system.</p>
+<p><a href="qextserialenumerator.html#setUpNotifications">setUpNotifications</a>() must be called first to enable event-driven device notifications. Currently only implemented on Windows and OS X.</p>
+<p><i>info</i> The device that has been discovered.</p>
+<!-- @@@deviceDiscovered -->
+<!-- $$$deviceRemoved[overload1]$$$deviceRemovedconstQextPortInfo& -->
+<h3 class="fn"><a name="deviceRemoved"></a><span class="type">void</span> QextSerialEnumerator::<span class="name">deviceRemoved</span> ( const <span class="type"><a href="qextportinfo.html">QextPortInfo</a></span> &amp; <i>info</i> )<tt> [signal]</tt></h3>
+<p>A device has been disconnected from the system.</p>
+<p><a href="qextserialenumerator.html#setUpNotifications">setUpNotifications</a>() must be called first to enable event-driven device notifications. Currently only implemented on Windows and OS X.</p>
+<p><i>info</i> The device that was disconnected.</p>
+<!-- @@@deviceRemoved -->
+<!-- $$$getPorts[overload1]$$$getPorts -->
+<h3 class="fn"><a name="getPorts"></a><span class="type"><a href="http://qt.nokia.com/doc/4.8/qlist.html">QList</a></span>&lt;<span class="type"><a href="qextportinfo.html">QextPortInfo</a></span>&gt; QextSerialEnumerator::<span class="name">getPorts</span> ()<tt> [static]</tt></h3>
+<p>Get list of ports.</p>
+<p>return list of ports currently available in the system.</p>
+<!-- @@@getPorts -->
+<!-- $$$setUpNotifications[overload1]$$$setUpNotifications -->
+<h3 class="fn"><a name="setUpNotifications"></a><span class="type">void</span> QextSerialEnumerator::<span class="name">setUpNotifications</span> ()</h3>
+<p>Enable event-driven notifications of board discovery/removal.</p>
+<!-- @@@setUpNotifications -->
+</div>
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

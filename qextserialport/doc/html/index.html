@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- index.qdoc -->
+  <title>qesp : QextSerialPort Manual</title>
+  <link rel="stylesheet" type="text/css" href="style/style.css" />
+</head>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td class="postheader" valign="center"><a href="index.html">Home</a> &middot; <a href="classes.html">All Classes</a> &middot; <a href="functions.html">All Functions</a> &middot;</td></tr></table><li>QextSerialPort Manual</li>
+<h1 class="title">QextSerialPort Manual</h1>
+<span class="subtitle"></span>
+<!-- $$$index.html-description -->
+<div class="descr"> <a name="details"></a>
+<a name="description"></a>
+<h2>Description</h2>
+<p><a href="qextserialport.html">QextSerialPort</a> provides an interface to old fashioned serial ports for Qt-based applications. It currently supports Mac OS X, Windows, Linux, FreeBSD.</p>
+<p>From <a href="qextserialport.html">QextSerialPort</a> 1.2-beta on, license of the project has been changed to MIT.</p>
+<ul>
+<li>Revision 0.9&#x2e;x is Qt 2 &amp; 3 compatible.</li>
+<li>Revision 1.x&#x2e;x is Qt 4 compatible.</li>
+</ul>
+<a name="classes"></a>
+<h2>Classes</h2>
+<ul>
+<li><a href="qextserialport.html">QextSerialPort</a> encapsulates a serial port on both POSIX and Windows systems.</li>
+<li><a href="qextserialenumerator.html">QextSerialEnumerator</a> enumerates ports currently available in the system.</li>
+</ul>
+<a name="usage"></a>
+<h2>Usage</h2>
+<p>The package contains a qextserialport.pri file that allows you to integrate the component into programs that use qmake for the build step.</p>
+<p>All you need is adding following line to your qmake project file:</p>
+<pre class="cpp">    <span class="keyword">include</span>(pathToPri<span class="operator">/</span>qextserialport<span class="operator">.</span>pri)</pre>
+<a name="using-qexserialport-library"></a>
+<h3>Using QexSerialPort library</h3>
+<p>Although <a href="qextserialport.html">QextSerialPort</a> can be directly compiled into your application, You may prefer to use QextSerailPort as an library, which is very easy too.</p>
+<p>1. Write a config.pri file.(read config_example.pri for reference):</p>
+<ul>
+<li>shared library</li>
+<li>static library</li>
+</ul>
+<p>2. Changed to subdirectory 'buildlib', run</p>
+<pre class="cpp">    qmake
+    make</pre>
+<p>shared or static library will be generated.</p>
+<p>3. Add following line to your qmake project file:</p>
+<pre class="cpp">    <span class="keyword">include</span>(pathToPri<span class="operator">/</span>qextserialport<span class="operator">.</span>pri)</pre>
+<a name="build-documents"></a>
+<h3>Build documents</h3>
+<p>Run qdoc3 from the doc directory.</p>
+<pre class="cpp">      qdoc3 qextserialport<span class="operator">.</span>qdocconf</pre>
+<p>Note: qdoc3 has been renamed to qdoc under Qt5.</p>
+<a name="examples"></a>
+<h2>Examples</h2>
+<ul>
+<li><a href="examples-enumerator.html">examples/enumerator</a></li>
+<li><a href="examples-qespta.html">examples/qespta</a></li>
+<li><a href="examples-uartassistant.html">examples/uartassistant</a></li>
+</ul>
+<a name="resources"></a>
+<h2>Resources</h2>
+<a name="nokia-trolltech"></a>
+<h3>Nokia(Trolltech)</h3>
+<ul>
+<li><a href="http://doc.trolltech.com/qq/qq12-iodevice.html">Writing a Custom I/O Device</a></li>
+<li><a href="http://doc.trolltech.com/3.3/qiodevice.html">Qt 3.3: QIODevice Class Reference</a></li>
+<li><a href="http://doc.trolltech.com/4.7/qiodevice.html">Qt 4.7: QIODevice Class Reference</a></li>
+</ul>
+<a name="msdn"></a>
+<h3>MSDN</h3>
+<ul>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_resources.asp">Communications Resources</a></li>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/about_communications_resources.asp">About Communications Resources</a></li>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/using_communications_resources.asp">Using Communications Resources</a></li>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_functions.asp">Communications Functions</a></li>
+<li><a href="http://msdn.microsoft.com/library/default.asp?url=/library/en-us/devio/base/communications_structures.asp">Communications Structures</a></li>
+</ul>
+<a name="tldp"></a>
+<h3>TLDP</h3>
+<ul>
+<li><a href="http://www.tldp.org/HOWTO/Serial-HOWTO.html">Serial HOWTO</a></li>
+<li><a href="http://www.tldp.org/HOWTO/Serial-Programming-HOWTO/">Serial Programming HOWTO</a></li>
+</ul>
+<a name="other"></a>
+<h3>Other</h3>
+<ul>
+<li><a href="http://www.easysw.com/~mike/serial/serial.html">Serial Programming Guide for POSIX Operating Systems</a></li>
+</ul>
+</div>
+<!-- @@@index.html -->
+<p /><address><hr /><div align="center">
+<table width="100%" cellspacing="0" border="0"><tr class="address">
+<td width="40%" align="left">Copyright &copy; 2000-2012</td>
+<td width="20%" align="center"><a href="http://code.google.com/p/qextserialport">QextSerialPort Project</a></td>
+<td width="40%" align="right"><div align="right">QextSerialPort Manual</div></td>
+</tr></table></div></address></body>
+</html>

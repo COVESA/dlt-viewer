@@ -3,7 +3,7 @@
 # -------------------------------------------------
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
-INCLUDEPATH = ../qextserialport ../qdlt
+INCLUDEPATH = ../qextserialport/src ../qdlt
 
 icons.path = /usr/share/pixmaps
 icons.files = icon/face-glasses.ico
