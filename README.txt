@@ -29,40 +29,19 @@ Dynamically linked/open source software
 --------------------------------------
 * Qt 4.7.4 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
-* qextserialport (New BSD licence - Version 1.1)
+* qextserialport (MIT license - Version 1.2 Beta)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
 
 
-Compiling in Windows:
+Compiling (Windows and Linux):
 ---------------------
-- Download and install "Qt SDK version 1.2" for Windows from http://qt.nokia.com/downloads
-- Download qextserialport (REL_1_1) from http://code.google.com/p/qextserialport/
-- Save file <DLT-viewer-Root>/qextserialport/qextserialport.pro
-- Copy qextserialport (REL_1_1) into <DLT-viewer-Root>/qextserialport directory 
-- Overwrite file qextserialport/qextserialport.pro with saved file before
+- Install Qt4 (Qt SDK Version 1.2 - Guidline http://doc.qt.nokia.com/sdk-1.1/sdk-installing.html )
 - Open project BuildDltViewer.pro in Qt Creator
 - Build Release in Qt Creator
-
-
-Compiling in Linux:
--------------------
-Precondition
-- Install package Qt4 including developer tools
-- Optional: Install Qt Creator
-
-Steps
-- Download qextserialport (REL_1_1) from http://code.google.com/p/qextserialport/
-- Save file qextserialport/qextserialport.pro
-- Copy qextserialport (REL_1_1) into <DLT-viewer-Root>/qextserialport directory 
-- Overwrite file qextserialport/qextserialport.pro with saved file before
-- Create directory build
-- Change into directory build
-- qmake-qt4 ../BuildDltViewer.pro
-- make
-- optional: sudo make install
-- optional: sudo ldconfig
-- Run dlt_viewer (if you installed the viewer) or change into the release directory and run ./dlt_viewer 
-- Optional: Open project BuildDltViewer.pro in Qt Creator and build DLT Viewer in Qt Creator
+- (Optional in Linux) Change the directory to the build directory
+- (Optional in Linux) sudo make install
+- (Optional in Linux) sudo ldconfig
+- (Optional in Linux) Optional set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .|
 
 
 Command line usage:

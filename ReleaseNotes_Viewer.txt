@@ -29,7 +29,7 @@ Dynamically linked open source software
 ---------------------------------------
 * Qt 4.7/4.8 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
-* qextserialport (New BSD licence - Version 1.1)
+* qextserialport (MIT License - Version 1.2 BETA)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
 
 
@@ -37,9 +37,10 @@ Changes in this release
 -----------------------
 2.6.0
 !!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
+   * [GDLT-78] Extended API of the decoderinterface. Plugins gets a notification if the state of the ECU connection changed.
+   * [GDLT-87] Added new version of QextSerialPort v1.2 BETA - MIT License
    * [GDLT-66] Plugin is deactivated but after restarting the DLT Viewer the plugin will be called to handle/parse messages fixed.
    * [GDLT-77] Open a .dlt file with double click creates a config.ini file fixed.
-   * [Dxxxx] (Can't find issue number) Mostplugin crashes on incorrect property and method entries fixed. 
    * Added some statistics as a single tab to the dlt-viewer plugin.
    * Fixed bug in statisticstab of dltviewerplugin and extended with more statistics.
    * Fixed bug in window title of plugins
