@@ -148,7 +148,7 @@ void File::errorHappens(QString filename, QString errorCode1, QString errorCode2
 }
 
 bool File::isComplete(){
-    return receivedPackages==packages;
+    return receivedPackages == packages;
 }
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){

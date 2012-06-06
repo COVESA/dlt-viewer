@@ -2,4 +2,4 @@
 TEMPLATE = subdirs
 CONFIG   += ordered
 
-SUBDIRS  += dummydecoderplugin nonverboseplugin #dltviewerplugin filetransferplugin dltsystemviewerplugin
+SUBDIRS  +=  dltviewerplugin nonverboseplugin filetransferplugin#  dltsystemviewerplugin dummydecoderplugin

@@ -112,6 +112,10 @@ void Form::itemChanged(QTreeWidgetItem* item,int i){
 
 }
 
+void Form::clearSelectedFiles(){
+    selectedFiles = 0;
+}
+
 void Form::on_saveButton_clicked(){
 
     if(selectedFiles <= 0){
@@ -197,10 +201,6 @@ void Form::itemDoubleClicked ( QTreeWidgetItem * item, int column ){
 
 }
 
-void Form::sectionInTableDoubleClicked(int logicalIndex){
-        ui->treeWidget->resizeColumnToContents(logicalIndex);
-}
-
 void Form::on_treeWidget_customContextMenuRequested(QPoint pos)
 {
     /* show custom pop menu  for configuration */
@@ -212,14 +212,8 @@ void Form::on_treeWidget_customContextMenuRequested(QPoint pos)
 
     if(list.count() == 1)
     {
-        action = new QAction("&Save file", this);
+        action = new QAction("&Save selected file", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionSave_triggered()));
-        menu.addAction(action);
-
-        menu.addSeparator();
-
-        action = new QAction("&Remove file from list", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_actionDelete_triggered()));
         menu.addAction(action);
 
         /* show popup menu */
@@ -237,20 +231,4 @@ void Form::on_actionSave_triggered(){
         on_saveButton_clicked();
         itemChanged(tmpFile,COLUMN_CHECK);
     }
-}
-
-void Form::on_actionDelete_triggered(){
-
-    QList<QTreeWidgetItem *> list = ui->treeWidget->selectedItems();
-    if((list.count() == 1))
-    {
-        File* tmpFile = (File*)list.at(0);
-        int index = ui->treeWidget->indexOfTopLevelItem(tmpFile);
-        ui->treeWidget->takeTopLevelItem(index);
-    }
-}
-
-void Form::on_clearAllButton_clicked()
-{
-    getTreeWidget()->clear();
 }

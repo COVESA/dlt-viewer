@@ -25,7 +25,7 @@
      <property name="spacing">
       <number>6</number>
      </property>
-     <item row="9" column="1" colspan="2">
+     <item row="10" column="1" colspan="2">
       <widget class="QTreeWidget" name="treeWidget">
        <column>
         <property name="text">
@@ -74,20 +74,7 @@
        </column>
       </widget>
      </item>
-     <item row="0" column="1" rowspan="6">
-      <widget class="QPushButton" name="selectButton">
-       <property name="text">
-        <string>Select All</string>
-       </property>
-       <property name="iconSize">
-        <size>
-         <width>22</width>
-         <height>22</height>
-        </size>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2" rowspan="6">
+     <item row="8" column="1" colspan="2">
       <widget class="QPushButton" name="saveButton">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -96,7 +83,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Save Selected</string>
+        <string>Save all selected files</string>
        </property>
        <property name="iconSize">
         <size>
@@ -107,9 +94,9 @@
       </widget>
      </item>
      <item row="6" column="2">
-      <widget class="QPushButton" name="clearAllButton">
+      <widget class="QPushButton" name="deselectButton">
        <property name="text">
-        <string>Clear List</string>
+        <string>Deselect all complete files</string>
        </property>
        <property name="iconSize">
         <size>
@@ -120,9 +107,9 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QPushButton" name="deselectButton">
+      <widget class="QPushButton" name="selectButton">
        <property name="text">
-        <string>Deselect All</string>
+        <string>Select all complete files</string>
        </property>
        <property name="iconSize">
         <size>

@@ -76,7 +76,9 @@ QWidget* FiletransferPlugin::initViewer() {
 
 bool FiletransferPlugin::initFile(QDltFile *file) {
     dltFile = file;
-    //msgIndex = 0;
+    msgIndex = 0;
+    form->getTreeWidget()->clear();
+    form->clearSelectedFiles();
     updateFile();
     return true;
 }

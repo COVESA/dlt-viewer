@@ -35,7 +35,7 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
     QTreeWidget* getTreeWidget();
-
+    void clearSelectedFiles();
 private:
     Ui::Form *ui;
 
