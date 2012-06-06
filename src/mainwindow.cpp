@@ -869,7 +869,7 @@ void MainWindow::reloadLogFile()
     /* open file, create filter index and update model view */
     qfile.open(outputfile.fileName());
 
-    QProgressDialog fileprogress("Parsing DLT file...", "Abort", 0, qfile.size(), this);
+    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
@@ -880,8 +880,10 @@ void MainWindow::reloadLogFile()
            break;
         }
 
-        if(!(num%(qsz/300+1)))
+        if(!(num%(qsz/300+1))){
+            QApplication::processEvents(); // Needed for processing the event when the cancel button was pressed
             fileprogress.setValue(num); // This is expensive
+        }
 
         data = qfile.getMsg(num);
         msg.setMsg(data);
