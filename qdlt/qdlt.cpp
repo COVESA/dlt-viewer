@@ -751,6 +751,8 @@ QVariant QDltArgument::getValue()
 
 bool QDltArgument::setValue(QVariant value, bool verboseMode)
 {
+    Q_UNUSED(verboseMode);
+
     endianness = QDltArgument::DltEndiannessLittleEndian;
 
     switch(value.type())

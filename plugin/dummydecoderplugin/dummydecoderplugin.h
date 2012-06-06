@@ -46,8 +46,8 @@ public:
     QStringList infoConfig();
 
     /* QDltPluginDecoderInterface */
-    bool isMsg(QDltMsg &msg);
-    bool decodeMsg(QDltMsg &msg);
+    bool isMsg(QDltMsg &msg, int triggeredByUser);
+    bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
 private:
     QString errorText;

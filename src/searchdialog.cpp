@@ -190,9 +190,9 @@ int SearchDialog::find()
         {
             PluginItem *item = (PluginItem*)plugin->topLevelItem(num2);
 
-            if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+            if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,1))
             {
-                item->plugindecoderinterface->decodeMsg(msg);
+                item->plugindecoderinterface->decodeMsg(msg,1);
                 break;
             }
         }

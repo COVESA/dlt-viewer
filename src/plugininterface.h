@@ -130,9 +130,10 @@ public:
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
       \param msg The current DLT message.
+      \param triggeredByUser Reason for this method call was a user interaction with the GUI, e.g. clicked on "Export to ASCII" in the menu. 0 = not triggered by user, 1 = triggered by user
       \return True if the message is handled by the plugin. False if the message is not handled by the plugin.
     */
-    virtual bool isMsg(QDltMsg &msg) = 0;
+    virtual bool isMsg(QDltMsg &msg, int triggeredByUser) = 0;
 
     //! Decode the message and provide back the decoded message.
     /*!
@@ -140,9 +141,10 @@ public:
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
       \param msg The current DLT message and the decoded message information.
+      \param triggeredByUser Reason for this method call was a user interaction with the GUI, e.g. clicked on "Export to ASCII" in the menu. 0 = not triggered by user, 1 = triggered by user
       \return True if the message is converted by the plugin. False if the conversion fails.
     */
-    virtual bool decodeMsg(QDltMsg &msg) = 0;
+    virtual bool decodeMsg(QDltMsg &msg, int triggeredByUser) = 0;
 
 };
 

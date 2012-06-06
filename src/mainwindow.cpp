@@ -375,7 +375,7 @@ void MainWindow::commandLineConvertToASCII(){
         msg.setMsg(data);
 
         /* decode message is necessary */
-        iterateDecodersForMsg(msg);
+        iterateDecodersForMsg(msg,1);
 
         /* get message ASCII text */
         text.clear();
@@ -643,7 +643,7 @@ void MainWindow::on_actionExport_ASCII_triggered()
         msg.setMsg(data);
 
         /* decode message is necessary */
-        iterateDecodersForMsg(msg);
+        iterateDecodersForMsg(msg,1);
 
         /* get message ASCII text */
         text.clear();
@@ -733,7 +733,7 @@ void MainWindow::exportSelection(bool ascii,bool file)
                msg.setMsg(data);
 
                /* decode message is necessary */
-               iterateDecodersForMsg(msg);
+               iterateDecodersForMsg(msg,1);
 
                /* get message ASCII text */
                text.clear();
@@ -885,7 +885,7 @@ void MainWindow::reloadLogFile()
 
         data = qfile.getMsg(num);
         msg.setMsg(data);
-        iterateDecodersForMsg(msg);
+        iterateDecodersForMsg(msg,0);
         if(qfile.checkFilter(msg)) {
             qfile.addFilterIndex(num);
         }
@@ -2139,7 +2139,7 @@ void MainWindow::read(EcuItem* ecuitem)
             for(int num=oldsize;num<qfile.size();num++) {
                 data = qfile.getMsg(num);
                 qmsg.setMsg(data);
-                iterateDecodersForMsg(qmsg);
+                iterateDecodersForMsg(qmsg,0);
                 if(qfile.checkFilter(qmsg)) {
                     qfile.addFilterIndex(num);
                 }
@@ -2445,7 +2445,7 @@ void MainWindow::SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString ap
     for(int num=oldsize;num<qfile.size();num++) {
         data = qfile.getMsg(num);
         qmsg.setMsg(data);
-        iterateDecodersForMsg(qmsg);
+        iterateDecodersForMsg(qmsg,0);
         if(qfile.checkFilter(qmsg)) {
             qfile.addFilterIndex(num);
         }
@@ -3850,7 +3850,7 @@ void MainWindow::filterAddTable() {
     msg.setMsg(data);
 
     /* decode message if necessary */
-    iterateDecodersForMsg(msg);
+    iterateDecodersForMsg(msg,1);
 
     /* show filter dialog */
     FilterDialog dlg;
@@ -4487,7 +4487,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 }
 
 
-void MainWindow::iterateDecodersForMsg(QDltMsg &msg)
+void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
     for(int i = 0; i < project.plugin->topLevelItemCount (); i++)
     {
@@ -4495,9 +4495,9 @@ void MainWindow::iterateDecodersForMsg(QDltMsg &msg)
 
         if(item->getMode() != item->ModeDisable &&
            item->plugindecoderinterface &&
-           item->plugindecoderinterface->isMsg(msg))
+           item->plugindecoderinterface->isMsg(msg,triggeredByUser))
         {
-            item->plugindecoderinterface->decodeMsg(msg);
+            item->plugindecoderinterface->decodeMsg(msg,triggeredByUser);
             break;
         }
     }

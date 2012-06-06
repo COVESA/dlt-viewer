@@ -411,8 +411,10 @@ QStringList NonverbosePlugin::infoConfig()
     return list;
 }
 
-bool NonverbosePlugin::isMsg(QDltMsg &msg)
+bool NonverbosePlugin::isMsg(QDltMsg &msg, int triggeredByUser)
 {
+    Q_UNUSED(triggeredByUser)
+
     if((msg.getMode() != QDltMsg::DltModeNonVerbose))
     {
         /* message is not a non-verbose message */
@@ -428,8 +430,9 @@ bool NonverbosePlugin::isMsg(QDltMsg &msg)
     return framemap.contains(idtext);
 }
 
-bool NonverbosePlugin::decodeMsg(QDltMsg &msg)
+bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
+    Q_UNUSED(triggeredByUser)
     int offset = 4;
 
     if((msg.getMode() != QDltMsg::DltModeNonVerbose))

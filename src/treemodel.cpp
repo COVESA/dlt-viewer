@@ -60,9 +60,9 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
 
-             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
              {
-                 item->plugindecoderinterface->decodeMsg(msg);
+                 item->plugindecoderinterface->decodeMsg(msg,0);
                  break;
              }
          }
@@ -164,9 +164,9 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
 
-             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg))
+             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
              {
-                 item->plugindecoderinterface->decodeMsg(msg);
+                 item->plugindecoderinterface->decodeMsg(msg,0);
                  break;
              }
          }

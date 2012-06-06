@@ -68,13 +68,19 @@ QStringList DummyDecoderPlugin::infoConfig()
     return QStringList();
 }
 
-bool DummyDecoderPlugin::isMsg(QDltMsg & /* msg */)
+bool DummyDecoderPlugin::isMsg(QDltMsg & msg, int triggeredByUser)
 {
+    Q_UNUSED(msg);
+    Q_UNUSED(triggeredByUser);
+
     return false;
 }
 
-bool DummyDecoderPlugin::decodeMsg(QDltMsg & /* msg */)
+bool DummyDecoderPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
+    Q_UNUSED(msg);
+    Q_UNUSED(triggeredByUser);
+
     return false;
 }
 
