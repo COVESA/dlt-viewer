@@ -122,6 +122,7 @@ private slots:
     void on_action_menuConfig_Disconnect_triggered();
     void on_action_menuConfig_Connect_triggered();
     void on_action_menuConfig_Delete_All_Contexts_triggered();
+    void on_action_menuConfig_Copy_to_clipboard_triggered();
 
     // DLT methods
     void on_action_menuDLT_Send_Injection_triggered();
@@ -173,6 +174,8 @@ private slots:
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
     void on_filterButton_clicked(bool checked);
+
+
 
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);

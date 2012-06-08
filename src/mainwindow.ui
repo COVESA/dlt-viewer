@@ -89,6 +89,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream"/>
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="action_menuFile_Append_DLT_File"/>
+    <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="action_menuFile_Export_ASCII"/>
     <addaction name="action_menuFile_Export_Selection"/>
     <addaction name="action_menuFile_Export_Selection_ASCII"/>
@@ -919,6 +920,14 @@
    </property>
    <property name="toolTip">
     <string>Plugin Disable</string>
+   </property>
+  </action>
+  <action name="action_menuConfig_Copy_to_clipboard">
+   <property name="text">
+    <string>Copy to clipboard</string>
+   </property>
+   <property name="toolTip">
+    <string>Copy to clipboard</string>
    </property>
   </action>
  </widget>

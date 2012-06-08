@@ -612,7 +612,7 @@ void MainWindow::on_action_menuFile_Export_Selection_ASCII_triggered()
     exportSelection(true,true);
 }
 
-void MainWindow::exportSelection(bool ascii,bool file)
+void MainWindow::exportSelection(bool ascii = true,bool file = false)
 {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -4363,8 +4363,18 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     QAction *action;
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
+    action = new QAction("&Copy Selection to Clipboard", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_to_clipboard_triggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
     action = new QAction("&Export ASCII", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Export_ASCII_triggered()));
+    if(qfile.sizeFilter() <= 0)
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Export_ASCII_triggered()));
+
     menu.addAction(action);
 
     action = new QAction("Export Selection", this);
@@ -4537,4 +4547,9 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
     else
         QMessageBox::warning(0, QString("DLT Viewer"),
                             QString("No Plugin selected!"));
+}
+
+void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
+{
+    exportSelection(true,false);
 }
