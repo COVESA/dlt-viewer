@@ -149,6 +149,7 @@
     </widget>
     <addaction name="action_menuFilter_Save_As"/>
     <addaction name="action_menuFilter_Load"/>
+    <addaction name="action_menuFilter_Append_Filters"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_Filters"/>
     <addaction name="separator"/>
@@ -928,6 +929,14 @@
    </property>
    <property name="toolTip">
     <string>Copy to clipboard</string>
+   </property>
+  </action>
+  <action name="action_menuFilter_Append_Filters">
+   <property name="text">
+    <string>Append Filter File</string>
+   </property>
+   <property name="toolTip">
+    <string>Append Filter File</string>
    </property>
   </action>
  </widget>

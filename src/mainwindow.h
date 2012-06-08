@@ -145,6 +145,7 @@ private slots:
     void on_action_menuFilter_Add_triggered();
     void on_action_menuFilter_Clear_all_triggered();
     void on_action_menuFilter_Duplicate_triggered();
+    void on_action_menuFilter_Append_Filters_triggered();
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
@@ -174,6 +175,8 @@ private slots:
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
     void on_filterButton_clicked(bool checked);
+
+
 
 
 

@@ -255,7 +255,7 @@ public:
     void Clear();
 
     bool SaveFilter(QString filename);
-    bool LoadFilter(QString filename);
+    bool LoadFilter(QString filename,bool replace);
 
     QTreeWidget *ecu;
     QTreeWidget *filter;

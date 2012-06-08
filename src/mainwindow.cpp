@@ -249,7 +249,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     if(OptManager::getInstance()->isFilterFile()){
-        if(project.LoadFilter(OptManager::getInstance()->getFilterFile()))
+        if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),true))
         {
             filterUpdate();
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
@@ -3324,7 +3324,7 @@ void MainWindow::openRecentFilters()
     {
         fileName = action->data().toString();
 
-        if(!fileName.isEmpty() && project.LoadFilter(fileName))
+        if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
         {
             ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
             ui->filterStatus->setText("Filters changed. Please enable filtering.");
@@ -3975,7 +3975,7 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
-    if(!fileName.isEmpty() && project.LoadFilter(fileName))
+    if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
     {
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
         ui->filterStatus->setText("Filters changed. Please enable filtering.");
@@ -4552,4 +4552,22 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
 void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 {
     exportSelection(true,false);
+}
+
+void MainWindow::on_action_menuFilter_Append_Filters_triggered()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
+
+    if(!fileName.isEmpty() && project.LoadFilter(fileName,false))
+    {
+        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
+        ui->filterStatus->setText("Filters changed. Please enable filtering.");
+
+        ui->filterButton->setChecked(Qt::Unchecked);
+        ui->filterButton->setText("Enable filters");
+
+        setCurrentFilters(fileName);
+
+    }
 }

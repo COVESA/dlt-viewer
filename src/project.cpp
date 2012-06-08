@@ -1235,7 +1235,7 @@ bool Project::SaveFilter(QString filename)
     return true;
 }
 
-bool Project::LoadFilter(QString filename){
+bool Project::LoadFilter(QString filename, bool replace){
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -1246,8 +1246,9 @@ bool Project::LoadFilter(QString filename){
 
     FilterItem *filteritem = 0;
 
+    if(replace)
+        filter->clear();
 
-    filter->clear();
     QXmlStreamReader xml(&file);
     while (!xml.atEnd()) {
           xml.readNext();
