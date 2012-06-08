@@ -3859,8 +3859,11 @@ void MainWindow::filterAddTable() {
         /* add filter to list */
         project.filter->addTopLevelItem(item);
 
-        /* update filter list in DLT log file */
-        filterUpdate();
+        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
+        ui->filterStatus->setText("Filters changed. Please enable filtering.");
+
+        ui->filterButton->setChecked(Qt::Unchecked);
+        ui->filterButton->setText("Enable filters");
     }
 }
 
@@ -3944,8 +3947,11 @@ void MainWindow::filterAdd() {
         /* add filter to list */
         project.filter->addTopLevelItem(item);
 
-        /* update filter list in DLT log file */
-        filterUpdate();
+        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
+        ui->filterStatus->setText("Filters changed. Please enable filtering.");
+
+        ui->filterButton->setChecked(Qt::Unchecked);
+        ui->filterButton->setText("Enable filters");
 
     }
 }
@@ -3977,7 +3983,6 @@ void MainWindow::on_action_menuFilter_Load_triggered()
         ui->filterButton->setChecked(Qt::Unchecked);
         ui->filterButton->setText("Enable filters");
 
-        filterUpdate();
         setCurrentFilters(fileName);
 
     }
@@ -4034,8 +4039,6 @@ void MainWindow::on_action_menuFilter_Add_triggered() {
         ui->filterButton->setChecked(Qt::Unchecked);
         ui->filterButton->setText("Enable filters");
 
-        /* update filter list in DLT log file */
-        //filterUpdate();
     }
 }
 
@@ -4267,8 +4270,6 @@ void MainWindow::on_action_menuFilter_Clear_all_triggered() {
     ui->filterButton->setChecked(Qt::Unchecked);
     ui->filterButton->setText("Enable filters");
 
-    /* update filter list in DLT log file */
-    filterUpdate();
 }
 
 void MainWindow::filterUpdate() {
