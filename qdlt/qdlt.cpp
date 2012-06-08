@@ -1296,6 +1296,8 @@ QString QDltMsg::toStringPayload()
 QDltFile::QDltFile()
 {
     filterFlag = false;
+    ba_cache.setMaxCost(5000);
+    msg_cache.setMaxCost(5000);
 }
 
 QDltFile::~QDltFile()

@@ -53,6 +53,10 @@ QTreeWidget* Form::getTreeWidget(){
     return ui->treeWidget;
 }
 
+void Form::sectionInTableDoubleClicked(int logicalIndex){
+        ui->treeWidget->resizeColumnToContents(logicalIndex);
+}
+
 void Form::on_selectButton_clicked(){
     QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NotChecked|QTreeWidgetItemIterator::NoChildren);
     while (*it) {

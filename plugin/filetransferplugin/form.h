@@ -44,11 +44,11 @@ private:
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);
     void itemDoubleClicked ( QTreeWidgetItem * item, int column );
-    void sectionInTableDoubleClicked(int logicalIndex);
+
 
 private slots:
+    void sectionInTableDoubleClicked(int logicalIndex);
     void on_treeWidget_customContextMenuRequested(QPoint pos);
-    void on_actionDelete_triggered();
     void on_actionSave_triggered();
     void on_saveButton_clicked();
     void on_selectButton_clicked();
