@@ -24,7 +24,7 @@
 
 DltSettingsManager *DltSettingsManager::m_instance = NULL;
 
-DltSettingsManager* DltSettingsManager::instance()
+DltSettingsManager* DltSettingsManager::getInstance()
 {
     if(!m_instance)
         m_instance = new DltSettingsManager();

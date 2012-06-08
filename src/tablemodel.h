@@ -17,8 +17,8 @@
  * @licence end@
  */
 
-#ifndef TREEMODEL_H
-#define TREEMODEL_H
+#ifndef TABLEMODEL_H
+#define TABLEMODEL_H
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -36,29 +36,26 @@ extern "C"
         #include "dlt_user_shared.h"
 }
 
-class TreeItem;
-
-class TreeModel : public QAbstractTableModel
+class TableModel : public QAbstractTableModel
 {
 Q_OBJECT
 
 public:
-TreeModel(const QString &data, QObject *parent = 0);
-~TreeModel();
+    TableModel(const QString &data, QObject *parent = 0);
+    ~TableModel();
 
-QVariant data(const QModelIndex &index, int role) const;
-QVariant headerData(int section, Qt::Orientation orientation,
+    QVariant data(const QModelIndex &index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation,
          int role = Qt::DisplayRole) const;
-int rowCount(const QModelIndex &parent = QModelIndex()) const;
-int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-/* pointer to the current loaded file */
-QDltFile *qfile;
-int size;
-QMutex *mutex;
-Project *project;
-void modelChanged();
+    /* pointer to the current loaded file */
+    QDltFile *qfile;
+    QMutex *mutex;
+    Project *project;
+    void modelChanged();
 
 };
 
-#endif // TREEMODEL_H
+#endif // TABLEMODEL_H

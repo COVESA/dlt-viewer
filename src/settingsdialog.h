@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QMainWindow>
+#include "qdlt.h"
 
 namespace Ui {
     class SettingsDialog;
@@ -30,6 +31,7 @@ namespace Ui {
 class SettingsDialog : public QDialog {
     Q_OBJECT
 public:
+    SettingsDialog(QDltFile *_qFile, QWidget *parent = 0);
     SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
 
@@ -45,7 +47,6 @@ public:
     int autoMarkFatalError;
     int autoMarkWarn;
     int writeControl;
-    int hideFiletransfer;
 
     int fontSize;
     int showIndex;
@@ -75,11 +76,18 @@ public:
 
     void resetSettings();
 
+    QStringList getRecentFiles();
+    QStringList getRecentProjects();
+    QStringList getRecentFilters();
+    QString getWorkingDirectory();
+
 protected:
     void changeEvent(QEvent *e);
 
 private:
+    QDltFile *qFile;
     Ui::SettingsDialog *ui;
+
 
 private slots:
     void on_groupBoxAppId_clicked(bool checked);

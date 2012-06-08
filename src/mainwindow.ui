@@ -67,7 +67,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -79,23 +79,23 @@
       <string>Recent files</string>
      </property>
     </widget>
-    <addaction name="actionNew"/>
-    <addaction name="actionOpen"/>
-    <addaction name="actionSaveAs"/>
-    <addaction name="actionClear"/>
+    <addaction name="action_menuFile_New"/>
+    <addaction name="action_menuFile_Open"/>
+    <addaction name="action_menuFile_SaveAs"/>
+    <addaction name="action_menuFile_Clear"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_files"/>
     <addaction name="separator"/>
-    <addaction name="actionImport_DLT_Stream"/>
-    <addaction name="actionImport_DLT_Stream_with_Serial_Header"/>
-    <addaction name="actionAppend_DLT_File"/>
-    <addaction name="actionExport_ASCII"/>
-    <addaction name="actionExport_Selection"/>
-    <addaction name="actionExport_Selection_ASCII"/>
+    <addaction name="action_menuFile_Import_DLT_Stream"/>
+    <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
+    <addaction name="action_menuFile_Append_DLT_File"/>
+    <addaction name="action_menuFile_Export_ASCII"/>
+    <addaction name="action_menuFile_Export_Selection"/>
+    <addaction name="action_menuFile_Export_Selection_ASCII"/>
     <addaction name="separator"/>
-    <addaction name="actionSettings"/>
+    <addaction name="action_menuFile_Settings"/>
     <addaction name="separator"/>
-    <addaction name="actionQuit"/>
+    <addaction name="action_menuFile_Quit"/>
    </widget>
    <widget class="QMenu" name="menuProject">
     <property name="title">
@@ -106,9 +106,9 @@
       <string>Recent projects</string>
      </property>
     </widget>
-    <addaction name="actionProjectNew"/>
-    <addaction name="actionProjectOpen"/>
-    <addaction name="actionProjectSave"/>
+    <addaction name="action_menuProject_New"/>
+    <addaction name="action_menuProject_Open"/>
+    <addaction name="action_menuProject_Save"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_projects"/>
    </widget>
@@ -116,24 +116,25 @@
     <property name="title">
      <string>Config</string>
     </property>
-    <addaction name="actionECU_Add"/>
-    <addaction name="actionECU_Edit"/>
-    <addaction name="actionECU_Delete"/>
-    <addaction name="actionECU_Delete_All_Contexts"/>
+    <addaction name="action_menuConfig_ECU_Add"/>
+    <addaction name="action_menuConfig_ECU_Edit"/>
+    <addaction name="action_menuConfig_ECU_Delete"/>
+    <addaction name="action_menuConfig_Delete_All_Contexts"/>
     <addaction name="separator"/>
-    <addaction name="actionECU_Connect"/>
-    <addaction name="actionECU_Disconnect"/>
+    <addaction name="action_menuConfig_Connect"/>
+    <addaction name="action_menuConfig_Disconnect"/>
     <addaction name="separator"/>
-    <addaction name="actionExpand_All_ECUs"/>
-    <addaction name="actionCollapse_All_ECUs"/>
+    <addaction name="action_menuConfig_Expand_All_ECUs"/>
+    <addaction name="action_menuConfig_Collapse_All_ECUs"/>
     <addaction name="separator"/>
-    <addaction name="actionApplication_Add"/>
-    <addaction name="actionApplication_Edit"/>
-    <addaction name="actionApplication_Delete"/>
+    <addaction name="action_menuConfig_Application_Add"/>
+    <addaction name="action_menuConfig_Application_Edit"/>
+    <addaction name="action_menuConfig_Application_Delete"/>
     <addaction name="separator"/>
-    <addaction name="actionContext_Add"/>
-    <addaction name="actionContext_Edit"/>
-    <addaction name="actionContext_Delete"/>
+    <addaction name="action_menuConfig_Context_Add"/>
+    <addaction name="action_menuConfig_Context_Edit"/>
+    <addaction name="action_menuConfig_Context_Delete"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">
@@ -145,57 +146,61 @@
      </property>
      <addaction name="separator"/>
     </widget>
-    <addaction name="actionFilter_Save_As"/>
-    <addaction name="actionFilter_Load"/>
+    <addaction name="action_menuFilter_Save_As"/>
+    <addaction name="action_menuFilter_Load"/>
     <addaction name="separator"/>
     <addaction name="menuRecent_Filters"/>
     <addaction name="separator"/>
-    <addaction name="actionFilter_Add"/>
-    <addaction name="actionFilter_Edit"/>
-    <addaction name="actionFilter_Delete"/>
-    <addaction name="actionFilter_Clear_all"/>
+    <addaction name="action_menuFilter_Add"/>
+    <addaction name="action_menuFilter_Edit"/>
+    <addaction name="action_menuFilter_Duplicate"/>
+    <addaction name="action_menuFilter_Delete"/>
+    <addaction name="action_menuFilter_Clear_all"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
      <string>Plugin</string>
     </property>
-    <addaction name="actionPlugin_Edit"/>
-    <addaction name="actionPlugin_Show"/>
-    <addaction name="actionPlugin_Hide"/>
+    <addaction name="action_menuPlugin_Edit"/>
+    <addaction name="action_menuPlugin_Show"/>
+    <addaction name="action_menuPlugin_Hide"/>
+    <addaction name="action_menuPlugin_Disable"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="action_Info"/>
+    <addaction name="action_menuHelp_Info"/>
     <addaction name="separator"/>
-    <addaction name="actionCommand_Line"/>
+    <addaction name="action_menuHelp_Command_Line"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
      <string>DLT</string>
     </property>
-    <addaction name="actionGet_Default_Log_Level"/>
-    <addaction name="actionSet_Default_Log_Level"/>
-    <addaction name="actionGet_Log_Info"/>
-    <addaction name="actionSet_Log_Level"/>
-    <addaction name="actionSet_All_Log_Levels"/>
+    <addaction name="action_menuDLT_Get_Default_Log_Level"/>
+    <addaction name="action_menuDLT_Set_Default_Log_Level"/>
+    <addaction name="action_menuDLT_Get_Log_Info"/>
+    <addaction name="action_menuDLT_Set_Log_Level"/>
+    <addaction name="action_menuDLT_Set_All_Log_Levels"/>
     <addaction name="separator"/>
-    <addaction name="actionStore_Config"/>
-    <addaction name="actionReset_to_Factory_Default"/>
+    <addaction name="action_menuDLT_Store_Config"/>
+    <addaction name="action_menuDLT_Reset_to_Factory_Default"/>
     <addaction name="separator"/>
-    <addaction name="actionSend_Injection"/>
-    <addaction name="actionGet_Software_Version"/>
-    <addaction name="actionGet_Local_Time"/>
+    <addaction name="action_menuDLT_Send_Injection"/>
+    <addaction name="action_menuDLT_Get_Software_Version"/>
+    <addaction name="action_menuDLT_Get_Local_Time"/>
+    <addaction name="separator"/>
+    <addaction name="action_menuDLT_Edit_All_Log_Levels"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="menuSearch">
     <property name="title">
      <string>Search</string>
     </property>
-    <addaction name="actionFind"/>
+    <addaction name="action_menuSearch_Find"/>
    </widget>
    <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
+   <addaction name="menuSearch"/>
    <addaction name="menuProject"/>
    <addaction name="menuConfig"/>
    <addaction name="menuDLT"/>
@@ -214,7 +219,7 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
    <property name="features">
-    <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
    <property name="windowTitle">
     <string>Project</string>
@@ -325,7 +330,7 @@
             <bool>true</bool>
            </property>
            <property name="headerHidden">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="expandsOnDoubleClick">
             <bool>true</bool>
@@ -373,6 +378,45 @@
          <property name="margin">
           <number>2</number>
          </property>
+         <item>
+          <widget class="QPushButton" name="filterButton">
+           <property name="toolTip">
+            <string>Enable Filter</string>
+           </property>
+           <property name="text">
+            <string>Enable Filter</string>
+           </property>
+           <property name="icon">
+            <iconset resource="resource.qrc">
+             <normaloff>:/toolbar/png/weather-overcast.png</normaloff>:/toolbar/png/weather-overcast.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>32</width>
+             <height>32</height>
+            </size>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="filterStatus">
+           <property name="text">
+            <string>No filter active</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="QTreeWidget" name="filterWidget">
            <property name="sizePolicy">
@@ -427,7 +471,7 @@
     </layout>
    </widget>
   </widget>
-  <action name="actionOpen">
+  <action name="action_menuFile_Open">
    <property name="text">
     <string>Open...</string>
    </property>
@@ -435,7 +479,7 @@
     <string>Ctrl+O</string>
    </property>
   </action>
-  <action name="actionSaveAs">
+  <action name="action_menuFile_SaveAs">
    <property name="text">
     <string>Save As...</string>
    </property>
@@ -443,7 +487,7 @@
     <string>Ctrl+S</string>
    </property>
   </action>
-  <action name="actionClear">
+  <action name="action_menuFile_Clear">
    <property name="text">
     <string>Clear</string>
    </property>
@@ -451,12 +495,12 @@
     <string>Ctrl+K</string>
    </property>
   </action>
-  <action name="actionSettings">
+  <action name="action_menuFile_Settings">
    <property name="text">
     <string>Settings</string>
    </property>
   </action>
-  <action name="actionQuit">
+  <action name="action_menuFile_Quit">
    <property name="text">
     <string>Quit</string>
    </property>
@@ -464,7 +508,7 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionProjectOpen">
+  <action name="action_menuProject_Open">
    <property name="text">
     <string>Open...</string>
    </property>
@@ -472,7 +516,10 @@
     <string>Ctrl+Shift+O</string>
    </property>
   </action>
-  <action name="actionProjectSave">
+  <action name="action_menuProject_Save">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save As...</string>
    </property>
@@ -480,7 +527,10 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="actionProjectNew">
+  <action name="action_menuProject_New">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>New</string>
    </property>
@@ -488,82 +538,108 @@
     <string>Ctrl+Shift+N</string>
    </property>
   </action>
-  <action name="actionECU_Add">
+  <action name="action_menuConfig_ECU_Add">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>ECU Add...</string>
    </property>
   </action>
-  <action name="actionECU_Delete">
+  <action name="action_menuConfig_ECU_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>ECU Delete</string>
    </property>
   </action>
-  <action name="actionECU_Edit">
+  <action name="action_menuConfig_ECU_Edit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>ECU Edit...</string>
    </property>
   </action>
-  <action name="actionApplication_Add">
+  <action name="action_menuConfig_Application_Add">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Application Add...</string>
    </property>
   </action>
-  <action name="actionApplication_Edit">
+  <action name="action_menuConfig_Application_Edit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Application Edit...</string>
    </property>
   </action>
-  <action name="actionApplication_Delete">
+  <action name="action_menuConfig_Application_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Application Delete</string>
    </property>
   </action>
-  <action name="actionContext_Add">
+  <action name="action_menuConfig_Context_Add">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Context Add...</string>
    </property>
   </action>
-  <action name="actionContext_Edit">
+  <action name="action_menuConfig_Context_Edit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Context Edit...</string>
    </property>
   </action>
-  <action name="actionContext_Delete">
+  <action name="action_menuConfig_Context_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Context Delete</string>
    </property>
   </action>
-  <action name="actionFilter_Add">
+  <action name="action_menuFilter_Add">
    <property name="text">
     <string>Filter Add...</string>
    </property>
   </action>
-  <action name="actionFilter_Edit">
+  <action name="action_menuFilter_Edit">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Filter Edit...</string>
    </property>
   </action>
-  <action name="actionFilter_Delete">
+  <action name="action_menuFilter_Delete">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Filter Delete</string>
    </property>
   </action>
-  <action name="actionPlugin_Add">
-   <property name="text">
-    <string>Plugin Add...</string>
+  <action name="action_menuPlugin_Edit">
+   <property name="enabled">
+    <bool>false</bool>
    </property>
-  </action>
-  <action name="actionPlugin_Edit">
    <property name="text">
     <string>Plugin Edit...</string>
    </property>
   </action>
-  <action name="actionPlugin_Delete">
-   <property name="text">
-    <string>Plugin Delete</string>
-   </property>
-  </action>
-  <action name="action_Info">
+  <action name="action_menuHelp_Info">
    <property name="text">
     <string>&amp;Info...</string>
    </property>
@@ -571,67 +647,103 @@
     <string>F1</string>
    </property>
   </action>
-  <action name="actionECU_Connect">
+  <action name="action_menuConfig_Connect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>ECU Connect</string>
    </property>
   </action>
-  <action name="actionECU_Disconnect">
+  <action name="action_menuConfig_Disconnect">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>ECU Disconnect</string>
    </property>
   </action>
-  <action name="actionGet_Default_Log_Level">
+  <action name="action_menuDLT_Get_Default_Log_Level">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Get Default Log Level</string>
    </property>
   </action>
-  <action name="actionSet_Default_Log_Level">
+  <action name="action_menuDLT_Set_Default_Log_Level">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Set Default Log Level</string>
    </property>
   </action>
-  <action name="actionGet_Log_Info">
+  <action name="action_menuDLT_Get_Log_Info">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Get Log Info</string>
    </property>
   </action>
-  <action name="actionSet_Log_Level">
+  <action name="action_menuDLT_Set_Log_Level">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Set Log Level</string>
    </property>
   </action>
-  <action name="actionSet_All_Log_Levels">
+  <action name="action_menuDLT_Set_All_Log_Levels">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Set All Log Levels</string>
    </property>
   </action>
-  <action name="actionStore_Config">
+  <action name="action_menuDLT_Store_Config">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Store Config</string>
    </property>
   </action>
-  <action name="actionReset_to_Factory_Default">
+  <action name="action_menuDLT_Reset_to_Factory_Default">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Reset to Factory Default</string>
    </property>
   </action>
-  <action name="actionGet_Software_Version">
+  <action name="action_menuDLT_Get_Software_Version">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Get Software Version</string>
    </property>
   </action>
-  <action name="actionGet_Local_Time">
+  <action name="action_menuDLT_Get_Local_Time">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Get Local Time</string>
    </property>
   </action>
-  <action name="actionSend_Injection">
+  <action name="action_menuDLT_Send_Injection">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Send Injection</string>
    </property>
   </action>
-  <action name="actionNew">
+  <action name="action_menuFile_New">
    <property name="text">
     <string>New...</string>
    </property>
@@ -639,12 +751,15 @@
     <string>Ctrl+N</string>
    </property>
   </action>
-  <action name="actionECU_Delete_All_Contexts">
+  <action name="action_menuConfig_Delete_All_Contexts">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>ECU Delete All Contexts</string>
    </property>
   </action>
-  <action name="actionImport_DLT_Stream">
+  <action name="action_menuFile_Import_DLT_Stream">
    <property name="text">
     <string>Import DLT Stream...</string>
    </property>
@@ -652,7 +767,10 @@
     <string>Ctrl+I</string>
    </property>
   </action>
-  <action name="actionExport_ASCII">
+  <action name="action_menuFile_Export_ASCII">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Export ASCII...</string>
    </property>
@@ -660,7 +778,10 @@
     <string>Ctrl+E</string>
    </property>
   </action>
-  <action name="actionFind">
+  <action name="action_menuSearch_Find">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="text">
     <string>Find</string>
    </property>
@@ -668,20 +789,18 @@
     <string>Ctrl+F</string>
    </property>
   </action>
-  <action name="actionFind_Next">
-   <property name="text">
-    <string>Find Next</string>
+  <action name="action_menuFilter_Clear_all">
+   <property name="enabled">
+    <bool>false</bool>
    </property>
-   <property name="shortcut">
-    <string>F3</string>
-   </property>
-  </action>
-  <action name="actionFilter_Clear_all">
    <property name="text">
     <string>Filter Clear all</string>
    </property>
+   <property name="toolTip">
+    <string>Filter Delete All</string>
+   </property>
   </action>
-  <action name="actionAppend_DLT_File">
+  <action name="action_menuFile_Append_DLT_File">
    <property name="text">
     <string>Append DLT File...</string>
    </property>
@@ -689,7 +808,7 @@
     <string>Ctrl+P</string>
    </property>
   </action>
-  <action name="actionExport_Selection">
+  <action name="action_menuFile_Export_Selection">
    <property name="text">
     <string>Export Selection...</string>
    </property>
@@ -697,7 +816,7 @@
     <string>Ctrl+L</string>
    </property>
   </action>
-  <action name="actionImport_DLT_Stream_with_Serial_Header">
+  <action name="action_menuFile_Import_DLT_Stream_with_Serial_Header">
    <property name="text">
     <string>Import DLT Stream with Serial Header...</string>
    </property>
@@ -705,68 +824,101 @@
     <string>Ctrl+J</string>
    </property>
   </action>
-  <action name="actionPlugin_Show">
+  <action name="action_menuPlugin_Show">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Plugin Show</string>
    </property>
   </action>
-  <action name="actionPlugin_Hide">
+  <action name="action_menuPlugin_Hide">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Plugin Hide</string>
    </property>
   </action>
-  <action name="actionExport_Selection_ASCII">
+  <action name="action_menuFile_Export_Selection_ASCII">
    <property name="text">
     <string>Export Selection ASCII...</string>
    </property>
   </action>
-  <action name="actionFilter_Save_As">
+  <action name="action_menuFilter_Save_As">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Save Filter As...</string>
    </property>
   </action>
-  <action name="actionFilter_Load">
+  <action name="action_menuFilter_Load">
    <property name="text">
     <string>Load Filter(s)...</string>
    </property>
   </action>
-  <action name="actionFind_Previous">
-   <property name="text">
-    <string>Find Previous</string>
+  <action name="action_menuFilter_Duplicate">
+   <property name="enabled">
+    <bool>false</bool>
    </property>
-   <property name="shortcut">
-    <string>F2</string>
-   </property>
-  </action>
-  <action name="actionFilter_Duplicate">
    <property name="text">
     <string>Filter Duplicate</string>
    </property>
   </action>
-  <action name="actionContext_MultipleContextsEdit">
-   <property name="text">
-    <string>Context_MultipleContextsEdit</string>
-   </property>
-  </action>
-  <action name="actionCommand_Line">
+  <action name="action_menuHelp_Command_Line">
    <property name="text">
     <string>Command Line Options...</string>
    </property>
   </action>
-  <action name="actionCollapse_All_ECUs">
+  <action name="action_menuConfig_Collapse_All_ECUs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
     <string>Collapse All ECUs</string>
+   </property>
+   <property name="toolTip">
+    <string>Collapse All_ECUs</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
    </property>
   </action>
-  <action name="actionExpand_All_ECUs">
+  <action name="action_menuConfig_Expand_All_ECUs">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
    <property name="text">
+    <string>Expand All ECUs</string>
+   </property>
+   <property name="toolTip">
     <string>Expand All ECUs</string>
    </property>
    <property name="shortcut">
     <string>Ctrl++</string>
+   </property>
+  </action>
+  <action name="action_menuDLT_Edit_All_Log_Levels">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>ECU Edit All Log Levels</string>
+   </property>
+   <property name="toolTip">
+    <string>ECU Edit All Log Levels</string>
+   </property>
+  </action>
+  <action name="action_menuPlugin_Disable">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Plugin Disable</string>
+   </property>
+   <property name="toolTip">
+    <string>Plugin Disable</string>
    </property>
   </action>
  </widget>
@@ -778,7 +930,7 @@
   <connection>
    <sender>filterWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionFilter_Edit</receiver>
+   <receiver>action_menuFilter_Edit</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -794,7 +946,7 @@
   <connection>
    <sender>pluginWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionPlugin_Edit</receiver>
+   <receiver>action_menuPlugin_Edit</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -810,7 +962,7 @@
   <connection>
    <sender>configWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionECU_Edit</receiver>
+   <receiver>action_menuConfig_ECU_Edit</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -826,7 +978,7 @@
   <connection>
    <sender>configWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionApplication_Edit</receiver>
+   <receiver>action_menuConfig_Application_Edit</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -842,7 +994,7 @@
   <connection>
    <sender>configWidget</sender>
    <signal>itemDoubleClicked(QTreeWidgetItem*,int)</signal>
-   <receiver>actionContext_Edit</receiver>
+   <receiver>action_menuConfig_Context_Edit</receiver>
    <slot>trigger()</slot>
    <hints>
     <hint type="sourcelabel">

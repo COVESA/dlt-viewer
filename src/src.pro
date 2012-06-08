@@ -40,7 +40,6 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     mainwindow.cpp \
-    treemodel.cpp \
     project.cpp \
     ecudialog.cpp \
     applicationdialog.cpp \
@@ -52,10 +51,10 @@ SOURCES += main.cpp \
     searchdialog.cpp \
     multiplecontextdialog.cpp \
     optmanager.cpp \
-    dltsettingsmanager.cpp
+    dltsettingsmanager.cpp \
+    tablemodel.cpp
 
 HEADERS += mainwindow.h \
-    treemodel.h \
     project.h \
     ecudialog.h \
     applicationdialog.h \
@@ -72,7 +71,8 @@ HEADERS += mainwindow.h \
     version.h \
     multiplecontextdialog.h \
     optmanager.h \
-    dltsettingsmanager.h
+    dltsettingsmanager.h \
+    tablemodel.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

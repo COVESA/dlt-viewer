@@ -26,6 +26,14 @@
 #include "version.h"
 #include "dltsettingsmanager.h"
 
+SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
+
+    QDialog(parent), qFile(_qFile),
+    ui(new Ui::SettingsDialog)
+{
+    ui->setupUi(this);
+}
+
 SettingsDialog::SettingsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SettingsDialog)
@@ -52,7 +60,7 @@ void SettingsDialog::changeEvent(QEvent *e)
 
 void SettingsDialog::assertSettingsVersion()
 {
-	DltSettingsManager *settings = DltSettingsManager::instance();
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
 
 	int major = settings->value("startup/versionMajor").toInt();
 	int minor = settings->value("startup/versionMinor").toInt();
@@ -85,7 +93,7 @@ void SettingsDialog::assertSettingsVersion()
 
 void SettingsDialog::resetSettings()
 {
-	DltSettingsManager *settings = DltSettingsManager::instance();
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
 	settings->clear();
 	QString fn(settings->fileName());
 	DltSettingsManager::close();
@@ -181,7 +189,6 @@ void SettingsDialog::writeDlg()
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxHideFiletransfer->setCheckState(hideFiletransfer?Qt::Checked:Qt::Unchecked);
 }
 
 void SettingsDialog::readDlg()
@@ -219,13 +226,12 @@ void SettingsDialog::readDlg()
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
-    hideFiletransfer = (ui->checkBoxHideFiletransfer->checkState() == Qt::Checked);
 
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 {
-	DltSettingsManager *settings = DltSettingsManager::instance();
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
 
     settings->setValue("geometry", mainwindow->saveGeometry());
     settings->setValue("windowState", mainwindow->saveState());
@@ -263,7 +269,6 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 
     /* other */
 	settings->setValue("startup/writeControl",writeControl);
-	settings->setValue("startup/hideFiletransfer",hideFiletransfer);
 
     /* For settings integrity validation */
 	settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
@@ -273,7 +278,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 
 void SettingsDialog::readSettings()
 {
-	DltSettingsManager *settings = DltSettingsManager::instance();
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
     /* startup */
 	defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
 	defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
@@ -307,9 +312,22 @@ void SettingsDialog::readSettings()
 
     /* other */
 	writeControl = settings->value("startup/writeControl",1).toInt();
-	hideFiletransfer = settings->value("startup/hideFiletransfer",1).toInt();
 }
 
+
+
+QStringList SettingsDialog::getRecentFiles(){
+    return DltSettingsManager::getInstance()->value("other/recentFileList").toStringList();
+}
+QStringList SettingsDialog::getRecentProjects(){
+    return DltSettingsManager::getInstance()->value("other/recentProjectList").toStringList();
+}
+QStringList SettingsDialog::getRecentFilters(){
+    return DltSettingsManager::getInstance()->value("other/recentFiltersList").toStringList();
+}
+QString SettingsDialog::getWorkingDirectory(){
+    return DltSettingsManager::getInstance()->value("work/workingDirectory",QDir::currentPath()).toString();
+}
 
 void SettingsDialog::on_toolButtonDefaultLogFile_clicked()
 {

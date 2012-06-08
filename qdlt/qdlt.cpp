@@ -1307,13 +1307,12 @@ QDltFile::~QDltFile()
 
 int QDltFile::size()
 {
-    //return file->counter;
     return indexAll.size();
 }
 
 int QDltFile::sizeFilter()
 {
-    if(filterFlag || hideFileTransfer)
+    if(filterFlag)
         return indexFilter.size();
     else
         return indexAll.size();
@@ -1481,34 +1480,14 @@ bool QDltFile::updateIndexFilter()
 
     return true;
 }
-bool QDltFile::isFileTransferMessage(QDltMsg &msg)
-{
-    QDltArgument arg;
-    msg.getArgument(0, arg);
-    if(arg.getTypeInfo() == 0) // Is string.
-    {
-        QString txt = arg.toString();
-        if(txt.startsWith("FLDA") ||
-           txt.startsWith("FLFI"))
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 bool QDltFile::checkFilter(QDltMsg &msg)
-{
+{  
     QDltFilter filter;
     bool found = false, foundFilter;
     bool filterActivated = false;
 
-    if(hideFileTransfer && isFileTransferMessage(msg))
-    {
-        return false;
-    }
-
-    if(hideFileTransfer && !filterFlag)
+    if(!filterFlag)
     {
         return true;
     }
@@ -1597,7 +1576,6 @@ bool QDltFile::checkFilter(QDltMsg &msg)
             if(foundFilter)
                 found = false;
         }
-
     }
 
     return found;
@@ -1621,6 +1599,11 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
     QDltFilter filter;
     bool found = false, foundFilter;
     QColor color;
+
+    if(!filterFlag)
+    {
+        return color;
+    }
 
     for(int numfilter=0;numfilter<marker.size();numfilter++)
     {
@@ -1739,7 +1722,7 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
 
 QByteArray QDltFile::getMsgFilter(int index)
 {
-    if(filterFlag || hideFileTransfer) {
+    if(filterFlag) {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size()) {
             qDebug() << "getMsgFilter: Index is out of range";
@@ -1763,7 +1746,7 @@ QByteArray QDltFile::getMsgFilter(int index)
 
 int QDltFile::getMsgFilterPos(int index)
 {
-    if(filterFlag || hideFileTransfer) {
+    if(filterFlag) {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size()) {
             qDebug() << "getMsgFilter: Index is out of range";

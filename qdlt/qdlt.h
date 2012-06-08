@@ -841,7 +841,7 @@ public:
 
     //! Get the status of the filter.
     /*!
-      \return true if filtering is enabled, fals eif filtering is disabled
+      \return true if filtering is enabled, fals if filtering is disabled
     */
     bool isFilter();
 
@@ -914,7 +914,7 @@ private:
     /*!
       Index contains positions of DLT messages in indexAll.
     */
-    QList<int> indexFilter;
+    QList<unsigned long> indexFilter;
 
     //! List of positive filters.
     QList<QDltFilter> pfilter;

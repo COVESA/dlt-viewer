@@ -15,6 +15,9 @@
         <file>png/filter.png</file>
         <file>png/document-save-as2.png</file>
         <file>png/document-save-as3.png</file>
+        <file>png/weather-storm.png</file>
+        <file>png/weather-clear.png</file>
+        <file>png/weather-overcast.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>

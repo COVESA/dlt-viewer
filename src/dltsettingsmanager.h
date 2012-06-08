@@ -28,7 +28,7 @@ class DltSettingsManager
 {
 // Singleton pattern
 public:
-    static DltSettingsManager* instance();
+    static DltSettingsManager* getInstance();
     static void close();
 
 private:

@@ -20,27 +20,27 @@
 #include <QtGui>
 #include <qmessagebox.h>
 
-#include "treemodel.h"
+#include "tablemodel.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
- TreeModel::TreeModel(const QString & /*data*/, QObject *parent)
+ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
-     size = 0;
+
  }
 
- TreeModel::~TreeModel()
+ TableModel::~TableModel()
  {
 
  }
 
- int TreeModel::columnCount(const QModelIndex & /*parent*/) const
+ int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      return 12;
  }
 
- QVariant TreeModel::data(const QModelIndex &index, int role) const
+ QVariant TableModel::data(const QModelIndex &index, int role) const
  {
      QDltMsg msg;
      QByteArray buf;
@@ -48,7 +48,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if (!index.isValid())
          return QVariant();
 
-     if (index.row() >= size && index.row()<0)
+     if (index.row() >= qfile->sizeFilter() && index.row()<0)
          return QVariant();
 
      if (role == Qt::DisplayRole)
@@ -219,7 +219,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      return QVariant();
  }
 
-  QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
+  QVariant TableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
  {
       if (role != Qt::DisplayRole)
@@ -269,15 +269,15 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
       return QVariant();
   }
 
- int TreeModel::rowCount(const QModelIndex & /*parent*/) const
+ int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {
-     return size;
+     return qfile->sizeFilter();
  }
 
- void TreeModel::modelChanged()
+ void TableModel::modelChanged()
  {
      QModelIndex lIndex = index(0, 1);
-     QModelIndex lLeft = index(size-1, 0);
-     QModelIndex lRight = index(size-1, columnCount() - 1);
+     QModelIndex lLeft = index(qfile->sizeFilter()-1, 0);
+     QModelIndex lRight = index(qfile->sizeFilter()-1, columnCount() - 1);
      emit(layoutChanged());
  }

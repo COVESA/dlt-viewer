@@ -414,6 +414,9 @@ void FilterItem::update()
     if(type == FilterItem::marker)
     {
         text += filterColour.name();
+
+        setBackground(0,filterColour);
+        setBackground(1,filterColour);
     }
 
     if(text.isEmpty()) {
@@ -557,13 +560,11 @@ void PluginItem::setMode(int m){
 }
 
 void PluginItem::savePluginModeToSettings(){
-    DltSettingsManager *bmwsettings = DltSettingsManager::instance();
-    bmwsettings->setValue("plugin/pluginmodefor"+this->getName(),QVariant(mode));
+    return DltSettingsManager::getInstance()->setValue("plugin/pluginmodefor"+this->getName(),QVariant(mode));
 }
 
 int PluginItem::getPluginModeFromSettings(){
-    DltSettingsManager *bmwsettings = DltSettingsManager::instance();
-    return bmwsettings->value("plugin/pluginmodefor"+this->getName(),QVariant(PluginItem::ModeDisable)).toInt();
+    return DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+this->getName(),QVariant(PluginItem::ModeDisable)).toInt();
 }
 
 Project::Project()
