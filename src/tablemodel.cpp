@@ -200,9 +200,29 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
             case 4:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
             case 5:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
+                switch(project->settings->showApIdDesc){
+                case 0:
+                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
+                    break;
+                case 1:
+                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+                    break;
+                default:
+                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+                    break;
+                }
             case 6:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
+                switch(project->settings->showCtIdDesc){
+                case 0:
+                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
+                    break;
+                case 1:
+                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+                    break;
+                default:
+                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+                    break;
+                }
             case 7:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
             case 8:
