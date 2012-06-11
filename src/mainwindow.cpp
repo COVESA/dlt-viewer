@@ -223,28 +223,36 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* Process Logfile */
-    outputfile = new QFile();
     if(OptManager::getInstance()->isLogFile())
     {
-        openDltFile(OptManager::getInstance()->getLogFile());
+                openDltFile(OptManager::getInstance()->getLogFile());
     } else {
-        /* load default log file */
+         /* load default log file */
+        statusFilename->setText("no log file loaded");
         if(settings->defaultLogFile)
-        {
+         {
             openDltFile(settings->defaultLogFileName);
-        }
-        else
-        {
-            /* create temporary file */
-            outputfile = new QTemporaryFile();
 
-            if(outputfile->open(QIODevice::WriteOnly|QIODevice::Truncate))
-                reloadLogFile();
-            else
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                     QString("Cannot load temporary log file \"%1\"\n%2")
-                                     .arg(outputfile->fileName())
-                                     .arg(outputfile->errorString()));
+         }
+         else
+         {
+             /* create temporary file */
+            QTemporaryFile file;
+            if (file.open()) {
+                QString filename;
+                filename = file.fileName();
+                file.setAutoRemove(false);
+                file.close();
+                outputfile.setFileName(filename);
+                if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+                    reloadLogFile();
+                else
+                    QMessageBox::critical(0, QString("DLT Viewer"),
+                                         QString("Cannot load temporary log file \"%1\"\n%2")
+                                         .arg(filename)
+                                         .arg(outputfile.errorString()));
+            }
+            file.close();
         }
     }
 
@@ -353,19 +361,19 @@ void MainWindow::on_action_menuFile_New_triggered()
     workingDirectory = QFileInfo(fileName).absolutePath();
 
     /* close existing file */
-    if(outputfile->isOpen())
-        outputfile->close();
+    if(outputfile.isOpen())
+        outputfile.close();
 
     /* create new file; truncate if already exist */
-    outputfile->setFileName(fileName);
+    outputfile.setFileName(fileName);
     setCurrentFile(fileName);
-    if(outputfile->open(QIODevice::WriteOnly|QIODevice::Truncate))
+    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                              QString("Cannot create new log file \"%1\"\n%2")
                              .arg(fileName)
-                             .arg(outputfile->errorString()));
+                             .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Open_triggered()
@@ -389,19 +397,19 @@ void MainWindow::on_action_menuFile_Open_triggered()
 void MainWindow::openDltFile(QString fileName)
 {
     /* close existing file */
-    if(outputfile->isOpen())
-        outputfile->close();
+    if(outputfile.isOpen())
+        outputfile.close();
 
     /* open existing file and append new data */
-    outputfile->setFileName(fileName);
+    outputfile.setFileName(fileName);
     setCurrentFile(fileName);
-    if(outputfile->open(QIODevice::WriteOnly|QIODevice::Append))
+    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                              QString("Cannot open log file \"%1\"\n%2")
                              .arg(fileName)
-                             .arg(outputfile->errorString()));
+                             .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
@@ -415,7 +423,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
 
-    if(!outputfile->isOpen())
+    if(!outputfile.isOpen())
         return;
 
     DltFile importfile;
@@ -428,9 +436,9 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,false,0)>=0)
     {
-        outputfile->write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile->write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-        outputfile->flush();
+        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        outputfile.flush();
 
     }
 
@@ -457,7 +465,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
 
-    if(!outputfile->isOpen())
+    if(!outputfile.isOpen())
         return;
 
     DltFile importfile;
@@ -470,9 +478,9 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,true,0)>=0)
     {
-        outputfile->write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile->write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-        outputfile->flush();
+        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        outputfile.flush();
 
     }
 
@@ -498,7 +506,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
 
-    if(!outputfile->isOpen())
+    if(!outputfile.isOpen())
         return;
 
     DltFile importfile;
@@ -539,10 +547,10 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
             return;
         }
         dlt_file_message(&importfile,pos,0);
-        outputfile->write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile->write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
     }
-    outputfile->flush();
+    outputfile.flush();
 
     dlt_file_free(&importfile,0);
 
@@ -734,10 +742,10 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     workingDirectory = QFileInfo(fileName).absolutePath();
 
     qfile.close();
-    outputfile->close();
+    outputfile.close();
 
     bool success = true;
-    QFile sourceFile( outputfile->fileName() );
+    QFile sourceFile( outputfile.fileName() );
     QFile destFile( fileName );
     success &= sourceFile.open( QFile::ReadOnly );
     success &= destFile.open( QFile::WriteOnly | QFile::Truncate );
@@ -753,15 +761,15 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
         return;
     }
 
-    outputfile->setFileName(fileName);
+    outputfile.setFileName(fileName);
     setCurrentFile(fileName);
-    if(outputfile->open(QIODevice::WriteOnly|QIODevice::Append))
+    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                              QString("Cannot rename log file \"%1\"\n%2")
                              .arg(fileName)
-                             .arg(outputfile->errorString()));
+                             .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Clear_triggered()
@@ -778,11 +786,11 @@ void MainWindow::on_action_menuFile_Clear_triggered()
                case QMessageBox::Ok:
 
                    /* close existing file */
-                   if(outputfile->isOpen())
-                       outputfile->close();
+                   if(outputfile.isOpen())
+                       outputfile.close();
 
                    /* reopen file and truncate */
-                   if(outputfile->open(QIODevice::WriteOnly|QIODevice::Truncate))
+                   if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
                    {
                        reloadLogFile();
                        //ui->textBrowser->setText("");
@@ -790,8 +798,8 @@ void MainWindow::on_action_menuFile_Clear_triggered()
                    else
                        QMessageBox::critical(0, QString("DLT Viewer"),
                                             QString("Cannot clear log file \"%1\"\n%2")
-                                            .arg(outputfile->fileName())
-                                            .arg(outputfile->errorString()));
+                                            .arg(outputfile.fileName())
+                                            .arg(outputfile.errorString()));
                    break;
                default:
                    // should never be reached
@@ -805,7 +813,7 @@ void MainWindow::reloadLogFile()
     QByteArray data;
 
     /* open file, create filter index and update model view */
-    qfile.open(outputfile->fileName());
+    qfile.open(outputfile.fileName());
 
     QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowTitle("DLT Viewer");
@@ -859,7 +867,7 @@ void MainWindow::reloadLogFile()
     }
 
     /* set name of opened log file in status bar */
-    statusFilename->setText(outputfile->fileName());
+    statusFilename->setText(outputfile.fileName());
 }
 
 void MainWindow::applySettings()
@@ -2031,14 +2039,14 @@ void MainWindow::read(EcuItem* ecuitem)
             bool is_ctrl_msg = DLT_MSG_IS_CONTROL(&msg);
 
             /* check if message is matching the filter */
-            if (outputfile->isOpen())
+            if (outputfile.isOpen())
             {
 
                 if ((settings->writeControl && is_ctrl_msg) || (!is_ctrl_msg))
                 {
-                    outputfile->write((char*)msg.headerbuffer,msg.headersize);
-                    outputfile->write((char*)msg.databuffer,msg.datasize);
-                    outputfile->flush();
+                    outputfile.write((char*)msg.headerbuffer,msg.headersize);
+                    outputfile.write((char*)msg.databuffer,msg.datasize);
+                    outputfile.flush();
                 }
             }
 
@@ -2073,7 +2081,7 @@ void MainWindow::read(EcuItem* ecuitem)
         /* remove parsed data block from buffer */
         ecuitem->data.remove(0,ecuitem->data.size()-bytesRcvd);
 
-        if (outputfile->isOpen() )
+        if (outputfile.isOpen() )
         {
             /* read received messages in DLT file parser and update DLT message list view */
             /* update indexes  and table view */
@@ -2364,13 +2372,13 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
 
     /* store ctrl message in log file */
-    if (outputfile->isOpen())
+    if (outputfile.isOpen())
     {
         if (settings->writeControl)
         {
-            outputfile->write((const char*)msg.headerbuffer,msg.headersize);
-            outputfile->write((const char*)msg.databuffer,msg.datasize);
-            outputfile->flush();
+            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+            outputfile.write((const char*)msg.databuffer,msg.datasize);
+            outputfile.flush();
         }
     }
 
@@ -3181,22 +3189,22 @@ void MainWindow::openRecentFile()
         }
 
         /* close existing file */
-        if(outputfile->isOpen())
-            outputfile->close();
+        if(outputfile.isOpen())
+            outputfile.close();
 
         /* open existing file and append new data */
-        outputfile->setFileName(fileName);
+        outputfile.setFileName(fileName);
 
         setCurrentFile(fileName);
 
-        if(outputfile->open(QIODevice::WriteOnly|QIODevice::Append))
+        if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
             reloadLogFile();
         else
         {
             QMessageBox::critical(0, QString("DLT Viewer"),
                                  QString("Cannot open log file \"%1\"\n%2")
                                  .arg(fileName)
-                                 .arg(outputfile->errorString()));
+                                 .arg(outputfile.errorString()));
             removeCurrentFile(fileName);
         }
     }

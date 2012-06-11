@@ -195,7 +195,7 @@ public:
     /* DLT file handling */
     QDltFile qfile;
     QDltControl qcontrol;
-    QFile *outputfile;
+    QFile outputfile;
     TableModel *tableModel;
     QMutex mutex;
     QString workingDirectory;
