@@ -803,9 +803,6 @@ void MainWindow::reloadLogFile()
 {
     QDltMsg msg;
     QByteArray data;
-    //QProgressDialog progress("Loading log file", "Abort Loading", 0, 100, this);
-
-    /* Show progress bar */
 
     /* open file, create filter index and update model view */
     qfile.open(outputfile->fileName());
@@ -4344,14 +4341,8 @@ void MainWindow::on_filterButton_clicked(bool checked)
     /* enable/disable filter */
     qfile.enableFilter(checked);
 
-    /* remove any selection made before */
-    ui->tableView->selectionModel()->clear();
-
     /* reload DLT log file */
     reloadLogFile();
-
-    /* update table of log messages */
-    tableModel->modelChanged();
 }
 
 
