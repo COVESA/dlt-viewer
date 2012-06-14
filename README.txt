@@ -27,7 +27,7 @@ Christian Muck (christian.muck@bmw.de)
 
 Dynamically linked/open source software
 --------------------------------------
-* Qt 4.7.4 (LGPL - Qt SDK version 1.2)
+* Qt 4.8.1 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
 * qextserialport (MIT license - Version 1.2 Beta)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)

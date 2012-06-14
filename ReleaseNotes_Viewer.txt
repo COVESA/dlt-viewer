@@ -27,7 +27,7 @@ Christian Muck (christian.muck@bmw.de)
 
 Dynamically linked open source software
 ---------------------------------------
-* Qt 4.7/4.8 (LGPL - Qt SDK version 1.2)
+* Qt 4.8.1 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
 * qextserialport (MIT License - Version 1.2 BETA)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
@@ -37,12 +37,24 @@ Changes in this release
 -----------------------
 2.6.0
 !!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
-   * [GDLT-78] Extended API of the decoderinterface. Plugins gets a notification if the state of the ECU connection changed.
+!!! *** IMPORTANT: API changed for Decoderinterace - see GDLT-80 *** !!!
    * [GDLT-87] Added new version of QextSerialPort v1.2 BETA - MIT License
-   * [GDLT-66] Plugin is deactivated but after restarting the DLT Viewer the plugin will be called to handle/parse messages fixed.
-   * [GDLT-77] Open a .dlt file with double click creates a config.ini file fixed.
-   * Added some statistics as a single tab to the dlt-viewer plugin.
-   * Fixed bug in statisticstab of dltviewerplugin and extended with more statistics.
+   * [GDLT-80] Decoderinterface extended - plugins get the information if the action for isMsg or decodeMsg  was triggered by the user
+   * [GDLT-78] Extended API of the decoderinterface. Plugins gets a notification if the state of the ECU connection changed
+   * [GDLT-58] Merging/Append filter files is possible
+   * [GDLT-61] ApId and CtId description should be left aligned fixed
+   * [GDLT-59] Added Copy to clipboard in context menu of the tablewidget
+   * Reworked the filterUpdate calls
+   * Increased max cost of cache to 5000 and fixed bug in filetransferplugin
+   * [GDLT-60] Cancel button doesn't react fixed
+   * [GDLT-96] Added a QCache to speedup getMsg. treeview using optimized getMsg methods
+   * [GDLT-98] Added message box with warning if FRAMES are ignored due to duplicated id in the xml
+   * [GDLT-97] Use constData() instead of data() when buffer is just read
+   * [GDLT-66] Plugin is deactivated but after restarting the DLT Viewer the plugin will be called to handle/parse messages fixed
+   * [GDLT-77] Open a .dlt file with double click creates a config.ini file fixed
+   * Added some statistics as a single tab to the dlt-viewer plugin
+   * Removed unneeded signal for modelChanged and clearing the selection model
+   * Fixed bug in statisticstab of dltviewerplugin and extended with more statistics
    * Fixed bug in window title of plugins
    
 2.5.1
