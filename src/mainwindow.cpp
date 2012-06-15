@@ -3712,6 +3712,8 @@ void MainWindow::updatePlugin(PluginItem *item) {
 
 void MainWindow::on_action_menuPlugin_Edit_triggered() {
     /* get selected plugin */
+    bool callInitFile = false;
+
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
     if((list.count() == 1) ) {
         QTreeWidgetItem *treeitem = list.at(0);
@@ -3736,6 +3738,10 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         if(dlg.exec()) {
             workingDirectory = dlg.workingDirectory;
             item->setFilename( dlg.getFilename() );
+
+            if(item->getMode() == PluginItem::ModeDisable && dlg.getMode() != PluginItem::ModeDisable)
+                callInitFile = true;
+
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
 
@@ -3743,6 +3749,19 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
 
             /* update plugin item */
             updatePlugin(item);
+
+            if(callInitFile)
+            {
+                QProgressDialog pluginprogress("Applying plugin", "Abort", 0, 100, this);
+                pluginprogress.setWindowTitle("DLT Viewer");
+                pluginprogress.setWindowModality(Qt::WindowModal);
+                pluginprogress.show();
+                if(item->pluginviewerinterface)
+                {
+                    item->pluginviewerinterface->initFile(&qfile);
+                }
+                pluginprogress.setValue(100);
+           }
 
         }
     }
