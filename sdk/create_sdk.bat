@@ -1,7 +1,8 @@
-set QT_DIR=C:\QtSDK\QtCreator\bin
-set SOURCE_DIR=C:\00_Git\DLT-viewer
-set BUILD_DIR=C:\00_Git\BuildDltViewer-build-desktop-Qt_4_7_4_for_Desktop_-_MinGW_4_4__Qt_SDK__Release\release
-set TARGET_DIR=C:\dlt_viewer\releases\dlt_viewer_new
+set MINGW_DIR=C:\MinGW
+set QT_DIR=C:\QtSDK\Desktop\Qt\4.8.1\mingw\bin
+set SOURCE_DIR=C:\data\git\DLT-viewer
+set BUILD_DIR=C:\data\git\BuildDltViewer-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Release\release
+set TARGET_DIR=C:\data\release\dlt_viewer_new
 
 cd %BUILD_DIR%
 
@@ -17,8 +18,9 @@ mkdir %TARGET_DIR%\sdk\src\dummyviewerplugin
 mkdir %TARGET_DIR%\sdk\src\dummycontrolplugin
 
 ECHO Copy files
-copy %QT_DIR%\..\mingw\bin\mingwm10.dll %TARGET_DIR%
-copy %QT_DIR%\..\mingw\bin\libgcc_s_dw2-1.dll %TARGET_DIR%
+copy %MINGW_DIR%\bin\mingwm10.dll %TARGET_DIR%
+copy %MINGW_DIR%\bin\libgcc_s_dw2-1.dll %TARGET_DIR%
+copy "%MINGW_DIR%\bin\libstdc++-6.dll" %TARGET_DIR%
 copy %QT_DIR%\QtCore4.dll %TARGET_DIR%
 copy %QT_DIR%\QtGui4.dll %TARGET_DIR%
 copy %QT_DIR%\QtNetwork4.dll %TARGET_DIR%
@@ -30,7 +32,6 @@ copy %BUILD_DIR%\qdlt.dll %TARGET_DIR%
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %TARGET_DIR%\plugins
 copy %BUILD_DIR%\plugins\nonverboseplugin.dll %TARGET_DIR%\plugins
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %TARGET_DIR%\plugins
-copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %TARGET_DIR%\plugins
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %TARGET_DIR%
 
