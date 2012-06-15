@@ -3991,6 +3991,8 @@ void MainWindow::on_action_menuFilter_Load_triggered()
         setCurrentFilters(fileName);
 
     }
+
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
@@ -4045,6 +4047,8 @@ void MainWindow::on_action_menuFilter_Add_triggered() {
         ui->filterButton->setText("Enable filters");
 
     }
+
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Duplicate_triggered() {
@@ -4135,6 +4139,7 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
         QMessageBox::warning(0, QString("DLT Viewer"),
                             QString("No Filter selected!"));
     }
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Edit_triggered() {
@@ -4263,6 +4268,8 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
         QMessageBox::warning(0, QString("DLT Viewer"),
                             QString("No Filter selected!"));
     }
+
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Clear_all_triggered() {
@@ -4569,4 +4576,7 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
         setCurrentFilters(fileName);
 
     }
+
+    on_filterWidget_itemSelectionChanged();
+
 }
