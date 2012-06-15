@@ -3778,10 +3778,28 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->pluginviewerinterface)
-            item->dockWidget->show();
+        if(item->getMode() != PluginItem::ModeShow){
+            int oldMode = item->getMode();
 
-        updatePlugin(item);
+            item->setMode( PluginItem::ModeShow );
+            item->savePluginModeToSettings();
+            updatePlugin(item);
+
+            if(oldMode == PluginItem::ModeDisable){
+                QProgressDialog pluginprogress("Applying plugin", "Abort", 0, 100, this);
+                pluginprogress.setWindowTitle("DLT Viewer");
+                pluginprogress.setWindowModality(Qt::WindowModal);
+                pluginprogress.show();
+                if(item->pluginviewerinterface)
+                {
+                    item->pluginviewerinterface->initFile(&qfile);
+                }
+                pluginprogress.setValue(100);
+            }
+        }else{
+            QMessageBox::warning(0, QString("DLT Viewer"),
+                                QString("The selected Plugin is already active."));
+        }
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
@@ -3796,16 +3814,41 @@ void MainWindow::on_action_menuPlugin_Hide_triggered() {
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->pluginviewerinterface)
-            item->dockWidget->hide();
-
-        updatePlugin(item);
+        if(item->getMode() == PluginItem::ModeShow){
+            item->setMode( PluginItem::ModeEnable );
+            item->savePluginModeToSettings();
+            updatePlugin(item);
+        }else{
+            QMessageBox::warning(0, QString("DLT Viewer"),
+                                QString("The selected Plugin is already hidden or deactivated."));
+        }
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
                             QString("No Plugin selected!"));
     }
 
+}
+
+void MainWindow::on_action_menuPlugin_Disable_triggered()
+{
+    /* get selected plugin */
+    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
+    if((list.count() == 1) ) {
+        PluginItem* item = (PluginItem*) list.at(0);
+
+        if(item->getMode() != PluginItem::ModeDisable){
+            item->setMode( PluginItem::ModeDisable );
+            item->savePluginModeToSettings();
+            updatePlugin(item);
+        }else{
+            QMessageBox::warning(0, QString("DLT Viewer"),
+                                QString("The selected Plugin is already deactivated."));
+        }
+    }
+    else
+        QMessageBox::warning(0, QString("DLT Viewer"),
+                            QString("No Plugin selected!"));
 }
 
 //----------------------------------------------------------------------------
@@ -4556,23 +4599,7 @@ void MainWindow::on_action_menuConfig_Expand_All_ECUs_triggered()
     ui->configWidget->expandAll();
 }
 
-void MainWindow::on_action_menuPlugin_Disable_triggered()
-{
-    /* get selected plugin */
-    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
-    if((list.count() == 1) ) {
-        PluginItem* item = (PluginItem*) list.at(0);
 
-        item->setMode(0);
-        item->savePluginModeToSettings();
-
-        /* update plugin item */
-        updatePlugin(item);
-    }
-    else
-        QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Plugin selected!"));
-}
 
 void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 {
