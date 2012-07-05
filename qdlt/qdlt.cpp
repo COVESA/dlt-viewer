@@ -1515,13 +1515,13 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         if(filter.enableFilter){
             foundFilter = true;
 
-            if(filter.enableEcuid && !msg.getEcuid().contains(filter.ecuid)) {
+            if(filter.enableEcuid && 0 != msg.getEcuid().compare(filter.ecuid)) {
                 foundFilter = false;
             }
-            if(filter.enableApid && !msg.getApid().contains(filter.apid)) {
+            if(filter.enableApid && 0 != msg.getApid().compare(filter.apid)) {
                 foundFilter = false;
             }
-            if(filter.enableCtid && !msg.getCtid().contains(filter.ctid)) {
+            if(filter.enableCtid && 0 != msg.getCtid().compare(filter.ctid)) {
                 foundFilter = false;
             }
             if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
