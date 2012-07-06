@@ -1022,7 +1022,8 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     QStringList portListPreset = getSerialPortsWithQextEnumartor();
 
     /* show ECU configuration dialog */
-    EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,false,true,false,false,false,false,true);
+    EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,
+                  false,true,false,true,false,false,true);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
