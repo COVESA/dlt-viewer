@@ -827,7 +827,6 @@ void MainWindow::reloadLogFile()
         }
 
         if(!(num%(qsz/300+1))){
-            QApplication::processEvents(); // Needed for processing the event when the cancel button was pressed
             fileprogress.setValue(num); // This is expensive
         }
 
