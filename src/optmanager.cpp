@@ -28,6 +28,7 @@ OptManager::OptManager()
     log = false;
     convert = false;
     filter = false;
+    plugin = false;
 }
 
 OptManager* OptManager::getInstance()
@@ -55,6 +56,7 @@ void OptManager::OptManager::printUsage(){
     qDebug()<<" -l logfile \tLoading logfile on startup (must end with .dlt)";
     qDebug()<<" -f filterfile \tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)";
+    qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.";
 
     // Please copy changes to mainwindow.cpp - on_actionCommand_Line_triggered()
 }
@@ -138,6 +140,23 @@ void OptManager::parse(QStringList *opt){
                     exit(-1);
                 }
             }
+            if(str.compare("-e")==0) {
+                QString c = opt->value(i+1);
+                QStringList args = c.split("|");;
+                if(c != 0 && args.size() > 1) {
+                    pluginName = args.at(0);
+                    commandName = args.at(1);
+                    args.removeAt(0);
+                    args.removeAt(0);
+                    commandParams = args;
+                    plugin = true;
+
+                }else{
+                    qDebug()<<"Error occured during processing of command line option \"-e\"";
+                    printUsage();
+                    exit(-1);
+                }
+            }
         }
      }
 }
@@ -153,3 +172,6 @@ QString OptManager::getLogFile(){return logFile;}
 QString OptManager::getFilterFile(){return filterFile;}
 QString OptManager::getConvertSourceFile(){return convertSourceFile;}
 QString OptManager::getConvertDestFile(){return convertDestFile;}
+QString OptManager::getPluginName(){return pluginName;}
+QString OptManager::getCommandName(){return commandName;}
+QStringList OptManager::getCommandParams(){return commandParams;}

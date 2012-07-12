@@ -469,6 +469,7 @@ PluginItem::PluginItem(QTreeWidgetItem *parent)
     plugindecoderinterface = 0;
     pluginviewerinterface = 0;
     plugincontrolinterface = 0;
+    plugincommandinterface = 0;
 
     widget = 0;
     dockWidget = 0;
@@ -493,6 +494,8 @@ void PluginItem::update()
         types << "Decode";
     if(plugincontrolinterface)
         types << "Ctrl";
+    if(plugincommandinterface)
+        types << "Command";
 
     QString *modeString;
     switch(mode){

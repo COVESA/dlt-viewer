@@ -55,6 +55,7 @@ private:
     Ui::MainWindow *ui;
 
     void commandLineConvertToASCII();
+    void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
     QStringList getSerialPortsWithQextEnumartor();
 
@@ -152,6 +153,7 @@ private slots:
     void on_action_menuPlugin_Show_triggered();
     void on_action_menuPlugin_Edit_triggered();
     void on_action_menuPlugin_Disable_triggered();
+    void on_action_menuPlugin_ExecuteCommand_triggered();
 
     //Rename
     void filterAdd();

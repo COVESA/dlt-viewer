@@ -256,4 +256,68 @@ public:
 Q_DECLARE_INTERFACE(QDltPluginControlInterface,
                     "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.0");
 
+//! Extended DLT Command Plugin Interface
+/*!
+  This is an extended DLT Plugin Interface.
+  This interface must be used by command plugins.
+  The command plugin interface can be used to accept commands to execute from the UI or command line.
+  The plugin receives commands from the DLT-viewer via this interface.
+  This interface be used either synchronously or asynchronously. If you want a simple
+  Synchronous call, just implement everything in command() and return 100 from
+  the progress. Have your return value available on return of command.
+  If you want an asynchronous interface, start a new thread in command and return progress
+  information from progress(). Return 100 or more when the command is done.
+*/
+class QDltPluginCommandInterface
+{
+public:
+
+    //! A command is executed in the plugin
+    /*!
+      This function is called when a request is made by the user to execute a command
+      in the plugin. If the function returns false, more information about the error
+      can be obtained via error()
+      \sa QDLTPluginInterface::error()
+      \param command The requested command.
+      \param params List of parameters to the command.
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool command(QString command, QList<QString> params) = 0;
+
+    //! Cancel the currently running command
+    /*!
+      When this function is called, the plugin should abort whatever it
+      was doing and setting possible error and return values.
+    */
+    virtual void cancel() = 0;
+
+    //! Return value from previous command.
+    /*!
+      After progress has been made to 100 or more, the will be called
+      to get a return value from the previo0us command. The return value
+      will be displayed to the user.
+      \return Return value of the previous command
+    */
+    virtual QString commandReturnValue() = 0;
+
+    //! Obtain progress information
+    /*!
+      Return the progress in the range 0 - 100. 100 means it is ready to return.
+      A Progress dialog will be shown to the user while the command is processed.
+      \return Progress information.
+    */
+    virtual int commandProgress() = 0;
+
+    //! Get a list of available commands
+    /*!
+      Return a list of commands that are supported by this plugin.
+      This is used primarily for the plugin UI to show a list of commands.
+      \return List of commands
+    */
+    virtual QList<QString> commandList() = 0;
+};
+
+Q_DECLARE_INTERFACE(QDltPluginCommandInterface,
+                    "org.genivi.DLT.Plugin.DLTViewerPluginCommandInterface/1.0");
+
 #endif // PLUGININTERFACE_H

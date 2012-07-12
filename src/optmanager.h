@@ -40,6 +40,9 @@ public:
     QString getFilterFile();
     QString getConvertSourceFile();
     QString getConvertDestFile();
+    QString getPluginName();
+    QString getCommandName();
+    QStringList getCommandParams();
 
 private:
     OptManager();
@@ -56,6 +59,9 @@ private:
     QString filterFile;
     QString convertSourceFile;
     QString convertDestFile;
+    QString pluginName;
+    QString commandName;
+    QStringList commandParams;
 };
 
 #endif // OPTMANAGER_H
