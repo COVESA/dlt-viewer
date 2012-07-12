@@ -276,6 +276,9 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
 
     logLevelMax = 6;
     logLevelMin = 0;
+
+    /* Prevent drag&drop childify */
+    setFlags(flags() ^ Qt::ItemIsDropEnabled);
 }
 
 FilterItem::~FilterItem()
