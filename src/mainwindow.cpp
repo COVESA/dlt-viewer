@@ -2080,6 +2080,34 @@ void MainWindow::readyRead()
     }
 }
 
+/**
+ * @brief MainWindow::skipSerialHeader
+ * @param ecu
+ * If buffer size in ecuitem exceeds DLT_BUFFER_CORRUPT_TRESHOLD
+ * while using serial connection, this function is used to
+ * skil one serial header and allow a resync
+ */
+void MainWindow::skipSerialHeader(EcuItem *ecu)
+{
+    const char *buf = ecu->data.data();
+    unsigned int offset = 0;
+    unsigned const int datalen = ecu->data.length();
+
+    while(offset < datalen - sizeof(dltSerialHeader))
+    {
+        if(memcmp(buf, dltSerialHeader, sizeof(dltSerialHeader)) == 0)
+        {
+            ecu->data.remove(offset, sizeof(dltSerialHeader));
+            return;
+        }
+    }
+    // Unrecoverable error condition. Disconnect ECU
+    QMessageBox::warning(this, "Buffer corrupted irrecoverably",
+                         "Input buffer corrupted. An attempt was made to resynchronize it, but it failed. Buffer will be flushed.");
+    ecu->data.clear();
+
+}
+
 void MainWindow::read(EcuItem* ecuitem)
 {
     uint8_t *buf;
@@ -2169,6 +2197,14 @@ void MainWindow::read(EcuItem* ecuitem)
 
         /* remove parsed data block from buffer */
         ecuitem->data.remove(0,ecuitem->data.size()-bytesRcvd);
+
+        /* If buffer is too large after parsing, try to resync it */
+        if(ecuitem->interfacetype != 0 &&
+                ecuitem->serialport &&
+                ecuitem->data.length() > DLT_BUFFER_CORRUPT_TRESHOLD)
+        {
+            skipSerialHeader(ecuitem);
+        }
 
         if (outputfile.isOpen() )
         {

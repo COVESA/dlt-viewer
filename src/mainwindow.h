@@ -34,6 +34,13 @@
 #include "qdlt.h"
 #include "dltsettingsmanager.h"
 
+/**
+ * When ecu items buffer size exceeds this while using
+ * serial connection, it will be considered corrupted.
+ **/
+
+#define DLT_BUFFER_CORRUPT_TRESHOLD 4* 1024
+
 extern "C"
 {
         #include "dlt_common.h"
@@ -58,6 +65,7 @@ private:
     void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
     QStringList getSerialPortsWithQextEnumartor();
+    void skipSerialHeader(EcuItem *ecu);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
