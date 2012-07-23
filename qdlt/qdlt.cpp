@@ -1296,8 +1296,6 @@ QString QDltMsg::toStringPayload()
 QDltFile::QDltFile()
 {
     filterFlag = false;
-    ba_cache.setMaxCost(5000);
-    msg_cache.setMaxCost(5000);
 }
 
 QDltFile::~QDltFile()
@@ -1375,10 +1373,6 @@ bool QDltFile::updateIndex()
     QByteArray buf;
     unsigned long pos = 0;
     int lastSize = 0;
-
-    /* clear cache eg. in case of file reload */
-    ba_cache.clear();
-    msg_cache.clear();
 
     /* check if file is already opened */
     if(!infile.isOpen()) {
@@ -1656,10 +1650,7 @@ void QDltFile::close()
 
 QByteArray QDltFile::getMsg(int index)
 {
-    QByteArray *pbuf = ba_cache.object(index);
-    if (pbuf){
-        return *pbuf;
-    }
+    QByteArray buf;
 
     /* check if file is already opened */
     if(!infile.isOpen()) {
@@ -1678,37 +1669,23 @@ QByteArray QDltFile::getMsg(int index)
         return QByteArray();
     }
 
-    pbuf=new QByteArray;
-    if (!pbuf) return QByteArray();
-
     /* move to file position selected by index */
     infile.seek(indexAll[index]);
 
     /* read DLT message from file */
     if(index == (indexAll.size()-1))
         /* last message in file */
-        *pbuf = infile.read(infile.size()-indexAll[index]);
+        buf = infile.read(infile.size()-indexAll[index]);
     else
         /* any other file position */
-        *pbuf = infile.read(indexAll[index+1]-indexAll[index]);
+        buf = infile.read(indexAll[index+1]-indexAll[index]);
 
-    /* add item to cache */
-    ba_cache.insert(index, pbuf);
     /* return DLT message buffer */
-    return *pbuf;
+    return buf;
 }
 
 bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
-    bool toRet;
-    if (msg_cache.contains(index)){
-        QDltMsg *cmsg = msg_cache.object(index);
-        if (cmsg){
-            msg = *cmsg; // assignment is faster than parsing from data again
-            return true;
-        }
-    }
-
     QByteArray data;
 
     data = getMsg(index);
@@ -1716,10 +1693,7 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     if(data.isEmpty())
         return false;
 
-    toRet = msg.setMsg(data);
-    if (toRet)
-        msg_cache.insert(index, new QDltMsg(msg));
-    return toRet;
+    return msg.setMsg(data);
 }
 
 QByteArray QDltFile::getMsgFilter(int index)
