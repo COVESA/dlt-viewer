@@ -420,7 +420,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QTreeWidget" name="filterWidget">
+          <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
              <horstretch>0</horstretch>
@@ -443,6 +443,9 @@
             <enum>Qt::MoveAction</enum>
            </property>
            <property name="rootIsDecorated">
+            <bool>false</bool>
+           </property>
+           <property name="itemsExpandable">
             <bool>false</bool>
            </property>
            <property name="headerHidden">
@@ -953,6 +956,13 @@
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>FilterTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>filtertreewidget.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resource.qrc"/>
  </resources>

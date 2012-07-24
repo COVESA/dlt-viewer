@@ -1,6 +1,3 @@
-# -------------------------------------------------
-# Project created by QtCreator 2010-08-13T14:33:04
-# -------------------------------------------------
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = ../qextserialport/src ../qdlt
@@ -52,7 +49,9 @@ SOURCES += main.cpp \
     multiplecontextdialog.cpp \
     optmanager.cpp \
     dltsettingsmanager.cpp \
-    tablemodel.cpp
+    tablemodel.cpp \
+    commandplugindialog.cpp \
+    filtertreewidget.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -72,7 +71,9 @@ HEADERS += mainwindow.h \
     multiplecontextdialog.h \
     optmanager.h \
     dltsettingsmanager.h \
-    tablemodel.h
+    tablemodel.h \
+    commandplugindialog.h \
+    filtertreewidget.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \
@@ -83,7 +84,8 @@ FORMS += mainwindow.ui \
     settingsdialog.ui \
     injectiondialog.ui \
     searchdialog.ui \
-    multiplecontextdialog.ui
+    multiplecontextdialog.ui \
+    commandplugindialog.ui
 
 OTHER_FILES += png/edit-clear.png \
     png/document-save-as.png \

@@ -150,6 +150,9 @@ MainWindow::MainWindow(QWidget *parent) :
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
 
+    /* Inform filterWidget about FilterButton */
+    ui->filterWidget->setFilterButton(ui->filterButton);
+
     /* initialize tool bar */
     QAction *action;
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-new.png"), tr("&New"));
