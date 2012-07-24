@@ -4689,12 +4689,12 @@ void MainWindow::dropEvent(QDropEvent *event)
         QUrl url = event->mimeData()->urls()[0];
         filename = url.toLocalFile();
 
-        if(filename.endsWith(".dlt"))
+        if(filename.endsWith(".dlt", Qt::CaseInsensitive))
         {
             /* DLT log file dropped */
             openDltFile(filename);
         }
-        else if(filename.endsWith(".dlp"))
+        else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
         {
             /* Project file dropped */
             openDlpFile(filename);
