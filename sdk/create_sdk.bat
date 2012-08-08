@@ -1,7 +1,7 @@
 set MINGW_DIR=C:\MinGW
 set QT_DIR=C:\QtSDK\Desktop\Qt\4.8.1\mingw\bin
 set SOURCE_DIR=C:\data\git\DLT-viewer
-set BUILD_DIR=C:\data\git\BuildDltViewer-build-desktop-Qt_4_8_1_for_Desktop_-_MinGW__Qt_SDK__Release\release
+set BUILD_DIR=C:\data\git\viewer-release\release
 set TARGET_DIR=C:\data\release\dlt_viewer_new
 
 cd %BUILD_DIR%
@@ -32,6 +32,7 @@ copy %BUILD_DIR%\qdlt.dll %TARGET_DIR%
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %TARGET_DIR%\plugins
 copy %BUILD_DIR%\plugins\nonverboseplugin.dll %TARGET_DIR%\plugins
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %TARGET_DIR%\plugins
+copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %TARGET_DIR%\plugins
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %TARGET_DIR%
 
