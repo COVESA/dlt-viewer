@@ -72,7 +72,10 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              /* display index */
              return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
          case 1:
-             return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+             if( project->settings->automaticTimeSettings == 0 )
+                return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+             else
+                return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
          case 2:
              return QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
          case 3:

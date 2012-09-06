@@ -64,6 +64,10 @@ public:
     int showNoar;
     int showPayload;
 
+    int automaticTimeSettings;
+    qlonglong utcOffset;
+    int dst;
+
     QString workingDirectory;
 
     void assertSettingsVersion();
@@ -92,6 +96,7 @@ private:
 private slots:
     void on_groupBoxAppId_clicked(bool checked);
     void on_groupBoxConId_clicked(bool checked);
+    void on_groupBoxAutomaticTimeSettings_clicked(bool checked);
     void on_tooButtonPluginsPath_clicked();
     void on_toolButtonDefaultProjectFile_clicked();
     void on_toolButtonDefaultLogFile_clicked();

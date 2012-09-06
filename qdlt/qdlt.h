@@ -330,6 +330,14 @@ public:
     */
     QString getTimeString();
 
+    //! Get the time of the message based on the gmtime with offset as string.
+    /*!
+      \param utcOffsetInSeconds Offset in seconds added to gmtime.
+      \param dst Daylight saving time - if true, adding automatically 3600 seconds on top.
+      \return QString representing the the time of the message for specific time zone.
+    */
+    QString getGmTimeWithOffsetString(qlonglong utcOffsetInSeconds, bool dst);
+
     //! Get the time, microseconds part, of the DLT message, when the DLT message is logged.
     /*!
       \return The microseconds when the DLT message is logged.

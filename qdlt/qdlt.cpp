@@ -892,6 +892,31 @@ QString QDltMsg::getTimeString()
     return QString(strtime);
 }
 
+QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
+{
+    //TODO check offset and dst
+
+    struct tm *time_tm;
+    time_tm = gmtime(&time);
+
+    QDateTime gmDateTime(QDate(time_tm->tm_year,time_tm->tm_mon,time_tm->tm_mday),QTime(time_tm->tm_hour,time_tm->tm_min,time_tm->tm_sec),Qt::UTC);
+
+    /*Reason for adding:
+        tm_mon	months since January	0-11
+        tm_year	years since 1900
+    */
+    gmDateTime = gmDateTime.addMonths(1);
+    gmDateTime = gmDateTime.addYears(1900);
+
+    gmDateTime = gmDateTime.addSecs(offset);
+
+    if(dst)
+       gmDateTime = gmDateTime.addSecs(3600);
+
+    return gmDateTime.toString(QString("yyyy/MM/dd hh:mm:ss"));
+}
+
+
 bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 {
     unsigned int offset;

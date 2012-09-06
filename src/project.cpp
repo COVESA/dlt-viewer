@@ -633,6 +633,18 @@ bool Project::Load(QString filename)
               {
                   settings->fontSize = xml.readElementText().toInt();
               }
+              if(xml.name() == QString("automaticTimeSettings"))
+              {
+                  settings->automaticTimeSettings = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("utcOffset"))
+              {
+                  settings->utcOffset = xml.readElementText().toLongLong();
+              }
+              if(xml.name() == QString("utcOffset"))
+              {
+                  settings->dst = xml.readElementText().toInt();
+              }
               if(xml.name() == QString("showIndex"))
               {
                   settings->showIndex = xml.readElementText().toInt();
@@ -1050,6 +1062,9 @@ bool Project::Save(QString filename)
     xml.writeStartElement("settings");
         xml.writeStartElement("table");
             xml.writeTextElement("fontSize",QString("%1").arg(settings->fontSize));
+            xml.writeTextElement("automaticTimeSettings",QString("%1").arg(settings->automaticTimeSettings));
+            xml.writeTextElement("utcOffset",QString("%1").arg(settings->utcOffset));
+            xml.writeTextElement("dst",QString("%1").arg(settings->dst));
             xml.writeTextElement("showIndex",QString("%1").arg(settings->showIndex));
             xml.writeTextElement("showTime",QString("%1").arg(settings->showTime));
             xml.writeTextElement("showTimestamp",QString("%1").arg(settings->showTimestamp));

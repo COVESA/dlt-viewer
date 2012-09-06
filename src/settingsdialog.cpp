@@ -20,6 +20,7 @@
 #include <QSettings>
 #include <QFileDialog>
 #include <qmessagebox.h>
+#include <QDebug>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
@@ -32,6 +33,67 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui(new Ui::SettingsDialog)
 {
     ui->setupUi(this);
+
+    //See man pages - tzset(3)
+    //It is used to access DST and other timezone related information
+    //and sets all timezone global variables
+    tzset();
+
+    //timezone contains the difference in seconds between UTC and the local
+    //standard time
+    //qDebug()<< "Difference between UTC and the local standard time: "<<timezone<< " seconds."<<endl;
+
+    //daylight is a Boolean flag
+    //qDebug()<<"Is DST in effect? "<<(daylight == 0 ? false:true)<<endl;
+
+    //tzname[0] contains a textual timezone codename which represents the
+    //local standard time
+    //qDebug()<<"Local standard timezone code is:  "<<tzname[0]<<endl;
+
+    //tzname[1] is the name of the local alternate timezone
+    //qDebug()<<"Local alternate timezone code is: "<<tzname[1]<<endl;
+
+    /* List of official UTC time offsets */
+    ui->comboBoxUTCOffset->addItem("UTC-12:00",-12*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-11:00",-11*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-10:00",-10*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-09:30",-9*3600-30*60);
+    ui->comboBoxUTCOffset->addItem("UTC-09:00",-9*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-08:00",-8*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-07:00",-7*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-06:00",-6*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-05:00",-5*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-04:30",-4*3600-30*60);
+    ui->comboBoxUTCOffset->addItem("UTC-04:00",-4*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-03:30",-3*3600-30*60);
+    ui->comboBoxUTCOffset->addItem("UTC-03:00",-3*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-02:00",-2*3600);
+    ui->comboBoxUTCOffset->addItem("UTC-01:00",-1*3600);
+    ui->comboBoxUTCOffset->addItem("UTC 00:00",0);
+    ui->comboBoxUTCOffset->addItem("UTC+01:00",1*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+02:00",2*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+03:00",3*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+03:30",3*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+04:00",4*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+04:30",4*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+05:00",5*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+05:30",5*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+05:45",5*3600+45*60);
+    ui->comboBoxUTCOffset->addItem("UTC+06:00",6*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+06:30",6*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+07:00",7*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+08:00",8*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+08:45",8*3600+45*60);
+    ui->comboBoxUTCOffset->addItem("UTC+09:00",9*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+09:30",9*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+10:00",10*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+10:30",10*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+11:00",11*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+11:30",11*3600+30*60);
+    ui->comboBoxUTCOffset->addItem("UTC+12:00",12*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+12:45",12*3600+45*60);
+    ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
+    ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -62,8 +124,8 @@ void SettingsDialog::assertSettingsVersion()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
 
-	int major = settings->value("startup/versionMajor").toInt();
-	int minor = settings->value("startup/versionMinor").toInt();
+    int major = settings->value("startup/versionMajor").toInt();
+    int minor = settings->value("startup/versionMinor").toInt();
 
     if(major == 0 && minor == 0)
         return; // The settings were empty already
@@ -94,10 +156,10 @@ void SettingsDialog::assertSettingsVersion()
 void SettingsDialog::resetSettings()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
-	settings->clear();
-	QString fn(settings->fileName());
-	DltSettingsManager::close();
-	QFile fh(fn);
+    settings->clear();
+    QString fn(settings->fileName());
+    DltSettingsManager::close();
+    QFile fh(fn);
     if(fh.exists())
     {
         if(!fh.open(QIODevice::ReadWrite))
@@ -127,6 +189,21 @@ void SettingsDialog::writeDlg()
 
     /* table */
     ui->spinBoxFontSize->setValue(fontSize);
+
+    /* Time settings */
+    ui->groupBoxAutomaticTimeSettings->setChecked(automaticTimeSettings?Qt::Checked:Qt::Unchecked);
+    if(ui->groupBoxAutomaticTimeSettings->isChecked()){
+        ui->checkBoxDST->setEnabled(false);
+        ui->comboBoxUTCOffset->setEnabled(false);
+        ui->labelTimezone->setEnabled(false);
+    }else{
+        ui->checkBoxDST->setEnabled(true);
+        ui->comboBoxUTCOffset->setEnabled(true);
+        ui->labelTimezone->setEnabled(true);
+    }
+    ui->checkBoxDST->setCheckState(dst?Qt::Checked:Qt::Unchecked);
+    ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(utcOffset)));
+
     ui->checkBoxIndex->setCheckState(showIndex?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTime->setCheckState(showTime?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTimestamp->setCheckState(showTimestamp?Qt::Checked:Qt::Unchecked);
@@ -207,6 +284,12 @@ void SettingsDialog::readDlg()
 
     /* table */
     fontSize = ui->spinBoxFontSize->value();
+
+    /* Time settings */
+    automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
+    utcOffset = ui->comboBoxUTCOffset->itemData(ui->comboBoxUTCOffset->currentIndex()).toLongLong();
+    dst =           ( ui->checkBoxDST->isChecked()== true ? 1:0);
+
     showIndex =     ( ui->checkBoxIndex->checkState() == Qt::Checked);
     showTime =      ( ui->checkBoxTime->checkState() == Qt::Checked);
     showTimestamp = ( ui->checkBoxTimestamp->checkState() == Qt::Checked);
@@ -237,81 +320,87 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("windowState", mainwindow->saveState());
 
     /* startup */
-	settings->setValue("startup/defaultProjectFile",defaultProjectFile);
-	settings->setValue("startup/defaultProjectFileName",defaultProjectFileName);
-	settings->setValue("startup/defaultLogFile",defaultLogFile);
-	settings->setValue("startup/defaultLogFileName",defaultLogFileName);
-	settings->setValue("startup/pluginsPath",pluginsPath);
-	settings->setValue("startup/pluginsPathName",pluginsPathName);
-	settings->setValue("startup/autoConnect",autoConnect);
-	settings->setValue("startup/autoScroll",autoScroll);
-	settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
-	settings->setValue("startup/autoMarkWarn",autoMarkWarn);
+    settings->setValue("startup/defaultProjectFile",defaultProjectFile);
+    settings->setValue("startup/defaultProjectFileName",defaultProjectFileName);
+    settings->setValue("startup/defaultLogFile",defaultLogFile);
+    settings->setValue("startup/defaultLogFileName",defaultLogFileName);
+    settings->setValue("startup/pluginsPath",pluginsPath);
+    settings->setValue("startup/pluginsPathName",pluginsPathName);
+    settings->setValue("startup/autoConnect",autoConnect);
+    settings->setValue("startup/autoScroll",autoScroll);
+    settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
+    settings->setValue("startup/autoMarkWarn",autoMarkWarn);
 
     /* table */
-	settings->setValue("startup/fontSize",fontSize);
-	settings->setValue("startup/showIndex",showIndex);
-	settings->setValue("startup/showTime",showTime);
-	settings->setValue("startup/showTimestamp",showTimestamp);
-	settings->setValue("startup/showCount",showCount);
+    settings->setValue("startup/fontSize",fontSize);
+    settings->setValue("startup/automaticTimeSettings",automaticTimeSettings);
+    settings->setValue("startup/utcOffset",utcOffset);
+    settings->setValue("startup/dst",dst);
+    settings->setValue("startup/showIndex",showIndex);
+    settings->setValue("startup/showTime",showTime);
+    settings->setValue("startup/showTimestamp",showTimestamp);
+    settings->setValue("startup/showCount",showCount);
 
-	settings->setValue("startup/showEcuId",showEcuId);
-	settings->setValue("startup/showApId",showApId);
-	settings->setValue("startup/showApIdDesc",showApIdDesc);
-	settings->setValue("startup/showCtId",showCtId);
-	settings->setValue("startup/showCtIdDesc",showCtIdDesc);
-	settings->setValue("startup/showType",showType);
+    settings->setValue("startup/showEcuId",showEcuId);
+    settings->setValue("startup/showApId",showApId);
+    settings->setValue("startup/showApIdDesc",showApIdDesc);
+    settings->setValue("startup/showCtId",showCtId);
+    settings->setValue("startup/showCtIdDesc",showCtIdDesc);
+    settings->setValue("startup/showType",showType);
 
-	settings->setValue("startup/showSubtype",showSubtype);
-	settings->setValue("startup/showMode",showMode);
-	settings->setValue("startup/showNoar",showNoar);
-	settings->setValue("startup/showPayload",showPayload);
+    settings->setValue("startup/showSubtype",showSubtype);
+    settings->setValue("startup/showMode",showMode);
+    settings->setValue("startup/showNoar",showNoar);
+    settings->setValue("startup/showPayload",showPayload);
 
     /* other */
-	settings->setValue("startup/writeControl",writeControl);
+    settings->setValue("startup/writeControl",writeControl);
 
     /* For settings integrity validation */
-	settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
-	settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
-	settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
+    settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
+    settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
+    settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
 }
 
 void SettingsDialog::readSettings()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     /* startup */
-	defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
-	defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
-	defaultLogFile = settings->value("startup/defaultLogFile",0).toInt();
-	defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
-	pluginsPath = settings->value("startup/pluginsPath",0).toInt();
-	pluginsPathName = settings->value("startup/pluginsPathName",QDir().currentPath()).toString();
-	autoConnect = settings->value("startup/autoConnect",0).toInt();
-	autoScroll = settings->value("startup/autoScroll",1).toInt();
-	autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
-	autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
+    defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
+    defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
+    defaultLogFile = settings->value("startup/defaultLogFile",0).toInt();
+    defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
+    pluginsPath = settings->value("startup/pluginsPath",0).toInt();
+    pluginsPathName = settings->value("startup/pluginsPathName",QDir().currentPath()).toString();
+    autoConnect = settings->value("startup/autoConnect",0).toInt();
+    autoScroll = settings->value("startup/autoScroll",1).toInt();
+    autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
+    autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
 
     /* table */
-	fontSize = settings->value("startup/fontSize",8).toInt();
-	showIndex = settings->value("startup/showIndex",1).toInt();
-	showTime = settings->value("startup/showTime",1).toInt();
-	showTimestamp = settings->value("startup/showTimestamp",1).toInt();
-	showCount = settings->value("startup/showCount",1).toInt();
+    fontSize = settings->value("startup/fontSize",8).toInt();
+    automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
+    utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)timezone*-1)).toLongLong();
+    dst = settings->value("startup/dst",daylight == 0 ? 0 : 1).toInt();
+    showIndex = settings->value("startup/showIndex",1).toInt();
+    showTime = settings->value("startup/showTime",1).toInt();
+    showTimestamp = settings->value("startup/showTimestamp",1).toInt();
+    showCount = settings->value("startup/showCount",1).toInt();
 
-	showEcuId = settings->value("startup/showEcuId",1).toInt();
-	showApId = settings->value("startup/showApId",1).toInt();
-	showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
-	showCtId = settings->value("startup/showCtId",1).toInt();
-	showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
-	showType = settings->value("startup/showType",1).toInt();
+    showEcuId = settings->value("startup/showEcuId",1).toInt();
+    showApId = settings->value("startup/showApId",1).toInt();
+    showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
+    showCtId = settings->value("startup/showCtId",1).toInt();
+    showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
+    showType = settings->value("startup/showType",1).toInt();
 
-	showSubtype = settings->value("startup/showSubtype",1).toInt();
-	showMode = settings->value("startup/showMode",1).toInt();
-	showNoar = settings->value("startup/showNoar",1).toInt();
-	showPayload = settings->value("startup/showPayload",1).toInt();
+    showSubtype = settings->value("startup/showSubtype",1).toInt();
+    showMode = settings->value("startup/showMode",1).toInt();
+    showNoar = settings->value("startup/showNoar",1).toInt();
+    showPayload = settings->value("startup/showPayload",1).toInt();
 
     /* other */
-	writeControl = settings->value("startup/writeControl",1).toInt();
+    writeControl = settings->value("startup/writeControl",1).toInt();
 }
 
 
@@ -395,5 +484,18 @@ void SettingsDialog::on_groupBoxAppId_clicked(bool checked)
     }else{
         ui->radioButtonAppId->setEnabled(false);
         ui->radioButtonAppIdDesc->setEnabled(false);
+    }
+}
+
+void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
+{
+    if(checked){
+        ui->checkBoxDST->setEnabled(false);
+        ui->comboBoxUTCOffset->setEnabled(false);
+        ui->labelTimezone->setEnabled(false);
+    }else{
+        ui->checkBoxDST->setEnabled(true);
+        ui->comboBoxUTCOffset->setEnabled(true);
+        ui->labelTimezone->setEnabled(true);
     }
 }
