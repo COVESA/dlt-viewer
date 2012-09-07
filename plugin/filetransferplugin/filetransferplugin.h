@@ -24,7 +24,7 @@
 #include "plugininterface.h"
 #include "form.h"
 #include "globals.h"
-
+#include "configuration.h"
 
 #define FILETRANSFER_PLUGIN_VERSION "1.0.0"
 
@@ -66,6 +66,8 @@ private:
     void doFLFI(QDltMsg *msg);
     void doFLIF(QDltMsg *msg);
     void doFLER(QDltMsg *msg);
+
+    Configuration config;
 };
 
 #endif // DLTVIEWERPLUGIN_H

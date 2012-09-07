@@ -30,13 +30,15 @@ HEADERS += filetransferplugin.h \
     file.h \
     imagepreviewdialog.h \
     textviewdialog.h \
-    globals.h
+    globals.h \
+    configuration.h
 
 SOURCES += filetransferplugin.cpp \
     form.cpp \
     file.cpp \
     imagepreviewdialog.cpp \
-    textviewdialog.cpp
+    textviewdialog.cpp \
+    configuration.cpp
 
 FORMS += form.ui \
     imagepreviewdialog.ui \

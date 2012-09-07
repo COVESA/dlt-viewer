@@ -53,7 +53,52 @@ QString FiletransferPlugin::error() {
     return QString();
 }
 
-bool FiletransferPlugin::loadConfig(QString /*filename*/) {
+bool FiletransferPlugin::loadConfig(QString filename) {
+
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+             return false;
+    }
+
+    QXmlStreamReader xml(&file);
+    while (!xml.atEnd()) {
+          xml.readNext();
+
+          if(xml.isStartElement())
+          {
+              if(xml.name() == QString("TAG_FLST"))
+              {
+                  config.setFlstTag( xml.readElementText() );
+              }
+              if(xml.name() == QString("TAG_FLDA"))
+              {
+                  config.setFldaTag( xml.readElementText() );
+              }
+              if(xml.name() == QString("TAG_FLFI"))
+              {
+                  config.setFlfiTag( xml.readElementText() );
+              }
+              if(xml.name() == QString("TAG_FLER"))
+              {
+                  config.setFlerTag( xml.readElementText() );
+              }
+              if(xml.name() == QString("TAG_FLAPPID"))
+              {
+                  config.setFlAppIdTag( xml.readElementText() );
+              }
+              if(xml.name() == QString("TAG_FLCTID"))
+              {
+                  config.setFlCtIdTag( xml.readElementText() );
+              }
+          }
+    }
+    if (xml.hasError()) {
+        QMessageBox::warning(0, QString("XML Parser error"),
+                             xml.errorString());
+    }
+
+    file.close();
 
     return true;
 }
@@ -65,7 +110,16 @@ bool FiletransferPlugin::saveConfig(QString /*filename*/) {
 
 QStringList FiletransferPlugin::infoConfig() {
 
-    return QStringList();
+    QStringList list;
+
+    list.append("TAG_FLAPPID: "+ config.getFlAppIdTag());
+    list.append("TAG_FLCTID: "+ config.getFlCtIdTag());
+    list.append("TAG_FLST: "+ config.getFlstTag());
+    list.append("TAG_FLDA: "+ config.getFldaTag());
+    list.append("TAG_FLFI: "+ config.getFlfiTag());
+    list.append("TAG_FLER: "+ config.getFlerTag());
+
+    return list;
 }
 
 QWidget* FiletransferPlugin::initViewer() {
@@ -85,8 +139,8 @@ bool FiletransferPlugin::initFile(QDltFile *file) {
 
 void FiletransferPlugin::updateFile() {
     QDltMsg msg;
-    QDltArgument protocolStartFlag;
-    QDltArgument protocolEndFlag;
+    QDltArgument msgFirstArgument;
+    QDltArgument msgLastArgument;
 
     if(!dltFile)
         return;
@@ -96,44 +150,55 @@ void FiletransferPlugin::updateFile() {
         if (!dltFile->getMsg(msgIndex, msg))
             break;
 
-        msg.getArgument(PROTOCOL_ALL_STARTFLAG,protocolStartFlag);
 
-        if(protocolStartFlag.toString().compare("FLST") == 0 )
+        if(config.getFlAppIdTag().compare(msg.getApid()) != 0 || config.getFlCtIdTag().compare(msg.getCtid()) != 0)
+                 continue;
+
+        if(!msg.getArgument(PROTOCOL_ALL_STARTFLAG,msgFirstArgument))
+            continue;
+
+        if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 )
         {
-            msg.getArgument(PROTOCOL_FLST_ENDFLAG,protocolEndFlag);
-            if(protocolEndFlag.toString().compare("FLST") == 0)
+            msg.getArgument(PROTOCOL_FLST_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFlstTag()) == 0)
             {
                 doFLST(&msg);
             }
-        } else if(protocolStartFlag.toString().compare("FLDA") == 0 ) {
-            msg.getArgument(PROTOCOL_FLDA_ENDFLAG,protocolEndFlag);
-            if(protocolEndFlag.toString().compare("FLDA") == 0)
+            continue;
+        }
+        if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 ) {
+            msg.getArgument(PROTOCOL_FLDA_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFldaTag()) == 0)
             {
                 doFLDA(msgIndex,&msg);
             }
-        } else if(protocolStartFlag.toString().compare("FLFI") == 0 ) {
-            msg.getArgument(PROTOCOL_FLFI_ENDFLAG,protocolEndFlag);
-            if(protocolEndFlag.toString().compare("FLFI") == 0)
+            continue;
+        }
+        if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
+            msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
                 doFLFI(&msg);
             }
-        } else if(protocolStartFlag.toString().compare("FLIF") == 0 ) {
-            msg.getArgument(PROTOCOL_FLIF_ENDFLAG,protocolEndFlag);
-            if(protocolEndFlag.toString().compare("FLFI") == 0)
+            continue;
+        }
+        if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
+            msg.getArgument(PROTOCOL_FLIF_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
                 doFLIF(&msg);
             }
-        } else if (protocolStartFlag.toString().compare("FLER") == 0 ) {
-            msg.getArgument(PROTOCOL_FLER_ENDFLAG,protocolEndFlag);
-            if(protocolEndFlag.toString().compare("FLER") == 0)
+            continue;
+        }
+        if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 ) {
+            msg.getArgument(PROTOCOL_FLER_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFlerTag()) == 0)
             {
                 doFLER(&msg);
             }
+            continue;
         }
-
-
     }
-
 }
 
 void FiletransferPlugin::selectedIdxMsg(int index) {
