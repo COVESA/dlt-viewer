@@ -873,9 +873,18 @@ void MainWindow::reloadLogFile()
 {
     QDltMsg msg;
     QByteArray data;
+#ifdef DEBUG_PERFORMANCE
+    QTime t;
+#endif
 
     /* open file, create filter index and update model view */
+#ifdef DEBUG_PERFORMANCE
+    t.start();
+#endif
     qfile.open(outputfile.fileName());
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time to create index: " << t.elapsed()/1000 << "s" ;
+#endif
 
     QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowTitle("DLT Viewer");
@@ -883,6 +892,9 @@ void MainWindow::reloadLogFile()
     fileprogress.show();
     qfile.clearFilterIndex();
     const int qsz = qfile.size();
+#ifdef DEBUG_PERFORMANCE
+    t.start();
+#endif
     for(int num=0;num<qsz;num++) {
         if (fileprogress.wasCanceled()){
            break;
@@ -899,6 +911,9 @@ void MainWindow::reloadLogFile()
             qfile.addFilterIndex(num);
         }
     }
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time to create filter index: " << t.elapsed()/1000 << "s" ;
+#endif
 
     // qfile.createIndexFilter();
 
@@ -923,7 +938,13 @@ void MainWindow::reloadLogFile()
 
         if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
         {
+#ifdef DEBUG_PERFORMANCE
+            t.start();
+#endif
             item->pluginviewerinterface->initFile(&qfile);
+#ifdef DEBUG_PERFORMANCE
+            qDebug() << "Time to init plugin " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
         }
     }
 
