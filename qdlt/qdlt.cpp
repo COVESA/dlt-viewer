@@ -894,26 +894,27 @@ QString QDltMsg::getTimeString()
 
 QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
 {
-    //TODO check offset and dst
-
     struct tm *time_tm;
     time_tm = gmtime(&time);
-
-    QDateTime gmDateTime(QDate(time_tm->tm_year,time_tm->tm_mon,time_tm->tm_mday),QTime(time_tm->tm_hour,time_tm->tm_min,time_tm->tm_sec),Qt::UTC);
 
     /*Reason for adding:
         tm_mon	months since January	0-11
         tm_year	years since 1900
     */
-    gmDateTime = gmDateTime.addMonths(1);
-    gmDateTime = gmDateTime.addYears(1900);
+    QDate date(time_tm->tm_year+1900,time_tm->tm_mon+1,time_tm->tm_mday);
+    QTime time(time_tm->tm_hour,time_tm->tm_min,time_tm->tm_sec);
+
+    if(!date.isValid() || !time.isValid())
+        return QString("Invalid date");
+
+    QDateTime gmDateTime(date,time,Qt::UTC);
 
     gmDateTime = gmDateTime.addSecs(offset);
 
     if(dst)
        gmDateTime = gmDateTime.addSecs(3600);
 
-    return gmDateTime.toString(QString("yyyy/MM/dd hh:mm:ss"));
+    return gmDateTime.toString("yyyy/MM/dd hh:mm:ss");
 }
 
 
