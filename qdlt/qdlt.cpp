@@ -1292,8 +1292,19 @@ QString QDltMsg::toStringPayload()
 
     if( getType()==QDltMsg::DltTypeControl && getSubtype()==QDltMsg::DltControlResponse) {
         text += QString("[%1 %2] ").arg(getCtrlServiceIdString()).arg(getCtrlReturnTypeString());
-        data = payload.mid(6,(payload.size()>262)?256:(payload.size()-6));
-        text += toAscii(data);
+
+        // ServiceID of Get ECU Software Version
+        if(getCtrlServiceId() == 0x13)
+        {
+            // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU – Software Version
+            data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
+            text += toAscii(data,true);
+        }
+        else
+        {
+            data = payload.mid(6,(payload.size()>262)?256:(payload.size()-6));
+            text += toAscii(data);
+        }
 
         return text;
     }
