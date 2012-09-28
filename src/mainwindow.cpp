@@ -294,7 +294,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* start timer for serial read */
     connect(&timerRead, SIGNAL(timeout()), this, SLOT(timeoutRead()));
-    timerRead.start(100);
+    timerRead.start(100);    
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -1106,7 +1106,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 
     /* show ECU configuration dialog */
     EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,
-                  false,true,false,true,false,false,true);
+                  false,true,false,true,false,false,true,true,5);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -1162,7 +1162,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         /* show ECU configuration dialog */
         EcuDialog dlg(ecuitem->id,ecuitem->description,ecuitem->interfacetype,ecuitem->hostname,ecuitem->tcpport,ecuitem->port,ecuitem->baudrate,
                       ecuitem->loglevel,ecuitem->tracestatus,ecuitem->verbosemode,ecuitem->sendSerialHeaderTcp,ecuitem->sendSerialHeaderSerial,ecuitem->syncSerialHeaderTcp,ecuitem->syncSerialHeaderSerial,
-                      ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->updateDataIfOnline);
+                      ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->updateDataIfOnline,ecuitem->autoReconnect,ecuitem->autoReconnectTimeout);
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -1890,6 +1890,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
         /* reset receive buffer */
         ecuitem->totalBytesRcvd = 0;
+        ecuitem->totalBytesRcvdLastTimeout = 0;
         ecuitem->data.clear();
 
         /* start socket connection to host */
@@ -1970,6 +1971,7 @@ void MainWindow::connected()
 
             /* reset receive buffer */
             ecuitem->totalBytesRcvd = 0;
+            ecuitem->totalBytesRcvdLastTimeout = 0;
             ecuitem->data.clear();
         }
     }
@@ -2005,12 +2007,24 @@ void MainWindow::timeout()
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
 
+        if(ecuitem->isAutoReconnectTimeoutPassed())
+        {
+            //qDebug() << "totalBytesRcvd:"<<ecuitem->totalBytesRcvd << " - totalBytesRcvdLastTimeout:" << ecuitem->totalBytesRcvdLastTimeout;
+
+            if(ecuitem->autoReconnect && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+            {
+                //qDebug() << "reconnect";
+                disconnectECU(ecuitem);
+                ecuitem->tryToConnect = true;
+            }
+            ecuitem->totalBytesRcvdLastTimeout = ecuitem->totalBytesRcvd;
+        }
+
         if( ecuitem->tryToConnect && !ecuitem->connected)
         {
             connectECU(ecuitem,true);
         }
     }
-
 }
 
 void MainWindow::timeoutRead()

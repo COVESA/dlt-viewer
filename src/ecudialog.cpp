@@ -22,7 +22,7 @@
 #include "qextserialenumerator.h"
 EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
                      int loglevel, int tracestatus,int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
-                     bool timingPackets, bool sendGetLogInfo, bool update, QWidget *parent) :
+                     bool timingPackets, bool sendGetLogInfo, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EcuDialog)
 {
@@ -97,6 +97,9 @@ EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostna
     ui->checkBoxGetLogInfo->setCheckState(sendGetLogInfo?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxUpdate->setCheckState(update?Qt::Checked:Qt::Unchecked);
+
+    ui->checkBoxAutoReconnect->setCheckState(autoReconnect?Qt::Checked:Qt::Unchecked);
+    ui->spinBoxAutoreconnect->setValue(autoReconnectTimeout);
 }
 
 EcuDialog::~EcuDialog()
@@ -210,6 +213,16 @@ int EcuDialog::update()
     return  ui->checkBoxUpdate->isChecked();
 }
 
+int EcuDialog::autoReconnect()
+{
+    return  ui->checkBoxAutoReconnect->isChecked();
+}
+
+int EcuDialog::autoReconnectTimeout()
+{
+    return  ui->spinBoxAutoreconnect->value();
+}
+
 QStringList EcuDialog::getHostnameList()
 {
     QStringList hostnames;
@@ -264,6 +277,9 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->timingPackets = this->timingPackets();
     item->sendGetLogInfo = this->sendGetLogInfo();
     item->updateDataIfOnline = this->update();
+    item->autoReconnect = this->autoReconnect();
+    item->autoReconnectTimeout = this->autoReconnectTimeout();
+    item->updateAutoReconnectTimestamp();
 
     /* new qdlt library */
     item->tcpcon.setTcpPort(this->tcpport());
@@ -275,4 +291,9 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->serialcon.setSendSerialHeader(this->sendSerialHeaderSerial());
     item->serialcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
 
+}
+
+void EcuDialog::on_checkBoxAutoReconnect_toggled(bool checked)
+{
+    ui->spinBoxAutoreconnect->setEnabled(checked);
 }

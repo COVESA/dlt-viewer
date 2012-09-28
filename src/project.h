@@ -27,6 +27,7 @@
 #include <QTcpSocket>
 #include <QDockWidget>
 #include <QObject>
+#include <QDateTime>
 #include <qextserialport.h>
 #include "settingsdialog.h"
 
@@ -68,6 +69,8 @@ public:
     unsigned int tcpport;
     bool sendSerialHeaderTcp;
     bool syncSerialHeaderTcp;
+    bool autoReconnect;
+    int autoReconnectTimeout;
 
     QDltTCPConnection tcpcon;
 
@@ -97,7 +100,13 @@ public:
     int32_t totalBytesRcvd;
     QByteArray data;
 
+    /* AutoReconnecct */
+    int32_t totalBytesRcvdLastTimeout;
+    bool isAutoReconnectTimeoutPassed();
+    void updateAutoReconnectTimestamp();
+
 private:
+    QDateTime autoReconnectTimestamp;
     bool operator< ( const QTreeWidgetItem & other ) const;
 };
 

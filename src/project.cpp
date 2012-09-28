@@ -33,6 +33,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
 {
     /* initialise receive buffer and message*/
     totalBytesRcvd = 0;
+    totalBytesRcvdLastTimeout = 0;
 
     tryToConnect = 0;
     connected = 0;
@@ -62,7 +63,8 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
 
     updateDataIfOnline = false;
 
-
+    autoReconnect = true;
+    autoReconnectTimestamp = QDateTime::currentDateTime();
 }
 
 EcuItem::~EcuItem()
@@ -158,6 +160,27 @@ bool EcuItem::operator< ( const QTreeWidgetItem & other ) const {
 //    qDebug()<<"currentItemEcu: "<<currentItem <<" otherItemEcu: "<<otherItem;
 
     return currentItem.toLower() < otherItem.toLower();
+}
+
+bool EcuItem::isAutoReconnectTimeoutPassed(){
+
+    bool timeoutPassed = false;
+
+    QDateTime currentDateTime = QDateTime::currentDateTime();
+
+    //qDebug() << "currentDateTime:" << currentDateTime << " - nextTimeOut:" << autoReconnectTimestamp;
+
+    if(autoReconnectTimestamp <= currentDateTime){
+        timeoutPassed = true;
+        autoReconnectTimestamp = currentDateTime.addSecs(autoReconnectTimeout);
+    }
+
+    return timeoutPassed;
+}
+
+void EcuItem::updateAutoReconnectTimestamp(){
+
+    autoReconnectTimestamp = QDateTime::currentDateTime().addSecs(autoReconnectTimeout);
 }
 
 ApplicationItem::ApplicationItem(QTreeWidgetItem *parent)
@@ -836,6 +859,18 @@ bool Project::Load(QString filename)
                       ecuitem->syncSerialHeaderSerial = xml.readElementText().toInt();
 
               }
+              if(xml.name() == QString("autoReconnect"))
+              {
+                  if(ecuitem)
+                      ecuitem->autoReconnect = xml.readElementText().toInt();
+
+              }
+              if(xml.name() == QString("autoReconnectTimeout"))
+              {
+                  if(ecuitem)
+                      ecuitem->autoReconnectTimeout = xml.readElementText().toInt();
+
+              }
               if(xml.name() == QString("type"))
               {
                   if(filteritem)
@@ -1114,6 +1149,8 @@ bool Project::Save(QString filename)
         xml.writeTextElement("timingpackets",QString("%1").arg(ecuitem->timingPackets));
         xml.writeTextElement("sendgetloginfo",QString("%1").arg(ecuitem->sendGetLogInfo));
         xml.writeTextElement("updatedata",QString("%1").arg(ecuitem->updateDataIfOnline));
+        xml.writeTextElement("autoReconnect",QString("%1").arg(ecuitem->autoReconnect));
+        xml.writeTextElement("autoReconnectTimeout",QString("%1").arg(ecuitem->autoReconnectTimeout));
 
         for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
         {

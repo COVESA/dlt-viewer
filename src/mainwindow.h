@@ -201,6 +201,7 @@ public:
     /* Timer for connecting to ECUs */
     QTimer timer;
     QTimer timerRead;
+    QTimer timerAutoReconnect;
 
     /* DLT file handling */
     QDltFile qfile;

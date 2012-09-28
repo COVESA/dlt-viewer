@@ -403,14 +403,14 @@
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkBoxAutoConnect">
             <property name="text">
-             <string>Auto Connect</string>
+             <string>Auto connect to ECUs at start</string>
             </property>
            </widget>
           </item>
           <item row="1" column="0">
            <widget class="QCheckBox" name="checkBoxAutoScroll">
             <property name="text">
-             <string>Auto Scroll</string>
+             <string>Auto scroll</string>
             </property>
            </widget>
           </item>

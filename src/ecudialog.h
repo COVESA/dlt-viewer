@@ -32,7 +32,7 @@ class EcuDialog : public QDialog {
 public:
     EcuDialog(QString id,QString description,int interfacetype,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
               int loglevel, int tracestatus, int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
-              bool timingPackets, bool sendGetLogInfo, bool update, QWidget *parent = 0);
+              bool timingPackets, bool sendGetLogInfo, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent = 0);
     ~EcuDialog();
 
     QString id();
@@ -51,8 +51,9 @@ public:
     int syncSerialHeaderSerial();
     int timingPackets();
     int sendGetLogInfo();
-
     int update();
+    int autoReconnect();
+    int autoReconnectTimeout();
 
     QStringList getHostnameList();
     void setHostnameList(QStringList hostnames);
@@ -61,9 +62,11 @@ public:
     void setPortList(QStringList ports);
 
     void setDialogToEcuItem(EcuItem *item);
-
 protected:
     void changeEvent(QEvent *e);
+
+private slots:
+    void on_checkBoxAutoReconnect_toggled(bool checked);
 
 private:
     Ui::EcuDialog *ui;
