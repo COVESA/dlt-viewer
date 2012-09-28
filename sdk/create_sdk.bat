@@ -2,7 +2,7 @@ set MINGW_DIR=C:\MinGW
 set QT_DIR=C:\QtSDK\Desktop\Qt\4.8.1\mingw\bin
 set SOURCE_DIR=C:\data\git\DLT-viewer
 set BUILD_DIR=C:\data\git\viewer-release\release
-set TARGET_DIR=C:\data\release\dlt_viewer_new
+set TARGET_DIR=c:\DltViewerSDK
 
 cd %BUILD_DIR%
 
