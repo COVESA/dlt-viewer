@@ -2,7 +2,7 @@
 
 using namespace std;
 
-Configuration::Configuration():tagFLST("FLST"),tagFLDA("FLDA"),tagFLFI("FLFI"),tagFLIF("FLIF"),tagFLER("FLER"),tagFLAppId("FLTR"),tagFLCtId("FLTR")
+Configuration::Configuration():tagFLST("FLST"),tagFLDA("FLDA"),tagFLFI("FLFI"),tagFLER("FLER"),tagFLIF("FLIF"),tagFLAppId("FLTR"),tagFLCtId("FLTR")
 {
 
 }

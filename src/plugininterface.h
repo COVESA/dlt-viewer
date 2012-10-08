@@ -166,34 +166,93 @@ public:
       The plugin manager provides the handle of the parent window.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
-      \param parent The parent window for the viewer plugin window.
-      \return True if everything went ok. False if there was an error.
+      \return The form of the plugin.
     */
     virtual QWidget* initViewer() = 0;
 
+
     //! A new log file is opened by the DLT Viewer.
-    /*!
-      This function is called by the the viewer everytime a new log file is opened by the viewer
-      or a new log file is created.
+    /*! This function is called by the the viewer everytime a new log file is opened by the viewer
+      or a new log file is created and before all messages were processed with initMsg and initMsgDecoded.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
       \param file The DLT log file handle.
-      \return True if everything went ok. False if there was an error.
     */
-    virtual bool initFile(QDltFile *file) = 0;
+    virtual void initFileStart(QDltFile *file) = 0;
 
-    //! New DLT messages are added to the log file.
-    /*!
-      This function is called when new log entries are added to the log file.
+
+    //! A new undecoded DLT message is processed after a new log file is opened by the DLT Viewer
+    /*! After a new log file is opened this function is called by the viewer everytime
+        a new undecoded message is processed.
+      \sa QDLTPluginInterface::error()
+      \param index The current DLT message index
+      \param msg The current undecoded DLT message
     */
-    virtual void updateFile() = 0;
+    virtual void initMsg(int index, QDltMsg &msg ) = 0;
+
+    //! A new decoded DLT message is processed after a new log file is opened by the DLT Viewer
+    /*! After a new log file is opened this function is called by the viewer everytime
+        a new decoded message is processed.
+      \sa QDLTPluginInterface::error()
+      \param index The current DLT message index
+      \param msg The current decoded DLT message
+    */
+    virtual void initMsgDecoded(int index, QDltMsg &msg ) = 0;
+
+    //! A new log file was opened by the DLT Viewer.
+    /*! This function is called by the the viewer everytime a new log file was opened by the viewer
+      or a new log file is created and all messages were processed with initMsg and initMsgDecoded.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+    */
+    virtual void initFileFinish() = 0;
+
+
+    //! A new message was received before updateMsg and updateMsgDecoded.
+    /*! This function is called by the viewer everytime a new message was received
+        before processing the message with updateMsg and updateMsgDecoded.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+    */
+    virtual void updateFileStart( ) = 0;
+
+
+    //! New message were added to the log file.
+    /*! This function is called when new log entries are added to the log file.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param index The current DLT message index
+      \param msg The current undecoded DLT message
+    */
+    virtual void updateMsg(int index, QDltMsg &msg ) = 0;
+
+
+    //! New message were added to the log file.
+    /*! This function is called when new log entries are added to the log file.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param index The current DLT message index
+      \param msg The current decoded DLT message
+    */
+    virtual void updateMsgDecoded(int index, QDltMsg &msg ) = 0;
+
+
+    //! A new message was received after updateMsg and updateMsgDecoded.
+    /*! This function is called by the viewer everytime a new message was received
+        after processing the message with updateMsg and updateMsgDecoded.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+    */
+    virtual void updateFileFinish( ) = 0;
+
 
     //! A log message was selected to show more detailed information.
     /*!
       A log message was selected. The viewer plugin can show more detailed information about this plugin.
-      \param index The current DLT message and the decoded message information.
+      \param index The current DLT message index
+      \param msg The current decoded DLT message
     */
-    virtual void selectedIdxMsg(int index) = 0;
+    virtual void selectedIdxMsg(int index, QDltMsg &msg) = 0;
 
 };
 

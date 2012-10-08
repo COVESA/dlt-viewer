@@ -75,53 +75,14 @@ QWidget* DummyViewerPlugin::initViewer()
     return form;
 }
 
-bool DummyViewerPlugin::initFile(QDltFile *file)
-{
-    dltFile = file;
 
-    form->setMessages(dltFile->size());
-
-    counterMessages = dltFile->size();
-
-    counterNonVerboseMessages = 0;
-    counterVerboseMessages = 0;
-
-    updateCounters(0,counterMessages-1);
-
-    return true;
-}
-
-void DummyViewerPlugin::updateFile()
+void DummyViewerPlugin::updateCounters(int index, QDltMsg &msg)
 {
     if(!dltFile)
         return;
 
-    updateCounters(counterMessages-1,dltFile->size()-1);
-
-    counterMessages = dltFile->size();
-}
-
-void DummyViewerPlugin::selectedIdxMsg(int index)
-{
-    if(!dltFile)
-        return;
-
-    form->setSelectedMessage(index);
-}
-
-void DummyViewerPlugin::updateCounters(int start,int end)
-{
-    QByteArray data;
-    QDltMsg msg;
-
-    if(!dltFile)
-        return;
 
 
-    for(int num=start;num<=end;num++)
-    {
-        if(dltFile->getMsg(num,msg)==true)
-        {
             if(msg.getMode() == QDltMsg::DltModeVerbose)
             {
                 counterVerboseMessages++;
@@ -130,14 +91,65 @@ void DummyViewerPlugin::updateCounters(int start,int end)
             {
                 counterNonVerboseMessages++;
             }
-        }
-    }
+}
 
 
-   form->setMessages(dltFile->size());
-   form->setVerboseMessages(counterVerboseMessages);
-   form->setNonVerboseMessages(counterNonVerboseMessages);
+void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+    if(!dltFile)
+        return;
 
+    form->setSelectedMessage(index);
+}
+
+
+void DummyViewerPlugin::initFileStart(QDltFile *file){
+
+    dltFile = file;
+
+    form->setMessages(dltFile->size());
+
+    counterMessages = dltFile->size();
+
+    counterNonVerboseMessages = 0;
+    counterVerboseMessages = 0;
+}
+
+void DummyViewerPlugin::initMsg(int index, QDltMsg &msg){
+
+    updateCounters(index, msg);
+}
+
+void DummyViewerPlugin::initMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void DummyViewerPlugin::initFileFinish(){
+    form->setMessages(dltFile->size());
+    form->setVerboseMessages(counterVerboseMessages);
+    form->setNonVerboseMessages(counterNonVerboseMessages);
+}
+
+void DummyViewerPlugin::updateFileStart(){
+
+}
+
+void DummyViewerPlugin::updateMsg(int index, QDltMsg &msg){
+        if(!dltFile)
+            return;
+
+        updateCounters(index,msg);
+
+        counterMessages = dltFile->size();
+}
+
+void DummyViewerPlugin::updateMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void DummyViewerPlugin::updateFileFinish(){
+    form->setMessages(dltFile->size());
+    form->setVerboseMessages(counterVerboseMessages);
+    form->setNonVerboseMessages(counterNonVerboseMessages);
 }
 
 Q_EXPORT_PLUGIN2(dummyviewerplugin, DummyViewerPlugin);

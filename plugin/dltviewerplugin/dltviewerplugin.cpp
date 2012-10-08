@@ -24,22 +24,7 @@
 DltViewerPlugin::DltViewerPlugin() {
     dltFile = 0;
 
-    counterMessages = 0;
-    counterVerboseLogs = 0;
-    counterVerboseTraces = 0;
-    counterNonVerboseControl = 0;
-
-    for(int num=0; num <= QDltMsg::DltLogVerbose; num++) {
-        countersVerboseLogs[num] = 0;
-    }
-
-    for(int num=0; num <= QDltMsg::DltNetworkTraceMost; num++) {
-        countersVerboseTraces[num] = 0;
-    }
-
-    for(int num=0; num <= QDltMsg::DltControlTime; num++) {
-        countersNonVerboseControl[num] = 0;
-    }
+    resetStatistics();
 }
 
 DltViewerPlugin::~DltViewerPlugin() {
@@ -83,46 +68,11 @@ QWidget* DltViewerPlugin::initViewer() {
     return form;
 }
 
-bool DltViewerPlugin::initFile(QDltFile *file) {
-    dltFile = file;
-
-    //if(!dltFile)
-        counterMessages = dltFile->size();
-    //else
-    //    counterMessages = 0;
-
-    counterVerboseLogs = 0;
-    counterVerboseTraces = 0;
-    counterNonVerboseControl = 0;
-
-    resetStatistics();
-
-    updateStatistics(0,dltFile->size()-1);
-
-    return true;
-}
-
-void DltViewerPlugin::updateFile() {
-    if(!dltFile)
-        return;
-
-    if((dltFile->size()-1)>=counterMessages)
-        updateStatistics(counterMessages,dltFile->size()-1);
-
-    counterMessages = dltFile->size();
-}
-
-void DltViewerPlugin::selectedIdxMsg(int index) {
+void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     QString text;
-    QDltMsg msg;
     QDltArgument argument;
-    QByteArray buf;
 
     if(!dltFile)
-        return;
-
-    /* get message */
-    if (!dltFile->getMsg(dltFile->getMsgFilterPos(index), msg))
         return;
 
     //if(dltFile->getMsg(index,msg)==false)
@@ -203,7 +153,59 @@ void DltViewerPlugin::selectedIdxMsg(int index) {
     form->setTextBrowserMixed(msg.toAsciiTable(bytes,true,true,true));
 }
 
+
+void DltViewerPlugin::initFileStart(QDltFile *file){
+    dltFile = file;
+
+    resetStatistics();
+
+    if(dltFile)
+        counterMessages = dltFile->size();
+
+}
+
+void DltViewerPlugin::initMsg(int index, QDltMsg &msg){
+
+    updateStatistics(index, msg);
+}
+
+void DltViewerPlugin::initMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void DltViewerPlugin::initFileFinish(){
+
+    printStatistics();
+}
+
+void DltViewerPlugin::updateFileStart(){
+
+}
+
+void DltViewerPlugin::updateMsg(int index, QDltMsg &msg){
+
+    updateStatistics(index, msg);
+
+    counterMessages = index;
+}
+
+void DltViewerPlugin::updateMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void DltViewerPlugin::updateFileFinish(){
+
+    printStatistics();
+
+}
+
 void DltViewerPlugin::resetStatistics() {
+
+    counterMessages = 0;
+    counterVerboseLogs = 0;
+    counterVerboseTraces = 0;
+    counterNonVerboseControl = 0;
+
     for(int num=0; num <= QDltMsg::DltLogVerbose; num++) {
         countersVerboseLogs[num] = 0;
     }
@@ -215,20 +217,10 @@ void DltViewerPlugin::resetStatistics() {
     for(int num=0; num <= QDltMsg::DltControlTime; num++) {
         countersNonVerboseControl[num] = 0;
     }
-
-    printStatistics();
 }
 
-void DltViewerPlugin::updateStatistics(int begin,int end) {
-    QDltMsg msg;
+void DltViewerPlugin::updateStatistics(int index, QDltMsg &msg) {
 
-    if(!dltFile)
-        return;
-
-    for(int num=begin;num<=end;num++)
-    {
-        if(dltFile->getMsg(num,msg)==true)
-        {
             if(msg.getMode()==QDltMsg::DltModeVerbose)
             {
 
@@ -264,10 +256,6 @@ void DltViewerPlugin::updateStatistics(int begin,int end) {
                 }
 
             }
-        }
-    }
-
-    printStatistics();
 }
 
 extern const char *qDltLogInfo[];
@@ -344,5 +332,6 @@ void DltViewerPlugin::printStatistics() {
 
     form->setTextBrowserStatistics(text);
 }
+
 
 Q_EXPORT_PLUGIN2(dltviewerplugin, DltViewerPlugin);

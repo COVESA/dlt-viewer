@@ -801,9 +801,9 @@ public:
     */
     bool getMsg(int index,QDltMsg &msg);
 
-    //! Get one DLT message of the filtered DLT log file selected by index
+    //! Get one DLT message of the DLT log file selected by index
     /*!
-      \param index position of the DLT message in the log file up to the number of filtered DLT messages in the file
+      \param index position of the DLT message in the log file up to the number DLT messages in the file
       \return Byte array containing the complete DLT message.
     */
     QByteArray getMsg(int index);
@@ -889,20 +889,6 @@ public:
       \return 0 if message will not be marked, colour if message will be marked
     */
     QColor checkMarker(QDltMsg &msg);
-
-    //! Check if a message is a type of file transfer message that we want to hide
-    /*!
-        \return True if we want to hide this message, false if we want to show it.
-    */
-    bool isFileTransferMessage(QDltMsg &msg);
-
-    //! Filter file transfer messages?
-    /*!
-      true, hide file transfer messages
-      false, show file transfer messages
-    */
-    bool hideFileTransfer;
-
 
 protected:
 

@@ -50,16 +50,23 @@ public:
 
     /* QDltPluginViewerInterface */
     QWidget* initViewer();
-    bool initFile(QDltFile *file);
-    void updateFile();
-    void selectedIdxMsg(int index);
+    void initFileStart(QDltFile *file);
+    void initFileFinish();
+    void initMsg(int index, QDltMsg &msg);
+    void initMsgDecoded(int index, QDltMsg &msg);
+    void updateFileStart();
+    void updateMsg(int index, QDltMsg &msg);
+    void updateMsgDecoded(int index, QDltMsg &msg);
+    void updateFileFinish();
+    void selectedIdxMsg(int index, QDltMsg &msg);
+
+    void updateFiletransfer(int index, QDltMsg &msg);
     void show(bool value);
 
 private:
     Form *form;
     QDltFile *dltFile;
     QString errorText;
-    int msgIndex;
 
     void doFLST(QDltMsg *msg);
     void doFLDA(int index, QDltMsg *msg);

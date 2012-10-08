@@ -574,7 +574,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
     dlt_file_init(&importfile,0);
 
-    QProgressDialog progress("Append log file", "Abort Loading", 0, 100, this);
+    QProgressDialog progress("Append log file", "Cancel Loading", 0, 100, this);
     int num = 0;
 
     /* open DLT log file with same filename as output file */
@@ -638,14 +638,14 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
     if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
 
-    QProgressDialog fileprogress("Export to ASCII...", "Abort", 0, qfile.sizeFilter(), this);
+    QProgressDialog fileprogress("Export to ASCII...", "Cancel", 0, qfile.sizeFilter(), this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
     const int qsz = qfile.sizeFilter();
     for(int num = 0;num< qsz;num++)
     {
-        if(!(num%(qsz/100+1)))
+        if((num%(qsz/300))==0)
             fileprogress.setValue(num);
 
         /* get message form log file */
@@ -724,13 +724,15 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
             return;
     }
 
-    QProgressDialog fileprogress("Export...", "Abort", 0, list.count(), this);
+    QProgressDialog fileprogress("Export...", "Cancel", 0, list.count(), this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
     for(int num=0; num < list.count();num++)
     {
-       fileprogress.setValue(num);
+       if((num%(list.count()/300))==0)
+            fileprogress.setValue(num);
+
        QModelIndex index = list[num];
 
        /* get the message with the selected item id */
@@ -871,29 +873,68 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 void MainWindow::reloadLogFile()
 {
     QDltMsg msg;
-    QByteArray data;
+    PluginItem *item = 0;
+    QList<PluginItem*> activeViewerPlugins;
+    QList<PluginItem*> activeDecoderPlugins;
 #ifdef DEBUG_PERFORMANCE
     QTime t;
 #endif
+
+    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, 100, this);
+    fileprogress.setWindowTitle("DLT Viewer");
+    fileprogress.setWindowModality(Qt::WindowModal);
+    fileprogress.show();
+    fileprogress.setValue(0);
 
     /* open file, create filter index and update model view */
 #ifdef DEBUG_PERFORMANCE
     t.start();
 #endif
+
     qfile.open(outputfile.fileName());
+
+    const int qsz = qfile.size();
+
+    fileprogress.setMaximum(qsz);
+
 #ifdef DEBUG_PERFORMANCE
     qDebug() << "Time to create index: " << t.elapsed()/1000 << "s" ;
 #endif
 
-    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, qfile.size(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
     qfile.clearFilterIndex();
-    const int qsz = qfile.size();
+
+    fileprogress.setLabelText("Applying Plugins");
+
+    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+    {
+        item = (PluginItem*)project.plugin->topLevelItem(i);
+
+        if(item->getMode() != PluginItem::ModeDisable)
+        {
+            if(item->plugindecoderinterface)
+            {
+               activeDecoderPlugins.append(item);
+            }
+            else if(item->pluginviewerinterface)
+            {
+
 #ifdef DEBUG_PERFORMANCE
     t.start();
 #endif
+                item->pluginviewerinterface->initFileStart(&qfile);
+
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
+                activeViewerPlugins.append(item);
+          }
+        }
+    }
+
+#ifdef DEBUG_PERFORMANCE
+    t.start();
+#endif
+
     for(int num=0;num<qsz;num++) {
         if (fileprogress.wasCanceled()){
            break;
@@ -903,49 +944,55 @@ void MainWindow::reloadLogFile()
             fileprogress.setValue(num); // This is expensive
         }
 
-        data = qfile.getMsg(num);
-        msg.setMsg(data);
-        iterateDecodersForMsg(msg,0);
+        msg.setMsg(qfile.getMsg(num));
+
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = (PluginItem*)activeViewerPlugins.at(i);
+            item->pluginviewerinterface->initMsg(num,msg);
+        }
+
+        for(int i = 0; i < activeDecoderPlugins.size(); i++)
+        {
+            item = (PluginItem*)activeDecoderPlugins.at(i);
+
+            if(item->plugindecoderinterface->isMsg(msg,0))
+            {
+
+                item->plugindecoderinterface->decodeMsg(msg,0);
+                break;
+            }
+        }
+
         if(qfile.checkFilter(msg)) {
             qfile.addFilterIndex(num);
         }
+
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = (PluginItem*)activeViewerPlugins.at(i);
+            item->pluginviewerinterface->initMsgDecoded(num,msg);
+
+        }
     }
+
 #ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time to create filter index: " << t.elapsed()/1000 << "s" ;
+    qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
 #endif
 
-    // qfile.createIndexFilter();
+    for(int i = 0; i < activeViewerPlugins.size(); i++){
+        item = (PluginItem*)activeViewerPlugins.at(i);
+
+#ifdef DEBUG_PERFORMANCE
+       t.start();
+#endif
+        item->pluginviewerinterface->initFileFinish();
+
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
+    }
 
     ui->tableView->selectionModel()->clear();
     tableModel->modelChanged();
-
-
-    QProgressDialog pluginprogress("Applying plugins (0/0)...", "Abort", 0, project.plugin->topLevelItemCount (), this);
-    pluginprogress.setWindowTitle("DLT Viewer");
-    pluginprogress.setWindowModality(Qt::WindowModal);
-    pluginprogress.show();
-    /* update plugins */
-    for(int num = 0; num < project.plugin->topLevelItemCount(); num++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
-
-        if (pluginprogress.wasCanceled()){
-           break;
-        }
-        pluginprogress.setLabelText(QString("Applying plugin %1 of %2 - %3").arg(num+1).arg( project.plugin->topLevelItemCount()).arg(item->getName()));
-        pluginprogress.setValue(num);
-
-        if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
-        {
-#ifdef DEBUG_PERFORMANCE
-            t.start();
-#endif
-            item->pluginviewerinterface->initFile(&qfile);
-#ifdef DEBUG_PERFORMANCE
-            qDebug() << "Time to init plugin " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
-        }
-    }
 
     /* set name of opened log file in status bar */
     statusFilename->setText(outputfile.fileName());
@@ -2126,8 +2173,10 @@ void MainWindow::read(EcuItem* ecuitem)
     uint8_t *buf;
     int32_t bytesRcvd = 0;
     DltMessage msg;
-    QByteArray data;
     QDltMsg qmsg;
+    PluginItem *item = 0;
+    QList<PluginItem*> activeViewerPlugins;
+    QList<PluginItem*> activeDecoderPlugins;
 
     if (!ecuitem)
         return;
@@ -2221,18 +2270,60 @@ void MainWindow::read(EcuItem* ecuitem)
 
         if (outputfile.isOpen() )
         {
+
+            for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+            {
+                item = (PluginItem*)project.plugin->topLevelItem(i);
+
+                if(item->getMode() != PluginItem::ModeDisable)
+                {
+                    if(item->plugindecoderinterface)
+                    {
+                        activeDecoderPlugins.append(item);
+                    }
+                    else if(item->pluginviewerinterface)
+                    {
+                        item->pluginviewerinterface->updateFileStart();
+                        activeViewerPlugins.append(item);
+                    }
+                }
+            }
+
+
             /* read received messages in DLT file parser and update DLT message list view */
             /* update indexes  and table view */
             int oldsize = qfile.size();
             qfile.updateIndex();
+
             for(int num=oldsize;num<qfile.size();num++) {
-                data = qfile.getMsg(num);
-                qmsg.setMsg(data);
-                iterateDecodersForMsg(qmsg,0);
+                qmsg.setMsg(qfile.getMsg(num));
+
+                for(int i = 0; i < activeViewerPlugins.size(); i++){
+                    item = (PluginItem*)activeViewerPlugins.at(i);
+                    item->pluginviewerinterface->updateMsg(num,qmsg);
+                }
+
+                for(int i = 0; i < activeDecoderPlugins.size(); i++)
+                {
+                    item = (PluginItem*)activeDecoderPlugins.at(i);
+
+                    if(item->plugindecoderinterface->isMsg(qmsg,0))
+                    {
+                        item->plugindecoderinterface->decodeMsg(qmsg,0);
+                        break;
+                    }
+                }
+
                 if(qfile.checkFilter(qmsg)) {
                     qfile.addFilterIndex(num);
                 }
+
+                for(int i = 0; i < activeViewerPlugins.size(); i++){
+                    item = (PluginItem*)activeViewerPlugins.at(i);
+                    item->pluginviewerinterface->updateMsgDecoded(num,qmsg);
+                }
             }
+
             tableModel->modelChanged();
             //Line below would resize the payload column automatically so that the whole content is readable
             //ui->tableView->resizeColumnToContents(11); //Column 11 is the payload column
@@ -2240,13 +2331,9 @@ void MainWindow::read(EcuItem* ecuitem)
                 ui->tableView->scrollToBottom();
             }
 
-            /* update plugins */
-            for(int num = 0; num < project.plugin->topLevelItemCount (); num++) {
-                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
-
-                if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable)) {
-                    item->pluginviewerinterface->updateFile();
-                }
+            for(int i = 0; i < activeViewerPlugins.size(); i++){
+                item = (PluginItem*)activeViewerPlugins.at(i);
+                item->pluginviewerinterface->updateFileFinish();
             }
         }
     }
@@ -2254,6 +2341,11 @@ void MainWindow::read(EcuItem* ecuitem)
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {
+
+    QDltMsg msg;
+    //qfile.getMsg(qfile.getMsgFilterPos(index.row()), msg);
+    msg.setMsg(qfile.getMsgFilter(index.row()));
+
     // Update plugins
     for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
     {
@@ -2261,7 +2353,7 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
 
         if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
         {
-            item->pluginviewerinterface->selectedIdxMsg(index.row());
+            item->pluginviewerinterface->selectedIdxMsg(qfile.getMsgFilterPos(index.row()),msg);
         }
     }
 }
@@ -3895,17 +3987,8 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
 
             if(callInitFile)
             {
-                QProgressDialog pluginprogress("Applying plugin", "Abort", 0, 100, this);
-                pluginprogress.setWindowTitle("DLT Viewer");
-                pluginprogress.setWindowModality(Qt::WindowModal);
-                pluginprogress.show();
-                if(item->pluginviewerinterface)
-                {
-                    item->pluginviewerinterface->initFile(&qfile);
-                }
-                pluginprogress.setValue(100);
-           }
-
+                initPluginAfterActivation(item);
+            }
         }
     }
     else
@@ -3913,6 +3996,76 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                             QString("No Plugin selected!"));
 
 }
+
+void MainWindow::initPluginAfterActivation(PluginItem *item){
+
+    if(!item){
+        qDebug()<<"Plugin couldn't be initialized. Plugin is null";
+        return;
+    }
+
+    if(!item->pluginviewerinterface)
+        return;
+
+    const int qsz = qfile.size();
+    QProgressDialog pluginprogress("Applying Plugins", "Cancel", 0, qsz, this);
+    pluginprogress.setWindowTitle("DLT Viewer");
+    pluginprogress.setWindowModality(Qt::WindowModal);
+    pluginprogress.show();
+    pluginprogress.setValue(0);
+
+    QDltMsg msg;
+    PluginItem *decoderItem = 0;
+    QList<PluginItem*> activeDecoderPlugins;
+
+
+        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+        {
+            decoderItem = (PluginItem*)project.plugin->topLevelItem(i);
+
+            if(decoderItem->getMode() != PluginItem::ModeDisable && decoderItem->plugindecoderinterface)
+            {
+                activeDecoderPlugins.append(decoderItem);
+            }
+        }
+
+        item->pluginviewerinterface->initFileStart(&qfile);
+
+        for(int num=0;num<qsz;num++) {
+
+            if (pluginprogress.wasCanceled()){
+               break;
+            }
+
+            if(!(num%(qsz/300+1))){
+                pluginprogress.setValue(num); // This is expensive
+            }
+
+            msg.setMsg(qfile.getMsg(num));
+
+            item->pluginviewerinterface->initMsg(num,msg);
+
+
+            for(int i = 0; i < activeDecoderPlugins.size(); i++)
+            {
+                decoderItem = (PluginItem*)activeDecoderPlugins.at(i);
+
+                if(decoderItem->plugindecoderinterface->isMsg(msg,0))
+                {
+
+                    decoderItem->plugindecoderinterface->decodeMsg(msg,0);
+                    break;
+                }
+            }
+
+
+            item->pluginviewerinterface->initMsgDecoded(num,msg);
+
+        }
+
+        item->pluginviewerinterface->initFileFinish();
+}
+
 
 void MainWindow::on_action_menuPlugin_Show_triggered() {
 
@@ -3929,15 +4082,7 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
             updatePlugin(item);
 
             if(oldMode == PluginItem::ModeDisable){
-                QProgressDialog pluginprogress("Applying plugin", "Abort", 0, 100, this);
-                pluginprogress.setWindowTitle("DLT Viewer");
-                pluginprogress.setWindowModality(Qt::WindowModal);
-                pluginprogress.show();
-                if(item->pluginviewerinterface)
-                {
-                    item->pluginviewerinterface->initFile(&qfile);
-                }
-                pluginprogress.setValue(100);
+                initPluginAfterActivation(item);
             }
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),

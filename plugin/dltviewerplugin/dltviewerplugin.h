@@ -48,16 +48,22 @@ public:
 
     /* QDltPluginViewerInterface */
     QWidget* initViewer();
-    bool initFile(QDltFile *file);
-    void updateFile();
-    void selectedIdxMsg(int index);
+    void initFileStart(QDltFile *file);
+    void initFileFinish();
+    void initMsg(int index, QDltMsg &msg);
+    void initMsgDecoded(int index, QDltMsg &msg);
+    void updateFileStart();
+    void updateMsg(int index, QDltMsg &msg);
+    void updateMsgDecoded(int index, QDltMsg &msg);
+    void updateFileFinish();
+    void selectedIdxMsg(int index, QDltMsg &msg);
 
     /* internal variables */
     Form *form;
 
     /* statistics functions */
     void resetStatistics();
-    void updateStatistics(int begin,int end);
+    void updateStatistics(int index, QDltMsg &msg);
     void printStatistics();
 
 private:

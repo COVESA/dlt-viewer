@@ -22,7 +22,6 @@
 
 FiletransferPlugin::FiletransferPlugin() {
     dltFile = 0;
-    msgIndex = 0;
 }
 
 FiletransferPlugin::~FiletransferPlugin() {
@@ -128,34 +127,64 @@ QWidget* FiletransferPlugin::initViewer() {
     return form;
 }
 
-bool FiletransferPlugin::initFile(QDltFile *file) {
-    dltFile = file;
-    msgIndex = 0;
-    form->getTreeWidget()->clear();
-    form->clearSelectedFiles();
-    updateFile();
-    return true;
+void FiletransferPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+
 }
 
-void FiletransferPlugin::updateFile() {
-    QDltMsg msg;
+
+void FiletransferPlugin::initFileStart(QDltFile *file){
+    dltFile = file;
+
+    form->getTreeWidget()->clear();
+    form->clearSelectedFiles();
+}
+
+void FiletransferPlugin::initMsg(int index, QDltMsg &msg){
+    updateFiletransfer(index,msg);
+}
+
+void FiletransferPlugin::initMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void FiletransferPlugin::initFileFinish(){
+
+}
+
+void FiletransferPlugin::updateFileStart(){
+
+}
+
+void FiletransferPlugin::updateMsg(int index, QDltMsg &msg){
+    updateFiletransfer(index,msg);
+
+}
+
+void FiletransferPlugin::updateMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void FiletransferPlugin::updateFileFinish(){
+
+}
+
+void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg) {
+
     QDltArgument msgFirstArgument;
     QDltArgument msgLastArgument;
+
 
     if(!dltFile)
         return;
 
-    for(;msgIndex<dltFile->size();msgIndex++)
-    {
-        if (!dltFile->getMsg(msgIndex, msg))
-            break;
+    if(msg.getType() != QDltMsg::DltTypeLog)
+        return;
 
-
-        if(config.getFlAppIdTag().compare(msg.getApid()) != 0 || config.getFlCtIdTag().compare(msg.getCtid()) != 0)
-                 continue;
+    if(config.getFlAppIdTag().compare(msg.getApid()) != 0 || config.getFlCtIdTag().compare(msg.getCtid()) != 0)
+        return;
 
         if(!msg.getArgument(PROTOCOL_ALL_STARTFLAG,msgFirstArgument))
-            continue;
+            return;
 
         if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 )
         {
@@ -164,15 +193,15 @@ void FiletransferPlugin::updateFile() {
             {
                 doFLST(&msg);
             }
-            continue;
+            return;
         }
         if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 ) {
             msg.getArgument(PROTOCOL_FLDA_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFldaTag()) == 0)
             {
-                doFLDA(msgIndex,&msg);
+                doFLDA(index,&msg);
             }
-            continue;
+            return;
         }
         if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
             msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
@@ -180,7 +209,7 @@ void FiletransferPlugin::updateFile() {
             {
                 doFLFI(&msg);
             }
-            continue;
+            return;
         }
         if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
             msg.getArgument(PROTOCOL_FLIF_ENDFLAG,msgLastArgument);
@@ -188,7 +217,7 @@ void FiletransferPlugin::updateFile() {
             {
                 doFLIF(&msg);
             }
-            continue;
+            return;
         }
         if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 ) {
             msg.getArgument(PROTOCOL_FLER_ENDFLAG,msgLastArgument);
@@ -196,14 +225,9 @@ void FiletransferPlugin::updateFile() {
             {
                 doFLER(&msg);
             }
-            continue;
+            return;
         }
-    }
-}
 
-void FiletransferPlugin::selectedIdxMsg(int index) {
-    if(!dltFile)
-        return;
 }
 
 void FiletransferPlugin::doFLST(QDltMsg *msg){

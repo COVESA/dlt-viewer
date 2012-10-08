@@ -48,9 +48,15 @@ public:
 
     /* QDltPluginViewerInterface */
     QWidget* initViewer();
-    bool initFile(QDltFile *file);
-    void updateFile();
-    void selectedIdxMsg(int index);
+    void initFileStart(QDltFile *file);
+    void initFileFinish();
+    void initMsg(int index, QDltMsg &msg);
+    void initMsgDecoded(int index, QDltMsg &msg);
+    void updateFileStart();
+    void updateMsg(int index, QDltMsg &msg);
+    void updateMsgDecoded(int index, QDltMsg &msg);
+    void updateFileFinish();
+    void selectedIdxMsg(int index, QDltMsg &msg);
 
     /* internal variables */
     Form *form;
@@ -65,7 +71,7 @@ public:
 
     void show(bool value);
 
-    void updateProcesses(int start,int end);
+    void updateProcesses(int index, QDltMsg &msg);
 
 private:
     QDltFile *dltFile;

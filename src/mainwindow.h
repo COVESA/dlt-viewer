@@ -67,6 +67,7 @@ private:
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
     QStringList getSerialPortsWithQextEnumartor();
     void skipSerialHeader(EcuItem *ecu);
+    void initPluginAfterActivation(PluginItem *item);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );

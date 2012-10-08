@@ -75,55 +75,69 @@ QWidget* DltSystemViewerPlugin::initViewer()
     return form;
 }
 
-bool DltSystemViewerPlugin::initFile(QDltFile *file)
-{
-    dltFile = file;
 
-    //form->setMessages(dltFile->size());
+void DltSystemViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+
+}
+
+
+void DltSystemViewerPlugin::initFileStart(QDltFile *file){
+
+    dltFile = file;
 
     counterMessages = dltFile->size();
 
     form->deleteAllProccesses();
 
-    updateProcesses(0,dltFile->size()-1);
-
-    return true;
 }
 
-void DltSystemViewerPlugin::updateFile()
-{
+void DltSystemViewerPlugin::initMsg(int index, QDltMsg &msg){
+
+    updateProcesses(index, msg);
+
+}
+void DltSystemViewerPlugin::initMsgDecoded(int index, QDltMsg &msg){
+
+}
+
+void DltSystemViewerPlugin::initFileFinish(){
+
+}
+
+void DltSystemViewerPlugin::updateFileStart(){
+
+}
+void DltSystemViewerPlugin::updateMsg(int index, QDltMsg &msg){
+
     if(!dltFile)
         return;
 
-    if((dltFile->size()-1)>=counterMessages)
-        updateProcesses(counterMessages,dltFile->size()-1);
+    updateProcesses(index, msg);
 
     counterMessages = dltFile->size();
+
 }
 
-void DltSystemViewerPlugin::selectedIdxMsg(int index)
-{
-    if(!dltFile)
-        return;
+void DltSystemViewerPlugin::updateMsgDecoded(int index, QDltMsg &msg){
 
-    //form->setSelectedMessage(index);
+}
+void DltSystemViewerPlugin::updateFileFinish(){
+
+
 }
 
-void DltSystemViewerPlugin::updateProcesses(int start,int end)
+
+void DltSystemViewerPlugin::updateProcesses(int index, QDltMsg &msg)
 {
     QStringList datalist;
-    QByteArray data;
-    QDltMsg msg;
     QDltArgument arg;
     int pid,seq;
 
     if(!dltFile)
         return;
 
-    for(int num=start;num<=end;num++)
-    {
-        if(dltFile->getMsg(num,msg)==true)
-        {
+
+
             if(msg.getMode() == QDltMsg::DltModeVerbose)
             {
                 counterVerboseMessages++;
@@ -132,7 +146,7 @@ void DltSystemViewerPlugin::updateProcesses(int start,int end)
             {
                 counterNonVerboseMessages++;
             }
-        }
+
         if(msg.getApid()=="SYS" && msg.getCtid()=="PROC") {
             msg.getArgument(0,arg);
             pid = arg.toString().toInt();
@@ -157,7 +171,7 @@ void DltSystemViewerPlugin::updateProcesses(int start,int end)
                 lastTimeStamp = msg.getTimestamp();
             }
         }
-   }
+
 
 }
 
