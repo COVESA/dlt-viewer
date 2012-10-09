@@ -33,6 +33,7 @@
 #include "optmanager.h"
 #include "qdlt.h"
 #include "dltsettingsmanager.h"
+#include "filterdialog.h"
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -278,6 +279,8 @@ public:
     void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
     void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
 
+    void filterDialogRead(FilterDialog &dlg,FilterItem* item);
+    void filterDialogWrite(FilterDialog &dlg,FilterItem* item);
     void filterUpdate();
 
     void loadPlugins();

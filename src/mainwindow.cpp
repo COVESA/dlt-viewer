@@ -38,7 +38,6 @@
 #include "applicationdialog.h"
 #include "contextdialog.h"
 #include "multiplecontextdialog.h"
-#include "filterdialog.h"
 #include "plugindialog.h"
 #include "settingsdialog.h"
 #include "injectiondialog.h"
@@ -4090,41 +4089,8 @@ void MainWindow::filterAddTable() {
 
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
-        item->type = (FilterItem::FilterType)(dlg.getType());
-
-        item->ecuId = dlg.getEcuId();
-        item->applicationId = dlg.getApplicationId();
-        item->contextId = dlg.getContextId();
-        item->headerText = dlg.getHeaderText();
-        item->payloadText = dlg.getPayloadText();
-
-        item->enableFilter = dlg.getEnableActive();
-        item->enableEcuId = dlg.getEnableEcuId();
-        item->enableApplicationId = dlg.getEnableApplicationId();
-        item->enableContextId = dlg.getEnableContextId();
-        item->enableHeaderText = dlg.getEnableHeaderText();
-        item->enablePayloadText = dlg.getEnablePayloadText();
-        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
-        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
-
-        item->filterColour = dlg.getFilterColour();
-        item->setBackground(0,dlg.getFilterColour());
-        item->setBackground(1,dlg.getFilterColour());
-        item->logLevelMax = dlg.getLogLevelMax();
-        item->logLevelMin = dlg.getLogLevelMin();
-
-        /* update filter item */
-        item->update();
-
-        /* add filter to list */
         project.filter->addTopLevelItem(item);
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
+        filterDialogRead(dlg,item);
     }
 }
 
@@ -4175,45 +4141,8 @@ void MainWindow::filterAdd() {
 
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
-
-        item->type = (FilterItem::FilterType)(dlg.getType());
-
-        item->name = dlg.getName();
-
-        item->ecuId = dlg.getEcuId();
-        item->applicationId = dlg.getApplicationId();
-        item->contextId = dlg.getContextId();
-        item->headerText = dlg.getHeaderText();
-        item->payloadText = dlg.getPayloadText();
-
-        item->enableFilter = dlg.getEnableActive();
-        item->enableEcuId = dlg.getEnableEcuId();
-        item->enableApplicationId = dlg.getEnableApplicationId();
-        item->enableContextId = dlg.getEnableContextId();
-        item->enableHeaderText = dlg.getEnableHeaderText();
-        item->enablePayloadText = dlg.getEnablePayloadText();
-        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
-        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
-
-        item->filterColour = dlg.getFilterColour();
-        item->setBackground(0,dlg.getFilterColour());
-        item->setBackground(1,dlg.getFilterColour());
-        item->logLevelMax = dlg.getLogLevelMax();
-        item->logLevelMin = dlg.getLogLevelMin();
-
-        /* update filter item */
-        item->update();
-
-        /* add filter to list */
         project.filter->addTopLevelItem(item);
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
+        filterDialogRead(dlg,item);
     }
 }
 
@@ -4252,57 +4181,76 @@ void MainWindow::on_action_menuFilter_Load_triggered()
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
-    //QTreeWidget *widget;
-
-    /* get currently visible filter list in user interface */
-    //if(ui->tabPFilter->isVisible()) {
-    //    widget = project.pfilter;
-    //}
-    //else
-    //    return;
-
     /* show filter dialog */
     FilterDialog dlg;
 
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
-
-        item->type = (FilterItem::FilterType)(dlg.getType());
-
-        item->name = dlg.getName();
-        item->ecuId = dlg.getEcuId();
-        item->applicationId = dlg.getApplicationId();
-        item->contextId = dlg.getContextId();
-        item->headerText = dlg.getHeaderText();
-        item->payloadText = dlg.getPayloadText();
-
-        item->enableFilter = dlg.getEnableActive();
-        item->enableEcuId = dlg.getEnableEcuId();
-        item->enableApplicationId = dlg.getEnableApplicationId();
-        item->enableContextId = dlg.getEnableContextId();
-        item->enableHeaderText = dlg.getEnableHeaderText();
-        item->enablePayloadText = dlg.getEnablePayloadText();
-        item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-        item->enableLogLevelMax = dlg.getEnableLogLevelMax();
-        item->enableLogLevelMin = dlg.getEnableLogLevelMin();
-
-        item->filterColour = dlg.getFilterColour();
-        item->logLevelMax = dlg.getLogLevelMax();
-        item->logLevelMin = dlg.getLogLevelMin();
-
-        /* update filter item */
-        item->update();
-
-        /* add filter to list */
         project.filter->addTopLevelItem(item);
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
+        filterDialogRead(dlg,item);
     }
+}
+
+void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
+{
+    dlg.setType((int)(item->type));
+
+    dlg.setName(item->name);
+    dlg.setEcuId(item->ecuId);
+    dlg.setApplicationId(item->applicationId);
+    dlg.setContextId(item->contextId);
+    dlg.setHeaderText(item->headerText);
+    dlg.setPayloadText(item->payloadText);
+
+    dlg.setActive(item->enableFilter);
+    dlg.setEnableEcuId(item->enableEcuId);
+    dlg.setEnableApplicationId(item->enableApplicationId);
+    dlg.setEnableContextId(item->enableContextId);
+    dlg.setEnableHeaderText(item->enableHeaderText);
+    dlg.setEnablePayloadText(item->enablePayloadText);
+    dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
+    dlg.setEnableLogLevelMax(item->enableLogLevelMax);
+    dlg.setEnableLogLevelMin(item->enableLogLevelMin);
+
+    dlg.setFilterColour(item->filterColour);
+
+    dlg.setLogLevelMax(item->logLevelMax);
+    dlg.setLogLevelMin(item->logLevelMin);
+}
+
+void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
+{
+    item->type = (FilterItem::FilterType)(dlg.getType());
+
+    item->name = dlg.getName();
+    item->ecuId = dlg.getEcuId();
+    item->applicationId = dlg.getApplicationId();
+    item->contextId = dlg.getContextId();
+    item->headerText = dlg.getHeaderText();
+    item->payloadText = dlg.getPayloadText();
+
+    item->enableFilter = dlg.getEnableActive();
+    item->enableEcuId = dlg.getEnableEcuId();
+    item->enableApplicationId = dlg.getEnableApplicationId();
+    item->enableContextId = dlg.getEnableContextId();
+    item->enableHeaderText = dlg.getEnableHeaderText();
+    item->enablePayloadText = dlg.getEnablePayloadText();
+    item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
+    item->enableLogLevelMax = dlg.getEnableLogLevelMax();
+    item->enableLogLevelMin = dlg.getEnableLogLevelMin();
+
+    item->filterColour = dlg.getFilterColour();
+    item->logLevelMax = dlg.getLogLevelMax();
+    item->logLevelMin = dlg.getLogLevelMin();
+
+    /* update filter item */
+    item->update();
+
+    ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
+    ui->filterStatus->setText("Filters changed. Please enable filtering.");
+
+    ui->filterButton->setChecked(Qt::Unchecked);
+    ui->filterButton->setText("Enable filters");
 
     on_filterWidget_itemSelectionChanged();
 }
@@ -4323,79 +4271,19 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
         FilterItem* item = (FilterItem*) list.at(0);
 
         /* show filter dialog */
-        FilterDialog dlg;
-        dlg.setType((int)(item->type));
-
-        dlg.setName(item->name);
-        dlg.setEcuId(item->ecuId);
-        dlg.setApplicationId(item->applicationId);
-        dlg.setContextId(item->contextId);
-        dlg.setHeaderText(item->headerText);
-        dlg.setPayloadText(item->payloadText);
-
-        dlg.setActive(item->enableFilter);
-        dlg.setEnableEcuId(item->enableEcuId);
-        dlg.setEnableApplicationId(item->enableApplicationId);
-        dlg.setEnableContextId(item->enableContextId);
-        dlg.setEnableHeaderText(item->enableHeaderText);
-        dlg.setEnablePayloadText(item->enablePayloadText);
-        dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
-        dlg.setEnableLogLevelMax(item->enableLogLevelMax);
-        dlg.setEnableLogLevelMin(item->enableLogLevelMin);
-
-        dlg.setFilterColour(item->filterColour);
-
-        dlg.setLogLevelMax(item->logLevelMax);
-        dlg.setLogLevelMin(item->logLevelMin);
-
+        FilterDialog dlg;        
+        filterDialogWrite(dlg,item);
         if(dlg.exec())
         {
             FilterItem* newitem = new FilterItem(0);
-
-            newitem->type = (FilterItem::FilterType)(dlg.getType());
-
-            newitem->name = dlg.getName();
-            newitem->ecuId = dlg.getEcuId();
-            newitem->applicationId = dlg.getApplicationId();
-            newitem->contextId = dlg.getContextId();
-            newitem->headerText = dlg.getHeaderText();
-            newitem->payloadText = dlg.getPayloadText();
-
-            newitem->enableFilter = dlg.getEnableActive();
-            newitem->enableEcuId = dlg.getEnableEcuId();
-            newitem->enableApplicationId = dlg.getEnableApplicationId();
-            newitem->enableContextId = dlg.getEnableContextId();
-            newitem->enableHeaderText = dlg.getEnableHeaderText();
-            newitem->enablePayloadText = dlg.getEnablePayloadText();
-            newitem->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-            newitem->enableLogLevelMax = dlg.getEnableLogLevelMax();
-            newitem->enableLogLevelMin = dlg.getEnableLogLevelMin();
-
-            newitem->filterColour = dlg.getFilterColour();
-            newitem->logLevelMax = dlg.getLogLevelMax();
-            newitem->logLevelMin = dlg.getLogLevelMin();
-
-            /* update filter item */
-            newitem->update();
-
-            /* add filter to list */
             project.filter->addTopLevelItem(newitem);
-
-            ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-            ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-            ui->filterButton->setChecked(Qt::Unchecked);
-            ui->filterButton->setText("Enable filters");
-
-            /* update filter list in DLT log file */
-            //filterUpdate();
+            filterDialogRead(dlg,newitem);
         }
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
                             QString("No Filter selected!"));
     }
-    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Edit_triggered() {
@@ -4415,78 +4303,10 @@ void MainWindow::on_action_menuFilter_Edit_triggered() {
 
         /* show filter dialog */
         FilterDialog dlg;
-        dlg.setType((int)(item->type));
-
-        dlg.setName(item->name);
-        dlg.setEcuId(item->ecuId);
-        dlg.setApplicationId(item->applicationId);
-        dlg.setContextId(item->contextId);
-        dlg.setHeaderText(item->headerText);
-        dlg.setPayloadText(item->payloadText);
-
-        dlg.setActive(item->enableFilter);
-        dlg.setEnableEcuId(item->enableEcuId);
-        dlg.setEnableApplicationId(item->enableApplicationId);
-        dlg.setEnableContextId(item->enableContextId);
-        dlg.setEnableHeaderText(item->enableHeaderText);
-        dlg.setEnablePayloadText(item->enablePayloadText);
-        dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
-        dlg.setEnableLogLevelMax(item->enableLogLevelMax);
-        dlg.setEnableLogLevelMin(item->enableLogLevelMin);
-
-        dlg.setFilterColour(item->filterColour);
-
-        dlg.setLogLevelMax(item->logLevelMax);
-        dlg.setLogLevelMin(item->logLevelMin);
-
+        filterDialogWrite(dlg,item);
         if(dlg.exec())
         {
-            item->type = (FilterItem::FilterType)(dlg.getType());
-
-            item->name = dlg.getName();
-            item->ecuId = dlg.getEcuId();
-            item->applicationId = dlg.getApplicationId();
-            item->contextId = dlg.getContextId();
-            item->headerText = dlg.getHeaderText();
-            item->payloadText = dlg.getPayloadText();
-
-            item->enableFilter = dlg.getEnableActive();
-            item->enableEcuId = dlg.getEnableEcuId();
-            item->enableApplicationId = dlg.getEnableApplicationId();
-            item->enableContextId = dlg.getEnableContextId();
-            item->enableHeaderText = dlg.getEnableHeaderText();
-            item->enablePayloadText = dlg.getEnablePayloadText();
-            item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-            item->enableLogLevelMax = dlg.getEnableLogLevelMax();
-            item->enableLogLevelMin = dlg.getEnableLogLevelMin();
-
-            item->filterColour = dlg.getFilterColour();
-            switch(dlg.getType()){
-            case 2:
-                    item->setBackground(0,dlg.getFilterColour());
-                    item->setBackground(1,dlg.getFilterColour());
-                    break;
-            default:
-                    item->setBackground(0,QColor(255,255,255));
-                    item->setBackground(1,QColor(255,255,255));
-                    break;
-            }
-
-
-            item->logLevelMax = dlg.getLogLevelMax();
-            item->logLevelMin = dlg.getLogLevelMin();
-
-            /* update filter item */
-            item->update();
-
-            ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-            ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-            ui->filterButton->setChecked(Qt::Unchecked);
-            ui->filterButton->setText("Enable filters");
-
-            /* update filter list in DLT log file */
-            //filterUpdate();
+            filterDialogRead(dlg,item);
         }
     }
     else {
