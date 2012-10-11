@@ -67,7 +67,9 @@ private:
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
     QStringList getSerialPortsWithQextEnumartor();
     void skipSerialHeader(EcuItem *ecu);
-    void initPluginAfterActivation(PluginItem *item);
+    void processMsgAfterPluginmodeChange(PluginItem *item);
+
+    bool threadIsRunnging;
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
@@ -194,7 +196,7 @@ private slots:
 
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
-
+    void threadpluginFinished();
 public:   
 
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
@@ -203,14 +205,12 @@ public:
     /* Timer for connecting to ECUs */
     QTimer timer;
     QTimer timerRead;
-    QTimer timerAutoReconnect;
 
     /* DLT file handling */
     QDltFile qfile;
     QDltControl qcontrol;
     QFile outputfile;
     TableModel *tableModel;
-    QMutex mutex;
     QString workingDirectory;
 
     /* Status line items */

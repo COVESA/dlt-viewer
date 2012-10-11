@@ -44,6 +44,7 @@
 #include "qextserialenumerator.h"
 #include "version.h"
 #include "commandplugindialog.h"
+#include "threadplugin.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -95,7 +96,6 @@ MainWindow::MainWindow(QWidget *parent) :
     /* initialise DLT file handling */
     tableModel = new TableModel("Hello Tree");
     tableModel->qfile = &qfile;
-    tableModel->mutex = &mutex;
     tableModel->project = &project;
 
     /* initialise project configuration */
@@ -219,8 +219,8 @@ MainWindow::MainWindow(QWidget *parent) :
         {
             if(!openDlpFile(settings->defaultProjectFileName)){
                 QMessageBox::critical(0, QString("DLT Viewer"),
-                                     QString("Cannot load default project \"%1\"")
-                                     .arg(settings->defaultProjectFileName));
+                                      QString("Cannot load default project \"%1\"")
+                                      .arg(settings->defaultProjectFileName));
             }
         }
     }
@@ -228,18 +228,18 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Process Logfile */
     if(OptManager::getInstance()->isLogFile())
     {
-                openDltFile(OptManager::getInstance()->getLogFile());
+        openDltFile(OptManager::getInstance()->getLogFile());
     } else {
-         /* load default log file */
+        /* load default log file */
         statusFilename->setText("no log file loaded");
         if(settings->defaultLogFile)
-         {
+        {
             openDltFile(settings->defaultLogFileName);
 
-         }
-         else
-         {
-             /* create temporary file */
+        }
+        else
+        {
+            /* create temporary file */
             QTemporaryFile file;
             if (file.open()) {
                 QString filename;
@@ -251,9 +251,9 @@ MainWindow::MainWindow(QWidget *parent) :
                     reloadLogFile();
                 else
                     QMessageBox::critical(0, QString("DLT Viewer"),
-                                         QString("Cannot load temporary log file \"%1\"\n%2")
-                                         .arg(filename)
-                                         .arg(outputfile.errorString()));
+                                          QString("Cannot load temporary log file \"%1\"\n%2")
+                                          .arg(filename)
+                                          .arg(outputfile.errorString()));
             }
             file.close();
         }
@@ -293,7 +293,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* start timer for serial read */
     connect(&timerRead, SIGNAL(timeout()), this, SLOT(timeoutRead()));
-    timerRead.start(100);    
+    timerRead.start(100);
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -322,8 +322,8 @@ void MainWindow::commandLineConvertToASCII(){
     QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
     if(!asciiFile.open(QIODevice::WriteOnly | QIODevice::Text))
     {
-       //Error output
-       exit(0);
+        //Error output
+        exit(0);
     }
 
     for(int num = 0;num< qfile.sizeFilter();num++)
@@ -413,7 +413,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_action_menuFile_New_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("New DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+                                                    tr("New DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -432,15 +432,15 @@ void MainWindow::on_action_menuFile_New_triggered()
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("Cannot create new log file \"%1\"\n%2")
-                             .arg(fileName)
-                             .arg(outputfile.errorString()));
+                              QString("Cannot create new log file \"%1\"\n%2")
+                              .arg(fileName)
+                              .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Open_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+                                                    tr("Open DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -468,15 +468,15 @@ void MainWindow::openDltFile(QString fileName)
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("Cannot open log file \"%1\"\n%2")
-                             .arg(fileName)
-                             .arg(outputfile.errorString()));
+                              QString("Cannot open log file \"%1\"\n%2")
+                              .arg(fileName)
+                              .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Import DLT Stream"), workingDirectory, tr("DLT Stream file (*.*)"));
+                                                    tr("Import DLT Stream"), workingDirectory, tr("DLT Stream file (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -518,7 +518,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Import DLT Stream with serial header"), workingDirectory, tr("DLT Stream file (*.*)"));
+                                                    tr("Import DLT Stream with serial header"), workingDirectory, tr("DLT Stream file (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -559,7 +559,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
 void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Append DLT File"), workingDirectory, tr("DLT File (*.dlt)"));
+                                                    tr("Append DLT File"), workingDirectory, tr("DLT File (*.dlt)"));
 
     if(fileName.isEmpty())
         return;
@@ -626,7 +626,7 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
     QByteArray data;
     QString text;
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Export to ASCII"), workingDirectory, tr("ASCII Files (*.txt);;All files (*.*)"));
+                                                    tr("Export to ASCII"), workingDirectory, tr("ASCII Files (*.txt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -692,7 +692,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     if(list.count()<=0)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("No messages selected"));
+                              QString("No messages selected"));
         return;
     }
 
@@ -703,12 +703,12 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
         if(ascii)
         {
             fileName = QFileDialog::getSaveFileName(this,
-                tr("Export Selection"), workingDirectory, tr("Text Files (*.txt)"));
+                                                    tr("Export Selection"), workingDirectory, tr("Text Files (*.txt)"));
         }
         else
         {
             fileName = QFileDialog::getSaveFileName(this,
-                tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
+                                                    tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
         }
         if(fileName.isEmpty())
             return;
@@ -730,56 +730,56 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     fileprogress.show();
     for(int num=0; num < list.count();num++)
     {
-       if((num%(list.count()/300))==0)
+        if((num%(list.count()/300))==0)
             fileprogress.setValue(num);
 
-       QModelIndex index = list[num];
+        QModelIndex index = list[num];
 
-       /* get the message with the selected item id */
-       if(index.column()==0)
-       {
-           data = qfile.getMsgFilter(index.row());
+        /* get the message with the selected item id */
+        if(index.column()==0)
+        {
+            data = qfile.getMsgFilter(index.row());
 
-           if(ascii)
-           {
-               msg.setMsg(data);
+            if(ascii)
+            {
+                msg.setMsg(data);
 
-               /* decode message is necessary */
-               iterateDecodersForMsg(msg,1);
+                /* decode message is necessary */
+                iterateDecodersForMsg(msg,1);
 
-               /* get message ASCII text */
-               text.clear();
-               text += QString("%1 ").arg(qfile.getMsgFilterPos(index.row()));
-               text += msg.toStringHeader();
-               text += " ";
-               text += msg.toStringPayload();
-               text += "\n";
+                /* get message ASCII text */
+                text.clear();
+                text += QString("%1 ").arg(qfile.getMsgFilterPos(index.row()));
+                text += msg.toStringHeader();
+                text += " ";
+                text += msg.toStringPayload();
+                text += "\n";
 
-               if(file)
-               {
-                   // write to file
-                   outfile.write(text.toAscii().constData());
-               }
-               else
-               {
-                   // write to clipboard
-                   textExport += text;
-               }
-           }
-           else
-           {
-               if(file)
-               {
-                   // write to file
-                   outfile.write(data);
-               }
-               else
-               {
-                   // write to clipboard
-               }
-           }
-       }
-   }
+                if(file)
+                {
+                    // write to file
+                    outfile.write(text.toAscii().constData());
+                }
+                else
+                {
+                    // write to clipboard
+                    textExport += text;
+                }
+            }
+            else
+            {
+                if(file)
+                {
+                    // write to file
+                    outfile.write(data);
+                }
+                else
+                {
+                    // write to clipboard
+                }
+            }
+        }
+    }
 
     if(file)
     {
@@ -796,7 +796,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
 void MainWindow::on_action_menuFile_SaveAs_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+                                                    tr("Save DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
@@ -819,7 +819,7 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     if(!success)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("Save as failed!"));
+                              QString("Save as failed!"));
 
         return;
     }
@@ -830,49 +830,55 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
         reloadLogFile();
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("Cannot rename log file \"%1\"\n%2")
-                             .arg(fileName)
-                             .arg(outputfile.errorString()));
+                              QString("Cannot rename log file \"%1\"\n%2")
+                              .arg(fileName)
+                              .arg(outputfile.errorString()));
 }
 
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
 
     int ret = QMessageBox::question(this, tr("Please confirm"),
-                                   tr("Are you sure to clear the table (the dlt file will be cleared too)?"),
-                                   QMessageBox::Cancel | QMessageBox::Ok);
+                                    tr("Are you sure to clear the table (the dlt file will be cleared too)?"),
+                                    QMessageBox::Cancel | QMessageBox::Ok);
 
-     switch (ret) {
-               case QMessageBox::Cancel:
-                   // Cancel was clicked
-                   break;
-               case QMessageBox::Ok:
+    switch (ret) {
+    case QMessageBox::Cancel:
+        // Cancel was clicked
+        break;
+    case QMessageBox::Ok:
 
-                   /* close existing file */
-                   if(outputfile.isOpen())
-                       outputfile.close();
+        /* close existing file */
+        if(outputfile.isOpen())
+            outputfile.close();
 
-                   /* reopen file and truncate */
-                   if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-                   {
-                       reloadLogFile();
-                       //ui->textBrowser->setText("");
-                   }
-                   else
-                       QMessageBox::critical(0, QString("DLT Viewer"),
-                                            QString("Cannot clear log file \"%1\"\n%2")
-                                            .arg(outputfile.fileName())
-                                            .arg(outputfile.errorString()));
-                   break;
-               default:
-                   // should never be reached
-                   break;
-      }
+        /* reopen file and truncate */
+        if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+        {
+            reloadLogFile();
+            //ui->textBrowser->setText("");
+        }
+        else
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot clear log file \"%1\"\n%2")
+                                  .arg(outputfile.fileName())
+                                  .arg(outputfile.errorString()));
+        break;
+    default:
+        // should never be reached
+        break;
+    }
+}
+
+
+
+void MainWindow::threadpluginFinished(){
+    threadIsRunnging = false;
 }
 
 void MainWindow::reloadLogFile()
 {
-    QDltMsg msg;
+
     PluginItem *item = 0;
     QList<PluginItem*> activeViewerPlugins;
     QList<PluginItem*> activeDecoderPlugins;
@@ -884,7 +890,6 @@ void MainWindow::reloadLogFile()
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
-    fileprogress.setValue(0);
 
     /* open file, create filter index and update model view */
 #ifdef DEBUG_PERFORMANCE
@@ -893,17 +898,11 @@ void MainWindow::reloadLogFile()
 
     qfile.open(outputfile.fileName());
 
-    const int qsz = qfile.size();
-
-    fileprogress.setMaximum(qsz);
-
 #ifdef DEBUG_PERFORMANCE
     qDebug() << "Time to create index: " << t.elapsed()/1000 << "s" ;
 #endif
 
-    qfile.clearFilterIndex();
-
-    fileprogress.setLabelText("Applying Plugins");
+    fileprogress.setMaximum(qfile.size());
 
     for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
     {
@@ -913,82 +912,94 @@ void MainWindow::reloadLogFile()
         {
             if(item->plugindecoderinterface)
             {
-               activeDecoderPlugins.append(item);
+                activeDecoderPlugins.append(item);
             }
             if(item->pluginviewerinterface)
             {
 
 #ifdef DEBUG_PERFORMANCE
-    t.start();
+                t.start();
 #endif
                 item->pluginviewerinterface->initFileStart(&qfile);
 
 #ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+                qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
 #endif
                 activeViewerPlugins.append(item);
-          }
-        }
-    }
-
-#ifdef DEBUG_PERFORMANCE
-    t.start();
-#endif
-
-    for(int num=0;num<qsz;num++) {
-        if (fileprogress.wasCanceled()){
-           break;
-        }
-
-        if(!(num%(qsz/300+1))){
-            fileprogress.setValue(num); // This is expensive
-        }
-
-        msg.setMsg(qfile.getMsg(num));
-
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
-            item = (PluginItem*)activeViewerPlugins.at(i);
-            item->pluginviewerinterface->initMsg(num,msg);
-        }
-
-        for(int i = 0; i < activeDecoderPlugins.size(); i++)
-        {
-            item = (PluginItem*)activeDecoderPlugins.at(i);
-
-            if(item->plugindecoderinterface->isMsg(msg,0))
-            {
-
-                item->plugindecoderinterface->decodeMsg(msg,0);
-                break;
             }
         }
+    }
 
-        if(qfile.checkFilter(msg)) {
-            qfile.addFilterIndex(num);
+    // Possible to use several threads to process the splitted  trace file
+    // But this is slower than using one thread.
+    // Reason: Random IO on disk is very slow
+    // Example to use more than one threads
+    //int threadCount = 1;
+    //if(qfile.size()!=0)
+    //    threadCount = QThread::idealThreadCount();
+    //if(threadCount < 1)
+    //        threadCount = 1;
+    //qDebug()<<"Threads: "<<threadCount;
+    //int chunkSize = qfile.size() / threadCount;
+    //qDebug()<<"messages: " <<  qfile.size() << "chunkSize: " << chunkSize;
+
+    if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
+    {
+        fileprogress.cancel();
+        qDebug() << "No plugins active - no thread to process messages started";
+    }
+    else
+    {
+
+        fileprogress.setLabelText(QString("Applying Plugins for Message 0/%1").arg(qfile.size()));
+
+        ThreadPlugin thread;
+        thread.setQDltFile(&qfile);
+        thread.setActiveDecoderPlugins(&activeDecoderPlugins);
+        thread.setActiveViewerPlugins(&activeViewerPlugins);
+        thread.setStartIndex(0);
+        thread.setStopIndex( qfile.size());
+
+        connect(&thread, SIGNAL(percentageComplete(int)), &fileprogress, SLOT(setValue(int)));
+        connect(&thread, SIGNAL(updateProgressText(QString)), &fileprogress, SLOT(setLabelText(QString)));
+        connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
+        connect(&fileprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
+
+        threadIsRunnging = true;
+
+#ifdef DEBUG_PERFORMANCE
+        t.start();
+#endif
+
+        thread.start();
+        thread.setPriority(QThread::HighPriority);
+
+        while(threadIsRunnging){
+            QApplication::processEvents();
         }
+
+#ifdef DEBUG_PERFORMANCE
+        qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
+#endif
 
         for(int i = 0; i < activeViewerPlugins.size(); i++){
             item = (PluginItem*)activeViewerPlugins.at(i);
-            item->pluginviewerinterface->initMsgDecoded(num,msg);
 
+#ifdef DEBUG_PERFORMANCE
+            t.start();
+#endif
+
+            item->pluginviewerinterface->initFileFinish();
+
+#ifdef DEBUG_PERFORMANCE
+            qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
         }
-    }
 
-#ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
-#endif
-
-    for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = (PluginItem*)activeViewerPlugins.at(i);
-
-#ifdef DEBUG_PERFORMANCE
-       t.start();
-#endif
-        item->pluginviewerinterface->initFileFinish();
-
-#ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
+        if(fileprogress.wasCanceled())
+        {
+            QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
+        }
     }
 
     ui->tableView->selectionModel()->clear();
@@ -1069,7 +1080,7 @@ void MainWindow::on_action_menuProject_Open_triggered()
     /* TODO: Ask for saving project if changed */
 
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
+                                                    tr("Open DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
 
     /* open existing project */
     if(!fileName.isEmpty())
@@ -1113,7 +1124,7 @@ bool MainWindow::openDlpFile(QString fileName)
 void MainWindow::on_action_menuProject_Save_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
+                                                    tr("Save DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
 
     /* save project */
     if(!fileName.isEmpty() && project.Save(fileName))
@@ -1121,7 +1132,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
         /* change current working directory */
         workingDirectory = QFileInfo(fileName).absolutePath();
 
-         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
+        this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
         setCurrentProject(fileName);
     }
@@ -1224,11 +1235,11 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         {
             bool interfaceChanged = false;
             if((ecuitem->interfacetype != dlg.interfacetype() ||
-               ecuitem->hostname != dlg.hostname() ||
-               ecuitem->tcpport != dlg.tcpport() ||
-               ecuitem->port != dlg.port() ||
-               ecuitem->baudrate != dlg.baudrate()) &&
-               ecuitem->tryToConnect)
+                ecuitem->hostname != dlg.hostname() ||
+                ecuitem->tcpport != dlg.tcpport() ||
+                ecuitem->port != dlg.port() ||
+                ecuitem->baudrate != dlg.baudrate()) &&
+                    ecuitem->tryToConnect)
             {
                 interfaceChanged = true;
                 disconnectECU(ecuitem);
@@ -1442,79 +1453,79 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
     if(dlg.exec())
     {
 
-    QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
+        QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
 
-    if(list.at(0)->type() == context_type){
-        //Nothing to do
-    }
-
-    if(list.at(0)->type() == application_type){
-        //qDebug()<<"Application selected";
-        ApplicationItem *applicationItem;
-        for(int i=0; i<list.count(); i++){
-             applicationItem = (ApplicationItem*) list.at(i);
-             ContextItem *contextItem;
-             for(int j=0; j<applicationItem->childCount();j++){
-                contextItem = (ContextItem*)applicationItem->child(j);
-                contextItem->setSelected(true);
-             }
-             applicationItem->setSelected(false);
+        if(list.at(0)->type() == context_type){
+            //Nothing to do
         }
-    }
 
-
-    if(list.at(0)->type() == ecu_type){
-        //qDebug()<<"ECU selected";
-        EcuItem *ecuItem;
-        for(int i=0; i<list.count(); i++){
-            ecuItem = (EcuItem*) list.at(i);
+        if(list.at(0)->type() == application_type){
+            //qDebug()<<"Application selected";
             ApplicationItem *applicationItem;
-            for(int j=0; j<ecuItem->childCount(); j++){
-                applicationItem = (ApplicationItem*) ecuItem->child(j);
+            for(int i=0; i<list.count(); i++){
+                applicationItem = (ApplicationItem*) list.at(i);
                 ContextItem *contextItem;
-                for(int k=0; k<applicationItem->childCount();k++){
-                    contextItem = (ContextItem*)applicationItem->child(k);
+                for(int j=0; j<applicationItem->childCount();j++){
+                    contextItem = (ContextItem*)applicationItem->child(j);
                     contextItem->setSelected(true);
-                 }
-
+                }
+                applicationItem->setSelected(false);
             }
-            ecuItem->setSelected(false);
         }
-    }
 
-    list = project.ecu->selectedItems();
 
-    if((list.count() >= 1))
-    {
-        ContextItem *conitem;
+        if(list.at(0)->type() == ecu_type){
+            //qDebug()<<"ECU selected";
+            EcuItem *ecuItem;
+            for(int i=0; i<list.count(); i++){
+                ecuItem = (EcuItem*) list.at(i);
+                ApplicationItem *applicationItem;
+                for(int j=0; j<ecuItem->childCount(); j++){
+                    applicationItem = (ApplicationItem*) ecuItem->child(j);
+                    ContextItem *contextItem;
+                    for(int k=0; k<applicationItem->childCount();k++){
+                        contextItem = (ContextItem*)applicationItem->child(k);
+                        contextItem->setSelected(true);
+                    }
+
+                }
+                ecuItem->setSelected(false);
+            }
+        }
+
+        list = project.ecu->selectedItems();
+
+        if((list.count() >= 1))
+        {
+            ContextItem *conitem;
             for(int i=0; i<list.count(); i++){
                 if(list.at(i)->type() == context_type){
 
-                     conitem = (ContextItem*) list.at(i);
+                    conitem = (ContextItem*) list.at(i);
 
-                     conitem->loglevel = dlg.loglevel();
-                     conitem->tracestatus = dlg.tracestatus();
+                    conitem->loglevel = dlg.loglevel();
+                    conitem->tracestatus = dlg.tracestatus();
 
-                     /* update context item */
-                     conitem->update();
+                    /* update context item */
+                    conitem->update();
 
-                     /* send new log level to ECU, if connected and if selected in dlg */
-                     if(dlg.update())
-                     {
-                         ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
-                         EcuItem* ecuitem = (EcuItem*) appitem->parent();
+                    /* send new log level to ECU, if connected and if selected in dlg */
+                    if(dlg.update())
+                    {
+                        ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
+                        EcuItem* ecuitem = (EcuItem*) appitem->parent();
 
-                         if(ecuitem->connected)
-                         {
-                             controlMessage_SetLogLevel(ecuitem,appitem->id,conitem->id,conitem->loglevel);
-                             controlMessage_SetTraceStatus(ecuitem,appitem->id,conitem->id,conitem->tracestatus);
+                        if(ecuitem->connected)
+                        {
+                            controlMessage_SetLogLevel(ecuitem,appitem->id,conitem->id,conitem->loglevel);
+                            controlMessage_SetTraceStatus(ecuitem,appitem->id,conitem->id,conitem->tracestatus);
 
-                             /* update status */
-                             conitem->status = ContextItem::valid;
-                             conitem->update();
-                         }
-                     }
-                     conitem->setSelected(false);
+                            /* update status */
+                            conitem->status = ContextItem::valid;
+                            conitem->update();
+                        }
+                    }
+                    conitem->setSelected(false);
                 }
             }
 
@@ -2110,14 +2121,14 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
             ecuitem->connected = false;
             ecuitem->update();
 
-//            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
-//                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
+            //            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
+            //                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
 
-//                if(item->plugincontrolinterface)
-//                {
-//                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionError);
-//                }
-//            }
+            //                if(item->plugincontrolinterface)
+            //                {
+            //                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionError);
+            //                }
+            //            }
 
             on_configWidget_itemSelectionChanged();
         }
@@ -2366,160 +2377,160 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessa
     /* control message was received */
     uint32_t service_id=0, service_id_tmp=0;
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-        service_id=DLT_ENDIAN_GET_32(msg.standardheader->htyp, service_id_tmp);
+    service_id=DLT_ENDIAN_GET_32(msg.standardheader->htyp, service_id_tmp);
 
     switch (service_id)
     {
-        case DLT_SERVICE_ID_GET_LOG_INFO:
+    case DLT_SERVICE_ID_GET_LOG_INFO:
+    {
+        /* Only status 1,2,6,7,8 is supported yet! */
+
+        uint8_t status=0;
+        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
+
+        /* Support for status=8 */
+        if (status==8)
         {
-            /* Only status 1,2,6,7,8 is supported yet! */
+            ecuitem->InvalidAll();
+        }
 
-            uint8_t status=0;
-            DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
+        /* Support for status=6 and status=7 */
+        if ((status==6) || (status==7))
+        {
+            uint16_t count_app_ids=0,count_app_ids_tmp=0;
+            DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
+            count_app_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_app_ids_tmp);
 
-            /* Support for status=8 */
-            if (status==8)
+            for (int32_t num=0;num<count_app_ids;num++)
             {
-                ecuitem->InvalidAll();
-            }
+                char apid[DLT_ID_SIZE+1];
+                apid[DLT_ID_SIZE] = 0;
 
-            /* Support for status=6 and status=7 */
-            if ((status==6) || (status==7))
-            {
-                uint16_t count_app_ids=0,count_app_ids_tmp=0;
-                DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
-                count_app_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_app_ids_tmp);
+                DLT_MSG_READ_ID(apid,ptr,length);
 
-                for (int32_t num=0;num<count_app_ids;num++)
+                uint16_t count_context_ids=0,count_context_ids_tmp=0;
+                DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
+                count_context_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_context_ids_tmp);
+
+                for (int32_t num2=0;num2<count_context_ids;num2++)
                 {
-                    char apid[DLT_ID_SIZE+1];
-                    apid[DLT_ID_SIZE] = 0;
+                    QString contextDescription;
+                    char ctid[DLT_ID_SIZE+1];
+                    ctid[DLT_ID_SIZE] = 0;
 
-                    DLT_MSG_READ_ID(apid,ptr,length);
+                    DLT_MSG_READ_ID(ctid,ptr,length);
 
-                    uint16_t count_context_ids=0,count_context_ids_tmp=0;
-                    DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
-                    count_context_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_context_ids_tmp);
+                    int8_t log_level=0;
+                    DLT_MSG_READ_VALUE(log_level,ptr,length,int8_t); /* No endian conversion necessary */
 
-                    for (int32_t num2=0;num2<count_context_ids;num2++)
-                    {
-                        QString contextDescription;
-                        char ctid[DLT_ID_SIZE+1];
-                        ctid[DLT_ID_SIZE] = 0;
-
-                        DLT_MSG_READ_ID(ctid,ptr,length);
-
-                        int8_t log_level=0;
-                        DLT_MSG_READ_VALUE(log_level,ptr,length,int8_t); /* No endian conversion necessary */
-
-                        int8_t trace_status=0;
-                        DLT_MSG_READ_VALUE(trace_status,ptr,length,int8_t); /* No endian conversion necessary */
-
-                        if (status==7)
-                        {
-                            uint16_t context_description_length=0,context_description_length_tmp=0;
-                            DLT_MSG_READ_VALUE(context_description_length_tmp,ptr,length,uint16_t);
-                            context_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,context_description_length_tmp);
-
-                            if (length<context_description_length)
-                            {
-                                length = -1;
-                            }
-                            else
-                            {
-                                contextDescription = QString(QByteArray((char*)ptr,context_description_length));
-                                ptr+=context_description_length;
-                                length-=context_description_length;
-                            }
-                        }
-
-                        controlMessage_SetContext(ecuitem,QString(apid),QString(ctid),contextDescription,log_level,trace_status);
-                    }
+                    int8_t trace_status=0;
+                    DLT_MSG_READ_VALUE(trace_status,ptr,length,int8_t); /* No endian conversion necessary */
 
                     if (status==7)
                     {
-                        QString applicationDescription;
-                        uint16_t application_description_length=0,application_description_length_tmp=0;
-                        DLT_MSG_READ_VALUE(application_description_length_tmp,ptr,length,uint16_t);
-                        application_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,application_description_length_tmp);
-                        applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
-                        controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
-                        ptr+=application_description_length;
+                        uint16_t context_description_length=0,context_description_length_tmp=0;
+                        DLT_MSG_READ_VALUE(context_description_length_tmp,ptr,length,uint16_t);
+                        context_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,context_description_length_tmp);
+
+                        if (length<context_description_length)
+                        {
+                            length = -1;
+                        }
+                        else
+                        {
+                            contextDescription = QString(QByteArray((char*)ptr,context_description_length));
+                            ptr+=context_description_length;
+                            length-=context_description_length;
+                        }
                     }
+
+                    controlMessage_SetContext(ecuitem,QString(apid),QString(ctid),contextDescription,log_level,trace_status);
+                }
+
+                if (status==7)
+                {
+                    QString applicationDescription;
+                    uint16_t application_description_length=0,application_description_length_tmp=0;
+                    DLT_MSG_READ_VALUE(application_description_length_tmp,ptr,length,uint16_t);
+                    application_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,application_description_length_tmp);
+                    applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
+                    controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
+                    ptr+=application_description_length;
                 }
             }
-
-            char com_interface[DLT_ID_SIZE];
-            DLT_MSG_READ_ID(com_interface,ptr,length);
-
-            if (length<0)
-            {
-                // wxMessageBox(_("Control Message corrupted!"),_("Receive Control Message"));
-            }
-
-            break;
         }
-        case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
+
+        char com_interface[DLT_ID_SIZE];
+        DLT_MSG_READ_ID(com_interface,ptr,length);
+
+        if (length<0)
         {
-            uint8_t status=0;
-            DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-            uint8_t loglevel=0;
-            DLT_MSG_READ_VALUE(loglevel,ptr,length,uint8_t); /* No endian conversion necessary */
-
-            switch (status)
-            {
-            case 0: /* OK */
-                {
-                    ecuitem->loglevel = loglevel;
-                    ecuitem->status = EcuItem::valid;
-                }
-                    break;
-            case 1: /* NOT_SUPPORTED */
-                {
-                    ecuitem->status = EcuItem::unknown;
-                }
-                break;
-            case 2: /* ERROR */
-                {
-                    ecuitem->status = EcuItem::invalid;
-                }
-                break;
-            }
-            /* update status */
-            ecuitem->update();
-
-            break;
+            // wxMessageBox(_("Control Message corrupted!"),_("Receive Control Message"));
         }
-        case DLT_SERVICE_ID_SET_LOG_LEVEL:
+
+        break;
+    }
+    case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
+    {
+        uint8_t status=0;
+        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
+
+        uint8_t loglevel=0;
+        DLT_MSG_READ_VALUE(loglevel,ptr,length,uint8_t); /* No endian conversion necessary */
+
+        switch (status)
         {
-            uint8_t status=0;
-            DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-            switch (status)
-            {
-            case 0: /* OK */
-                {
-                    //conitem->status = EcuItem::valid;
-                }
-                    break;
-            case 1: /* NOT_SUPPORTED */
-                {
-                    //conitem->status = EcuItem::unknown;
-                }
-                break;
-            case 2: /* ERROR */
-                {
-                    //conitem->status = EcuItem::invalid;
-                }
-                break;
-            }
-
-            /* update status*/
-            //conitem->update();
-
+        case 0: /* OK */
+        {
+            ecuitem->loglevel = loglevel;
+            ecuitem->status = EcuItem::valid;
+        }
+            break;
+        case 1: /* NOT_SUPPORTED */
+        {
+            ecuitem->status = EcuItem::unknown;
+        }
+            break;
+        case 2: /* ERROR */
+        {
+            ecuitem->status = EcuItem::invalid;
+        }
             break;
         }
+        /* update status */
+        ecuitem->update();
+
+        break;
+    }
+    case DLT_SERVICE_ID_SET_LOG_LEVEL:
+    {
+        uint8_t status=0;
+        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
+
+        switch (status)
+        {
+        case 0: /* OK */
+        {
+            //conitem->status = EcuItem::valid;
+        }
+            break;
+        case 1: /* NOT_SUPPORTED */
+        {
+            //conitem->status = EcuItem::unknown;
+        }
+            break;
+        case 2: /* ERROR */
+        {
+            //conitem->status = EcuItem::invalid;
+        }
+            break;
+        }
+
+        /* update status*/
+        //conitem->update();
+
+        break;
+    }
     } // switch
 }
 
@@ -2536,9 +2547,9 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     msg.standardheader = (DltStandardHeader*)(msg.headerbuffer + sizeof(DltStorageHeader));
     msg.standardheader->htyp = DLT_HTYP_WEID | DLT_HTYP_WTMS | DLT_HTYP_UEH | DLT_HTYP_PROTOCOL_VERSION1 ;
 
-        #if (BYTE_ORDER==BIG_ENDIAN)
-                msg.standardheader->htyp = (msg.standardheader->htyp | DLT_HTYP_MSBF);
-        #endif
+#if (BYTE_ORDER==BIG_ENDIAN)
+    msg.standardheader->htyp = (msg.standardheader->htyp | DLT_HTYP_MSBF);
+#endif
 
     msg.standardheader->mcnt = 0;
 
@@ -2766,7 +2777,7 @@ void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QStri
     /* initialise new message */
     dlt_message_init(&msg,0);
 
-    /* prepare payload */    
+    /* prepare payload */
     msg.datasize = sizeof(DltServiceSetLogLevel);
     if (msg.databuffer) free(msg.databuffer);
     msg.databuffer = (uint8_t *) malloc(msg.datasize);
@@ -2792,7 +2803,7 @@ void MainWindow::controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status)
     /* initialise new message */
     dlt_message_init(&msg,0);
 
-    /* prepare payload */   
+    /* prepare payload */
     msg.datasize = sizeof(DltServiceSetDefaultLogLevel);
     if (msg.databuffer) free(msg.databuffer);
     msg.databuffer = (uint8_t *) malloc(msg.datasize);
@@ -3280,11 +3291,11 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                              QString("Build Date: %1\n").arg(__DATE__)+
                              QString("Build Time: %1\n").arg(__TIME__)+
                              QString("Qt Version: %1\n\n").arg(QT_VERSION_STR)+
-#if (BYTE_ORDER==BIG_ENDIAN)
+                         #if (BYTE_ORDER==BIG_ENDIAN)
                              QString("Architecture: Big Endian\n\n")+
-#else
+                         #else
                              QString("Architecture: Little Endian\n\n")+
-#endif
+                         #endif
                              QString("(C) 2010 BMW AG\n"));
 }
 
@@ -3294,14 +3305,14 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
     // Please copy changes to OptManager::getInstance().cpp - printUsage()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage"),
-#if (WIN32)
+                         #if (WIN32)
                              QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
                              QString("Options:\n")+
-#else
+                         #else
                              QString("Usage: dlt_viewer [OPTIONS]\n\n")+
                              QString("Options:\n")+
                              QString(" -h \t\tPrint usage\n")+
-#endif
+                         #endif
                              QString(" -p projectfile \t\tLoading project file on startup (must end with .dlp)\n")+
                              QString(" -l logfile \t\tLoading logfile on startup (must end with .dlt)\n")+
                              QString(" -f filterfile \t\tLoading filterfile on startup (must end with .dlf)\n")+
@@ -3326,8 +3337,8 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
     ui->action_menuFilter_Load->setEnabled(true);
 
     if( project.filter->topLevelItemCount() > 0 ){
-            ui->action_menuFilter_Save_As->setEnabled(true);
-            ui->action_menuFilter_Clear_all->setEnabled(true);
+        ui->action_menuFilter_Save_As->setEnabled(true);
+        ui->action_menuFilter_Clear_all->setEnabled(true);
     }else{
         ui->action_menuFilter_Save_As->setEnabled(false);
         ui->action_menuFilter_Clear_all->setEnabled(false);
@@ -3433,9 +3444,9 @@ void MainWindow::openRecentFile()
         else
         {
             QMessageBox::critical(0, QString("DLT Viewer"),
-                                 QString("Cannot open log file \"%1\"\n%2")
-                                 .arg(fileName)
-                                 .arg(outputfile.errorString()));
+                                  QString("Cannot open log file \"%1\"\n%2")
+                                  .arg(fileName)
+                                  .arg(outputfile.errorString()));
             removeCurrentFile(fileName);
         }
     }
@@ -3675,7 +3686,7 @@ void MainWindow::sendUpdates(EcuItem* ecuitem)
     controlMessage_SetTimingPackets(ecuitem,ecuitem->timingPackets);
 
     if (ecuitem->sendGetLogInfo)
-       controlMessage_GetLogInfo(ecuitem);
+        controlMessage_GetLogInfo(ecuitem);
 
     /* update status */
     ecuitem->status = EcuItem::valid;
@@ -3710,7 +3721,7 @@ void MainWindow::stateChangedSerial(bool dsrChanged){
                 if(item->plugincontrolinterface)
                 {
                     if(dsrChanged){
-                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
                     }else{
                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
                     }
@@ -3757,7 +3768,7 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionConnecting);
                         break;
                     case QAbstractSocket::ConnectedState:
-                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
+                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
                         break;
                     case QAbstractSocket::ClosingState:
                         item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
@@ -3905,7 +3916,7 @@ void MainWindow::updatePluginsECUList()
 
         if(item->plugincontrolinterface)
         {
-			item->plugincontrolinterface->initControl(&qcontrol);
+            item->plugincontrolinterface->initControl(&qcontrol);
             item->plugincontrolinterface->initConnections(list);
         }
     }
@@ -3925,7 +3936,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
 
     item->plugininterface->loadConfig(item->getFilename());
 
-/*    if(item->plugincontrolinterface)
+    /*    if(item->plugincontrolinterface)
         item->plugincontrolinterface->initControl(&qcontrol);
 */
     QStringList list = item->plugininterface->infoConfig();
@@ -3980,90 +3991,120 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
 
-            item->savePluginModeToSettings();
-
             /* update plugin item */
             updatePlugin(item);
+            item->savePluginModeToSettings();
 
-            if(callInitFile)
-            {
-                initPluginAfterActivation(item);
-            }
+
+        }
+        if(callInitFile)
+        {
+            processMsgAfterPluginmodeChange(item);
         }
     }
     else
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Plugin selected!"));
+                             QString("No Plugin selected!"));
 
 }
 
-void MainWindow::initPluginAfterActivation(PluginItem *item){
+void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
+
+    QList<PluginItem*> activeDecoderPlugins;
+    QList<PluginItem*> activeViewerPlugins;
+
+#ifdef DEBUG_PERFORMANCE
+    QTime t;
+#endif
 
     if(!item){
-        qDebug()<<"Plugin couldn't be initialized. Plugin is null";
+        qDebug()<<"Error: Plugin could not be initizialised. Item null.";
         return;
     }
 
-    if(!item->pluginviewerinterface)
-        return;
-
-    const int qsz = qfile.size();
-    QProgressDialog pluginprogress("Applying Plugins", "Cancel", 0, qsz, this);
+    QProgressDialog pluginprogress(QString("Applying Plugins for message 0/%1").arg(qfile.size()), "Cancel", 0, qfile.size(), this);
     pluginprogress.setWindowTitle("DLT Viewer");
     pluginprogress.setWindowModality(Qt::WindowModal);
     pluginprogress.show();
-    pluginprogress.setValue(0);
 
-    QDltMsg msg;
-    PluginItem *decoderItem = 0;
-    QList<PluginItem*> activeDecoderPlugins;
+    if(item->pluginviewerinterface)
+    {
+        activeViewerPlugins.append(item);
 
+#ifdef DEBUG_PERFORMANCE
+        t.start();
+#endif
+        item->pluginviewerinterface->initFileStart(&qfile);
 
+#ifdef DEBUG_PERFORMANCE
+        qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
+
+        PluginItem *decoderItem = 0;
         for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
         {
             decoderItem = (PluginItem*)project.plugin->topLevelItem(i);
 
             if(decoderItem->getMode() != PluginItem::ModeDisable && decoderItem->plugindecoderinterface)
             {
+
                 activeDecoderPlugins.append(decoderItem);
             }
         }
 
-        item->pluginviewerinterface->initFileStart(&qfile);
+    }
+    // Possible to use several threads to process the splitted  trace file
+    // But this is slower than using one thread.
+    // Reason: Random IO on disk is very slow
+    // Example to use more than one threads
+    //if(qfile.size()!=0)
+    //    threadCount = QThread::idealThreadCount();
+    //if(threadCount < 1)
+    //        threadCount = 1;
+    //int chunkSize = qfile.size() / threadCount;
+    //qDebug()<<"messages: " <<  qfile.size() << "chunkSize: " << chunkSize;
 
-        for(int num=0;num<qsz;num++) {
+    ThreadPlugin thread;
 
-            if (pluginprogress.wasCanceled()){
-               break;
-            }
+    thread.setQDltFile(&qfile);
+    thread.setActiveDecoderPlugins(&activeDecoderPlugins);
+    thread.setActiveViewerPlugins(&activeViewerPlugins);
+    thread.setStartIndex(0);
+    thread.setStopIndex( qfile.size());
 
-            if(!(num%(qsz/300+1))){
-                pluginprogress.setValue(num); // This is expensive
-            }
+    connect(&pluginprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
+    connect(&thread, SIGNAL(percentageComplete(int)), &pluginprogress, SLOT(setValue(int)));
+    connect(&thread, SIGNAL(updateProgressText(QString)), &pluginprogress, SLOT(setLabelText(QString)));
+    connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
 
-            msg.setMsg(qfile.getMsg(num));
+    threadIsRunnging = true;
 
-            item->pluginviewerinterface->initMsg(num,msg);
+#ifdef DEBUG_PERFORMANCE
+    t.start();
+#endif
 
+    thread.start();
+    thread.setPriority(QThread::HighPriority);
 
-            for(int i = 0; i < activeDecoderPlugins.size(); i++)
-            {
-                decoderItem = (PluginItem*)activeDecoderPlugins.at(i);
+    while(threadIsRunnging){
+        QApplication::processEvents();
+    }
 
-                if(decoderItem->plugindecoderinterface->isMsg(msg,0))
-                {
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
+    t.start();
+#endif
 
-                    decoderItem->plugindecoderinterface->decodeMsg(msg,0);
-                    break;
-                }
-            }
+    item->pluginviewerinterface->initFileFinish();
 
+#ifdef DEBUG_PERFORMANCE
+    qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+#endif
 
-            item->pluginviewerinterface->initMsgDecoded(num,msg);
-
-        }
-
-        item->pluginviewerinterface->initFileFinish();
+    if(pluginprogress.wasCanceled())
+    {
+        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
+    }
 }
 
 
@@ -4082,16 +4123,16 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
             updatePlugin(item);
 
             if(oldMode == PluginItem::ModeDisable){
-                initPluginAfterActivation(item);
+                processMsgAfterPluginmodeChange(item);
             }
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
-                                QString("The selected Plugin is already active."));
+                                 QString("The selected Plugin is already active."));
         }
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Plugin selected!"));
+                             QString("No Plugin selected!"));
     }
 
 }
@@ -4108,12 +4149,12 @@ void MainWindow::on_action_menuPlugin_Hide_triggered() {
             updatePlugin(item);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
-                                QString("The selected Plugin is already hidden or deactivated."));
+                                 QString("The selected Plugin is already hidden or deactivated."));
         }
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Plugin selected!"));
+                             QString("No Plugin selected!"));
     }
 
 }
@@ -4131,12 +4172,12 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
             updatePlugin(item);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
-                                QString("The selected Plugin is already deactivated."));
+                                 QString("The selected Plugin is already deactivated."));
         }
     }
     else
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Plugin selected!"));
+                             QString("No Plugin selected!"));
 }
 
 void MainWindow::on_action_menuPlugin_ExecuteCommand_triggered()
@@ -4149,7 +4190,7 @@ void MainWindow::on_action_menuPlugin_ExecuteCommand_triggered()
     if(!plugin)
     {
         QMessageBox::warning(this, QString("DLT Viewer"),
-                            QString("Not a Command Plugin."));
+                             QString("Not a Command Plugin."));
         return;
     }
 
@@ -4201,7 +4242,7 @@ void MainWindow::filterAddTable() {
     if(list.count()<=0)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
-                             QString("No message selected"));
+                              QString("No message selected"));
         return;
     }
 
@@ -4295,7 +4336,7 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
 {
 
     QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Save DLT Filters"), workingDirectory, tr("DLT Filter File (*.dlf);;All files (*.*)"));
+                                                    tr("Save DLT Filters"), workingDirectory, tr("DLT Filter File (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty())
     {
@@ -4308,7 +4349,7 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
 void MainWindow::on_action_menuFilter_Load_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
+                                                    tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
     {
@@ -4416,7 +4457,7 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
         FilterItem* item = (FilterItem*) list.at(0);
 
         /* show filter dialog */
-        FilterDialog dlg;        
+        FilterDialog dlg;
         filterDialogWrite(dlg,item);
         if(dlg.exec())
         {
@@ -4427,7 +4468,7 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Filter selected!"));
+                             QString("No Filter selected!"));
     }
 }
 
@@ -4456,7 +4497,7 @@ void MainWindow::on_action_menuFilter_Edit_triggered() {
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Filter selected!"));
+                             QString("No Filter selected!"));
     }
 }
 
@@ -4487,7 +4528,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
-                            QString("No Filter selected!"));
+                             QString("No Filter selected!"));
     }
 
     on_filterWidget_itemSelectionChanged();
@@ -4692,7 +4733,7 @@ void MainWindow::dropEvent(QDropEvent *event)
 }
 
 void MainWindow::sectionInTableDoubleClicked(int logicalIndex){
-        ui->tableView->resizeColumnToContents(logicalIndex);
+    ui->tableView->resizeColumnToContents(logicalIndex);
 }
 
 void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
@@ -4711,23 +4752,23 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
     if(column == 0)
     {
-            FilterItem *tmp = (FilterItem*)item;
-            if(tmp->checkState(column) == Qt::Unchecked)
-            {
-                tmp->enableFilter = false;
-            }
-            else
-            {
-                tmp->enableFilter = true;
-            }
+        FilterItem *tmp = (FilterItem*)item;
+        if(tmp->checkState(column) == Qt::Unchecked)
+        {
+            tmp->enableFilter = false;
+        }
+        else
+        {
+            tmp->enableFilter = true;
+        }
 
-            ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-            ui->filterStatus->setText("Filters changed. Please enable filtering.");
+        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
+        ui->filterStatus->setText("Filters changed. Please enable filtering.");
 
-            ui->filterButton->setChecked(Qt::Unchecked);
-            ui->filterButton->setText("Enable filters");
+        ui->filterButton->setChecked(Qt::Unchecked);
+        ui->filterButton->setText("Enable filters");
 
-            //filterUpdate();
+        //filterUpdate();
     }
 }
 
@@ -4739,8 +4780,8 @@ void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
 
         if(item->getMode() != item->ModeDisable &&
-           item->plugindecoderinterface &&
-           item->plugindecoderinterface->isMsg(msg,triggeredByUser))
+                item->plugindecoderinterface &&
+                item->plugindecoderinterface->isMsg(msg,triggeredByUser))
         {
             item->plugindecoderinterface->decodeMsg(msg,triggeredByUser);
             break;
@@ -4768,7 +4809,7 @@ void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 void MainWindow::on_action_menuFilter_Append_Filters_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
+                                                    tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty() && project.LoadFilter(fileName,false))
     {

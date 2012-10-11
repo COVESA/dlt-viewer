@@ -52,7 +52,6 @@ public:
 
     /* pointer to the current loaded file */
     QDltFile *qfile;
-    QMutex *mutex;
     Project *project;
     void modelChanged();
 

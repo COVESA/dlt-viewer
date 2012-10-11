@@ -27,7 +27,7 @@
 #include <QFile>
 #include <QDateTime>
 #include <QColor>
-
+#include <QMutex>
 #include <time.h>
 
 struct sDltFile;
@@ -87,7 +87,9 @@ public:
 
 protected:
 
+
 private:
+
 
 };
 
@@ -893,6 +895,9 @@ public:
 protected:
 
 private:
+
+    //! Mutex to lock critical path for infile
+    QMutex mutexQDlt;
 
     //! DLT log file.
     QFile infile;

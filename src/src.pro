@@ -53,7 +53,8 @@ SOURCES += main.cpp \
     dltsettingsmanager.cpp \
     tablemodel.cpp \
     commandplugindialog.cpp \
-    filtertreewidget.cpp
+    filtertreewidget.cpp \
+    threadplugin.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -75,7 +76,8 @@ HEADERS += mainwindow.h \
     dltsettingsmanager.h \
     tablemodel.h \
     commandplugindialog.h \
-    filtertreewidget.h
+    filtertreewidget.h \
+    threadplugin.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

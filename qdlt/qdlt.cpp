@@ -25,7 +25,6 @@
 
 #include <qextserialport.h>
 #include <QTcpSocket>
-
 #include "qdlt.h"
 
 extern "C"
@@ -1417,6 +1416,8 @@ bool QDltFile::updateIndex()
         return false;
     }
 
+    mutexQDlt.lock();
+
     /* start at last found position */
     if(indexAll.size()) {
         /* move behind last found position */
@@ -1434,8 +1435,10 @@ bool QDltFile::updateIndex()
 
     /* walk through the whole file and find all DLT0x01 markers */
     /* store the found positions in the indexAll */
+    char lastFound = 0;
+
     while(true) {
-        char lastFound = 0;
+
         /* read buffer from file */
         buf = infile.read(READ_BUF_SZ);
         if(buf.isEmpty())
@@ -1471,6 +1474,8 @@ bool QDltFile::updateIndex()
         }
         pos += cbuf_sz;
     }
+
+    mutexQDlt.unlock();
 
     /* success */
     return true;
@@ -1702,9 +1707,12 @@ QByteArray QDltFile::getMsg(int index)
     if(index<0 || index>=indexAll.size()) {
         qDebug() << "getMsg: Index is out of range";
 
+        qDebug()<<"bla";
         /* return empty data buffer */
         return QByteArray();
     }
+
+    mutexQDlt.lock();
 
     /* move to file position selected by index */
     infile.seek(indexAll[index]);
@@ -1716,6 +1724,8 @@ QByteArray QDltFile::getMsg(int index)
     else
         /* any other file position */
         buf = infile.read(indexAll[index+1]-indexAll[index]);
+
+    mutexQDlt.unlock();
 
     /* return DLT message buffer */
     return buf;
