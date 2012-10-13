@@ -1,43 +1,37 @@
-DLT Viewer - Automotive Diagnostic Log and Trace Viewer
+DLT Viewer  - Release Notes
+===========================
+Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
+Version
+-------
 Version 2.7.0 ALPHA
 
-The DLT Viewer can send control messages to the DLT daemon, e.g. to set 
-individual log levels of applications and contexts or get the list of 
-applications and contexts registered in the DLT daemon.
-More features are listed on the Homepage.
+Known issues
+------------
 
-Homepage
---------
-https://collab.genivi.org/wiki/display/geniviproj/Automotive+DLT+%28Diagnostic+Log+and+Trace%29
+   * none
 
-
-License
+Changes
 -------
-Full information on the license for this software
-is available in the "LICENSE.txt" file. 
-The full MPL license is in "MPL.txt."
 
+2.7.0
 
-Contact
--------
-Alexander Wenzel (Alexander.AW.Wenzel@bmw.de)
-Christian Muck (christian.muck@bmw.de)
+   * !!! *** Important: API change of plugininterface. 
+   * Modified methods reloadlogfile and read to use new plugininterface methods and updated all plugins.
+   * Moved duplicate Filter Dialog read and write operation into new function.
+   * [GDLT-125] DLT Viewer often cannot reconnect TCP connection automatically when power supply is interrupted
+   * Added build and SDK generation script for windows.
+   * [GDLT-124] Filetransfer plugin performance enhanced
+   * [GDLT-135] Version control message is not displayed as ASCII
+   * [GDLT-111]: Change to Case Insensitive to ignore case in extension
+   * [GDLT-122] Time parameter is always local time fixed
+   * [GDLT-107]: Plugin interface extension for sending commands to plugins
+   * [GDLT-39]: Enable drag&drop ordering of filters
 
-
-Dynamically linked open source software
----------------------------------------
-* Qt 4.8.1 (LGPL - Qt SDK version 1.2)
-* GCC (GPL)
-* qextserialport (MIT License - Version 1.2 BETA)
-* (Optional) Mingw (GPL + BSD Variante + Public Domain)
-
-
-Changes in this release
------------------------
 2.6.0
-!!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
-!!! *** IMPORTANT: API changed for Decoderinterace - see GDLT-80 *** !!!
+
+   * !!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
+   * !!! *** IMPORTANT: API changed for Decoderinterace - see GDLT-80 *** !!!
    * [GDLT-87] Added new version of QextSerialPort v1.2 BETA - MIT License
    * [GDLT-80] Decoderinterface extended - plugins get the information if the action for isMsg or decodeMsg  was triggered by the user
    * [GDLT-78] Extended API of the decoderinterface. Plugins gets a notification if the state of the ECU connection changed
@@ -62,7 +56,6 @@ Changes in this release
    * Change to the Mozilla Public License Version 2.0
 
 2.5.0
-Improvements:
 
    * [GDLT-32] Store DLT Viewer configuration in an ini file instead of using the registry 
    * [GDLT-34] Save the DLT-viewr version to config/registry and delete specific values when a new minor version of the viewer is started 
@@ -70,31 +63,21 @@ Improvements:
    * [GDLT-33] Checkbox in the project settings to hide file transfer messages 
    * [GDLT-45] Improve detection of filetransferMessages (Related to GDLT-33)
    * [GENDLT-14] DLT Viewer tested with Qt SDK version 1.2 
-
-Bugfixes: 
    * [GDLT-31] Tracefile content stored different under Ubuntu 64 bit version compared to Ubuntu/Win 32 Bit version 
    * [GDLT-43]  Filter on/off toggle button is broken when "Hide file transfer messages" is selected in settings 
  
-NOTE: Because of the switch to Qt SDK version 1.2 and GDLT-31 it is recommended to recompile implemented plugins.
-
 2.4.3:
 
-Bugfixes:
    * Fixed an issue where the plugins could not modify the message passed to them.
 
 2.4.2:
 
-New Features:
    * [GSW-134] Expand and collapse all context menu in the configWidget (shortcut ctrl+- and ctrl++)
    * [GSW-112] Possibility to enable/disable filters with a check-box in the filter widget
    * [GSW-111] Checkbox in project settings for automatically color errors and wanrings in the viewer
-
-Improvements:
    * [GSW-131] The viewer looks in relativ to the executable in the ./plugins directory
    * [GSW-129] Double klick on .dlt or .dlp opens dlt_viewer and loads automatically logfile or projectfile when dlt_viewer is defined as the standard program for .dlt or .dlp files in Windows
    * Plugininformation is called when the Pluginitem is expanded and not only when the Plugin is loaded
-
-Bugfixes:
    * [GSW-107] Check if the plugins are really deactivated when they are hidden
    * [GENDLT-11] Wrong HTML format for < and > of the viewer plugin
    * [GSW-118] When changing filters a popup with an abort button appears this button seems to do nothing
@@ -104,14 +87,10 @@ Bugfixes:
 
 2.4.1:
 
-Improvements:
-
    * Deleted unnecessary widget of mainwindow 
    * Added Linux Desktop Icon and Description
    * [GSW-103] Prove if the plugins directory in the dlt-viewer directory exists and is readable before loading plugins
    * [GSW-70] Button for save project in the toolbar
-
-Bugfixes:
    * Fixed Bug in Filetransferplugin - Clear list button
    * Fixed initialisation of injection plugin interface.
    * [GSW-109] Printing of dlt-viewer usage not visibile in windows. Command line usage for windows added to the help menu of the dlt viewer.
@@ -120,14 +99,9 @@ Bugfixes:
 
 2.4.0:
 
-New Features:
-
    * [GSW-68] Command line parameter for test automation. Start the "dlt_viewer -h" from command line to print usage.
    * [GSW-88] Set log level/trace status for multiple contexts at once (multiple selection with "Shift" or "Crtl").
    * [GSW-90] Configurable font size of the table content fixed. The table font size is configurable in the settings dialog - tab table.
-
-Improvements:
-
    * [GSW-84] User hast to confirm to clear the log table
    * [GSW-85] Change button icon of Enable filter to a filter symbol and enable filter by default
    * [GSW-89] Resize payload column of DLT message view. Double click on table header resizes the column.
@@ -135,16 +109,11 @@ Improvements:
    
 2.3.0:
 
-New Features:
-
    * [GSW-20] Table View should also display description of context for each displayed DLT message - choose id or description within settings
    * [GSW-63] Load and Save Filter configurations  
    * [GSW-17] Sorting of Contexts and Applications by id or descriptions.
    * [GSW-64] Select Filter from last used filter configuration.
    * [GSW-8] Version and interface check of plugins
-
-Improvements:
-
    * [GSW-21] Enhance search function: Start from current position / start from beginning
    * [GSW-14] Doxygen based documentation of DLT Viewer
    * [GSW-65] Using RGB colors via color picker for filter marker.
@@ -161,9 +130,6 @@ Improvements:
    * [GSW-6] Marker functionaliy added.
    * Plugins are loaded now from three directories: Directory from settings, plugins directory and /usr/share/dlt-viewer directory.
    * Linux: Plugins are loaded also from /usr/share/dlt-viewer directory
-
-Bugfixes:
-
    * Fixed crash when double clicking on child item below plugin item.
    * All directory and file search dialog now use the same working directory.
    * [GSW-35] Filtered messages have other message ids then unfiltered messages fixed.
@@ -173,8 +139,6 @@ Bugfixes:
    * [GSW-22] Plugin Non Verbose: Zero arguments displays "[Id]|" fixed.
 
 2.2.0:
-
-Improvements:
 
    * Added version to window title
    * Filtering of decoded messages by decode plugins now possible
@@ -188,9 +152,6 @@ Improvements:
    * Start DLT viewer with a DLT Viewer Project as argument.
    * Colour marking of contexts, if synchronized with dlt daemon
    * Import DLT Stream with serial header functionality addded incl. resync to serial header and error counter
-
-Bugfixes:
-
    * Fixed bug when using COM ports bigger than 9
    * Fixies big endian target
    * DLT header parameter Timestaps was handled in the wrong endianes format, big endian is correct now
@@ -201,8 +162,6 @@ Bugfixes:
    * ECU Configuration did not save sync to serial header option (TCP and Serial)
 
 2.1.0:
-
-Improvements:
 
    * New Qt based implementation of viewer
    * Indiviual columns for header fields
@@ -220,9 +179,6 @@ Improvements:
    * History for open files/projects/TCP Hostnames
    * Enable/Disable timing messages per ECU is now possible
    * Extended scrolling functionality (enable/disable scrolling by scrolling in list)
-
-Bugfixes:
-
    * Changed serial library because of sporadic crashes of teh application
    * Only one filter with same name can be added now
    * Corrected initialization of resync mode
@@ -231,27 +187,4 @@ Bugfixes:
    * Automatic sending of default log level, display status and request for timing packets fixed
    * Displaying connection status fixed
 
-Known issues in this release
-----------------------------
-
- * DLT Viewer: DLT Fibex plugin doesn't do any checks concerning length or messages validity
-
-
-Documents
----------
-
- * ...
-
-Notes
------
-
- * ...
-
-Software/Hardware
------------------
-
- * Developped with:
- 	* QT 4.7.0 (http://qt.nokia.com/)
-    * Ubuntu Linux 10.10 32-bit / Intel PC
- 	* MS Windows XP / Intel PC
 
