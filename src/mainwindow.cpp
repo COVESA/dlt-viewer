@@ -915,7 +915,7 @@ void MainWindow::reloadLogFile()
             {
                activeDecoderPlugins.append(item);
             }
-            else if(item->pluginviewerinterface)
+            if(item->pluginviewerinterface)
             {
 
 #ifdef DEBUG_PERFORMANCE
