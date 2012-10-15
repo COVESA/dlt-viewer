@@ -27,6 +27,8 @@ Changes
    * [GDLT-122] Time parameter is always local time fixed
    * [GDLT-107]: Plugin interface extension for sending commands to plugins
    * [GDLT-39]: Enable drag&drop ordering of filters
+   * [GENDLT-37] MOST plugin should be able to decode messages segmented over 
+                 several log messages
 
 2.6.0
 
