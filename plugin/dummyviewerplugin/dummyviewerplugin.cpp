@@ -98,9 +98,16 @@ void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     if(!dltFile)
         return;
 
+    qDebug() << "undecoded: " << msg.toStringPayload();
+
     form->setSelectedMessage(index);
 }
 
+void DummyViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+
+    qDebug() << "decoded: " << msg.toStringPayload();
+
+}
 
 void DummyViewerPlugin::initFileStart(QDltFile *file){
 

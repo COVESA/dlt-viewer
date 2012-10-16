@@ -246,13 +246,22 @@ public:
     virtual void updateFileFinish( ) = 0;
 
 
-    //! A log message was selected to show more detailed information.
+    //! An undecoded log message was selected to show more detailed information.
     /*!
-      A log message was selected. The viewer plugin can show more detailed information about this plugin.
+      An undecoded log message was selected. The viewer plugin can show more detailed information about this plugin.
+      \param index The current DLT message index
+      \param msg The current undecoded DLT message
+    */
+    virtual void selectedIdxMsg(int index, QDltMsg &msg) = 0;
+
+
+    //! A decoded log message was selected to show more detailed information.
+    /*!
+      A decoded log message was selected. The viewer plugin can show more detailed information about this plugin.
       \param index The current DLT message index
       \param msg The current decoded DLT message
     */
-    virtual void selectedIdxMsg(int index, QDltMsg &msg) = 0;
+    virtual void selectedIdxMsgDecoded(int index, QDltMsg &msg) = 0;
 
 };
 

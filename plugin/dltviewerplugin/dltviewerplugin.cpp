@@ -68,6 +68,10 @@ QWidget* DltViewerPlugin::initViewer() {
     return form;
 }
 
+void DltViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+
+}
+
 void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     QString text;
     QDltArgument argument;

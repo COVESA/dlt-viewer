@@ -114,6 +114,9 @@ void DummyControlPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
 }
 
+void DummyControlPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+
+}
 
 void DummyControlPlugin::initFileStart(QDltFile *file){
     dltFile = file;

@@ -2352,19 +2352,62 @@ void MainWindow::read(EcuItem* ecuitem)
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {
-
+    PluginItem *item = 0;
+    QList<PluginItem*> activeViewerPlugins;
+    QList<PluginItem*> activeDecoderPlugins;
     QDltMsg msg;
     //qfile.getMsg(qfile.getMsgFilterPos(index.row()), msg);
     msg.setMsg(qfile.getMsgFilter(index.row()));
 
-    // Update plugins
-    for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+    int msgIndex = qfile.getMsgFilterPos(index.row());
 
-        if(item->pluginviewerinterface && (item->getMode() != PluginItem::ModeDisable))
+    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+    {
+        item = (PluginItem*)project.plugin->topLevelItem(i);
+
+        if(item->getMode() != PluginItem::ModeDisable)
         {
-            item->pluginviewerinterface->selectedIdxMsg(qfile.getMsgFilterPos(index.row()),msg);
+            if(item->plugindecoderinterface)
+            {
+                activeDecoderPlugins.append(item);
+            }
+            if(item->pluginviewerinterface)
+            {
+                activeViewerPlugins.append(item);
+            }
+        }
+    }
+
+    if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
+    {
+        return;
+    }
+
+    // Update plugins
+    for(int i = 0; i < activeViewerPlugins.size() ; i++)
+    {
+        item = (PluginItem*)activeViewerPlugins.at(i);
+        item->pluginviewerinterface->selectedIdxMsg(msgIndex,msg);
+
+    }
+
+    bool decoded = false;
+    for(int i = 0; i < activeDecoderPlugins.size(); i++)
+    {
+        item = (PluginItem*)activeDecoderPlugins.at(i);
+
+        if(item->plugindecoderinterface->isMsg(msg,0))
+        {
+            item->plugindecoderinterface->decodeMsg(msg,0);
+            decoded = true;
+            break;
+        }
+    }
+
+    if(decoded){
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = (PluginItem*)activeViewerPlugins.at(i);
+            item->pluginviewerinterface->selectedIdxMsgDecoded(msgIndex,msg);
         }
     }
 }
@@ -4090,16 +4133,20 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
         QApplication::processEvents();
     }
 
+    if(item->pluginviewerinterface)
+    {
 #ifdef DEBUG_PERFORMANCE
     qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
     t.start();
 #endif
 
-    item->pluginviewerinterface->initFileFinish();
+        item->pluginviewerinterface->initFileFinish();
 
 #ifdef DEBUG_PERFORMANCE
     qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
 #endif
+    }
+
 
     if(pluginprogress.wasCanceled())
     {

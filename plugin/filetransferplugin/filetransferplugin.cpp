@@ -131,6 +131,9 @@ void FiletransferPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
 }
 
+void FiletransferPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+
+}
 
 void FiletransferPlugin::initFileStart(QDltFile *file){
     dltFile = file;

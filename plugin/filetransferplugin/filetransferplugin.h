@@ -59,6 +59,7 @@ public:
     void updateMsgDecoded(int index, QDltMsg &msg);
     void updateFileFinish();
     void selectedIdxMsg(int index, QDltMsg &msg);
+    void selectedIdxMsgDecoded(int index, QDltMsg &msg);
 
     void updateFiletransfer(int index, QDltMsg &msg);
     void show(bool value);

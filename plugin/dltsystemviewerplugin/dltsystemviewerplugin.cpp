@@ -80,6 +80,9 @@ void DltSystemViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
 }
 
+void DltSystemViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+
+}
 
 void DltSystemViewerPlugin::initFileStart(QDltFile *file){
 

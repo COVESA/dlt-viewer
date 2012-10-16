@@ -58,6 +58,7 @@ public:
     void updateMsgDecoded(int index, QDltMsg &msg);
     void updateFileFinish();
     void selectedIdxMsg(int index, QDltMsg &msg);
+    void selectedIdxMsgDecoded(int index, QDltMsg &msg);
 
     /* QDltPluginControlInterface */
     bool initControl(QDltControl *control);
