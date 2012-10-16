@@ -770,6 +770,17 @@ public:
     */
     void close();
 
+    //! Sets the internal index of all DLT messages.
+    /*!
+      \param New index list of all DLT messages
+    */
+    void setDltIndex(QList<unsigned long> &_indexAll);
+
+    //! Clears the internal index of all DLT messages.
+    /*!
+    */
+    void clearIndex();
+
     //! Create an internal index of all DLT messages of the currently opened DLT log file.
     /*!
       \return true if the operation was successful, false if an error occured.

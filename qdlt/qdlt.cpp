@@ -22,6 +22,8 @@
 #include <QTextStream>
 #include <QFile>
 #include <QtDebug>
+#include <QThread>
+#include <QtConcurrentRun>
 
 #include <qextserialport.h>
 #include <QTcpSocket>
@@ -1341,6 +1343,10 @@ QDltFile::~QDltFile()
     }
 }
 
+void QDltFile::setDltIndex(QList<unsigned long> &_indexAll){
+    indexAll = _indexAll;
+}
+
 int QDltFile::size()
 {
     return indexAll.size();
@@ -1356,9 +1362,11 @@ int QDltFile::sizeFilter()
 
 bool QDltFile::open(QString _filename) {
 
+    qDebug() << "Open file" << _filename << "started";
+
     /* check if file is already opened */
     if(infile.isOpen()) {
-        qWarning() << "open: file is already open";
+        qWarning() << "infile.isOpen: file is already open";
         infile.close();
     }
 
@@ -1372,36 +1380,40 @@ bool QDltFile::open(QString _filename) {
         return false;
     }
 
-    qDebug() << "Open file" << _filename << "started";
-
-    /* create the index for the log file */
-    if(!createIndex()) {
-        /* index creation failed */
-        infile.close();
-        return false;
-    }
-
     qDebug() << "Open file" << _filename << "finished";
-    qDebug() << indexAll.size() << "messages found";
 
-    /* Success */
     return true;
+}
+
+void QDltFile::clearIndex()
+{
+    indexAll.clear();
 }
 
 bool QDltFile::createIndex()
 {
+    bool ret = false;
+
+    qDebug() << "Create index started";
 
     /* check if file is already opened */
     if(!infile.isOpen()) {
         /* return empty buffer */
         qDebug() << "createIndex: Infile is not open";
-        return false;
+        return ret;
     }
 
-    /* clear old index */
-    indexAll.clear();
+    clearIndex();
 
-    return updateIndex();
+    /* Example to use QtConcurrent to call updateIndex in sepearte Thread*/
+    //QFuture<bool> f = QtConcurrent::run(this, &QDltFile::updateIndex);
+    //f.waitForFinished();
+
+    ret = updateIndex();
+
+    qDebug() << "Create index finished - "<< indexAll.size() << "messages found";
+
+    return ret;
 }
 
 bool QDltFile::updateIndex()

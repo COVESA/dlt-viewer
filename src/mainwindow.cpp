@@ -45,6 +45,7 @@
 #include "version.h"
 #include "commandplugindialog.h"
 #include "threadplugin.h"
+#include "threaddltindex.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -882,27 +883,61 @@ void MainWindow::reloadLogFile()
     PluginItem *item = 0;
     QList<PluginItem*> activeViewerPlugins;
     QList<PluginItem*> activeDecoderPlugins;
+
 #ifdef DEBUG_PERFORMANCE
     QTime t;
 #endif
 
-    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, 100, this);
+    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, 0, this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
+
+    QList<QPushButton *> fileprogressButtons =fileprogress.findChildren<QPushButton *>();
+    fileprogressButtons.at(0)->setEnabled(false);
+
     fileprogress.show();
 
-    /* open file, create filter index and update model view */
+    qfile.open(outputfile.fileName());
+    qfile.clearIndex();
+
+    ThreadDltIndex threadDltIndex;
+    QString filename = outputfile.fileName();
+    threadDltIndex.setFilename(filename);
+
+    connect(&threadDltIndex, SIGNAL(updateProgressText(QString)), &fileprogress, SLOT(setLabelText(QString)));
+    connect(&threadDltIndex, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
+
+    threadIsRunnging = true;
+
 #ifdef DEBUG_PERFORMANCE
     t.start();
 #endif
 
-    qfile.open(outputfile.fileName());
+    /* Using now seperate thread to create DLT index which is faster.
+       To use old behaviour, use methode qfile.createIndex.*/
+
+    //qfile.createIndex();
+
+    /* ----> Thread usage to create DLT index starts here <---- */
+    threadDltIndex.start();
+    threadDltIndex.setPriority(QThread::HighestPriority);
+
+    while(threadIsRunnging){
+        QApplication::processEvents();
+    }
 
 #ifdef DEBUG_PERFORMANCE
     qDebug() << "Time to create index: " << t.elapsed()/1000 << "s" ;
 #endif
 
+    QList<unsigned long> indexDltList = threadDltIndex.getIndexAll();
+    qfile.setDltIndex(indexDltList);
+    /* ----> Thread usage to create DLT index ends here <---- */
+
+
     fileprogress.setMaximum(qfile.size());
+    fileprogressButtons.at(0)->setEnabled(true);
+
 
     for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
     {
@@ -972,7 +1007,7 @@ void MainWindow::reloadLogFile()
 #endif
 
         thread.start();
-        thread.setPriority(QThread::HighPriority);
+        thread.setPriority(QThread::HighestPriority);
 
         while(threadIsRunnging){
             QApplication::processEvents();
