@@ -46,6 +46,7 @@
 #include "commandplugindialog.h"
 #include "threadplugin.h"
 #include "threaddltindex.h"
+#include "threadfilter.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -4684,11 +4685,60 @@ void MainWindow::on_filterButton_clicked(bool checked)
 {
     filterUpdate();
 
+    /* enable/disable filter */
+    qfile.enableFilter(checked);
+    qfile.clearFilterIndex();
+
     if(checked)
     {
         ui->filterButton->setText("Filters enabled");
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-clear.png"));
         ui->filterStatus->setText("");
+
+        PluginItem *item;
+        QList<PluginItem*> activeDecoderPlugins;
+
+        QProgressDialog filterprogress("Applying filters for message 0/0", "Cancel", 0, qfile.size(), this);
+        filterprogress.setWindowTitle("DLT Viewer");
+        filterprogress.setWindowModality(Qt::WindowModal);
+        filterprogress.show();
+
+        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+        {
+            item = (PluginItem*)project.plugin->topLevelItem(i);
+
+            if(item->getMode() != PluginItem::ModeDisable &&item->plugindecoderinterface )
+            {
+
+                    activeDecoderPlugins.append(item);
+            }
+        }
+
+        ThreadFilter thread;
+        thread.setQDltFile(&qfile);
+        thread.setActiveDecoderPlugins(&activeDecoderPlugins);
+        thread.setStartIndex(0);
+        thread.setStopIndex( qfile.size());
+
+        connect(&thread, SIGNAL(percentageComplete(int)), &filterprogress, SLOT(setValue(int)));
+        connect(&thread, SIGNAL(updateProgressText(QString)), &filterprogress, SLOT(setLabelText(QString)));
+        connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
+        connect(&filterprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
+
+        threadIsRunnging = true;
+
+        thread.start();
+        thread.setPriority(QThread::HighestPriority);
+
+        while(threadIsRunnging){
+            QApplication::processEvents();
+        }
+
+        if(filterprogress.wasCanceled())
+        {
+            QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the filter progress. Not all messages could be processed by the activated filters!"), QMessageBox::Ok);
+        }
+
     }
     else
     {
@@ -4697,11 +4747,8 @@ void MainWindow::on_filterButton_clicked(bool checked)
         ui->filterStatus->setText("");
     }
 
-    /* enable/disable filter */
-    qfile.enableFilter(checked);
-
-    /* reload DLT log file */
-    reloadLogFile();
+    ui->tableView->selectionModel()->clear();
+    tableModel->modelChanged();
 }
 
 

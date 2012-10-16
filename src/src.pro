@@ -55,7 +55,8 @@ SOURCES += main.cpp \
     commandplugindialog.cpp \
     filtertreewidget.cpp \
     threadplugin.cpp \
-    threaddltindex.cpp
+    threaddltindex.cpp \
+    threadfilter.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -79,7 +80,8 @@ HEADERS += mainwindow.h \
     commandplugindialog.h \
     filtertreewidget.h \
     threadplugin.h \
-    threaddltindex.h
+    threaddltindex.h \
+    threadfilter.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

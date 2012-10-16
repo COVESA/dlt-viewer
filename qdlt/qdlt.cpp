@@ -1719,7 +1719,6 @@ QByteArray QDltFile::getMsg(int index)
     if(index<0 || index>=indexAll.size()) {
         qDebug() << "getMsg: Index is out of range";
 
-        qDebug()<<"bla";
         /* return empty data buffer */
         return QByteArray();
     }
