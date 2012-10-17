@@ -2261,7 +2261,7 @@ void MainWindow::read(EcuItem* ecuitem)
                     {
                         activeDecoderPlugins.append(item);
                     }
-                    else if(item->pluginviewerinterface)
+                    if(item->pluginviewerinterface)
                     {
                         item->pluginviewerinterface->updateFileStart();
                         activeViewerPlugins.append(item);
