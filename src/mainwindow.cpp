@@ -1223,6 +1223,12 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
 
+        if(ecuitem->interfacetype == 0){
+            connect(&ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+            connect(&ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
+            connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
+        }
+
         for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
             PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
 
@@ -1989,13 +1995,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             /* connect socket signals with window slots */
             if (ecuitem->socket.state()==QAbstractSocket::UnconnectedState)
             {
-                disconnect(&ecuitem->socket,0,0,0);
-                connect(&ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
-                connect(&ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-                connect(&ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
-                connect(&ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
-                connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
-
+                //disconnect(&ecuitem->socket,0,0,0);
                 ecuitem->socket.connectToHost(ecuitem->hostname,ecuitem->tcpport);
             }
         }
@@ -2042,52 +2042,6 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
     }
 }
 
-void MainWindow::connected()
-{
-    /* signal emited when connected to host */
-
-    /* find socket which emited signal */
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
-        {
-            /* update connection state */
-            ecuitem->connected = true;
-            ecuitem->connectError.clear();
-            ecuitem->update();
-            on_configWidget_itemSelectionChanged();
-
-            /* reset receive buffer */
-            ecuitem->totalBytesRcvd = 0;
-            ecuitem->totalBytesRcvdLastTimeout = 0;
-            ecuitem->data.clear();
-        }
-    }
-}
-
-void MainWindow::disconnected()
-{
-    /* signal emited when disconnected to host */
-
-    /* find socket which emited signal */
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
-        {
-            /* update connection state */
-            ecuitem->connected = false;
-            ecuitem->connectError.clear();
-            ecuitem->InvalidAll();
-            ecuitem->update();
-            on_configWidget_itemSelectionChanged();
-
-            /* disconnect socket signals from window slots */
-            disconnect(&ecuitem->socket,0,0,0);
-        }
-    }
-}
 
 
 void MainWindow::timeout()
@@ -3804,17 +3758,40 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         if( &(ecuitem->socket) == sender())
         {
-            /* update ECU item */
-            ecuitem->update();
 
             if (socketState==QAbstractSocket::ConnectedState)
             {
+                ecuitem->connected = true;
+                ecuitem->connectError.clear();
+
                 /* send new default log level to ECU, if selected in dlg */
                 if (ecuitem->updateDataIfOnline)
                 {
                     sendUpdates(ecuitem);
                 }
+
+
+                /* reset receive buffer */
+                ecuitem->totalBytesRcvd = 0;
+                ecuitem->totalBytesRcvdLastTimeout = 0;
+                ecuitem->data.clear();
             }
+
+
+            if (socketState==QAbstractSocket::UnconnectedState)
+            {
+                /* update connection state */
+                ecuitem->connected = false;
+                ecuitem->connectError.clear();
+                ecuitem->InvalidAll();
+
+                /* disconnect socket signals from window slots */
+                //disconnect(&ecuitem->socket,0,0,0);
+            }
+
+            /* update ECU item */
+            ecuitem->update();
+            on_configWidget_itemSelectionChanged();
 
             for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
                 PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
