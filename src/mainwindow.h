@@ -62,14 +62,130 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    void commandLineConvertToASCII();
-    void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
-    void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
-    QStringList getSerialPortsWithQextEnumartor();
-    void skipSerialHeader(EcuItem *ecu);
-    void processMsgAfterPluginmodeChange(PluginItem *item);
+    /* Timer for connecting to ECUs */
+    QTimer timer;
 
     bool threadIsRunnging;
+
+    QDltControl qcontrol;
+    QFile outputfile;
+    TableModel *tableModel;
+    QString workingDirectory;
+
+    /* Status line items */
+    QLabel *statusFilename;
+    QLabel *statusBytesReceived;
+    QLabel *statusByteErrorsReceived;
+    unsigned long totalBytesRcvd;
+    unsigned long totalByteErrorsRcvd;
+
+    /* Search */
+    SearchDialog *searchDlg;
+
+    /* Settings dialog containing also the settings parameter itself */
+    SettingsDialog *settings;
+    QLineEdit *searchTextToolbar;
+
+    /* injections */
+    QString injectionAplicationId;
+    QString injectionContextId;
+    QString injectionServiceId;
+    QString injectionData;
+
+    /* Toggle button */
+    QPushButton *scrollbutton;
+
+    /* Recent files */
+    enum { MaxRecentFiles = 5 };
+    QAction *recentFileActs[MaxRecentFiles];
+    QStringList recentFiles;
+
+    /* Recent projects */
+    enum { MaxRecentProjects = 5 };
+    QAction *recentProjectActs[MaxRecentProjects];
+    QStringList recentProjects;
+
+    /* Recent filters */
+    enum { MaxRecentFilters = 5 };
+    QAction *recentFiltersActs[MaxRecentFilters];
+    QStringList recentFilters;
+
+    /* Recent hostnames and ports */
+    enum { MaxRecentHostnames = 10 };
+    QStringList recentHostnames;
+    enum { MaxRecentPorts = 10 };
+    QStringList recentPorts;
+
+
+
+    void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
+
+    void reloadLogFile();
+
+    void exportSelection(bool ascii,bool file);
+
+    void ControlServiceRequest(EcuItem* ecuitem, int service_id );
+    void SendInjection(EcuItem* ecuitem);
+
+    void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
+    void controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,int log_level);
+    void controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status);
+    void controlMessage_SetTraceStatus(EcuItem* ecuitem,QString app, QString con,int status);
+    void controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int status);
+    void controlMessage_SetVerboseMode(EcuItem* ecuitem, int mode);
+    void controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable);
+    void controlMessage_GetLogInfo(EcuItem* ecuitem);
+    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,DltMessage &msg);
+    void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
+    void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
+
+    void filterDialogRead(FilterDialog &dlg,FilterItem* item);
+    void filterDialogWrite(FilterDialog &dlg,FilterItem* item);
+    void filterUpdate();
+
+    void loadPlugins();
+    void loadPluginsPath(QDir dir);
+    void updatePluginsECUList();
+    void updatePlugins();
+    void updatePlugin(PluginItem *item);
+
+    void connectECU(EcuItem *ecuitem,bool force = false);
+    void disconnectECU(EcuItem *ecuitem);
+    void read(EcuItem *ecuitem);
+
+    void updateRecentFileActions();
+    void setCurrentFile(const QString &fileName);
+    void removeCurrentFile(const QString &fileName);
+
+    void updateRecentProjectActions();
+    void setCurrentProject(const QString &projectName);
+    void removeCurrentProject(const QString &projectName);
+
+    void updateRecentFiltersActions();
+    void setCurrentFilters(const QString &filtersName);
+    void removeCurrentFilters(const QString &filtersName);
+
+    void setCurrentHostname(const QString &hostName);
+    void setCurrentPort(const QString &portName);
+
+    void sendUpdates(EcuItem* ecuitem);
+
+    void openDltFile(QString fileName);
+    bool openDlpFile(QString filename);
+
+    void commandLineConvertToASCII();
+
+    void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
+
+    void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
+
+    QStringList getSerialPortsWithQextEnumartor();
+
+    void skipSerialHeader(EcuItem *ecu);
+
+    void processMsgAfterPluginmodeChange(PluginItem *item);
+
+
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
@@ -187,130 +303,17 @@ private slots:
     void sectionInTableDoubleClicked(int logicalIndex);
     void on_filterButton_clicked(bool checked);
 
-
-
-
-
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void threadpluginFinished();
+
 public:   
 
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
     Project project;
 
-    /* Timer for connecting to ECUs */
-    QTimer timer;
-
     /* DLT file handling */
     QDltFile qfile;
-    QDltControl qcontrol;
-    QFile outputfile;
-    TableModel *tableModel;
-    QString workingDirectory;
-
-    /* Status line items */
-    QLabel *statusFilename;
-    QLabel *statusBytesReceived;
-    QLabel *statusByteErrorsReceived;
-    unsigned long totalBytesRcvd;
-    unsigned long totalByteErrorsRcvd;
-
-    /* Search */
-    SearchDialog *searchDlg;
-
-    /* Settings dialog containing also the settings parameter itself */
-    SettingsDialog *settings;
-    QLineEdit *searchTextToolbar;
-
-    /* injections */
-    QString injectionAplicationId;
-    QString injectionContextId;
-    QString injectionServiceId;
-    QString injectionData;
-
-    /* Toggle button */
-    QPushButton *scrollbutton;
-
-    /* Recent files */
-    enum { MaxRecentFiles = 5 };
-    QAction *recentFileActs[MaxRecentFiles];
-    QStringList recentFiles;
-
-    /* Recent projects */
-    enum { MaxRecentProjects = 5 };
-    QAction *recentProjectActs[MaxRecentProjects];
-    QStringList recentProjects;
-
-    /* Recent filters */
-    enum { MaxRecentFilters = 5 };
-    QAction *recentFiltersActs[MaxRecentFilters];
-    QStringList recentFilters;
-
-    /* Recent hostnames and ports */
-    enum { MaxRecentHostnames = 10 };
-    QStringList recentHostnames;
-    enum { MaxRecentPorts = 10 };
-    QStringList recentPorts;
-
-
-
-    void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
-
-    void reloadLogFile();
-
-    void exportSelection(bool ascii,bool file);
-
-    void ControlServiceRequest(EcuItem* ecuitem, int service_id );
-    void SendInjection(EcuItem* ecuitem);
-
-    void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
-    void controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,int log_level);
-    void controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status);
-    void controlMessage_SetTraceStatus(EcuItem* ecuitem,QString app, QString con,int status);
-    void controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int status);
-    void controlMessage_SetVerboseMode(EcuItem* ecuitem, int mode);
-    void controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable);
-    void controlMessage_GetLogInfo(EcuItem* ecuitem);
-    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,DltMessage &msg);
-    void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
-    void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
-
-    void filterDialogRead(FilterDialog &dlg,FilterItem* item);
-    void filterDialogWrite(FilterDialog &dlg,FilterItem* item);
-    void filterUpdate();
-
-    void loadPlugins();
-    void loadPluginsPath(QDir dir);
-    void updatePluginsECUList();
-    void updatePlugins();
-    void updatePlugin(PluginItem *item);
-
-    void connectECU(EcuItem *ecuitem,bool force = false);
-    void disconnectECU(EcuItem *ecuitem);
-    void read(EcuItem *ecuitem);
-
-    void updateRecentFileActions();   
-    void setCurrentFile(const QString &fileName);
-    void removeCurrentFile(const QString &fileName);
-
-    void updateRecentProjectActions();
-    void setCurrentProject(const QString &projectName);
-    void removeCurrentProject(const QString &projectName);
-
-    void updateRecentFiltersActions();
-    void setCurrentFilters(const QString &filtersName);
-    void removeCurrentFilters(const QString &filtersName);
-
-    void setCurrentHostname(const QString &hostName);
-    void setCurrentPort(const QString &portName);
-
-    void sendUpdates(EcuItem* ecuitem);
-
-    void openDltFile(QString fileName);
-    bool openDlpFile(QString filename);
-
-
 
 };
 
