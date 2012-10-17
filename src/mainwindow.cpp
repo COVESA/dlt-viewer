@@ -1227,6 +1227,13 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
             connect(&ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
             connect(&ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
             connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
+        } else {
+
+            PortSettings settings = {ecuitem->baudrate, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
+
+            ecuitem->serialport = new QextSerialPort(ecuitem->port,settings);
+            connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
+            connect(ecuitem->serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
         }
 
         for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
@@ -2002,16 +2009,6 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         else
         {
             /* Serial */
-            if(!ecuitem->serialport)
-            {
-                PortSettings settings = {ecuitem->baudrate, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
-
-                ecuitem->serialport = new QextSerialPort(ecuitem->port,settings);
-                connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
-                connect(ecuitem->serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
-
-            }
-
             if(ecuitem->serialport->isOpen())
             {
                 ecuitem->serialport->close();
