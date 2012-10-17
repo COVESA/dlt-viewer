@@ -643,7 +643,7 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
     const int qsz = qfile.sizeFilter();
     for(int num = 0;num< qsz;num++)
     {
-        if((num%(qsz/300))==0)
+        if((num%(qsz/300+1))==0)
             fileprogress.setValue(num);
 
         /* get message form log file */
@@ -728,7 +728,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     fileprogress.show();
     for(int num=0; num < list.count();num++)
     {
-        if((num%(list.count()/300))==0)
+        if((num%(list.count()/300+1))==0)
             fileprogress.setValue(num);
 
         QModelIndex index = list[num];
