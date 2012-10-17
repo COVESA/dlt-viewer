@@ -2051,7 +2051,7 @@ void MainWindow::timeout()
         {
             //qDebug() << "totalBytesRcvd:"<<ecuitem->totalBytesRcvd << " - totalBytesRcvdLastTimeout:" << ecuitem->totalBytesRcvdLastTimeout;
 
-            if(ecuitem->autoReconnect && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+            if(ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
             {
                 //qDebug() << "reconnect";
                 disconnectECU(ecuitem);
