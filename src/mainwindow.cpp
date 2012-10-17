@@ -3864,6 +3864,12 @@ void MainWindow::loadPlugins()
 
 void MainWindow::loadPluginsPath(QDir dir)
 {
+    /* set filter for plugin files */
+    QStringList filters;
+    filters << "*.dll" << "*.lib";
+    dir.setNameFilters(filters);
+
+    /* iterate through all plugins */
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
         QPluginLoader pluginLoader(dir.absoluteFilePath(fileName));
@@ -3928,9 +3934,10 @@ void MainWindow::loadPluginsPath(QDir dir)
 
                     QMessageBox::warning(0, QString("DLT Viewer"),QString(tr("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5")).arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
                 }
-
-
             }
+        }
+        else {
+            QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
         }
     }
 }
