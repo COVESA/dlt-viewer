@@ -293,10 +293,6 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
     timer.start(1000);
 
-    /* start timer for serial read */
-    connect(&timerRead, SIGNAL(timeout()), this, SLOT(timeoutRead()));
-    timerRead.start(100);
-
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
 }
@@ -2118,20 +2114,6 @@ void MainWindow::timeout()
             connectECU(ecuitem,true);
         }
     }
-}
-
-void MainWindow::timeoutRead()
-{
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-
-        if( ecuitem->connected)
-        {
-            read(ecuitem);
-        }
-    }
-
 }
 
 void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
