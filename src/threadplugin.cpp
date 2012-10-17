@@ -24,7 +24,6 @@ void ThreadPlugin::run(){
 
     QDltMsg msg;
     QByteArray data;
-    bool decoded = false;
 
     for(int num=startIndex;num<stopIndex;num++) {
 
@@ -46,7 +45,7 @@ void ThreadPlugin::run(){
             item->pluginviewerinterface->initMsg(num,msg);
         }
 
-        decoded = false;
+
         for(int i = 0; i < activeDecoderPlugins->size(); i++)
         {
             item = (PluginItem*)activeDecoderPlugins->at(i);
@@ -55,7 +54,6 @@ void ThreadPlugin::run(){
             {
 
                 item->plugindecoderinterface->decodeMsg(msg,0);
-                decoded = true;
                 break;
             }
         }
@@ -64,12 +62,11 @@ void ThreadPlugin::run(){
             qDltFile->addFilterIndex(num);
         }
 
-        if(decoded){
-            for(int i = 0; i < activeViewerPlugins->size(); i++){
-                item = (PluginItem*)activeViewerPlugins->at(i);
-                item->pluginviewerinterface->initMsgDecoded(num,msg);
-            }
+        for(int i = 0; i < activeViewerPlugins->size(); i++){
+            item = (PluginItem*)activeViewerPlugins->at(i);
+            item->pluginviewerinterface->initMsgDecoded(num,msg);
         }
+
 
         if((num%((qDltFile->size()/200)+1))==0)
         {

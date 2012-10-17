@@ -2360,7 +2360,7 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
 
     }
 
-    bool decoded = false;
+
     for(int i = 0; i < activeDecoderPlugins.size(); i++)
     {
         item = (PluginItem*)activeDecoderPlugins.at(i);
@@ -2368,17 +2368,16 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
         if(item->plugindecoderinterface->isMsg(msg,0))
         {
             item->plugindecoderinterface->decodeMsg(msg,0);
-            decoded = true;
             break;
         }
     }
 
-    if(decoded){
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
-            item = (PluginItem*)activeViewerPlugins.at(i);
-            item->pluginviewerinterface->selectedIdxMsgDecoded(msgIndex,msg);
-        }
+
+    for(int i = 0; i < activeViewerPlugins.size(); i++){
+        item = (PluginItem*)activeViewerPlugins.at(i);
+        item->pluginviewerinterface->selectedIdxMsgDecoded(msgIndex,msg);
     }
+
 }
 
 void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessage &msg)
@@ -4128,14 +4127,14 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
     if(item->pluginviewerinterface)
     {
 #ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
-    t.start();
+        qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
+        t.start();
 #endif
 
         item->pluginviewerinterface->initFileFinish();
 
 #ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
+        qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
 #endif
     }
 
@@ -4666,7 +4665,7 @@ void MainWindow::on_filterButton_clicked(bool checked)
             if(item->getMode() != PluginItem::ModeDisable &&item->plugindecoderinterface )
             {
 
-                    activeDecoderPlugins.append(item);
+                activeDecoderPlugins.append(item);
             }
         }
 
