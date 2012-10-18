@@ -32,6 +32,7 @@ echo *************************
 ECHO Create directories
 mkdir %SDK_DIR%
 mkdir %SDK_DIR%\plugins
+mkdir %SDK_DIR%\plugins\examples
 mkdir %SDK_DIR%\sdk
 mkdir %SDK_DIR%\sdk\include
 mkdir %SDK_DIR%\sdk\lib
@@ -85,8 +86,10 @@ copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %SDK_DIR%\sdk\src\dummydecoderplugi
 copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %SDK_DIR%\sdk\src\dummyviewerplugin
 copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %SDK_DIR%\sdk\src\dummycontrolplugin
 
+copy %SOURCE_DIR%\plugin\nonverboseplugin\nonverboseplugin_configuration.xml %SDK_DIR%\plugins\examples
+
 echo *************************
 echo * Finish                *
 echo *************************
-echo SDK Dir:  %SDK_DIR%
+echo SDK installed in:  %SDK_DIR%
 set /p name= Continue
