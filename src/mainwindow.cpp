@@ -1813,15 +1813,19 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
     QList<QTreeWidgetItem *> list = project.filter->selectedItems();
 
 
-    action = new QAction("Save Filter(s)...", this);
+    action = new QAction("Save Filter...", this);
     if(project.filter->topLevelItemCount() <= 0)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Save_As_triggered()));
     menu.addAction(action);
 
-    action = new QAction("Load Filter(s)...", this);
+    action = new QAction("Load Filter...", this);
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Load_triggered()));
+    menu.addAction(action);
+
+    action = new QAction("Append Filter...", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Append_Filters_triggered()));
     menu.addAction(action);
 
     menu.addSeparator();
@@ -1837,20 +1841,18 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Edit_triggered()));
     menu.addAction(action);
 
-    action = new QAction("Filter Delete", this);
-    if(list.size() != 1)
-        action->setEnabled(false);
-    else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Delete_triggered()));
-    menu.addAction(action);
-
-    menu.addSeparator();
-
     action = new QAction("Filter Duplicate...", this);
     if(list.size() != 1)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Duplicate_triggered()));
+    menu.addAction(action);
+
+    action = new QAction("Filter Delete", this);
+    if(list.size() != 1)
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Delete_triggered()));
     menu.addAction(action);
 
     /* show popup menu */
@@ -3348,10 +3350,10 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
     ui->action_menuFilter_Load->setEnabled(true);
 
     if( project.filter->topLevelItemCount() > 0 ){
-        ui->action_menuFilter_Save_As->setEnabled(true);
+        //ui->action_menuFilter_Save_As->setEnabled(true);
         ui->action_menuFilter_Clear_all->setEnabled(true);
     }else{
-        ui->action_menuFilter_Save_As->setEnabled(false);
+        //ui->action_menuFilter_Save_As->setEnabled(false);
         ui->action_menuFilter_Clear_all->setEnabled(false);
     }
 
