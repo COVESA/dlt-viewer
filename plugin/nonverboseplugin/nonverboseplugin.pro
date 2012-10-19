@@ -1,35 +1,20 @@
-TEMPLATE  = lib
+# include global settings for all DLT Viewer Plugins
+include( ../plugin.pri )
 
-CONFIG   += plugin
-
-# QT += network
-
-target.path = /usr/share/dlt-viewer/plugins
-INSTALLS += target
-
-CONFIG(debug, debug|release) {
-    DESTDIR = ../../debug/plugins
-    QMAKE_LIBDIR += ../../debug
-    LIBS += -lqdltd
-}
-else {
-    DESTDIR = ../../release/plugins
-    QMAKE_LIBDIR += ../../release
-    LIBS += -lqdlt
-}
-
+# target name
 TARGET = $$qtLibraryTarget(nonverboseplugin)
 
-# Defines and Header Directories
-DEFINES  += QT_VIEWER
+# plugin header files
+HEADERS += \
+    nonverboseplugin.h
 
-INCLUDEPATH += ../../src \
-            ../../qdlt
+# plugin source files
+SOURCES += \
+    nonverboseplugin.cpp
 
-# Project files
-HEADERS += nonverboseplugin.h
+# plugin forms
+FORMS +=
 
-SOURCES += nonverboseplugin.cpp
-
+# other files
 OTHER_FILES += \
     dlt-example-non-verbose-1.xml

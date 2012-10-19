@@ -1,39 +1,19 @@
-TEMPLATE  = lib
+# include global settings for all DLT Viewer Plugins
+include( ../plugin.pri )
 
-CONFIG   += plugin
-
-# QT += network
-
-# only install optional, because only needed for testing purpose
-# target.path = /usr/share/dlt-viewer/plugins
-# INSTALLS += target
-
-CONFIG(debug, debug|release) {
-    DESTDIR = ../../debug/plugins
-    QMAKE_LIBDIR += ../../debug
-    LIBS += -lqdltd
-}
-else {
-    DESTDIR = ../../release/plugins
-    QMAKE_LIBDIR += ../../release
-    LIBS += -lqdlt
-}
-
+# target name
 TARGET = $$qtLibraryTarget(dummycommandplugin)
 
-# Defines and Header Directories
-DEFINES  += QT_VIEWER
-
-INCLUDEPATH += ../../src \
-            ../../qdlt
-
-# Project files
+# plugin header files
 HEADERS += \
     dummycommandplugin.h \
     dummywaitthread.h
 
+# plugin source files
 SOURCES += \
     dummycommandplugin.cpp \
     dummywaitthread.cpp
 
+# plugin forms
 FORMS +=
+
