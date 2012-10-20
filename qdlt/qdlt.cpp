@@ -952,13 +952,23 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     headersize = sizeStorageHeader + sizeof(DltStandardHeader) + extra_size;
     datasize =  DLT_SWAP_16(standardheader->len) - (headersize - sizeStorageHeader);
 
+    /* check header length */
+    if (buf.size()  < (int)(headersize)) {
+        return false;
+    }
+
+    /* store payload size */
+    payloadSize = datasize;
+
+    /* store header size */
+    headerSize = headersize;
+
+    /* copy header */
+    header = buf.mid(0,headersize);
+
     /* load standard header extra parameters and Extended header if used */
     if (extra_size>0)
     {
-        if (buf.size()  < (int)(headersize - sizeStorageHeader)) {
-            return false;
-        }
-
         /* set extended header ptr and get standard header extra parameters */
         if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
             extendedheader = (DltExtendedHeader*) (buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader) +
@@ -1073,8 +1083,13 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
         numberOfArguments = extendedheader->noar;
     }
 
+    /* check complete length */
+    if (buf.size()  < (int)(headersize+datasize)) {
+        return false;
+    }
+
     /* copy payload */
-    payload = buf.mid(headersize);
+    payload = buf.mid(headersize,datasize);
 
     /* set messageid if non verbose and no extended header */
     if(!DLT_IS_HTYP_UEH(standardheader->htyp) && payload.size()>=4) {
@@ -1214,6 +1229,10 @@ void QDltMsg::clear()
     ctrlServiceId = 0;
     ctrlReturnType = 0;
     arguments.clear();
+    payload.clear();
+    payloadSize = 0;
+    header.clear();
+    headerSize = 0;
 }
 
 void QDltMsg::clearArguments()
@@ -1297,7 +1316,7 @@ QString QDltMsg::toStringPayload()
         // ServiceID of Get ECU Software Version
         if(getCtrlServiceId() == 0x13)
         {
-            // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU – Software Version
+            // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU Software Version
             data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
             text += toAscii(data,true);
         }
@@ -1885,6 +1904,99 @@ void QDltConnection::setSyncSerialHeader(bool _syncSerialHeader)
 bool QDltConnection::getSyncSerialHeader()
 {
     return syncSerialHeader;
+}
+
+bool QDltConnection::parse(QDltMsg &msg)
+{
+    /* if sync to serial header search for header */
+    int found = 0;
+    int firstPos = 0;
+    int secondPos = 0;
+    if(syncSerialHeader) {
+
+        char lastFound = 0;
+
+        /* Use primitive buffer for faster access */
+        int cbuf_sz = data.size();
+        const char *cbuf = data.constData();
+
+        /* find marker in buffer */
+        for(int num=0;num<cbuf_sz;num++) {
+            if(cbuf[num] == 'D')
+            {
+                lastFound = 'D';
+            }
+            else if(lastFound == 'D' && cbuf[num] == 'L')
+            {
+                lastFound = 'L';
+            }
+            else if(lastFound == 'L' && cbuf[num] == 'S')
+            {
+                lastFound = 'S';
+            }
+            else if(lastFound == 'S' && cbuf[num] == 0x01)
+            {
+                /* header found */
+                found++;
+                if(found==1)
+                    firstPos = num+1;
+                if(found==2)
+                {
+                    secondPos = num+1;
+                    break;
+                }
+                lastFound = 0;
+                break;
+            }
+            else
+            {
+                lastFound = 0;
+            }
+        }
+
+        if(!found)
+        {
+            /* complete sync header not found */
+            if(!lastFound)
+                /* clear buffer if even not start of sync header found */
+                data.clear();
+            return false;
+        }
+    }
+
+    qDebug() << "found " << found << " firstPos " << firstPos << " secondPos " << secondPos;
+
+    if(found==2)
+    {
+        /* two sync headers found */
+        /* try to read msg */
+        if(!msg.setMsg(data.mid(firstPos,secondPos-firstPos),false))
+        {
+            /* no valid msg found, perhaps to short */
+            data.remove(0,secondPos-4);
+            return false;
+        }
+        else
+        {
+            /* msg read succesful */
+            data.remove(0,secondPos-4);
+            return true;
+        }
+
+    }
+
+    /* try to read msg */
+    if(!msg.setMsg(data.mid(firstPos),false))
+    {
+        /* no complete msg found */
+        if(data.size()>2048)
+            data.remove(0,secondPos-4);
+        return false;
+    }
+
+    /* msg read succesful */
+    data.remove(0,firstPos+msg.getHeaderSize()+msg.getPayloadSize());
+    return true;
 }
 
 QDltTCPConnection::QDltTCPConnection()

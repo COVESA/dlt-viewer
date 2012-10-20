@@ -532,11 +532,31 @@ public:
     */
     void setNumberOfArguments(unsigned char noargs) { numberOfArguments = noargs; }
 
+    //! Get the complete header of the DLT message.
+    /*!
+      \return Byte Array containig the complete header of the DLT message.
+    */
+    QByteArray getHeader() { return header; }
+
+    //! Get the size of the header.
+    /*!
+      This value is even set, if the data was to small, but the header was read.
+      \return Byte Array containig the complete payload of the DLT message.
+    */
+    int getHeaderSize() { return headerSize; }
+
     //! Get the complete payload of the DLT message.
     /*!
       \return Byte Array containig the complete payload of the DLT message.
     */
     QByteArray getPayload() { return payload; }
+
+    //! Get the size of the payload.
+    /*!
+      This value is even set, if the data was to small, but the header was read.
+      \return Byte Array containig the complete payload of the DLT message.
+    */
+    int getPayloadSize() { return payloadSize; }
 
     //! Get the the message id of non-verbose DLT message.
     /*!
@@ -611,6 +631,10 @@ public:
 
     //! Set the message provided by a byte array containing the DLT message.
     /*!
+      The message must start at the beginning of the byte array, but the byte array can be
+      bigger than the message itself. On success the header and the payload is copied to the
+      corresponding buffers. If it fails, but at least the header can be read, the payload
+      size can be retrieved, which is perhaps wrong.
       This function returns false, if an error in the decoded message was found.
       \param buf the buffer containing the DLT messages.
       \param withSH message to be parsed contains storage header, default true.
@@ -686,8 +710,13 @@ private:
     //! The number of arguments of the DLT message.
     unsigned char numberOfArguments;
 
+    //! The complete header of the DLT message.
+    QByteArray header;
+    int headerSize;
+
     //! The complete payload of the DLT message.
     QByteArray payload;
+    int payloadSize;
 
     //! The message id if this is a non-verbose message and no control message.
     unsigned int messageId;
@@ -975,6 +1004,10 @@ public:
 
     void setSyncSerialHeader(bool _syncSerialHeader);
     bool getSyncSerialHeader();
+
+    bool parse(QDltMsg &msg);
+
+    QByteArray data;
 
 protected:
 

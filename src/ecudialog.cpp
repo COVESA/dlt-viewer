@@ -285,11 +285,11 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->tcpcon.setTcpPort(this->tcpport());
     item->tcpcon.setHostname(this->hostname());
     item->tcpcon.setSendSerialHeader(this->sendSerialHeaderTcp());
-    item->tcpcon.setSyncSerialHeader(this->syncSerialHeaderSerial());
+    item->tcpcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
     item->serialcon.setBaudrate(this->baudrate());
     item->serialcon.setPort(this->port());
     item->serialcon.setSendSerialHeader(this->sendSerialHeaderSerial());
-    item->serialcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
+    item->serialcon.setSyncSerialHeader(this->syncSerialHeaderSerial());
 
 }
 
