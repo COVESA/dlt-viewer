@@ -3868,7 +3868,7 @@ void MainWindow::loadPluginsPath(QDir dir)
 {
     /* set filter for plugin files */
     QStringList filters;
-    filters << "*.dll" << "*.lib";
+    filters << "*.dll" << "*.lib" << "*.so";
     dir.setNameFilters(filters);
 
     /* iterate through all plugins */
