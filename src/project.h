@@ -98,7 +98,6 @@ public:
 
     /* current received message and buffer for receivig from the socket */
     int32_t totalBytesRcvd;
-    QByteArray data;
 
     /* AutoReconnecct */
     int32_t totalBytesRcvdLastTimeout;

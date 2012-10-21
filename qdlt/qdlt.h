@@ -1007,12 +1007,21 @@ public:
 
     bool parse(QDltMsg &msg);
 
+    void clear();
+    void add(QByteArray &bytes);
+
     QByteArray data;
+
+    unsigned long bytesReceived;
+    unsigned long bytesError;
+    unsigned long syncFound;
 
 protected:
 
     bool sendSerialHeader;
     bool syncSerialHeader;
+
+
 
 };
 

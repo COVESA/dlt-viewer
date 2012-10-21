@@ -30,6 +30,7 @@
 #include <QXmlStreamWriter>
 #include <QLineEdit>
 #include <QUrl>
+#include <QDateTime>
 
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -145,12 +146,15 @@ MainWindow::MainWindow(QWidget *parent) :
     /* initialise statusbar */
     totalBytesRcvd = 0;
     totalByteErrorsRcvd = 0;
+    totalSyncFoundRcvd = 0;
     statusFilename = new QLabel("no log file loaded");
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
+    statusSyncFoundReceived = new QLabel("Sync found: 0");
     statusBar()->addWidget(statusFilename);
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
+    statusBar()->addWidget(statusSyncFoundReceived);
 
     /* Inform filterWidget about FilterButton */
     ui->filterWidget->setFilterButton(ui->filterButton);
@@ -1995,7 +1999,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         /* reset receive buffer */
         ecuitem->totalBytesRcvd = 0;
         ecuitem->totalBytesRcvdLastTimeout = 0;
-        ecuitem->data.clear();
+        ecuitem->tcpcon.clear();
+        ecuitem->serialcon.clear();
 
         /* start socket connection to host */
         if(ecuitem->interfacetype == 0)
@@ -2122,39 +2127,9 @@ void MainWindow::readyRead()
     }
 }
 
-/**
- * @brief MainWindow::skipSerialHeader
- * @param ecu
- * If buffer size in ecuitem exceeds DLT_BUFFER_CORRUPT_TRESHOLD
- * while using serial connection, this function is used to
- * skil one serial header and allow a resync
- */
-void MainWindow::skipSerialHeader(EcuItem *ecu)
-{
-    const char *buf = ecu->data.data();
-    unsigned int offset = 0;
-    unsigned const int datalen = ecu->data.length();
-
-    while(offset < datalen - sizeof(dltSerialHeader))
-    {
-        if(memcmp(buf, dltSerialHeader, sizeof(dltSerialHeader)) == 0)
-        {
-            ecu->data.remove(offset, sizeof(dltSerialHeader));
-            return;
-        }
-    }
-    // Unrecoverable error condition. Disconnect ECU
-    QMessageBox::warning(this, "Buffer corrupted irrecoverably",
-                         "Input buffer corrupted. An attempt was made to resynchronize it, but it failed. Buffer will be flushed.");
-    ecu->data.clear();
-
-}
-
 void MainWindow::read(EcuItem* ecuitem)
 {
-    uint8_t *buf;
     int32_t bytesRcvd = 0;
-    DltMessage msg;
     QDltMsg qmsg;
     PluginItem *item = 0;
     QList<PluginItem*> activeViewerPlugins;
@@ -2163,92 +2138,98 @@ void MainWindow::read(EcuItem* ecuitem)
     if (!ecuitem)
         return;
 
-    dlt_message_init(&msg,0);
-
+    QByteArray data;
     if(ecuitem->interfacetype == 0)
     {
         /* TCP */
         bytesRcvd = ecuitem->socket.bytesAvailable();
-        ecuitem->data += ecuitem->socket.readAll();
-    }
+        data = ecuitem->socket.readAll();
+        bytesRcvd = data.size();
+        ecuitem->tcpcon.add(data);
+     }
     else if(ecuitem->serialport)
     {
         /* serial */
         bytesRcvd = ecuitem->serialport->bytesAvailable();
-        ecuitem->data += ecuitem->serialport->readAll();
+        data = ecuitem->serialport->readAll();
+        bytesRcvd = data.size();
+        ecuitem->serialcon.add(data);
     }
-    buf = (uint8_t*) ecuitem->data.data();
 
     /* reading data; new data is added to the current buffer */
     if (bytesRcvd>0)
     {
 
-        bytesRcvd = ecuitem->data.size();
         ecuitem->totalBytesRcvd += bytesRcvd;
-        totalBytesRcvd += bytesRcvd;
-        statusBytesReceived->setText(QString("Recv: %1").arg(totalBytesRcvd));
 
-        /* read so many messages from the buffer as in the buffer; keep rest of the data in the buffer */
-        while (dlt_message_read(&msg,buf,bytesRcvd,(ecuitem->interfacetype == 0)?ecuitem->syncSerialHeaderTcp:ecuitem->syncSerialHeaderSerial,0)==0)
+        while((ecuitem->interfacetype == 0 && ecuitem->tcpcon.parse(qmsg)) ||
+              (ecuitem->interfacetype == 1 && ecuitem->serialcon.parse(qmsg)))
         {
+            DltStorageHeader str;
+            str.pattern[0]='D';
+            str.pattern[1]='L';
+            str.pattern[2]='T';
+            str.pattern[3]=0x01;
+            QDateTime time = QDateTime::currentDateTime();
+            str.seconds = (time_t)time.toTime_t(); /* value is long */
+            str.microseconds = (int32_t)time.time().msec(); /* value is long */
+            str.ecu[0]=0;
+            str.ecu[1]=0;
+            str.ecu[2]=0;
+            str.ecu[3]=0;
             /* prepare storage header */
-            if (DLT_IS_HTYP_WEID(msg.standardheader->htyp))
-                dlt_set_storageheader(msg.storageheader,msg.headerextra.ecu);
+            if (!qmsg.getEcuid().isEmpty())
+               dlt_set_id(str.ecu,qmsg.getEcuid().toAscii());
             else
-                dlt_set_storageheader(msg.storageheader,ecuitem->id.toAscii());
+                dlt_set_id(str.ecu,ecuitem->id.toAscii());
 
-            bool is_ctrl_msg = DLT_MSG_IS_CONTROL(&msg);
+            bool is_ctrl_msg = (qmsg.getType()==QDltMsg::DltTypeControl);
 
             /* check if message is matching the filter */
             if (outputfile.isOpen())
             {
 
-                if ((settings->writeControl && is_ctrl_msg) || (!is_ctrl_msg))
+                if ((settings->writeControl && (qmsg.getType()==QDltMsg::DltTypeControl)) || (!(qmsg.getType()==QDltMsg::DltTypeControl)))
                 {
-                    outputfile.write((char*)msg.headerbuffer,msg.headersize);
-                    outputfile.write((char*)msg.databuffer,msg.datasize);
+                    outputfile.write((char*)&str,sizeof(DltStorageHeader));
+                    QByteArray buffer = qmsg.getHeader();
+                    outputfile.write(buffer);
+                    buffer = qmsg.getPayload();
+                    outputfile.write(buffer);
                     outputfile.flush();
                 }
             }
 
-            /* remove read message from buffer */
-            if(msg.found_serialheader)
-            {
-                bytesRcvd = bytesRcvd - (msg.headersize+msg.datasize-sizeof(DltStorageHeader)+sizeof(dltSerialHeader));
-                buf = buf + (msg.headersize+msg.datasize-sizeof(DltStorageHeader)+sizeof(dltSerialHeader));
-            }
-            else
-            {
-                bytesRcvd = bytesRcvd - (msg.headersize+msg.datasize-sizeof(DltStorageHeader));
-                buf = buf + (msg.headersize+msg.datasize-sizeof(DltStorageHeader));
-            }
-            if(msg.resync_offset>0)
-            {
-                bytesRcvd -= msg.resync_offset;
-                buf += msg.resync_offset;
-
-                totalByteErrorsRcvd += msg.resync_offset;
-                statusByteErrorsReceived->setText(QString("Recv Errors: %1").arg(totalByteErrorsRcvd));
-            }
-
             /* analyse received message, check if DLT control message response */
-            if ( is_ctrl_msg && DLT_MSG_IS_CONTROL_RESPONSE(&msg))
+            if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
             {
-                controlMessage_ReceiveControlMessage(ecuitem,msg);
+                controlMessage_ReceiveControlMessage(ecuitem,qmsg);
             }
-
         }
 
-        /* remove parsed data block from buffer */
-        ecuitem->data.remove(0,ecuitem->data.size()-bytesRcvd);
-
-        /* If buffer is too large after parsing, try to resync it */
-        if(ecuitem->interfacetype != 0 &&
-                ecuitem->serialport &&
-                ecuitem->data.length() > DLT_BUFFER_CORRUPT_TRESHOLD)
+        if(ecuitem->interfacetype == 0)
         {
-            skipSerialHeader(ecuitem);
+            /* TCP */
+            totalByteErrorsRcvd+=ecuitem->tcpcon.bytesError;
+            ecuitem->tcpcon.bytesError = 0;
+            totalBytesRcvd+=ecuitem->tcpcon.bytesReceived;
+            ecuitem->tcpcon.bytesReceived = 0;
+            totalSyncFoundRcvd+=ecuitem->tcpcon.syncFound;
+            ecuitem->tcpcon.syncFound = 0;
+         }
+        else if(ecuitem->serialport)
+        {
+            /* serial */
+            totalByteErrorsRcvd+=ecuitem->serialcon.bytesError;
+            ecuitem->serialcon.bytesError = 0;
+            totalBytesRcvd+=ecuitem->serialcon.bytesReceived;
+            ecuitem->serialcon.bytesReceived = 0;
+            totalSyncFoundRcvd+=ecuitem->serialcon.syncFound;
+            ecuitem->serialcon.syncFound = 0;
         }
+        statusByteErrorsReceived->setText(QString("Recv Errors: %1").arg(totalByteErrorsRcvd));
+        statusBytesReceived->setText(QString("Recv: %1").arg(totalBytesRcvd));
+        statusSyncFoundReceived->setText(QString("Sync found: %1").arg(totalSyncFoundRcvd));
 
         if (outputfile.isOpen() )
         {
@@ -2382,15 +2363,19 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
 
 }
 
-void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessage &msg)
+void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg &msg)
 {
-    uint8_t * ptr = msg.databuffer;
-    int32_t length = msg.datasize;
+    const char *ptr;
+    int32_t length;
+
+    QByteArray payload = msg.getPayload();
+    ptr = payload.constData();
+    length = payload.size();
 
     /* control message was received */
     uint32_t service_id=0, service_id_tmp=0;
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-    service_id=DLT_ENDIAN_GET_32(msg.standardheader->htyp, service_id_tmp);
+    service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
 
     switch (service_id)
     {
@@ -2412,7 +2397,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessa
         {
             uint16_t count_app_ids=0,count_app_ids_tmp=0;
             DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
-            count_app_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_app_ids_tmp);
+            count_app_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_app_ids_tmp);
 
             for (int32_t num=0;num<count_app_ids;num++)
             {
@@ -2423,7 +2408,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessa
 
                 uint16_t count_context_ids=0,count_context_ids_tmp=0;
                 DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
-                count_context_ids=DLT_ENDIAN_GET_16(msg.standardheader->htyp, count_context_ids_tmp);
+                count_context_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_context_ids_tmp);
 
                 for (int32_t num2=0;num2<count_context_ids;num2++)
                 {
@@ -2443,7 +2428,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessa
                     {
                         uint16_t context_description_length=0,context_description_length_tmp=0;
                         DLT_MSG_READ_VALUE(context_description_length_tmp,ptr,length,uint16_t);
-                        context_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,context_description_length_tmp);
+                        context_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),context_description_length_tmp);
 
                         if (length<context_description_length)
                         {
@@ -2465,7 +2450,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, DltMessa
                     QString applicationDescription;
                     uint16_t application_description_length=0,application_description_length_tmp=0;
                     DLT_MSG_READ_VALUE(application_description_length_tmp,ptr,length,uint16_t);
-                    application_description_length=DLT_ENDIAN_GET_16(msg.standardheader->htyp,application_description_length_tmp);
+                    application_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),application_description_length_tmp);
                     applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
                     controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
                     ptr+=application_description_length;
@@ -3772,7 +3757,8 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
                 /* reset receive buffer */
                 ecuitem->totalBytesRcvd = 0;
                 ecuitem->totalBytesRcvdLastTimeout = 0;
-                ecuitem->data.clear();
+                ecuitem->tcpcon.clear();
+                ecuitem->serialcon.clear();
             }
 
 

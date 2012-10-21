@@ -76,8 +76,10 @@ private:
     QLabel *statusFilename;
     QLabel *statusBytesReceived;
     QLabel *statusByteErrorsReceived;
+    QLabel *statusSyncFoundReceived;
     unsigned long totalBytesRcvd;
     unsigned long totalByteErrorsRcvd;
+    unsigned long totalSyncFoundRcvd;
 
     /* Search */
     SearchDialog *searchDlg;
@@ -135,7 +137,7 @@ private:
     void controlMessage_SetVerboseMode(EcuItem* ecuitem, int mode);
     void controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable);
     void controlMessage_GetLogInfo(EcuItem* ecuitem);
-    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,DltMessage &msg);
+    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,QDltMsg &msg);
     void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
     void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
 
@@ -180,8 +182,6 @@ private:
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
     QStringList getSerialPortsWithQextEnumartor();
-
-    void skipSerialHeader(EcuItem *ecu);
 
     void processMsgAfterPluginmodeChange(PluginItem *item);
 
