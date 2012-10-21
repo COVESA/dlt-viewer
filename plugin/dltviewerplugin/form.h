@@ -34,12 +34,13 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
 
-    void setTextBrowserHeader(QString text);
-    void setTextBrowserPayload(QString text);
+    void setTextBrowserDetails(QString text);
+    void setTextBrowserMessage(QString text);
     void setTextBrowserAscii(QString text);
     void setTextBrowserBinary(QString text);
     void setTextBrowserMixed(QString text);
     void setTextBrowserStatistics(QString text);
+    void setTextBrowserUncoded(QString text);
 
 /*
     void setMessages(int message);

@@ -32,14 +32,14 @@ Form::~Form()
     delete ui;
 }
 
-void Form::setTextBrowserHeader(QString text)
+void Form::setTextBrowserDetails(QString text)
 {
-    ui->textBrowserHeader->setText(text);
+    ui->textBrowserDetails->setText(text);
 }
 
-void Form::setTextBrowserPayload(QString text)
+void Form::setTextBrowserMessage(QString text)
 {
-    ui->textBrowserPayload->setText(text);
+    ui->textBrowserMessage->setText(text);
 }
 
 void Form::setTextBrowserAscii(QString text)
@@ -55,6 +55,11 @@ void Form::setTextBrowserBinary(QString text)
 void Form::setTextBrowserMixed(QString text)
 {
     ui->textBrowserMixed->setText(text);
+}
+
+void Form::setTextBrowserUncoded(QString text)
+{
+    ui->textBrowserUncoded->setText(text);
 }
 
 void Form::setTextBrowserStatistics(QString text)

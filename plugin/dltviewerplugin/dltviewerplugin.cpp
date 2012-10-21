@@ -69,7 +69,8 @@ QWidget* DltViewerPlugin::initViewer() {
 }
 
 void DltViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
-
+    /* Show Decoded output */
+    form->setTextBrowserMessage(msg.toStringHeader()+"<br><br>"+msg.toStringPayload());
 }
 
 void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
@@ -79,14 +80,15 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     if(!dltFile)
         return;
 
-    //if(dltFile->getMsg(index,msg)==false)
-    //    return;
+    /* Show Payload*/
+    form->setTextBrowserUncoded(msg.toStringHeader()+"<br><br>"+msg.toStringPayload());
 
-    QByteArray bytes = msg.getPayload();
-
-    /* Show Header */
+    /* Show details */
     text = QString("<html><body>");
-    text += QString("<table border=\"1\">");
+
+    text += QString("<h3>Header</h3>");
+    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
+    qDebug() << text;
     text += QString("<tr><th>Index</th><th>Time</th><th>Timestamp</th><th>Count</th><th>Ecuid</th><th>Apid</th><th>Ctid</th>");
     text += QString("<th>Type</th><th>Subtype</th><th>Mode</th><th>Endianness</th><th>#Args</th></tr>");
     text += QString("<tr><td>%1</td>").arg(dltFile->getMsgFilterPos(index));
@@ -102,50 +104,54 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     text += QString("<td>%1</td>").arg(msg.getEndiannessString());
     text += QString("<td>%1</td>").arg(msg.getNumberOfArguments());
     text += QString("</tr></table>");
-    text += QString("</body></html>");
-    form->setTextBrowserHeader(text);
 
-    /* Show payload */
-    text = QString("<html><body>");
-
-    text += QString("<table border=\"1\">");
-    text += QString("<tr><th>MessageId</th><th>CtrlServiceId</th><th>CtrlReturnType</th></tr>");
-    text += QString("<tr>");
-    text += QString("<td>%1</td>").arg(msg.getMessageId());
-    text += QString("<td>%1</td>").arg(msg.getCtrlServiceIdString());
-    text += QString("<td>%1</td>").arg(msg.getCtrlReturnTypeString());
-    text += QString("</tr></table>");
-
-    text += QString("<table border=\"1\">");
-    text += QString("<tr><th>Index</th><th>Offest</th><th>Size</th><th>TypeInfo</th><th>Name</th><th>Unit</th><th>Text</th><th>Binary</th></tr>");
-    for(int num=0;num<msg.getNumberOfArguments();num++) {
+    if(msg.getType()==QDltMsg::DltTypeControl) {
+        text += QString("<h3>Control Message</h3>");
+        text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
+        text += QString("<tr><th>MessageId</th><th>CtrlServiceId</th><th>CtrlReturnType</th></tr>");
         text += QString("<tr>");
-        if(msg.getArgument(num,argument)) {
-            text += QString("<td>%1</td>").arg(num+1);
-            text += QString("<td>%1</td>").arg(argument.getOffsetPayload());
-            text += QString("<td>%1</td>").arg(argument.getDataSize());
-            text += QString("<td>%1</td>").arg(argument.getTypeInfoString());
-            text += QString("<td>%1</td>").arg(argument.getName());
-            text += QString("<td>%1</td>").arg(argument.getUnit());
-            text += QString("<td>");
-
-            // Necessary to display < and > as characters in a HTML context.
-            // Otherwise < and > would be handled as HTML tags and not the complete payload would be displayed.
-            QString payloadText = argument.toString(); /* text output */
-            payloadText = payloadText.replace("<","&#60;");
-            payloadText = payloadText.replace(">","&#62;");
-            text += payloadText;
-
-            text += QString("</td>");
-            text += QString("<td>");
-            text += argument.toString(true); /* Binary output */
-            text += QString("</td>");
-        }
-        text += QString("</tr>");
+        text += QString("<td>%1</td>").arg(msg.getMessageId());
+        text += QString("<td>%1</td>").arg(msg.getCtrlServiceIdString());
+        text += QString("<td>%1</td>").arg(msg.getCtrlReturnTypeString());
+        text += QString("</tr></table>");
     }
-    text += QString("</table>");
+    else {
+        text += QString("<h3>Payload</h3>");
+        text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
+        text += QString("<tr><th>Index</th><th>Offest</th><th>Size</th><th>TypeInfo</th><th>Name</th><th>Unit</th><th>Text</th><th>Binary</th></tr>");
+        for(int num=0;num<msg.getNumberOfArguments();num++) {
+            text += QString("<tr>");
+            if(msg.getArgument(num,argument)) {
+                text += QString("<td>%1</td>").arg(num+1);
+                text += QString("<td>%1</td>").arg(argument.getOffsetPayload());
+                text += QString("<td>%1</td>").arg(argument.getDataSize());
+                text += QString("<td>%1</td>").arg(argument.getTypeInfoString());
+                text += QString("<td>%1</td>").arg(argument.getName());
+                text += QString("<td>%1</td>").arg(argument.getUnit());
+                text += QString("<td>");
+
+                // Necessary to display < and > as characters in a HTML context.
+                // Otherwise < and > would be handled as HTML tags and not the complete payload would be displayed.
+                QString payloadText = argument.toString(); /* text output */
+                payloadText = payloadText.replace("<","&#60;");
+                payloadText = payloadText.replace(">","&#62;");
+                text += payloadText;
+                text += QString("</td>");
+                text += QString("<td>");
+                text += argument.toString(true); /* Binary output */
+                text += QString("</td>");
+            }
+            text += QString("</tr>");
+        }
+        text += QString("</table>");
+    }
+
     text += QString("</body></html>");
-    form->setTextBrowserPayload(text);
+
+    form->setTextBrowserDetails(text);
+
+    /* get binary payload */
+    QByteArray bytes = msg.getPayload();
 
     /* Show Ascii output */
     form->setTextBrowserAscii(msg.toAsciiTable(bytes,false,false,true,8,64));
@@ -275,12 +281,12 @@ void DltViewerPlugin::printStatistics() {
 
     text += QString("<h3>Verbose log</h3>");
 
-    text += QString("<table border=\"1\">");
+    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
     text += QString("<tr><th>Total</th><th>Log</th><th>NwTrace</th></tr>");
     text += QString("<tr><td>%1</td><td>%2</td><td>%3</td></tr>").arg(counterVerboseLogs+counterVerboseTraces).arg(counterVerboseLogs).arg(counterVerboseTraces);
-    text += QString("</table>");
+    text += QString("</table><br>");
 
-    text += QString("<table border=\"1\">");
+    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
     text += QString("<tr>");
     for(int num=1;num<=QDltMsg::DltLogVerbose;num++) {
         text += QString("<th>%1</th>").arg(qDltLogInfo[num]);
@@ -291,10 +297,9 @@ void DltViewerPlugin::printStatistics() {
         text += QString("<td>%1</td>").arg(countersVerboseLogs[num]);
     }
     text += QString("</tr>");
-    text += QString("</table>");
+    text += QString("</table><br>");
 
-
-    text += QString("<table border=\"1\">");
+    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
     text += QString("<tr>");
     for(int num=1;num<=QDltMsg::DltNetworkTraceMost;num++) {
         text += QString("<th>%1</th>").arg(qDltNwTraceType[num]);
@@ -309,12 +314,12 @@ void DltViewerPlugin::printStatistics() {
 
     text += QString("<h3>Control</h3>");
 
-//    text += QString("<table border=\"1\">");
+//    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
 //    text += QString("<tr><th>Total</th><th>Control</th></tr>");
 //    text += QString("<tr><td>%1</td><td>%2</td></tr>").arg(counterNonVerboseControl).arg(counterNonVerboseControl);
 //    text += QString("</table>");
 
-    text += QString("<table border=\"1\">");
+    text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
     text += QString("<tr>");
     text += QString("<th>Total</th>");
     for(int num=1;num<=QDltMsg::DltControlTime;num++) {
