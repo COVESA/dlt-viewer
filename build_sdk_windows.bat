@@ -7,12 +7,12 @@ echo Setting up environment for Qt usage...
 set QTSDK=C:\QtSDK
 set QTDIR=%QTSDK%\Desktop\Qt\4.8.1\mingw
 set PATH=%QTDIR%\bin;%PATH%
-set PATH=%QTSDK%\mingw\bin;%PATH%
+set PATH=C:\MinGW\bin;%PATH%
 
 echo Setting up environment for DLT Viewer SDK...
 set SDK_DIR=c:\DltViewerSDK
 set PWD=%~dp0
-set MINGW_DIR=%QTSDK%\mingw
+set MINGW_DIR=C:\MinGW
 set SOURCE_DIR=%PWD%
 set BUILD_DIR=%PWD%build\release
 
