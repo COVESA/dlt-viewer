@@ -803,6 +803,15 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     if(fileName.isEmpty())
         return;
 
+    /* check if filename is the same as already open */
+    if(outputfile.fileName()==fileName)
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                              QString("File is already open!"));
+
+        return;
+    }
+
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
 
