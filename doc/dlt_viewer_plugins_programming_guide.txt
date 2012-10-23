@@ -1,0 +1,381 @@
+DLT Viewer Plugins Programming Guide
+====================================
+Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
+0.0.1, 2012/10/23: Initial version
+
+image::images/genivi_chrome_1_transparent.png[width=128]
+
+Overview
+--------
+The DLT Viewer can be extended by writing plugins. The plugins can be devided into three groups:
+
+Decoder Plugins::
+  Interprets a DLT message and transforms the content in a human readable way. The new content is also used to filter the messages.
+Viewer Plugins::
+  These plugins create widgets, which can display selected messages in special way. But also the complete message stream can be interpreted and displayed in a user defined way.
+Control Plugins::
+  These plugins are used to communicate with the target.
+
+The functionalities of the individual plugins can be combined in a single plugin.
+
+Interfaces
+----------
+The plugins consists of several plugin interfaces:
+
+QDLTPluginInterface::
+  This is the standard DLT Viewer Plugin Interface.
+  This interface must be inherited by each DLT Viewer plugin.
+QDLTPluginDecoderInterface::
+  This is an extended DLT Plugin Interface.
+  This interface must be used by decoder plugins.
+  DLT messages which are displayed are checked by the plugin, if they are valid and then decoded by the plugin.
+QDltPluginViewerInterface::
+  This is an extended DLT Plugin Interface.
+  This interface must be used by viewer plugins.
+  The viewer plugin gets full access to the loaded DLT file.
+QDltPluginControlInterface::
+  This is an extended DLT Plugin Interface.
+  This interface must be used by control plugins.
+  The control plugin interface can send control requests to the DLT daemon and receives control responses from the DLT daemon.
+  The plugin gets informed about the available connections to DLT daemons.
+QDltPluginCommandInterface::
+  This is an extended DLT Plugin Interface.
+  This interface must be used by command plugins.
+  The command plugin interface can be used to accept commands to execute from the UI or command line.
+  The plugin receives commands from the DLT-viewer via this interface.
+
+The QDLTPluginInterface must be implemented by every plugin. The other plugin interfaces are optional.
+  
+Basic Plugin
+-------------
+A plugin must consist of at least the following files
+
+.dummyplugin.h
+----
+#ifndef DUMMYPLUGIN_H
+#define DUMMYLUGIN_H
+
+#include <QObject>
+#include "plugininterface.h"
+
+#define DUMMY_PLUGIN_VERSION "1.0.0"
+
+class DummyPlugin : public QObject, QDLTPluginInterface
+{
+    Q_OBJECT
+    Q_INTERFACES(QDLTPluginInterface)
+
+public:
+    DummyPlugin();
+    ~DummyPlugin();
+
+    /* QDLTPluginInterface interface */
+    QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
+    QString description();
+    QString error();
+    bool loadConfig(QString filename);
+    bool saveConfig(QString filename);
+    QStringList infoConfig();
+};
+
+#endif // DUMMYPLUGIN_H
+----
+
+.dummyplugin.c
+----
+#include <QtGui>
+
+#include "dummydecoderplugin.h"
+
+DummyPlugin::DummyPlugin()
+{
+}
+
+DummyPlugin::~DummyPlugin()
+{
+
+}
+
+QString DummyPlugin::name()
+{
+    return QString("Dummy Plugin");
+}
+
+QString DummyPlugin::pluginVersion(){
+    return DUMMY_PLUGIN_VERSION;
+}
+
+QString DummyPlugin::pluginInterfaceVersion(){
+    return PLUGIN_INTERFACE_VERSION;
+}
+
+QString DummyPlugin::description()
+{
+    return QString();
+}
+
+QString DummyPlugin::error()
+{
+    return QString();
+}
+
+bool DummyPlugin::loadConfig(QString /* filename */ )
+{
+    return true;
+}
+
+bool DummyPlugin::saveConfig(QString /* filename */)
+{
+    return true;
+}
+
+QStringList DummyPlugin::infoConfig()
+{
+    return QStringList();
+}
+
+Q_EXPORT_PLUGIN2(dummyplugin, DummyPlugin);
+----
+
+.dummyplugin.pro
+----
+# include global settings for all DLT Viewer Plugins
+include( ../plugin.pri )
+
+# target name
+TARGET = $$qtLibraryTarget(dummyplugin)
+
+# plugin header files
+HEADERS += \
+    dummyplugin.h
+
+# plugin source files
+SOURCES += \
+    dummyplugin.cpp
+
+# plugin forms
+FORMS +=
+----
+
+As a minimal interface the QDLTPluginInterface must be implemented.
+
+Additional interfaces can be added by deriving the Plugin class from the specific interface.
+
+----
+class DummyDecoderPlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface
+----
+
+You have also to derive the Interface you want to use in the plugin header.
+
+----
+   Q_INTERFACES(QDLTDecoderPluginInterface)
+   
+public:
+    /* QDltPluginDecoderInterface */
+    bool isMsg(QDltMsg &msg, int triggeredByUser);
+    bool decodeMsg(QDltMsg &msg, int triggeredByUser);
+----
+
+The new interface functions must be implemented in the plugin .cpp file.
+
+If you als implemented a widget for viewer plugins add a form to the plugin project.
+
+QDLTPluginInterface description
+-------------------------------
+This is the standard DLT Viewer Plugin Interface.
+This interface must be inherited by each DLT Viewer plugin.
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Most of these functions from this interface are called when loading the plugin the first time.
+loadConfig() is called whenever a new file is loaded.
+
+Function QString name()
+~~~~~~~~~~~~~~~~~~~~~~~
+Called during intialisation of plugin.
+See doxygen API documentation for more details.
+
+Function QString pluginVersion()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Called during intialisation of plugin.
+See doxygen API documentation for more details.
+
+Function QString pluginInterfaceVersion()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Called during intialisation of plugin.
+See doxygen API documentation for more details.
+
+Function QString description()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Currently not used by DLT viewer.
+See doxygen API documentation for more details.
+
+Function QString error()
+~~~~~~~~~~~~~~~~~~~~~~~~
+Called when an error occures in the last interface call.
+See doxygen API documentation for more details.
+
+Function bool loadConfig(QString filename)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function bool saveConfig(QString filename)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Currently not used by DLT viewer.
+See doxygen API documentation for more details.
+
+Function QStringList infoConfig()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This function is called after call to loadConfig().
+See doxygen API documentation for more details.
+
+QDLTPluginDecoderInterface description
+--------------------------------------
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This function is called in the following use cases:
+
+* DLT message is showed in the table
+* DLT messages are filtered to create the filter index
+* Exporting DLT messages to ASCII
+* Called before calls to initMsgDecoded() and updateMsgDecoded()
+
+Function bool isMsg(QDltMsg &msg, int triggeredByUser)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function bool decodeMsg(QDltMsg &msg, int triggeredByUser)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+This function is called after decodeMsg() is called, and decodeMsg() returns true.
+See doxygen API documentation for more details.
+
+
+QDltPluginViewerInterface description
+-------------------------------------
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following sequence is called for every plugin, whenever a new DLT file is loaded:
+
+* initFileStart()
+* calling the following functions for all DLT message from the opened file
+  - initMsg()
+  - initMsgDecoded()
+* initFileFinish
+
+Before calling updateMsgDecoded() the functions isMsg() and is decodeMsg() for each decoder plugin.
+
+The following sequence is called for every plugin, when new DLT messages are received by DLT viewer:
+
+* updateFileStart()
+* calling the following functions for all new received DLT message
+  - updateMsg()
+  - updateMsgDecoded()
+* updateFileFinish
+
+Before calling updateMsgDecoded() the functions isMsg() and is decodeMsg() for each decoder plugin.
+
+Currently the DLT messages are iterated from first to last message in the DLT file. In future versions the call can be out of order, when mutlithreading is introduced.
+
+Function QWidget* initViewer()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Called during loading plugin. The created widget must be returned.
+See doxygen API documentation for more details.
+
+Function void initFileStart(QDltFile *file)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void initFileFinish()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void initMsg(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void initMsgDecoded(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void updateFileStart()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void updateMsg(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void updateMsgDecoded(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void updateFileFinish()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void selectedIdxMsg(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void selectedIdxMsgDecoded(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+
+QDltPluginControlInterface description
+--------------------------------------
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Function bool initControl(QDltControl *control)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function bool initConnections(QStringList list)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function bool controlMsg(int index, QDltMsg &msg)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+
+QDltPluginCommandInterface description
+--------------------------------------
+
+Sequence of calls from DLT Viewer
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Function bool command(QString command, QList<QString> params)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function void cancel()
+~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function QString commandReturnValue()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function int commandProgress()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+
+Function QList<QString> commandList()
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+See doxygen API documentation.
+    
