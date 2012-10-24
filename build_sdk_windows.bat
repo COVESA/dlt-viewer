@@ -60,6 +60,7 @@ copy %BUILD_DIR%\plugins\dltviewerplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\nonverboseplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %SDK_DIR%\plugins
 
+
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %SDK_DIR%
 copy %SOURCE_DIR%\README.txt %SDK_DIR%
 copy %SOURCE_DIR%\LICENSE.txt %SDK_DIR%
@@ -86,7 +87,8 @@ copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %SDK_DIR%\sdk\src\dummydecoderplugi
 copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %SDK_DIR%\sdk\src\dummyviewerplugin
 copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %SDK_DIR%\sdk\src\dummycontrolplugin
 
-copy %SOURCE_DIR%\plugin\nonverboseplugin\nonverboseplugin_configuration.xml %SDK_DIR%\plugins\examples
+copy %SOURCE_DIR%\plugin\examples\nonverboseplugin_configuration.xml %SDK_DIR%\plugins\examples
+copy %SOURCE_DIR%\plugin\examples\filetransferplugin_configuration.xml %SDK_DIR%\plugins\examples
 
 echo *************************
 echo * Finish                *
