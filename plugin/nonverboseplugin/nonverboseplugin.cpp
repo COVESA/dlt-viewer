@@ -179,7 +179,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
                           //pdu->typeInfo = DLT_TYPE_INFO_STRG | DLT_SCOD_UTF8;
                           pdu->typeInfo = QDltArgument::DltTypeInfoStrg;
                       }
-                      else if (text == "S_RAWD")
+                      else if (text == "S_RAWD" || text == "S_RAW")
                       {
                           //pdu->typeInfo = DLT_TYPE_INFO_RAWD;
                           pdu->typeInfo = QDltArgument::DltTypeInfoRawd;
