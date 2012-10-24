@@ -266,7 +266,7 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDltPluginViewerInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginViewerInterface/1.0");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginViewerInterface/1.1");
 
 //! Extended DLT Control Plugin Interface used by control plugins.
 /*!

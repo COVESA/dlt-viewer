@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.7.0 ALPHA
+Version 2.7.0 STABLE
 
 Known issues
 ------------
@@ -37,7 +37,14 @@ Changes
    * [GDLT-39]q Enable drag&drop ordering of filters
    * [GENDLT-37] MOST plugin should be able to decode messages segmented over 
                  several log messages
-
+   * [GDLT-130] Save As DLT file with same file name deletes file
+   * Changed MinGW Path for generating SDK with batch file.
+   * Release test fix: Moved deletion of serialport to ecuitem destructor. Remove automatic reconnect for serial connections.
+   * Added dlt viewer plugin programming guide.
+   * Added example filetransferplugin configuration file
+   * Release test fix: Increase max accepted message size to account for dlt_get_log_info
+   * Release fix: Also accept S_RAW in lieu of S_RAWD in nonverboseplugin
+   
 2.6.0
 
    * !!! *** IMPORTANT: In this release, all plugins are deactivated by default. You can enable your plugins in the "plugins"-tab. *** !!!
