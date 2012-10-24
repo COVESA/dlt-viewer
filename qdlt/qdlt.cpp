@@ -49,6 +49,7 @@ const char *qDltCtrlServiceId[] = {"","set_log_level","set_trace_status","get_lo
                              "get_software_version","message_buffer_overflow"};
 const char *qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
 
+#define DLT_MAX_MESSAGE_LEN 1024*64
 
 QDlt::QDlt()
 {
@@ -2023,7 +2024,7 @@ bool QDltConnection::parse(QDltMsg &msg)
         /* no complete msg found */
         /* perhaps not completely received */
         /* check valid size */
-        if(data.size()>2048)
+        if(data.size()>DLT_MAX_MESSAGE_LEN)
         {
             /* size exceeds max DLT message size */
             /* clear buffer */
