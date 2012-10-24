@@ -1956,8 +1956,6 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
         {
             /* Serial */
             ecuitem->serialport->close();
-            delete ecuitem->serialport;
-            ecuitem->serialport = 0;
         }
 
         ecuitem->InvalidAll();
@@ -2067,7 +2065,7 @@ void MainWindow::timeout()
         {
             //qDebug() << "totalBytesRcvd:"<<ecuitem->totalBytesRcvd << " - totalBytesRcvdLastTimeout:" << ecuitem->totalBytesRcvdLastTimeout;
 
-            if(ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+            if(ecuitem->interfacetype == 0 && ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
             {
                 //qDebug() << "reconnect";
                 disconnectECU(ecuitem);

@@ -2087,7 +2087,11 @@ QDltSerialConnection::QDltSerialConnection()
 
 QDltSerialConnection::~QDltSerialConnection()
 {
-
+    if(serialport != NULL)
+    {
+        delete serialport;
+        serialport = NULL;
+    }
 }
 
 void QDltSerialConnection::setPort(QString _port)
