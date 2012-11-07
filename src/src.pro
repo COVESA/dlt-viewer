@@ -54,7 +54,6 @@ SOURCES += main.cpp \
     tablemodel.cpp \
     commandplugindialog.cpp \
     filtertreewidget.cpp \
-    threadplugin.cpp \
     threaddltindex.cpp \
     threadfilter.cpp
 
@@ -79,7 +78,6 @@ HEADERS += mainwindow.h \
     tablemodel.h \
     commandplugindialog.h \
     filtertreewidget.h \
-    threadplugin.h \
     threaddltindex.h \
     threadfilter.h
 
