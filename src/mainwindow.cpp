@@ -45,7 +45,6 @@
 #include "qextserialenumerator.h"
 #include "version.h"
 #include "commandplugindialog.h"
-#include "threadplugin.h"
 #include "threaddltindex.h"
 #include "threadfilter.h"
 
@@ -975,19 +974,6 @@ void MainWindow::reloadLogFile()
         }
     }
 
-    // Possible to use several threads to process the splitted  trace file
-    // But this is slower than using one thread.
-    // Reason: Random IO on disk is very slow
-    // Example to use more than one threads
-    //int threadCount = 1;
-    //if(qfile.size()!=0)
-    //    threadCount = QThread::idealThreadCount();
-    //if(threadCount < 1)
-    //        threadCount = 1;
-    //qDebug()<<"Threads: "<<threadCount;
-    //int chunkSize = qfile.size() / threadCount;
-    //qDebug()<<"messages: " <<  qfile.size() << "chunkSize: " << chunkSize;
-
     if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
     {
         fileprogress.cancel();
@@ -998,29 +984,66 @@ void MainWindow::reloadLogFile()
 
         fileprogress.setLabelText(QString("Applying Plugins for Message 0/%1").arg(qfile.size()));
 
-        ThreadPlugin thread;
-        thread.setQDltFile(&qfile);
-        thread.setActiveDecoderPlugins(&activeDecoderPlugins);
-        thread.setActiveViewerPlugins(&activeViewerPlugins);
-        thread.setStartIndex(0);
-        thread.setStopIndex( qfile.size());
-
-        connect(&thread, SIGNAL(percentageComplete(int)), &fileprogress, SLOT(setValue(int)));
-        connect(&thread, SIGNAL(updateProgressText(QString)), &fileprogress, SLOT(setLabelText(QString)));
-        connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
-        connect(&fileprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
-
-        threadIsRunnging = true;
-
 #ifdef DEBUG_PERFORMANCE
         t.start();
 #endif
+        QDltMsg msg;
+        PluginItem *item;
+        for(int ix=0;ix<qfile.size();ix++)
+        {
+            /* Fill message from file */
+            if(!qfile.getMsg(ix, msg))
+            {
+                qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
+                continue;
+            }
 
-        thread.start();
-        thread.setPriority(QThread::HighestPriority);
+            /* Process all viewer plugins */
+            for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
+            {
+                item = (PluginItem*)activeViewerPlugins.at(ivp);
+                item->pluginviewerinterface->initMsg(ix, msg);
+            }
 
-        while(threadIsRunnging){
+            /* Process all decoderplugins */
+            for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
+            {
+                item = (PluginItem*)activeDecoderPlugins.at(idp);
+                if(item->plugindecoderinterface->isMsg(msg, 0))
+                {
+                    item->plugindecoderinterface->decodeMsg(msg, 0);
+                    /* TODO: Do we, or do we not want to break here?
+                     * Perhaps user wants to stack multiple plugins */
+                    break;
+                }
+            }
+
+            /* Add to filterindex if matches */
+            if(qfile.checkFilter(msg))
+            {
+                qfile.addFilterIndex(ix);
+            }
+
+            /* Offer messages again to viewer plugins after decode */
+            for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
+            {
+                item = (PluginItem *)activeViewerPlugins.at(ivp);
+                item->pluginviewerinterface->initMsgDecoded(ix, msg);
+            }
+
+            /* Update progress every 0.5% */
+            if((ix%((qfile.size()/200)+1))==0)
+            {
+                fileprogress.setValue(ix);
+                fileprogress.setLabelText(
+                            QString("Applying Plugins for Message %1/%2")
+                            .arg(ix).arg(qfile.size()));
+            }
             QApplication::processEvents();
+            if(fileprogress.wasCanceled())
+            {
+                break;
+            }
         }
 
 #ifdef DEBUG_PERFORMANCE
@@ -4100,30 +4123,67 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
     //int chunkSize = qfile.size() / threadCount;
     //qDebug()<<"messages: " <<  qfile.size() << "chunkSize: " << chunkSize;
 
-    ThreadPlugin thread;
-
-    thread.setQDltFile(&qfile);
-    thread.setActiveDecoderPlugins(&activeDecoderPlugins);
-    thread.setActiveViewerPlugins(&activeViewerPlugins);
-    thread.setStartIndex(0);
-    thread.setStopIndex( qfile.size());
-
-    connect(&pluginprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
-    connect(&thread, SIGNAL(percentageComplete(int)), &pluginprogress, SLOT(setValue(int)));
-    connect(&thread, SIGNAL(updateProgressText(QString)), &pluginprogress, SLOT(setLabelText(QString)));
-    connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
-
-    threadIsRunnging = true;
-
 #ifdef DEBUG_PERFORMANCE
     t.start();
 #endif
 
-    thread.start();
-    thread.setPriority(QThread::HighPriority);
+    QDltMsg msg;
+    PluginItem *pitem;
+    for(int ix=0;ix<qfile.size();ix++)
+    {
+        /* Fill message from file */
+        if(!qfile.getMsg(ix, msg))
+        {
+            qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
+            continue;
+        }
 
-    while(threadIsRunnging){
+        /* Process all viewer plugins */
+        for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
+        {
+            pitem = (PluginItem*)activeViewerPlugins.at(ivp);
+            pitem->pluginviewerinterface->initMsg(ix, msg);
+        }
+
+        /* Process all decoderplugins */
+        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
+        {
+            pitem = (PluginItem*)activeDecoderPlugins.at(idp);
+            if(pitem->plugindecoderinterface->isMsg(msg, 0))
+            {
+                pitem->plugindecoderinterface->decodeMsg(msg, 0);
+                /* TODO: Do we, or do we not want to break here?
+                 * Perhaps user wants to stack multiple plugins */
+                break;
+            }
+        }
+
+        /* Add to filterindex if matches */
+        if(qfile.checkFilter(msg))
+        {
+            qfile.addFilterIndex(ix);
+        }
+
+        /* Offer messages again to viewer plugins after decode */
+        for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
+        {
+            pitem = (PluginItem *)activeViewerPlugins.at(ivp);
+            pitem->pluginviewerinterface->initMsgDecoded(ix, msg);
+        }
+
+        /* Update progress every 0.5% */
+        if((ix%((qfile.size()/200)+1))==0)
+        {
+            pluginprogress.setValue(ix);
+            pluginprogress.setLabelText(
+                           QString("Applying Plugins for Message %1/%2")
+                           .arg(ix).arg(qfile.size()));
+        }
         QApplication::processEvents();
+        if(pluginprogress.wasCanceled())
+        {
+            break;
+        }
     }
 
     if(item->pluginviewerinterface)
