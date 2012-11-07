@@ -287,6 +287,8 @@ private slots:
     void filterAdd();
     void filterAddTable();
     void autoscrollToggled(bool state);
+    void connected();
+    void disconnected();
     void error(QAbstractSocket::SocketError);
     void readyRead();
     void timeout();
