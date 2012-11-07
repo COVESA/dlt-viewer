@@ -2213,8 +2213,6 @@ void MainWindow::read(EcuItem* ecuitem)
             else
                 dlt_set_id(str.ecu,ecuitem->id.toAscii());
 
-            bool is_ctrl_msg = (qmsg.getType()==QDltMsg::DltTypeControl);
-
             /* check if message is matching the filter */
             if (outputfile.isOpen())
             {
