@@ -447,7 +447,6 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
 bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
 {
     unsigned int dltType = 0;
-    unsigned short length;
 
     /* add the type info in verbose mode */
     if(verboseMode) {
@@ -505,7 +504,6 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
 
     /* add the string or raw data size to the payload */
     if((typeInfo == DLT_TYPE_INFO_RAWD) || (typeInfo == DLT_TYPE_INFO_STRG)) {
-        length = data.size();
         payload += QByteArray((const char*)&dltType,sizeof(unsigned int));
     }
 
@@ -1440,7 +1438,6 @@ bool QDltFile::updateIndex()
 {
     QByteArray buf;
     unsigned long pos = 0;
-    int lastSize = 0;
 
     /* check if file is already opened */
     if(!infile.isOpen()) {
@@ -1455,7 +1452,6 @@ bool QDltFile::updateIndex()
         /* move behind last found position */
         pos = indexAll[indexAll.size()-1] + 4;
         infile.seek(pos);
-        lastSize = indexAll.size();
     }
     else {
         /* the file was empty the last call */
@@ -1667,7 +1663,7 @@ void QDltFile::addFilterIndex (int index)
 QColor QDltFile::checkMarker(QDltMsg &msg)
 {
     QDltFilter filter;
-    bool found = false, foundFilter;
+    bool foundFilter;
     QColor color;
 
     if(!filterFlag)
@@ -1708,7 +1704,6 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
 
             if(foundFilter)
             {
-                found = true;
                 color = filter.filterColour;
             }
         }
