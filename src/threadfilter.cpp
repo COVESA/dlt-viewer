@@ -25,7 +25,7 @@ void ThreadFilter::run(){
 
         data = qDltFile->getMsg(num);
         if(data.isEmpty()){
-            qDebug()<<"Error: getMsg in thread for plugins failed for num: " << num;
+            //qDebug()<<"Error: getMsg in thread for plugins failed for num: " << num;
             //break;
         }
         msg.setMsg(data);
