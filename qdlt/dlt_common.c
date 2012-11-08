@@ -79,6 +79,10 @@
 #include <time.h> /* for clock_gettime() */
 #endif
 
+#if defined (__APPLE__)
+#include <mach/mach_time.h>
+#endif
+
 #if defined (_MSC_VER)
 #include <io.h>
 #else
@@ -2756,7 +2760,7 @@ int dlt_setup_serial(int fd, speed_t speed)
 
 speed_t dlt_convert_serial_speed(int baudrate)
 {
-#if !defined (__WIN32__) && !defined(_MSC_VER)
+#if !defined (__WIN32__) && !defined(_MSC_VER) && !defined(__APPLE__)
     speed_t ret;
 
     switch (baudrate)
@@ -2939,6 +2943,15 @@ uint32_t dlt_uptime(void)
 
     return (uint32_t)(GetTickCount()*10); /* GetTickCount() return DWORD */
 
+#elif defined (__APPLE__)
+    static mach_timebase_info_data_t sTimebaseInfo = { .numer = 0, .denom = 0 };
+    if (0 == sTimebaseInfo.denom) {
+        mach_timebase_info(&sTimebaseInfo);
+    }
+    uint64_t now = mach_absolute_time();
+    uint64_t nano = now * sTimebaseInfo.numer / sTimebaseInfo.denom;
+
+    return (uint32_t)(nano/100000);
 #else
     struct timespec ts;
 

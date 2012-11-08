@@ -67,9 +67,6 @@ HEADERS += mainwindow.h \
     settingsdialog.h \
     injectiondialog.h \
     searchdialog.h \
-    dlt_common.h \
-    dlt_user_shared.h \
-    qdlt.h \
     plugininterface.h \
     version.h \
     multiplecontextdialog.h \
