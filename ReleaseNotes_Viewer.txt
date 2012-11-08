@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.7.0 STABLE
+Version 2.7.1 ALPHA
 
 Known issues
 ------------
@@ -13,6 +13,10 @@ Known issues
 
 Changes
 -------
+
+2.7.1
+
+   *
 
 2.7.0
 
