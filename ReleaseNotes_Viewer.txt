@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.7.1 ALPHA
+Version 2.7.1 RELEASE
 
 Known issues
 ------------
@@ -13,11 +13,11 @@ Known issues
 
 Changes
 -------
-
 2.7.1
-
-   *
-
+   * [GSWD-123][BZ-5][BZ-12]: Fix connection handling when loading a project file.
+   * [BZ-7]: Remove threading.
+   * Fix compiler warnings
+   
 2.7.0
 
    * Show decoded messages in DLt viewer plugin
