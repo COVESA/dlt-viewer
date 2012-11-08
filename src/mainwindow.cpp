@@ -994,7 +994,7 @@ void MainWindow::reloadLogFile()
             /* Fill message from file */
             if(!qfile.getMsg(ix, msg))
             {
-                qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
+                //qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
                 continue;
             }
 
@@ -4149,7 +4149,7 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
         /* Fill message from file */
         if(!qfile.getMsg(ix, msg))
         {
-            qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
+            //qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
             continue;
         }
 
