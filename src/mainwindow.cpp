@@ -44,7 +44,6 @@
 #include "injectiondialog.h"
 #include "qextserialenumerator.h"
 #include "version.h"
-#include "commandplugindialog.h"
 #include "threaddltindex.h"
 #include "threadfilter.h"
 
@@ -359,7 +358,7 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
     for(int i = 0;i < project.plugin->topLevelItemCount();i++)
     {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
-        if(item->getName() == plugin)
+        if(item->getName().compare(plugin, Qt::CaseInsensitive) == 0)
         {
             plugin_found = true;
             /* Check that this is a command plugin */
@@ -371,37 +370,23 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
             }
             if(!cmdif->command(cmd, params))
             {
-                // Show error
-                QMessageBox::warning(this, "Error", plugin);
-                return;
-            }
-
-            // Show progress dialog
-            QProgressDialog progress(plugin, "Cancel", 0, 100, this);
-            progress.show();
-            while(cmdif->commandProgress() < 100)
-            {
-                progress.setValue(cmdif->commandProgress());
-                if(progress.wasCanceled())
+                if(item->plugininterface)
                 {
-                    cmdif->cancel();
-                    return;
+                    qDebug() << item->plugininterface->error();
                 }
-                // TODO: This caused crashing someplace else. Use caution.
-                QApplication::processEvents();
+                exit(0);
             }
-            progress.close();
-
-            // Show return value
-            QMessageBox::information(this, plugin, cmdif->commandReturnValue());
+            else
+            {
+                exit(-1);
+            }
         }
     }
+
     if(!plugin_found)
     {
-        QMessageBox::critical(this, "Error", plugin + " is not a command plugin.");
-        exit(-1);
+        qDebug() << "Plugin not found " << plugin;
     }
-    exit(0);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -1904,12 +1889,6 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
             menu.addAction(action);
             action = new QAction("Plugin Hide", this);
             connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Hide_triggered()));
-            menu.addAction(action);
-        }
-        if(item->plugincommandinterface)
-        {
-            action = new QAction("Execute Command...", this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_ExecuteCommand_triggered()));
             menu.addAction(action);
         }
         menu.addSeparator();
@@ -4293,56 +4272,6 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
     else
         QMessageBox::warning(0, QString("DLT Viewer"),
                              QString("No Plugin selected!"));
-}
-
-void MainWindow::on_action_menuPlugin_ExecuteCommand_triggered()
-{
-    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
-    PluginItem* item = (PluginItem*) list.at(0);
-    QDltPluginCommandInterface *plugin = item->plugincommandinterface;
-    QDLTPluginInterface *plugin_core = item->plugininterface;
-
-    if(!plugin)
-    {
-        QMessageBox::warning(this, QString("DLT Viewer"),
-                             QString("Not a Command Plugin."));
-        return;
-    }
-
-    CommandPluginDialog dlg(this);
-    dlg.setPlugin(plugin);
-    int ret = dlg.exec();
-    if(ret == QDialog::Accepted)
-    {
-        // Start processing the command
-        QString cmd = dlg.command();
-        QList<QString> params = dlg.params();
-        if(!plugin->command(cmd, params))
-        {
-            // Show error
-            QMessageBox::warning(this, "Error", plugin_core->error());
-            return;
-        }
-
-        // Show progress dialog
-        QProgressDialog progress(plugin_core->name(), "Cancel", 0, 100, this);
-        progress.show();
-        while(plugin->commandProgress() < 100)
-        {
-            progress.setValue(plugin->commandProgress());
-            if(progress.wasCanceled())
-            {
-                plugin->cancel();
-                return;
-            }
-            // TODO: This caused crashing someplace else. Use caution.
-            QApplication::processEvents();
-        }
-        progress.close();
-
-        // Show return value
-        QMessageBox::information(this, plugin_core->name(), plugin->commandReturnValue());
-    }
 }
 
 //----------------------------------------------------------------------------

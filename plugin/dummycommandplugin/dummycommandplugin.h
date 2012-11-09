@@ -22,7 +22,6 @@
 
 #include <QObject>
 #include "plugininterface.h"
-#include "dummywaitthread.h"
 
 #define DUMMY_COMMAND_PLUGIN_VERSION "1.0.0"
 
@@ -48,13 +47,6 @@ public:
 
     /* QDltPluginCommandInterface */
     bool command(QString command, QList<QString> params);
-    void cancel();
-    QString commandReturnValue();
-    int commandProgress();
-    QList<QString> commandList();
-
-    /* The wait thread */
-    DummyWaitThread *thread;
 };
 
 #endif // DUMMYCONTROLPLUGIN_H

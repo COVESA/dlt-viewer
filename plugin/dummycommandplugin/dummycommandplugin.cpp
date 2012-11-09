@@ -25,7 +25,6 @@
 
 DummyCommandPlugin::DummyCommandPlugin()
 {
-    thread = new DummyWaitThread();
 }
 
 DummyCommandPlugin::~DummyCommandPlugin()
@@ -73,9 +72,6 @@ QStringList DummyCommandPlugin::infoConfig()
 
 bool DummyCommandPlugin::command(QString command, QList<QString> params)
 {
-    thread->reset();
-    thread->start();
-
     QFile dst("DummyCommandPlugin.txt");
     QDataStream sout;
     if(command == "append")
@@ -100,31 +96,13 @@ bool DummyCommandPlugin::command(QString command, QList<QString> params)
         QString line(params[i] + QString("\n"));
         sout << line;
     }
+    for(int i=0;i<100;i++)
+    {
+        qDebug() << "Doing nothing: " << i << "%";
+        QApplication::processEvents();
+    }
     dst.close();
     return true;
 }
 
-void DummyCommandPlugin::cancel()
-{
-    thread->exit();
-}
-
-QString DummyCommandPlugin::commandReturnValue()
-{
-    return QString("Dummy Command Plugin return value");
-}
-
-int DummyCommandPlugin::commandProgress()
-{
-    return thread->getProgress();
-}
-
-QList<QString> DummyCommandPlugin::commandList()
-{
-    QList<QString> ret;
-    ret.append(QString("append"));
-    ret.append(QString("overwrite"));
-    return ret;
-}
-
-Q_EXPORT_PLUGIN2(dummycommandplugin, DummyCommandPlugin);
+Q_EXPORT_PLUGIN2(dummycommandplugin, DummyCommandPlugin)

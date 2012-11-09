@@ -52,7 +52,6 @@ SOURCES += main.cpp \
     optmanager.cpp \
     dltsettingsmanager.cpp \
     tablemodel.cpp \
-    commandplugindialog.cpp \
     filtertreewidget.cpp \
     threaddltindex.cpp \
     threadfilter.cpp
@@ -73,7 +72,6 @@ HEADERS += mainwindow.h \
     optmanager.h \
     dltsettingsmanager.h \
     tablemodel.h \
-    commandplugindialog.h \
     filtertreewidget.h \
     threaddltindex.h \
     threadfilter.h
@@ -87,8 +85,7 @@ FORMS += mainwindow.ui \
     settingsdialog.ui \
     injectiondialog.ui \
     searchdialog.ui \
-    multiplecontextdialog.ui \
-    commandplugindialog.ui
+    multiplecontextdialog.ui
 
 OTHER_FILES += png/edit-clear.png \
     png/document-save-as.png \

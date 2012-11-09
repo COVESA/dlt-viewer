@@ -6,13 +6,11 @@ TARGET = $$qtLibraryTarget(dummycommandplugin)
 
 # plugin header files
 HEADERS += \
-    dummycommandplugin.h \
-    dummywaitthread.h
+    dummycommandplugin.h
 
 # plugin source files
 SOURCES += \
-    dummycommandplugin.cpp \
-    dummywaitthread.cpp
+    dummycommandplugin.cpp
 
 # plugin forms
 FORMS +=
