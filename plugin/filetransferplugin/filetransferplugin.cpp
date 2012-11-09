@@ -19,6 +19,8 @@
 
 #include <QtGui>
 #include "filetransferplugin.h"
+#include "file.h"
+#include <QDir>
 
 FiletransferPlugin::FiletransferPlugin() {
     dltFile = 0;
@@ -49,7 +51,7 @@ QString FiletransferPlugin::description() {
 }
 
 QString FiletransferPlugin::error() {
-    return QString();
+    return errorText;
 }
 
 bool FiletransferPlugin::loadConfig(QString filename) {
@@ -348,4 +350,54 @@ void FiletransferPlugin::doFLER(QDltMsg *msg){
     file->setFlags(Qt::NoItemFlags );
 }
 
-Q_EXPORT_PLUGIN2(filetransferplugin, FiletransferPlugin);
+bool FiletransferPlugin::command(QString command, QList<QString> params)
+{
+    if(command.compare("export", Qt::CaseInsensitive) == 0)
+    {
+        if(params.length() != 1)
+        {
+            errorText = "Need one parameter, path to save to.";
+            return false;
+        }
+        QDir f(params.at(0));
+        if(!f.exists() && !f.mkpath("."))
+        {
+            errorText = "Failed to create directory " + params.at(0);
+            return false;
+        }
+        return exportAll(params.at(0));
+    }
+    errorText = "Unknown command " + command;
+    return false;
+}
+
+bool FiletransferPlugin::exportAll(QString path)
+{
+    QTreeWidgetItemIterator it(form->getTreeWidget(),QTreeWidgetItemIterator::NoChildren );
+    errorText = "Failed to save files";
+    bool ret = true;
+    if(!*it)
+    {
+        errorText = "No filetransfer files in the loaded DLT file.";
+        return false;
+    }
+    while (*it) {
+        File *tmp = dynamic_cast<File*>(*it);
+        if (tmp != NULL && tmp->isComplete()) {
+            QString absolutePath = path+"//"+tmp->getFilename();
+            if(!tmp->saveFile(absolutePath) ){
+                ret = false;
+                errorText += ", " + tmp->getFilenameOnTarget();
+            }
+            else
+            {
+                qDebug() << "Exported: " << absolutePath;
+            }
+        }
+        ++it;
+        QApplication::processEvents();
+    }
+    return ret;
+}
+
+Q_EXPORT_PLUGIN2(filetransferplugin, FiletransferPlugin)

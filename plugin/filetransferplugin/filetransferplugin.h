@@ -28,11 +28,12 @@
 
 #define FILETRANSFER_PLUGIN_VERSION "1.0.0"
 
-class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface
+class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+    Q_INTERFACES(QDltPluginCommandInterface)
 
 public:
     FiletransferPlugin();
@@ -63,6 +64,10 @@ public:
 
     void updateFiletransfer(int index, QDltMsg &msg);
     void show(bool value);
+
+    /* QDltPluginCommandInterface */
+    bool command(QString command, QList<QString> params);
+    bool exportAll(QString path);
 
 private:
     Form *form;
