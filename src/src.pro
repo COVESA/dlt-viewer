@@ -96,7 +96,12 @@ OTHER_FILES += png/edit-clear.png \
     png/preferences-desktop.png \
     png/network-transmit-receive.png \
     png/network-offline.png \
-    png/edit-cut.png
+    png/edit-cut.png \
+    ../ReleaseNotes_Viewer.txt \
+    ../README.txt \
+    ../MPL.txt \
+    ../LICENSE.txt \
+    ../INSTALL.txt
 
 RESOURCES += resource.qrc
 

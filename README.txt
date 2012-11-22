@@ -24,6 +24,8 @@ Options:
  -l logfile 		Loading logfile on startup (must end with .dlt) 
  -f filterfile 		Loading filterfile on startup (must end with .dlf) 
  -c logfile textfile 	Convert logfile file to textfile (logfile must end with .dlt) 
+ -e "name of plugin|command in plugin|param1|param2|paramn..."
+    Execute command in a command interface plugin.
 
 API Documentation
 -----------------

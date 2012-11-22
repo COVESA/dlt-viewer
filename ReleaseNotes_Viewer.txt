@@ -4,18 +4,28 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.8.0 ALPHA
+Version 2.8.0 STABLE
 
 Known issues
 ------------
 
-   * none
+   * Bug 18 - Filter not applied when loading a dlt file
+     http://bugs.genivi.org/show_bug.cgi?id=18
+   * Unexpected output from MOSTPlugin, possibly related to above
 
 Changes
 -------
 2.8.0
+  * [GDLT-128] Improvement of temporary file handling.
+  * Ensure connection properties are propagated to connection objects.
+  * Added OS X compatibility
+  * [GDLT-108] Command line option to execute command plugins
 
-
+2.7.1
+  * [GSWD-123][BZ-5][BZ-12]: Fix connection handling when loading a project file.
+  * [BZ-7]: Remove threading.
+  * Fix compiler warnings
+   
 2.7.0
 
    * Show decoded messages in DLt viewer plugin
