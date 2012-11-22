@@ -64,37 +64,22 @@ public:
     bool sendGetLogInfo;
     enum {invalid,unknown,valid} status;
 
-   /* configuration TCP */
-    QString hostname;
-    unsigned int tcpport;
-    bool sendSerialHeaderTcp;
-    bool syncSerialHeaderTcp;
-    bool autoReconnect;
-    int autoReconnectTimeout;
-
-    QDltTCPConnection tcpcon;
-
-    /* configuration serial */
-    QString port;
-    BaudRateType baudrate;
-    bool sendSerialHeaderSerial;
-    bool syncSerialHeaderSerial;
-
-    QDltSerialConnection serialcon;
-
     /* configuration update */
     bool updateDataIfOnline;
     void update();
 
     /* connection */
     QTcpSocket socket;
-    //AbstractSerial *serialport;
+
     QextSerialPort *serialport;
 
     /* connection status */
     int tryToConnect;
     int connected;
     QString connectError;
+    bool autoReconnect;
+    int autoReconnectTimeout;
+
 
     /* current received message and buffer for receivig from the socket */
     int32_t totalBytesRcvd;
@@ -107,6 +92,49 @@ public:
 private:
     QDateTime autoReconnectTimestamp;
     bool operator< ( const QTreeWidgetItem & other ) const;
+
+    /* configuration TCP */
+     QString hostname;
+     unsigned int tcpport;
+     bool sendSerialHeaderTcp;
+     bool syncSerialHeaderTcp;
+
+public:
+     QDltTCPConnection tcpcon;
+
+     /* Accsesors to config */
+     QString getHostname() {return hostname;}
+     unsigned int getTcpport() {return tcpport;}
+     bool getSendSerialHeaderTcp() {return sendSerialHeaderTcp;}
+     bool getSyncSerialHeaderTcp() {return syncSerialHeaderTcp;}
+
+     void setHostname(QString hname) {hostname = hname; tcpcon.setHostname(hostname);}
+     void setTcpport(unsigned int tp) {tcpport = tp; tcpcon.setTcpPort(tcpport);}
+     void setSendSerialHeaderTcp(bool b) {sendSerialHeaderTcp = b; tcpcon.setSendSerialHeader(sendSerialHeaderTcp);}
+     void setSyncSerialHeaderTcp(bool b) {syncSerialHeaderTcp = b; tcpcon.setSyncSerialHeader(syncSerialHeaderTcp);}
+
+private:
+     /* Configuration serial */
+     QString port;
+     BaudRateType baudrate;
+     bool sendSerialHeaderSerial;
+     bool syncSerialHeaderSerial;
+
+public:
+     QDltSerialConnection serialcon;
+
+     /* Accsesors to config */
+     QString getPort() {return port;}
+     BaudRateType getBaudrate() {return baudrate;}
+     bool getSendSerialHeaderSerial() {return sendSerialHeaderSerial;}
+     bool getSyncSerialHeaderSerial() {return syncSerialHeaderSerial;}
+
+     void setPort(QString tp) {port = tp; serialcon.setPort(port);}
+     void setBaudrate(BaudRateType brt) {baudrate = brt;serialcon.setBaudrate(baudrate);}
+     void setSendSerialHeaderSerial(bool b) {sendSerialHeaderSerial = b;serialcon.setSendSerialHeader(sendSerialHeaderSerial);}
+     void setSyncSerialHeaderSerial(bool b) {syncSerialHeaderSerial = b;serialcon.setSyncSerialHeader(syncSerialHeaderSerial);}
+
+
 };
 
 class ApplicationItem  : public QTreeWidgetItem

@@ -1238,8 +1238,8 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
         project.ecu->addTopLevelItem(ecuitem);
 
         /* Update settings for recent hostnames and ports */
-        setCurrentHostname(ecuitem->hostname);
-        setCurrentPort(ecuitem->port);
+        setCurrentHostname(ecuitem->getHostname());
+        setCurrentPort(ecuitem->getPort());
 
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
@@ -1270,16 +1270,16 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
         /* show ECU configuration dialog */
-        EcuDialog dlg(ecuitem->id,ecuitem->description,ecuitem->interfacetype,ecuitem->hostname,ecuitem->tcpport,ecuitem->port,ecuitem->baudrate,
-                      ecuitem->loglevel,ecuitem->tracestatus,ecuitem->verbosemode,ecuitem->sendSerialHeaderTcp,ecuitem->sendSerialHeaderSerial,ecuitem->syncSerialHeaderTcp,ecuitem->syncSerialHeaderSerial,
+        EcuDialog dlg(ecuitem->id,ecuitem->description,ecuitem->interfacetype,ecuitem->getHostname(),ecuitem->getTcpport(),ecuitem->getPort(),ecuitem->getBaudrate(),
+                      ecuitem->loglevel,ecuitem->tracestatus,ecuitem->verbosemode,ecuitem->getSendSerialHeaderTcp(),ecuitem->getSendSerialHeaderSerial(),ecuitem->getSyncSerialHeaderTcp(),ecuitem->getSyncSerialHeaderSerial(),
                       ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->updateDataIfOnline,ecuitem->autoReconnect,ecuitem->autoReconnectTimeout);
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
         recentPorts = DltSettingsManager::getInstance()->value("other/recentPortList",portListPreset).toStringList();
 
-        setCurrentHostname(ecuitem->hostname);
-        setCurrentPort(ecuitem->port);
+        setCurrentHostname(ecuitem->getHostname());
+        setCurrentPort(ecuitem->getPort());
 
         dlg.setHostnameList(recentHostnames);
         dlg.setPortList(recentPorts);
@@ -1288,10 +1288,10 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         {
             bool interfaceChanged = false;
             if((ecuitem->interfacetype != dlg.interfacetype() ||
-                ecuitem->hostname != dlg.hostname() ||
-                ecuitem->tcpport != dlg.tcpport() ||
-                ecuitem->port != dlg.port() ||
-                ecuitem->baudrate != dlg.baudrate()) &&
+                ecuitem->getHostname() != dlg.hostname() ||
+                ecuitem->getTcpport() != dlg.tcpport() ||
+                ecuitem->getPort() != dlg.port() ||
+                ecuitem->getBaudrate() != dlg.baudrate()) &&
                     ecuitem->tryToConnect)
             {
                 interfaceChanged = true;
@@ -1316,8 +1316,8 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             }
 
             /* Update settings for recent hostnames and ports */
-            setCurrentHostname(ecuitem->hostname);
-            setCurrentPort(ecuitem->port);
+            setCurrentHostname(ecuitem->getHostname());
+            setCurrentPort(ecuitem->getPort());
 
             /* Update the ECU list in control plugins */
             updatePluginsECUList();
@@ -2013,7 +2013,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
 
                 //disconnect(&ecuitem->socket,0,0,0);
-                ecuitem->socket.connectToHost(ecuitem->hostname,ecuitem->tcpport);
+                ecuitem->socket.connectToHost(ecuitem->getHostname(),ecuitem->getTcpport());
             }
         }
         else
@@ -2021,9 +2021,9 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             /* Serial */
             if(!ecuitem->serialport)
             {
-                PortSettings settings = {ecuitem->baudrate, DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
+                PortSettings settings = {ecuitem->getBaudrate(), DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
 
-                ecuitem->serialport = new QextSerialPort(ecuitem->port,settings);
+                ecuitem->serialport = new QextSerialPort(ecuitem->getPort(),settings);
                 connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
                 connect(ecuitem->serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
             }
@@ -2031,7 +2031,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             if(ecuitem->serialport->isOpen())
             {
                 ecuitem->serialport->close();
-                ecuitem->serialport->setBaudRate(ecuitem->baudrate);
+                ecuitem->serialport->setBaudRate(ecuitem->getBaudrate());
             }
 
             ecuitem->serialport->open(QIODevice::ReadWrite);
@@ -2635,7 +2635,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     if (ecuitem->interfacetype == 0 && ecuitem->socket.isOpen())
     {
         /* Optional: Send serial header, if requested */
-        if (ecuitem->sendSerialHeaderTcp)
+        if (ecuitem->getSendSerialHeaderTcp())
             ecuitem->socket.write((const char*)dltSerialHeader,sizeof(dltSerialHeader));
 
         /* Send data */
@@ -2645,7 +2645,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     else if (ecuitem->interfacetype == 1 && ecuitem->serialport && ecuitem->serialport->isOpen())
     {
         /* Optional: Send serial header, if requested */
-        if (ecuitem->sendSerialHeaderSerial)
+        if (ecuitem->getSendSerialHeaderSerial())
             ecuitem->serialport->write((const char*)dltSerialHeader,sizeof(dltSerialHeader));
 
         /* Send data */

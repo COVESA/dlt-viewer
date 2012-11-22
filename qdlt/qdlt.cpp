@@ -1961,7 +1961,6 @@ bool QDltConnection::parse(QDltMsg &msg)
                 break;
             }
             lastFound = 0;
-            break;
         }
         else
         {
@@ -1989,12 +1988,12 @@ bool QDltConnection::parse(QDltMsg &msg)
     {
         /* two sync headers found */
         /* try to read msg */
-        if(!msg.setMsg(data.mid(firstPos,secondPos-firstPos),false))
+        if(!msg.setMsg(data.mid(firstPos,secondPos-firstPos-4),false))
         {
             /* no valid msg found, perhaps to short */
             data.remove(0,secondPos-4);
             /* errors found */
-            bytesError += secondPos-8;
+            bytesError += secondPos-4;
             return false;
         }
         else

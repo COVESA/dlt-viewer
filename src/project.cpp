@@ -813,50 +813,50 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("hostname"))
               {
                   if(ecuitem)
-                    ecuitem->hostname = xml.readElementText();
+                    ecuitem->setHostname(xml.readElementText());
 
               }
               if(xml.name() == QString("tcpport"))
               {
                   if(ecuitem)
-                    ecuitem->tcpport = xml.readElementText().toInt();
+                    ecuitem->setTcpport(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("port"))
               {
                   if(ecuitem)
-                    ecuitem->port = xml.readElementText();
+                    ecuitem->setPort(xml.readElementText());
 
               }
               if(xml.name() == QString("baudrate"))
               {
                   //TODO (BaudRateType)?
                   if(ecuitem)
-                      ecuitem->baudrate = (BaudRateType)xml.readElementText().toInt();
+                      ecuitem->setBaudrate((BaudRateType)xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("sendserialheadertcp"))
               {
                   if(ecuitem)
-                      ecuitem->sendSerialHeaderTcp = xml.readElementText().toInt();
+                      ecuitem->setSendSerialHeaderTcp(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("sendserialheaderserial"))
               {
                   if(ecuitem)
-                      ecuitem->sendSerialHeaderSerial = xml.readElementText().toInt();
+                      ecuitem->setSendSerialHeaderSerial(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("synctoserialheadertcp"))
               {
                   if(ecuitem)
-                      ecuitem->syncSerialHeaderTcp = xml.readElementText().toInt();
+                      ecuitem->setSyncSerialHeaderTcp(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("synctoserialheaderserial"))
               {
                   if(ecuitem)
-                      ecuitem->syncSerialHeaderSerial = xml.readElementText().toInt();
+                      ecuitem->setSyncSerialHeaderSerial(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("autoReconnect"))
@@ -1135,14 +1135,14 @@ bool Project::Save(QString filename)
         xml.writeTextElement("id",ecuitem->id);
         xml.writeTextElement("description",ecuitem->description);
         xml.writeTextElement("interface",QString("%1").arg(ecuitem->interfacetype));
-        xml.writeTextElement("hostname",ecuitem->hostname);
-        xml.writeTextElement("tcpport",QString("%1").arg(ecuitem->tcpport));
-        xml.writeTextElement("port",ecuitem->port);
-        xml.writeTextElement("baudrate",QString("%1").arg(ecuitem->baudrate));
-        xml.writeTextElement("sendserialheadertcp",QString("%1").arg(ecuitem->sendSerialHeaderTcp));
-        xml.writeTextElement("sendserialheaderserial",QString("%1").arg(ecuitem->sendSerialHeaderSerial));
-        xml.writeTextElement("synctoserialheadertcp",QString("%1").arg(ecuitem->syncSerialHeaderTcp));
-        xml.writeTextElement("synctoserialheaderserial",QString("%1").arg(ecuitem->syncSerialHeaderSerial));
+        xml.writeTextElement("hostname",ecuitem->getHostname());
+        xml.writeTextElement("tcpport",QString("%1").arg(ecuitem->getTcpport()));
+        xml.writeTextElement("port",ecuitem->getPort());
+        xml.writeTextElement("baudrate",QString("%1").arg(ecuitem->getBaudrate()));
+        xml.writeTextElement("sendserialheadertcp",QString("%1").arg(ecuitem->getSendSerialHeaderTcp()));
+        xml.writeTextElement("sendserialheaderserial",QString("%1").arg(ecuitem->getSendSerialHeaderSerial()));
+        xml.writeTextElement("synctoserialheadertcp",QString("%1").arg(ecuitem->getSyncSerialHeaderTcp()));
+        xml.writeTextElement("synctoserialheaderserial",QString("%1").arg(ecuitem->getSyncSerialHeaderSerial()));
         xml.writeTextElement("loglevel",QString("%1").arg(ecuitem->loglevel));
         xml.writeTextElement("tracestatus",QString("%1").arg(ecuitem->tracestatus));
         xml.writeTextElement("verbosemode",QString("%1").arg(ecuitem->verbosemode));
