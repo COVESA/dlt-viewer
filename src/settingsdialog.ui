@@ -31,24 +31,14 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab_1">
       <attribute name="title">
        <string>Global</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
-         <property name="text">
-          <string>Default Log File</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1">
-        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
-       </item>
-       <item row="0" column="2">
+       <item row="1" column="2">
         <widget class="QToolButton" name="toolButtonDefaultLogFile">
          <property name="maximumSize">
           <size>
@@ -61,17 +51,27 @@
          </property>
         </widget>
        </item>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
+       </item>
        <item row="1" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
+         <property name="text">
+          <string>Default Log File</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
         <widget class="QCheckBox" name="checkBoxDefaultProjectFile">
          <property name="text">
           <string>Default Project</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
+       <item row="2" column="1">
         <widget class="QLineEdit" name="lineEditDefaultProjectFile"/>
        </item>
-       <item row="1" column="2">
+       <item row="2" column="2">
         <widget class="QToolButton" name="toolButtonDefaultProjectFile">
          <property name="enabled">
           <bool>true</bool>
@@ -87,17 +87,17 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
+       <item row="3" column="0">
         <widget class="QCheckBox" name="checkBoxPluginsPath">
          <property name="text">
           <string>Plugins Path</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1">
+       <item row="3" column="1">
         <widget class="QLineEdit" name="lineEditPluginsPath"/>
        </item>
-       <item row="2" column="2">
+       <item row="3" column="2">
         <widget class="QPushButton" name="tooButtonPluginsPath">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -125,7 +125,7 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="4" column="0">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -137,6 +137,72 @@
           </size>
          </property>
         </spacer>
+       </item>
+       <item row="0" column="0" colspan="3">
+        <widget class="QGroupBox" name="gbTempDir">
+         <property name="title">
+          <string>Temporary File Behaviour</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEditOwnTemp"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="radioButtonUseTemp">
+            <property name="text">
+             <string>Use %TEMP%</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QToolButton" name="toolButtonTempPath">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioButtonSelectTemp">
+            <property name="text">
+             <string>Select:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineEditSystemTemp">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBoxCloseWithoutAsking">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Close temporary file without asking</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBoxSaveOnClear">
+            <property name="text">
+             <string>Save temporary file on clear</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
       </layout>
      </widget>

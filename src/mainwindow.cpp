@@ -46,6 +46,7 @@
 #include "version.h"
 #include "threaddltindex.h"
 #include "threadfilter.h"
+#include "dltfileutils.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -230,36 +231,39 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* Process Logfile */
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
     if(OptManager::getInstance()->isLogFile())
     {
         openDltFile(OptManager::getInstance()->getLogFile());
-    } else {
+        /* Command line file is treated as temp file */
+        outputfileIsTemporary = true;
+        outputfileIsFromCLI = true;
+    }
+    else
+    {
         /* load default log file */
         statusFilename->setText("no log file loaded");
         if(settings->defaultLogFile)
         {
             openDltFile(settings->defaultLogFileName);
-
+            outputfileIsFromCLI = false;
+            outputfileIsTemporary = false;
         }
         else
         {
-            /* create temporary file */
-            QTemporaryFile file;
-            if (file.open()) {
-                QString filename;
-                filename = file.fileName();
-                file.setAutoRemove(false);
-                file.close();
-                outputfile.setFileName(filename);
-                if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-                    reloadLogFile();
-                else
-                    QMessageBox::critical(0, QString("DLT Viewer"),
-                                          QString("Cannot load temporary log file \"%1\"\n%2")
-                                          .arg(filename)
-                                          .arg(outputfile.errorString()));
-            }
-            file.close();
+            /* Create temp file */
+            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings));
+            outputfile.setFileName(fn);
+            outputfileIsTemporary = true;
+            outputfileIsFromCLI = false;
+            if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+                reloadLogFile();
+            else
+                QMessageBox::critical(0, QString("DLT Viewer"),
+                                         QString("Cannot load temporary log file \"%1\"\n%2")
+                                         .arg(outputfile.fileName())
+                                         .arg(outputfile.errorString()));
         }
     }
 
@@ -318,6 +322,8 @@ void MainWindow::commandLineConvertToASCII(){
     QString text;
 
     openDltFile(OptManager::getInstance()->getConvertSourceFile());
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
 
     QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
     if(!asciiFile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -391,9 +397,55 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    settings->writeSettings(this);
 
-    QMainWindow::closeEvent(event);
+    settings->writeSettings(this);
+    if(settings->tempCloseWithoutAsking)
+    {
+        if(outputfileIsTemporary && !outputfileIsFromCLI)
+        {
+            // Delete created temp file
+            qfile.close();
+            outputfile.close();
+            if(outputfile.exists() && !outputfile.remove())
+            {
+                QMessageBox::critical(0, QString("DLT Viewer"),
+                                      QString("Cannot delete temporary log file \"%1\"\n%2")
+                                      .arg(outputfile.fileName())
+                                      .arg(outputfile.errorString()));
+            }
+        }
+        QMainWindow::closeEvent(event);
+    }
+    else if(outputfileIsTemporary && !outputfileIsFromCLI)
+    {
+        if(QMessageBox::information(this, "DLT Viewer",
+           "You still have an unsaved temporary file open. Exit anyway?",
+           QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+        {
+            if(outputfileIsTemporary && !outputfileIsFromCLI)
+            {
+                // Delete created temp file
+                qfile.close();
+                outputfile.close();
+                if(outputfile.exists() && !outputfile.remove())
+                {
+                    QMessageBox::critical(0, QString("DLT Viewer"),
+                                          QString("Cannot delete temporary log file \"%1\"\n%2")
+                                          .arg(outputfile.fileName())
+                                          .arg(outputfile.errorString()));
+                }
+            }
+            QMainWindow::closeEvent(event);
+        }
+        else
+        {
+            event->ignore();
+        }
+    }
+    else
+    {
+        QMainWindow::closeEvent(event);
+    }
 }
 
 void MainWindow::on_action_menuFile_New_triggered()
@@ -413,6 +465,8 @@ void MainWindow::on_action_menuFile_New_triggered()
 
     /* create new file; truncate if already exist */
     outputfile.setFileName(fileName);
+    outputfileIsTemporary = false;
+    outputfileIsFromCLI = false;
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
         reloadLogFile();
@@ -435,6 +489,8 @@ void MainWindow::on_action_menuFile_Open_triggered()
     workingDirectory = QFileInfo(fileName).absolutePath();
 
     openDltFile(fileName);
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
 
     searchDlg->setMatch(false);
     searchDlg->setOnceClicked(false);
@@ -820,6 +876,8 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     }
 
     outputfile.setFileName(fileName);
+    outputfileIsTemporary = false;
+    outputfileIsFromCLI = false;
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
         reloadLogFile();
@@ -832,37 +890,49 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
 
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
-
-    int ret = QMessageBox::question(this, tr("Please confirm"),
-                                    tr("Are you sure to clear the table (the dlt file will be cleared too)?"),
-                                    QMessageBox::Cancel | QMessageBox::Ok);
-
-    switch (ret) {
-    case QMessageBox::Cancel:
-        // Cancel was clicked
-        break;
-    case QMessageBox::Ok:
-
-        /* close existing file */
-        if(outputfile.isOpen())
-            outputfile.close();
-
-        /* reopen file and truncate */
-        if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-        {
-            reloadLogFile();
-            //ui->textBrowser->setText("");
-        }
-        else
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                  QString("Cannot clear log file \"%1\"\n%2")
-                                  .arg(outputfile.fileName())
-                                  .arg(outputfile.errorString()));
-        break;
-    default:
-        // should never be reached
-        break;
+    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings));
+    if(!fn.length())
+    {
+        /* Something went horribly wrong with file name creation
+         * There's nothing we can do at this point */
+        return;
     }
+
+    QString oldfn = outputfile.fileName();
+
+    if(outputfile.isOpen())
+    {
+        outputfile.close();
+    }
+
+    outputfile.setFileName(fn);
+
+    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    {
+        reloadLogFile();
+    }
+    else
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                              QString("Cannot open log file \"%1\"\n%2")
+                              .arg(fn)
+                              .arg(outputfile.errorString()));
+    }
+
+    if(outputfileIsTemporary && !settings->tempSaveOnClear && !outputfileIsFromCLI)
+    {
+        QFile dfile(oldfn);
+        if(!dfile.remove())
+        {
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot delete log file \"%1\"\n%2")
+                                  .arg(oldfn)
+                                  .arg(dfile.errorString()));
+        }
+    }
+    outputfileIsTemporary = true;
+    outputfileIsFromCLI = false;
+    return;
 }
 
 
@@ -3482,6 +3552,8 @@ void MainWindow::openRecentFile()
 
         /* open existing file and append new data */
         outputfile.setFileName(fileName);
+        outputfileIsTemporary = false;
+        outputfileIsFromCLI = false;
 
         setCurrentFile(fileName);
 
@@ -4803,6 +4875,8 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             /* DLT log file dropped */
             openDltFile(filename);
+            outputfileIsTemporary = false;
+            outputfileIsFromCLI   = false;
         }
         else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
         {

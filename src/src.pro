@@ -54,7 +54,8 @@ SOURCES += main.cpp \
     tablemodel.cpp \
     filtertreewidget.cpp \
     threaddltindex.cpp \
-    threadfilter.cpp
+    threadfilter.cpp \
+    dltfileutils.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -74,7 +75,8 @@ HEADERS += mainwindow.h \
     tablemodel.h \
     filtertreewidget.h \
     threaddltindex.h \
-    threadfilter.h
+    threadfilter.h \
+    dltfileutils.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

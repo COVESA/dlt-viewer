@@ -175,6 +175,22 @@ void SettingsDialog::resetSettings()
 
 void SettingsDialog::writeDlg()
 {
+    /* Temp file */
+    if(tempUseOwn == 1)
+    {
+        ui->radioButtonSelectTemp->setChecked(true);
+    }
+    else if(tempUseSystem == 1)
+    {
+        ui->radioButtonUseTemp->setChecked(true);
+    }
+    // ^Else, uses default set in .ui
+
+    ui->lineEditSystemTemp->setText(QDir::tempPath());
+    ui->lineEditOwnTemp->setText(tempOwnPath);
+    ui->checkBoxCloseWithoutAsking->setChecked(tempCloseWithoutAsking == 1 ? true : false);
+    ui->checkBoxSaveOnClear->setChecked(tempSaveOnClear == 1 ? true : false);
+
     /* startup */
     ui->checkBoxDefaultProjectFile->setCheckState(defaultProjectFile?Qt::Checked:Qt::Unchecked);
     ui->lineEditDefaultProjectFile->setText(defaultProjectFileName);
@@ -270,6 +286,14 @@ void SettingsDialog::writeDlg()
 
 void SettingsDialog::readDlg()
 {
+    /* Temp file */
+    tempUseSystem               = (ui->radioButtonUseTemp->isChecked() == true ? 1 : 0);
+    tempSystemPath              = ui->lineEditSystemTemp->text();
+    tempUseOwn                  = (ui->radioButtonSelectTemp->isChecked() == true ? 1 : 0);
+    tempOwnPath                 = ui->lineEditOwnTemp->text();
+    tempCloseWithoutAsking      = (ui->checkBoxCloseWithoutAsking->isChecked() == true ? 1 : 0);
+    tempSaveOnClear             = (ui->checkBoxSaveOnClear->isChecked() == true ? 1 : 0);
+
     /* startup */
     defaultProjectFile = (ui->checkBoxDefaultProjectFile->checkState() == Qt::Checked);
     defaultProjectFileName = ui->lineEditDefaultProjectFile->text();
@@ -319,6 +343,14 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("geometry", mainwindow->saveGeometry());
     settings->setValue("windowState", mainwindow->saveState());
 
+    /* Temporary directory */
+    settings->setValue("tempdir/tempUseSystem", tempUseSystem);
+    settings->setValue("tempdir/tempSystemPath", tempSystemPath);
+    settings->setValue("tempdir/tempUseOwn", tempUseOwn);
+    settings->setValue("tempdir/tempOwnPath", tempOwnPath);
+    settings->setValue("tempdir/tempCloseWithoutAsking", tempCloseWithoutAsking);
+    settings->setValue("tempdir/tempSaveOnClear", tempSaveOnClear);
+
     /* startup */
     settings->setValue("startup/defaultProjectFile",defaultProjectFile);
     settings->setValue("startup/defaultProjectFileName",defaultProjectFileName);
@@ -365,6 +397,15 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 void SettingsDialog::readSettings()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
+
+    /* Temp file */
+    tempUseSystem               = settings->value("tempdir/tempUseSystem", 1).toInt();
+    tempSystemPath              = QDir::tempPath();
+    tempUseOwn                  = settings->value("tempdir/tempUseOwn", 0).toInt();
+    tempOwnPath                 = settings->value("tempdir/tempOwnPath", QString("")).toString();
+    tempCloseWithoutAsking      = settings->value("tempdir/tempCloseWithoutAsking", 0).toInt();
+    tempSaveOnClear             = settings->value("tempdir/tempSaveOnClear", 1).toInt();
+
     /* startup */
     defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
     defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
@@ -463,6 +504,20 @@ void SettingsDialog::on_tooButtonPluginsPath_clicked()
     QMessageBox::warning(0, QString("DLT Viewer"),
                          QString("Plugins will only be reloaded after restart of DLT Viewer!"));
 
+}
+
+void SettingsDialog::on_toolButtonTempPath_clicked()
+{
+    QString fileName = QFileDialog::getExistingDirectory(this,
+        tr("Temporary directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change current working directory */
+    tempOwnPath = QFileInfo(fileName).absolutePath();
+
+    ui->lineEditOwnTemp->setText(fileName);
 }
 
 void SettingsDialog::on_groupBoxConId_clicked(bool checked)

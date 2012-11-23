@@ -35,6 +35,14 @@ public:
     SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
 
+    int     tempUseSystem;
+    QString tempSystemPath;
+    int     tempUseOwn;
+    QString tempOwnPath;
+    int     tempCloseWithoutAsking;
+    int     tempSaveOnClear;
+
+
     int defaultLogFile;
     QString defaultLogFileName;
     int defaultProjectFile;
@@ -100,6 +108,7 @@ private slots:
     void on_tooButtonPluginsPath_clicked();
     void on_toolButtonDefaultProjectFile_clicked();
     void on_toolButtonDefaultLogFile_clicked();
+    void on_toolButtonTempPath_clicked();
 };
 
 #endif // SETTINGSDIALOG_H

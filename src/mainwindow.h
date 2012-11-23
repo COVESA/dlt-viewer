@@ -69,6 +69,8 @@ private:
 
     QDltControl qcontrol;
     QFile outputfile;
+    bool outputfileIsTemporary;
+    bool outputfileIsFromCLI;
     TableModel *tableModel;
     QString workingDirectory;
 
