@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.8.0 STABLE
+Version 2.9.0 ALPHA
 
 Known issues
 ------------
@@ -15,6 +15,9 @@ Known issues
 
 Changes
 -------
+2.9.0
+
+
 2.8.0
   * [GDLT-128] Improvement of temporary file handling.
   * Ensure connection properties are propagated to connection objects.
