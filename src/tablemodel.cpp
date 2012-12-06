@@ -27,7 +27,6 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
-
  }
 
  TableModel::~TableModel()
@@ -37,7 +36,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
-     return 12;
+     return DLT_VIEWER_COLUMN_COUNT;
  }
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
@@ -54,7 +53,18 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
+         if(!qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg))
+         {
+             if(index.column() == cnIndex)
+             {
+                 return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
+             }
+             else if(index.column() == cnPayload)
+             {
+                 return QString("!!CORRUPTED MESSAGE!!");
+             }
+             return QVariant();
+         }
          for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
@@ -68,21 +78,21 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
          switch(index.column())
          {
-         case 0:
+         case cnIndex:
              /* display index */
              return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
-         case 1:
+         case cnTime:
              if( project->settings->automaticTimeSettings == 0 )
                 return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
              else
                 return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
-         case 2:
+         case cnTimeStamp:
              return QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
-         case 3:
+         case cnCounter:
              return QString("%1").arg(msg.getMessageCounter());
-         case 4:
+         case cnEcuId:
              return msg.getEcuid();
-         case 5:
+         case cnAppId:
              switch(project->settings->showApIdDesc){
              case 0:
                  return msg.getApid();
@@ -105,7 +115,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
               default:
                  return msg.getApid();
              }
-         case 6:
+         case cnContextId:
              switch(project->settings->showCtIdDesc){
              case 0:
                  return msg.getCtid();
@@ -135,15 +145,15 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
               default:
                  return msg.getCtid();
              }
-         case 7:
+         case cnType:
              return msg.getTypeString();
-         case 8:
+         case cnSubtype:
              return msg.getSubtypeString();
-         case 9:
+         case cnMode:
              return msg.getModeString();
-         case 10:
+         case cnArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
-         case 11:
+         case cnPayload:
              /* display payload */
              return msg.toStringPayload();
          }
@@ -192,17 +202,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if ( role == Qt::TextAlignmentRole ) {
         switch(index.column())
         {
-            case 0:
+            case cnIndex:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case 1:
+            case cnTime:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 2:
+            case cnTimeStamp:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case 3:
+            case cnCounter:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 4:
+            case cnEcuId:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 5:
+            case cnAppId:
                 switch(project->settings->showApIdDesc){
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
@@ -214,7 +224,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                     return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
                     break;
                 }
-            case 6:
+            case cnContextId:
                 switch(project->settings->showCtIdDesc){
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
@@ -226,15 +236,15 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                     return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
                     break;
                 }
-            case 7:
+            case cnType:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 8:
+            case cnSubtype:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 9:
+            case cnMode:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case 10:
+            case cnArgCount:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case 11:
+            case cnPayload:
                 return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
         }
     }
@@ -252,39 +262,39 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
       {
           switch(section)
           {
-          case 0:
+          case cnIndex:
               return QString("Index");
-          case 1:
+          case cnTime:
               return QString("Time");
-          case 2:
+          case cnTimeStamp:
               return QString("Timestamp");
-          case 3:
+          case cnCounter:
               return QString("Count");
-          case 4:
+          case cnEcuId:
               return QString("Ecuid");
-          case 5:
+          case cnAppId:
               switch(project->settings->showApIdDesc){
               case 0:
                    return QString("Apid");
               case 1:
                    return QString("Apid Desc");
               }
-          case 6:
+          case cnContextId:
               switch(project->settings->showCtIdDesc){
               case 0:
                    return QString("Ctid");
               case 1:
                    return QString("Ctid Desc");
               }
-          case 7:
+          case cnType:
               return QString("Type");
-          case 8:
+          case cnSubtype:
               return QString("Subtype");
-          case 9:
+          case cnMode:
               return QString("Mode");
-          case 10:
+          case cnArgCount:
               return QString("#Args");
-          case 11:
+          case cnPayload:
               return QString("Payload");
           }
       }
@@ -294,7 +304,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
  int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {
-     return qfile->sizeFilter();
+    return qfile->sizeFilter();
  }
 
  void TableModel::modelChanged()

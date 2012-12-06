@@ -932,10 +932,15 @@ public:
     */
     QColor checkMarker(QDltMsg &msg);
 
+    //! Get file name of the underlying file object
+    /*!
+     * \return File name
+     **/
+    QString getFileName();
+
 protected:
 
 private:
-
     //! Mutex to lock critical path for infile
     QMutex mutexQDlt;
 

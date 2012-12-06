@@ -44,8 +44,6 @@
 #include "injectiondialog.h"
 #include "qextserialenumerator.h"
 #include "version.h"
-#include "threaddltindex.h"
-#include "threadfilter.h"
 #include "dltfileutils.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -212,6 +210,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
+    /* Initialize dlt-file indexer  */
+    dltIndexer = new DltFileIndexer(&qfile, this);
+
     /* Process Project */
     if(OptManager::getInstance()->isProjectFile())
     {
@@ -314,6 +315,7 @@ MainWindow::~MainWindow()
     delete ui;
     delete tableModel;
     delete searchDlg;
+    delete dltIndexer;
 }
 
 void MainWindow::commandLineConvertToASCII(){
@@ -454,7 +456,9 @@ void MainWindow::on_action_menuFile_New_triggered()
                                                     tr("New DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
+    {
         return;
+    }
 
     /* change current working directory */
     workingDirectory = QFileInfo(fileName).absolutePath();
@@ -507,7 +511,9 @@ void MainWindow::openDltFile(QString fileName)
     outputfile.setFileName(fileName);
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
         reloadLogFile();
+    }
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot open log file \"%1\"\n%2")
@@ -539,6 +545,8 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,false,0)>=0)
     {
+        // https://bugreports.qt-project.org/browse/QTBUG-26069
+        outputfile.seek(outputfile.size());
         outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
         outputfile.flush();
@@ -581,6 +589,8 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,true,0)>=0)
     {
+        // https://bugreports.qt-project.org/browse/QTBUG-26069
+        outputfile.seek(outputfile.size());
         outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
         outputfile.flush();
@@ -838,17 +848,20 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
 void MainWindow::on_action_menuFile_SaveAs_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Save DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+                        tr("Save DLT Log file"),
+                        workingDirectory,
+                        tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
+    {
         return;
+    }
 
     /* check if filename is the same as already open */
     if(outputfile.fileName()==fileName)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("File is already open!"));
-
         return;
     }
 
@@ -858,20 +871,25 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     qfile.close();
     outputfile.close();
 
-    bool success = true;
     QFile sourceFile( outputfile.fileName() );
     QFile destFile( fileName );
-    success &= sourceFile.open( QFile::ReadOnly );
-    success &= destFile.open( QFile::WriteOnly | QFile::Truncate );
-    success &= destFile.write( sourceFile.readAll() ) >= 0;
-    sourceFile.close();
-    destFile.close();
 
-    if(!success)
+    /* Dialog will ask if you want to replace */
+    if(destFile.exists())
+    {
+        if(!destFile.remove())
+        {
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Save as failed! Could not delete old file."));
+            return;
+        }
+    }
+
+
+    if(!sourceFile.copy(destFile.fileName()))
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("Save as failed!"));
-
+                              QString("Save as failed! Could not move to new destination."));
         return;
     }
 
@@ -880,7 +898,9 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     outputfileIsFromCLI = false;
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
         reloadLogFile();
+    }
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot rename log file \"%1\"\n%2")
@@ -934,74 +954,97 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     outputfileIsFromCLI = false;
     return;
 }
+void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins)
+{
+    QDltMsg msg;
+    PluginItem *item;
+    QProgressDialog fileprogress("Applying plugins.", "Cancel", 0, qfile.size(), this);
+    fileprogress.setWindowModality(Qt::WindowModal);
 
+    for(int ix=0;ix<qfile.size();ix++)
+    {
+        /* Fill message from file */
+        if(!qfile.getMsg(ix, msg))
+        {
+            /* Skip broken messages */
+            continue;
+        }
 
+        /* Process all viewer plugins */
+        for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
+        {
+            item = (PluginItem*)activeViewerPlugins.at(ivp);
+            item->pluginviewerinterface->initMsg(ix, msg);
+        }
 
-void MainWindow::threadpluginFinished(){
-    threadIsRunnging = false;
+        /* Process all decoderplugins */
+        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
+        {
+            item = (PluginItem*)activeDecoderPlugins.at(idp);
+            if(item->plugindecoderinterface->isMsg(msg, 0))
+            {
+                item->plugindecoderinterface->decodeMsg(msg, 0);
+                /* TODO: Do we, or do we not want to break here?
+                 * Perhaps user wants to stack multiple plugins */
+                break;
+            }
+        }
+
+        /* Add to filterindex if matches */
+        if(qfile.checkFilter(msg))
+        {
+            qfile.addFilterIndex(ix);
+        }
+
+        /* Offer messages again to viewer plugins after decode */
+        for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
+        {
+            item = (PluginItem *)activeViewerPlugins.at(ivp);
+            item->pluginviewerinterface->initMsgDecoded(ix, msg);
+        }
+
+        /* Update progress every 0.5% */
+        if((ix%((qfile.size()/200)+1))==0)
+        {
+            fileprogress.setValue(ix);
+            fileprogress.setLabelText(
+                        QString("Applying Plugins for Message %1/%2")
+                        .arg(ix).arg(qfile.size()));
+            if(fileprogress.wasCanceled())
+            {
+                break;
+            }
+            QApplication::processEvents();
+        }
+    }
+
+    for(int i = 0; i < activeViewerPlugins.size(); i++){
+        item = (PluginItem*)activeViewerPlugins.at(i);
+        item->pluginviewerinterface->initFileFinish();
+
+    }
+
+    if(fileprogress.wasCanceled())
+    {
+        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
+    }
 }
 
 void MainWindow::reloadLogFile()
 {
-
     PluginItem *item = 0;
     QList<PluginItem*> activeViewerPlugins;
     QList<PluginItem*> activeDecoderPlugins;
 
-#ifdef DEBUG_PERFORMANCE
-    QTime t;
-#endif
-
-    QProgressDialog fileprogress("Parsing DLT file...", "Cancel", 0, 0, this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-
-    QList<QPushButton *> fileprogressButtons =fileprogress.findChildren<QPushButton *>();
-    fileprogressButtons.at(0)->setEnabled(false);
-
-    fileprogress.show();
-
     qfile.open(outputfile.fileName());
-    qfile.clearIndex();
 
-    ThreadDltIndex threadDltIndex;
-    QString filename = outputfile.fileName();
-    threadDltIndex.setFilename(filename);
+    /* Create the main index */
+    ui->tableView->lock();
+    dltIndexer->index();
+    ui->tableView->unlock();
 
-    connect(&threadDltIndex, SIGNAL(updateProgressText(QString)), &fileprogress, SLOT(setLabelText(QString)));
-    connect(&threadDltIndex, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
-
-    threadIsRunnging = true;
-
-#ifdef DEBUG_PERFORMANCE
-    t.start();
-#endif
-
-    /* Using now seperate thread to create DLT index which is faster.
-       To use old behaviour, use methode qfile.createIndex.*/
-
-    //qfile.createIndex();
-
-    /* ----> Thread usage to create DLT index starts here <---- */
-    threadDltIndex.start();
-    threadDltIndex.setPriority(QThread::HighestPriority);
-
-    while(threadIsRunnging){
-        QApplication::processEvents();
-    }
-
-#ifdef DEBUG_PERFORMANCE
-    qDebug() << "Time to create index: " << t.elapsed()/1000 << "s" ;
-#endif
-
-    QList<unsigned long> indexDltList = threadDltIndex.getIndexAll();
-    qfile.setDltIndex(indexDltList);
-    /* ----> Thread usage to create DLT index ends here <---- */
-
-
-    fileprogress.setMaximum(qfile.size());
-    fileprogressButtons.at(0)->setEnabled(true);
-
+    /* Apply filters */
+    on_filterButton_clicked(ui->filterButton->isChecked());
 
     for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
     {
@@ -1016,14 +1059,7 @@ void MainWindow::reloadLogFile()
             if(item->pluginviewerinterface)
             {
 
-#ifdef DEBUG_PERFORMANCE
-                t.start();
-#endif
                 item->pluginviewerinterface->initFileStart(&qfile);
-
-#ifdef DEBUG_PERFORMANCE
-                qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
                 activeViewerPlugins.append(item);
             }
         }
@@ -1031,98 +1067,13 @@ void MainWindow::reloadLogFile()
 
     if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
     {
-        fileprogress.cancel();
-        qDebug() << "No plugins active - no thread to process messages started";
+        qDebug() << "No plugins active";
     }
     else
     {
-
-        fileprogress.setLabelText(QString("Applying Plugins for Message 0/%1").arg(qfile.size()));
-
-#ifdef DEBUG_PERFORMANCE
-        t.start();
-#endif
-        QDltMsg msg;
-        PluginItem *item;
-        for(int ix=0;ix<qfile.size();ix++)
-        {
-            /* Fill message from file */
-            if(!qfile.getMsg(ix, msg))
-            {
-                //qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
-                continue;
-            }
-
-            /* Process all viewer plugins */
-            for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
-            {
-                item = (PluginItem*)activeViewerPlugins.at(ivp);
-                item->pluginviewerinterface->initMsg(ix, msg);
-            }
-
-            /* Process all decoderplugins */
-            for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
-            {
-                item = (PluginItem*)activeDecoderPlugins.at(idp);
-                if(item->plugindecoderinterface->isMsg(msg, 0))
-                {
-                    item->plugindecoderinterface->decodeMsg(msg, 0);
-                    /* TODO: Do we, or do we not want to break here?
-                     * Perhaps user wants to stack multiple plugins */
-                    break;
-                }
-            }
-
-            /* Add to filterindex if matches */
-            if(qfile.checkFilter(msg))
-            {
-                qfile.addFilterIndex(ix);
-            }
-
-            /* Offer messages again to viewer plugins after decode */
-            for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
-            {
-                item = (PluginItem *)activeViewerPlugins.at(ivp);
-                item->pluginviewerinterface->initMsgDecoded(ix, msg);
-            }
-
-            /* Update progress every 0.5% */
-            if((ix%((qfile.size()/200)+1))==0)
-            {
-                fileprogress.setValue(ix);
-                fileprogress.setLabelText(
-                            QString("Applying Plugins for Message %1/%2")
-                            .arg(ix).arg(qfile.size()));
-            }
-            QApplication::processEvents();
-            if(fileprogress.wasCanceled())
-            {
-                break;
-            }
-        }
-
-#ifdef DEBUG_PERFORMANCE
-        qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
-#endif
-
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
-            item = (PluginItem*)activeViewerPlugins.at(i);
-
-#ifdef DEBUG_PERFORMANCE
-            t.start();
-#endif
-
-            item->pluginviewerinterface->initFileFinish();
-
-#ifdef DEBUG_PERFORMANCE
-            qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
-        }
-
-        if(fileprogress.wasCanceled())
-        {
-            QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
-        }
+        dltIndexer->lock();
+        applyPlugins(activeViewerPlugins, activeDecoderPlugins);
+        dltIndexer->unlock();
     }
 
     ui->tableView->selectionModel()->clear();
@@ -2236,14 +2187,19 @@ void MainWindow::readyRead()
 {
     /* signal emited when socket received data */
 
-    /* find socket which emited signal */
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    /* Delay reading, if indexer is working on the dlt file */
+    if(dltIndexer->tryLock())
     {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( (&(ecuitem->socket) == sender()) || (ecuitem->serialport == sender()))
+        /* find socket which emited signal */
+        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
-            read(ecuitem);
+            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+            if( (&(ecuitem->socket) == sender()) || (ecuitem->serialport == sender()))
+            {
+                read(ecuitem);
+            }
         }
+        dltIndexer->unlock();
     }
 }
 
@@ -2309,6 +2265,8 @@ void MainWindow::read(EcuItem* ecuitem)
 
                 if ((settings->writeControl && (qmsg.getType()==QDltMsg::DltTypeControl)) || (!(qmsg.getType()==QDltMsg::DltTypeControl)))
                 {
+                    // https://bugreports.qt-project.org/browse/QTBUG-26069
+                    outputfile.seek(outputfile.size());
                     outputfile.write((char*)&str,sizeof(DltStorageHeader));
                     QByteArray buffer = qmsg.getHeader();
                     outputfile.write(buffer);
@@ -2728,11 +2686,14 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         return;
     }
 
-    /* store ctrl message in log file */
+    /* store ctrl message in log file,
+     * have to skip saving if file is used by indexer */
     if (outputfile.isOpen())
     {
         if (settings->writeControl)
         {
+            // https://bugreports.qt-project.org/browse/QTBUG-26069
+            outputfile.seek(outputfile.size());
             outputfile.write((const char*)msg.headerbuffer,msg.headersize);
             outputfile.write((const char*)msg.databuffer,msg.datasize);
             outputfile.flush();
@@ -3535,7 +3496,6 @@ void MainWindow::openRecentFile()
 {
     QAction *action = qobject_cast<QAction *>(sender());
     QString fileName;
-
     if (action)
     {
         fileName = action->data().toString();
@@ -3558,7 +3518,9 @@ void MainWindow::openRecentFile()
         setCurrentFile(fileName);
 
         if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+        {
             reloadLogFile();
+        }
         else
         {
             QMessageBox::critical(0, QString("DLT Viewer"),
@@ -4138,10 +4100,6 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
     QList<PluginItem*> activeDecoderPlugins;
     QList<PluginItem*> activeViewerPlugins;
 
-#ifdef DEBUG_PERFORMANCE
-    QTime t;
-#endif
-
     if(!item){
         qDebug()<<"Error: Plugin could not be initizialised. Item null.";
         return;
@@ -4155,16 +4113,7 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
     if(item->pluginviewerinterface)
     {
         activeViewerPlugins.append(item);
-
-#ifdef DEBUG_PERFORMANCE
-        t.start();
-#endif
         item->pluginviewerinterface->initFileStart(&qfile);
-
-#ifdef DEBUG_PERFORMANCE
-        qDebug() << "Time for initFileStart: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
-
         PluginItem *decoderItem = 0;
         for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
         {
@@ -4178,29 +4127,15 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
         }
 
     }
-    // Possible to use several threads to process the splitted  trace file
-    // But this is slower than using one thread.
-    // Reason: Random IO on disk is very slow
-    // Example to use more than one threads
-    //if(qfile.size()!=0)
-    //    threadCount = QThread::idealThreadCount();
-    //if(threadCount < 1)
-    //        threadCount = 1;
-    //int chunkSize = qfile.size() / threadCount;
-    //qDebug()<<"messages: " <<  qfile.size() << "chunkSize: " << chunkSize;
-
-#ifdef DEBUG_PERFORMANCE
-    t.start();
-#endif
 
     QDltMsg msg;
     PluginItem *pitem;
+    dltIndexer->lock();
     for(int ix=0;ix<qfile.size();ix++)
     {
         /* Fill message from file */
         if(!qfile.getMsg(ix, msg))
         {
-            //qDebug()<<"Error: getMsg in thread for plugins failed for num: " << ix;
             continue;
         }
 
@@ -4244,26 +4179,18 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
             pluginprogress.setLabelText(
                            QString("Applying Plugins for Message %1/%2")
                            .arg(ix).arg(qfile.size()));
-        }
-        QApplication::processEvents();
-        if(pluginprogress.wasCanceled())
-        {
-            break;
+            if(pluginprogress.wasCanceled())
+            {
+                break;
+            }
+            QApplication::processEvents();
         }
     }
+    dltIndexer->unlock();
 
     if(item->pluginviewerinterface)
     {
-#ifdef DEBUG_PERFORMANCE
-        qDebug() << "Time to initMsg,isMsg,decodeMsg,checkFilter,initMsgDecoded: " << t.elapsed()/1000 << "s" ;
-        t.start();
-#endif
-
         item->pluginviewerinterface->initFileFinish();
-
-#ifdef DEBUG_PERFORMANCE
-        qDebug() << "Time for initFileFinish: " << item->getName() << ": " << t.elapsed()/1000 << "s" ;
-#endif
     }
 
 
@@ -4336,6 +4263,7 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
             item->setMode( PluginItem::ModeDisable );
             item->savePluginModeToSettings();
             updatePlugin(item);
+            processMsgAfterPluginmodeChange(item);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
                                  QString("The selected Plugin is already deactivated."));
@@ -4716,6 +4644,8 @@ void MainWindow::filterUpdate() {
 
 void MainWindow::on_filterButton_clicked(bool checked)
 {
+    ui->tableView->lock();
+
     filterUpdate();
 
     /* enable/disable filter */
@@ -4732,6 +4662,7 @@ void MainWindow::on_filterButton_clicked(bool checked)
         QList<PluginItem*> activeDecoderPlugins;
 
         QProgressDialog filterprogress("Applying filters for message 0/0", "Cancel", 0, qfile.size(), this);
+        filterprogress.setAutoClose(true);
         filterprogress.setWindowTitle("DLT Viewer");
         filterprogress.setWindowModality(Qt::WindowModal);
         filterprogress.show();
@@ -4747,31 +4678,47 @@ void MainWindow::on_filterButton_clicked(bool checked)
             }
         }
 
-        ThreadFilter thread;
-        thread.setQDltFile(&qfile);
-        thread.setActiveDecoderPlugins(&activeDecoderPlugins);
-        thread.setStartIndex(0);
-        thread.setStopIndex( qfile.size());
+        QDltMsg msg;
+        filterprogress.setMaximum(qfile.size());
 
-        connect(&thread, SIGNAL(percentageComplete(int)), &filterprogress, SLOT(setValue(int)));
-        connect(&thread, SIGNAL(updateProgressText(QString)), &filterprogress, SLOT(setLabelText(QString)));
-        connect(&thread, SIGNAL(finished()), this, SLOT(threadpluginFinished()));
-        connect(&filterprogress, SIGNAL(canceled()), &thread, SLOT(stopProcessMsg()));
-
-        threadIsRunnging = true;
-
-        thread.start();
-        thread.setPriority(QThread::HighestPriority);
-
-        while(threadIsRunnging){
-            QApplication::processEvents();
-        }
-
-        if(filterprogress.wasCanceled())
+        for(int i=0;i < qfile.size();i++)
         {
-            QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the filter progress. Not all messages could be processed by the activated filters!"), QMessageBox::Ok);
-        }
+            if(!qfile.getMsg(i, msg))
+            {
+                // Skip broken messages.
+                continue;
+            }
+            for(int j = 0;j < activeDecoderPlugins.size();j++)
+            {
+                item = (PluginItem *)activeDecoderPlugins.at(j);
+                if(item->plugindecoderinterface->isMsg(msg, 0))
+                {
+                    item->plugindecoderinterface->decodeMsg(msg, 0);
+                    break;
+                }
+            }
 
+            if(qfile.checkFilter(msg))
+            {
+                qfile.addFilterIndex(i);
+            }
+            /* Update UI ever half a percent */
+            if((i%((qfile.size()/200)+1))==0)
+            {
+                filterprogress.setValue(i);
+                filterprogress.setLabelText(
+                            QString("Applying filters for message %1/%2.")
+                            .arg(i).arg(qfile.size()));
+
+                if(filterprogress.wasCanceled())
+                {
+                    filterprogress.reset();
+                    QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the filter progress. Not all messages could be processed by the activated filters!"), QMessageBox::Ok);
+                    break;
+                }
+                QApplication::processEvents();
+            }
+        }
     }
     else
     {
@@ -4779,9 +4726,9 @@ void MainWindow::on_filterButton_clicked(bool checked)
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-overcast.png"));
         ui->filterStatus->setText("");
     }
-
     ui->tableView->selectionModel()->clear();
     tableModel->modelChanged();
+    ui->tableView->unlock();
 }
 
 
@@ -4932,7 +4879,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         ui->filterButton->setChecked(Qt::Unchecked);
         ui->filterButton->setText("Enable filters");
 
-        //filterUpdate();
+        on_filterButton_clicked(false);
     }
 }
 

@@ -34,6 +34,7 @@
 #include "qdlt.h"
 #include "dltsettingsmanager.h"
 #include "filterdialog.h"
+#include "dltfileindexer.h"
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -64,8 +65,6 @@ private:
 
     /* Timer for connecting to ECUs */
     QTimer timer;
-
-    bool threadIsRunnging;
 
     QDltControl qcontrol;
     QFile outputfile;
@@ -120,7 +119,8 @@ private:
     enum { MaxRecentPorts = 10 };
     QStringList recentPorts;
 
-
+    /* dlt-file Indexer with cancel cabability */
+    DltFileIndexer *dltIndexer;
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
@@ -152,6 +152,7 @@ private:
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
+    void applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
@@ -277,6 +278,7 @@ private slots:
     void on_action_menuFilter_Clear_all_triggered();
     void on_action_menuFilter_Duplicate_triggered();
     void on_action_menuFilter_Append_Filters_triggered();
+    void on_filterButton_clicked(bool checked);
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
@@ -304,11 +306,9 @@ private slots:
     void stateChangedTCP(QAbstractSocket::SocketState socketState);
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
-    void on_filterButton_clicked(bool checked);
 
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
-    void threadpluginFinished();
 
 public:   
 

@@ -26,7 +26,7 @@
      <number>2</number>
     </property>
     <item>
-     <widget class="QTableView" name="tableView">
+     <widget class="DltTableView" name="tableView">
       <property name="font">
        <font>
         <family>Courier 10 Pitch</family>
@@ -67,7 +67,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -966,6 +966,11 @@
    <class>FilterTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header>filtertreewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>DltTableView</class>
+   <extends>QTableView</extends>
+   <header>dlttableview.h</header>
   </customwidget>
  </customwidgets>
  <resources>

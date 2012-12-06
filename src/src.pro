@@ -1,5 +1,3 @@
-DEFINES += DEBUG_PERFORMANCE
-
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = ../qextserialport/src ../qdlt
@@ -53,9 +51,9 @@ SOURCES += main.cpp \
     dltsettingsmanager.cpp \
     tablemodel.cpp \
     filtertreewidget.cpp \
-    threaddltindex.cpp \
-    threadfilter.cpp \
-    dltfileutils.cpp
+    dltfileutils.cpp \
+    dltfileindexer.cpp \
+    dlttableview.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -74,9 +72,9 @@ HEADERS += mainwindow.h \
     dltsettingsmanager.h \
     tablemodel.h \
     filtertreewidget.h \
-    threaddltindex.h \
-    threadfilter.h \
-    dltfileutils.h
+    dltfileutils.h \
+    dltfileindexer.h \
+    dlttableview.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

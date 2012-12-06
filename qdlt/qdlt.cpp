@@ -1711,6 +1711,11 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
     return color;
 }
 
+QString QDltFile::getFileName()
+{
+    return infile.fileName();
+}
+
 void QDltFile::close()
 {
     /* close file */
