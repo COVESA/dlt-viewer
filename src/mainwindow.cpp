@@ -1080,6 +1080,9 @@ void MainWindow::reloadLogFile()
 
     /* set name of opened log file in status bar */
     statusFilename->setText(outputfile.fileName());
+
+    /* We might have had readyRead events, which we missed */
+    readyRead();
 }
 
 void MainWindow::applySettings()
