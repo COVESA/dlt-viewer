@@ -14,7 +14,7 @@
  * This can be anything from 1-3G on win32.
  * We use a safe half a gigabyte value
  **/
-#define DLT_MAX_MMAP_SEGMENT (1024*1024*512)
+#define DLT_MAX_MMAP_SEGMENT (1024*1024)
 
 class DltFileIndexer : public QObject
 {

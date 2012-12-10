@@ -16,6 +16,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *argfile, QMainWindow *parent)
 {
     this->dltFile = argfile;
     this->progress = new QProgressDialog(QString("Indexing file."), QString("Cancel"), 0, 100, parent);
+    this->progress->setModal(true);
     this->progress->setAutoClose(true);
     this->progress->reset();
 }

@@ -627,6 +627,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     dlt_file_init(&importfile,0);
 
     QProgressDialog progress("Append log file", "Cancel Loading", 0, 100, this);
+    progress.setModal(true);
     int num = 0;
 
     /* open DLT log file with same filename as output file */
@@ -717,9 +718,7 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
 
         /* write to file */
         outfile.write(text.toAscii().constData());
-
     }
-
     outfile.close();
 }
 
@@ -2686,37 +2685,40 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         return;
     }
 
-    /* store ctrl message in log file,
-     * have to skip saving if file is used by indexer */
-    if (outputfile.isOpen())
+    /* Skip the file handling, if indexer is working on the file */
+    if(dltIndexer->tryLock())
     {
-        if (settings->writeControl)
+        /* store ctrl message in log file */
+        if (outputfile.isOpen())
         {
-            // https://bugreports.qt-project.org/browse/QTBUG-26069
-            outputfile.seek(outputfile.size());
-            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
-            outputfile.write((const char*)msg.databuffer,msg.datasize);
-            outputfile.flush();
+            if (settings->writeControl)
+            {
+                // https://bugreports.qt-project.org/browse/QTBUG-26069
+                outputfile.seek(outputfile.size());
+                outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+                outputfile.write((const char*)msg.databuffer,msg.datasize);
+                outputfile.flush();
+            }
         }
-    }
 
-    /* read received messages in DLT file parser and update DLT message list view */
-    /* update indexes  and table view */
-    int oldsize = qfile.size();
-    qfile.updateIndex();
-    for(int num=oldsize;num<qfile.size();num++) {
-        data = qfile.getMsg(num);
-        qmsg.setMsg(data);
-        iterateDecodersForMsg(qmsg,0);
-        if(qfile.checkFilter(qmsg)) {
-            qfile.addFilterIndex(num);
+        /* read received messages in DLT file parser and update DLT message list view */
+        /* update indexes  and table view */
+        int oldsize = qfile.size();
+        qfile.updateIndex();
+        for(int num=oldsize;num<qfile.size();num++) {
+            data = qfile.getMsg(num);
+            qmsg.setMsg(data);
+            iterateDecodersForMsg(qmsg,0);
+            if(qfile.checkFilter(qmsg)) {
+                qfile.addFilterIndex(num);
+            }
         }
+        tableModel->modelChanged();
+        if(settings->autoScroll) {
+            ui->tableView->scrollToBottom();
+        }
+        dltIndexer->unlock();
     }
-    tableModel->modelChanged();
-    if(settings->autoScroll) {
-        ui->tableView->scrollToBottom();
-    }
-
 }
 
 void MainWindow::on_action_menuDLT_Get_Default_Log_Level_triggered()
@@ -4105,7 +4107,8 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
         return;
     }
 
-    QProgressDialog pluginprogress(QString("Applying Plugins for message 0/%1").arg(qfile.size()), "Cancel", 0, qfile.size(), this);
+    QProgressDialog pluginprogress(QString("Applying Plugins for message 0/%1").arg(qfile.size()),
+                                   "Cancel", 0, qfile.size(), this);
     pluginprogress.setWindowTitle("DLT Viewer");
     pluginprogress.setWindowModality(Qt::WindowModal);
     pluginprogress.show();
