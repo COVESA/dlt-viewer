@@ -2132,28 +2132,32 @@ void MainWindow::disconnected()
 
 void MainWindow::timeout()
 {
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-
-        if(ecuitem->isAutoReconnectTimeoutPassed())
+        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
-            //qDebug() << "totalBytesRcvd:"<<ecuitem->totalBytesRcvd << " - totalBytesRcvdLastTimeout:" << ecuitem->totalBytesRcvdLastTimeout;
+            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
 
-            if(ecuitem->interfacetype == 0 && ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+            /* Try to reconnect if the ecuitem has not received
+             * new data for long enough time.
+             * If the indexer is busy indexing,
+             * do not disconnect yet. Wait for future timeouts until
+             * indexer is free. */
+            if(ecuitem->isAutoReconnectTimeoutPassed() &&
+               dltIndexer->tryLock())
             {
-                //qDebug() << "reconnect";
-                disconnectECU(ecuitem);
-                ecuitem->tryToConnect = true;
+                if(ecuitem->interfacetype == 0 && ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+                {
+                    disconnectECU(ecuitem);
+                    ecuitem->tryToConnect = true;
+                }
+                ecuitem->totalBytesRcvdLastTimeout = ecuitem->totalBytesRcvd;
+                dltIndexer->unlock();
             }
-            ecuitem->totalBytesRcvdLastTimeout = ecuitem->totalBytesRcvd;
-        }
 
-        if( ecuitem->tryToConnect && !ecuitem->connected)
-        {
-            connectECU(ecuitem,true);
+            if( ecuitem->tryToConnect && !ecuitem->connected)
+            {
+                connectECU(ecuitem,true);
+            }
         }
-    }
 }
 
 void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
