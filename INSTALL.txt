@@ -5,9 +5,12 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
-* Install Qt4 (Qt SDK Version 1.2.1, Windows: select also MinGW)
-* Open project BuildDltViewer.pro in Qt Creator
-* Build Release in Qt Creator
+* Install Qt4. Tested with QT 4.8.3.
+* Install relative new MinGW. Tested GCC 4.6.2
+* Install Qt Creator. Tested with 2.6.0.
+* Open project BuildDltViewer.pro in Qt Creator.
+* Ensure that build options point to correct QT and MinGW.
+* Build Release in Qt Creator.
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
 
 Instructions for installing DLT Viewer (Linux commandline)
@@ -24,8 +27,9 @@ Instructions for installing DLT Viewer (Linux commandline)
 Create SDK (Windows)
 --------------------
 
-* Install Qt4 (Qt SDK Version 1.2.1, Windows: select also MinGW)
-* Check the directories set in build_sdk_windows.bat batch file
+* Install Qt4. Tested with QT 4.8.3.
+* Install relative new MinGW. Tested GCC 4.6.2
+* Check the directories set in build_sdk_windows.bat batch file are correct.
 * Execute build_sdk_windows.bat batch file
 
 The SDK will be installed to c:\DltViewerSDK

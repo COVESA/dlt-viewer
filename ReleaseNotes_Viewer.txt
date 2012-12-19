@@ -9,13 +9,18 @@ Version 2.9.0 ALPHA
 Known issues
 ------------
 
-   * Bug 18 - Filter not applied when loading a dlt file
-     http://bugs.genivi.org/show_bug.cgi?id=18
-   * Unexpected output from MOSTPlugin, possibly related to above
-
 Changes
 -------
 2.9.0
+  * MOSTPlugin should decode now properly
+  * Removed warning dialog from, nonverboseplugin. Blocked automatic operation.
+  * Make rest of the warning dialogs modal, to prevent user from touching the UI.
+  * Remove rest of threading.
+  * Implement indexing using memory map.
+  * Add locks to prevent index corruption.
+  * Add locks to avoid crashes when doing file operations, while receiving.
+  * Workaround for QTBUG-26069
+  * Improve logic when plugins and filters are applied.
 
 
 2.8.0
