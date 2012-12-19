@@ -369,8 +369,9 @@ bool NonverbosePlugin::loadConfig(QString filename)
 
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
-        QMessageBox::warning(0, QString("Duplicated FRAMES ignored:"),
-                              warning_text);
+        // Removed Message Box which causes proplems when started via command line
+        //QMessageBox::warning(0, QString("Duplicated FRAMES ignored:"),
+        //                      warning_text);
     }
 
     /* create PDU Ref links */
