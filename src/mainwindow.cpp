@@ -17,6 +17,7 @@
  * @licence end@
  */
 
+#include <iostream>
 #include <QTreeView>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -846,12 +847,19 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
 
 void MainWindow::on_action_menuFile_SaveAs_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this,
-                        tr("Save DLT Log file"),
-                        workingDirectory,
-                        tr("DLT Files (*.dlt);;All files (*.*)"));
 
-    if(fileName.isEmpty())
+    QFileDialog dialog(this);
+    QStringList filters;
+    filters << "DLT Files (*.dlt)" <<"All files (*.*)";
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("dlt");
+    dialog.setDirectory(workingDirectory);
+    dialog.setFilters(filters);
+    dialog.setWindowTitle("Save DLT Log file");
+    dialog.exec();
+    QString fileName = dialog.selectedFiles()[0];
+
+    if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
     {
         return;
     }
@@ -1199,11 +1207,25 @@ bool MainWindow::openDlpFile(QString fileName)
 
 void MainWindow::on_action_menuProject_Save_triggered()
 {
-    QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Save DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
+
+    QFileDialog dialog(this);
+    QStringList filters;
+    filters << "DLT Project Files (*.dlp)" <<"All files (*.*)";
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("dlp");
+    dialog.setDirectory(workingDirectory);
+    dialog.setFilters(filters);
+    dialog.setWindowTitle("Save DLT Project file");
+    dialog.exec();
+    QString fileName = dialog.selectedFiles()[0];
+
 
     /* save project */
-    if(!fileName.isEmpty() && project.Save(fileName))
+    if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
+    {
+        //return;
+    }
+    else if( project.Save(fileName))
     {
         /* change current working directory */
         workingDirectory = QFileInfo(fileName).absolutePath();
