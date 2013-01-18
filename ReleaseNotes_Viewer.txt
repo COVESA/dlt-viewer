@@ -8,7 +8,6 @@ Version 2.9.0 ALPHA
 
 Known issues
 ------------
-  * Known errors in MOSTPlugin decoding.
 
 Changes
 -------
@@ -21,6 +20,10 @@ Changes
   * Workaround for QTBUG-26069
   * Improve logic when plugins and filters are applied.
   * User manual converted to asciidoc
+  * MOSTPlugin incorrect decoding fixed.
+  * MOSTDecoder crash fixed.
+  * Save File and Save Project Dialog now append a file extension if none is given by user now also under Linux.
+  * Add possibility to export message to a CSV file.
 
 
 2.8.0
