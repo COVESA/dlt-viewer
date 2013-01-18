@@ -55,22 +55,6 @@ public:
     QDltFile *qfile;
     Project *project;
     void modelChanged();
-private:
-    enum ColumnNames
-    {
-        cnIndex,
-        cnTime,
-        cnTimeStamp,
-        cnCounter,
-        cnEcuId,
-        cnAppId,
-        cnContextId,
-        cnType,
-        cnSubtype,
-        cnMode,
-        cnArgCount,
-        cnPayload
-    };
 };
 
 #endif // TABLEMODEL_H

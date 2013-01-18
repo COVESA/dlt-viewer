@@ -188,8 +188,6 @@ private:
 
     void processMsgAfterPluginmodeChange(PluginItem *item);
 
-
-
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
@@ -221,6 +219,8 @@ private slots:
     void on_action_menuFile_Append_DLT_File_triggered();
     void on_action_menuFile_Export_Selection_ASCII_triggered();
     void on_action_menuFile_Export_ASCII_triggered();
+    void on_action_menuFile_Export_CSV_triggered();
+    void on_action_menuFile_Export_Selection_CSV_triggered();
     void on_action_menuFile_Import_DLT_Stream_triggered();
     void on_action_menuFile_Quit_triggered();
     void on_action_menuFile_Settings_triggered();

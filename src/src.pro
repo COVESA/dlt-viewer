@@ -53,7 +53,9 @@ SOURCES += main.cpp \
     filtertreewidget.cpp \
     dltfileutils.cpp \
     dltfileindexer.cpp \
-    dlttableview.cpp
+    dlttableview.cpp \
+    dltexporter.cpp \
+    fieldnames.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -74,7 +76,9 @@ HEADERS += mainwindow.h \
     filtertreewidget.h \
     dltfileutils.h \
     dltfileindexer.h \
-    dlttableview.h
+    dlttableview.h \
+    dltexporter.h \
+    fieldnames.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \

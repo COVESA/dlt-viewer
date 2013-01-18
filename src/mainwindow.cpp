@@ -46,6 +46,7 @@
 #include "qextserialenumerator.h"
 #include "version.h"
 #include "dltfileutils.h"
+#include "dltexporter.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -844,6 +845,78 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     }
 
 }
+
+void MainWindow::on_action_menuFile_Export_CSV_triggered()
+{
+    if(qfile.sizeFilter() <= 0)
+    {
+        QMessageBox::critical(this, QString("DLT Viewer"),
+                              QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
+        return;
+    }
+
+    QFileDialog dialog(this);
+    QStringList filters;
+    filters << "CSV Files (*.csv)" <<"All files (*.*)";
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("csv");
+    dialog.setDirectory(workingDirectory);
+    dialog.setFilters(filters);
+    dialog.setWindowTitle("Export to CSV file");
+    dialog.exec();
+    QString fileName = dialog.selectedFiles()[0];
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
+    DltExporter exporter(this);
+    QFile outfile(fileName);
+    exporter.exportCSV(&qfile, &outfile, project.plugin);
+}
+
+void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
+{
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+    if(qfile.sizeFilter() <= 0)
+    {
+        QMessageBox::critical(this, QString("DLT Viewer"),
+                              QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
+        return;
+    }
+
+    if(list.count() <= 0)
+    {
+        QMessageBox::critical(this, QString("DLT Viewer"),
+                              QString("No messages selected. Select something from the main view."));
+        return;
+    }
+
+    QFileDialog dialog(this);
+    QStringList filters;
+    filters << "CSV Files (*.csv)" <<"All files (*.*)";
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("csv");
+    dialog.setDirectory(workingDirectory);
+    dialog.setFilters(filters);
+    dialog.setWindowTitle("Export to CSV file");
+    dialog.exec();
+    QString fileName = dialog.selectedFiles()[0];
+
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
+
+    QFile outfile(fileName);
+    DltExporter exporter(this);
+    exporter.exportCSV(&qfile, &outfile, project.plugin, &list);
+}
+
 
 void MainWindow::on_action_menuFile_SaveAs_triggered()
 {

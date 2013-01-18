@@ -21,6 +21,7 @@
 #include <qmessagebox.h>
 
 #include "tablemodel.h"
+#include "fieldnames.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
@@ -55,11 +56,11 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          /* get the message with the selected item id */
          if(!qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg))
          {
-             if(index.column() == cnIndex)
+             if(index.column() == FieldNames::Index)
              {
                  return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
              }
-             else if(index.column() == cnPayload)
+             else if(index.column() == FieldNames::Payload)
              {
                  return QString("!!CORRUPTED MESSAGE!!");
              }
@@ -78,21 +79,21 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
          switch(index.column())
          {
-         case cnIndex:
+         case FieldNames::Index:
              /* display index */
              return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
-         case cnTime:
+         case FieldNames::Time:
              if( project->settings->automaticTimeSettings == 0 )
                 return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
              else
                 return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
-         case cnTimeStamp:
+         case FieldNames::TimeStamp:
              return QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
-         case cnCounter:
+         case FieldNames::Counter:
              return QString("%1").arg(msg.getMessageCounter());
-         case cnEcuId:
+         case FieldNames::EcuId:
              return msg.getEcuid();
-         case cnAppId:
+         case FieldNames::AppId:
              switch(project->settings->showApIdDesc){
              case 0:
                  return msg.getApid();
@@ -115,7 +116,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
               default:
                  return msg.getApid();
              }
-         case cnContextId:
+         case FieldNames::ContextId:
              switch(project->settings->showCtIdDesc){
              case 0:
                  return msg.getCtid();
@@ -145,15 +146,15 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
               default:
                  return msg.getCtid();
              }
-         case cnType:
+         case FieldNames::Type:
              return msg.getTypeString();
-         case cnSubtype:
+         case FieldNames::Subtype:
              return msg.getSubtypeString();
-         case cnMode:
+         case FieldNames::Mode:
              return msg.getModeString();
-         case cnArgCount:
+         case FieldNames::ArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
-         case cnPayload:
+         case FieldNames::Payload:
              /* display payload */
              return msg.toStringPayload();
          }
@@ -202,17 +203,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if ( role == Qt::TextAlignmentRole ) {
         switch(index.column())
         {
-            case cnIndex:
+            case FieldNames::Index:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case cnTime:
+            case FieldNames::Time:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnTimeStamp:
+            case FieldNames::TimeStamp:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case cnCounter:
+            case FieldNames::Counter:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnEcuId:
+            case FieldNames::EcuId:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnAppId:
+            case FieldNames::AppId:
                 switch(project->settings->showApIdDesc){
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
@@ -224,7 +225,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                     return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
                     break;
                 }
-            case cnContextId:
+            case FieldNames::ContextId:
                 switch(project->settings->showCtIdDesc){
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
@@ -236,15 +237,15 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                     return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
                     break;
                 }
-            case cnType:
+            case FieldNames::Type:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnSubtype:
+            case FieldNames::Subtype:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnMode:
+            case FieldNames::Mode:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case cnArgCount:
+            case FieldNames::ArgCount:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case cnPayload:
+            case FieldNames::Payload:
                 return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
         }
     }
@@ -252,55 +253,19 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      return QVariant();
  }
 
-  QVariant TableModel::headerData(int section, Qt::Orientation orientation,
+QVariant TableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
- {
-      if (role != Qt::DisplayRole)
-          return QVariant();
+{
+    if (role != Qt::DisplayRole)
+        return QVariant();
 
-      if (orientation == Qt::Horizontal)
-      {
-          switch(section)
-          {
-          case cnIndex:
-              return QString("Index");
-          case cnTime:
-              return QString("Time");
-          case cnTimeStamp:
-              return QString("Timestamp");
-          case cnCounter:
-              return QString("Count");
-          case cnEcuId:
-              return QString("Ecuid");
-          case cnAppId:
-              switch(project->settings->showApIdDesc){
-              case 0:
-                   return QString("Apid");
-              case 1:
-                   return QString("Apid Desc");
-              }
-          case cnContextId:
-              switch(project->settings->showCtIdDesc){
-              case 0:
-                   return QString("Ctid");
-              case 1:
-                   return QString("Ctid Desc");
-              }
-          case cnType:
-              return QString("Type");
-          case cnSubtype:
-              return QString("Subtype");
-          case cnMode:
-              return QString("Mode");
-          case cnArgCount:
-              return QString("#Args");
-          case cnPayload:
-              return QString("Payload");
-          }
-      }
+    if (orientation == Qt::Horizontal)
+    {
+        return FieldNames::getName((FieldNames::Fields)section, project->settings);
+    }
 
-      return QVariant();
-  }
+    return QVariant();
+}
 
  int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {

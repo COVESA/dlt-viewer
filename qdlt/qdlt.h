@@ -665,8 +665,6 @@ public:
       \return The payload string.
     */
     QString toStringPayload();
-
-
 protected:
 
 private:
