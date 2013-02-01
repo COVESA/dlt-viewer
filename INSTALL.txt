@@ -63,5 +63,11 @@ Create SDK Documentation (Linux)
 Create manuals documentation
 ----------------------------
 The manuals are generated with asciidoc.
-
+Call 
+asciidoc dlt_viewer_user_manual.txt
+asciidoc dlt_viewer_plugins_programming_guide.txt
+to generate html output.
+To generate pdfs, call
+sh onvert.sh 
+from within the doc directory
 
