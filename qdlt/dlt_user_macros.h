@@ -63,7 +63,7 @@
  */
 
 #ifndef DLT_USER_MACROS_H
-#define DLT_USER_MACORS_H
+#define DLT_USER_MACROS_H
 
 /**
   \defgroup userapi DLT User API
