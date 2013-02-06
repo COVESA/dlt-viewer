@@ -1123,9 +1123,7 @@ void MainWindow::reloadLogFile()
     dltIndexer->index();
     ui->tableView->unlock();
 
-    /* Apply filters */
-    on_filterButton_clicked(ui->filterButton->isChecked());
-
+    /* Collect all plugins */
     for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
     {
         item = (PluginItem*)project.plugin->topLevelItem(i);
@@ -1152,6 +1150,8 @@ void MainWindow::reloadLogFile()
     else
     {
         dltIndexer->lock();
+        /* Apply collected plugins.
+         * Please note that filterIndex is created as a side effect */
         applyPlugins(activeViewerPlugins, activeDecoderPlugins);
         dltIndexer->unlock();
     }
