@@ -325,6 +325,7 @@ void MainWindow::commandLineConvertToASCII(){
     QDltMsg msg;
     QString text;
 
+    qfile.enableFilter(true);
     openDltFile(OptManager::getInstance()->getConvertSourceFile());
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
