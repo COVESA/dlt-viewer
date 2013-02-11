@@ -4556,6 +4556,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
 {
     item->type = (FilterItem::FilterType)(dlg.getType());
 
+
     item->name = dlg.getName();
     item->ecuId = dlg.getEcuId();
     item->applicationId = dlg.getApplicationId();

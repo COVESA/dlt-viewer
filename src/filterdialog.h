@@ -93,6 +93,15 @@ private:
 public slots:
     void on_buttonSelectColor_clicked();
     void on_comboBoxType_currentIndexChanged(int index);
+private slots:
+    //void on_lineEditEcuId_editingFinished();
+    void on_lineEditApplicationId_textEdited(const QString &arg1);
+    void on_lineEditEcuId_textEdited(const QString &arg1);
+    void on_lineEditContextId_textEdited(const QString &arg1);
+    void on_lineEditHeaderText_textEdited(const QString &arg1);
+    void on_lineEditPayloadText_textEdited(const QString &arg1);
+    void on_comboBoxLogLevelMax_currentIndexChanged(int index);
+    void on_comboBoxLogLevelMin_currentIndexChanged(int index);
 };
 
 #endif // FILTERDIALOG_H

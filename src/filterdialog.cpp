@@ -255,3 +255,64 @@ void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
             break;
     }
 }
+/*
+void FilterDialog::on_lineEditEcuId_editingFinished()
+{
+  //ui->checkBoxHeaderText->checkStateSet();
+  //ui->checkBoxHeaderText->setCheckState(Qt::Checked);
+  if (ui->lineEditEcuId->text().length())
+    ui->checkBoxEcuId->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxEcuId->setCheckState(Qt::Unchecked);
+//    ui->FilterDialog::setEnableHeaderText(bool state)
+}
+*/
+void FilterDialog::on_lineEditApplicationId_textEdited(const QString &arg1)
+{
+  if (ui->lineEditApplicationId->text().length())
+    ui->checkBoxApplicationId->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxApplicationId->setCheckState(Qt::Unchecked);
+}
+
+void FilterDialog::on_lineEditEcuId_textEdited(const QString &arg1)
+{
+  if (ui->lineEditEcuId->text().length())
+    ui->checkBoxEcuId->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxEcuId->setCheckState(Qt::Unchecked);
+}
+
+void FilterDialog::on_lineEditContextId_textEdited(const QString &arg1)
+{
+  if (ui->lineEditContextId->text().length())
+    ui->checkBoxContextId->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxContextId->setCheckState(Qt::Unchecked);
+}
+
+void FilterDialog::on_lineEditHeaderText_textEdited(const QString &arg1)
+{
+  if (ui->lineEditHeaderText->text().length())
+    ui->checkBoxHeaderText->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxHeaderText->setCheckState(Qt::Unchecked);
+}
+
+void FilterDialog::on_lineEditPayloadText_textEdited(const QString &arg1)
+{
+  if (ui->lineEditPayloadText->text().length())
+    ui->checkBoxPayloadText->setCheckState(Qt::Checked);
+  else
+    ui->checkBoxPayloadText->setCheckState(Qt::Unchecked);
+}
+
+void FilterDialog::on_comboBoxLogLevelMax_currentIndexChanged(int index)
+{
+    ui->checkBoxLogLevelMax->setCheckState(Qt::Checked);
+}
+
+void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int index)
+{
+    ui->checkBoxLogLevelMin->setCheckState(Qt::Checked);
+}
