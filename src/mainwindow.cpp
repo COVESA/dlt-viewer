@@ -3528,13 +3528,11 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
 
     if((project.filter->selectedItems().count() >= 1) ) {
         ui->action_menuFilter_Delete->setEnabled(true);
-        ui->action_menuFilter_Edit->setEnabled(true);
-        ui->action_menuFilter_Add->setEnabled(true);
+        ui->action_menuFilter_Edit->setEnabled(true);        
         ui->action_menuFilter_Duplicate->setEnabled(true);
     }else{
         ui->action_menuFilter_Delete->setEnabled(false);
-        ui->action_menuFilter_Edit->setEnabled(false);
-        ui->action_menuFilter_Add->setEnabled(false);
+        ui->action_menuFilter_Edit->setEnabled(false);        
         ui->action_menuFilter_Duplicate->setEnabled(false);
     }
 }
