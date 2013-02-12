@@ -156,7 +156,7 @@ void DltExporter::exportCSV(QDltFile *from, QFile *to, QTreeWidget *plugins, QMo
     int maxProgress = 0;
     if(selection == NULL)
     {
-        maxProgress = from->sizeFilter();
+        maxProgress = from->size();
     }
     else
     {
