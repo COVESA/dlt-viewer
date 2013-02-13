@@ -4539,6 +4539,7 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setPayloadText(item->payloadText);
 
     dlg.setActive(item->enableFilter);
+    dlg.setEnableRegexp(item->enableRegexp);
     dlg.setEnableEcuId(item->enableEcuId);
     dlg.setEnableApplicationId(item->enableApplicationId);
     dlg.setEnableContextId(item->enableContextId);
@@ -4567,6 +4568,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->payloadText = dlg.getPayloadText();
 
     item->enableFilter = dlg.getEnableActive();
+    item->enableRegexp = dlg.getEnableRegexp();
     item->enableEcuId = dlg.getEnableEcuId();
     item->enableApplicationId = dlg.getEnableApplicationId();
     item->enableContextId = dlg.getEnableContextId();
@@ -4705,7 +4707,7 @@ void MainWindow::filterUpdate() {
     /* clear old filter list */
     qfile.clearFilter();
 
-    /* iterate through all positive filters */
+    /* iterate through all filters */
     for(int num = 0; num < project.filter->topLevelItemCount (); num++)
     {
         FilterItem *item = (FilterItem*)project.filter->topLevelItem(num);
@@ -4716,6 +4718,7 @@ void MainWindow::filterUpdate() {
         afilter.header = item->headerText;
         afilter.payload = item->payloadText;
 
+        afilter.enableRegexp = item->enableRegexp;
         afilter.enableFilter = item->enableFilter;
         afilter.enableEcuid = item->enableEcuId;
         afilter.enableApid = item->enableApplicationId;
@@ -4732,6 +4735,15 @@ void MainWindow::filterUpdate() {
         afilter.filterColour = item->filterColour;
         item->setBackground(0,item->filterColour);
         item->setBackground(1,item->filterColour);
+
+        if(afilter.enableRegexp)
+        {
+            if(!afilter.compileRegexps())
+            {
+                // This is also validated in the UI part
+                qDebug() << "Error compiling a regexp" << endl;
+            }
+        }
 
         switch(item->type)
         {

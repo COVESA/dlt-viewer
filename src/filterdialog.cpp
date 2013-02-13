@@ -19,6 +19,8 @@
 
 #include "filterdialog.h"
 #include "ui_filterdialog.h"
+#include <QMessageBox>
+#include <QCloseEvent>
 
 FilterDialog::FilterDialog(QWidget *parent) :
     QDialog(parent),
@@ -56,6 +58,16 @@ void FilterDialog::setName(QString name)
 QString FilterDialog::getName()
 {
     return ui->lineEditName->text();
+}
+
+void FilterDialog::setEnableRegexp(bool state)
+{
+    ui->checkBoxRegexp->setChecked(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableRegexp()
+{
+    return (ui->checkBoxRegexp->checkState() == Qt::Checked);
 }
 
 void FilterDialog::setEcuId(QString id)
@@ -255,18 +267,7 @@ void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
             break;
     }
 }
-/*
-void FilterDialog::on_lineEditEcuId_editingFinished()
-{
-  //ui->checkBoxHeaderText->checkStateSet();
-  //ui->checkBoxHeaderText->setCheckState(Qt::Checked);
-  if (ui->lineEditEcuId->text().length())
-    ui->checkBoxEcuId->setCheckState(Qt::Checked);
-  else
-    ui->checkBoxEcuId->setCheckState(Qt::Unchecked);
-//    ui->FilterDialog::setEnableHeaderText(bool state)
-}
-*/
+
 void FilterDialog::on_lineEditApplicationId_textEdited(const QString &arg1)
 {
   if (ui->lineEditApplicationId->text().length())
@@ -315,4 +316,32 @@ void FilterDialog::on_comboBoxLogLevelMax_currentIndexChanged(int index)
 void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int index)
 {
     ui->checkBoxLogLevelMin->setCheckState(Qt::Checked);
+}
+
+void FilterDialog::validate()
+{
+    QString
+    error =  "Could not parse %1 regular expression. ";
+    error += "Please correct the error or remove the regular expression.";
+
+    if(!getEnableRegexp())
+    {
+        emit accept();
+        return;
+    }
+
+    QRegExp rx;
+    rx.setPattern(getPayloadText());
+    if(!rx.isValid()) {
+        QMessageBox::warning(this, "Warning", error.arg("payload"));
+        return;
+    }
+
+    rx.setPattern(getHeaderText());
+    if(!rx.isValid()) {
+        QMessageBox::warning(this, "Warning", error.arg("header"));
+        return;
+    }
+
+    emit accept();
 }

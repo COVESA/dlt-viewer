@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>328</width>
+    <width>345</width>
     <height>388</height>
    </rect>
   </property>
@@ -18,6 +18,51 @@
     <normaloff>:/toolbar/png/edit-cut.png</normaloff>:/toolbar/png/edit-cut.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="checkBoxApplicationId">
+     <property name="text">
+      <string>Application Id:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
+    <widget class="QLineEdit" name="lineEditApplicationId">
+     <property name="maxLength">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="11" column="0">
+    <widget class="QCheckBox" name="checkBoxHeaderText">
+     <property name="text">
+      <string>Header Text:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEditContextId">
+     <property name="maxLength">
+      <number>4</number>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLineEdit" name="lineEditEcuId"/>
+   </item>
+   <item row="5" column="0">
+    <widget class="QCheckBox" name="checkBoxEcuId">
+     <property name="text">
+      <string>ECU Id:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Type:</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
@@ -26,13 +71,6 @@
     </widget>
    </item>
    <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Type:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
     <widget class="QComboBox" name="comboBoxType">
      <item>
       <property name="text">
@@ -51,48 +89,24 @@
      </item>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="QCheckBox" name="checkBoxEcuId">
+   <item row="7" column="1">
+    <widget class="QCheckBox" name="checkBoxContextId">
      <property name="text">
-      <string>ECU Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QLineEdit" name="lineEditEcuId"/>
-   </item>
-   <item row="8" column="0">
-    <widget class="QCheckBox" name="checkBoxApplicationId">
-     <property name="text">
-      <string>Application Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="9" column="0">
-    <widget class="QLineEdit" name="lineEditApplicationId">
-     <property name="maxLength">
-      <number>4</number>
+      <string>Context Id:</string>
      </property>
     </widget>
    </item>
    <item row="12" column="0">
-    <widget class="QCheckBox" name="checkBoxHeaderText">
-     <property name="text">
-      <string>Header Text:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="0">
     <widget class="QLineEdit" name="lineEditHeaderText"/>
    </item>
-   <item row="16" column="0">
+   <item row="15" column="0">
     <widget class="QCheckBox" name="checkBoxLogLevelMax">
      <property name="text">
       <string>Log Level Max</string>
      </property>
     </widget>
    </item>
-   <item row="17" column="0">
+   <item row="16" column="0">
     <widget class="QComboBox" name="comboBoxLogLevelMax">
      <item>
       <property name="text">
@@ -131,7 +145,7 @@
      </item>
     </widget>
    </item>
-   <item row="22" column="0">
+   <item row="21" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -141,21 +155,21 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0" colspan="2">
+   <item row="1" column="0" colspan="2">
     <widget class="QLineEdit" name="lineEditName">
      <property name="text">
       <string>New Filter</string>
      </property>
     </widget>
    </item>
-   <item row="21" column="0">
+   <item row="20" column="0">
     <widget class="QCheckBox" name="checkBoxCtrlMsgs">
      <property name="text">
       <string>Control Messages</string>
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
+   <item row="1" column="2">
     <widget class="QCheckBox" name="checkBoxActive">
      <property name="text">
       <string>Active</string>
@@ -165,38 +179,24 @@
      </property>
     </widget>
    </item>
-   <item row="9" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditContextId">
-     <property name="maxLength">
-      <number>4</number>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1">
-    <widget class="QCheckBox" name="checkBoxContextId">
-     <property name="text">
-      <string>Context Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="1">
+   <item row="11" column="1">
     <widget class="QCheckBox" name="checkBoxPayloadText">
      <property name="text">
       <string>Payload Text:</string>
      </property>
     </widget>
    </item>
-   <item row="13" column="1" colspan="2">
+   <item row="12" column="1" colspan="2">
     <widget class="QLineEdit" name="lineEditPayloadText"/>
    </item>
-   <item row="16" column="1">
+   <item row="15" column="1">
     <widget class="QCheckBox" name="checkBoxLogLevelMin">
      <property name="text">
       <string>Log Level Min</string>
      </property>
     </widget>
    </item>
-   <item row="17" column="1" colspan="2">
+   <item row="16" column="1" colspan="2">
     <widget class="QComboBox" name="comboBoxLogLevelMin">
      <item>
       <property name="text">
@@ -235,20 +235,30 @@
      </item>
     </widget>
    </item>
-   <item row="4" column="1">
+   <item row="3" column="1">
     <widget class="QPushButton" name="buttonSelectColor">
      <property name="text">
       <string>Select marker color</string>
      </property>
     </widget>
    </item>
-   <item row="4" column="2">
+   <item row="3" column="2">
     <widget class="QLabel" name="labelSelectedColor">
      <property name="autoFillBackground">
       <bool>true</bool>
      </property>
      <property name="text">
       <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="checkBoxRegexp">
+     <property name="toolTip">
+      <string>Enable this option, to use regular expressions for header and payload text.</string>
+     </property>
+     <property name="text">
+      <string>RegExp</string>
      </property>
     </widget>
    </item>
@@ -260,29 +270,13 @@
  <connections>
   <connection>
    <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>FilterDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
    <signal>rejected()</signal>
    <receiver>FilterDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>164</x>
+     <y>356</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
@@ -290,5 +284,24 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>FilterDialog</receiver>
+   <slot>validate()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>51</x>
+     <y>368</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>260</x>
+     <y>359</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
+ <slots>
+  <slot>validate()</slot>
+ </slots>
 </ui>

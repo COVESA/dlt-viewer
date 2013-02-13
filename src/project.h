@@ -193,6 +193,7 @@ public:
     QString headerText;
     QString payloadText;
 
+    bool enableRegexp;
     bool enableFilter;
     bool enableEcuId;
     bool enableApplicationId;

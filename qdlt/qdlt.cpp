@@ -1572,6 +1572,9 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         found = false;
 
 
+    /* TODO: Could these big blocks be refactored to a function?
+     * They do exactly the same thing for p- and n-filters, right?
+     * Maybe QDltFilter::match(QDltMsg) */
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
         filter = pfilter[numfilter];
@@ -1588,11 +1591,23 @@ bool QDltFile::checkFilter(QDltMsg &msg)
             if(filter.enableCtid && 0 != msg.getCtid().compare(filter.ctid)) {
                 foundFilter = false;
             }
-            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                foundFilter = false;
+            if(filter.enableRegexp)
+            {
+                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
+                    foundFilter = false;
+                }
             }
-            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                foundFilter = false;
+            else
+            {
+                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                    foundFilter = false;
+                }
             }
             if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
                 foundFilter = false;
@@ -1624,11 +1639,23 @@ bool QDltFile::checkFilter(QDltMsg &msg)
             if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
                 foundFilter = false;
             }
-            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                foundFilter = false;
+            if(filter.enableRegexp)
+            {
+                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
+                    foundFilter = false;
+                }
             }
-            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                foundFilter = false;
+            else
+            {
+                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                    foundFilter = false;
+                }
             }
             if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
                 foundFilter = false;
@@ -1671,6 +1698,8 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
         return color;
     }
 
+    /* TODO: Another place which could be refactored.
+     * See: checkFilter */
     for(int numfilter=0;numfilter<marker.size();numfilter++)
     {
         filter = marker[numfilter];
@@ -1686,11 +1715,23 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
             if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
                 foundFilter = false;
             }
-            if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                foundFilter = false;
+            if(filter.enableRegexp)
+            {
+                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
+                    foundFilter = false;
+                }
             }
-            if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                foundFilter = false;
+            else
+            {
+                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
+                    foundFilter = false;
+                }
+                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
+                    foundFilter = false;
+                }
             }
             if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
                 foundFilter = false;
@@ -1856,6 +1897,13 @@ bool QDltFile::isFilter()
 void QDltFile::enableFilter(bool state)
 {
     filterFlag = state;
+}
+
+bool QDltFilter::compileRegexps()
+{
+    headerRegexp.setPattern(header);
+    payloadRegexp.setPattern(payload);
+    return (headerRegexp.isValid() && payloadRegexp.isValid());
 }
 
 QDltControl::QDltControl(QObject *_server)

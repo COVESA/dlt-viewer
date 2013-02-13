@@ -737,6 +737,9 @@ public:
     QString ctid;
     QString header;
     QString payload;
+    QRegExp headerRegexp;
+    QRegExp payloadRegexp;
+    bool enableRegexp;
     bool enableFilter;
     bool enableEcuid;
     bool enableApid;
@@ -749,6 +752,7 @@ public:
     QColor filterColour;
     int logLevelMax;
     int logLevelMin;
+    bool compileRegexps();
 protected:
 private:
 };

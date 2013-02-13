@@ -45,6 +45,9 @@ public:
     void setActive(bool state);
     bool getEnableActive();
 
+    void setEnableRegexp(bool state);
+    bool getEnableRegexp();
+
     void setEcuId(QString id);
     QString getEcuId();
     void setEnableEcuId(bool state);
@@ -93,8 +96,8 @@ private:
 public slots:
     void on_buttonSelectColor_clicked();
     void on_comboBoxType_currentIndexChanged(int index);
+    void validate();
 private slots:
-    //void on_lineEditEcuId_editingFinished();
     void on_lineEditApplicationId_textEdited(const QString &arg1);
     void on_lineEditEcuId_textEdited(const QString &arg1);
     void on_lineEditContextId_textEdited(const QString &arg1);

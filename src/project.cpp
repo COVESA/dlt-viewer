@@ -285,6 +285,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     name = "New Filter";
 
     setCheckState(0,Qt::Checked);
+    enableRegexp = false;
     enableFilter = false;
     enableEcuId = false;
     enableApplicationId = false;
@@ -320,6 +321,7 @@ void FilterItem:: operator = (FilterItem &item)
     headerText = item.headerText;
     payloadText = item.payloadText;
 
+    enableRegexp = item.enableRegexp;
     enableFilter = item.enableFilter;
     enableEcuId = item.enableEcuId;
     enableApplicationId = item.enableApplicationId;
@@ -353,6 +355,10 @@ void FilterItem::update()
     case FilterItem::marker:
         text += QString("MARKER ");
         break;
+    }
+
+    if(enableRegexp){
+        text += "RegExp";
     }
 
     if(enableFilter){
@@ -906,6 +912,12 @@ bool Project::Load(QString filename)
                   if(filteritem)
                     filteritem->payloadText = xml.readElementText();
               }
+              if(xml.name() == QString("enableregexp"))
+              {
+                  if(filteritem)
+                    filteritem->enableRegexp = xml.readElementText().toInt();
+
+              }
               if(xml.name() == QString("enablefilter"))
               {
                   if(filteritem)
@@ -1194,6 +1206,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("headertext",item->headerText);
         xml.writeTextElement("payloadtext",item->payloadText);
 
+        xml.writeTextElement("enableregexp", QString("%1").arg(item->enableRegexp));
         xml.writeTextElement("enablefilter",QString("%1").arg(item->enableFilter));
         xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
         xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
@@ -1267,6 +1280,7 @@ bool Project::SaveFilter(QString filename)
         xml.writeTextElement("headertext",item->headerText);
         xml.writeTextElement("payloadtext",item->payloadText);
 
+        xml.writeTextElement("enableregexp",QString("%1").arg(item->enableRegexp));
         xml.writeTextElement("enablefilter",QString("%1").arg(item->enableFilter));
         xml.writeTextElement("enableecuid",QString("%1").arg(item->enableEcuId));
         xml.writeTextElement("enableapplicationid",QString("%1").arg(item->enableApplicationId));
@@ -1359,6 +1373,12 @@ bool Project::LoadFilter(QString filename, bool replace){
               {
                   if(filteritem)
                     filteritem->payloadText = xml.readElementText();
+              }
+              if(xml.name() == QString("enableregexp"))
+              {
+                  if(filteritem)
+                    filteritem->enableRegexp = xml.readElementText().toInt();
+
               }
               if(xml.name() == QString("enablefilter"))
               {
