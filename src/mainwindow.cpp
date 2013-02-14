@@ -1147,6 +1147,8 @@ void MainWindow::reloadLogFile()
     if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
     {
         qDebug() << "No plugins active";
+        /* We don't have any plugins, create the filter index here. */
+        on_filterButton_clicked(ui->filterButton->isChecked());
     }
     else
     {
