@@ -1569,7 +1569,7 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         }
     }
 
-    if(pfilter.isEmpty() || filterActivated==false)
+    if(filterActivated==false)
         found = true;
     else
         found = false;
@@ -1580,19 +1580,30 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         filter = pfilter[numfilter];
         if(filter.enableFilter) {
             found = filter.match(msg);
-            break;
+            if (found)
+              break;
         }
     }
 
-    for(int numfilter=0;numfilter<nfilter.size();numfilter++)
-    {
-        filter = nfilter[numfilter];
+    if (found || filterActivated==false ){
+        //we need only to check for negative filters, if the message would be shown! If discarded anyway, there is no need to apply it.
+        //if positive filter applied -> check for negative filters
+        //if no positive filters are active or no one exists, we need also to filter negatively
+        // if the message has been discarded by all positive filters before, we do not need to filter it away a second time
 
-        if(filter.enableFilter){
-            found = !filter.match(msg);
-            break;
-        }
-    }
+        for(int numfilter=0;numfilter<nfilter.size();numfilter++)
+          {
+            filter = nfilter[numfilter];
+            if(filter.enableFilter){
+                if (filter.match(msg))
+                  {
+                    // a negative filter has matched -> found = false
+                    found = false;
+                    break;
+                  }
+              }
+          }
+      }
 
     return found;
 }
