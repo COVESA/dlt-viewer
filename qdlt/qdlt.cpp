@@ -1558,6 +1558,9 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         return true;
     }
 
+    /* If there are no positive filters, or all positive filters
+     * are disabled, the default case is to show all messages. Only
+     * negative filters will be applied */
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
         filter = pfilter[numfilter];
@@ -1572,54 +1575,12 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         found = false;
 
 
-    /* TODO: Could these big blocks be refactored to a function?
-     * They do exactly the same thing for p- and n-filters, right?
-     * Maybe QDltFilter::match(QDltMsg) */
     for(int numfilter=0;numfilter<pfilter.size();numfilter++)
     {
         filter = pfilter[numfilter];
-
-        if(filter.enableFilter){
-            foundFilter = true;
-
-            if(filter.enableEcuid && 0 != msg.getEcuid().compare(filter.ecuid)) {
-                foundFilter = false;
-            }
-            if(filter.enableApid && 0 != msg.getApid().compare(filter.apid)) {
-                foundFilter = false;
-            }
-            if(filter.enableCtid && 0 != msg.getCtid().compare(filter.ctid)) {
-                foundFilter = false;
-            }
-            if(filter.enableRegexp)
-            {
-                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
-                    foundFilter = false;
-                }
-            }
-            else
-            {
-                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                    foundFilter = false;
-                }
-            }
-            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-                foundFilter = false;
-            }
-            if(foundFilter)
-                found = true;
+        if(filter.enableFilter) {
+            found = filter.match(msg);
+            break;
         }
     }
 
@@ -1628,46 +1589,8 @@ bool QDltFile::checkFilter(QDltMsg &msg)
         filter = nfilter[numfilter];
 
         if(filter.enableFilter){
-            foundFilter = true;
-
-            if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
-                foundFilter = false;
-            }
-            if(filter.enableApid && (msg.getApid() != filter.apid)) {
-                foundFilter = false;
-            }
-            if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
-                foundFilter = false;
-            }
-            if(filter.enableRegexp)
-            {
-                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
-                    foundFilter = false;
-                }
-            }
-            else
-            {
-                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                    foundFilter = false;
-                }
-            }
-            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-                foundFilter = false;
-            }
-            if(foundFilter)
-                found = false;
+            found = !filter.match(msg);
+            break;
         }
     }
 
@@ -1690,7 +1613,6 @@ void QDltFile::addFilterIndex (int index)
 QColor QDltFile::checkMarker(QDltMsg &msg)
 {
     QDltFilter filter;
-    bool foundFilter;
     QColor color;
 
     if(!filterFlag)
@@ -1698,54 +1620,15 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
         return color;
     }
 
-    /* TODO: Another place which could be refactored.
-     * See: checkFilter */
     for(int numfilter=0;numfilter<marker.size();numfilter++)
     {
         filter = marker[numfilter];
 
         if(filter.enableFilter){
-            foundFilter = true;
-            if(filter.enableEcuid && ( msg.getEcuid() != filter.ecuid)) {
-                foundFilter = false;
-            }
-            if(filter.enableApid && (msg.getApid() != filter.apid)) {
-                foundFilter = false;
-            }
-            if(filter.enableCtid && (msg.getCtid() != filter.ctid)) {
-                foundFilter = false;
-            }
-            if(filter.enableRegexp)
-            {
-                if(filter.enableHeader && filter.headerRegexp.indexIn(msg.toStringHeader()) < 0) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && filter.payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
-                    foundFilter = false;
-                }
-            }
-            else
-            {
-                if(filter.enableHeader && !(msg.toStringHeader().contains(filter.header))) {
-                    foundFilter = false;
-                }
-                if(filter.enablePayload && !(msg.toStringPayload().contains(filter.payload))) {
-                    foundFilter = false;
-                }
-            }
-            if(filter.enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter.logLevelMax))) {
-                foundFilter = false;
-            }
-            if(filter.enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter.logLevelMin))) {
-                foundFilter = false;
-            }
-
-            if(foundFilter)
+            if(filter.match(msg))
             {
                 color = filter.filterColour;
+                break;
             }
         }
     }
@@ -2160,4 +2043,46 @@ void QDltSerialConnection::setBaudrate(int _baudrate)
 unsigned int QDltSerialConnection::getBaudrate()
 {
     return baudrate;
+}
+
+bool QDltFilter::match(QDltMsg &msg)
+{
+    if(enableEcuid && (msg.getEcuid() != ecuid)) {
+        return false;
+    }
+    if(enableApid && (msg.getApid() != apid)) {
+        return false;
+    }
+    if(enableCtid && (msg.getCtid() != ctid)) {
+        return false;
+    }
+    if(enableRegexp)
+    {
+        if(enableHeader && headerRegexp.indexIn(msg.toStringHeader()) < 0) {
+            return false;
+        }
+        if(enablePayload && payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
+            return false;
+        }
+    }
+    else
+    {
+        if(enableHeader && !(msg.toStringHeader().contains(header))) {
+            return false;
+        }
+        if(enablePayload && !(msg.toStringPayload().contains(payload))) {
+            return false;
+        }
+    }
+    if(enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
+        return false;
+    }
+    if(enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= logLevelMax))) {
+        return false;
+    }
+    if(enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= logLevelMin))) {
+        return false;
+    }
+
+    return true;
 }

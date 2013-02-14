@@ -753,6 +753,7 @@ public:
     int logLevelMax;
     int logLevelMin;
     bool compileRegexps();
+    bool match(QDltMsg &msg);
 protected:
 private:
 };
