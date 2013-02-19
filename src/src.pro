@@ -55,7 +55,8 @@ SOURCES += main.cpp \
     dltfileindexer.cpp \
     dlttableview.cpp \
     dltexporter.cpp \
-    fieldnames.cpp
+    fieldnames.cpp \
+    jumptodialog.cpp
 
 HEADERS += mainwindow.h \
     project.h \
@@ -78,7 +79,8 @@ HEADERS += mainwindow.h \
     dltfileindexer.h \
     dlttableview.h \
     dltexporter.h \
-    fieldnames.h
+    fieldnames.h \
+    jumptodialog.h
 
 FORMS += mainwindow.ui \
     ecudialog.ui \
@@ -89,7 +91,8 @@ FORMS += mainwindow.ui \
     settingsdialog.ui \
     injectiondialog.ui \
     searchdialog.ui \
-    multiplecontextdialog.ui
+    multiplecontextdialog.ui \
+    jumptodialog.ui
 
 OTHER_FILES += png/edit-clear.png \
     png/document-save-as.png \

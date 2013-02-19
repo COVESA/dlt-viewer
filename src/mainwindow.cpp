@@ -47,6 +47,7 @@
 #include "version.h"
 #include "dltfileutils.h"
 #include "dltexporter.h"
+#include "jumptodialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -5071,4 +5072,58 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
 
     on_filterWidget_itemSelectionChanged();
 
+}
+
+void MainWindow::on_actionJump_To_triggered()
+{
+    JumpToDialog dlg(this);
+    int min = qfile.getMsgFilterPos(0);
+    int max = qfile.getMsgFilterPos(qfile.sizeFilter()-1);
+    dlg.setLimits(min, max);
+
+    int result = dlg.exec();
+
+    if(result != QDialog::Accepted)
+    {
+        return;
+    }
+
+    // If filters are off, just go directly to the row
+    int row = 0;
+    if(!qfile.isFilter())
+    {
+        row = dlg.getIndex();
+    }
+    else
+    {
+        /* Iterate through filter index, trying to find
+         * matching index. If it cannot be found, just settle
+         * for the last one that we saw before going over */
+        int lastFound = 0, i;
+        for(i=0;i<qfile.sizeFilter();i++)
+        {
+            if(qfile.getMsgFilterPos(i) < dlg.getIndex())
+            {
+                // Track previous smaller
+                lastFound = i;
+            }
+            else if(qfile.getMsgFilterPos(i) == dlg.getIndex())
+            {
+                // It's actually visible
+                lastFound = i;
+                break;
+            }
+            else if(qfile.getMsgFilterPos(i) > dlg.getIndex())
+            {
+                // Ok, we went past it, use the last one.
+                break;
+            }
+        }
+        row = lastFound;
+    }
+
+    ui->tableView->selectionModel()->clear();
+    QModelIndex idx = tableModel->index(row, 0, QModelIndex());
+    ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
+    ui->tableView->selectionModel()->select(idx, QItemSelectionModel::Select|QItemSelectionModel::Rows);
 }

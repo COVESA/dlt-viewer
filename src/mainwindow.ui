@@ -22,7 +22,16 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
      <number>2</number>
     </property>
     <item>
@@ -208,6 +217,7 @@
      <string>Search</string>
     </property>
     <addaction name="action_menuSearch_Find"/>
+    <addaction name="actionJump_To"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSearch"/>
@@ -239,7 +249,16 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <property name="bottomMargin">
       <number>2</number>
      </property>
      <item>
@@ -267,7 +286,16 @@
          <string>Config</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -325,7 +353,16 @@
          <string>Plugin</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -385,7 +422,16 @@
          <string>Filter</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -808,7 +854,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Find</string>
+    <string>Find...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -970,6 +1016,14 @@
   <action name="action_menuFile_Export_Selection_CSV">
    <property name="text">
     <string>Export Selection CSV...</string>
+   </property>
+  </action>
+  <action name="actionJump_To">
+   <property name="text">
+    <string>Jump To...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+G</string>
    </property>
   </action>
  </widget>

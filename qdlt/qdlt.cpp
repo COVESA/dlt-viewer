@@ -1550,7 +1550,7 @@ bool QDltFile::updateIndexFilter()
 bool QDltFile::checkFilter(QDltMsg &msg)
 {  
     QDltFilter filter;
-    bool found = false, foundFilter;
+    bool found = false;
     bool filterActivated = false;
 
     if(!filterFlag)

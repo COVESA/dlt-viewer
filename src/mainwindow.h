@@ -308,6 +308,8 @@ private slots:
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
 
+    void on_actionJump_To_triggered();
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
 
