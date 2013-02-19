@@ -7,7 +7,13 @@ JumpToDialog::JumpToDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::JumpToDialog)
 {
-    ui->setupUi(this);
+  ui->setupUi(this);
+
+  Qt::WindowFlags flags = windowFlags();
+  Qt::WindowFlags disableFlag = Qt::WindowContextHelpButtonHint;
+  flags = flags & (~disableFlag);
+  setWindowFlags(flags);
+
 }
 
 JumpToDialog::~JumpToDialog()
@@ -40,13 +46,13 @@ void JumpToDialog::validate()
 {
     if(getIndex() < 0)
     {
-        QString err = "Invalid search idnex. Could not parse to valid number.";
+        QString err = "Invalid search index. Could not parse to valid number.";
         QMessageBox::warning(this, "Warning", err);
         return;
     }
     if(getIndex() < searchMin || getIndex() > searchMax)
     {
-        QString err = "Invalid search idnex. The index must be between %1 and %2.";
+        QString err = "Invalid search index. The index must be between %1 and %2.";
         err = err.arg(searchMin).arg(searchMax);
         QMessageBox::warning(this, "Warning", err);
         return;

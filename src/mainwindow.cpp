@@ -5077,8 +5077,8 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
 void MainWindow::on_actionJump_To_triggered()
 {
     JumpToDialog dlg(this);
-    int min = qfile.getMsgFilterPos(0);
-    int max = qfile.getMsgFilterPos(qfile.sizeFilter()-1);
+    int min = 0;
+    int max = qfile.size()-1;
     dlg.setLimits(min, max);
 
     int result = dlg.exec();
