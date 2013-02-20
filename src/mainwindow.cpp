@@ -765,11 +765,16 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
                                                     tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
         }
         if(fileName.isEmpty())
+        {
             return;
+        }
+        else
+        {
+            /* change current working directory */
+            workingDirectory = QFileInfo(fileName).absolutePath();
+        }
     }
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
 
     QFile outfile(fileName);
     if(file)
@@ -4943,11 +4948,13 @@ void MainWindow::dropEvent(QDropEvent *event)
             openDltFile(filename);
             outputfileIsTemporary = false;
             outputfileIsFromCLI   = false;
+            workingDirectory = QFileInfo(filename).absolutePath();
         }
         else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
         {
             /* Project file dropped */
             openDlpFile(filename);
+            workingDirectory = QFileInfo(filename).absolutePath();
         }
         else
         {
