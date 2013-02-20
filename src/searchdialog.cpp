@@ -30,6 +30,7 @@ SearchDialog::SearchDialog(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    regexpCheckBox = ui->checkBoxRegExp;
     match = false;
     onceClicked = false;
     startLine = -1;

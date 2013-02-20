@@ -18,6 +18,7 @@
         <file>png/weather-storm.png</file>
         <file>png/weather-clear.png</file>
         <file>png/weather-overcast.png</file>
+        <file>png/action-regexp.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>

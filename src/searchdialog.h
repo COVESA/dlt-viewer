@@ -24,6 +24,8 @@
 #include "qdlt.h"
 #include <QTableView>
 #include <QTreeWidget>
+#include <QCheckBox>
+
 namespace Ui {
     class SearchDialog;
 }
@@ -76,6 +78,8 @@ public:
     QTableView *table;
     QTreeWidget *plugin;
     QList<QLineEdit*> *lineEdits;
+    QCheckBox *regexpCheckBox;
+
 
 private slots:
     void on_lineEditText_textEdited(QString newText);

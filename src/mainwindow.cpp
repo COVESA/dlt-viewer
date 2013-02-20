@@ -193,8 +193,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/system-search.png"), tr("Find"));
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuSearch_Find_triggered()));
-    //action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Search previous"));
-    //connect(action, SIGNAL(triggered()), this, SLOT(on_actionSearch_Continue_triggered()));
+
+    regexpButton = new QPushButton(QIcon(":/toolbar/png/action-regexp.png"), tr(""), this);
+    regexpButton->setFlat(true);
+    regexpButton->setCheckable(true);
+    regexpButton->setToolTip(tr("Enable Regular Expressions for Find"));
+    action = ui->mainToolBar->addWidget(regexpButton);
+
+    /* Connect togglebutton to search dialog checkbox, and vice versa. */
+    connect(regexpButton, SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
+    connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), regexpButton, SLOT(setChecked(bool)));
+
     searchTextToolbar = new QLineEdit(ui->mainToolBar);
     searchDlg->appendLineEdit(searchTextToolbar);
     connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));

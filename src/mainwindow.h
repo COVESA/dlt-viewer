@@ -97,6 +97,7 @@ private:
 
     /* Toggle button */
     QPushButton *scrollbutton;
+    QPushButton *regexpButton;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
