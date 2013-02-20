@@ -103,16 +103,12 @@ int SearchDialog::find()
     if(file->sizeFilter()==0)
             return 0;
 
-    //setSearchColour(QColor(0,0,0),QColor(255,255,255));
-
     if(getMatch() || getSearchFromBeginning()==false){
         QModelIndexList list = table->selectionModel()->selection().indexes();
         if(list.count()<=0)
         {
             QMessageBox::critical(0, QString("DLT Viewer"),QString("No message selected"));
             setMatch(false);
-            //table->clearSelection();
-            //setSearchColour(QColor(255,255,255),QColor(255,102,102));
             return 0;
         }
 
@@ -147,7 +143,6 @@ int SearchDialog::find()
         {
             QMessageBox::warning(0, QString("Search"),
                                     QString("Invalid regular expression!"));
-            //setSearchColour(QColor(255,255,255),QColor(255,102,102));
             return 0;
         }
     }
@@ -164,24 +159,28 @@ int SearchDialog::find()
             searchLine++;
             if(searchLine >= file->sizeFilter()){
                 searchLine = 0;
-                //QMessageBox::information(0, QString("Search"),QString("End of file reached. Search start from top."));
             }
         }else{
             searchLine--;
             if(searchLine <= -1){
                 searchLine = file->sizeFilter()-1;
-                //QMessageBox::information(0, QString("Search"),QString("Top of file reached. Search start from bottom."));
             }
         }
 
-        //qDebug()<<"startLine: "<<getStartLine();
-        //qDebug()<<"searchBorder: "<<searchBorder;
-        //qDebug()<<"searchLine: "<<searchLine;
+        /* Update progress every 0.5% */
+        if(searchLine%1000==0)
+        {
+            if(getNextClicked()){
+                fileprogress.setValue(searchLine+1);
+            }else{
+                fileprogress.setValue(file->sizeFilter()-searchLine);
+            }
 
-        if(getNextClicked()){
-            fileprogress.setValue(searchLine+1);
-        }else{
-            fileprogress.setValue(file->sizeFilter()-searchLine);
+            if(fileprogress.wasCanceled())
+            {
+                break;
+            }
+            QApplication::processEvents();
         }
 
         /* get the message with the selected item id */
@@ -277,8 +276,6 @@ int SearchDialog::find()
         return 1;
     }
 
-    //table->clearSelection();
-    //setSearchColour(QColor(255,255,255),QColor(255,102,102));
     return 0;
 }
 
