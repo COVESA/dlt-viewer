@@ -26,4 +26,6 @@
 #define PACKAGE_PATCH_LEVEL "0"
 #define PACKAGE_VERSION "2.9.0"
 #define PACKAGE_REVISION ""
+#define DLT_SUPPORT_MAIL_ADDRESS "dlt-support@bmw.com"
+#define DLT_SUPPORT_NAME "BMW"
 #endif

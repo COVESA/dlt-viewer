@@ -237,6 +237,7 @@ private slots:
     void on_action_menuProject_New_triggered();
 
     // Help methods
+    void on_action_menuHelp_Support_triggered();
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
 
