@@ -4,8 +4,8 @@ echo * Configuration         *
 echo *************************
 
 echo Setting up environment for Qt usage...
-set QTSDK=C:\QtSDK
-set QTDIR=%QTSDK%\Desktop\Qt\4.8.1\mingw
+set QTSDK=C:\Qt\4.8.2
+set QTDIR=C:\Qt\4.8.2
 set PATH=%QTDIR%\bin;%PATH%
 set PATH=C:\MinGW\bin;%PATH%
 
