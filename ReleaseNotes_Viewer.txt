@@ -24,6 +24,20 @@ Changes
   * MOSTDecoder crash fixed.
   * Save File and Save Project Dialog now append a file extension if none is given by user now also under Linux.
   * Add possibility to export message to a CSV file.
+  
+  * Added Filter checkboxes are automatically checked when the user typing in the filter the first time
+  * Added Regular Expressions in Filter configuration
+  * Added "Jump to" function
+  * Added an option to mainwindow search bar to use Regular Expressions instead of simple match
+  * Added a mailto dlt-support@bmw.com in DLT Viewer help dialog
+  
+  * Fixed  DLT Viewer shows unexpected behaviour when loading file with filters enabled
+  * Fixed "Filter Add ..." is disactivated
+  * Fixed Export from command line with filters not working
+  * Fixed DLT Viewer shows unexpected behaviour when loading file with filters enabled
+  * Fixed Using the search function it is not possible to cancel the search
+  * Fixed Working directory is not set correctly using "Open file"
+  * Fixed Export as CSV with enabled filter does not work correct
 
 
 2.8.0
