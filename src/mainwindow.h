@@ -176,7 +176,7 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
-    void openDltFile(QString fileName);
+    bool openDltFile(QString fileName);
     bool openDlpFile(QString filename);
 
     void commandLineConvertToASCII();
@@ -188,6 +188,8 @@ private:
     QStringList getSerialPortsWithQextEnumartor();
 
     void processMsgAfterPluginmodeChange(PluginItem *item);
+
+    void deleteactualFile();
 
 protected:
     void keyPressEvent ( QKeyEvent * event );

@@ -410,25 +410,32 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
     }
 }
 
+void MainWindow::deleteactualFile(){
+  if(outputfileIsTemporary && !outputfileIsFromCLI)
+  {
+      // Delete created temp file
+      qfile.close();
+      outputfile.close();
+      if(outputfile.exists() && !outputfile.remove())
+      {
+          QMessageBox::critical(0, QString("DLT Viewer"),
+                                QString("Cannot delete temporary log file \"%1\"\n%2")
+                                .arg(outputfile.fileName())
+                                .arg(outputfile.errorString()));
+      }
+  }
+}
+
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 
     settings->writeSettings(this);
-    if(settings->tempCloseWithoutAsking)
+    if(settings->tempCloseWithoutAsking || outputfile.size() == 0)
     {
-        if(outputfileIsTemporary && !outputfileIsFromCLI)
-        {
-            // Delete created temp file
-            qfile.close();
-            outputfile.close();
-            if(outputfile.exists() && !outputfile.remove())
-            {
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                      QString("Cannot delete temporary log file \"%1\"\n%2")
-                                      .arg(outputfile.fileName())
-                                      .arg(outputfile.errorString()));
-            }
-        }
+
+        deleteactualFile();
+
         QMainWindow::closeEvent(event);
     }
     else if(outputfileIsTemporary && !outputfileIsFromCLI)
@@ -437,19 +444,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
            "You still have an unsaved temporary file open. Exit anyway?",
            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
         {
-            if(outputfileIsTemporary && !outputfileIsFromCLI)
-            {
-                // Delete created temp file
-                qfile.close();
-                outputfile.close();
-                if(outputfile.exists() && !outputfile.remove())
-                {
-                    QMessageBox::critical(0, QString("DLT Viewer"),
-                                          QString("Cannot delete temporary log file \"%1\"\n%2")
-                                          .arg(outputfile.fileName())
-                                          .arg(outputfile.errorString()));
-                }
-            }
+            deleteactualFile();
+
             QMainWindow::closeEvent(event);
         }
         else
@@ -478,7 +474,16 @@ void MainWindow::on_action_menuFile_New_triggered()
 
     /* close existing file */
     if(outputfile.isOpen())
-        outputfile.close();
+      {
+        if (outputfile.size() == 0)
+          {
+            deleteactualFile();
+          }
+        else
+          {
+          outputfile.close();
+          }
+      }
 
     /* create new file; truncate if already exist */
     outputfile.setFileName(fileName);
@@ -514,11 +519,49 @@ void MainWindow::on_action_menuFile_Open_triggered()
     searchDlg->setStartLine(-1);
 }
 
-void MainWindow::openDltFile(QString fileName)
+
+void MainWindow::openRecentFile()
+{
+    QAction *action = qobject_cast<QAction *>(sender());
+    QString fileName;
+    if (action)
+    {
+        fileName = action->data().toString();
+
+        if(fileName.isEmpty())
+        {
+            removeCurrentFile(fileName);
+            return;
+        }
+
+         /* open existing file and append new data */
+        if (true == openDltFile(fileName))
+          {
+            outputfileIsTemporary = false;
+            outputfileIsFromCLI = false;
+          }
+        else
+          {
+            removeCurrentFile(fileName);
+          }
+    }
+}
+
+bool MainWindow::openDltFile(QString fileName)
 {
     /* close existing file */
-    if(outputfile.isOpen())
-        outputfile.close();
+  bool ret = false;
+  if(outputfile.isOpen())
+    {
+      if (outputfile.size() == 0)
+        {
+          deleteactualFile();
+        }
+      else
+        {
+          outputfile.close();
+        }
+    }
 
     /* open existing file and append new data */
     outputfile.setFileName(fileName);
@@ -526,12 +569,19 @@ void MainWindow::openDltFile(QString fileName)
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         reloadLogFile();
+        ret = true;
     }
     else
+      {
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot open log file \"%1\"\n%2")
                               .arg(fileName)
                               .arg(outputfile.errorString()));
+        ret = false;
+
+      }
+
+    return ret;
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
@@ -1017,9 +1067,16 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     QString oldfn = outputfile.fileName();
 
     if(outputfile.isOpen())
-    {
-        outputfile.close();
-    }
+      {
+        if (outputfile.size() == 0)
+          {
+            deleteactualFile();
+          }
+        else
+          {
+          outputfile.close();
+          }
+      }
 
     outputfile.setFileName(fn);
 
@@ -3634,45 +3691,6 @@ void MainWindow::updateScrollButton()
         scrollbutton->setChecked(true);
 }
 
-void MainWindow::openRecentFile()
-{
-    QAction *action = qobject_cast<QAction *>(sender());
-    QString fileName;
-    if (action)
-    {
-        fileName = action->data().toString();
-
-        if(fileName.isEmpty())
-        {
-            removeCurrentFile(fileName);
-            return;
-        }
-
-        /* close existing file */
-        if(outputfile.isOpen())
-            outputfile.close();
-
-        /* open existing file and append new data */
-        outputfile.setFileName(fileName);
-        outputfileIsTemporary = false;
-        outputfileIsFromCLI = false;
-
-        setCurrentFile(fileName);
-
-        if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
-        {
-            reloadLogFile();
-        }
-        else
-        {
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                  QString("Cannot open log file \"%1\"\n%2")
-                                  .arg(fileName)
-                                  .arg(outputfile.errorString()));
-            removeCurrentFile(fileName);
-        }
-    }
-}
 
 void MainWindow::updateRecentFileActions()
 {
