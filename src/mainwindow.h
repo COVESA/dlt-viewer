@@ -25,6 +25,7 @@
 #include <QLabel>
 #include <QTimer>
 #include <QDir>
+#include <QShortcut>
 
 #include "tablemodel.h"
 #include "project.h"
@@ -84,6 +85,9 @@ private:
 
     /* Search */
     SearchDialog *searchDlg;
+    QShortcut *m_shortcut_searchnext;
+    QShortcut *m_shortcut_searchprev;
+
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settings;

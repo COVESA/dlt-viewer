@@ -215,6 +215,12 @@ MainWindow::MainWindow(QWidget *parent) :
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-next.png"), tr("Find Next"));
     connect(action, SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
 
+    /*adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active*/
+    m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);
+    connect(m_shortcut_searchnext, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonNext_clicked() ) );
+    m_shortcut_searchnext = new QShortcut(QKeySequence("F2"), this);
+    connect(m_shortcut_searchnext, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
+
 
     /* Apply loaded settings */
     applySettings();
@@ -328,6 +334,8 @@ MainWindow::~MainWindow()
     delete tableModel;
     delete searchDlg;
     delete dltIndexer;
+    delete m_shortcut_searchnext;
+    delete m_shortcut_searchprev;
 }
 
 void MainWindow::commandLineConvertToASCII(){
