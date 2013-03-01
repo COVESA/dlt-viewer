@@ -100,6 +100,17 @@ EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostna
 
     ui->checkBoxAutoReconnect->setCheckState(autoReconnect?Qt::Checked:Qt::Unchecked);
     ui->spinBoxAutoreconnect->setValue(autoReconnectTimeout);
+
+    if (ui->comboBoxInterface->currentIndex() == 0)
+      {
+      ui->tabWidget->setTabEnabled(1,true);
+      ui->tabWidget->setTabEnabled(2,false);
+      }
+    else
+      {
+        ui->tabWidget->setTabEnabled(2,true);
+        ui->tabWidget->setTabEnabled(1,false);
+      }
 }
 
 EcuDialog::~EcuDialog()
@@ -296,4 +307,19 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
 void EcuDialog::on_checkBoxAutoReconnect_toggled(bool checked)
 {
     ui->spinBoxAutoreconnect->setEnabled(checked);
+}
+
+void EcuDialog::on_comboBoxInterface_currentIndexChanged(int index)
+{
+  if (index == 0)
+    {
+      //we have tcp set -> disable serial, enable tcp
+      ui->tabWidget->setTabEnabled(1,true);
+      ui->tabWidget->setTabEnabled(2,false);
+    }
+  else
+    {
+      ui->tabWidget->setTabEnabled(2,true);
+      ui->tabWidget->setTabEnabled(1,false);
+    }
 }

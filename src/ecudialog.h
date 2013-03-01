@@ -68,6 +68,8 @@ protected:
 private slots:
     void on_checkBoxAutoReconnect_toggled(bool checked);
 
+    void on_comboBoxInterface_currentIndexChanged(int index);
+
 private:
     Ui::EcuDialog *ui;
 };
