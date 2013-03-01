@@ -59,6 +59,9 @@
      <property name="shortcut">
       <string>F3</string>
      </property>
+     <property name="default">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item row="2" column="2">
