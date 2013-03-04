@@ -80,11 +80,16 @@ public:
     QList<QLineEdit*> *lineEdits;
     QCheckBox *regexpCheckBox;
 
+private:
+    void updateColorbutton();
+    void focusRow(int searchLine);
 
 private slots:
     void on_lineEditText_textEdited(QString newText);
     void on_pushButtonPrevious_clicked();
     void on_pushButtonNext_clicked();
+    void on_pushButtonColor_clicked();
+
 public slots:
     void textEditedFromToolbar(QString newText);
     void findNextClicked();

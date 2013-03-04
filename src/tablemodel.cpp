@@ -22,12 +22,14 @@
 
 #include "tablemodel.h"
 #include "fieldnames.h"
+#include "dltsettingsmanager.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
  TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
+     lastSearchIndex = -1;
  }
 
  TableModel::~TableModel()
@@ -161,8 +163,14 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      }
 
      if ( role == Qt::ForegroundRole ) {
-         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
-         if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
+         int currentIdx = qfile->getMsgFilterPos(index.row());
+         qfile->getMsg(currentIdx, msg);
+
+         // Color the last search row
+         if(currentIdx == lastSearchIndex)
+         {
+             return QVariant(QBrush(optimalTextColor(searchBackgroundColor())));
+         } else if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
             return QVariant(QBrush(QColor(255,255,255)));
          } else {
             return QVariant(QBrush(QColor(0,0,0)));
@@ -170,7 +178,14 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      }
 
      if ( role == Qt::BackgroundRole ) {
-         qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg); // getMsg can be better optimized than the two single calls
+         int currentIdx = qfile->getMsgFilterPos(index.row());
+         qfile->getMsg(currentIdx, msg);
+
+         if(currentIdx == lastSearchIndex)
+         {
+             return QVariant(QBrush(searchBackgroundColor()));
+         }
+
          for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
          {
              PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
@@ -279,3 +294,30 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      QModelIndex lRight = index(qfile->sizeFilter()-1, columnCount() - 1);
      emit(layoutChanged());
  }
+
+
+QColor TableModel::optimalTextColor(QColor forColor) const
+{
+    int d = 0;
+
+    // Counting the perceptive luminance - human eye favors green color...
+    double a = 1 - ( 0.299 * forColor.redF() + 0.587 * forColor.green() + 0.114 * forColor.blue())/255;
+
+    if (a < 0.5)
+    {
+        d = 0; // bright colors - black font
+    }
+    else
+    {
+        d = 255; // dark colors - white font
+    }
+    return  QColor(d,d,d);
+}
+
+
+QColor TableModel::searchBackgroundColor() const
+{
+    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QColor hlColor(color);
+    return hlColor;
+}

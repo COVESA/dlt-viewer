@@ -20,6 +20,8 @@
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "mainwindow.h"
+#include "dltsettingsmanager.h"
+
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QProgressDialog>
@@ -37,6 +39,8 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
     lineEdits = new QList<QLineEdit*>();
     lineEdits->append(ui->lineEditText);
+
+    updateColorbutton();
 }
 
 SearchDialog::~SearchDialog()
@@ -90,6 +94,16 @@ void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
     }
 }
 
+void SearchDialog::focusRow(int searchLine)
+{
+    TableModel *model = qobject_cast<TableModel *>(table->model());
+    QModelIndex idx = model->index(searchLine, 0, QModelIndex());
+    table->scrollTo(idx, QAbstractItemView::EnsureVisible);
+    model->setLastSearchIndex(searchLine);
+    table->selectionModel()->clear();
+    model->modelChanged();
+}
+
 int SearchDialog::find()
 {
     QRegExp searchTextRegExp;
@@ -105,23 +119,19 @@ int SearchDialog::find()
 
     if(getMatch() || getSearchFromBeginning()==false){
         QModelIndexList list = table->selectionModel()->selection().indexes();
-        if(list.count()<=0)
+        if(list.count() > 0)
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("No message selected"));
-            setMatch(false);
-            return 0;
-        }
-
-        QModelIndex index;
-        for(int num=0; num < list.count();num++)
-        {
-            index = list[num];
-            if(index.column()==0)
+            QModelIndex index;
+            for(int num=0; num < list.count();num++)
             {
-                break;
+                index = list[num];
+                if(index.column()==0)
+                {
+                    break;
+                }
             }
+            setStartLine(index.row());
         }
-        setStartLine(index.row());
     }
 
     searchLine = getStartLine();
@@ -211,7 +221,7 @@ int SearchDialog::find()
             {
                 if(text.contains(searchTextRegExp))
                 {
-                    table->selectRow(searchLine);
+                    focusRow(searchLine);
                     setStartLine(searchLine);
                     setMatch(true);
                     break;
@@ -224,7 +234,7 @@ int SearchDialog::find()
                 if(text.contains(getText(),getCaseSensitive()? Qt::CaseSensitive : Qt::CaseInsensitive ))
                 {
 
-                    table->selectRow(searchLine);
+                    focusRow(searchLine);
                     setStartLine(searchLine);
                     setMatch(true);
                     break;
@@ -247,7 +257,7 @@ int SearchDialog::find()
             {
                 if(text.contains(searchTextRegExp))
                 {
-                    table->selectRow(searchLine);
+                    focusRow(searchLine);
                     setMatch(true);
                     setStartLine(searchLine);
                     break;
@@ -259,7 +269,7 @@ int SearchDialog::find()
             {
                 if(text.contains(getText(),getCaseSensitive()?Qt::CaseSensitive:Qt::CaseInsensitive))
                 {
-                    table->selectRow(searchLine);
+                    focusRow(searchLine);
                     setMatch(true);
                     setStartLine(searchLine);
                     break;
@@ -275,7 +285,7 @@ int SearchDialog::find()
     {
         return 1;
     }
-
+    setStartLine(0);
     return 0;
 }
 
@@ -326,3 +336,30 @@ void SearchDialog::textEditedFromToolbar(QString newText){
                 setSearchColour(lineEdits->at(i),1);
         }
 }
+
+void SearchDialog::on_pushButtonColor_clicked()
+{
+    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QColor oldColor(color);
+    QColor newColor = QColorDialog::getColor(oldColor, this, "Pick color for Search Highlight");
+    if(!newColor.isValid())
+    {
+        // User cancelled
+        return;
+    }
+
+    DltSettingsManager::getInstance()->setValue("other/searchResultColor", newColor.name());
+    updateColorbutton();
+}
+
+void SearchDialog::updateColorbutton()
+{
+    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QColor hlColor(color);
+    QPixmap px(12, 12);
+    px.fill(hlColor);
+    ui->pushButtonColor->setIcon(px);
+}
+
+
+

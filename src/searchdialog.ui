@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>163</height>
+    <height>184</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,30 +18,47 @@
     <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
+   <item row="6" column="2">
+    <widget class="QPushButton" name="pushButtonNext">
      <property name="text">
-      <string>Text to search:</string>
+      <string>Next  (F3)</string>
+     </property>
+     <property name="shortcut">
+      <string>F3</string>
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditText"/>
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Search in:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QCheckBox" name="checkBoxRegExp">
+     <property name="text">
+      <string>Regular Expression</string>
+     </property>
+    </widget>
    </item>
    <item row="5" column="0">
-    <widget class="QDialogButtonBox" name="buttonBox">
+    <widget class="QLabel" name="label_4">
      <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
+      <enum>Qt::RightToLeft</enum>
      </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+     <property name="text">
+      <string>Search options:</string>
      </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel</set>
+     <property name="default">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
+   <item row="6" column="1">
     <widget class="QPushButton" name="pushButtonPrevious">
      <property name="text">
       <string>Previous  (F2)</string>
@@ -51,20 +68,7 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="2">
-    <widget class="QPushButton" name="pushButtonNext">
-     <property name="text">
-      <string>Next  (F3)</string>
-     </property>
-     <property name="shortcut">
-      <string>F3</string>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
+   <item row="3" column="2">
     <widget class="QCheckBox" name="checkBoxPayload">
      <property name="text">
       <string>Payload</string>
@@ -74,24 +78,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QCheckBox" name="checkBoxHeader">
-     <property name="text">
-      <string>Header</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="2">
-    <widget class="QCheckBox" name="checkBoxRegExp">
-     <property name="text">
-      <string>Regular Expression</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="1">
+   <item row="5" column="1">
     <widget class="QCheckBox" name="checkBoxCaseSensitive">
      <property name="text">
       <string>Case Sensitive</string>
@@ -101,13 +88,13 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
+   <item row="3" column="1">
+    <widget class="QCheckBox" name="checkBoxHeader">
      <property name="text">
-      <string>Search in:</string>
+      <string>Header</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -150,13 +137,58 @@
      </layout>
     </widget>
    </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_4">
+   <item row="6" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
      <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
+      <enum>Qt::LeftToRight</enum>
+     </property>
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel</set>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Text to search:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEditText"/>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Highlight color:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="pushButtonColor">
+     <property name="minimumSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
      </property>
      <property name="text">
-      <string>Search options:</string>
+      <string/>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>12</width>
+       <height>12</height>
+      </size>
      </property>
     </widget>
    </item>
