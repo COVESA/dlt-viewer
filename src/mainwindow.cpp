@@ -182,11 +182,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->mainToolBar->addSeparator();
 
-    scrollbutton = new QPushButton(QIcon(":/toolbar/png/go-bottom.png"),tr(""),this);
-    scrollbutton->setFlat(true);
+    scrollbutton = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-bottom.png"), tr("Auto Scroll"));
     scrollbutton->setCheckable(true);
-    scrollbutton->setToolTip(tr("Auto Scroll"));
-    action = ui->mainToolBar->addWidget(scrollbutton);
     connect(scrollbutton, SIGNAL(toggled(bool)), this, SLOT(autoscrollToggled(bool)));
     updateScrollButton();
 
@@ -195,11 +192,8 @@ MainWindow::MainWindow(QWidget *parent) :
     action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/system-search.png"), tr("Find"));
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuSearch_Find_triggered()));
 
-    regexpButton = new QPushButton(QIcon(":/toolbar/png/action-regexp.png"), tr(""), this);
-    regexpButton->setFlat(true);
+    regexpButton = ui->mainToolBar->addAction(QIcon(":/toolbar/png/action-regexp.png"), tr("Enable Regular Expressions for Find"));
     regexpButton->setCheckable(true);
-    regexpButton->setToolTip(tr("Enable Regular Expressions for Find"));
-    action = ui->mainToolBar->addWidget(regexpButton);
 
     /* Connect togglebutton to search dialog checkbox, and vice versa. */
     connect(regexpButton, SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));

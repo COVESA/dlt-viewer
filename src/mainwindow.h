@@ -99,9 +99,9 @@ private:
     QString injectionServiceId;
     QString injectionData;
 
-    /* Toggle button */
-    QPushButton *scrollbutton;
-    QPushButton *regexpButton;
+    /* Toggle buttons */
+    QAction *scrollbutton;
+    QAction *regexpButton;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
