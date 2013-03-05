@@ -32,7 +32,23 @@ Create SDK (Windows)
 * Check the directories set in build_sdk_windows.bat batch file are correct.
 * Execute build_sdk_windows.bat batch file
 
-The SDK will be installed to c:\DltViewerSDK
+The SDK will be installed to C:\DltViewerSDK\
+
+Create Installer (Windows)
+--------------------
+
+For distribution as a package execute the build_windows_installer.bat batch file. 
+Before, make sure that all required plugins are located in the subfolder. 
+
+Rewuirements:
+* Nullsoft Scriptable Installer System is installed
+  It can be downloaded from http://nsis.sourceforge.net
+* Documentation file (e.g. DLT Viewer User Manual.pdf) is copied into C:\DltViewerSDK\doc\ 
+  If no file exists in the doc subdirectory, the build fails!  
+* Run by executing the batch file build_windows_installer.bat
+
+The installer will be copied to c:\DltViewerSDK\installer
+
 
 Create SDK (Linux)
 ------------------
