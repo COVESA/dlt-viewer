@@ -1219,6 +1219,8 @@ void MainWindow::reloadLogFile()
     QList<PluginItem*> activeViewerPlugins;
     QList<PluginItem*> activeDecoderPlugins;
 
+    ui->tableView->selectionModel()->clear();
+
     qfile.open(outputfile.fileName());
 
     /* Create the main index */
@@ -1261,7 +1263,6 @@ void MainWindow::reloadLogFile()
         dltIndexer->unlock();
     }
 
-    ui->tableView->selectionModel()->clear();
     tableModel->modelChanged();
 
     /* set name of opened log file in status bar */
@@ -4861,6 +4862,17 @@ void MainWindow::on_filterButton_clicked(bool checked)
 
     filterUpdate();
 
+    /* Store old selections */
+    QModelIndex scrollToTarget = tableModel->index(0, 0);
+    QModelIndexList rows = ui->tableView->selectionModel()->selectedRows();
+    QList<int> rowIndices;
+    for(int i=0;i<rows.count();i++)
+    {
+        int sr = rows.at(i).row();
+        rowIndices.append(qfile.getMsgFilterPos(sr));
+    }
+    ui->tableView->selectionModel()->clear();
+
     /* enable/disable filter */
     qfile.enableFilter(checked);
     qfile.clearFilterIndex();
@@ -4934,14 +4946,31 @@ void MainWindow::on_filterButton_clicked(bool checked)
         }
     }
     else
-    {
+    {        
         ui->filterButton->setText("Filters disabled");
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-overcast.png"));
         ui->filterStatus->setText("");
+
+        int firstSelection = 0;
+
+        /* Try to re-select old indices */
+        QItemSelection newSelection;
+        for(int j=0;j<rowIndices.count();j++)
+        {
+            if(j == 0)
+                firstSelection = rowIndices.at(j);
+            QModelIndex idx = tableModel->index(rowIndices.at(j), 0);
+            newSelection.select(idx, idx);
+        }
+        ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+        scrollToTarget = tableModel->index(firstSelection, 0);
     }
-    ui->tableView->selectionModel()->clear();
     tableModel->modelChanged();
     ui->tableView->unlock();
+
+    // Pump all pending events before trying to scroll
+    QApplication::processEvents();
+    ui->tableView->scrollTo(scrollToTarget, QTableView::PositionAtTop);
 }
 
 
