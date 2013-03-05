@@ -938,6 +938,15 @@ void MainWindow::on_action_menuFile_Export_CSV_triggered()
     dialog.setFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+
+
+
+
     QString fileName = dialog.selectedFiles()[0];
 
     if(fileName.isEmpty())
@@ -976,6 +985,17 @@ void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
     dialog.setFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+
+
+
+
+
+
     QString fileName = dialog.selectedFiles()[0];
 
     if(fileName.isEmpty())
@@ -1004,6 +1024,14 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     dialog.setFilters(filters);
     dialog.setWindowTitle("Save DLT Log file");
     dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+
+
+
     QString fileName = dialog.selectedFiles()[0];
 
     if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
@@ -1373,6 +1401,15 @@ void MainWindow::on_action_menuProject_Save_triggered()
     dialog.setFilters(filters);
     dialog.setWindowTitle("Save DLT Project file");
     dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+
+
+
+
     QString fileName = dialog.selectedFiles()[0];
 
 
