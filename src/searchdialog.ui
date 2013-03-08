@@ -53,9 +53,6 @@
      <property name="text">
       <string>Search options:</string>
      </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
     </widget>
    </item>
    <item row="6" column="1">
