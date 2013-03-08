@@ -143,7 +143,7 @@ void Form::on_saveButton_clicked(){
         QString infoText;
         QString detailedText;
         QMessageBox msgBox;
-        msgBox.setWindowTitle("Filtransfer Plugin");
+        msgBox.setWindowTitle("Filetransfer Plugin");
         bool errorOccured = false;
 
         while (*it) {
