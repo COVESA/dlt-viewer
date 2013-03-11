@@ -98,6 +98,12 @@ bool DltExporter::prepareCSVExport(QDltFile *from, QFile *to, QTreeWidget *plugi
         return false;
     }
 
+    /* Sort the selection list. */
+    if(selection != NULL)
+    {
+        qSort(selection->begin(), selection->end());
+    }
+
     /* Try to open the export file */
     if(!to->open(QIODevice::WriteOnly))
     {

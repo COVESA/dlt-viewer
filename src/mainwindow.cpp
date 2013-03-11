@@ -800,6 +800,8 @@ void MainWindow::on_action_menuFile_Export_Selection_ASCII_triggered()
 void MainWindow::exportSelection(bool ascii = true,bool file = false)
 {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+    qSort(list.begin(), list.end());
+
     QDltMsg msg;
     QByteArray data;
     QString textExport;
@@ -844,6 +846,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
         if(!outfile.open(QIODevice::WriteOnly))
             return;
     }
+
 
     QProgressDialog fileprogress("Export...", "Cancel", 0, list.count(), this);
     fileprogress.setWindowTitle("DLT Viewer");
