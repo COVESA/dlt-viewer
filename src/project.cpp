@@ -503,13 +503,19 @@ PluginItem::PluginItem(QTreeWidgetItem *parent)
     widget = 0;
     dockWidget = 0;
 
+    loader = 0;
+
     mode = ModeShow;
     type = 0;
 }
 
 PluginItem::~PluginItem()
 {
-
+    if(loader != NULL)
+    {
+        loader->unload();
+        delete loader;
+    }
 }
 
 void PluginItem::update()

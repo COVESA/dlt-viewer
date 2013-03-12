@@ -29,6 +29,8 @@
 #include <QObject>
 #include <QDateTime>
 #include <qextserialport.h>
+#include <QPluginLoader>
+
 #include "settingsdialog.h"
 
 extern "C"
@@ -258,6 +260,7 @@ public:
     QDltPluginCommandInterface *plugincommandinterface;
     QWidget *widget;
     MyPluginDockWidget *dockWidget;
+    QPluginLoader *loader;
 
 private:
     QString name;

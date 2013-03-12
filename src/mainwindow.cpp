@@ -324,6 +324,25 @@ MainWindow::~MainWindow()
     settings->setValue("work/workingDirectory",workingDirectory);
     DltSettingsManager::close();
 
+    /**
+     * All plugin dockwidgets must be removed from the layout manually and
+     * then deleted. This has to be done here, because they contain
+     * UI components owned by the plugins. The plugins will destroy their
+     * own UI components. If the dockwidget is not manually removed, the
+     * parent destructor of MainWindow will try to automatically delete
+     * the dockWidgets subcomponents, which are already destroyed
+     * when unloading plugins.
+     **/
+    for(int i=0;i<project.plugin->topLevelItemCount();i++)
+    {
+        PluginItem *item = (PluginItem *) project.plugin->topLevelItem(i);
+        if(item->dockWidget != NULL)
+        {
+            removeDockWidget(item->dockWidget);
+            delete item->dockWidget;
+        }
+    }
+
     delete ui;
     delete tableModel;
     delete searchDlg;
@@ -4139,8 +4158,8 @@ void MainWindow::loadPluginsPath(QDir dir)
     /* iterate through all plugins */
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
-        QPluginLoader pluginLoader(dir.absoluteFilePath(fileName));
-        QObject *plugin = pluginLoader.instance();
+        QPluginLoader *pluginLoader = new QPluginLoader(dir.absoluteFilePath(fileName));
+        QObject *plugin = pluginLoader->instance();
         if (plugin)
         {
             QDLTPluginInterface *plugininterface = qobject_cast<QDLTPluginInterface *>(plugin);
@@ -4149,6 +4168,7 @@ void MainWindow::loadPluginsPath(QDir dir)
                 if(QString::compare( plugininterface->pluginInterfaceVersion(),PLUGIN_INTERFACE_VERSION, Qt::CaseSensitive) == 0){
 
                     PluginItem* item = new PluginItem(0);
+                    item->loader = pluginLoader;
                     item->plugininterface = plugininterface;
                     item->setName(plugininterface->name());
                     item->setPluginVersion( plugininterface->pluginVersion() );
@@ -4204,7 +4224,7 @@ void MainWindow::loadPluginsPath(QDir dir)
             }
         }
         else {
-            QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
+            QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader->errorString()));
         }
     }
 }
