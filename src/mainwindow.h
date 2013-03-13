@@ -189,7 +189,7 @@ private:
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
-    QStringList getSerialPortsWithQextEnumartor();
+    QStringList getSerialPortsWithQextEnumerator();
 
     void processMsgAfterPluginmodeChange(PluginItem *item);
 

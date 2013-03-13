@@ -2024,15 +2024,15 @@ QDltSerialConnection::QDltSerialConnection()
     port = "";
     baudrate = 0;
 
-    serialport = 0;
+    m_qdltserialport = 0;
 }
 
 QDltSerialConnection::~QDltSerialConnection()
 {
-    if(serialport != NULL)
+    if(m_qdltserialport != NULL)
     {
-        delete serialport;
-        serialport = NULL;
+        delete m_qdltserialport;
+        m_qdltserialport = NULL;
     }
 }
 

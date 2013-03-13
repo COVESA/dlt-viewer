@@ -1424,7 +1424,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
     }
 }
 
-QStringList MainWindow::getSerialPortsWithQextEnumartor(){
+QStringList MainWindow::getSerialPortsWithQextEnumerator(){
 
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList portList;
@@ -1445,7 +1445,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     QStringList hostnameListPreset;
     hostnameListPreset << "localhost";
 
-    QStringList portListPreset = getSerialPortsWithQextEnumartor();
+    QStringList portListPreset = getSerialPortsWithQextEnumerator();
 
     /* show ECU configuration dialog */
     EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,
@@ -1498,7 +1498,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         QStringList hostnameListPreset;
         hostnameListPreset << "localhost";
 
-        QStringList portListPreset = getSerialPortsWithQextEnumartor();
+        QStringList portListPreset = getSerialPortsWithQextEnumerator();
 
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
@@ -1512,6 +1512,8 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         recentPorts = DltSettingsManager::getInstance()->value("other/recentPortList",portListPreset).toStringList();
 
         setCurrentHostname(ecuitem->getHostname());
+
+        //serial Port
         setCurrentPort(ecuitem->getPort());
 
         dlg.setHostnameList(recentHostnames);
@@ -2177,7 +2179,7 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
         else
         {
             /* Serial */
-            ecuitem->serialport->close();
+            ecuitem->m_serialport->close();
         }
 
         ecuitem->InvalidAll();
@@ -2252,24 +2254,39 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         else
         {
             /* Serial */
-            if(!ecuitem->serialport)
-            {
+
+            if(!ecuitem->m_serialport)
+              {
                 PortSettings settings = {ecuitem->getBaudrate(), DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
+                ecuitem->m_serialport = new QextSerialPort(ecuitem->getPort(),settings);
+                connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
+                connect(ecuitem->m_serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
 
-                ecuitem->serialport = new QextSerialPort(ecuitem->getPort(),settings);
-                connect(ecuitem->serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
-                connect(ecuitem->serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
+              }
+            else{
+
+              //to keep things consistent: delete old member, create new one
+              //alternatively we could just close the port, and set the new settings.
+              ecuitem->m_serialport->close();
+              //delete(ecuitem->m_serialport);
+              ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate());
+              //ecuitem->m_serialport->setDataBits(settings.DataBits);
+              //ecuitem->m_serialport->setFlowControl(settings.FlowControl);
+              //ecuitem->m_serialport->setStopBits(settings.StopBits);
+              //ecuitem->m_serialport->setParity(settings.Parity);
+              //ecuitem->m_serialport->setTimeout(settings.Timeout_Millisec);
+              ecuitem->m_serialport->setPortName(ecuitem->getPort());
             }
 
-            if(ecuitem->serialport->isOpen())
+            if(ecuitem->m_serialport->isOpen())
             {
-                ecuitem->serialport->close();
-                ecuitem->serialport->setBaudRate(ecuitem->getBaudrate());
+                ecuitem->m_serialport->close();
+                ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate());
             }
 
-            ecuitem->serialport->open(QIODevice::ReadWrite);
+            ecuitem->m_serialport->open(QIODevice::ReadWrite);
 
-            if(ecuitem->serialport->isOpen())
+            if(ecuitem->m_serialport->isOpen())
             {
                 ecuitem->connected = true;
                 ecuitem->update();
@@ -2410,7 +2427,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( (&(ecuitem->socket) == sender()) || (ecuitem->serialport == sender()))
+            if( (&(ecuitem->socket) == sender()) || (ecuitem->m_serialport == sender()))
             {
                 read(ecuitem);
             }
@@ -2439,11 +2456,11 @@ void MainWindow::read(EcuItem* ecuitem)
         bytesRcvd = data.size();
         ecuitem->tcpcon.add(data);
      }
-    else if(ecuitem->serialport)
+    else if(ecuitem->m_serialport)
     {
         /* serial */
-        bytesRcvd = ecuitem->serialport->bytesAvailable();
-        data = ecuitem->serialport->readAll();
+        bytesRcvd = ecuitem->m_serialport->bytesAvailable();
+        data = ecuitem->m_serialport->readAll();
         bytesRcvd = data.size();
         ecuitem->serialcon.add(data);
     }
@@ -2509,7 +2526,7 @@ void MainWindow::read(EcuItem* ecuitem)
             totalSyncFoundRcvd+=ecuitem->tcpcon.syncFound;
             ecuitem->tcpcon.syncFound = 0;
          }
-        else if(ecuitem->serialport)
+        else if(ecuitem->m_serialport)
         {
             /* serial */
             totalByteErrorsRcvd+=ecuitem->serialcon.bytesError;
@@ -2886,15 +2903,15 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         ecuitem->socket.write((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
         ecuitem->socket.write((const char*)msg.databuffer,msg.datasize);
     }
-    else if (ecuitem->interfacetype == 1 && ecuitem->serialport && ecuitem->serialport->isOpen())
+    else if (ecuitem->interfacetype == 1 && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
     {
         /* Optional: Send serial header, if requested */
         if (ecuitem->getSendSerialHeaderSerial())
-            ecuitem->serialport->write((const char*)dltSerialHeader,sizeof(dltSerialHeader));
+            ecuitem->m_serialport->write((const char*)dltSerialHeader,sizeof(dltSerialHeader));
 
         /* Send data */
-        ecuitem->serialport->write((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
-        ecuitem->serialport->write((const char*)msg.databuffer,msg.datasize);
+        ecuitem->m_serialport->write((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
+        ecuitem->m_serialport->write((const char*)msg.databuffer,msg.datasize);
     }
     else
     {
@@ -3981,7 +3998,7 @@ void MainWindow::stateChangedSerial(bool dsrChanged){
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( ecuitem->serialport == sender())
+        if( ecuitem->m_serialport == sender())
         {
             /* update ECU item */
             ecuitem->update();

@@ -49,7 +49,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     baudrate = BAUD115200; /* default 115200 */
     sendSerialHeaderSerial = true;
 
-    serialport = 0;
+    m_serialport = 0;
 
     tcpport = DLT_DAEMON_TCP_PORT;
 

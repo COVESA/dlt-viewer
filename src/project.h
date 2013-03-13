@@ -71,7 +71,7 @@ public:
     /* connection */
     QTcpSocket socket;
 
-    QextSerialPort *serialport;
+    QextSerialPort *m_serialport;
 
     /* connection status */
     int tryToConnect;

@@ -170,7 +170,7 @@ public:
 
     //! Get the byte data of the parameter.    
     /*!
-      The endianess of the parameter is as set in teh endianess parameter.
+      The endianess of the parameter is as set in the endianess parameter.
       \return The complete data of the parameter as byte array.
     */
     QByteArray getData();
@@ -1074,7 +1074,7 @@ private:
     QString port;
     int baudrate;
 
-    QextSerialPort *serialport;
+    QextSerialPort *m_qdltserialport;
 
 };
 
