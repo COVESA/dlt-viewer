@@ -181,7 +181,7 @@ void Form::on_saveButton_clicked(){
     }
 }
 
-void Form::itemDoubleClicked ( QTreeWidgetItem * item, int column ){
+void Form::itemDoubleClicked ( QTreeWidgetItem * item, int){
 
     File *tmp = dynamic_cast<File*>(item);
     if (tmp != NULL && tmp->isComplete())

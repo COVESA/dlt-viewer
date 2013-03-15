@@ -131,12 +131,12 @@ QWidget* FiletransferPlugin::initViewer() {
     return form;
 }
 
-void FiletransferPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
-
+void FiletransferPlugin::selectedIdxMsg(int , QDltMsg &) {
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void FiletransferPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
-
+void FiletransferPlugin::selectedIdxMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::initFileStart(QDltFile *file){
@@ -150,16 +150,16 @@ void FiletransferPlugin::initMsg(int index, QDltMsg &msg){
     updateFiletransfer(index,msg);
 }
 
-void FiletransferPlugin::initMsgDecoded(int index, QDltMsg &msg){
-
+void FiletransferPlugin::initMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::initFileFinish(){
-
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::updateFileStart(){
-
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::updateMsg(int index, QDltMsg &msg){
@@ -167,8 +167,8 @@ void FiletransferPlugin::updateMsg(int index, QDltMsg &msg){
 
 }
 
-void FiletransferPlugin::updateMsgDecoded(int index, QDltMsg &msg){
-
+void FiletransferPlugin::updateMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::updateFileFinish(){
@@ -322,7 +322,7 @@ void FiletransferPlugin::doFLFI(QDltMsg *msg){
 }
 
 void FiletransferPlugin::doFLIF(QDltMsg *msg){
-
+//empty. Why? tbd. We should remove this function and the caller.
 }
 
 void FiletransferPlugin::doFLER(QDltMsg *msg){

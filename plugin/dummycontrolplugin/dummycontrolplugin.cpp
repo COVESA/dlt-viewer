@@ -92,12 +92,12 @@ bool DummyControlPlugin::initConnections(QStringList list)
     return false;
 }
 
-bool DummyControlPlugin::controlMsg(int index, QDltMsg &msg)
+bool DummyControlPlugin::controlMsg(int , QDltMsg &)
 {
     return false;
 }
 
-void DummyControlPlugin::updateCounters(int start,int end)
+void DummyControlPlugin::updateCounters(int ,int )
 {
 
 }
@@ -110,11 +110,11 @@ bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionS
 }
 
 
-void DummyControlPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+void DummyControlPlugin::selectedIdxMsg(int , QDltMsg &) {
 
 }
 
-void DummyControlPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+void DummyControlPlugin::selectedIdxMsgDecoded(int , QDltMsg &){
 
 }
 
@@ -122,10 +122,10 @@ void DummyControlPlugin::initFileStart(QDltFile *file){
     dltFile = file;
 }
 
-void DummyControlPlugin::initMsg(int index, QDltMsg &msg){
+void DummyControlPlugin::initMsg(int , QDltMsg &){
 
 }
-void DummyControlPlugin::initMsgDecoded(int index, QDltMsg &msg){
+void DummyControlPlugin::initMsgDecoded(int , QDltMsg &){
 
 }
 
@@ -137,11 +137,11 @@ void DummyControlPlugin::updateFileStart(){
 
 }
 
-void DummyControlPlugin::updateMsg(int index, QDltMsg &msg){
+void DummyControlPlugin::updateMsg(int , QDltMsg &){
 
 }
 
-void DummyControlPlugin::updateMsgDecoded(int index, QDltMsg &msg){
+void DummyControlPlugin::updateMsgDecoded(int , QDltMsg &){
 
 }
 void DummyControlPlugin::updateFileFinish(){

@@ -268,7 +268,7 @@ void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
     }
 }
 
-void FilterDialog::on_lineEditApplicationId_textEdited(const QString &arg1)
+void FilterDialog::on_lineEditApplicationId_textEdited(const QString &)
 {
   if (ui->lineEditApplicationId->text().length())
     ui->checkBoxApplicationId->setCheckState(Qt::Checked);
@@ -276,7 +276,7 @@ void FilterDialog::on_lineEditApplicationId_textEdited(const QString &arg1)
     ui->checkBoxApplicationId->setCheckState(Qt::Unchecked);
 }
 
-void FilterDialog::on_lineEditEcuId_textEdited(const QString &arg1)
+void FilterDialog::on_lineEditEcuId_textEdited(const QString &)
 {
   if (ui->lineEditEcuId->text().length())
     ui->checkBoxEcuId->setCheckState(Qt::Checked);
@@ -284,7 +284,7 @@ void FilterDialog::on_lineEditEcuId_textEdited(const QString &arg1)
     ui->checkBoxEcuId->setCheckState(Qt::Unchecked);
 }
 
-void FilterDialog::on_lineEditContextId_textEdited(const QString &arg1)
+void FilterDialog::on_lineEditContextId_textEdited(const QString &)
 {
   if (ui->lineEditContextId->text().length())
     ui->checkBoxContextId->setCheckState(Qt::Checked);
@@ -292,7 +292,7 @@ void FilterDialog::on_lineEditContextId_textEdited(const QString &arg1)
     ui->checkBoxContextId->setCheckState(Qt::Unchecked);
 }
 
-void FilterDialog::on_lineEditHeaderText_textEdited(const QString &arg1)
+void FilterDialog::on_lineEditHeaderText_textEdited(const QString &)
 {
   if (ui->lineEditHeaderText->text().length())
     ui->checkBoxHeaderText->setCheckState(Qt::Checked);
@@ -300,7 +300,7 @@ void FilterDialog::on_lineEditHeaderText_textEdited(const QString &arg1)
     ui->checkBoxHeaderText->setCheckState(Qt::Unchecked);
 }
 
-void FilterDialog::on_lineEditPayloadText_textEdited(const QString &arg1)
+void FilterDialog::on_lineEditPayloadText_textEdited(const QString &)
 {
   if (ui->lineEditPayloadText->text().length())
     ui->checkBoxPayloadText->setCheckState(Qt::Checked);
@@ -308,12 +308,12 @@ void FilterDialog::on_lineEditPayloadText_textEdited(const QString &arg1)
     ui->checkBoxPayloadText->setCheckState(Qt::Unchecked);
 }
 
-void FilterDialog::on_comboBoxLogLevelMax_currentIndexChanged(int index)
+void FilterDialog::on_comboBoxLogLevelMax_currentIndexChanged(int )
 {
     ui->checkBoxLogLevelMax->setCheckState(Qt::Checked);
 }
 
-void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int index)
+void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int )
 {
     ui->checkBoxLogLevelMin->setCheckState(Qt::Checked);
 }

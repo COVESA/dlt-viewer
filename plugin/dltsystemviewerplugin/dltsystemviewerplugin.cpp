@@ -76,12 +76,12 @@ QWidget* DltSystemViewerPlugin::initViewer()
 }
 
 
-void DltSystemViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
-
+void DltSystemViewerPlugin::selectedIdxMsg(int , QDltMsg &) {
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void DltSystemViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
-
+void DltSystemViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void DltSystemViewerPlugin::initFileStart(QDltFile *file){
@@ -99,8 +99,8 @@ void DltSystemViewerPlugin::initMsg(int index, QDltMsg &msg){
     updateProcesses(index, msg);
 
 }
-void DltSystemViewerPlugin::initMsgDecoded(int index, QDltMsg &msg){
-
+void DltSystemViewerPlugin::initMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void DltSystemViewerPlugin::initFileFinish(){
@@ -121,8 +121,8 @@ void DltSystemViewerPlugin::updateMsg(int index, QDltMsg &msg){
 
 }
 
-void DltSystemViewerPlugin::updateMsgDecoded(int index, QDltMsg &msg){
-
+void DltSystemViewerPlugin::updateMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 void DltSystemViewerPlugin::updateFileFinish(){
 
@@ -130,7 +130,7 @@ void DltSystemViewerPlugin::updateFileFinish(){
 }
 
 
-void DltSystemViewerPlugin::updateProcesses(int index, QDltMsg &msg)
+void DltSystemViewerPlugin::updateProcesses(int , QDltMsg &msg)
 {
     QStringList datalist;
     QDltArgument arg;

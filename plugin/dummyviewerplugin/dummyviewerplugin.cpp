@@ -76,7 +76,7 @@ QWidget* DummyViewerPlugin::initViewer()
 }
 
 
-void DummyViewerPlugin::updateCounters(int index, QDltMsg &msg)
+void DummyViewerPlugin::updateCounters(int , QDltMsg &msg)
 {
     if(!dltFile)
         return;
@@ -103,7 +103,7 @@ void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     form->setSelectedMessage(index);
 }
 
-void DummyViewerPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg){
+void DummyViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
 
     qDebug() << "decoded: " << msg.toStringPayload();
 
@@ -126,8 +126,8 @@ void DummyViewerPlugin::initMsg(int index, QDltMsg &msg){
     updateCounters(index, msg);
 }
 
-void DummyViewerPlugin::initMsgDecoded(int index, QDltMsg &msg){
-
+void DummyViewerPlugin::initMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void DummyViewerPlugin::initFileFinish(){
@@ -149,8 +149,8 @@ void DummyViewerPlugin::updateMsg(int index, QDltMsg &msg){
         counterMessages = dltFile->size();
 }
 
-void DummyViewerPlugin::updateMsgDecoded(int index, QDltMsg &msg){
-
+void DummyViewerPlugin::updateMsgDecoded(int , QDltMsg &){
+//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void DummyViewerPlugin::updateFileFinish(){
