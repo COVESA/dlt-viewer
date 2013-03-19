@@ -1251,7 +1251,8 @@ void MainWindow::reloadLogFile()
     if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
     {
         qDebug() << "No plugins active";
-        /* We don't have any plugins, create the filter index here. */
+        /* We don't have any plugins, create the filter index here.
+         * Please note, that index is locked inside this function */
         on_filterButton_clicked(ui->filterButton->isChecked());
     }
     else
@@ -4875,6 +4876,7 @@ void MainWindow::filterUpdate() {
 
 void MainWindow::on_filterButton_clicked(bool checked)
 {
+    dltIndexer->lock();
     ui->tableView->lock();
 
     filterUpdate();
@@ -4984,6 +4986,7 @@ void MainWindow::on_filterButton_clicked(bool checked)
     }
     tableModel->modelChanged();
     ui->tableView->unlock();
+    dltIndexer->unlock();
 
     // Pump all pending events before trying to scroll
     QApplication::processEvents();
