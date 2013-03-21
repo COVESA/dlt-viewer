@@ -4,11 +4,12 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.9.0 ALPHA
+Version 2.9.0 STABLE
 
 Known issues
 ------------
-
+  * Changing of serial interface does not work after creation. Workaround: Create a new ECU entry.
+  
 Changes
 -------
 2.9.0
