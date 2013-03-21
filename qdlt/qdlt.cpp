@@ -22,8 +22,6 @@
 #include <QTextStream>
 #include <QFile>
 #include <QtDebug>
-#include <QThread>
-#include <QtConcurrentRun>
 
 #include <qextserialport.h>
 #include <QTcpSocket>

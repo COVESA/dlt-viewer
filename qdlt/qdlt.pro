@@ -13,7 +13,7 @@ INSTALLS += headers
 target.path = /usr/lib
 INSTALLS += target
 
-CONFIG                 += warn_on qt thread
+CONFIG                 += warn_on qt
 #QT                     -= gui network
 QT                     += network
 QT                     += gui
