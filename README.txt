@@ -34,14 +34,14 @@ See INSTALL.txt regarding doxygen API documentation generation.
 Software/Hardware
 -----------------
 
-* Developped with: QT 4.8.1 (http://qt-project.org/)
+* Developped with: QT 4.8.2 (http://qt-project.org/)
 * Ubuntu Linux 12.10 Qt SDK v1.2.1 32-bit / Intel PC
 * MS Windows XP / Intel PC
 
 Dynamically linked open source software
 ---------------------------------------
 
-* Qt 4.8.1 (LGPL - Qt SDK version 1.2)
+* Qt 4.8.2 (LGPL - Qt SDK version 1.2)
 * GCC (GPL)
 * qextserialport (MIT License - Version 1.2 BETA)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
