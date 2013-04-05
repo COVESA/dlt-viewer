@@ -21,6 +21,7 @@
 #define PLUGINDIALOG_H
 
 #include <QDialog>
+#include "workingdirectory.h"
 
 namespace Ui {
     class PluginDialog;
@@ -35,7 +36,7 @@ public:
     explicit PluginDialog(QWidget *parent = 0);
     ~PluginDialog();
 
-    QString workingDirectory;
+    WorkingDirectory workingDirectory;
 
     void setName(QString name);
     void setPluginVersion(QString version);

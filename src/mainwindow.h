@@ -36,6 +36,7 @@
 #include "dltsettingsmanager.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
+#include "workingdirectory.h"
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -72,7 +73,7 @@ private:
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
     TableModel *tableModel;
-    QString workingDirectory;
+    WorkingDirectory workingDirectory;
 
     /* Status line items */
     QLabel *statusFilename;

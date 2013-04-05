@@ -65,7 +65,6 @@ MainWindow::MainWindow(QWidget *parent) :
     recentFiles = settings->getRecentFiles();
     recentProjects = settings->getRecentProjects();
     recentFilters = settings->getRecentFilters();
-    workingDirectory = settings->getWorkingDirectory();
 
     /* Initialize recent files */
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -318,12 +317,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
-
-    /* store last working directory */
-    settings->setValue("work/workingDirectory",workingDirectory);
     DltSettingsManager::close();
-
     /**
      * All plugin dockwidgets must be removed from the layout manually and
      * then deleted. This has to be done here, because they contain
@@ -483,15 +477,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::on_action_menuFile_New_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("New DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+        tr("New DLT Log file"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
     {
         return;
     }
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     /* close existing file */
     if(outputfile.isOpen())
@@ -523,13 +517,13 @@ void MainWindow::on_action_menuFile_New_triggered()
 void MainWindow::on_action_menuFile_Open_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open DLT Log file"), workingDirectory, tr("DLT Files (*.dlt);;All files (*.*)"));
+        tr("Open DLT Log file"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     openDltFile(fileName);
     outputfileIsFromCLI = false;
@@ -554,6 +548,7 @@ void MainWindow::openRecentFile()
             removeCurrentFile(fileName);
             return;
         }
+        workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
          /* open existing file and append new data */
         if (true == openDltFile(fileName))
@@ -608,13 +603,13 @@ bool MainWindow::openDltFile(QString fileName)
 void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Import DLT Stream"), workingDirectory, tr("DLT Stream file (*.*)"));
+        tr("Import DLT Stream"), workingDirectory.getDltDirectory(), tr("DLT Stream file (*.*)"));
 
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     if(!outputfile.isOpen())
         return;
@@ -652,13 +647,13 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Import DLT Stream with serial header"), workingDirectory, tr("DLT Stream file (*.*)"));
+        tr("Import DLT Stream with serial header"), workingDirectory.getDltDirectory(), tr("DLT Stream file (*.*)"));
 
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     if(!outputfile.isOpen())
         return;
@@ -695,13 +690,13 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
 void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Append DLT File"), workingDirectory, tr("DLT File (*.dlt)"));
+        tr("Append DLT File"), workingDirectory.getDltDirectory(), tr("DLT File (*.dlt)"));
 
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     if(!outputfile.isOpen())
         return;
@@ -763,13 +758,13 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
     QByteArray data;
     QString text;
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Export to ASCII"), workingDirectory, tr("ASCII Files (*.txt);;All files (*.*)"));
+        tr("Export to ASCII"), workingDirectory.getExportDirectory(), tr("ASCII Files (*.txt);;All files (*.*)"));
 
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change last export directory */
+    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
 
     QFile outfile(fileName);
     if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -840,12 +835,12 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
         if(ascii)
         {
             fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Export Selection"), workingDirectory, tr("Text Files (*.txt)"));
+                tr("Export Selection"), workingDirectory.getExportDirectory(), tr("Text Files (*.txt)"));
         }
         else
         {
             fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Export Selection"), workingDirectory, tr("DLT Files (*.dlt)"));
+                tr("Export Selection"), workingDirectory.getExportDirectory(), tr("DLT Files (*.dlt)"));
         }
         if(fileName.isEmpty())
         {
@@ -853,8 +848,8 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
         }
         else
         {
-            /* change current working directory */
-            workingDirectory = QFileInfo(fileName).absolutePath();
+            /* change last export directory */
+            workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
         }
     }
 
@@ -950,7 +945,7 @@ void MainWindow::on_action_menuFile_Export_CSV_triggered()
     filters << "CSV Files (*.csv)" <<"All files (*.*)";
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("csv");
-    dialog.setDirectory(workingDirectory);
+    dialog.setDirectory(workingDirectory.getExportDirectory());
     dialog.setFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
@@ -968,8 +963,8 @@ void MainWindow::on_action_menuFile_Export_CSV_triggered()
     if(fileName.isEmpty())
         return;
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change last export directory */
+    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
     DltExporter exporter(this);
     QFile outfile(fileName);
     exporter.exportCSV(&qfile, &outfile, project.plugin);
@@ -997,7 +992,7 @@ void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
     filters << "CSV Files (*.csv)" <<"All files (*.*)";
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("csv");
-    dialog.setDirectory(workingDirectory);
+    dialog.setDirectory(workingDirectory.getExportDirectory());
     dialog.setFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
@@ -1019,8 +1014,8 @@ void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
         return;
     }
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change last export directory */
+    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
 
     QFile outfile(fileName);
     DltExporter exporter(this);
@@ -1036,7 +1031,7 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     filters << "DLT Files (*.dlt)" <<"All files (*.*)";
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("dlt");
-    dialog.setDirectory(workingDirectory);
+    dialog.setDirectory(workingDirectory.getDltDirectory());
     dialog.setFilters(filters);
     dialog.setWindowTitle("Save DLT Log file");
     dialog.exec();
@@ -1063,8 +1058,8 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
         return;
     }
 
-    /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
     qfile.close();
     outputfile.close();
@@ -1323,14 +1318,12 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 {
     /* show settings dialog */
     settings->writeDlg();
-    settings->workingDirectory = workingDirectory;
 
     if(settings->exec()==1)
     {
         /* change settings and store settings persistently */
         settings->readDlg();
         settings->writeSettings(this);
-        workingDirectory = settings->workingDirectory;
 
         /* Apply settings to table */
         applySettings();
@@ -1366,13 +1359,13 @@ void MainWindow::on_action_menuProject_Open_triggered()
     /* TODO: Ask for saving project if changed */
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open DLT Project file"), workingDirectory, tr("DLT Project Files (*.dlp);;All files (*.*)"));
+        tr("Open DLT Project file"), workingDirectory.getDlpDirectory(), tr("DLT Project Files (*.dlp);;All files (*.*)"));
 
     /* open existing project */
     if(!fileName.isEmpty())
     {
-        /* change current working directory */
-        workingDirectory = QFileInfo(fileName).absolutePath();
+        /* change Project file working directory */
+        workingDirectory.setDlpDirectory(QFileInfo(fileName).absolutePath());
 
         openDlpFile(fileName);
     }
@@ -1415,7 +1408,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
     filters << "DLT Project Files (*.dlp)" <<"All files (*.*)";
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("dlp");
-    dialog.setDirectory(workingDirectory);
+    dialog.setDirectory(workingDirectory.getDlpDirectory());
     dialog.setFilters(filters);
     dialog.setWindowTitle("Save DLT Project file");
     dialog.exec();
@@ -1438,8 +1431,8 @@ void MainWindow::on_action_menuProject_Save_triggered()
     }
     else if( project.Save(fileName))
     {
-        /* change current working directory */
-        workingDirectory = QFileInfo(fileName).absolutePath();
+        /* change Project file working directory */
+        workingDirectory.setDlpDirectory(QFileInfo(fileName).absolutePath());
 
         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
@@ -2277,14 +2270,12 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         else
         {
             /* Serial */
-
             if(!ecuitem->m_serialport)
               {
                 PortSettings settings = {ecuitem->getBaudrate(), DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
                 ecuitem->m_serialport = new QextSerialPort(ecuitem->getPort(),settings);
                 connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
                 connect(ecuitem->m_serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
-
               }
             else{
 
@@ -3826,8 +3817,8 @@ void MainWindow::openRecentProject()
             applySettings();
             settings->writeSettings(this);
 
-            /* Change current working directory */
-            workingDirectory = QFileInfo(projectName).absolutePath();
+            /* Change Project file working directory */
+            workingDirectory.setDlpDirectory(QFileInfo(projectName).absolutePath());
 
             this->setWindowTitle(QString("DLT Viewer - "+projectName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
             /* Load the plugins description files after loading project */
@@ -3893,15 +3884,15 @@ void MainWindow::openRecentFilters()
 
         if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
         {
+            workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
+
             ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
             ui->filterStatus->setText("Filters changed. Please enable filtering.");
 
             ui->filterButton->setChecked(Qt::Unchecked);
             ui->filterButton->setText("Enable filters");
 
-            //filterUpdate();
             setCurrentFilters(fileName);
-            //reloadLogFile();
         }
     }
 }
@@ -4308,9 +4299,7 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         if(!item->pluginviewerinterface)
             dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->getType());
-        dlg.workingDirectory = workingDirectory;
         if(dlg.exec()) {
-            workingDirectory = dlg.workingDirectory;
             item->setFilename( dlg.getFilename() );
 
             if(item->getMode() == PluginItem::ModeDisable && dlg.getMode() != PluginItem::ModeDisable)
@@ -4622,10 +4611,11 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
 {
 
     QString fileName = QFileDialog::getSaveFileName(this,
-                                                    tr("Save DLT Filters"), workingDirectory, tr("DLT Filter File (*.dlf);;All files (*.*)"));
+        tr("Save DLT Filters"), workingDirectory.getDlfDirectory(), tr("DLT Filter File (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty())
     {
+        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         project.SaveFilter(fileName);
         setCurrentFilters(fileName);
     }
@@ -4635,10 +4625,12 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
 void MainWindow::on_action_menuFilter_Load_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
+        tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
     {
+        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
+
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
         ui->filterStatus->setText("Filters changed. Please enable filtering.");
 
@@ -5109,13 +5101,13 @@ void MainWindow::dropEvent(QDropEvent *event)
             openDltFile(filename);
             outputfileIsTemporary = false;
             outputfileIsFromCLI   = false;
-            workingDirectory = QFileInfo(filename).absolutePath();
+            workingDirectory.setDltDirectory(QFileInfo(filename).absolutePath());
         }
         else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
         {
             /* Project file dropped */
             openDlpFile(filename);
-            workingDirectory = QFileInfo(filename).absolutePath();
+            workingDirectory.setDlpDirectory(QFileInfo(filename).absolutePath());
         }
         else
         {
@@ -5207,10 +5199,12 @@ void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 void MainWindow::on_action_menuFilter_Append_Filters_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Load DLT Filter file"), workingDirectory, tr("DLT Filter Files (*.dlf);;All files (*.*)"));
+        tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
     if(!fileName.isEmpty() && project.LoadFilter(fileName,false))
     {
+        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
+
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
         ui->filterStatus->setText("Filters changed. Please enable filtering.");
 

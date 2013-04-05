@@ -34,6 +34,7 @@ PluginDialog::~PluginDialog() {
 
 void PluginDialog::setName(QString name) {
     ui->lineEditName->setText(name);
+
 }
 
 void PluginDialog::setPluginVersion(QString version){
@@ -73,14 +74,16 @@ QString PluginDialog::getFilename() {
 }
 
 void PluginDialog::on_toolButton_clicked() {
+    QString name = ui->lineEditName->text();
     QString fileName = QFileDialog::getOpenFileName(this,
-        QString("Open ")+ui->lineEditName->text()+QString(" configuration file"), workingDirectory, tr("Plugin configuration (*.*)"));
+        QString("Open ")+name+QString(" configuration file"),
+        workingDirectory.getPluginDirectory(name), tr("Plugin configuration (*.*)"));
 
     if(fileName.isEmpty())
         return;
 
     /* change current working directory */
-    workingDirectory = QFileInfo(fileName).absolutePath();
+    workingDirectory.setPluginDirectory(name, QFileInfo(fileName).absolutePath());
 
     ui->lineEditFilename->setText(fileName);
 }
