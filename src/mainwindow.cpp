@@ -3663,6 +3663,7 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString("Options:\n")+
                              QString(" -h \t\tPrint usage\n")+
                          #endif
+                             QString(" -s or --silent \t\tEnable silent mode without warning message boxes\n")+
                              QString(" -p projectfile \t\tLoading project file on startup (must end with .dlp)\n")+
                              QString(" -l logfile \t\tLoading logfile on startup (must end with .dlt)\n")+
                              QString(" -f filterfile \t\tLoading filterfile on startup (must end with .dlf)\n")+
@@ -4254,7 +4255,25 @@ void MainWindow::updatePlugins() {
 void MainWindow::updatePlugin(PluginItem *item) {
     item->takeChildren();
 
-    item->plugininterface->loadConfig(item->getFilename());
+    bool ret = item->plugininterface->loadConfig(item->getFilename());
+    if ( false == ret )
+      {
+        if (item->getMode() != PluginItem::ModeDisable)
+          {
+            QString err_header = "Plugin: ";
+            err_header.append(item->plugininterface->name());
+            err_header.append(" returned error: ");
+            QString err_text = item->plugininterface->error();
+            if (OptManager::getInstance()->issilentMode())
+              {
+                qDebug()<<err_header << "\n"<<err_text;
+              }
+            else
+              {
+                QMessageBox::warning(0, err_header,err_text);
+              }
+          }
+      }
 
     /*    if(item->plugincontrolinterface)
         item->plugincontrolinterface->initControl(&qcontrol);

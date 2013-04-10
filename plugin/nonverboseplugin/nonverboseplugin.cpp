@@ -49,19 +49,24 @@ QString NonverbosePlugin::description()
 
 QString NonverbosePlugin::error()
 {
-    return QString();
+    return m_error_string;
 }
 
 bool NonverbosePlugin::loadConfig(QString filename)
 {
-    /* remove all stored items */
+
+   bool ret = true;
+  /* remove all stored items */
+    m_error_string ="";
     foreach(DltFibexPdu *pdu, pdumap)
         delete pdu;
-    pdumap.clear();
+    pdumap.clear();    
 
     foreach(DltFibexFrame *frame, framemap)
         delete frame;
     framemap.clear();
+
+
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -70,6 +75,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
     }
 
     QString warning_text;
+
     DltFibexPdu *pdu = 0;
     DltFibexFrame *frame = 0;
 
@@ -369,8 +375,8 @@ bool NonverbosePlugin::loadConfig(QString filename)
 
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
-        QMessageBox::warning(0, QString("Duplicated FRAMES ignored:"),
-                              warning_text);
+        m_error_string.append("Duplicated FRAMES ignored: \n").append(warning_text);
+        ret = false;
     }
 
     /* create PDU Ref links */
@@ -389,7 +395,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
         }
     }
 
-    return true;
+    return ret;
 }
 
 bool NonverbosePlugin::saveConfig(QString /*filename*/)

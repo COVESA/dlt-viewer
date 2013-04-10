@@ -59,7 +59,9 @@ bool FiletransferPlugin::loadConfig(QString filename) {
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-             return false;
+        errorText = "Can not load configuration File: ";
+        errorText.append(filename);
+        return false;
     }
 
     QXmlStreamReader xml(&file);

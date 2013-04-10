@@ -91,8 +91,12 @@ public:
     bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
     /* Faster lookup */
+    //is it necessary that this is public?
     QHash<QString, DltFibexPdu *> pdumap;
     QHash<QString, DltFibexFrame *> framemap;
+
+private:
+    QString m_error_string;
 };
 
 #endif // NONVERBOSEPLUGIN_H

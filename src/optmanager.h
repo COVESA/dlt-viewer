@@ -34,6 +34,7 @@ public:
     bool isFilterFile();
     bool isConvert();
     bool isPlugin();
+    bool issilentMode();
 
     QString getProjectFile();
     QString getLogFile();
@@ -54,6 +55,7 @@ private:
     bool filter;
     bool convert;
     bool plugin;
+    bool silent_mode;
     QString projectFile;
     QString logFile;
     QString filterFile;

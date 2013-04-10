@@ -29,6 +29,7 @@ OptManager::OptManager()
     convert = false;
     filter = false;
     plugin = false;
+    silent_mode = false;
 }
 
 OptManager* OptManager::getInstance()
@@ -57,6 +58,7 @@ void OptManager::OptManager::printUsage(){
     qDebug()<<" -f filterfile \tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.";
+    qDebug()<<" -s or --silent \tEnable silent mode without warning message boxes.";
 
     // Please copy changes to mainwindow.cpp - on_actionCommand_Line_triggered()
 }
@@ -70,95 +72,101 @@ void OptManager::parse(QStringList *opt){
         if(opt->at(1).endsWith(".dlp")){
             projectFile = QString("%1").arg(opt->at(1));
             project = true;
+            return;
         }
         if(opt->at(1).endsWith(".dlt")){
             logFile = QString("%1").arg(opt->at(1));
             log = true;
+            return;
         }
     }
-    else
-    {
-        // 0==Binary 1==First Argument
-        for (int i = 0; i < opt->size(); ++i){
-            str = opt->at(i);
 
-    //        qDebug() << QString(" [%1]").arg(str);
+    // 0==Binary 1==First Argument
+    for (int i = 0; i < opt->size(); ++i){
+        str = opt->at(i);
 
-            if(str.compare("-h") == 0 || str.compare("--help") == 0){
+        //        qDebug() << QString(" [%1]").arg(str);
+
+        if(str.compare("-h") == 0 || str.compare("--help") == 0){
+            printUsage();
+            exit(0);
+          }
+        if(str.compare("-s") == 0 || str.compare("--silent") == 0){
+            silent_mode = true;
+          }
+
+
+
+        if(str.compare("-p")==0) {
+            QString p1 = opt->value(i+1);
+
+            if(p1!=0 && p1.endsWith(".dlp")){
+                projectFile = QString("%1").arg(opt->at(i+1));
+                project = true;
+              }else{
+                qDebug()<<"Error occured during processing of command line option \"-p\"";
                 printUsage();
-                exit(0);
-            }
+                exit(-1);
+              }
+          }
+        if(str.compare("-l")==0) {
+            QString l1 = opt->value(i+1);
 
-            if(str.compare("-p")==0) {
-                QString p1 = opt->value(i+1);
+            if(l1!=0 && l1.endsWith(".dlt")){
+                logFile = QString("%1").arg(l1);
+                log = true;
+              }else{
+                qDebug()<<"Error occured during processing of command line option \"-l\"";
+                printUsage();
+                exit(-1);
+              }
+          }
+        if(str.compare("-f")==0) {
+            QString f1 = opt->value(i+1);
 
-                if(p1!=0 && p1.endsWith(".dlp")){
-                    projectFile = QString("%1").arg(opt->at(i+1));
-                    project = true;
-                }else{
-                    qDebug()<<"Error occured during processing of command line option \"-p\"";
-                    printUsage();
-                    exit(-1);
-                }
-            }
-            if(str.compare("-l")==0) {
-                QString l1 = opt->value(i+1);
+            if(f1!=0 && f1.endsWith(".dlf")){
+                filterFile = QString("%1").arg(f1);
+                filter = true;
+              }else{
+                qDebug()<<"Error occured during processing of command line option \"-f\"";
+                printUsage();
+                exit(-1);
+              }
+          }
+        if(str.compare("-c")==0) {
 
-                if(l1!=0 && l1.endsWith(".dlt")){
-                    logFile = QString("%1").arg(l1);
-                    log = true;
-                }else{
-                    qDebug()<<"Error occured during processing of command line option \"-l\"";
-                    printUsage();
-                    exit(-1);
-                }
-            }
-            if(str.compare("-f")==0) {
-                QString f1 = opt->value(i+1);
+            QString c1 = opt->value(i+1);
+            QString c2 = opt->value(i+2);
 
-                if(f1!=0 && f1.endsWith(".dlf")){
-                    filterFile = QString("%1").arg(f1);
-                    filter = true;
-                }else{
-                    qDebug()<<"Error occured during processing of command line option \"-f\"";
-                    printUsage();
-                    exit(-1);
-                }
-            }
-            if(str.compare("-c")==0) {
+            if(c1!=0 && c1.endsWith(".dlt") && c2!=0){
+                convertSourceFile = QString("%1").arg(c1);
+                convertDestFile = QString("%1").arg(c2);
+                convert = true;
+              }else{
+                qDebug()<<"Error occured during processing of command line option \"-c\"";
+                printUsage();
+                exit(-1);
+              }
+          }
+        if(str.compare("-e")==0) {
+            QString c = opt->value(i+1);
+            QStringList args = c.split("|");;
+            if(c != 0 && args.size() > 1) {
+                pluginName = args.at(0);
+                commandName = args.at(1);
+                args.removeAt(0);
+                args.removeAt(0);
+                commandParams = args;
+                plugin = true;
 
-                QString c1 = opt->value(i+1);
-                QString c2 = opt->value(i+2);
+              }else{
+                qDebug()<<"Error occured during processing of command line option \"-e\"";
+                printUsage();
+                exit(-1);
+              }
+          }
+      }
 
-                if(c1!=0 && c1.endsWith(".dlt") && c2!=0){
-                    convertSourceFile = QString("%1").arg(c1);
-                    convertDestFile = QString("%1").arg(c2);
-                    convert = true;
-                }else{
-                    qDebug()<<"Error occured during processing of command line option \"-c\"";
-                    printUsage();
-                    exit(-1);
-                }
-            }
-            if(str.compare("-e")==0) {
-                QString c = opt->value(i+1);
-                QStringList args = c.split("|");;
-                if(c != 0 && args.size() > 1) {
-                    pluginName = args.at(0);
-                    commandName = args.at(1);
-                    args.removeAt(0);
-                    args.removeAt(0);
-                    commandParams = args;
-                    plugin = true;
-
-                }else{
-                    qDebug()<<"Error occured during processing of command line option \"-e\"";
-                    printUsage();
-                    exit(-1);
-                }
-            }
-        }
-     }
 }
 
 bool OptManager::isProjectFile(){ return project;}
@@ -166,6 +174,7 @@ bool OptManager::isLogFile(){return log;}
 bool OptManager::isFilterFile(){return filter;}
 bool OptManager::isConvert(){return convert;}
 bool OptManager::isPlugin(){return plugin;}
+bool OptManager::issilentMode(){return silent_mode;}
 
 QString OptManager::getProjectFile(){return projectFile;}
 QString OptManager::getLogFile(){return logFile;}
