@@ -720,7 +720,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     while (dlt_file_read(&importfile,0)>=0)
     {
         num++;
-        if ((num%1000) == 0)
+        if ( 0 == (num%1000))
             progress.setValue(importfile.file_position*100/importfile.file_length);
         if (progress.wasCanceled())
         {
@@ -732,7 +732,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     /* read DLT messages and append to current output file */
     for(int pos = 0 ; pos<num ; pos++)
     {
-        if ((pos%1000) == 0)
+        if ( 0 == (pos%1000))
             progress.setValue(pos*100/num);
         if (progress.wasCanceled())
         {
@@ -778,7 +778,7 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
     const int qsz = qfile.sizeFilter();
     for(int num = 0;num< qsz;num++)
     {
-        if((num%(qsz/300+1))==0)
+        if( 0 == (num%1000))
             fileprogress.setValue(num);
 
         /* get message form log file */
@@ -869,7 +869,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     fileprogress.show();
     for(int num=0; num < list.count();num++)
     {
-        if((num%(list.count()/300+1))==0)
+        if(0 == num%1000)
             fileprogress.setValue(num);
 
         QModelIndex index = list[num];
@@ -1205,7 +1205,7 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
         }
 
         /* Update progress every 0.5% */
-        if((ix%((qfile.size()/200)+1))==0)
+        if( 0 == (ix%1000))
         {
             fileprogress.setValue(ix);
             fileprogress.setLabelText(
@@ -4404,8 +4404,8 @@ void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
             pitem->pluginviewerinterface->initMsgDecoded(ix, msg);
         }
 
-        /* Update progress every 0.5% */
-        if((ix%((qfile.size()/200)+1))==0)
+        /* Update progress every 1000 lines*/
+        if( 0 == (ix%1000))
         {
             pluginprogress.setValue(ix);
             pluginprogress.setLabelText(
@@ -4964,8 +4964,8 @@ void MainWindow::on_filterButton_clicked(bool checked)
             {
                 qfile.addFilterIndex(i);
             }
-            /* Update UI ever half a percent */
-            if((i%((qfile.size()/200)+1))==0)
+            /* Update UI every 1000 lines*/
+            if(0 == (i%1000))
             {
                 filterprogress.setValue(i);
                 filterprogress.setLabelText(

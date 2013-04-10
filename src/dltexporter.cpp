@@ -178,8 +178,8 @@ void DltExporter::exportCSV(QDltFile *from, QFile *to, QTreeWidget *plugins, QMo
 
     for(int i = 0; i < maxProgress;i++)
     {
-        /* Update progress dialog every 0.5% */
-        if((i%(maxProgress/200+1)) == 0)
+        /* Update progress dialog every 1000 lines */
+        if( 0 == (i%1000))
         {
             fileprogress.setValue(i);
         }
