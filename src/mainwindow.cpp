@@ -46,6 +46,7 @@
 #include "qextserialenumerator.h"
 #include "version.h"
 #include "dltfileutils.h"
+#include "dltuiutils.h"
 #include "dltexporter.h"
 #include "jumptodialog.h"
 
@@ -4863,6 +4864,8 @@ void MainWindow::filterUpdate() {
         afilter.filterColour = item->filterColour;
         item->setBackground(0,item->filterColour);
         item->setBackground(1,item->filterColour);
+        item->setForeground(0,DltUiUtils::optimalTextColor(item->filterColour));
+        item->setForeground(1,DltUiUtils::optimalTextColor(item->filterColour));
 
         if(afilter.enableRegexp)
         {

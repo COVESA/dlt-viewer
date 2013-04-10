@@ -56,9 +56,8 @@ SOURCES += main.cpp \
     dlttableview.cpp \
     dltexporter.cpp \
     fieldnames.cpp \
-    jumptodialog.cpp \
+    dltuiutils.cpp
     workingdirectory.cpp
-
 HEADERS += mainwindow.h \
     project.h \
     ecudialog.h \
@@ -81,9 +80,8 @@ HEADERS += mainwindow.h \
     dlttableview.h \
     dltexporter.h \
     fieldnames.h \
-    jumptodialog.h \
     workingdirectory.h
-
+    dltuiutils.h
 FORMS += mainwindow.ui \
     ecudialog.ui \
     applicationdialog.ui \

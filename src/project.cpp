@@ -24,6 +24,7 @@
 
 #include "project.h"
 #include "dltsettingsmanager.h"
+#include "dltuiutils.h"
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *traceinfo[] = {"default","off","on"};
@@ -449,6 +450,8 @@ void FilterItem::update()
 
         setBackground(0,filterColour);
         setBackground(1,filterColour);
+        setForeground(0,DltUiUtils::optimalTextColor(filterColour));
+        setForeground(1,DltUiUtils::optimalTextColor(filterColour));
     }
 
     if(text.isEmpty()) {

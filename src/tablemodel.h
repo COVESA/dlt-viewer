@@ -59,8 +59,7 @@ public:
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
 private:
     int lastSearchIndex;
-    // http://stackoverflow.com/questions/1855884/determine-font-color-based-on-background-color
-    QColor optimalTextColor(QColor forColor) const;
+
     QColor searchBackgroundColor() const;
 };
 

@@ -23,6 +23,7 @@
 #include "tablemodel.h"
 #include "fieldnames.h"
 #include "dltsettingsmanager.h"
+#include "dltuiutils.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
@@ -169,8 +170,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          // Color the last search row
          if(currentIdx == lastSearchIndex)
          {
-             return QVariant(QBrush(optimalTextColor(searchBackgroundColor())));
-         } else if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
+             return QVariant(QBrush(DltUiUtils::optimalTextColor(searchBackgroundColor())));
+
+         }
+         else if (qfile->checkMarker(msg).isValid())
+         {
+           QColor color = qfile->checkMarker(msg);
+
+              //return QVariant(QBrush(color));
+              return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
+         }
+         else if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
             return QVariant(QBrush(QColor(255,255,255)));
          } else {
             return QVariant(QBrush(QColor(0,0,0)));
@@ -296,23 +306,6 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
  }
 
 
-QColor TableModel::optimalTextColor(QColor forColor) const
-{
-    int d = 0;
-
-    // Counting the perceptive luminance - human eye favors green color...
-    double a = 1 - ( 0.299 * forColor.redF() + 0.587 * forColor.green() + 0.114 * forColor.blue())/255;
-
-    if (a < 0.5)
-    {
-        d = 0; // bright colors - black font
-    }
-    else
-    {
-        d = 255; // dark colors - white font
-    }
-    return  QColor(d,d,d);
-}
 
 
 QColor TableModel::searchBackgroundColor() const
