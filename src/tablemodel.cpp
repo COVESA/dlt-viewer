@@ -191,7 +191,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          int currentIdx = qfile->getMsgFilterPos(index.row());
          qfile->getMsg(currentIdx, msg);
 
-         if(currentIdx == lastSearchIndex)
+         if(lastSearchIndex != -1 && currentIdx == qfile->getMsgFilterPos(lastSearchIndex))
          {
              return QVariant(QBrush(searchBackgroundColor()));
          }
