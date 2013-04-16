@@ -167,8 +167,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          int currentIdx = qfile->getMsgFilterPos(index.row());
          qfile->getMsg(currentIdx, msg);
 
-         // Color the last search row
-         if(currentIdx == lastSearchIndex)
+         // Color the last search row         
+         if(lastSearchIndex != -1 && currentIdx == qfile->getMsgFilterPos(lastSearchIndex))
          {
              return QVariant(QBrush(DltUiUtils::optimalTextColor(searchBackgroundColor())));
 
