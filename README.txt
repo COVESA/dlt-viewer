@@ -26,6 +26,8 @@ Options:
  -c logfile textfile 	Convert logfile file to textfile (logfile must end with .dlt) 
  -e "name of plugin|command in plugin|param1|param2|paramn..."
     Execute command in a command interface plugin.
+ -s	Enable silent mode without warning message boxes
+
 
 API Documentation
 -----------------
@@ -34,7 +36,7 @@ See INSTALL.txt regarding doxygen API documentation generation.
 Software/Hardware
 -----------------
 
-* Developped with: QT 4.8.2 (http://qt-project.org/)
+* Developed with: QT 4.8.2 (http://qt-project.org/)
 * Ubuntu Linux 12.10 Qt SDK v1.2.1 32-bit / Intel PC
 * MS Windows XP / Intel PC
 

@@ -4,14 +4,39 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.9.0 STABLE
+Version 2.10.0 ALPHA
 
 Known issues
 ------------
-  * Changing of serial interface does not work after creation. Workaround: Create a new ECU entry.
-  
+
 Changes
 -------
+2.10.0 ALPHA
+
+	* Created a Windows installer for DLT-viewer. Included in build scripts.
+	* Optional suppressing of plugin  message box error when started via commandline parameter -s
+    * Greyed out non relevant tab in "ECU ADD/config" menu
+    * Highlight color of found line configurable
+	* Usage of "optimalTextColor" for markers
+    * Unified the progress dialog updates
+    * Multiple working directories for dlt viewer use cases
+    * DLTViewer: performance improvement of Qdlt::toAScii function which is heavily used in filtering 
+    * Default button of search window is "next"
+    * Search Previous/Next without search window
+		
+    * Fixed lost selection of messages after disabling filter
+    * Fixed Empty Tmp files not deleted
+    * Fixed Plugin destructors are not called
+    * Fixed Export and CopyToClipboard not using index order - instead using selection order
+    * Fixed dlt-viewer: changed serial interface settings not working after connection attempt
+    * Fixed Scroll button and Regexp button are using the toolbar incorrectly
+    * Fixed Dlt Viewer crash on Linux, when aborting a "Save as..." dialog
+    * Fixed Possible filterIndex corruption when enabling filters
+
+    
+
+
+
 2.9.0
   * Make rest of the warning dialogs modal, to prevent user from touching the UI.
   * Remove rest of threading.
