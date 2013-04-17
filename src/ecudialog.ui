@@ -14,7 +14,7 @@
    <string>ECU Configuration</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset>
     <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
@@ -41,7 +41,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -405,9 +405,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="resource.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
