@@ -2,4 +2,4 @@
 *.pro.user
 build/
 .project
-
+/Makefile
