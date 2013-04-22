@@ -15,6 +15,8 @@ Known issues
 	* Possible problems with Screenshot Plugin. Those are very likely to be cause by the embedded target, because wether filetransfer nor screenshot
   	  plugin have a code change. More information required.
 	* A crash has been observed, when closing the Viewer during an active connection with many enabled plugins . More information required.
+	* MOST plugin v1.2.0 crash with most recent MOST xml: MOST-Funktionen-Katalog_PL7_2013-03-08.fcat.xml. 
+ Instead use an XML older like:   MOST-Funktionen-Katalog_PL7_2012-05-04.xml.fc.bmw.xml which is sufficient for 11/13 PUs.
 	
 
 
