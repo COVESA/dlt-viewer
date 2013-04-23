@@ -281,12 +281,14 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     if(OptManager::getInstance()->isFilterFile()){
-        if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),true))
-        {
+        if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),false))
+        {            
             filterUpdate();
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
+
         }
     }
+    ui->filterButton->setChecked(true);//for filters included in the project project and for filter files
 
     if(OptManager::getInstance()->isConvert())
     {
@@ -362,11 +364,12 @@ void MainWindow::commandLineConvertToASCII(){
         //Error output
         exit(0);
     }
+  //on_filterButton_clicked(bool checked)
 
     for(int num = 0;num< qfile.sizeFilter();num++)
     {
 
-        /* get message form log file */
+        /* get message from log file */
         data = qfile.getMsgFilter(num);
         msg.setMsg(data);
 
@@ -858,7 +861,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     QFile outfile(fileName);
     if(file)
     {
-        if(!outfile.open(QIODevice::WriteOnly))
+        if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
             return;
     }
 

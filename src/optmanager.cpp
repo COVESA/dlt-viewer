@@ -60,7 +60,6 @@ void OptManager::OptManager::printUsage(){
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.";
     qDebug()<<" -s or --silent \tEnable silent mode without warning message boxes.";
 
-    // Please copy changes to mainwindow.cpp - on_actionCommand_Line_triggered()
 }
 
 void OptManager::parse(QStringList *opt){
@@ -68,7 +67,6 @@ void OptManager::parse(QStringList *opt){
 
     if(opt->size()==2)
     {
-//        qDebug() << QString(" [%1]").arg(opt->at(1));
         if(opt->at(1).endsWith(".dlp")){
             projectFile = QString("%1").arg(opt->at(1));
             project = true;
@@ -85,17 +83,13 @@ void OptManager::parse(QStringList *opt){
     for (int i = 0; i < opt->size(); ++i){
         str = opt->at(i);
 
-        //        qDebug() << QString(" [%1]").arg(str);
-
-        if(str.compare("-h") == 0 || str.compare("--help") == 0){
+          if(str.compare("-h") == 0 || str.compare("--help") == 0){
             printUsage();
             exit(0);
           }
         if(str.compare("-s") == 0 || str.compare("--silent") == 0){
             silent_mode = true;
           }
-
-
 
         if(str.compare("-p")==0) {
             QString p1 = opt->value(i+1);
