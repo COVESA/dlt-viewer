@@ -196,6 +196,9 @@ private:
 
     void deleteactualFile();
 
+    int nearest_line(int line);
+    bool jump_to_line(int line);
+
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);

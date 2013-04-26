@@ -5003,27 +5003,36 @@ void MainWindow::on_filterButton_clicked(bool checked)
                 QApplication::processEvents();
             }
         }
+
+
+
+
     }
     else
     {        
         ui->filterButton->setText("Filters disabled");
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-overcast.png"));
         ui->filterStatus->setText("");
-
-        int firstSelection = 0;
-
-        /* Try to re-select old indices */
-        QItemSelection newSelection;
-        for(int j=0;j<rowIndices.count();j++)
-        {
-            if(j == 0)
-                firstSelection = rowIndices.at(j);
-            QModelIndex idx = tableModel->index(rowIndices.at(j), 0);
-            newSelection.select(idx, idx);
-        }
-        ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
-        scrollToTarget = tableModel->index(firstSelection, 0);
     }
+
+
+    int firstSelection = 0;
+    /* Try to re-select old indices */
+    QItemSelection newSelection;
+    for(int j=0;j<rowIndices.count();j++)
+    {
+        if(j == 0)
+        {
+            firstSelection = nearest_line(rowIndices.at(j));
+        }
+        int nearest = nearest_line(rowIndices.at(j));
+        QModelIndex idx = tableModel->index(nearest, 0);
+        newSelection.select(idx, idx);
+    }
+    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+    scrollToTarget = tableModel->index(firstSelection, 0);
+
+
     tableModel->modelChanged();
     ui->tableView->unlock();
     dltIndexer->unlock();
@@ -5244,6 +5253,63 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
 
 }
 
+int MainWindow::nearest_line(int line){
+
+    if (line < 0 || line > qfile.size()-1){
+        return -1;
+    }
+
+    // If filters are off, just go directly to the row
+    int row = 0;
+    if(!qfile.isFilter())
+    {
+        row = line;
+    }
+    else
+    {
+        /* Iterate through filter index, trying to find
+         * matching index. If it cannot be found, just settle
+         * for the last one that we saw before going over */
+        int lastFound = 0, i;
+        for(i=0;i<qfile.sizeFilter();i++)
+        {
+            if(qfile.getMsgFilterPos(i) < line)
+            {
+                // Track previous smaller
+                lastFound = i;
+            }
+            else if(qfile.getMsgFilterPos(i) == line)
+            {
+                // It's actually visible
+                lastFound = i;
+                break;
+            }
+            else if(qfile.getMsgFilterPos(i) > line)
+            {
+                // Ok, we went past it, use the last one.
+                break;
+            }
+        }
+        row = lastFound;
+    }
+    return row;
+}
+
+bool MainWindow::jump_to_line(int line)
+{
+
+    int row = nearest_line(line);
+    if (0 > row)
+        return false;
+
+    ui->tableView->selectionModel()->clear();
+    QModelIndex idx = tableModel->index(row, 0, QModelIndex());
+    ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
+    ui->tableView->selectionModel()->select(idx, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+
+    return true;
+}
+
 void MainWindow::on_actionJump_To_triggered()
 {
     JumpToDialog dlg(this);
@@ -5258,42 +5324,6 @@ void MainWindow::on_actionJump_To_triggered()
         return;
     }
 
-    // If filters are off, just go directly to the row
-    int row = 0;
-    if(!qfile.isFilter())
-    {
-        row = dlg.getIndex();
-    }
-    else
-    {
-        /* Iterate through filter index, trying to find
-         * matching index. If it cannot be found, just settle
-         * for the last one that we saw before going over */
-        int lastFound = 0, i;
-        for(i=0;i<qfile.sizeFilter();i++)
-        {
-            if(qfile.getMsgFilterPos(i) < dlg.getIndex())
-            {
-                // Track previous smaller
-                lastFound = i;
-            }
-            else if(qfile.getMsgFilterPos(i) == dlg.getIndex())
-            {
-                // It's actually visible
-                lastFound = i;
-                break;
-            }
-            else if(qfile.getMsgFilterPos(i) > dlg.getIndex())
-            {
-                // Ok, we went past it, use the last one.
-                break;
-            }
-        }
-        row = lastFound;
-    }
+    jump_to_line(dlg.getIndex());
 
-    ui->tableView->selectionModel()->clear();
-    QModelIndex idx = tableModel->index(row, 0, QModelIndex());
-    ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
-    ui->tableView->selectionModel()->select(idx, QItemSelectionModel::Select|QItemSelectionModel::Rows);
 }

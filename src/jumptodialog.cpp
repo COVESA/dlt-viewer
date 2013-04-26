@@ -61,7 +61,7 @@ void JumpToDialog::validate()
     emit accept();
 }
 
-void JumpToDialog::showEvent(QShowEvent * event)
+void JumpToDialog::showEvent(QShowEvent *)
 {
     ui->lineEditIndex->setFocus();
 }
