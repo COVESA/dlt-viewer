@@ -45,6 +45,51 @@
 
 #define DLT_BUFFER_CORRUPT_TRESHOLD 4* 1024
 
+/**
+ * @brief Namespace to contain the toolbar positions.
+ * You should always remember to update these enums if you 
+ * add, remove or re-arrange actions in the toolbars!
+ * If you add separators, please add "Separator" lines similar
+ * to those below, to make it obvious why the numbering scheme is 
+ * leaping over some numbers.
+ */
+namespace ToolbarPosition {
+    /**
+     * @brief Main Toolbar button positions.
+     * These are static thorough the program run time.
+     */
+    enum MainToolbarPosition {
+        NewDltFile      = 0,
+        OpenDltFile     = 1,
+        Clear           = 2,
+        SaveDltFile     = 3,
+        SaveProjectFile = 4,
+        // Separator    = 5,
+        ConnectAll      = 6,
+        DisconnectAll   = 7,
+        // Separator    = 8,
+        Settings        = 9,
+        // Separator    = 10,
+        AutoScroll      = 11
+    };
+
+    /**
+     * @brief Search Toolbar button positions
+     * Please note! Find Previos/Next will be shifted
+     * right by one position after constructor, because
+     * the textbox is added! So, if you want to use this
+     * enum to identify these actions later, you need to use
+     * SearchToolbarPosition::FindXXX + 1.
+     */
+    enum SearchToolbarPosition {
+        Search          = 0,
+        Regexp          = 1,
+        // Separator    = 2,
+        FindPrevious    = 3,
+        FindNext        = 4
+    };
+}
+
 extern "C"
 {
         #include "dlt_common.h"
@@ -92,7 +137,7 @@ private:
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settings;
-    QLineEdit *searchTextToolbar;
+    QLineEdit *searchTextbox;
 
     /* injections */
     QString injectionAplicationId;
@@ -101,8 +146,7 @@ private:
     QString injectionData;
 
     /* Toggle buttons */
-    QAction *scrollbutton;
-    QAction *regexpButton;
+    QAction *scrollButton;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
@@ -301,7 +345,6 @@ private slots:
     //Rename
     void filterAdd();
     void filterAddTable();
-    void autoscrollToggled(bool state);
     void connected();
     void disconnected();
     void error(QAbstractSocket::SocketError);
@@ -318,8 +361,10 @@ private slots:
     void stateChangedTCP(QAbstractSocket::SocketState socketState);
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
-
     void on_actionJump_To_triggered();
+    void on_actionAutoScroll_triggered(bool checked);
+    void on_actionConnectAll_triggered();
+    void on_actionDisconnectAll_triggered();
 
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);

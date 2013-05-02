@@ -227,6 +227,34 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionNewDltFile"/>
+   <addaction name="actionOpenDltFile"/>
+   <addaction name="actionClear"/>
+   <addaction name="actionSaveDltFile"/>
+   <addaction name="actionSaveProjectFile"/>
+   <addaction name="separator"/>
+   <addaction name="actionConnectAll"/>
+   <addaction name="actionDisconnectAll"/>
+   <addaction name="separator"/>
+   <addaction name="actionSettings"/>
+   <addaction name="separator"/>
+   <addaction name="actionAutoScroll"/>
+  </widget>
+  <widget class="QToolBar" name="searchToolbar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionFind"/>
+   <addaction name="actionRegExp"/>
+   <addaction name="separator"/>
+   <addaction name="actionFindPrevious"/>
+   <addaction name="actionFindNext"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidget">
@@ -987,6 +1015,165 @@
     <string>Support...</string>
    </property>
   </action>
+  <action name="actionNewDltFile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/document-new.png</normaloff>:/toolbar/png/document-new.png</iconset>
+   </property>
+   <property name="text">
+    <string>New</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new DLT file</string>
+   </property>
+  </action>
+  <action name="actionOpenDltFile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/document-open.png</normaloff>:/toolbar/png/document-open.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open existing DLT file</string>
+   </property>
+  </action>
+  <action name="actionClear">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/edit-clear.png</normaloff>:/toolbar/png/edit-clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>ClearDltFile</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a new temporary DLT file and clear the screen.</string>
+   </property>
+  </action>
+  <action name="actionSaveDltFile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/document-save-as.png</normaloff>:/toolbar/png/document-save-as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save logfile</string>
+   </property>
+   <property name="toolTip">
+    <string>Save current log as DLT file.</string>
+   </property>
+  </action>
+  <action name="actionSaveProjectFile">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/document-save-as2.png</normaloff>:/toolbar/png/document-save-as2.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save project</string>
+   </property>
+   <property name="toolTip">
+    <string>Save current project as DLP file.</string>
+   </property>
+  </action>
+  <action name="actionConnectAll">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/network-transmit-receive.png</normaloff>:/toolbar/png/network-transmit-receive.png</iconset>
+   </property>
+   <property name="text">
+    <string>Connect all ECU's</string>
+   </property>
+   <property name="toolTip">
+    <string>Connect all ECU's or create a new one.</string>
+   </property>
+  </action>
+  <action name="actionDisconnectAll">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/network-offline.png</normaloff>:/toolbar/png/network-offline.png</iconset>
+   </property>
+   <property name="text">
+    <string>Disconnect all ECU's</string>
+   </property>
+   <property name="toolTip">
+    <string>Disconnect all connected ECU's</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/preferences-desktop.png</normaloff>:/toolbar/png/preferences-desktop.png</iconset>
+   </property>
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionAutoScroll">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/go-bottom.png</normaloff>:/toolbar/png/go-bottom.png</iconset>
+   </property>
+   <property name="text">
+    <string>Auto Scroll</string>
+   </property>
+   <property name="toolTip">
+    <string>Scroll automatically to the end of the log, when receiving data.</string>
+   </property>
+  </action>
+  <action name="actionFind">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for a DLT message.</string>
+   </property>
+  </action>
+  <action name="actionRegExp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/action-regexp.png</normaloff>:/toolbar/png/action-regexp.png</iconset>
+   </property>
+   <property name="text">
+    <string>RegExp</string>
+   </property>
+   <property name="toolTip">
+    <string>Use regular expressions when searching.</string>
+   </property>
+  </action>
+  <action name="actionFindPrevious">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/go-previous.png</normaloff>:/toolbar/png/go-previous.png</iconset>
+   </property>
+   <property name="text">
+    <string>Find Previous</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for previous occurance.</string>
+   </property>
+  </action>
+  <action name="actionFindNext">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/go-next.png</normaloff>:/toolbar/png/go-next.png</iconset>
+   </property>
+   <property name="text">
+    <string>Find Next</string>
+   </property>
+   <property name="toolTip">
+    <string>Search for next occurance.</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1078,6 +1265,118 @@
     <hint type="sourcelabel">
      <x>133</x>
      <y>220</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionNewDltFile</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuFile_New</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionOpenDltFile</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuFile_Open</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionClear</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuFile_Clear</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSaveDltFile</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuFile_SaveAs</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSaveProjectFile</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuProject_Save</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSettings</sender>
+   <signal>triggered()</signal>
+   <receiver>action_menuFile_Settings</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionFind</sender>
+   <signal>triggered(bool)</signal>
+   <receiver>action_menuSearch_Find</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

@@ -159,57 +159,36 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Inform filterWidget about FilterButton */
     ui->filterWidget->setFilterButton(ui->filterButton);
 
-    /* initialize tool bar */
-    QAction *action;
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-new.png"), tr("&New"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_New_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-open.png"), tr("&Open"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Open_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/edit-clear.png"), tr("&Clear"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Clear_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-save-as3.png"), tr("&Save logfile"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_SaveAs_triggered()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/document-save-as2.png"), tr("&Save project"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuProject_Save_triggered()));
-    ui->mainToolBar->addSeparator();
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/network-transmit-receive.png"), tr("Connec&t"));
-    connect(action, SIGNAL(triggered()), this, SLOT(connectAll()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/network-offline.png"), tr("&Disconnect"));
-    connect(action, SIGNAL(triggered()), this, SLOT(disconnectAll()));
-    ui->mainToolBar->addSeparator();
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/preferences-desktop.png"), tr("S&ettings"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Settings_triggered()));
+    /* Create search text box */
+    searchTextbox = new QLineEdit();
+    searchDlg->appendLineEdit(searchTextbox);
+    connect(searchTextbox, SIGNAL(textEdited(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
+    connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
 
-    ui->mainToolBar->addSeparator();
+    /* Initialize toolbars. Most of the construction and connection is done via the
+     * UI file. See mainwindow.ui, ActionEditor and Signal & Slots editor */
+    QList<QAction *> mainActions = ui->mainToolBar->actions();
+    QList<QAction *> searchActions = ui->searchToolbar->actions();
 
-    scrollbutton = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-bottom.png"), tr("Auto Scroll"));
-    scrollbutton->setCheckable(true);
-    connect(scrollbutton, SIGNAL(toggled(bool)), this, SLOT(autoscrollToggled(bool)));
+    /* Point scroll toggle button to right place */
+    scrollButton = mainActions.at(ToolbarPosition::AutoScroll);
+
+    /* Update the scrollbutton status */
     updateScrollButton();
 
-    ui->mainToolBar->addSeparator();
+    /* Connect RegExp settings from and to search dialog */
+    connect(searchActions.at(ToolbarPosition::Regexp), SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
+    connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), searchActions.at(ToolbarPosition::Regexp), SLOT(setChecked(bool)));
 
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/system-search.png"), tr("Find"));
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuSearch_Find_triggered()));
+    /* Connect previous and next buttons to search dialog slots */
+    connect(searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
+    connect(searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
 
-    regexpButton = ui->mainToolBar->addAction(QIcon(":/toolbar/png/action-regexp.png"), tr("Enable Regular Expressions for Find"));
-    regexpButton->setCheckable(true);
+    /* Insert search text box to search toolbar, before previous button */
+    QAction *before = searchActions.at(ToolbarPosition::FindPrevious);
+    ui->searchToolbar->insertWidget(before, searchTextbox);
 
-    /* Connect togglebutton to search dialog checkbox, and vice versa. */
-    connect(regexpButton, SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
-    connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), regexpButton, SLOT(setChecked(bool)));
-
-    searchTextToolbar = new QLineEdit(ui->mainToolBar);
-    searchDlg->appendLineEdit(searchTextToolbar);
-    connect(searchTextToolbar, SIGNAL(textEdited(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
-    connect(searchTextToolbar, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
-    action = ui->mainToolBar->addWidget(searchTextToolbar);
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-previous.png"), tr("Find Previous"));
-    connect(action, SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
-    action = ui->mainToolBar->addAction(QIcon(":/toolbar/png/go-next.png"), tr("Find Next"));
-    connect(action, SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
-
-    /*adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active*/
+    /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
     m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);
     connect(m_shortcut_searchnext, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonNext_clicked() ) );
     m_shortcut_searchprev = new QShortcut(QKeySequence("F2"), this);
@@ -3747,24 +3726,13 @@ void MainWindow::on_configWidget_itemSelectionChanged()
 
 }
 
-void MainWindow::autoscrollToggled(bool state)
-{
-    int autoScrollOld = settings->autoScroll;
-
-    // Mapping: button to variable
-    settings->autoScroll = (state?Qt::Checked:Qt::Unchecked);
-
-    if (autoScrollOld!=settings->autoScroll)
-        settings->writeSettings(this);
-}
-
 void MainWindow::updateScrollButton()
 {
     // Mapping: variable to button
     if (settings->autoScroll == Qt::Unchecked )
-        scrollbutton->setChecked(false);
+        scrollButton->setChecked(false);
     else
-        scrollbutton->setChecked(true);
+        scrollButton->setChecked(true);
 }
 
 
@@ -3977,7 +3945,7 @@ void MainWindow::tableViewValueChanged(int value)
         if (settings->autoScroll==Qt::Unchecked)
         {
             /* enable scrolling */
-            autoscrollToggled(Qt::Checked);
+            on_actionAutoScroll_triggered(Qt::Checked);
             updateScrollButton();
         }
     }
@@ -3987,7 +3955,7 @@ void MainWindow::tableViewValueChanged(int value)
         if (settings->autoScroll==Qt::Checked)
         {
             /* disable scrolling */
-            autoscrollToggled(Qt::Unchecked);
+            on_actionAutoScroll_triggered(Qt::Unchecked);
             updateScrollButton();
         }
     }
@@ -5326,4 +5294,25 @@ void MainWindow::on_actionJump_To_triggered()
 
     jump_to_line(dlg.getIndex());
 
+}
+
+void MainWindow::on_actionAutoScroll_triggered(bool checked)
+{
+    int autoScrollOld = settings->autoScroll;
+
+    // Mapping: button to variable
+    settings->autoScroll = (checked?Qt::Checked:Qt::Unchecked);
+
+    if (autoScrollOld!=settings->autoScroll)
+        settings->writeSettings(this);
+}
+
+void MainWindow::on_actionConnectAll_triggered()
+{
+    connectAll();
+}
+
+void MainWindow::on_actionDisconnectAll_triggered()
+{
+    disconnectAll();
 }
