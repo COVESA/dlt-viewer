@@ -165,32 +165,45 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
 
 QString QDlt::toAscii(QByteArray &bytes, bool ascii)
 {
-    QString text;
-    text.reserve(bytes.size()*2);
-
-    /* create text to show */
-    for(int num=0;num<bytes.size();num++)
+    static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+    if (ascii)
     {
-        char ch = (bytes.constData())[num];
-        if(ascii) {
-            if( (ch >= ' ') && (ch <= '~') )
-                text += QString(QChar(ch));
-            else
-                text += QString("-");
-        }
-        else {
-            if(num!=0)
-                text += QString(" ");
-            text += QString("%1").arg((unsigned char)ch,2,16,QLatin1Char('0'));
-        }
+        // Could also use QString::QString ( const QByteArray & ba )
+        return QString::fromLatin1(bytes.data(), bytes.size() );
     }
+    else
+    {
+        int size = bytes.size();
+        if (!size)
+        {
+            //Let's return an empty string.
+            return QString("");
+        }
 
-    return text;
+        std::vector<char> str( size*3, ' ' );
+
+        char* strData = &str[0];
+        char* byteData = bytes.data();
+        for(int num=0;num<size;++num)
+        {
+            *strData = hexmap[ (*byteData & 0xF0) >> 4 ];
+            ++strData;
+            *strData = hexmap[ *byteData & 0x0F ];
+            strData += 2;
+            ++byteData;
+        }
+        // Remove trailing space at the end
+        if (size>0)
+        {
+            *(strData-1) = 0;
+        }
+        return QString( &str[0] );
+    }
 }
 
 QDltArgument::QDltArgument()
 {
-    /* clear content of argument */
+    // clear content of argument
     clear();
 }
 
