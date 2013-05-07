@@ -362,19 +362,31 @@ bool FiletransferPlugin::command(QString command, QList<QString> params)
             errorText = "Need one parameter, path to save to.";
             return false;
         }
-        QDir f(params.at(0));
-        if(!f.exists() && !f.mkpath("."))
+        QString exp_path = params.at(0);
+        QChar backslash('\"');
+
+        if ( exp_path.at(exp_path.length()-1) == backslash )
         {
-            errorText = "Failed to create directory " + params.at(0);
-            return false;
+            exp_path.chop(1);//remove the last \", which would cause problems under windows
         }
-        return exportAll(params.at(0));
+
+        QDir extract_dir(QDir::fromNativeSeparators ( exp_path ));
+
+        if(!extract_dir.exists())
+        {
+            if (!extract_dir.mkpath("."))
+            {
+              errorText = "Failed to create directory " + params.at(0);
+              return false;
+              }
+        }
+        return exportAll(extract_dir);
     }
     errorText = "Unknown command " + command;
     return false;
 }
 
-bool FiletransferPlugin::exportAll(QString path)
+bool FiletransferPlugin::exportAll(QDir extract_dir)
 {
     QTreeWidgetItemIterator it(form->getTreeWidget(),QTreeWidgetItemIterator::NoChildren );
     errorText = "Failed to save files";
@@ -387,7 +399,9 @@ bool FiletransferPlugin::exportAll(QString path)
     while (*it) {
         File *tmp = dynamic_cast<File*>(*it);
         if (tmp != NULL && tmp->isComplete()) {
-            QString absolutePath = path+"//"+tmp->getFilename();
+
+            QString absolutePath = extract_dir.filePath(tmp->getFilename());
+
             if(!tmp->saveFile(absolutePath) ){
                 ret = false;
                 errorText += ", " + tmp->getFilenameOnTarget();

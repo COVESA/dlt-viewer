@@ -67,7 +67,7 @@ public:
 
     /* QDltPluginCommandInterface */
     bool command(QString command, QList<QString> params);
-    bool exportAll(QString path);
+    bool exportAll(QDir extract_dir);
 
 private:
     Form *form;

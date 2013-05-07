@@ -19,7 +19,6 @@
 
 #include <iostream>
 #include <QTreeView>
-#include <QMessageBox>
 #include <QFileDialog>
 #include <QProgressDialog>
 #include <QTemporaryFile>
@@ -371,6 +370,26 @@ void MainWindow::commandLineConvertToASCII(){
     asciiFile.close();
 }
 
+void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
+
+  if (OptManager::getInstance()->issilentMode())
+    {
+      qDebug()<<message;
+    }
+  else
+    {
+      if (level == QMessageBox::Critical)
+        QMessageBox::critical(this, title, message);
+      else if (level == QMessageBox::Warning)
+        QMessageBox::warning(this, title, message);
+      else if (level == QMessageBox::Information)
+        QMessageBox::information(this, title, message);
+      else
+        QMessageBox::critical(this, "ErrorMessage problem", "unhandled case");
+    }
+
+}
+
 void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringList params)
 {
     bool plugin_found = false;
@@ -384,20 +403,31 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
             QDltPluginCommandInterface *cmdif = item->plugincommandinterface;
             if(cmdif == NULL)
             {
-                QMessageBox::critical(this, "Error", plugin + " is not a command plugin.");
+                QString msg("Error: ");
+                msg = msg+plugin+" is not a command plugin.";
+                ErrorMessage(QMessageBox::Critical, plugin, msg);
                 exit(-1);
             }
             if(!cmdif->command(cmd, params))
             {
                 if(item->plugininterface)
                 {
-                    qDebug() << item->plugininterface->error();
+                    QString msg("Error: ");
+                    msg.append(plugin);
+                    msg.append(item->plugininterface->error());
+                    ErrorMessage(QMessageBox::Warning,plugin, msg);
                 }
-                exit(0);
+                else
+                {
+                    QString msg("Error: unhandled case in: ");
+                    msg.append(__func__);
+                    ErrorMessage(QMessageBox::Critical,"commandLineExecutePlugin", msg);
+                }
+                exit(-1);
             }
             else
             {
-                exit(-1);
+                exit(0);
             }
         }
     }
@@ -4235,20 +4265,10 @@ void MainWindow::updatePlugin(PluginItem *item) {
             err_header.append(item->plugininterface->name());
             err_header.append(" returned error: ");
             QString err_text = item->plugininterface->error();
-            if (OptManager::getInstance()->issilentMode())
-              {
-                qDebug()<<err_header << "\n"<<err_text;
-              }
-            else
-              {
-                QMessageBox::warning(0, err_header,err_text);
-              }
+            ErrorMessage(QMessageBox::Warning,err_header,err_text);
           }
       }
 
-    /*    if(item->plugincontrolinterface)
-        item->plugincontrolinterface->initControl(&qcontrol);
-*/
     QStringList list = item->plugininterface->infoConfig();
     for(int num=0;num<list.size();num++) {
         item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));

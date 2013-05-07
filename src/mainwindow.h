@@ -26,6 +26,7 @@
 #include <QTimer>
 #include <QDir>
 #include <QShortcut>
+#include <QMessageBox>
 
 #include "tablemodel.h"
 #include "project.h"
@@ -242,7 +243,13 @@ private:
 
     int nearest_line(int line);
     bool jump_to_line(int line);
-
+ /**
+     * @brief ErrorMessage
+     * @param String which is shown as MessageBox, if we are not in silent mode.
+     *  In Silent Mode, it is printed on the console, which only works in Windows DEbug or under Linux Shells
+     *
+     */
+    void ErrorMessage(QMessageBox::Icon level, QString title,  QString message);
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
