@@ -1,7 +1,9 @@
 DLT Viewer User Manual
 ======================
-Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
+:Author: Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 v0.0.2, December 2012: Converted to asciidoc
+v0.0.3, April 2013: Added Filetransfer commandline description
+
 :toc:
 
 image::images/genivi_chrome_1_transparent.png[width=128]
@@ -250,9 +252,11 @@ QDltPluginViewerInterface
 |Screenshot|image:images/viewer_plugin.png[]
 |=============================================================================
 
-filetransferplugin
-~~~~~~~~~~~~~~~~~~
+Filetransfer Plugin
+~~~~~~~~~~~~~~~~~~~
 
+In the viewer
+^^^^^^^^^^^^^
 [width="70%",style="asciidoc",cols="<1s,<2",frame="topbot"]
 |=============================================================================
 |Interface|QDLTPluginInterface + 
@@ -265,6 +269,27 @@ QDltPluginControlInterface
 which are part of the trace file.
 |Screenshot|image:images/filetransfer_plugin.png[]
 |=============================================================================
+
+Command line usage
+^^^^^^^^^^^^^^^^^^
+You can use the Filetransfer Plugin to extract files out of a stored dlt file. 
+
+Therefore call the viewer with the command: 
+
+[dlt_viewer.exe] -p project_filetransfer.dlp -l filewithattachements.dlt  -e "Filetransfer Plugin|export|[path_to_extract]" 
+
+.Parameter description
+
+* [dlt_viewer.exe]: The executable of the viewer. E.g. dlt_viewer.exe in Windows, dlt_viewer in Linux 
+* project_filetransfer.dlp: A project, which has the filetransfer properly configured, by setting a valid plugin xml. 
+* filewithattachements.dlt: Path to a dlt trace file. If it contains embedded files, they will be extracted 
+* -e: triggers a plugin command
+* "Filetransfer Plugin: Filetransfer Plugin will be called for the command interface
+* |export: the export function is called
+* |[path_to_extract]": Path to a folder, where you want to extract all file dumps. If you apply this for very many files, think about using individual paths, to avoid overwriting of embedded files with identical names. 
+
+
+
 
 Installation/Remove/Enable/Disable on Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
