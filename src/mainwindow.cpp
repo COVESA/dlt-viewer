@@ -4448,12 +4448,12 @@ void MainWindow::loadPluginsPath(QDir dir)
 
                 } else {
 
-                    QMessageBox::warning(0, QString("DLT Viewer"),QString(tr("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5")).arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
+                    ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString(tr("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5")).arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
                 }
             }
         }
-        else {
-            QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader->errorString()));
+        else {            
+            ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader->errorString()));
         }
     }
 }
@@ -4492,17 +4492,35 @@ void MainWindow::updatePlugin(PluginItem *item) {
     item->takeChildren();
 
     bool ret = item->plugininterface->loadConfig(item->getFilename());
-    if ( false == ret )
-      {
-        if (item->getMode() != PluginItem::ModeDisable)
-          {
-            QString err_header = "Plugin: ";
+    QString err_text = item->plugininterface->error();
+	//We should not need error handling when disabling the plugins. But why is loadConfig called then anyway?
+    if (item->getMode() != PluginItem::ModeDisable)
+    {
+       
+        if ( false == ret )
+        {
+            QString err_header = "Plugin Error: ";
             err_header.append(item->plugininterface->name());
-            err_header.append(" returned error: ");
-            QString err_text = item->plugininterface->error();
-            ErrorMessage(QMessageBox::Warning,err_header,err_text);
-          }
-      }
+            QString err_body = err_header;
+            err_body.append(" returned error:\n");
+            err_body.append(err_text);
+            err_body.append("\nin loadConfig. \nDisabling Plugin!");
+            ErrorMessage(QMessageBox::Critical,err_header,err_body);
+            item->setMode(PluginItem::ModeDisable);
+        }
+        else if ( 0 < err_text.length() )
+        {
+			//we have no error, but the plugin complains about something
+            QString err_header = "Plugin Warning: ";
+            err_header.append(item->plugininterface->name());
+            QString err_body = err_header;
+            err_body.append(" returned message:\n");
+            err_body.append(err_text);
+            err_body.append("\nin loadConfig. ");
+            ErrorMessage(QMessageBox::Warning,err_header,err_body);
+        }
+    }
+
 
     QStringList list = item->plugininterface->infoConfig();
     for(int num=0;num<list.size();num++) {
@@ -4571,8 +4589,9 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         }
     }
     else
-        QMessageBox::warning(0, QString("DLT Viewer"),
-                             QString("No Plugin selected!"));
+    {
+        ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("No Plugin selected!"));
+    }
 
 }
 
@@ -4595,13 +4614,11 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
                 ui->applyConfig->setEnabled(true);
             }
         }else{
-            QMessageBox::warning(0, QString("DLT Viewer"),
-                                 QString("The selected Plugin is already active."));
+             ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("The selected Plugin is already active."));
         }
     }
     else {
-        QMessageBox::warning(0, QString("DLT Viewer"),
-                             QString("No Plugin selected!"));
+        ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("No Plugin selected!"));
     }
 
 }
@@ -4617,6 +4634,8 @@ void MainWindow::on_action_menuPlugin_Hide_triggered() {
             item->savePluginModeToSettings();
             updatePlugin(item);
         }else{
+            ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("No Plugin selected!"));
+
             QMessageBox::warning(0, QString("DLT Viewer"),
                                  QString("The selected Plugin is already hidden or deactivated."));
         }

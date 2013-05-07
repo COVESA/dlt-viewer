@@ -70,11 +70,19 @@ bool NonverbosePlugin::loadConfig(QString filename)
     framemap.clear();
 
 
+    if ( filename.length() <= 0 )
+    {
+        m_error_string = "No XML specified. Plugin only works with valid configuration file";
+        return false;
+    }
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-             return false;
+            m_error_string = "Could not open File: ";
+            m_error_string.append(filename).append(" for configuration.");
+
+            return false;
     }
 
     QString warning_text;
@@ -370,8 +378,8 @@ bool NonverbosePlugin::loadConfig(QString filename)
           }
     }
     if (xml.hasError()) {
-        QMessageBox::warning(0, QString("XML Parser error"),
-                             xml.errorString());
+        m_error_string.append("\nXML Parser error: ").append(xml.errorString()).append("\n");
+        ret = false;
     }
 
     file.close();
@@ -379,7 +387,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
         m_error_string.append("Duplicated FRAMES ignored: \n").append(warning_text);
-        ret = false;
+        ret = true;//it is not breaking the plugin functionality, but could cause wrong decoding.
     }
 
     /* create PDU Ref links */
