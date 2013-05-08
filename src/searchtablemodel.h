@@ -1,0 +1,69 @@
+/**
+ * @licence app begin@
+ * Copyright (C) 2011-2012  BMW AG
+ *
+ * This file is part of GENIVI Project Dlt Viewer.
+ *
+ * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contribution License Agreements.
+ *
+ * \copyright
+ * This Source Code Form is subject to the terms of the
+ * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
+ * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ *
+ * \file searchdialog.h
+ * For further information see http://www.genivi.org/.
+ * @licence end@
+ */
+
+#ifndef SEARCHTABLEMODEL_H
+#define SEARCHTABLEMODEL_H
+
+#include <QAbstractTableModel>
+
+#include "project.h"
+#include "qdlt.h"
+
+#define DLT_VIEWER_SEARCHCOLUMN_COUNT 12
+
+class SearchTableModel : public QAbstractTableModel
+{
+    Q_OBJECT
+public:
+    explicit SearchTableModel(const QString &data, QObject *parent = 0);
+    ~SearchTableModel();
+
+    QVariant headerData(int section, Qt::Orientation orientation,
+         int role = Qt::DisplayRole) const;
+
+    QVariant data(const QModelIndex &index, int role) const;
+
+    int rowCount(const QModelIndex & /*parent*/) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+
+    void modelChanged();
+
+    void clear_RearchResults();
+    void add_SearchResultEntry(unsigned long entry);
+
+
+    int get_SearchResultListSize() const;
+    bool get_SearchResultEntry(int position, unsigned long &entry);
+
+
+    /* pointer to the current loaded file */
+    QDltFile *qfile;
+    Project *project;
+    
+signals:
+    
+public slots:
+
+
+private:
+    QList <unsigned long> m_searchResultList;
+    
+};
+
+#endif // SEARCHTABLEMODEL_H

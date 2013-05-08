@@ -26,6 +26,8 @@
 #include <QTreeWidget>
 #include <QCheckBox>
 
+#include "searchtablemodel.h"
+
 namespace Ui {
     class SearchDialog;
 }
@@ -37,11 +39,12 @@ class SearchDialog : public QDialog
 
 private:
     Ui::SearchDialog *ui;
-    int startLine;
+    SearchTableModel *m_searchtablemodel;
+
+    int startLine;    
     bool nextClicked;
     bool match;
     bool onceClicked;
-
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
@@ -72,13 +75,26 @@ public:
     bool getMatch();
     bool getClicked();
     bool getOnceClicked();
-    int getStartLine();
+    bool searchtoIndex();
+    int getStartLine();    
+
     int find();
+    void findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp);
+
+    void registerSearchTableModel(SearchTableModel *model);
+    /**
+     * @brief foundLine
+     * @param searchLine
+     * @return true, if search can be breaked here, false if it should continue
+     */
+    bool foundLine(int searchLine);
+    void addToSearchIndex(int searchLine);
     QDltFile *file;
     QTableView *table;
     QTreeWidget *plugin;
     QList<QLineEdit*> *lineEdits;
     QCheckBox *regexpCheckBox;
+    QCheckBox *CheckBoxSearchtoList;
 
 private:
     void updateColorbutton();
@@ -90,10 +106,17 @@ private slots:
     void on_pushButtonNext_clicked();
     void on_pushButtonColor_clicked();
 
+
+    void on_checkBoxSearchIndex_toggled(bool checked);
+
 public slots:
     void textEditedFromToolbar(QString newText);
     void findNextClicked();
     void findPreviousClicked();
+
+signals:
+    void refreshedSearchIndex();
+    void checkBoxSearchList_toggled(int);
 };
 
 #endif // SEARCHDIALOG_H

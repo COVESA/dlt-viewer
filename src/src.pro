@@ -91,7 +91,8 @@ SOURCES += main.cpp \
     fieldnames.cpp \
     dltuiutils.cpp \
     workingdirectory.cpp \
-    jumptodialog.cpp
+    jumptodialog.cpp\
+    searchtablemodel.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -118,7 +119,8 @@ HEADERS += mainwindow.h \
     fieldnames.h \
     workingdirectory.h \
     dltuiutils.h \
-    jumptodialog.h
+    jumptodialog.h \
+    searchtablemodel.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \

@@ -36,6 +36,8 @@
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
+
+#include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 
 /**
@@ -84,9 +86,10 @@ namespace ToolbarPosition {
     enum SearchToolbarPosition {
         Search          = 0,
         Regexp          = 1,
-        // Separator    = 2,
-        FindPrevious    = 3,
-        FindNext        = 4
+        SearchList      = 2,
+        // Separator    = 3,
+        FindPrevious    = 4,
+        FindNext        = 5
     };
 }
 
@@ -117,6 +120,7 @@ private:
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
     TableModel *tableModel;
+    SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
 
     /* Status line items */
@@ -149,6 +153,9 @@ private:
 
     QList<QAction *> m_searchActions;
 
+    QTableView *m_searchresultsTable;
+
+
     /* Recent files */
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
@@ -180,6 +187,7 @@ private:
     void initView();
     void initSignalConnections();
     void initFileHandling();
+    void initSearchTable();
 
     /* general functions */
 
@@ -301,6 +309,9 @@ private slots:
 
     // Search methods
     void on_action_menuSearch_Find_triggered();
+
+    void searchTableRenewed();
+    void searchtable_cellSelected(QModelIndex index);
 
     // Project methods
     void on_action_menuProject_Save_triggered();

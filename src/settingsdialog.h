@@ -109,6 +109,7 @@ private slots:
     void on_toolButtonDefaultProjectFile_clicked();
     void on_toolButtonDefaultLogFile_clicked();
     void on_toolButtonTempPath_clicked();
+
 };
 
 #endif // SETTINGSDIALOG_H

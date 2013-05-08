@@ -22,7 +22,16 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>2</number>
+    </property>
+    <property name="topMargin">
+     <number>2</number>
+    </property>
+    <property name="rightMargin">
+     <number>2</number>
+    </property>
+    <property name="bottomMargin">
      <number>2</number>
     </property>
     <item>
@@ -211,6 +220,13 @@
     <addaction name="action_menuSearch_Find"/>
     <addaction name="actionJump_To"/>
    </widget>
+   <widget class="QMenu" name="menuView">
+    <property name="title">
+     <string>View</string>
+    </property>
+    <addaction name="actionProject"/>
+    <addaction name="actionSearch_Results"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuSearch"/>
    <addaction name="menuProject"/>
@@ -218,6 +234,7 @@
    <addaction name="menuDLT"/>
    <addaction name="menuFilter"/>
    <addaction name="menuPlugin"/>
+   <addaction name="menuView"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
@@ -252,12 +269,13 @@
    </attribute>
    <addaction name="actionFind"/>
    <addaction name="actionRegExp"/>
+   <addaction name="actionSearchList"/>
    <addaction name="separator"/>
    <addaction name="actionFindPrevious"/>
    <addaction name="actionFindNext"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
-  <widget class="QDockWidget" name="dockWidget">
+  <widget class="QDockWidget" name="dockWidgetProject">
    <property name="features">
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
@@ -269,7 +287,16 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>2</number>
+     </property>
+     <property name="topMargin">
+      <number>2</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <property name="bottomMargin">
       <number>2</number>
      </property>
      <item>
@@ -297,7 +324,16 @@
          <string>Config</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -355,7 +391,16 @@
          <string>Plugin</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -415,7 +460,16 @@
          <string>Filter</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="margin">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
           <number>2</number>
          </property>
          <item>
@@ -522,6 +576,33 @@
         </layout>
        </widget>
       </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QDockWidget" name="dockWidgetSearchIndex">
+   <property name="windowTitle">
+    <string>Search Results</string>
+   </property>
+   <attribute name="dockWidgetArea">
+    <number>8</number>
+   </attribute>
+   <widget class="QWidget" name="dockWidgetSearchIndexContents">
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>16</height>
+     </size>
+    </property>
+    <property name="baseSize">
+     <size>
+      <width>50</width>
+      <height>50</height>
+     </size>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QTableView" name="tableView_SearchIndex"/>
      </item>
     </layout>
    </widget>
@@ -1174,6 +1255,43 @@
     <string>Search for next occurance.</string>
    </property>
   </action>
+  <action name="actionSearchList">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/action-searchlist.png</normaloff>:/toolbar/png/action-searchlist.png</iconset>
+   </property>
+   <property name="text">
+    <string>SearchList</string>
+   </property>
+   <property name="toolTip">
+    <string>Put all search results to a list</string>
+   </property>
+  </action>
+  <action name="actionSearch_Results">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Search Results</string>
+   </property>
+  </action>
+  <action name="actionProject">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Project</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1377,6 +1495,70 @@
     <hint type="sourcelabel">
      <x>-1</x>
      <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionSearch_Results</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetSearchIndex</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>500</x>
+     <y>521</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetSearchIndex</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionSearch_Results</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>500</x>
+     <y>521</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>actionProject</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>dockWidgetProject</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>134</x>
+     <y>229</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>dockWidgetProject</sender>
+   <signal>visibilityChanged(bool)</signal>
+   <receiver>actionProject</receiver>
+   <slot>setChecked(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>134</x>
+     <y>229</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

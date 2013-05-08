@@ -189,6 +189,13 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="2">
+    <widget class="QCheckBox" name="checkBoxSearchIndex">
+     <property name="text">
+      <string>Find All</string>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <resources>

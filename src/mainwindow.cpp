@@ -58,6 +58,7 @@ extern "C" {
 #include "dltuiutils.h"
 #include "dltexporter.h"
 #include "jumptodialog.h"
+#include "fieldnames.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -70,14 +71,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initState();
 
-    initView();
+
 
     /* Apply loaded settings */
     applySettings();
 
+    initSearchTable();
+
+    initView();
+
     initSignalConnections();
 
     initFileHandling();
+
 
 
 
@@ -98,6 +104,10 @@ MainWindow::MainWindow(QWidget *parent) :
     /* start timer for autoconnect */
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
     timer.start(1000);
+
+
+
+
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -187,10 +197,6 @@ void MainWindow::initState()
     /* Load Plugins before loading default project */
     loadPlugins();
 
-    searchDlg = new SearchDialog(this);
-    searchDlg->file = &qfile;
-    searchDlg->table = ui->tableView;
-    searchDlg->plugin = project.plugin;
 
     /* initialize injection */
     injectionAplicationId.clear();
@@ -268,6 +274,11 @@ void MainWindow::initSignalConnections()
     connect(m_searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
 
+
+    connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
+    connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
+
+
     /* Insert search text box to search toolbar, before previous button */
     QAction *before = m_searchActions.at(ToolbarPosition::FindPrevious);
     ui->searchToolbar->insertWidget(before, searchTextbox);
@@ -278,10 +289,71 @@ void MainWindow::initSignalConnections()
     m_shortcut_searchprev = new QShortcut(QKeySequence("F2"), this);
     connect(m_shortcut_searchprev, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
 
-
-
     connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
+
+    //for search result table
+    connect(searchDlg, SIGNAL(refreshedSearchIndex()), this, SLOT(searchTableRenewed()));
+    connect( m_searchresultsTable, SIGNAL( doubleClicked (QModelIndex) ), this, SLOT( searchtable_cellSelected( QModelIndex ) ) );
+
+}
+
+void MainWindow::initSearchTable()
+{
+
+    //init search Dialog
+    searchDlg = new SearchDialog(this);
+    searchDlg->file = &qfile;
+    searchDlg->table = ui->tableView;
+    searchDlg->plugin = project.plugin;
+
+    /* initialise DLT Search handling */
+    m_searchtableModel = new SearchTableModel("Search Index Mainwindow");
+    m_searchtableModel->qfile = &qfile;
+    m_searchtableModel->project = &project;
+
+    searchDlg->registerSearchTableModel(m_searchtableModel);
+
+    m_searchresultsTable = ui->tableView_SearchIndex;
+    m_searchresultsTable->setModel(m_searchtableModel);
+
+    m_searchresultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+
+    m_searchresultsTable->verticalHeader()->setVisible(false);    
+    m_searchresultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
+    //Ideally possible with right-click
+    m_searchresultsTable->setColumnHidden(FieldNames::Counter, true);
+    //m_searchresultsTable->setColumnHidden(FieldNames::EcuId, true);
+    m_searchresultsTable->setColumnHidden(FieldNames::Type, true);
+    m_searchresultsTable->setColumnHidden(FieldNames::Subtype, true);
+    m_searchresultsTable->setColumnHidden(FieldNames::Mode, true);
+    m_searchresultsTable->setColumnHidden(FieldNames::ArgCount, true);
+
+    QFont searchtableViewFont = m_searchresultsTable->font();
+    searchtableViewFont.setPointSize(settings->fontSize);
+    m_searchresultsTable->setFont(searchtableViewFont);
+
+    // Rescale the height of a row to choosen font size + 8 pixels
+    m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->fontSize+8);
+
+    /* set table size and en */
+    m_searchresultsTable->setColumnWidth(FieldNames::Index,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::Time,150);
+    m_searchresultsTable->setColumnWidth(FieldNames::TimeStamp,70);
+    m_searchresultsTable->setColumnWidth(3,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::EcuId,40);
+    m_searchresultsTable->setColumnWidth(5,40);
+    m_searchresultsTable->setColumnWidth(6,40);
+    m_searchresultsTable->setColumnWidth(7,50);
+    m_searchresultsTable->setColumnWidth(8,50);
+    m_searchresultsTable->setColumnWidth(9,40);
+    m_searchresultsTable->setColumnWidth(10,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::Payload,1000);
+
+    ui->dockWidgetSearchIndex->hide();    
 
 }
 
@@ -1334,9 +1406,12 @@ void MainWindow::reloadLogFile()
     }
 
     tableModel->modelChanged();
+    m_searchtableModel->modelChanged();
 
     /* set name of opened log file in status bar */
     statusFilename->setText(outputfile.fileName());
+
+
 
     /* We might have had readyRead events, which we missed */
     readyRead();
@@ -4216,7 +4291,6 @@ void MainWindow::loadPluginsPath(QDir dir)
 
                         if(item->widget)
                         {
-                            //item->dockWidget = new QDockWidget(item->getName(),this);
                             item->dockWidget = new MyPluginDockWidget(item,this);
                             item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
                             item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
@@ -5031,9 +5105,6 @@ void MainWindow::on_filterButton_clicked(bool checked)
             }
         }
 
-
-
-
     }
     else
     {
@@ -5333,6 +5404,7 @@ bool MainWindow::jump_to_line(int line)
     QModelIndex idx = tableModel->index(row, 0, QModelIndex());
     ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
     ui->tableView->selectionModel()->select(idx, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+    ui->tableView->setFocus();
 
     return true;
 }
@@ -5352,6 +5424,7 @@ void MainWindow::on_actionJump_To_triggered()
     }
 
     jump_to_line(dlg.getIndex());
+
 
 }
 
@@ -5375,3 +5448,28 @@ void MainWindow::on_actionDisconnectAll_triggered()
 {
     disconnectAll();
 }
+
+void MainWindow::searchTableRenewed()
+{
+    if ( 0 < m_searchtableModel->get_SearchResultListSize())
+        ui->dockWidgetSearchIndex->show();
+
+    m_searchtableModel->modelChanged(); 
+}
+
+
+void MainWindow::searchtable_cellSelected( QModelIndex index)
+{
+
+    int position = index.row();
+    unsigned long entry;
+
+    if (! m_searchtableModel->get_SearchResultEntry(position, entry) )
+        return;
+
+    tableModel->setLastSearchIndex(entry);
+    jump_to_line(entry);
+
+}
+
+

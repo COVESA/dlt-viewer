@@ -33,12 +33,16 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
     ui->setupUi(this);
     regexpCheckBox = ui->checkBoxRegExp;
+    CheckBoxSearchtoList = ui->checkBoxSearchIndex;
     match = false;
     onceClicked = false;
-    startLine = -1;
+    startLine = -1;    
 
     lineEdits = new QList<QLineEdit*>();
     lineEdits->append(ui->lineEditText);
+
+    bool checked = DltSettingsManager::getInstance()->value("other/search/checkBoxSearchIndex", bool(true)).toBool();
+    ui->checkBoxSearchIndex->setChecked(checked);
 
     updateColorbutton();
 }
@@ -69,7 +73,10 @@ bool SearchDialog::getSearchFromBeginning(){return (ui->radioButtonPosBeginning-
 bool SearchDialog::getNextClicked(){return nextClicked;}
 bool SearchDialog::getMatch(){return match;}
 bool SearchDialog::getOnceClicked(){return onceClicked;}
+bool SearchDialog::searchtoIndex(){return (ui->checkBoxSearchIndex->checkState() ==Qt::Checked);}
+
 int SearchDialog::getStartLine( ){return startLine;}
+
 
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
@@ -107,9 +114,7 @@ void SearchDialog::focusRow(int searchLine)
 int SearchDialog::find()
 {
     QRegExp searchTextRegExp;
-    QDltMsg msg;
-    QByteArray buf;
-    QString text;
+
     int searchLine;
     int searchBorder;
 
@@ -136,7 +141,7 @@ int SearchDialog::find()
 
     searchLine = getStartLine();
     searchBorder = getStartLine();;
-    if(searchBorder < 0){
+    if(searchBorder < 0 || searchtoIndex()){
         if(getNextClicked()){
             searchBorder = file->sizeFilter()==0?0:file->sizeFilter()-1;
         }else{
@@ -158,12 +163,47 @@ int SearchDialog::find()
     }
 
 
+    findProcess(searchLine,searchBorder,searchTextRegExp);
+
+
+    if (searchtoIndex())
+    {
+        emit refreshedSearchIndex();
+        //if at least one element has been found -> successful search
+        if ( 0 < m_searchtablemodel->get_SearchResultListSize())
+            return 1;
+    }
+
+    if(getMatch())
+    {
+        return 1;
+    }
+    setStartLine(0);
+    return 0;
+}
+
+
+void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp)
+{
+
+    QDltMsg msg;
+    QByteArray buf;
+    QString text;
+    int ctr = 0;
+    m_searchtablemodel->clear_RearchResults();
+
+
+
     QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
+
     do
     {
+        ctr++;
+
+        text.clear();
 
         if(getNextClicked()){
             searchLine++;
@@ -180,11 +220,8 @@ int SearchDialog::find()
         /* Update progress every 0.5% */
         if(searchLine%1000==0)
         {
-            if(getNextClicked()){
-                fileprogress.setValue(searchLine+1);
-            }else{
-                fileprogress.setValue(file->sizeFilter()-searchLine);
-            }
+
+            fileprogress.setValue(ctr);
 
             if(fileprogress.wasCanceled())
             {
@@ -221,10 +258,10 @@ int SearchDialog::find()
             {
                 if(text.contains(searchTextRegExp))
                 {
-                    focusRow(searchLine);
-                    setStartLine(searchLine);
-                    setMatch(true);
-                    break;
+                    if ( foundLine(searchLine) )
+                        break;
+                    else
+                        continue;
                 }else {
                     setMatch(false);
                 }
@@ -233,11 +270,10 @@ int SearchDialog::find()
             {
                 if(text.contains(getText(),getCaseSensitive()? Qt::CaseSensitive : Qt::CaseInsensitive ))
                 {
-
-                    focusRow(searchLine);
-                    setStartLine(searchLine);
-                    setMatch(true);
-                    break;
+                    if ( foundLine(searchLine) )
+                        break;
+                    else
+                        continue;
                 }else {
                     setMatch(false);
                 }
@@ -257,10 +293,10 @@ int SearchDialog::find()
             {
                 if(text.contains(searchTextRegExp))
                 {
-                    focusRow(searchLine);
-                    setMatch(true);
-                    setStartLine(searchLine);
-                    break;
+                    if ( foundLine(searchLine) )
+                        break;
+                    else
+                        continue;
                 }else {
                     setMatch(false);
                 }
@@ -269,25 +305,44 @@ int SearchDialog::find()
             {
                 if(text.contains(getText(),getCaseSensitive()?Qt::CaseSensitive:Qt::CaseInsensitive))
                 {
-                    focusRow(searchLine);
-                    setMatch(true);
-                    setStartLine(searchLine);
-                    break;
+                    if ( foundLine(searchLine) )
+                        break;
+                    else
+                        continue;
                 } else {
                     setMatch(false);
                 }
             }
         }
 
-    }while(searchBorder != searchLine);
 
-    if(getMatch())
-    {
-        return 1;
-    }
-    setStartLine(0);
-    return 0;
+
+    }while( searchBorder != searchLine );
+
 }
+
+
+bool SearchDialog::foundLine(int searchLine)
+{
+
+    setMatch(true);
+
+    if (searchtoIndex())
+    {
+        addToSearchIndex(searchLine);
+
+    }
+    else
+    {
+        focusRow(searchLine);
+        setStartLine(searchLine);
+        return true;//found single result, and breaking here
+    }
+    return false;//don't break search here
+}
+
+
+
 
 void SearchDialog::on_pushButtonNext_clicked()
 {
@@ -362,4 +417,22 @@ void SearchDialog::updateColorbutton()
 }
 
 
+void SearchDialog::addToSearchIndex(int searchLine)
+{
+    m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));    
 
+ }
+
+void SearchDialog::registerSearchTableModel(SearchTableModel *model)
+{
+    m_searchtablemodel = model;    
+}
+
+
+
+void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
+{
+    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
+
+    emit(checkBoxSearchList_toggled(checked));
+}
