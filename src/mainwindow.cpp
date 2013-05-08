@@ -68,6 +68,74 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     setAcceptDrops(true);
 
+    initState();
+
+    initView();
+
+    /* Apply loaded settings */
+    applySettings();
+
+    initSignalConnections();
+
+    initFileHandling();
+
+
+
+    /* Command plugin */
+    if(OptManager::getInstance()->isPlugin())
+    {
+        commandLineExecutePlugin(OptManager::getInstance()->getPluginName(),
+                                 OptManager::getInstance()->getCommandName(),
+                                 OptManager::getInstance()->getCommandParams());
+    }
+
+    /* auto connect */
+    if(settings->autoConnect)
+    {
+        connectAll();
+    }
+
+    /* start timer for autoconnect */
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
+    timer.start(1000);
+
+    restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
+    restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
+}
+
+MainWindow::~MainWindow()
+{
+    DltSettingsManager::close();
+    /**
+     * All plugin dockwidgets must be removed from the layout manually and
+     * then deleted. This has to be done here, because they contain
+     * UI components owned by the plugins. The plugins will destroy their
+     * own UI components. If the dockwidget is not manually removed, the
+     * parent destructor of MainWindow will try to automatically delete
+     * the dockWidgets subcomponents, which are already destroyed
+     * when unloading plugins.
+     **/
+    for(int i=0;i<project.plugin->topLevelItemCount();i++)
+    {
+        PluginItem *item = (PluginItem *) project.plugin->topLevelItem(i);
+        if(item->dockWidget != NULL)
+        {
+            removeDockWidget(item->dockWidget);
+            delete item->dockWidget;
+        }
+    }
+
+    delete ui;
+    delete tableModel;
+    delete searchDlg;
+    delete dltIndexer;
+    delete m_shortcut_searchnext;
+    delete m_shortcut_searchprev;
+}
+
+void MainWindow::initState()
+{
+
     /* Settings */
     settings = new SettingsDialog(&qfile,this);
     settings->assertSettingsVersion();
@@ -129,6 +197,10 @@ MainWindow::MainWindow(QWidget *parent) :
     injectionContextId.clear();
     injectionServiceId.clear();
     injectionData.clear();
+}
+
+void MainWindow::initView()
+{
 
     /* set table size and en */
     ui->tableView->setModel(tableModel);
@@ -177,24 +249,27 @@ MainWindow::MainWindow(QWidget *parent) :
     /* Initialize toolbars. Most of the construction and connection is done via the
      * UI file. See mainwindow.ui, ActionEditor and Signal & Slots editor */
     QList<QAction *> mainActions = ui->mainToolBar->actions();
-    QList<QAction *> searchActions = ui->searchToolbar->actions();
+    m_searchActions = ui->searchToolbar->actions();
 
     /* Point scroll toggle button to right place */
     scrollButton = mainActions.at(ToolbarPosition::AutoScroll);
 
     /* Update the scrollbutton status */
     updateScrollButton();
+}
 
+void MainWindow::initSignalConnections()
+{
     /* Connect RegExp settings from and to search dialog */
-    connect(searchActions.at(ToolbarPosition::Regexp), SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
-    connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), searchActions.at(ToolbarPosition::Regexp), SLOT(setChecked(bool)));
+    connect(m_searchActions.at(ToolbarPosition::Regexp), SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
+    connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), m_searchActions.at(ToolbarPosition::Regexp), SLOT(setChecked(bool)));
 
     /* Connect previous and next buttons to search dialog slots */
-    connect(searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
-    connect(searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
+    connect(m_searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
+    connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
 
     /* Insert search text box to search toolbar, before previous button */
-    QAction *before = searchActions.at(ToolbarPosition::FindPrevious);
+    QAction *before = m_searchActions.at(ToolbarPosition::FindPrevious);
     ui->searchToolbar->insertWidget(before, searchTextbox);
 
     /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
@@ -204,12 +279,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_shortcut_searchprev, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
 
 
-    /* Apply loaded settings */
-    applySettings();
 
     connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
+}
+
+void MainWindow::initFileHandling()
+{
     /* Initialize dlt-file indexer  */
     dltIndexer = new DltFileIndexer(&qfile, this);
 
@@ -262,20 +339,22 @@ MainWindow::MainWindow(QWidget *parent) :
                 reloadLogFile();
             else
                 QMessageBox::critical(0, QString("DLT Viewer"),
-                                         QString("Cannot load temporary log file \"%1\"\n%2")
-                                         .arg(outputfile.fileName())
-                                         .arg(outputfile.errorString()));
+                                      QString("Cannot load temporary log file \"%1\"\n%2")
+                                      .arg(outputfile.fileName())
+                                      .arg(outputfile.errorString()));
         }
     }
 
     if(OptManager::getInstance()->isFilterFile()){
         if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),false))
-        {            
+        {
             filterUpdate();
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
 
         }
     }
+
+
     ui->filterButton->setChecked(true);//for filters included in the project project and for filter files
 
     if(OptManager::getInstance()->isConvert())
@@ -284,56 +363,6 @@ MainWindow::MainWindow(QWidget *parent) :
         exit(0);
     }
 
-    /* Command plugin */
-    if(OptManager::getInstance()->isPlugin())
-    {
-        commandLineExecutePlugin(OptManager::getInstance()->getPluginName(),
-                                 OptManager::getInstance()->getCommandName(),
-                                 OptManager::getInstance()->getCommandParams());
-    }
-
-    /* auto connect */
-    if(settings->autoConnect)
-    {
-        connectAll();
-    }
-
-    /* start timer for autoconnect */
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    timer.start(1000);
-
-    restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
-    restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
-}
-
-MainWindow::~MainWindow()
-{
-    DltSettingsManager::close();
-    /**
-     * All plugin dockwidgets must be removed from the layout manually and
-     * then deleted. This has to be done here, because they contain
-     * UI components owned by the plugins. The plugins will destroy their
-     * own UI components. If the dockwidget is not manually removed, the
-     * parent destructor of MainWindow will try to automatically delete
-     * the dockWidgets subcomponents, which are already destroyed
-     * when unloading plugins.
-     **/
-    for(int i=0;i<project.plugin->topLevelItemCount();i++)
-    {
-        PluginItem *item = (PluginItem *) project.plugin->topLevelItem(i);
-        if(item->dockWidget != NULL)
-        {
-            removeDockWidget(item->dockWidget);
-            delete item->dockWidget;
-        }
-    }
-
-    delete ui;
-    delete tableModel;
-    delete searchDlg;
-    delete dltIndexer;
-    delete m_shortcut_searchnext;
-    delete m_shortcut_searchprev;
 }
 
 void MainWindow::commandLineConvertToASCII(){

@@ -147,6 +147,8 @@ private:
     /* Toggle buttons */
     QAction *scrollButton;
 
+    QList<QAction *> m_searchActions;
+
     /* Recent files */
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
@@ -170,6 +172,16 @@ private:
 
     /* dlt-file Indexer with cancel cabability */
     DltFileIndexer *dltIndexer;
+
+
+
+    /* functions called in constructor */
+    void initState();
+    void initView();
+    void initSignalConnections();
+    void initFileHandling();
+
+    /* general functions */
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
