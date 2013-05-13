@@ -21,6 +21,7 @@
 #define DLTVIEWERPLUGIN_H
 
 #include <QObject>
+#include <qdlt.h>
 #include "plugininterface.h"
 #include "form.h"
 
@@ -31,6 +32,9 @@ class DltViewerPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInt
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+#ifdef QT5
+    Q_PLUGIN_METADATA(IID "org.genivi.DLT.DltViewerPlugin")
+#endif
 
 public:
     DltViewerPlugin();

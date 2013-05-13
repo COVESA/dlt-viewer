@@ -40,11 +40,13 @@ OptManager* OptManager::getInstance()
     return instance;
 }
 
-OptManager::OptManager(OptManager const&){
+OptManager::OptManager(OptManager const&)
+{
 
 }
 
-void OptManager::OptManager::printUsage(){
+void OptManager::printUsage()
+{
 #if (WIN32)
     qDebug()<<"Usage: dlt_viewer.exe [OPTIONS]";
 #else

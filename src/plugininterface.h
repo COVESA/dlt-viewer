@@ -21,7 +21,6 @@
 #define PLUGININTERFACE_H
 
 #include <QString>
-#include "dlt.h"
 #include "qdlt.h"
 
 #define PLUGIN_INTERFACE_VERSION "1.0.0"

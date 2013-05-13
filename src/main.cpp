@@ -17,9 +17,8 @@
  * @licence end@
  */
 
-#include <QtGui/QApplication>
 #include <QModelIndex>
-
+#include <QApplication>
 #include "mainwindow.h"
 #include "optmanager.h"
 

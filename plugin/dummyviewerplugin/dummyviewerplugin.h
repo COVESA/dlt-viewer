@@ -31,6 +31,9 @@ class DummyViewerPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerI
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+#ifdef QT5
+    Q_PLUGIN_METADATA(IID "org.genivi.DLT.DummyViewerPlugin")
+#endif
 
 public:
     DummyViewerPlugin();

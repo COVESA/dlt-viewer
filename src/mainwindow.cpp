@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <QMimeData>
 #include <QTreeView>
 #include <QFileDialog>
 #include <QProgressDialog>
@@ -32,8 +33,17 @@
 #include <QUrl>
 #include <QDateTime>
 
+/**
+ * From QDlt.
+ * Must be a "C" include to interpret the imports correctly
+ * for MSVC compilers.
+ **/
+extern "C" {
+    #include "dlt_common.h"
+    #include "dlt_user.h"
+}
+
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 
 #include "ecudialog.h"
 #include "applicationdialog.h"
@@ -363,7 +373,7 @@ void MainWindow::commandLineConvertToASCII(){
         text += "\n";
 
         /* write to file */
-        asciiFile.write(text.toAscii().constData());
+        asciiFile.write(text.toLatin1().constData());
 
     }
 
@@ -439,19 +449,19 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
 }
 
 void MainWindow::deleteactualFile(){
-  if(outputfileIsTemporary && !outputfileIsFromCLI)
-  {
-      // Delete created temp file
-      qfile.close();
-      outputfile.close();
-      if(outputfile.exists() && !outputfile.remove())
-      {
-          QMessageBox::critical(0, QString("DLT Viewer"),
-                                QString("Cannot delete temporary log file \"%1\"\n%2")
-                                .arg(outputfile.fileName())
-                                .arg(outputfile.errorString()));
-      }
-  }
+        if(outputfileIsTemporary && !outputfileIsFromCLI)
+        {
+            // Delete created temp file
+            qfile.close();
+            outputfile.close();
+            if(outputfile.exists() && !outputfile.remove())
+            {
+                QMessageBox::critical(0, QString("DLT Viewer"),
+                                      QString("Cannot delete temporary log file \"%1\"\n%2")
+                                      .arg(outputfile.fileName())
+                                      .arg(outputfile.errorString()));
+            }
+        }
 }
 
 
@@ -509,7 +519,7 @@ void MainWindow::on_action_menuFile_New_triggered()
           }
         else
           {
-          outputfile.close();
+        outputfile.close();
           }
       }
 
@@ -580,7 +590,7 @@ bool MainWindow::openDltFile(QString fileName)
 {
     /* close existing file */
   bool ret = false;
-  if(outputfile.isOpen())
+    if(outputfile.isOpen())
     {
       if (outputfile.size() == 0)
         {
@@ -588,7 +598,7 @@ bool MainWindow::openDltFile(QString fileName)
         }
       else
         {
-          outputfile.close();
+        outputfile.close();
         }
     }
 
@@ -632,7 +642,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     dlt_file_init(&importfile,0);
 
     /* open DLT stream file */
-    dlt_file_open(&importfile,fileName.toAscii(),0);
+    dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,false,0)>=0)
@@ -676,7 +686,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     dlt_file_init(&importfile,0);
 
     /* open DLT stream file */
-    dlt_file_open(&importfile,fileName.toAscii(),0);
+    dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
     while (dlt_file_read_raw(&importfile,true,0)>=0)
@@ -723,7 +733,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     int num = 0;
 
     /* open DLT log file with same filename as output file */
-    if (dlt_file_open(&importfile,fileName.toAscii() ,0)<0)
+    if (dlt_file_open(&importfile,fileName.toLatin1() ,0)<0)
     {
         return;
     }
@@ -809,7 +819,7 @@ void MainWindow::on_action_menuFile_Export_ASCII_triggered()
         text += "\n";
 
         /* write to file */
-        outfile.write(text.toAscii().constData());
+        outfile.write(text.toLatin1().constData());
     }
     outfile.close();
 }
@@ -909,7 +919,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
                 if(file)
                 {
                     // write to file
-                    outfile.write(text.toAscii().constData());
+                    outfile.write(text.toLatin1().constData());
                 }
                 else
                 {
@@ -959,7 +969,7 @@ void MainWindow::on_action_menuFile_Export_CSV_triggered()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("csv");
     dialog.setDirectory(workingDirectory.getExportDirectory());
-    dialog.setFilters(filters);
+    dialog.setNameFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
     if(dialog.result() != QFileDialog::Accepted ||
@@ -1006,7 +1016,7 @@ void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("csv");
     dialog.setDirectory(workingDirectory.getExportDirectory());
-    dialog.setFilters(filters);
+    dialog.setNameFilters(filters);
     dialog.setWindowTitle("Export to CSV file");
     dialog.exec();
     if(dialog.result() != QFileDialog::Accepted ||
@@ -1045,7 +1055,7 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("dlt");
     dialog.setDirectory(workingDirectory.getDltDirectory());
-    dialog.setFilters(filters);
+    dialog.setNameFilters(filters);
     dialog.setWindowTitle("Save DLT Log file");
     dialog.exec();
     if(dialog.result() != QFileDialog::Accepted ||
@@ -1127,15 +1137,15 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     QString oldfn = outputfile.fileName();
 
     if(outputfile.isOpen())
-      {
+    {
         if (outputfile.size() == 0)
           {
             deleteactualFile();
           }
         else
           {
-          outputfile.close();
-          }
+        outputfile.close();
+    }
       }
 
     outputfile.setFileName(fn);
@@ -1422,7 +1432,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDefaultSuffix("dlp");
     dialog.setDirectory(workingDirectory.getDlpDirectory());
-    dialog.setFilters(filters);
+    dialog.setNameFilters(filters);
     dialog.setWindowTitle("Save DLT Project file");
     dialog.exec();
     if(dialog.result() != QFileDialog::Accepted ||
@@ -2284,7 +2294,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         {
             /* Serial */
             if(!ecuitem->m_serialport)
-              {
+            {
                 PortSettings settings = {ecuitem->getBaudrate(), DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
                 ecuitem->m_serialport = new QextSerialPort(ecuitem->getPort(),settings);
                 connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
@@ -2515,9 +2525,9 @@ void MainWindow::read(EcuItem* ecuitem)
             str.ecu[3]=0;
             /* prepare storage header */
             if (!qmsg.getEcuid().isEmpty())
-               dlt_set_id(str.ecu,qmsg.getEcuid().toAscii());
+               dlt_set_id(str.ecu,qmsg.getEcuid().toLatin1());
             else
-                dlt_set_id(str.ecu,ecuitem->id.toAscii());
+                dlt_set_id(str.ecu,ecuitem->id.toLatin1());
 
             /* check if message is matching the filter */
             if (outputfile.isOpen())
@@ -2875,7 +2885,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
     /* prepare storage header */
     msg.storageheader = (DltStorageHeader*)msg.headerbuffer;
-    dlt_set_storageheader(msg.storageheader,ecuitem->id.toAscii());
+    dlt_set_storageheader(msg.storageheader,ecuitem->id.toLatin1());
 
     /* prepare standard header */
     msg.standardheader = (DltStandardHeader*)(msg.headerbuffer + sizeof(DltStorageHeader));
@@ -2888,7 +2898,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     msg.standardheader->mcnt = 0;
 
     /* Set header extra parameters */
-    dlt_set_id(msg.headerextra.ecu,ecuitem->id.toAscii());
+    dlt_set_id(msg.headerextra.ecu,ecuitem->id.toLatin1());
     msg.headerextra.tmsp = dlt_uptime();
 
     /* Copy header extra parameters to headerbuffer */
@@ -2904,7 +2914,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
     else
     {
-        dlt_set_id(msg.extendedheader->apid, appid.toAscii());
+        dlt_set_id(msg.extendedheader->apid, appid.toLatin1());
     }
     if (contid.isEmpty())
     {
@@ -2912,7 +2922,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
     else
     {
-        dlt_set_id(msg.extendedheader->ctid, contid.toAscii());
+        dlt_set_id(msg.extendedheader->ctid, contid.toLatin1());
     }
 
     /* prepare length information */
@@ -3124,8 +3134,8 @@ void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QStri
     DltServiceSetLogLevel *req;
     req = (DltServiceSetLogLevel*) msg.databuffer;
     req->service_id = DLT_SERVICE_ID_SET_LOG_LEVEL;
-    dlt_set_id(req->apid,app.toAscii());
-    dlt_set_id(req->ctid,con.toAscii());
+    dlt_set_id(req->apid,app.toLatin1());
+    dlt_set_id(req->ctid,con.toLatin1());
     req->log_level = log_level;
     dlt_set_id(req->com,"remo");
 
@@ -3174,8 +3184,8 @@ void MainWindow::controlMessage_SetTraceStatus(EcuItem* ecuitem,QString app, QSt
     DltServiceSetLogLevel *req;
     req = (DltServiceSetLogLevel*) msg.databuffer;
     req->service_id = DLT_SERVICE_ID_SET_TRACE_STATUS;
-    dlt_set_id(req->apid,app.toAscii());
-    dlt_set_id(req->ctid,con.toAscii());
+    dlt_set_id(req->apid,app.toLatin1());
+    dlt_set_id(req->ctid,con.toLatin1());
     req->log_level = status;
     dlt_set_id(req->com,"remo");
 
@@ -4146,7 +4156,7 @@ void MainWindow::loadPluginsPath(QDir dir)
 {
     /* set filter for plugin files */
     QStringList filters;
-    filters << "*.dll" << "*.lib" << "*.so";
+    filters << "*.dll" << "*.so";
     dir.setNameFilters(filters);
 
     /* iterate through all plugins */
@@ -5004,21 +5014,21 @@ void MainWindow::on_filterButton_clicked(bool checked)
     }
 
 
-    int firstSelection = 0;
-    /* Try to re-select old indices */
-    QItemSelection newSelection;
-    for(int j=0;j<rowIndices.count();j++)
-    {
-        if(j == 0)
+        int firstSelection = 0;
+        /* Try to re-select old indices */
+        QItemSelection newSelection;
+        for(int j=0;j<rowIndices.count();j++)
+        {
+            if(j == 0)
         {
             firstSelection = nearest_line(rowIndices.at(j));
         }
         int nearest = nearest_line(rowIndices.at(j));
         QModelIndex idx = tableModel->index(nearest, 0);
-        newSelection.select(idx, idx);
+            newSelection.select(idx, idx);
     }
-    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
-    scrollToTarget = tableModel->index(firstSelection, 0);
+        ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+        scrollToTarget = tableModel->index(firstSelection, 0);
 
 
     tableModel->modelChanged();

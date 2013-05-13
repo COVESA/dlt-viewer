@@ -38,7 +38,7 @@ void DltSettingsManager::close()
     m_instance = NULL;
 }
 
-#ifdef __WIN32__
+#ifdef Q_OS_WIN
 DltSettingsManager::DltSettingsManager()
 {
     settings = new QSettings(QApplication::applicationDirPath()+"/config.ini", QSettings::IniFormat);

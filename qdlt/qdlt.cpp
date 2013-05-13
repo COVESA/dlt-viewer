@@ -28,12 +28,6 @@
 #include <QTcpSocket>
 #include "qdlt.h"
 
-extern "C"
-{
-    #include "dlt_common.h"
-    #include "dlt_user_shared.h"
-}
-
 const char *qDltMessageType[] = {"log","app_trace","nw_trace","control","","","",""};
 const char *qDltLogInfo[] = {"","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *qDltTraceType[] = {"","variable","func_in","func_out","state","vfb","","","","","","","","","",""};
@@ -47,6 +41,11 @@ const char *qDltCtrlServiceId[] = {"","set_log_level","set_trace_status","get_lo
                              "get_local_time","use_ecu_id","use_session_id","use_timestamp","use_extended_header","set_default_log_level","set_default_trace_status",
                              "get_software_version","message_buffer_overflow"};
 const char *qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
+
+extern "C"
+{
+#include "dlt_common.h"
+}
 
 #define DLT_MAX_MESSAGE_LEN 1024*64
 
@@ -166,33 +165,27 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
 
 QString QDlt::toAscii(QByteArray &bytes, bool ascii)
 {
-    static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-    if (ascii)
+    QString text;
+    text.reserve(bytes.size()*2);
+
+    /* create text to show */
+    for(int num=0;num<bytes.size();num++)
     {
-        // Could also use QString::QString ( const QByteArray & ba )
-        return QString::fromAscii(bytes.data(), bytes.size() );
-    }
-    else
-    {
-        std::vector<char> str( bytes.size()*3, ' ' );
-        char* strData = &str[0];
-        int size = bytes.size();
-        char* byteData = bytes.data();
-        for(int num=0;num<size;++num)
-        {
-            *strData = hexmap[ (*byteData & 0xF0) >> 4 ];
-            ++strData;
-            *strData = hexmap[ *byteData & 0x0F ];
-            strData += 2;
-            ++byteData;
+        char ch = (bytes.constData())[num];
+        if(ascii) {
+            if( (ch >= ' ') && (ch <= '~') )
+                text += QString(QChar(ch));
+            else
+                text += QString("-");
         }
-        // Remove trailing space at the end
-        if (size>0)
-        {
-            *(strData-1) = 0;
+        else {
+            if(num!=0)
+                text += QString(" ");
+            text += QString("%1").arg((unsigned char)ch,2,16,QLatin1Char('0'));
         }
-        return QString( &str[0] );
     }
+
+    return text;
 }
 
 QDltArgument::QDltArgument()
@@ -1159,7 +1152,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
         storageheader.pattern[1] = 'L';
         storageheader.pattern[2] = 'T';
         storageheader.pattern[3] = 0x01;
-        strncpy(storageheader.ecu,ecuid.toAscii().constData(),ecuid.size()>3?4:ecuid.size()+1);
+        strncpy(storageheader.ecu,ecuid.toLatin1().constData(),ecuid.size()>3?4:ecuid.size()+1);
         storageheader.microseconds = microseconds;
         storageheader.seconds = time;
         buf += QByteArray((const char *)&storageheader,sizeof(DltStorageHeader));
@@ -1186,7 +1179,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
     /* write standard header extra */
     if(mode == DltModeVerbose) {
-        strncpy(headerextra.ecu,ecuid.toAscii().constData(),ecuid.size()>3?4:ecuid.size()+1);
+        strncpy(headerextra.ecu,ecuid.toLatin1().constData(),ecuid.size()>3?4:ecuid.size()+1);
         buf += QByteArray((const char *)&(headerextra.ecu),sizeof(headerextra.ecu));
         headerextra.seid = DLT_SWAP_32(sessionid);
         buf += QByteArray((const char *)&(headerextra.seid),sizeof(headerextra.seid));
@@ -1196,8 +1189,8 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
     /* write extendedheader */
     if(mode == DltModeVerbose) {
-        strncpy(extendedheader.apid,apid.toAscii().constData(),apid.size()>3?4:apid.size()+1);
-        strncpy(extendedheader.ctid,ctid.toAscii().constData(),ctid.size()>3?4:ctid.size()+1);
+        strncpy(extendedheader.apid,apid.toLatin1().constData(),apid.size()>3?4:apid.size()+1);
+        strncpy(extendedheader.ctid,ctid.toLatin1().constData(),ctid.size()>3?4:ctid.size()+1);
         extendedheader.msin = 0;
         if(mode == DltModeVerbose) {
             extendedheader.msin |= DLT_MSIN_VERB;

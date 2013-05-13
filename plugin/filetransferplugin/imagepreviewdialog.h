@@ -29,6 +29,7 @@
 #include <QPixmap>
 #include <QPrinter>
 #include <QPrintDialog>
+
 namespace Ui {
     class ImagePreviewDialog;
 }

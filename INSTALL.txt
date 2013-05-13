@@ -5,13 +5,18 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
-* Install Qt4. Tested with QT 4.8.2.
+* Install Qt4. Tested with QT 4.8.2
 * Install relative new MinGW. Tested GCC 4.6.2
-* Install Qt Creator. Tested with 2.6.0.
+* Install Qt Creator. Tested with 2.6.2.
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW.
 * Build Release in Qt Creator.
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
+
+The compilation has also been tried with these:
+* QT 5.0.2 - MinGW 4.7.2
+* QT 5.0.2 - MSVC 2010, 32bit
+* QT 5.0.2 - MSVC 2012, 64bit
 
 Instructions for installing DLT Viewer (Linux commandline)
 ----------------------------------------------------------

@@ -84,4 +84,7 @@ bool DummyDecoderPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     return false;
 }
 
+#ifndef QT5
 Q_EXPORT_PLUGIN2(dummydecoderplugin, DummyDecoderPlugin);
+#endif
+

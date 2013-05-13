@@ -25,6 +25,12 @@
 #include "nonverboseplugin.h"
 #include "plugininterface.h"
 
+#if defined(_MSC_VER)
+#include <cstdint>
+#else
+#include <stdint.h>
+#endif
+
 #define NON_VERBOSE_PLUGIN_VERSION "1.0.0"
 
 /**
@@ -74,6 +80,9 @@ class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderI
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
+#ifdef QT5
+    Q_PLUGIN_METADATA(IID "org.genivi.DLT.NonVerbosePlugin")
+#endif
 
 public:
     /* QDLTPluginInterface interface */

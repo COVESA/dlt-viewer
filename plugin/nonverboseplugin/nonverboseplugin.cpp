@@ -18,8 +18,11 @@
  */
 
 #include <QtGui>
+#include <QMessageBox>
 
 #include "nonverboseplugin.h"
+#include "dlt_protocol.h"
+#include "dlt_user.h"
 
 extern char *message_type[];
 extern const char *log_info[];
@@ -526,4 +529,6 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     return true;
 }
 
+#ifndef QT5
 Q_EXPORT_PLUGIN2(nonverboseplugin, NonverbosePlugin);
+#endif

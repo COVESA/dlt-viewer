@@ -20,9 +20,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
 #include <QFile>
-#include <QLabel>
 #include <QTimer>
 #include <QDir>
 #include <QShortcut>
@@ -38,6 +36,7 @@
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
+#include "ui_mainwindow.h"
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -93,8 +92,7 @@ namespace ToolbarPosition {
 
 extern "C"
 {
-        #include "dlt_common.h"
-        #include "dlt_user_shared.h"
+#include "dlt_common.h"
 }
 
 namespace Ui {

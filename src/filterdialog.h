@@ -22,7 +22,7 @@
 
 #include <QDialog>
 #include <QColorDialog>
-#include <project.h>
+#include "project.h"
 
 namespace Ui {
     class FilterDialog;

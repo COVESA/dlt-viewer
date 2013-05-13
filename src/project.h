@@ -22,21 +22,25 @@
 
 #include "qdlt.h"
 
-#include <QTreeWidgetItem>
-#include <QHeaderView>
-#include <QTcpSocket>
+#include <QTreeWidget>
 #include <QDockWidget>
+#include <QTcpSocket>
 #include <QObject>
 #include <QDateTime>
 #include <qextserialport.h>
 #include <QPluginLoader>
 
+#if defined(_MSC_VER)
+#include <cstdint>
+#else
+#include <stdint.h>
+#endif
+
 #include "settingsdialog.h"
 
 extern "C"
 {
-        #include "dlt_common.h"
-        #include "dlt_user_shared.h"
+
 }
 
 #include "plugininterface.h"

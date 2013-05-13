@@ -21,10 +21,12 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QMessageBox>
+#include <QHeaderView>
 
 #include "project.h"
 #include "dltsettingsmanager.h"
 #include "dltuiutils.h"
+#include "dlt_user.h"
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *traceinfo[] = {"default","off","on"};

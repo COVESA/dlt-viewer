@@ -159,4 +159,6 @@ void DummyViewerPlugin::updateFileFinish(){
     form->setNonVerboseMessages(counterNonVerboseMessages);
 }
 
+#ifndef QT5
 Q_EXPORT_PLUGIN2(dummyviewerplugin, DummyViewerPlugin);
+#endif

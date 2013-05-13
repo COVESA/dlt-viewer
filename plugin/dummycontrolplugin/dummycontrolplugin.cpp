@@ -148,4 +148,6 @@ void DummyControlPlugin::updateFileFinish(){
 
 }
 
+#ifndef QT5
 Q_EXPORT_PLUGIN2(dummycontrolplugin, DummyControlPlugin);
+#endif

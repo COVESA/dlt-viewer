@@ -73,11 +73,6 @@
 
 #include "dlt_types.h"
 #include "dlt_common.h"
-#include "dlt_user_macros.h"
-
-#if !defined (__WIN32__)
-#include <semaphore.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {

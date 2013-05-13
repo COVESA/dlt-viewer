@@ -33,8 +33,6 @@
 
 extern "C"
 {
-        #include "dlt_common.h"
-        #include "dlt_user_shared.h"
 }
 
 class TableModel : public QAbstractTableModel

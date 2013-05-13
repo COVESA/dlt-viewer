@@ -2,6 +2,13 @@
 PROJECT                 = qdlt
 TEMPLATE                = lib
 
+DEFINES += QDLT_LIBRARY
+
+# Uncomment to add debug symbols to Release build
+#QMAKE_CXXFLAGS_RELEASE += -g
+#QMAKE_CFLAGS_RELEASE += -g
+#QMAKE_LFLAGS_RELEASE =
+
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 
@@ -14,7 +21,6 @@ target.path = /usr/lib
 INSTALLS += target
 
 CONFIG                 += warn_on qt
-#QT                     -= gui network
 QT                     += network
 QT                     += gui
 
@@ -23,12 +29,14 @@ MOC_DIR                 = build/moc
 
 INCLUDEPATH = ../qextserialport/src ../src
 
-SOURCES +=  dlt_common.c \
-            qdlt.cpp
+SOURCES +=  qdlt.cpp \
+            dlt_common.c
 
-HEADERS += dlt_common.h \
-           dlt_user_shared.h \
-           qdlt.h
+
+HEADERS += qdlt.h \
+           export_rules.h \
+           dlt_common.h \
+           dlt_user.h
 
 unix:VERSION            = 1.0.0
 

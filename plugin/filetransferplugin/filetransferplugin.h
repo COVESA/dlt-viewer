@@ -34,6 +34,9 @@ class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewer
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginCommandInterface)
+#ifdef QT5
+    Q_PLUGIN_METADATA(IID "org.genivi.DLT.FileTransferPlugin")
+#endif
 
 public:
     FiletransferPlugin();

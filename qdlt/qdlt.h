@@ -30,6 +30,21 @@
 #include <QMutex>
 #include <time.h>
 
+#include "export_rules.h"
+
+extern "C" {
+    QDLT_C_EXPORT extern const char *qDltMessageType[];
+    QDLT_C_EXPORT extern const char *qDltLogInfo[];
+    QDLT_C_EXPORT extern const char *qDltTraceType[];
+    QDLT_C_EXPORT extern const char *qDltNwTraceType[];
+    QDLT_C_EXPORT extern const char *qDltControlType[];
+    QDLT_C_EXPORT extern const char *qDltMode[];
+    QDLT_C_EXPORT extern const char *qDltEndianness[];
+    QDLT_C_EXPORT extern const char *qDltTypeInfo[];
+    QDLT_C_EXPORT extern const char *qDltCtrlServiceId[];
+    QDLT_C_EXPORT extern const char *qDltCtrlReturnType[];
+}
+
 struct sDltFile;
 struct sDltMessage;
 
@@ -40,7 +55,7 @@ class QTcpSocket;
 /*!
   This class contains helper functions needed for all DLT operations and classes.
 */
-class QDlt
+class QDLT_EXPORT QDlt
 {
 
 public:    
@@ -98,7 +113,7 @@ private:
   This class contains one argument of a DLT message.
   A QDltMessage contains several Arguments.
 */
-class QDltArgument : public QDlt
+class QDLT_EXPORT QDltArgument : public QDlt
 {
 public:
 
@@ -282,7 +297,7 @@ private:
   This class provide access to a single DLT message from a DLT log file.
   This class is currently not multithread save.
 */
-class QDltMsg : public QDlt
+class QDLT_EXPORT QDltMsg : public QDlt
 {
 public:
     //! Constructor.
@@ -729,7 +744,7 @@ private:
     QList<QDltArgument> arguments;
 };
 
-class QDltFilter
+class QDLT_EXPORT QDltFilter
 {
 public:
     QString ecuid;
@@ -763,7 +778,7 @@ private:
   This class provide access to DLT log file.
   This class is currently not multithread save.
 */
-class QDltFile : public QDlt
+class QDLT_EXPORT QDltFile : public QDlt
 {
 public:
     //! The constructor.
@@ -979,7 +994,7 @@ private:
     bool filterFlag;
 };
 
-class QDltControl : public QObject
+class QDLT_EXPORT QDltControl : public QObject
 {
       Q_OBJECT
 public:
@@ -997,7 +1012,7 @@ private:
 
 };
 
-class QDltConnection
+class QDLT_EXPORT QDltConnection
 {
 
 public:
@@ -1033,7 +1048,7 @@ protected:
 
 };
 
-class QDltTCPConnection : public QDltConnection
+class QDLT_EXPORT QDltTCPConnection : public QDltConnection
 {
 public:
 
@@ -1056,7 +1071,7 @@ private:
 
 };
 
-class QDltSerialConnection : public QDltConnection
+class QDLT_EXPORT QDltSerialConnection : public QDltConnection
 {
 public:
 

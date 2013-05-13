@@ -48,7 +48,7 @@ bool DltExporter::writeCSVHeader(QFile *file)
                     .arg(FieldNames::getName(FieldNames::Mode))
                     .arg(FieldNames::getName(FieldNames::ArgCount))
                     .arg(FieldNames::getName(FieldNames::Payload));
-    return file->write(header.toAscii().constData()) < 0 ? false : true;
+    return file->write(header.toLatin1().constData()) < 0 ? false : true;
 }
 
 void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
@@ -69,7 +69,7 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(msg.toStringPayload());
     text += "\r\n";
 
-    to->write(text.toAscii().constData());
+    to->write(text.toLatin1().constData());
 }
 
 

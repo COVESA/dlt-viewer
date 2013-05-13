@@ -98,8 +98,8 @@
 
 static char str[DLT_COMMON_BUFFER_LENGTH];
 
-const char dltSerialHeader[DLT_ID_SIZE] = { 'D','L','S',1 };
-char dltSerialHeaderChar[DLT_ID_SIZE] = { 'D','L','S',1 };
+const char dltSerialHeader[] = { 'D','L','S',1 };
+char dltSerialHeaderChar[] = { 'D','L','S',1 };
 
 static int log_as_daemon = 0;
 
@@ -3041,7 +3041,7 @@ int dlt_message_print_mixed_html(DltMessage *message, char *text, uint32_t size,
     return 0;
 }
 
-int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,int32_t *datalength,char *text,int textlength,int byteLength,int __attribute__((unused)) verbose)
+int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,int32_t *datalength,char *text,int textlength,int byteLength,int verbose)
 {
     int16_t length=0,length_tmp=0; /* the macro can set this variable to -1 */
     uint16_t length2=0,length2_tmp=0,length3=0,length3_tmp=0;

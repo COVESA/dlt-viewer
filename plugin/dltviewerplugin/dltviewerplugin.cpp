@@ -268,10 +268,6 @@ void DltViewerPlugin::updateStatistics(int , QDltMsg &msg) {
             }
 }
 
-extern const char *qDltLogInfo[];
-extern const char *qDltNwTraceType[];
-extern const char *qDltControlType[];
-
 void DltViewerPlugin::printStatistics() {
     QString text;
 
@@ -342,5 +338,6 @@ void DltViewerPlugin::printStatistics() {
     form->setTextBrowserStatistics(text);
 }
 
-
+#ifndef QT5
 Q_EXPORT_PLUGIN2(dltviewerplugin, DltViewerPlugin);
+#endif

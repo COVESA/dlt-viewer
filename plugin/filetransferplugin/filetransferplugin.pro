@@ -1,6 +1,10 @@
 # include global settings for all DLT Viewer Plugins
 include( ../plugin.pri )
 
+greaterThan(QT_VER_MAJ, 4) {
+    QT += printsupport
+}
+
 # target name
 TARGET = $$qtLibraryTarget(filetransferplugin)
 

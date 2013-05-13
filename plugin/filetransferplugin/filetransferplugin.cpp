@@ -18,6 +18,8 @@
  */
 
 #include <QtGui>
+#include <QMessageBox>
+#include <QApplication>
 #include "filetransferplugin.h"
 #include "file.h"
 #include <QDir>
@@ -417,4 +419,6 @@ bool FiletransferPlugin::exportAll(QDir extract_dir)
     return ret;
 }
 
+#ifndef QT5
 Q_EXPORT_PLUGIN2(filetransferplugin, FiletransferPlugin)
+#endif
