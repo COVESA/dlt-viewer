@@ -47,6 +47,7 @@ copy %QTDIR%\bin\icuuc49.dll %SDK_DIR%
 copy %QTDIR%\bin\icudt49.dll %SDK_DIR%
 copy %QTDIR%\bin\libGLESv2.dll %SDK_DIR%
 copy %QTDIR%\bin\libEGL.dll %SDK_DIR%
+copy %QTDIR%\bin\d3dcompiler_46.dll %SDK_DIR%
 
 copy %QTDIR%\bin\Qt5Core.dll %SDK_DIR%
 copy %QTDIR%\bin\Qt5Gui.dll %SDK_DIR%
