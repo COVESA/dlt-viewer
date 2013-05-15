@@ -449,19 +449,19 @@ void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringLi
 }
 
 void MainWindow::deleteactualFile(){
-        if(outputfileIsTemporary && !outputfileIsFromCLI)
+    if(outputfileIsTemporary && !outputfileIsFromCLI)
+    {
+        // Delete created temp file
+        qfile.close();
+        outputfile.close();
+        if(outputfile.exists() && !outputfile.remove())
         {
-            // Delete created temp file
-            qfile.close();
-            outputfile.close();
-            if(outputfile.exists() && !outputfile.remove())
-            {
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                      QString("Cannot delete temporary log file \"%1\"\n%2")
-                                      .arg(outputfile.fileName())
-                                      .arg(outputfile.errorString()));
-            }
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot delete temporary log file \"%1\"\n%2")
+                                  .arg(outputfile.fileName())
+                                  .arg(outputfile.errorString()));
         }
+    }
 }
 
 
@@ -512,16 +512,16 @@ void MainWindow::on_action_menuFile_New_triggered()
 
     /* close existing file */
     if(outputfile.isOpen())
-      {
+    {
         if (outputfile.size() == 0)
-          {
+        {
             deleteactualFile();
-          }
+        }
         else
-          {
-        outputfile.close();
-          }
-      }
+        {
+            outputfile.close();
+        }
+    }
 
     /* create new file; truncate if already exist */
     outputfile.setFileName(fileName);
@@ -589,16 +589,16 @@ void MainWindow::openRecentFile()
 bool MainWindow::openDltFile(QString fileName)
 {
     /* close existing file */
-  bool ret = false;
+    bool ret = false;
     if(outputfile.isOpen())
     {
-      if (outputfile.size() == 0)
+        if (outputfile.size() == 0)
         {
-          deleteactualFile();
+            deleteactualFile();
         }
-      else
+        else
         {
-        outputfile.close();
+            outputfile.close();
         }
     }
 
@@ -611,14 +611,14 @@ bool MainWindow::openDltFile(QString fileName)
         ret = true;
     }
     else
-      {
+    {
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot open log file \"%1\"\n%2")
                               .arg(fileName)
                               .arg(outputfile.errorString()));
         ret = false;
 
-      }
+    }
 
     return ret;
 }
@@ -1139,14 +1139,14 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
-          {
+        {
             deleteactualFile();
-          }
+        }
         else
-          {
-        outputfile.close();
+        {
+            outputfile.close();
+        }
     }
-      }
 
     outputfile.setFileName(fn);
 
@@ -2299,20 +2299,20 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 ecuitem->m_serialport = new QextSerialPort(ecuitem->getPort(),settings);
                 connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
                 connect(ecuitem->m_serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
-              }
+            }
             else{
 
-              //to keep things consistent: delete old member, create new one
-              //alternatively we could just close the port, and set the new settings.
-              ecuitem->m_serialport->close();
-              //delete(ecuitem->m_serialport);
-              ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate());
-              //ecuitem->m_serialport->setDataBits(settings.DataBits);
-              //ecuitem->m_serialport->setFlowControl(settings.FlowControl);
-              //ecuitem->m_serialport->setStopBits(settings.StopBits);
-              //ecuitem->m_serialport->setParity(settings.Parity);
-              //ecuitem->m_serialport->setTimeout(settings.Timeout_Millisec);
-              ecuitem->m_serialport->setPortName(ecuitem->getPort());
+                //to keep things consistent: delete old member, create new one
+                //alternatively we could just close the port, and set the new settings.
+                ecuitem->m_serialport->close();
+                //delete(ecuitem->m_serialport);
+                ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate());
+                //ecuitem->m_serialport->setDataBits(settings.DataBits);
+                //ecuitem->m_serialport->setFlowControl(settings.FlowControl);
+                //ecuitem->m_serialport->setStopBits(settings.StopBits);
+                //ecuitem->m_serialport->setParity(settings.Parity);
+                //ecuitem->m_serialport->setTimeout(settings.Timeout_Millisec);
+                ecuitem->m_serialport->setPortName(ecuitem->getPort());
             }
 
             if(ecuitem->m_serialport->isOpen())
@@ -5007,28 +5007,28 @@ void MainWindow::on_filterButton_clicked(bool checked)
 
     }
     else
-    {        
+    {
         ui->filterButton->setText("Filters disabled");
         ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-overcast.png"));
         ui->filterStatus->setText("");
     }
 
 
-        int firstSelection = 0;
-        /* Try to re-select old indices */
-        QItemSelection newSelection;
-        for(int j=0;j<rowIndices.count();j++)
-        {
-            if(j == 0)
+    int firstSelection = 0;
+    /* Try to re-select old indices */
+    QItemSelection newSelection;
+    for(int j=0;j<rowIndices.count();j++)
+    {
+        if(j == 0)
         {
             firstSelection = nearest_line(rowIndices.at(j));
         }
         int nearest = nearest_line(rowIndices.at(j));
         QModelIndex idx = tableModel->index(nearest, 0);
-            newSelection.select(idx, idx);
+        newSelection.select(idx, idx);
     }
-        ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
-        scrollToTarget = tableModel->index(firstSelection, 0);
+    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+    scrollToTarget = tableModel->index(firstSelection, 0);
 
 
     tableModel->modelChanged();
