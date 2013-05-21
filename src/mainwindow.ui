@@ -300,6 +300,51 @@
       <number>2</number>
      </property>
      <item>
+      <widget class="QFrame" name="enableConfigFrame">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <layout class="QGridLayout" name="gridLayout">
+        <property name="margin">
+         <number>0</number>
+        </property>
+        <item row="1" column="0">
+         <widget class="QCheckBox" name="pluginsEnabled">
+          <property name="text">
+           <string>Plugins Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QCheckBox" name="filtersEnabled">
+          <property name="text">
+           <string>Filters Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0" colspan="2">
+         <widget class="PulseButton" name="applyConfig">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Apply Configuration</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="enabled">
         <bool>true</bool>
@@ -472,45 +517,6 @@
          <property name="bottomMargin">
           <number>2</number>
          </property>
-         <item>
-          <widget class="QPushButton" name="filterButton">
-           <property name="toolTip">
-            <string>Enable Filter</string>
-           </property>
-           <property name="text">
-            <string>Enable Filter</string>
-           </property>
-           <property name="icon">
-            <iconset resource="resource.qrc">
-             <normaloff>:/toolbar/png/weather-overcast.png</normaloff>:/toolbar/png/weather-overcast.png</iconset>
-           </property>
-           <property name="iconSize">
-            <size>
-             <width>32</width>
-             <height>32</height>
-            </size>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="checked">
-            <bool>false</bool>
-           </property>
-           <property name="flat">
-            <bool>false</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QLabel" name="filterStatus">
-           <property name="text">
-            <string>No filter active</string>
-           </property>
-           <property name="alignment">
-            <set>Qt::AlignCenter</set>
-           </property>
-          </widget>
-         </item>
          <item>
           <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
@@ -1304,6 +1310,11 @@
    <class>DltTableView</class>
    <extends>QTableView</extends>
    <header>dlttableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PulseButton</class>
+   <extends>QPushButton</extends>
+   <header location="global">pulsebutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>

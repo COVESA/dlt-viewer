@@ -9,15 +9,12 @@ class FilterTreeWidget : public QTreeWidget
     Q_OBJECT
 public:
     explicit FilterTreeWidget(QObject *parent = 0);
-    void setFilterButton(QPushButton *btn);
     void dragMoveEvent(QDragMoveEvent *event);
-
+    void dropEvent(QDropEvent *event);
 signals:
-    
+    void filterItemDropped();
 public slots:
-    
-private:
-    QPushButton *filterButton;
+
 };
 
 #endif // FILTERTREEWIDGET_H

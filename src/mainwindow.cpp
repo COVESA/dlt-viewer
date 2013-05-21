@@ -32,6 +32,7 @@
 #include <QLineEdit>
 #include <QUrl>
 #include <QDateTime>
+#include <QLabel>
 
 /**
  * From QDlt.
@@ -64,9 +65,11 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     timer(this),
-    qcontrol(this)
+    qcontrol(this),
+    pulseButtonColor(255, 40, 40)
 {
     ui->setupUi(this);
+    ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
 
     initState();
@@ -230,6 +233,9 @@ void MainWindow::initView()
     ui->filterWidget->setHeaderHidden(false);
     ui->pluginWidget->setHeaderHidden(false);
 
+    /* Start pulsing the apply changes button, when filters draged&dropped */
+    connect(ui->filterWidget, SIGNAL(filterItemDropped()), this, SLOT(filterOrderChanged()));
+
     /* initialise statusbar */
     totalBytesRcvd = 0;
     totalByteErrorsRcvd = 0;
@@ -242,9 +248,6 @@ void MainWindow::initView()
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
-
-    /* Inform filterWidget about FilterButton */
-    ui->filterWidget->setFilterButton(ui->filterButton);
 
     /* Create search text box */
     searchTextbox = new QLineEdit();
@@ -362,6 +365,10 @@ void MainWindow::initFileHandling()
     /* Initialize dlt-file indexer  */
     dltIndexer = new DltFileIndexer(&qfile, this);
 
+    /* Plugins/Filters enabled checkboxes */
+    ui->pluginsEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    ui->filtersEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+
     /* Process Project */
     if(OptManager::getInstance()->isProjectFile())
     {
@@ -425,10 +432,6 @@ void MainWindow::initFileHandling()
 
         }
     }
-
-
-    ui->filterButton->setChecked(true);//for filters included in the project project and for filter files
-
     if(OptManager::getInstance()->isConvert())
     {
         commandLineConvertToASCII();
@@ -462,7 +465,6 @@ void MainWindow::commandLineConvertToASCII(){
         //Error output
         exit(0);
     }
-  //on_filterButton_clicked(bool checked)
 
     for(int num = 0;num< qfile.sizeFilter();num++)
     {
@@ -1293,6 +1295,7 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
     PluginItem *item;
     QProgressDialog fileprogress("Applying plugins.", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowModality(Qt::WindowModal);
+    qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
 
     for(int ix=0;ix<qfile.size();ix++)
     {
@@ -1379,40 +1382,33 @@ void MainWindow::reloadLogFile()
     ui->tableView->unlock();
 
     /* Collect all plugins */
-    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+    if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
     {
-        item = (PluginItem*)project.plugin->topLevelItem(i);
-
-        if(item->getMode() != PluginItem::ModeDisable)
+        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
         {
-            if(item->plugindecoderinterface)
-            {
-                activeDecoderPlugins.append(item);
-            }
-            if(item->pluginviewerinterface)
-            {
+            item = (PluginItem*)project.plugin->topLevelItem(i);
 
-                item->pluginviewerinterface->initFileStart(&qfile);
-                activeViewerPlugins.append(item);
+            if(item->getMode() != PluginItem::ModeDisable)
+            {
+                if(item->plugindecoderinterface)
+                {
+                    activeDecoderPlugins.append(item);
+                }
+                if(item->pluginviewerinterface)
+                {
+
+                    item->pluginviewerinterface->initFileStart(&qfile);
+                    activeViewerPlugins.append(item);
+                }
             }
         }
     }
 
-    if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
-    {
-        qDebug() << "No plugins active";
-        /* We don't have any plugins, create the filter index here.
-         * Please note, that index is locked inside this function */
-        on_filterButton_clicked(ui->filterButton->isChecked());
-    }
-    else
-    {
-        dltIndexer->lock();
-        /* Apply collected plugins.
-         * Please note that filterIndex is created as a side effect */
-        applyPlugins(activeViewerPlugins, activeDecoderPlugins);
-        dltIndexer->unlock();
-    }
+    dltIndexer->lock();
+    /* Apply collected plugins.
+     * Please note that filterIndex is created as a side effect */
+    applyPlugins(activeViewerPlugins, activeDecoderPlugins);
+    dltIndexer->unlock();
 
     tableModel->modelChanged();
     m_searchtableModel->modelChanged();
@@ -2276,19 +2272,40 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
         action = new QAction("Plugin Edit...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Edit_triggered()));
         menu.addAction(action);
+        menu.addSeparator();
+
         if(item->pluginviewerinterface)
         {
-            action = new QAction("Plugin Show", this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Show_triggered()));
-            menu.addAction(action);
-            action = new QAction("Plugin Hide", this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Hide_triggered()));
+            /* If a viewer plugin is disabled, or enabled but not shown,
+             * add 'show' action. Else add 'hide' action */
+            if(item->getMode() != PluginItem::ModeShow)
+            {
+                action = new QAction("Plugin Show", this);
+                connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Show_triggered()));
+                menu.addAction(action);
+            }
+            else
+            {
+                action = new QAction("Plugin Hide", this);
+                connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Hide_triggered()));
+                menu.addAction(action);
+            }
+        }
+
+        /* If the plugin is shown or enabled, present the 'disable' option.
+         * Else, present the 'enable' option */
+        if(item->getMode() != PluginItem::ModeDisable)
+        {
+            action = new QAction("Plugin Disable", this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Disable_triggered()));
             menu.addAction(action);
         }
-        menu.addSeparator();
-        action = new QAction("Plugin Disable", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Disable_triggered()));
-        menu.addAction(action);
+        else
+        {
+            action = new QAction("Plugin Enable", this);
+            connect(action, SIGNAL(triggered()), this, SLOT(action_menuPlugin_Enable_triggered()));
+            menu.addAction(action);
+        }
         /* show popup menu */
         menu.exec(globalPos);
     }
@@ -4037,14 +4054,9 @@ void MainWindow::openRecentFilters()
         if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
         {
             workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-
-            ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-            ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-            ui->filterButton->setChecked(Qt::Unchecked);
-            ui->filterButton->setText("Enable filters");
-
             setCurrentFilters(fileName);
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
         }
     }
 }
@@ -4459,23 +4471,28 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->getType());
         if(dlg.exec()) {
-            item->setFilename( dlg.getFilename() );
-
-            if(item->getMode() == PluginItem::ModeDisable && dlg.getMode() != PluginItem::ModeDisable)
+            /* Check if there was a change that requires a refresh */
+            if(item->getMode() != dlg.getMode())
+                callInitFile = true;
+            if(item->getMode() == PluginItem::ModeShow && dlg.getMode() != PluginItem::ModeDisable)
+                callInitFile = false;
+            if(dlg.getMode() == PluginItem::ModeShow && item->getMode() != PluginItem::ModeDisable)
+                callInitFile = false;
+            if(item->getFilename() != dlg.getFilename())
                 callInitFile = true;
 
+            item->setFilename( dlg.getFilename() );
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
 
             /* update plugin item */
             updatePlugin(item);
             item->savePluginModeToSettings();
-
-
         }
         if(callInitFile)
         {
-            processMsgAfterPluginmodeChange(item);
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
         }
     }
     else
@@ -4483,113 +4500,6 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                              QString("No Plugin selected!"));
 
 }
-
-void MainWindow::processMsgAfterPluginmodeChange(PluginItem *item){
-
-    QList<PluginItem*> activeDecoderPlugins;
-    QList<PluginItem*> activeViewerPlugins;
-
-    if(!item){
-        qDebug()<<"Error: Plugin could not be initizialised. Item null.";
-        return;
-    }
-
-    QProgressDialog pluginprogress(QString("Applying Plugins for message 0/%1").arg(qfile.size()),
-                                   "Cancel", 0, qfile.size(), this);
-    pluginprogress.setWindowTitle("DLT Viewer");
-    pluginprogress.setWindowModality(Qt::WindowModal);
-    pluginprogress.show();
-
-    if(item->pluginviewerinterface)
-    {
-        activeViewerPlugins.append(item);
-        item->pluginviewerinterface->initFileStart(&qfile);
-        PluginItem *decoderItem = 0;
-        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
-        {
-            decoderItem = (PluginItem*)project.plugin->topLevelItem(i);
-
-            if(decoderItem->getMode() != PluginItem::ModeDisable && decoderItem->plugindecoderinterface)
-            {
-
-                activeDecoderPlugins.append(decoderItem);
-            }
-        }
-
-    }
-
-    QDltMsg msg;
-    PluginItem *pitem;
-    dltIndexer->lock();
-    for(int ix=0;ix<qfile.size();ix++)
-    {
-        /* Fill message from file */
-        if(!qfile.getMsg(ix, msg))
-        {
-            continue;
-        }
-
-        /* Process all viewer plugins */
-        for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
-        {
-            pitem = (PluginItem*)activeViewerPlugins.at(ivp);
-            pitem->pluginviewerinterface->initMsg(ix, msg);
-        }
-
-        /* Process all decoderplugins */
-        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
-        {
-            pitem = (PluginItem*)activeDecoderPlugins.at(idp);
-            if(pitem->plugindecoderinterface->isMsg(msg, 0))
-            {
-                pitem->plugindecoderinterface->decodeMsg(msg, 0);
-                /* TODO: Do we, or do we not want to break here?
-                 * Perhaps user wants to stack multiple plugins */
-                break;
-            }
-        }
-
-        /* Add to filterindex if matches */
-        if(qfile.checkFilter(msg))
-        {
-            qfile.addFilterIndex(ix);
-        }
-
-        /* Offer messages again to viewer plugins after decode */
-        for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
-        {
-            pitem = (PluginItem *)activeViewerPlugins.at(ivp);
-            pitem->pluginviewerinterface->initMsgDecoded(ix, msg);
-        }
-
-        /* Update progress every 1000 lines*/
-        if( 0 == (ix%1000))
-        {
-            pluginprogress.setValue(ix);
-            pluginprogress.setLabelText(
-                           QString("Applying Plugins for Message %1/%2")
-                           .arg(ix).arg(qfile.size()));
-            if(pluginprogress.wasCanceled())
-            {
-                break;
-            }
-            QApplication::processEvents();
-        }
-    }
-    dltIndexer->unlock();
-
-    if(item->pluginviewerinterface)
-    {
-        item->pluginviewerinterface->initFileFinish();
-    }
-
-
-    if(pluginprogress.wasCanceled())
-    {
-        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
-    }
-}
-
 
 void MainWindow::on_action_menuPlugin_Show_triggered() {
 
@@ -4606,7 +4516,8 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
             updatePlugin(item);
 
             if(oldMode == PluginItem::ModeDisable){
-                processMsgAfterPluginmodeChange(item);
+                ui->applyConfig->startPulsing(pulseButtonColor);
+                ui->applyConfig->setEnabled(true);
             }
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
@@ -4642,6 +4553,29 @@ void MainWindow::on_action_menuPlugin_Hide_triggered() {
 
 }
 
+void MainWindow::action_menuPlugin_Enable_triggered()
+{
+    /* get selected plugin */
+    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
+    if((list.count() == 1) ) {
+        PluginItem* item = (PluginItem*) list.at(0);
+
+        if(item->getMode() == PluginItem::ModeDisable){
+            item->setMode( PluginItem::ModeEnable );
+            item->savePluginModeToSettings();
+            updatePlugin(item);
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
+        }else{
+            QMessageBox::warning(0, QString("DLT Viewer"),
+                                 QString("The selected Plugin is already deactivated."));
+        }
+    }
+    else
+        QMessageBox::warning(0, QString("DLT Viewer"),
+                             QString("No Plugin selected!"));
+}
+
 void MainWindow::on_action_menuPlugin_Disable_triggered()
 {
     /* get selected plugin */
@@ -4653,7 +4587,8 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
             item->setMode( PluginItem::ModeDisable );
             item->savePluginModeToSettings();
             updatePlugin(item);
-            processMsgAfterPluginmodeChange(item);
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
                                  QString("The selected Plugin is already deactivated."));
@@ -4789,15 +4724,9 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
         setCurrentFilters(fileName);
-
+        ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->applyConfig->setEnabled(true);
     }
 
     on_filterWidget_itemSelectionChanged();
@@ -4871,14 +4800,21 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
 
     /* update filter item */
     item->update();
-
-    ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-    ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-    ui->filterButton->setChecked(Qt::Unchecked);
-    ui->filterButton->setText("Enable filters");
-
     on_filterWidget_itemSelectionChanged();
+
+    /* Update filters in qfile and either update
+     * view or pulse the button depending on if it is a filter or
+     * marker. */
+    filterUpdate();
+    if(item->type == FilterItem::marker)
+    {
+        tableModel->modelChanged();
+    }
+    else
+    {
+        ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->applyConfig->setEnabled(true);
+    }
 }
 
 void MainWindow::on_action_menuFilter_Duplicate_triggered() {
@@ -4955,16 +4891,18 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
     QList<QTreeWidgetItem *> list = widget->selectedItems();
     if((list.count() == 1) ) {
         /* delete filter */
+        FilterItem *item = (FilterItem *)widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
+        filterUpdate();
+        if(item->type == FilterItem::marker)
+        {
+            tableModel->modelChanged();
+        }
+        else
+        {
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
+        }
         delete widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
-        /* update filter list in DLT log file */
-        //filterUpdate();
     }
     else {
         QMessageBox::warning(0, QString("DLT Viewer"),
@@ -4977,13 +4915,8 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
 void MainWindow::on_action_menuFilter_Clear_all_triggered() {
     /* delete complete filter list */
     project.filter->clear();
-
-    ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-    ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-    ui->filterButton->setChecked(Qt::Unchecked);
-    ui->filterButton->setText("Enable filters");
-
+    ui->applyConfig->startPulsing(pulseButtonColor);
+    ui->applyConfig->setEnabled(true);
 }
 
 void MainWindow::filterUpdate() {
@@ -5050,130 +4983,6 @@ void MainWindow::filterUpdate() {
     }
 }
 
-void MainWindow::on_filterButton_clicked(bool checked)
-{
-    dltIndexer->lock();
-    ui->tableView->lock();
-
-    filterUpdate();
-
-    /* Store old selections */
-    QModelIndex scrollToTarget = tableModel->index(0, 0);
-    QModelIndexList rows = ui->tableView->selectionModel()->selectedRows();
-    QList<int> rowIndices;
-    for(int i=0;i<rows.count();i++)
-    {
-        int sr = rows.at(i).row();
-        rowIndices.append(qfile.getMsgFilterPos(sr));
-    }
-    ui->tableView->selectionModel()->clear();
-
-    /* enable/disable filter */
-    qfile.enableFilter(checked);
-    qfile.clearFilterIndex();
-
-    if(checked)
-    {
-        ui->filterButton->setText("Filters enabled");
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-clear.png"));
-        ui->filterStatus->setText("");
-
-        PluginItem *item;
-        QList<PluginItem*> activeDecoderPlugins;
-
-        QProgressDialog filterprogress("Applying filters for message 0/0", "Cancel", 0, qfile.size(), this);
-        filterprogress.setAutoClose(true);
-        filterprogress.setWindowTitle("DLT Viewer");
-        filterprogress.setWindowModality(Qt::WindowModal);
-        filterprogress.show();
-
-        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
-        {
-            item = (PluginItem*)project.plugin->topLevelItem(i);
-
-            if(item->getMode() != PluginItem::ModeDisable &&item->plugindecoderinterface )
-            {
-
-                activeDecoderPlugins.append(item);
-            }
-        }
-
-        QDltMsg msg;
-        filterprogress.setMaximum(qfile.size());
-
-        for(int i=0;i < qfile.size();i++)
-        {
-            if(!qfile.getMsg(i, msg))
-            {
-                // Skip broken messages.
-                continue;
-            }
-            for(int j = 0;j < activeDecoderPlugins.size();j++)
-            {
-                item = (PluginItem *)activeDecoderPlugins.at(j);
-                if(item->plugindecoderinterface->isMsg(msg, 0))
-                {
-                    item->plugindecoderinterface->decodeMsg(msg, 0);
-                    break;
-                }
-            }
-
-            if(qfile.checkFilter(msg))
-            {
-                qfile.addFilterIndex(i);
-            }
-            /* Update UI every 1000 lines*/
-            if(0 == (i%1000))
-            {
-                filterprogress.setValue(i);
-                filterprogress.setLabelText(
-                            QString("Applying filters for message %1/%2.")
-                            .arg(i).arg(qfile.size()));
-
-                if(filterprogress.wasCanceled())
-                {
-                    filterprogress.reset();
-                    QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the filter progress. Not all messages could be processed by the activated filters!"), QMessageBox::Ok);
-                    break;
-                }
-                QApplication::processEvents();
-            }
-        }
-
-    }
-    else
-    {
-        ui->filterButton->setText("Filters disabled");
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-overcast.png"));
-        ui->filterStatus->setText("");
-    }
-
-
-    int firstSelection = 0;
-    /* Try to re-select old indices */
-    QItemSelection newSelection;
-    for(int j=0;j<rowIndices.count();j++)
-    {
-        if(j == 0)
-        {
-            firstSelection = nearest_line(rowIndices.at(j));
-        }
-        int nearest = nearest_line(rowIndices.at(j));
-        QModelIndex idx = tableModel->index(nearest, 0);
-        newSelection.select(idx, idx);
-    }
-    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
-    scrollToTarget = tableModel->index(firstSelection, 0);
-
-
-    tableModel->modelChanged();
-    ui->tableView->unlock();
-    dltIndexer->unlock();
-
-    // Pump all pending events before trying to scroll
-    QApplication::processEvents();
-    ui->tableView->scrollTo(scrollToTarget, QTableView::PositionAtTop);
-}
 
 
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
@@ -5318,14 +5127,8 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         {
             tmp->enableFilter = true;
         }
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
-        on_filterButton_clicked(false);
+        ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->applyConfig->setEnabled(true);
     }
 }
 
@@ -5371,19 +5174,11 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
     if(!fileName.isEmpty() && project.LoadFilter(fileName,false))
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-
-        ui->filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        ui->filterStatus->setText("Filters changed. Please enable filtering.");
-
-        ui->filterButton->setChecked(Qt::Unchecked);
-        ui->filterButton->setText("Enable filters");
-
         setCurrentFilters(fileName);
-
+        ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->applyConfig->setEnabled(true);
     }
-
     on_filterWidget_itemSelectionChanged();
-
 }
 
 int MainWindow::nearest_line(int line){
@@ -5482,6 +5277,83 @@ void MainWindow::on_actionConnectAll_triggered()
 void MainWindow::on_actionDisconnectAll_triggered()
 {
     disconnectAll();
+}
+
+void MainWindow::on_pluginsEnabled_clicked(bool checked)
+{
+    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", checked);
+    ui->applyConfig->startPulsing(pulseButtonColor);
+    ui->applyConfig->setEnabled(true);
+}
+
+void MainWindow::on_filtersEnabled_clicked(bool checked)
+{
+    DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
+    ui->applyConfig->startPulsing(pulseButtonColor);
+    ui->applyConfig->setEnabled(true);
+}
+
+void MainWindow::on_applyConfig_clicked()
+{
+    ui->applyConfig->stopPulsing();
+    ui->applyConfig->setEnabled(false);
+    saveSelection();
+    filterUpdate();
+    reloadLogFile();
+    restoreSelection();
+}
+
+void MainWindow::saveSelection()
+{
+    previousSelection.clear();
+    /* Store old selections */
+    QModelIndexList rows = ui->tableView->selectionModel()->selectedRows();
+
+    for(int i=0;i<rows.count();i++)
+    {
+        int sr = rows.at(i).row();
+        previousSelection.append(qfile.getMsgFilterPos(sr));
+    }
+}
+
+void MainWindow::restoreSelection()
+{
+    int firstSelection = 0;
+    QModelIndex scrollToTarget = tableModel->index(0, 0);
+
+    /* Try to re-select old indices */
+    QItemSelection newSelection;
+    for(int j=0;j<previousSelection.count();j++)
+    {
+        if(j == 0)
+        {
+            firstSelection = nearest_line(previousSelection.at(j));
+        }
+        int nearest = nearest_line(previousSelection.at(j));
+        QModelIndex idx = tableModel->index(nearest, 0);
+        newSelection.select(idx, idx);
+    }
+    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+    scrollToTarget = tableModel->index(firstSelection, 0);
+    ui->tableView->scrollTo(scrollToTarget, QTableView::PositionAtTop);
+}
+
+void MainWindow::on_tabWidget_currentChanged(int index)
+{
+    if(index > 0)
+    {
+        ui->enableConfigFrame->setVisible(true);
+    }
+    else
+    {
+        ui->enableConfigFrame->setVisible(false);
+    }
+}
+
+void MainWindow::filterOrderChanged()
+{
+    filterUpdate();
+    tableModel->modelChanged();
 }
 
 void MainWindow::searchTableRenewed()

@@ -4,25 +4,27 @@
 FilterTreeWidget::FilterTreeWidget(QObject *parent) :
     QTreeWidget(qobject_cast<QWidget *>(parent))
 {
-    filterButton = 0;
-
-}
-
-void FilterTreeWidget::setFilterButton(QPushButton *btn)
-{
-    filterButton = btn;
 }
 
 void FilterTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
     event->accept();
-    if(filterButton)
-    {
-        filterButton->setIcon(QIcon(":/toolbar/png/weather-storm.png"));
-        filterButton->setText("Filters changed. Please enable filtering.");
-
-        filterButton->setChecked(Qt::Unchecked);
-        filterButton->setText("Enable filters");
-    }
 }
 
+void FilterTreeWidget::dropEvent(QDropEvent *event)
+{
+    QStringList types = event->mimeData()->formats();
+    for(int i=0;i < types.size(); i++)
+    {
+        /* QT advertises our filteritems with this MIME identifier.
+         * We use this to identify when a filter item was dropped,
+         * instead of some other random data. */
+        if(types[i] == "application/x-qabstractitemmodeldatalist")
+        {
+            QTreeWidget::dropEvent(event);
+            emit filterItemDropped();
+            event->accept();
+            break;
+         }
+    }
+}

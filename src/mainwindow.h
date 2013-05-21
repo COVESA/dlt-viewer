@@ -25,6 +25,7 @@
 #include <QDir>
 #include <QShortcut>
 #include <QMessageBox>
+#include <QColor>
 
 #include "tablemodel.h"
 #include "project.h"
@@ -184,7 +185,8 @@ private:
     /* dlt-file Indexer with cancel cabability */
     DltFileIndexer *dltIndexer;
 
-
+    /* Color for blinking 'Apply changes'-button */
+    QColor pulseButtonColor;
 
     /* functions called in constructor */
     void initState();
@@ -253,19 +255,17 @@ private:
     bool openDlpFile(QString filename);
 
     void commandLineConvertToASCII();
-
     void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
     QStringList getSerialPortsWithQextEnumerator();
 
-    void processMsgAfterPluginmodeChange(PluginItem *item);
-
     void deleteactualFile();
 
     int nearest_line(int line);
     bool jump_to_line(int line);
+
  /**
      * @brief ErrorMessage
      * @param String which is shown as MessageBox, if we are not in silent mode.
@@ -273,6 +273,11 @@ private:
      *
      */
     void ErrorMessage(QMessageBox::Icon level, QString title,  QString message);
+
+    void saveSelection();
+    void restoreSelection();
+    QList<int> previousSelection;
+
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
@@ -367,12 +372,12 @@ private slots:
     void on_action_menuFilter_Clear_all_triggered();
     void on_action_menuFilter_Duplicate_triggered();
     void on_action_menuFilter_Append_Filters_triggered();
-    void on_filterButton_clicked(bool checked);
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
     void on_action_menuPlugin_Show_triggered();
     void on_action_menuPlugin_Edit_triggered();
+    void action_menuPlugin_Enable_triggered();
     void on_action_menuPlugin_Disable_triggered();
 
     //Rename
@@ -400,8 +405,15 @@ private slots:
     void on_actionConnectAll_triggered();
     void on_actionDisconnectAll_triggered();
 
+    // Config Items
+    void on_pluginsEnabled_clicked(bool checked);
+    void on_filtersEnabled_clicked(bool checked);
+    void on_applyConfig_clicked();
+    void on_tabWidget_currentChanged(int index);
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+    void filterOrderChanged();
 
 public:   
 

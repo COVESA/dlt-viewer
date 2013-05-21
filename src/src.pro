@@ -92,7 +92,8 @@ SOURCES += main.cpp \
     dltuiutils.cpp \
     workingdirectory.cpp \
     jumptodialog.cpp\
-    searchtablemodel.cpp
+    searchtablemodel.cpp \
+    pulsebutton.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -120,6 +121,7 @@ HEADERS += mainwindow.h \
     workingdirectory.h \
     dltuiutils.h \
     jumptodialog.h \
+    pulsebutton.h \
     searchtablemodel.h
 
 # Compile these UI files
