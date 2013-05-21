@@ -24,6 +24,8 @@
 #include <QMainWindow>
 #include "qdlt.h"
 
+#define DEFAULT_REFRESH_RATE 20
+
 namespace Ui {
     class SettingsDialog;
 }

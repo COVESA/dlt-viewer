@@ -115,6 +115,10 @@ private:
     /* Timer for connecting to ECUs */
     QTimer timer;
 
+    /* Timer for draw Event */
+    QTimer draw_timer;
+    int draw_interval;
+
     QDltControl qcontrol;
     QFile outputfile;
     bool outputfileIsTemporary;
@@ -226,6 +230,7 @@ private:
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
     void read(EcuItem *ecuitem);
+    void drawUpdatedView();
 
     void updateRecentFileActions();
     void setCurrentFile(const QString &fileName);
@@ -378,6 +383,7 @@ private slots:
     void error(QAbstractSocket::SocketError);
     void readyRead();
     void timeout();
+    void draw_timeout();
     void connectAll();
     void disconnectAll();
     void applySettings();

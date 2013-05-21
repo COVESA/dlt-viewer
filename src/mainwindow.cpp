@@ -435,6 +435,15 @@ void MainWindow::initFileHandling()
         exit(0);
     }
 
+
+	draw_timer.setSingleShot (true);
+    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
+
+
+    DltSettingsManager *settingsmanager = DltSettingsManager::getInstance();
+    bool startup_minimized = settingsmanager->value("StartUpMinimized",false).toBool();
+    if (startup_minimized)
+        this->setWindowState(Qt::WindowMinimized);
 }
 
 void MainWindow::commandLineConvertToASCII(){
@@ -1439,6 +1448,13 @@ void MainWindow::applySettings()
     settings->showNoar?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
     settings->showPayload?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
 
+    DltSettingsManager *settingsmanager = DltSettingsManager::getInstance();
+
+    int refreshRate = settingsmanager->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
+    if ( refreshRate )
+        draw_interval = 1000 / refreshRate;
+	else
+		draw_interval = 1000 / DEFAULT_REFRESH_RATE;	
 }
 
 void MainWindow::on_action_menuFile_Settings_triggered()
@@ -2677,9 +2693,6 @@ void MainWindow::read(EcuItem* ecuitem)
             totalSyncFoundRcvd+=ecuitem->serialcon.syncFound;
             ecuitem->serialcon.syncFound = 0;
         }
-        statusByteErrorsReceived->setText(QString("Recv Errors: %1").arg(totalByteErrorsRcvd));
-        statusBytesReceived->setText(QString("Recv: %1").arg(totalBytesRcvd));
-        statusSyncFoundReceived->setText(QString("Sync found: %1").arg(totalSyncFoundRcvd));
 
         if (outputfile.isOpen() )
         {
@@ -2737,12 +2750,8 @@ void MainWindow::read(EcuItem* ecuitem)
                 }
             }
 
-            tableModel->modelChanged();
-            //Line below would resize the payload column automatically so that the whole content is readable
-            //ui->tableView->resizeColumnToContents(11); //Column 11 is the payload column
-            if(settings->autoScroll) {
-                ui->tableView->scrollToBottom();
-            }
+            if (!draw_timer.isActive())
+                draw_timer.start(draw_interval);
 
             for(int i = 0; i < activeViewerPlugins.size(); i++){
                 item = (PluginItem*)activeViewerPlugins.at(i);
@@ -2751,6 +2760,32 @@ void MainWindow::read(EcuItem* ecuitem)
         }
     }
 }
+
+
+
+void MainWindow::draw_timeout()
+{
+    drawUpdatedView();
+}
+
+
+void MainWindow::drawUpdatedView()
+{
+
+    statusByteErrorsReceived->setText(QString("Recv Errors: %1").arg(totalByteErrorsRcvd));
+    statusBytesReceived->setText(QString("Recv: %1").arg(totalBytesRcvd));
+    statusSyncFoundReceived->setText(QString("Sync found: %1").arg(totalSyncFoundRcvd));
+
+    tableModel->modelChanged();
+
+    //Line below would resize the payload column automatically so that the whole content is readable
+    //ui->tableView->resizeColumnToContents(11); //Column 11 is the payload column
+    if(settings->autoScroll) {
+        ui->tableView->scrollToBottom();
+    }
+
+}
+
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {

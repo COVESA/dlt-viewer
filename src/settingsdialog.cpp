@@ -282,6 +282,15 @@ void SettingsDialog::writeDlg()
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
+
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
+    int refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
+    ui->spinBoxFrequency->setValue(refreshrate);
+
+    bool startup_minimized = settings->value("StartUpMinimized",false).toBool();
+    ui->checkBoxStartUpMinimized->setChecked(startup_minimized);
+
+
 }
 
 void SettingsDialog::readDlg()
@@ -334,6 +343,14 @@ void SettingsDialog::readDlg()
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
 
+    DltSettingsManager *settings = DltSettingsManager::getInstance();
+    int refreshrate = ui->spinBoxFrequency->value();
+    int old_refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
+    if ( refreshrate != old_refreshrate && 0 != refreshrate )
+        settings->setValue("RefreshRate",refreshrate);
+
+    bool startup_minimized = ui->checkBoxStartUpMinimized->isChecked();
+    settings->setValue("StartUpMinimized",startup_minimized);
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
