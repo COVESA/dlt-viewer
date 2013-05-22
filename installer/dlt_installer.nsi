@@ -9,7 +9,7 @@
 !Define PRODUCT_NAME "DLTViewer"
 Name "${PRODUCT_NAME}"
 !Define EXE_NAME "dlt_viewer.exe"
-!Define PRODUCT_VERSION "2.10_RC-13135"
+!Define PRODUCT_VERSION "2.10_RC-13215"
 !Define VER_MAJOR 2
 !Define VER_MINOR 10
 !Define VER_REVISION 0
