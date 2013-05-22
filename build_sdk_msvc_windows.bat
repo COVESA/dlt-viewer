@@ -72,6 +72,7 @@ copy %SOURCE_DIR%\README.txt %SDK_DIR%
 copy %SOURCE_DIR%\LICENSE.txt %SDK_DIR%
 copy %SOURCE_DIR%\MPL.txt %SDK_DIR%
 
+copy %SOURCE_DIR%\qdlt\export_rules.h %SDK_DIR%\sdk\include
 copy %SOURCE_DIR%\qdlt\dlt_common.h %SDK_DIR%\sdk\include
 copy %SOURCE_DIR%\qdlt\dlt_protocol.h %SDK_DIR%\sdk\include
 copy %SOURCE_DIR%\qdlt\dlt_types.h %SDK_DIR%\sdk\include
