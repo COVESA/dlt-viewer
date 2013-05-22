@@ -9,42 +9,46 @@ Version 2.10.0 ALPHA
 Known issues
 ------------
 
-	* Filters for conversion on commandline are not applied.
-	* Selecting all lines with ctrl-a in a very large file (630MB) leads to a crash on right click or on clicking File->export du to very high memory 
-	  consumption.
-	* Possible problems with Screenshot Plugin. Those are very likely to be cause by the embedded target, because wether filetransfer nor screenshot
-  	  plugin have a code change. More information required.
-	* A crash has been observed, when closing the Viewer during an active connection with many enabled plugins . More information required.
-	* MOST plugin v1.2.0 crash with most recent MOST xml: MOST-Funktionen-Katalog_PL7_2013-03-08.fcat.xml. 
- Instead use an XML older like:   MOST-Funktionen-Katalog_PL7_2012-05-04.xml.fc.bmw.xml which is sufficient for 11/13 PUs.
-	
+  * Selecting all lines with ctrl-a in a very large file (630MB) leads to a crash on right click or on clicking File->export du to very high memory 
+    consumption.
+  * A crash has been observed, when closing the Viewer during an active connection with many enabled plugins . More information required.
 
 
 Changes
 -------
 2.10.0 ALPHA
+  * Created a Windows installer for DLT-viewer. Included in build scripts.
+  * Optional suppressing of plugin  message box error when started via commandline parameter -s
+  * Greyed out non relevant tab in "ECU ADD/config" menu
+  * Highlight color of found line configurable
+  * Usage of "optimalTextColor" for markers
+  * Unified the progress dialog updates
+  * Multiple working directories for dlt viewer use cases
+  * DLTViewer: performance improvement of Qdlt::toAScii function which is heavily used in filtering 
+  * Default button of search window is "next"
+  * Search Previous/Next without search window
+  * Added -Wunused to project file. Removed most warnings.
+  * Added description of not yet implemented FLIF in file transfer plugin.
+  * Move maintoolbar creation to designer. Separate main and search toolbar.
+  * Added description for commandline based extraction of File Transfers.
+  * Added QT5 Combatibility
+  * Add build scripts for QT5, MSVC compilers.
+  * Split up constructor in sub-functions to get better overview.
+  * Search to List implemented.
+  * Added Refresh Rate Setting for updating view after incoming messages.
+  * Change filter button to checkboxes and a "Apply changes"-button.
 
-	* Created a Windows installer for DLT-viewer. Included in build scripts.
-	* Optional suppressing of plugin  message box error when started via commandline parameter -s
-    * Greyed out non relevant tab in "ECU ADD/config" menu
-    * Highlight color of found line configurable
-	* Usage of "optimalTextColor" for markers
-    * Unified the progress dialog updates
-    * Multiple working directories for dlt viewer use cases
-    * DLTViewer: performance improvement of Qdlt::toAScii function which is heavily used in filtering 
-    * Default button of search window is "next"
-    * Search Previous/Next without search window
-		
-    * Fixed lost selection of messages after disabling filter
-    * Fixed Empty Tmp files not deleted
-    * Fixed Plugin destructors are not called
-    * Fixed Export and CopyToClipboard not using index order - instead using selection order
-    * Fixed dlt-viewer: changed serial interface settings not working after connection attempt
-    * Fixed Scroll button and Regexp button are using the toolbar incorrectly
-    * Fixed Dlt Viewer crash on Linux, when aborting a "Save as..." dialog
-    * Fixed Possible filterIndex corruption when enabling filters
-
-
+  * Fixed lost selection of messages after disabling filter
+  * Fixed Empty Tmp files not deleted
+  * Fixed Plugin destructors are not called
+  * Fixed Export and CopyToClipboard not using index order - instead using selection order
+  * Fixed dlt-viewer: changed serial interface settings not working after connection attempt
+  * Fixed Scroll button and Regexp button are using the toolbar incorrectly
+  * Fixed Dlt Viewer crash on Linux, when aborting a "Save as..." dialog
+  * Fixed Possible filterIndex corruption when enabling filters
+  * Fixed Filters are now applied when conversion is called from commandline.
+  * Fixed Selection persists now also when going from unfiltered to filtered view, like before in the other direction.
+  * Fixed Filetransfer file dump from commandline now also takes normal Windows paths.
 
 2.9.0
   * Make rest of the warning dialogs modal, to prevent user from touching the UI.
