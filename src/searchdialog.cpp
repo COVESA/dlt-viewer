@@ -432,7 +432,5 @@ void SearchDialog::registerSearchTableModel(SearchTableModel *model)
 
 void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
-
-    emit(checkBoxSearchList_toggled(checked));
+    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);    
 }

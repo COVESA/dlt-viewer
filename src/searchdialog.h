@@ -116,7 +116,6 @@ public slots:
 
 signals:
     void refreshedSearchIndex();
-    void checkBoxSearchList_toggled(int);
 };
 
 #endif // SEARCHDIALOG_H
