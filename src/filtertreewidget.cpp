@@ -1,5 +1,6 @@
 #include "filtertreewidget.h"
 #include <QDropEvent>
+#include <QMimeData>
 
 FilterTreeWidget::FilterTreeWidget(QObject *parent) :
     QTreeWidget(qobject_cast<QWidget *>(parent))

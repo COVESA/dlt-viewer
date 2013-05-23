@@ -1314,7 +1314,7 @@
   <customwidget>
    <class>PulseButton</class>
    <extends>QPushButton</extends>
-   <header location="global">pulsebutton.h</header>
+   <header>pulsebutton.h</header>
   </customwidget>
  </customwidgets>
  <resources>
