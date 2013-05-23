@@ -252,7 +252,7 @@ int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
     return DLT_VIEWER_SEARCHCOLUMN_COUNT;
 }
 
-void SearchTableModel::clear_RearchResults()
+void SearchTableModel::clear_SearchResults()
 {
     m_searchResultList.clear();
 }

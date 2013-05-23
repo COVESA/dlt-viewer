@@ -44,7 +44,7 @@ public:
 
     void modelChanged();
 
-    void clear_RearchResults();
+    void clear_SearchResults();
     void add_SearchResultEntry(unsigned long entry);
 
 

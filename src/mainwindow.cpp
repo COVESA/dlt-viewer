@@ -1373,6 +1373,8 @@ void MainWindow::reloadLogFile()
     QList<PluginItem*> activeDecoderPlugins;
 
     ui->tableView->selectionModel()->clear();
+    m_searchtableModel->clear_SearchResults();
+    ui->dockWidgetSearchIndex->hide();
 
     qfile.open(outputfile.fileName());
 

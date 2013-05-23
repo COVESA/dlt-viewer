@@ -122,7 +122,7 @@ int SearchDialog::find()
     if(file->sizeFilter()==0)
             return 0;
 
-    if(getMatch() || getSearchFromBeginning()==false){
+    if( (getMatch() || getSearchFromBeginning()==false) && false == searchtoIndex() ){
         QModelIndexList list = table->selectionModel()->selection().indexes();
         if(list.count() > 0)
         {
@@ -142,7 +142,7 @@ int SearchDialog::find()
     searchLine = getStartLine();
     searchBorder = getStartLine();;
     if(searchBorder < 0 || searchtoIndex()){
-        if(getNextClicked()){
+        if(getNextClicked() || searchtoIndex()){
             searchBorder = file->sizeFilter()==0?0:file->sizeFilter()-1;
         }else{
             searchBorder = 0;
@@ -190,7 +190,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
     QByteArray buf;
     QString text;
     int ctr = 0;
-    m_searchtablemodel->clear_RearchResults();
+    m_searchtablemodel->clear_SearchResults();
 
 
 
@@ -205,7 +205,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
 
         text.clear();
 
-        if(getNextClicked()){
+        if(getNextClicked() || searchtoIndex()){
             searchLine++;
             if(searchLine >= file->sizeFilter()){
                 searchLine = 0;
