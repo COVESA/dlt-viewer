@@ -1505,12 +1505,53 @@ void MainWindow::on_action_menuProject_Open_triggered()
     /* open existing project */
     if(!fileName.isEmpty())
     {
-        /* change Project file working directory */
-        workingDirectory.setDlpDirectory(QFileInfo(fileName).absolutePath());
 
         openDlpFile(fileName);
     }
 
+}
+
+bool MainWindow::anyPluginsEnabled()
+{
+    if(!(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
+    {
+        return false;
+    }
+
+    bool foundEnabledPlugin = false;
+    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+    {
+        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
+
+        if(item->getMode() != PluginItem::ModeDisable)
+        {
+            if(item->plugindecoderinterface || item->pluginviewerinterface)
+            {
+                foundEnabledPlugin = true;
+                break;
+            }
+        }
+    }
+    return foundEnabledPlugin;
+}
+
+bool MainWindow::anyFiltersEnabled()
+{
+    if(!(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+    {
+        return false;
+    }
+    bool foundEnabledFilter = false;
+    for(int num = 0; num < project.filter->topLevelItemCount (); num++)
+    {
+        FilterItem *item = (FilterItem*)project.filter->topLevelItem(num);
+        if(item->checkState(0) == Qt::Checked)
+        {
+            foundEnabledFilter = true;
+            break;
+        }
+    }
+    return foundEnabledFilter;
 }
 
 bool MainWindow::openDlpFile(QString fileName)
@@ -1521,6 +1562,9 @@ bool MainWindow::openDlpFile(QString fileName)
         /* Applies project settings and save it to registry */
         applySettings();
         settings->writeSettings(this);
+
+        /* change Project file working directory */
+        workingDirectory.setDlpDirectory(QFileInfo(fileName).absolutePath());
 
         this->setWindowTitle(QString("DLT Viewer - "+fileName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
 
@@ -1535,6 +1579,12 @@ bool MainWindow::openDlpFile(QString fileName)
         /* After loading the project file update the filters */
         filterUpdate();
 
+        /* Finally, enable the 'Apply' button, if needed */
+        if(anyPluginsEnabled() || anyFiltersEnabled())
+        {
+            ui->applyConfig->startPulsing(pulseButtonColor);
+            ui->applyConfig->setEnabled(true);
+        }
         return true;
     } else {
         return false;
@@ -3982,20 +4032,9 @@ void MainWindow::openRecentProject()
         projectName = action->data().toString();
 
         /* Open existing project */
-        if(!projectName.isEmpty() && project.Load(projectName))
+        if(!projectName.isEmpty() && openDlpFile(projectName))
         {
-            /* Applies project settings and save it to registry */
-            applySettings();
-            settings->writeSettings(this);
-
-            /* Change Project file working directory */
-            workingDirectory.setDlpDirectory(QFileInfo(projectName).absolutePath());
-
-            this->setWindowTitle(QString("DLT Viewer - "+projectName+" - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
-            /* Load the plugins description files after loading project */
-            updatePlugins();
-
-            setCurrentProject(projectName);
+           //thats it.
         }
         else
         {
@@ -5084,8 +5123,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
         {
             /* Project file dropped */
-            openDlpFile(filename);
-            workingDirectory.setDlpDirectory(QFileInfo(filename).absolutePath());
+            openDlpFile(filename);            
         }
         else
         {

@@ -251,6 +251,9 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
+    bool anyPluginsEnabled();
+    bool anyFiltersEnabled();
+
     bool openDltFile(QString fileName);
     bool openDlpFile(QString filename);
 
