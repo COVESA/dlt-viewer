@@ -1515,7 +1515,7 @@
   </connection>
   <connection>
    <sender>actionSearch_Results</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered(bool)</signal>
    <receiver>dockWidgetSearchIndex</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
@@ -1547,7 +1547,7 @@
   </connection>
   <connection>
    <sender>actionProject</sender>
-   <signal>toggled(bool)</signal>
+   <signal>triggered(bool)</signal>
    <receiver>dockWidgetProject</receiver>
    <slot>setVisible(bool)</slot>
    <hints>
