@@ -992,8 +992,16 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     QFile outfile(fileName);
     if(file)
     {
-        if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
-            return;
+        if (ascii)
+        {
+            if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
+                return;
+        }
+        else
+        {
+            if(!outfile.open(QIODevice::WriteOnly))
+                return;
+        }
     }
 
 
