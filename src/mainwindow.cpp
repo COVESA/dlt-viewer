@@ -1380,6 +1380,8 @@ void MainWindow::reloadLogFile()
     QList<PluginItem*> activeViewerPlugins;
     QList<PluginItem*> activeDecoderPlugins;
 
+    saveAndDisconnectCurrentlyConnectedSerialECUs();
+
     ui->tableView->selectionModel()->clear();
     m_searchtableModel->clear_SearchResults();
     ui->dockWidgetSearchIndex->hide();
@@ -1426,7 +1428,7 @@ void MainWindow::reloadLogFile()
     /* set name of opened log file in status bar */
     statusFilename->setText(outputfile.fileName());
 
-
+    connectPreviouslyConnectedECUs();
 
     /* We might have had readyRead events, which we missed */
     readyRead();
@@ -2368,6 +2370,29 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
         }
         /* show popup menu */
         menu.exec(globalPos);
+    }
+}
+
+void MainWindow::saveAndDisconnectCurrentlyConnectedSerialECUs()
+{
+    m_previouslyConnectedSerialECUs.clear();
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem->connected && ecuitem->interfacetype == 1)
+        {
+            m_previouslyConnectedSerialECUs.append(num);
+            disconnectECU(ecuitem);
+        }
+    }
+}
+
+void MainWindow::connectPreviouslyConnectedECUs()
+{
+    for(int i=0;i<m_previouslyConnectedSerialECUs.size();i++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(m_previouslyConnectedSerialECUs.at(i));
+        connectECU(ecuitem);
     }
 }
 

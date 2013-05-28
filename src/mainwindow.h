@@ -281,6 +281,11 @@ private:
     void restoreSelection();
     QList<int> previousSelection;
 
+    /* Disconnect and Reconnect serial connections */
+    QList<int> m_previouslyConnectedSerialECUs;
+    void saveAndDisconnectCurrentlyConnectedSerialECUs();
+    void connectPreviouslyConnectedECUs();
+
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
