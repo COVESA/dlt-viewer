@@ -1391,7 +1391,6 @@ void MainWindow::reloadLogFile()
     /* Create the main index */
     ui->tableView->lock();
     dltIndexer->index();
-    ui->tableView->unlock();
 
     /* Collect all plugins */
     if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
@@ -1421,6 +1420,8 @@ void MainWindow::reloadLogFile()
      * Please note that filterIndex is created as a side effect */
     applyPlugins(activeViewerPlugins, activeDecoderPlugins);
     dltIndexer->unlock();
+
+    ui->tableView->unlock();
 
     tableModel->modelChanged();
     m_searchtableModel->modelChanged();
