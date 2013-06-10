@@ -29,14 +29,32 @@ MOC_DIR                 = build/moc
 
 INCLUDEPATH = ../qextserialport/src ../src
 
-SOURCES +=  qdlt.cpp \
-            dlt_common.c
+SOURCES +=  \
+            dlt_common.c \
+    qdlttcpconnection.cpp \
+    qdltserialconenction.cpp \
+    qdltmsg.cpp \
+    qdltfilter.cpp \
+    qdltfile.cpp \
+    qdltcontrol.cpp \
+    qdltconnection.cpp \
+    qdltbase.cpp \
+    qdltargument.cpp
 
 
 HEADERS += qdlt.h \
            export_rules.h \
            dlt_common.h \
-           dlt_user.h
+           dlt_user.h \
+    qdlttcpconnection.h \
+    qdltserialconnection.h \
+    qdltmsg.h \
+    qdltfilter.h \
+    qdltfile.h \
+    qdltcontrol.h \
+    qdltconnection.h \
+    qdltbase.h \
+    qdltargument.h
 
 unix:VERSION            = 1.0.0
 
