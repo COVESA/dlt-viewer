@@ -211,6 +211,10 @@ void MainWindow::initState()
 void MainWindow::initView()
 {
 
+    /* update default filter selection */
+    ui->comboBoxFilterSelection->addItem("<No default filter selected>");
+    on_actionDefault_Filter_Reload_triggered();
+
     /* set table size and en */
     ui->tableView->setModel(tableModel);
     ui->tableView->setColumnWidth(0,50);
@@ -1593,8 +1597,7 @@ bool MainWindow::openDlpFile(QString fileName)
         /* Finally, enable the 'Apply' button, if needed */
         if(anyPluginsEnabled() || anyFiltersEnabled())
         {
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }
         return true;
     } else {
@@ -4130,8 +4133,7 @@ void MainWindow::openRecentFilters()
         {
             workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
             setCurrentFilters(fileName);
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }
     }
 }
@@ -4584,8 +4586,7 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         }
         if(callInitFile)
         {
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }
     }
     else
@@ -4610,8 +4611,7 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
             updatePlugin(item);
 
             if(oldMode == PluginItem::ModeDisable){
-                ui->applyConfig->startPulsing(pulseButtonColor);
-                ui->applyConfig->setEnabled(true);
+                applyConfigEnabled(true);
             }
         }else{
              ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("The selected Plugin is already active."));
@@ -4658,8 +4658,7 @@ void MainWindow::action_menuPlugin_Enable_triggered()
             item->setMode( PluginItem::ModeEnable );
             item->savePluginModeToSettings();
             updatePlugin(item);
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
                                  QString("The selected Plugin is already deactivated."));
@@ -4681,8 +4680,7 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
             item->setMode( PluginItem::ModeDisable );
             item->savePluginModeToSettings();
             updatePlugin(item);
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }else{
             QMessageBox::warning(0, QString("DLT Viewer"),
                                  QString("The selected Plugin is already deactivated."));
@@ -4819,8 +4817,7 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         setCurrentFilters(fileName);
-        ui->applyConfig->startPulsing(pulseButtonColor);
-        ui->applyConfig->setEnabled(true);
+        applyConfigEnabled(true);
     }
 
     on_filterWidget_itemSelectionChanged();
@@ -4906,8 +4903,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     }
     else
     {
-        ui->applyConfig->startPulsing(pulseButtonColor);
-        ui->applyConfig->setEnabled(true);
+        applyConfigEnabled(true);
     }
 }
 
@@ -4993,8 +4989,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
         }
         else
         {
-            ui->applyConfig->startPulsing(pulseButtonColor);
-            ui->applyConfig->setEnabled(true);
+            applyConfigEnabled(true);
         }
         delete widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
     }
@@ -5009,8 +5004,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
 void MainWindow::on_action_menuFilter_Clear_all_triggered() {
     /* delete complete filter list */
     project.filter->clear();
-    ui->applyConfig->startPulsing(pulseButtonColor);
-    ui->applyConfig->setEnabled(true);
+    applyConfigEnabled(true);
 }
 
 void MainWindow::filterUpdate() {
@@ -5220,8 +5214,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         {
             tmp->enableFilter = true;
         }
-        ui->applyConfig->startPulsing(pulseButtonColor);
-        ui->applyConfig->setEnabled(true);
+        applyConfigEnabled(true);
     }
 }
 
@@ -5268,8 +5261,7 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         setCurrentFilters(fileName);
-        ui->applyConfig->startPulsing(pulseButtonColor);
-        ui->applyConfig->setEnabled(true);
+        applyConfigEnabled(true);
     }
     on_filterWidget_itemSelectionChanged();
 }
@@ -5375,21 +5367,18 @@ void MainWindow::on_actionDisconnectAll_triggered()
 void MainWindow::on_pluginsEnabled_clicked(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", checked);
-    ui->applyConfig->startPulsing(pulseButtonColor);
-    ui->applyConfig->setEnabled(true);
+    applyConfigEnabled(true);
 }
 
 void MainWindow::on_filtersEnabled_clicked(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
-    ui->applyConfig->startPulsing(pulseButtonColor);
-    ui->applyConfig->setEnabled(true);
+    applyConfigEnabled(true);
 }
 
 void MainWindow::on_applyConfig_clicked()
 {
-    ui->applyConfig->stopPulsing();
-    ui->applyConfig->setEnabled(false);
+    applyConfigEnabled(false);
     saveSelection();
     filterUpdate();
     reloadLogFile();
@@ -5472,4 +5461,145 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 
 }
 
+void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
+{
+    QDir dir;
 
+    if(ui->comboBoxFilterSelection->currentIndex()==0)
+        return;
+
+    if(settings->defaultFilterPath)
+    {
+        dir.setPath(settings->defaultFilterPathName);
+        if(!dir.exists() || !dir.isReadable())
+        {
+            QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(settings->defaultFilterPathName));
+            return;
+        }
+    }
+    else
+    {
+        dir.setPath(QCoreApplication::applicationDirPath());
+        if(!dir.cd("filters"))
+        {
+            return;
+        }
+    }
+
+    QString fileName = dir.path()+"/"+arg1;
+
+    if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
+    {
+        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
+        setCurrentFilters(fileName);
+
+        // Now check if filter index already stored
+        QDltFilterIndex index = defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()];
+        if(index.allIndexSize == qfile.size() &&
+           index.dltFileName == qfile.getFileName())
+        {
+            // filter index cache found
+
+            // copy index into file
+            qfile.setIndexFilter(index.indexFilter);
+
+            applyConfigEnabled(false);
+            saveSelection();
+            filterUpdate();
+
+
+            //reloadLogFile();
+            tableModel->modelChanged();
+            m_searchtableModel->modelChanged();
+
+
+            restoreSelection();
+        }
+        else
+        {
+            // filter index cache not found
+
+            // Activate filter
+            on_applyConfig_clicked();
+
+            // Now store the created index in the filter list
+            QDltFilterIndex index = defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()];
+            index.indexFilter = qfile.getIndexFilter();
+            index.dltFileName = qfile.getFileName();
+            index.allIndexSize = qfile.size();
+            defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()] = index;
+        }
+    }
+
+    on_filterWidget_itemSelectionChanged();
+}
+
+void MainWindow::on_actionDefault_Filter_Reload_triggered()
+{
+    QDir dir;
+
+    ui->comboBoxFilterSelection->clear();
+    ui->comboBoxFilterSelection->addItem("<No default filter selected>");
+
+    defaultFilterIndex.clear();
+
+    defaultFilterIndex.append(QDltFilterIndex()); // for first dummy item
+
+    if(settings->defaultFilterPath)
+    {
+        dir.setPath(settings->defaultFilterPathName);
+        if(!dir.exists() || !dir.isReadable())
+        {
+            QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(settings->defaultFilterPathName));
+            return;
+        }
+    }
+    else
+    {
+        dir.setPath(QCoreApplication::applicationDirPath());
+        if(!dir.cd("filters"))
+        {
+            return;
+        }
+    }
+
+    /* set filter for default filter files */
+    QStringList filters;
+    filters << "*.dlf";
+    dir.setNameFilters(filters);
+
+    /* iterate through all plugins */
+    foreach (QString fileName, dir.entryList(QDir::Files))
+    {
+        ui->comboBoxFilterSelection->addItem(fileName);
+        defaultFilterIndex.append(QDltFilterIndex());
+    }
+
+}
+
+void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
+{
+
+}
+
+void MainWindow::applyConfigEnabled(bool enabled)
+{
+    if(enabled)
+    {
+        ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->applyConfig->setEnabled(true);
+        resetDefaultFilter();
+    }
+    else
+    {
+        ui->applyConfig->stopPulsing();
+        ui->applyConfig->setEnabled(false);
+    }
+}
+
+void MainWindow::resetDefaultFilter()
+{
+    ui->comboBoxFilterSelection->setCurrentIndex(0); //no default filter anymore
+    for(int num=0; num<defaultFilterIndex.size();num++)
+        defaultFilterIndex[num] = QDltFilterIndex();
+}

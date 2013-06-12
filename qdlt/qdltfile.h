@@ -147,6 +147,18 @@ public:
     */
     void clearFilter();
 
+    //! Get current filter list
+    /*!
+      \return filter list.
+    */
+    QDltFilterList getFilterList();
+
+    //! Get current filter list
+    /*!
+      \param filter list.
+    */
+    void setFilterList(QDltFilterList &_filterList);
+
     //! Add a positive filter to the positive filter list.
     /*!
       \param filter the filter configuration
@@ -215,6 +227,18 @@ public:
      **/
     QString getFileName();
 
+    //! Get Index of all DLT messages matching filter
+    /*!
+     * \return List of file positions
+     **/
+    QList<unsigned long> getIndexFilter();
+
+    //! Set Index of all DLT messages matching filter
+    /*!
+     * \param _indexFilter List of file positions
+     **/
+    void setIndexFilter(QList<unsigned long> &_indexFilter);
+
 protected:
 
 private:
@@ -236,14 +260,8 @@ private:
     */
     QList<unsigned long> indexFilter;
 
-    //! List of positive filters.
-    QList<QDltFilter> pfilter;
-
-    //! List of negative filters.
-    QList<QDltFilter> nfilter;
-
-    //! List of markers.
-    QList<QDltFilter> marker;
+    //! This contains the list of filters.
+    QDltFilterList filterList;
 
     //! Enabling filter.
     /*!

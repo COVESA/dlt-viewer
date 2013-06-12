@@ -286,6 +286,9 @@ private:
     void saveAndDisconnectCurrentlyConnectedSerialECUs();
     void connectPreviouslyConnectedECUs();
 
+    /* default filters */
+    void resetDefaultFilter();
+
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
@@ -404,6 +407,7 @@ private slots:
     void openRecentFile();
     void openRecentProject();
     void openRecentFilters();
+    void applyConfigEnabled(bool enabled);
     void tableViewValueChanged(int value);
     void stateChangedTCP(QAbstractSocket::SocketState socketState);
     void stateChangedSerial(bool dsrChanged);
@@ -419,6 +423,12 @@ private slots:
     void on_applyConfig_clicked();
     void on_tabWidget_currentChanged(int index);
 
+    void on_comboBoxFilterSelection_activated(const QString &arg1);
+
+    void on_actionDefault_Filter_Reload_triggered();
+
+    void on_actionDefault_Filter_Create_Index_triggered();
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
@@ -430,6 +440,9 @@ public:
 
     /* DLT file handling */
     QDltFile qfile;
+
+    /* Default Filter Index */
+    QList<QDltFilterIndex> defaultFilterIndex;
 
 };
 

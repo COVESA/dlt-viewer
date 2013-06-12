@@ -39,7 +39,9 @@ SOURCES +=  \
     qdltcontrol.cpp \
     qdltconnection.cpp \
     qdltbase.cpp \
-    qdltargument.cpp
+    qdltargument.cpp \
+    qdltfilterlist.cpp \
+    qdltfilterindex.cpp
 
 
 HEADERS += qdlt.h \
@@ -54,7 +56,9 @@ HEADERS += qdlt.h \
     qdltcontrol.h \
     qdltconnection.h \
     qdltbase.h \
-    qdltargument.h
+    qdltargument.h \
+    qdltfilterlist.h \
+    qdltfilterindex.h
 
 unix:VERSION            = 1.0.0
 

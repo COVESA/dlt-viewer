@@ -27,6 +27,8 @@
 #include <qdltargument.h>
 #include <qdltmsg.h>
 #include <qdltfilter.h>
+#include <qdltfilterlist.h>
+#include <qdltfilterindex.h>
 #include <qdltfile.h>
 #include <qdltcontrol.h>
 #include <qdltconnection.h>

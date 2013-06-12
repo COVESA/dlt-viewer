@@ -229,63 +229,22 @@ bool QDltFile::updateIndexFilter()
 
 bool QDltFile::checkFilter(QDltMsg &msg)
 {  
-    QDltFilter filter;
-    bool found = false;
-    bool filterActivated = false;
-
     if(!filterFlag)
     {
         return true;
     }
 
-    /* If there are no positive filters, or all positive filters
-     * are disabled, the default case is to show all messages. Only
-     * negative filters will be applied */
-    for(int numfilter=0;numfilter<pfilter.size();numfilter++)
-    {
-        filter = pfilter[numfilter];
-        if(filter.enableFilter){
-            filterActivated = true;
-        }
-    }
+    return filterList.checkFilter(msg);
+}
 
-    if(filterActivated==false)
-        found = true;
-    else
-        found = false;
+QDltFilterList QDltFile::getFilterList()
+{
+    return filterList;
+}
 
-
-    for(int numfilter=0;numfilter<pfilter.size();numfilter++)
-    {
-        filter = pfilter[numfilter];
-        if(filter.enableFilter) {
-            found = filter.match(msg);
-            if (found)
-              break;
-        }
-    }
-
-    if (found || filterActivated==false ){
-        //we need only to check for negative filters, if the message would be shown! If discarded anyway, there is no need to apply it.
-        //if positive filter applied -> check for negative filters
-        //if no positive filters are active or no one exists, we need also to filter negatively
-        // if the message has been discarded by all positive filters before, we do not need to filter it away a second time
-
-        for(int numfilter=0;numfilter<nfilter.size();numfilter++)
-          {
-            filter = nfilter[numfilter];
-            if(filter.enableFilter){
-                if (filter.match(msg))
-                  {
-                    // a negative filter has matched -> found = false
-                    found = false;
-                    break;
-                  }
-              }
-          }
-      }
-
-    return found;
+void QDltFile::setFilterList(QDltFilterList &_filterList)
+{
+    filterList = _filterList;
 }
 
 void QDltFile::clearFilterIndex()
@@ -303,27 +262,12 @@ void QDltFile::addFilterIndex (int index)
 
 QColor QDltFile::checkMarker(QDltMsg &msg)
 {
-    QDltFilter filter;
-    QColor color;
-
     if(!filterFlag)
     {
-        return color;
+        return QColor();
     }
 
-    for(int numfilter=0;numfilter<marker.size();numfilter++)
-    {
-        filter = marker[numfilter];
-
-        if(filter.enableFilter){
-            if(filter.match(msg))
-            {
-                color = filter.filterColour;
-                break;
-            }
-        }
-    }
-    return color;
+    return filterList.checkMarker(msg);
 }
 
 QString QDltFile::getFileName()
@@ -439,28 +383,22 @@ int QDltFile::getMsgFilterPos(int index)
 
 void QDltFile::clearFilter()
 {
-    pfilter.clear();
-    nfilter.clear();
-    marker.clear();
-    qDebug() << "clearFilter: Clear filter";
+    filterList.clearFilter();
 }
 
 void QDltFile::addPFilter(QDltFilter &_filter)
 {
-    pfilter.append(_filter);
-    qDebug() << "addPFilter: Add Filter" << _filter.apid << _filter.ctid;
+    filterList.addPFilter(_filter);
 }
 
 void QDltFile::addNFilter(QDltFilter &_filter)
 {
-    nfilter.append(_filter);
-    qDebug() << "addNFilter: Add Filter" << _filter.apid << _filter.ctid;
+    filterList.addNFilter(_filter);
 }
 
 void QDltFile::addMarker(QDltFilter &_filter)
 {
-    marker.append(_filter);
-    qDebug() << "addMarker: Add Filter" << _filter.apid << _filter.ctid;
+    filterList.addMarker(_filter);
 }
 
 bool QDltFile::isFilter()
@@ -471,4 +409,14 @@ bool QDltFile::isFilter()
 void QDltFile::enableFilter(bool state)
 {
     filterFlag = state;
+}
+
+QList<unsigned long> QDltFile::getIndexFilter()
+{
+    return indexFilter;
+}
+
+void QDltFile::setIndexFilter(QList<unsigned long> &_indexFilter)
+{
+    indexFilter = _indexFilter;
 }

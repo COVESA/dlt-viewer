@@ -22,16 +22,7 @@
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="leftMargin">
-     <number>2</number>
-    </property>
-    <property name="topMargin">
-     <number>2</number>
-    </property>
-    <property name="rightMargin">
-     <number>2</number>
-    </property>
-    <property name="bottomMargin">
+    <property name="margin">
      <number>2</number>
     </property>
     <item>
@@ -175,6 +166,9 @@
     <addaction name="action_menuFilter_Duplicate"/>
     <addaction name="action_menuFilter_Delete"/>
     <addaction name="action_menuFilter_Clear_all"/>
+    <addaction name="separator"/>
+    <addaction name="actionDefault_Filter_Reload"/>
+    <addaction name="actionDefault_Filter_Create_Index"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
@@ -287,16 +281,7 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="leftMargin">
-      <number>2</number>
-     </property>
-     <property name="topMargin">
-      <number>2</number>
-     </property>
-     <property name="rightMargin">
-      <number>2</number>
-     </property>
-     <property name="bottomMargin">
+     <property name="margin">
       <number>2</number>
      </property>
      <item>
@@ -369,16 +354,7 @@
          <string>Config</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_4">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>2</number>
          </property>
          <item>
@@ -436,16 +412,7 @@
          <string>Plugin</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
+         <property name="margin">
           <number>2</number>
          </property>
          <item>
@@ -505,18 +472,19 @@
          <string>Filter</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_5">
-         <property name="leftMargin">
+         <property name="margin">
           <number>2</number>
          </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
+         <item>
+          <widget class="QComboBox" name="comboBoxFilterSelection">
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="maxVisibleItems">
+            <number>30</number>
+           </property>
+          </widget>
+         </item>
          <item>
           <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
@@ -1296,6 +1264,19 @@
    </property>
    <property name="text">
     <string>Project</string>
+   </property>
+  </action>
+  <action name="actionDefault_Filter_Reload">
+   <property name="text">
+    <string>Reload Default Filter</string>
+   </property>
+  </action>
+  <action name="actionDefault_Filter_Create_Index">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Create All Default Filter Index</string>
    </property>
   </action>
  </widget>

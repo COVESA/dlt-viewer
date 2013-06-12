@@ -51,6 +51,8 @@ public:
     QString defaultProjectFileName;
     int pluginsPath;
     QString pluginsPathName;
+    int defaultFilterPath;
+    QString defaultFilterPathName;
 
     int autoConnect;
     int autoScroll;
@@ -112,6 +114,7 @@ private slots:
     void on_toolButtonDefaultLogFile_clicked();
     void on_toolButtonTempPath_clicked();
 
+    void on_toolButtonDefaultFilterPath_clicked();
 };
 
 #endif // SETTINGSDIALOG_H
