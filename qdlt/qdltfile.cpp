@@ -386,19 +386,9 @@ void QDltFile::clearFilter()
     filterList.clearFilter();
 }
 
-void QDltFile::addPFilter(QDltFilter &_filter)
+void QDltFile::addFilter(QDltFilter &_filter)
 {
-    filterList.addPFilter(_filter);
-}
-
-void QDltFile::addNFilter(QDltFilter &_filter)
-{
-    filterList.addNFilter(_filter);
-}
-
-void QDltFile::addMarker(QDltFilter &_filter)
-{
-    filterList.addMarker(_filter);
+    filterList.addFilter(_filter);
 }
 
 bool QDltFile::isFilter()

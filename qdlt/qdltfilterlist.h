@@ -29,6 +29,8 @@
 #include <QColor>
 #include <QMutex>
 #include <time.h>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 #include "export_rules.h"
 
@@ -56,23 +58,11 @@ public:
     */
     void clearFilter();
 
-    //! Add a positive filter to the positive filter list.
+    //! Add a filter to the filter list.
     /*!
       \param filter the filter configuration
     */
-    void addPFilter(QDltFilter &filter);
-
-    //! Add a negative filter to the negative filter list.
-    /*!
-      \param filter the filter configuration
-    */
-    void addNFilter(QDltFilter &filter);
-
-    //! Add a marker to the marker list.
-    /*!
-      \param filter the filter configuration
-    */
-    void addMarker(QDltFilter &filter);
+    void addFilter(QDltFilter &filter);
 
     //! Check if message will be marked.
     /*!
@@ -95,17 +85,15 @@ public:
     */
     bool checkFilter(QDltMsg &msg);
 
+    bool SaveFilter(QString filename);
+    bool LoadFilter(QString filename,bool replace);
+
+    //! List of filters.
+    QList<QDltFilter> filters;
+
 protected:
 private:
 
-    //! List of positive filters.
-    QList<QDltFilter> pfilter;
-
-    //! List of negative filters.
-    QList<QDltFilter> nfilter;
-
-    //! List of markers.
-    QList<QDltFilter> marker;
 
 };
 

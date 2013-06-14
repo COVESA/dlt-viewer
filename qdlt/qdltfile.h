@@ -153,29 +153,17 @@ public:
     */
     QDltFilterList getFilterList();
 
-    //! Get current filter list
+    //! Set current filter list
     /*!
       \param filter list.
     */
     void setFilterList(QDltFilterList &_filterList);
 
-    //! Add a positive filter to the positive filter list.
+    //! Add a filter to the filter list.
     /*!
       \param filter the filter configuration
     */
-    void addPFilter(QDltFilter &filter);
-
-    //! Add a negative filter to the negative filter list.
-    /*!
-      \param filter the filter configuration
-    */
-    void addNFilter(QDltFilter &filter);
-
-    //! Add a marker to the marker list.
-    /*!
-      \param filter the filter configuration
-    */
-    void addMarker(QDltFilter &filter);
+    void addFilter(QDltFilter &filter);
 
     //! Get the status of the filter.
     /*!

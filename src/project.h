@@ -188,32 +188,7 @@ public:
 
     void operator = (FilterItem &item);
 
-    typedef enum { positive = 0, negative, marker } FilterType;
-
-    FilterType type;
-
-    QString name;
-    QString ecuId;
-    QString applicationId;
-    QString contextId;
-    QString headerText;
-    QString payloadText;
-
-    bool enableRegexp;
-    bool enableFilter;
-    bool enableEcuId;
-    bool enableApplicationId;
-    bool enableContextId;
-    bool enableHeaderText;
-    bool enablePayloadText;
-    bool enableLogLevelMin;
-    bool enableLogLevelMax;
-    bool enableCtrlMsgs;
-
-    QColor filterColour;
-
-    int logLevelMax;
-    int logLevelMin;
+    QDltFilter filter;
 
     void update();
 

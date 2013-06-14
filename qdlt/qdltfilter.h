@@ -29,6 +29,8 @@
 #include <QColor>
 #include <QMutex>
 #include <time.h>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 #include "export_rules.h"
 
@@ -36,13 +38,30 @@
 class QDLT_EXPORT QDltFilter
 {
 public:
+
+    typedef enum { positive = 0, negative, marker } FilterType;
+
+    QDltFilter();
+    ~QDltFilter();
+
+    void clear();
+
+    //! Copy operator.
+    QDltFilter& operator= (QDltFilter const& _filter);
+
+    bool compileRegexps();
+
+    bool match(QDltMsg &msg);
+
+    FilterType type;
+    QString name;
+
     QString ecuid;
     QString apid;
     QString ctid;
     QString header;
     QString payload;
-    QRegExp headerRegexp;
-    QRegExp payloadRegexp;
+
     bool enableRegexp;
     bool enableFilter;
     bool enableEcuid;
@@ -53,11 +72,18 @@ public:
     bool enableCtrlMsgs;
     bool enableLogLevelMax;
     bool enableLogLevelMin;
+
     QColor filterColour;
     int logLevelMax;
     int logLevelMin;
-    bool compileRegexps();
-    bool match(QDltMsg &msg);
+
+    // generated from header and payload string
+    QRegExp headerRegexp;
+    QRegExp payloadRegexp;
+
+    void SaveFilterItem(QXmlStreamWriter &xml);
+    void LoadFilterItem(QXmlStreamReader &xml);
+
 protected:
 private:
 };

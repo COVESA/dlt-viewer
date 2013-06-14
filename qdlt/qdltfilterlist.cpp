@@ -20,6 +20,7 @@
  */
 
 #include <QtDebug>
+#include <QMessageBox>
 
 #include "qdlt.h"
 
@@ -40,37 +41,21 @@ QDltFilterList::~QDltFilterList()
 
 QDltFilterList& QDltFilterList::operator= (QDltFilterList const& _filterList)
 {
-    pfilter = _filterList.pfilter;
-    nfilter = _filterList.nfilter;
-    marker = _filterList.marker;
+    filters = _filterList.filters;
 
     return *this;
 }
 
 void QDltFilterList::clearFilter()
 {
-    pfilter.clear();
-    nfilter.clear();
-    marker.clear();
+    filters.clear();
     qDebug() << "clearFilter: Clear filter";
 }
 
-void QDltFilterList::addPFilter(QDltFilter &_filter)
+void QDltFilterList::addFilter(QDltFilter &_filter)
 {
-    pfilter.append(_filter);
-    qDebug() << "addPFilter: Add Filter" << _filter.apid << _filter.ctid;
-}
-
-void QDltFilterList::addNFilter(QDltFilter &_filter)
-{
-    nfilter.append(_filter);
-    qDebug() << "addNFilter: Add Filter" << _filter.apid << _filter.ctid;
-}
-
-void QDltFilterList::addMarker(QDltFilter &_filter)
-{
-    marker.append(_filter);
-    qDebug() << "addMarker: Add Filter" << _filter.apid << _filter.ctid;
+    filters.append(_filter);
+    qDebug() << "addFilter: Add Filter" << _filter.apid << _filter.ctid;
 }
 
 QColor QDltFilterList::checkMarker(QDltMsg &msg)
@@ -78,11 +63,12 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
     QDltFilter filter;
     QColor color;
 
-    for(int numfilter=0;numfilter<marker.size();numfilter++)
+    for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
-        filter = marker[numfilter];
+        filter = filters[numfilter];
 
-        if(filter.enableFilter){
+        if(filter.type == QDltFilter::marker && filter.enableFilter)
+        {
             if(filter.match(msg))
             {
                 color = filter.filterColour;
@@ -102,10 +88,10 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     /* If there are no positive filters, or all positive filters
      * are disabled, the default case is to show all messages. Only
      * negative filters will be applied */
-    for(int numfilter=0;numfilter<pfilter.size();numfilter++)
+    for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
-        filter = pfilter[numfilter];
-        if(filter.enableFilter){
+        filter = filters[numfilter];
+        if(filter.type == QDltFilter::positive && filter.enableFilter){
             filterActivated = true;
         }
     }
@@ -116,10 +102,10 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         found = false;
 
 
-    for(int numfilter=0;numfilter<pfilter.size();numfilter++)
+    for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
-        filter = pfilter[numfilter];
-        if(filter.enableFilter) {
+        filter = filters[numfilter];
+        if(filter.type == QDltFilter::positive && filter.enableFilter) {
             found = filter.match(msg);
             if (found)
               break;
@@ -132,10 +118,10 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         //if no positive filters are active or no one exists, we need also to filter negatively
         // if the message has been discarded by all positive filters before, we do not need to filter it away a second time
 
-        for(int numfilter=0;numfilter<nfilter.size();numfilter++)
+        for(int numfilter=0;numfilter<filters.size();numfilter++)
           {
-            filter = nfilter[numfilter];
-            if(filter.enableFilter){
+            filter = filters[numfilter];
+            if(filter.type == QDltFilter::negative && filter.enableFilter){
                 if (filter.match(msg))
                   {
                     // a negative filter has matched -> found = false
@@ -147,4 +133,86 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
       }
 
     return found;
+}
+
+bool QDltFilterList::SaveFilter(QString filename)
+{
+    QFile file(filename);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+    {
+            QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
+            return false;
+    }
+
+    QXmlStreamWriter xml(&file);
+
+    xml.setAutoFormatting(true);
+
+    xml.writeStartDocument();
+    xml.writeStartElement("dltfilter");
+
+
+    /* Write Filter */
+    for(int num = 0; num < filters.size(); num++)
+    {
+        QDltFilter filter = filters[num];
+
+        xml.writeStartElement("filter");
+        filter.SaveFilterItem(xml);
+
+        xml.writeEndElement(); // filter
+    }
+
+    xml.writeEndElement(); // dltfilter
+    xml.writeEndDocument();
+
+    file.close();
+
+    return true;
+}
+
+bool QDltFilterList::LoadFilter(QString filename, bool replace){
+
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+        return false;
+    }
+
+    QDltFilter filter;
+
+    if(replace)
+        filters.clear();
+
+    QXmlStreamReader xml(&file);
+    while (!xml.atEnd()) {
+          xml.readNext();
+
+          if(xml.isStartElement())
+          {
+
+              if(xml.name() == QString("filter"))
+              {
+                  filter.clear();
+              }
+              filter.LoadFilterItem(xml);
+          }
+          if(xml.isEndElement())
+          {
+              if(xml.name() == QString("filter"))
+              {
+                    filters.append(filter);
+              }
+
+          }
+    }
+    if (xml.hasError()) {
+        QMessageBox::warning(0, QString("XML Parser error"),
+                             xml.errorString());
+    }
+
+    file.close();
+
+    return true;
 }

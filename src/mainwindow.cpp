@@ -4836,58 +4836,58 @@ void MainWindow::on_action_menuFilter_Add_triggered() {
 
 void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
 {
-    dlg.setType((int)(item->type));
+    dlg.setType((int)(item->filter.type));
 
-    dlg.setName(item->name);
-    dlg.setEcuId(item->ecuId);
-    dlg.setApplicationId(item->applicationId);
-    dlg.setContextId(item->contextId);
-    dlg.setHeaderText(item->headerText);
-    dlg.setPayloadText(item->payloadText);
+    dlg.setName(item->filter.name);
+    dlg.setEcuId(item->filter.ecuid);
+    dlg.setApplicationId(item->filter.apid);
+    dlg.setContextId(item->filter.ctid);
+    dlg.setHeaderText(item->filter.header);
+    dlg.setPayloadText(item->filter.payload);
 
-    dlg.setActive(item->enableFilter);
-    dlg.setEnableRegexp(item->enableRegexp);
-    dlg.setEnableEcuId(item->enableEcuId);
-    dlg.setEnableApplicationId(item->enableApplicationId);
-    dlg.setEnableContextId(item->enableContextId);
-    dlg.setEnableHeaderText(item->enableHeaderText);
-    dlg.setEnablePayloadText(item->enablePayloadText);
-    dlg.setEnableCtrlMsgs(item->enableCtrlMsgs);
-    dlg.setEnableLogLevelMax(item->enableLogLevelMax);
-    dlg.setEnableLogLevelMin(item->enableLogLevelMin);
+    dlg.setEnableRegexp(item->filter.enableRegexp);
+    dlg.setActive(item->filter.enableFilter);
+    dlg.setEnableEcuId(item->filter.enableEcuid);
+    dlg.setEnableApplicationId(item->filter.enableApid);
+    dlg.setEnableContextId(item->filter.enableCtid);
+    dlg.setEnableHeaderText(item->filter.enableHeader);
+    dlg.setEnablePayloadText(item->filter.enablePayload);
+    dlg.setEnableCtrlMsgs(item->filter.enableCtrlMsgs);
+    dlg.setEnableLogLevelMax(item->filter.enableLogLevelMax);
+    dlg.setEnableLogLevelMin(item->filter.enableLogLevelMin);
 
-    dlg.setFilterColour(item->filterColour);
+    dlg.setFilterColour(item->filter.filterColour);
 
-    dlg.setLogLevelMax(item->logLevelMax);
-    dlg.setLogLevelMin(item->logLevelMin);
+    dlg.setLogLevelMax(item->filter.logLevelMax);
+    dlg.setLogLevelMin(item->filter.logLevelMin);
 }
 
 void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
 {
-    item->type = (FilterItem::FilterType)(dlg.getType());
+    item->filter.type = (QDltFilter::FilterType)(dlg.getType());
 
+    item->filter.name = dlg.getName();
 
-    item->name = dlg.getName();
-    item->ecuId = dlg.getEcuId();
-    item->applicationId = dlg.getApplicationId();
-    item->contextId = dlg.getContextId();
-    item->headerText = dlg.getHeaderText();
-    item->payloadText = dlg.getPayloadText();
+    item->filter.ecuid = dlg.getEcuId();
+    item->filter.apid = dlg.getApplicationId();
+    item->filter.ctid = dlg.getContextId();
+    item->filter.header = dlg.getHeaderText();
+    item->filter.payload = dlg.getPayloadText();
 
-    item->enableFilter = dlg.getEnableActive();
-    item->enableRegexp = dlg.getEnableRegexp();
-    item->enableEcuId = dlg.getEnableEcuId();
-    item->enableApplicationId = dlg.getEnableApplicationId();
-    item->enableContextId = dlg.getEnableContextId();
-    item->enableHeaderText = dlg.getEnableHeaderText();
-    item->enablePayloadText = dlg.getEnablePayloadText();
-    item->enableCtrlMsgs = dlg.getEnableCtrlMsgs();
-    item->enableLogLevelMax = dlg.getEnableLogLevelMax();
-    item->enableLogLevelMin = dlg.getEnableLogLevelMin();
+    item->filter.enableRegexp = dlg.getEnableRegexp();
+    item->filter.enableFilter = dlg.getEnableActive();
+    item->filter.enableEcuid = dlg.getEnableEcuId();
+    item->filter.enableApid = dlg.getEnableApplicationId();
+    item->filter.enableCtid = dlg.getEnableContextId();
+    item->filter.enableHeader = dlg.getEnableHeaderText();
+    item->filter.enablePayload = dlg.getEnablePayloadText();
+    item->filter.enableCtrlMsgs = dlg.getEnableCtrlMsgs();
+    item->filter.enableLogLevelMax = dlg.getEnableLogLevelMax();
+    item->filter.enableLogLevelMin = dlg.getEnableLogLevelMin();
 
-    item->filterColour = dlg.getFilterColour();
-    item->logLevelMax = dlg.getLogLevelMax();
-    item->logLevelMin = dlg.getLogLevelMin();
+    item->filter.filterColour = dlg.getFilterColour();
+    item->filter.logLevelMax = dlg.getLogLevelMax();
+    item->filter.logLevelMin = dlg.getLogLevelMin();
 
     /* update filter item */
     item->update();
@@ -4897,7 +4897,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
      * view or pulse the button depending on if it is a filter or
      * marker. */
     filterUpdate();
-    if(item->type == FilterItem::marker)
+    if(item->filter.type == QDltFilter::marker)
     {
         tableModel->modelChanged();
     }
@@ -4983,7 +4983,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
         /* delete filter */
         FilterItem *item = (FilterItem *)widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
         filterUpdate();
-        if(item->type == FilterItem::marker)
+        if(item->filter.type == QDltFilter::marker)
         {
             tableModel->modelChanged();
         }
@@ -5008,7 +5008,7 @@ void MainWindow::on_action_menuFilter_Clear_all_triggered() {
 }
 
 void MainWindow::filterUpdate() {
-    QDltFilter afilter;
+    QDltFilter filter;
 
     /* update all filters from filter configuration to DLT filter list */
 
@@ -5020,54 +5020,26 @@ void MainWindow::filterUpdate() {
     {
         FilterItem *item = (FilterItem*)project.filter->topLevelItem(num);
 
-        afilter.ecuid = item->ecuId;
-        afilter.apid = item->applicationId;
-        afilter.ctid = item->contextId;
-        afilter.header = item->headerText;
-        afilter.payload = item->payloadText;
+        filter = item->filter;
 
-        afilter.enableRegexp = item->enableRegexp;
-        afilter.enableFilter = item->enableFilter;
-        afilter.enableEcuid = item->enableEcuId;
-        afilter.enableApid = item->enableApplicationId;
-        afilter.enableCtid = item->enableContextId;
-        afilter.enableHeader = item->enableHeaderText;
-        afilter.enablePayload = item->enablePayloadText;
-        afilter.enableCtrlMsgs = item->enableCtrlMsgs;
-        afilter.enableLogLevelMax = item->enableLogLevelMax;
-        afilter.enableLogLevelMin = item->enableLogLevelMin;
-
-        afilter.logLevelMax = item->logLevelMax;
-        afilter.logLevelMin = item->logLevelMin;
-
-        afilter.filterColour = item->filterColour;
-        item->setBackground(0,item->filterColour);
-        item->setBackground(1,item->filterColour);
-        item->setForeground(0,DltUiUtils::optimalTextColor(item->filterColour));
-        item->setForeground(1,DltUiUtils::optimalTextColor(item->filterColour));
-
-        if(afilter.enableRegexp)
+        if(item->filter.type == QDltFilter::marker)
         {
-            if(!afilter.compileRegexps())
+            item->setBackground(0,item->filter.filterColour);
+            item->setBackground(1,item->filter.filterColour);
+            item->setForeground(0,DltUiUtils::optimalTextColor(item->filter.filterColour));
+            item->setForeground(1,DltUiUtils::optimalTextColor(item->filter.filterColour));
+        }
+
+        if(filter.enableRegexp)
+        {
+            if(!filter.compileRegexps())
             {
                 // This is also validated in the UI part
                 qDebug() << "Error compiling a regexp" << endl;
             }
         }
 
-        switch(item->type)
-        {
-        case FilterItem::positive:
-            qfile.addPFilter(afilter);
-            break;
-        case FilterItem::negative:
-            qfile.addNFilter(afilter);
-            break;
-        case FilterItem::marker:
-            qfile.addMarker(afilter);
-            break;
-        }
-
+        qfile.addFilter(filter);
     }
 }
 
@@ -5208,11 +5180,11 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         FilterItem *tmp = (FilterItem*)item;
         if(tmp->checkState(column) == Qt::Unchecked)
         {
-            tmp->enableFilter = false;
+            tmp->filter.enableFilter = false;
         }
         else
         {
-            tmp->enableFilter = true;
+            tmp->filter.enableFilter = true;
         }
         applyConfigEnabled(true);
     }
