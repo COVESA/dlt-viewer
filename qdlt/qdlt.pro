@@ -41,7 +41,8 @@ SOURCES +=  \
     qdltbase.cpp \
     qdltargument.cpp \
     qdltfilterlist.cpp \
-    qdltfilterindex.cpp
+    qdltfilterindex.cpp \
+    qdltdefaultfilter.cpp
 
 
 HEADERS += qdlt.h \
@@ -58,7 +59,8 @@ HEADERS += qdlt.h \
     qdltbase.h \
     qdltargument.h \
     qdltfilterlist.h \
-    qdltfilterindex.h
+    qdltfilterindex.h \
+    qdltdefaultfilter.h
 
 unix:VERSION            = 1.0.0
 

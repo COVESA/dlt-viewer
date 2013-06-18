@@ -14,13 +14,13 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdltfilterindex.h
+ * \file qdltdefaultfilter.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
 
-#ifndef QDLT_FILTER_INDEX_H
-#define QDLT_FILTER_INDEX_H
+#ifndef QDLT_DEFAULT_FILTER_H
+#define QDLT_DEFAULT_FILTER_H
 
 #include <QObject>
 #include <QString>
@@ -29,43 +29,54 @@
 #include <QColor>
 #include <QMutex>
 #include <time.h>
+#include <QXmlStreamReader>
+#include <QXmlStreamWriter>
 
 #include "export_rules.h"
 
-class QDLT_EXPORT QDltFilterIndex
+
+class QDLT_EXPORT QDltDefaultFilter
 {
 public:
 
-    QString dltFileName;
-    int allIndexSize;
-
-    QDltFilterList filterList;
-
-    //! Index of all DLT messages matching filter.
-    /*!
-      Index contains positions of DLT messages in indexAll.
-    */
-    QList<unsigned long> indexFilter;
-
-    //! Set the filter index cache.
+    //! The constructor.
     /*!
     */
-    void setIndexFilter(QList<unsigned long> _indexFilter);
+    QDltDefaultFilter();
 
-    //! Set filename for plausibility check.
+    //! The destructor.
     /*!
     */
-    void setDltFileName(QString _dltFileName);
+    ~QDltDefaultFilter();
 
-    //! Set the dlt file messages size for plausibilty check.
+    //! Delete all filters and markers.
     /*!
+      This includes all positive and negative filters and markers.
     */
-    void setAllIndexSize(int _allIndexSize);
+    void clear();
+
+    //! Load the filter list.
+    /*!
+      The old filter list is deleted.
+    */
+    void load(QString path);
+
+    //! Clear the default filter index cache.
+    /*!
+      The filter index are cleared.
+    */
+    void clearFilterIndex();
+
+    /* Default Filter List */
+    QList<QDltFilterList*> defaultFilterList;
+
+    /* Default Filter Index */
+    QList<QDltFilterIndex*> defaultFilterIndex;
 
 protected:
-
 private:
+
 
 };
 
-#endif // QDLT_FILTER_INDEX_H
+#endif // QDLT_DEFAULT_FILTER_H

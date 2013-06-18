@@ -39,6 +39,9 @@ class QDLT_EXPORT QDltFilterList
 {
 public:
 
+    //! List of filters.
+    QList<QDltFilter*> filters;
+
     //! The constructor.
     /*!
     */
@@ -62,7 +65,7 @@ public:
     /*!
       \param filter the filter configuration
     */
-    void addFilter(QDltFilter &filter);
+    void addFilter(QDltFilter *_filter);
 
     //! Check if message will be marked.
     /*!
@@ -85,15 +88,26 @@ public:
     */
     bool checkFilter(QDltMsg &msg);
 
-    bool SaveFilter(QString filename);
-    bool LoadFilter(QString filename,bool replace);
+    //! Save the filter.
+    /*!
+    */
+    bool SaveFilter(QString _filename);
 
-    //! List of filters.
-    QList<QDltFilter> filters;
+    //! Load the filter list.
+    /*!
+    */
+    bool LoadFilter(QString _filename,bool replace);
+
+    //! Return the filename.
+    /*!
+    */
+    QString getFilename() { return filename; }
 
 protected:
 private:
 
+    //! The filename of the filter list including complete path.
+    QString filename;
 
 };
 

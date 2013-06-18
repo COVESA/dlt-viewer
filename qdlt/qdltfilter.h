@@ -41,18 +41,6 @@ public:
 
     typedef enum { positive = 0, negative, marker } FilterType;
 
-    QDltFilter();
-    ~QDltFilter();
-
-    void clear();
-
-    //! Copy operator.
-    QDltFilter& operator= (QDltFilter const& _filter);
-
-    bool compileRegexps();
-
-    bool match(QDltMsg &msg);
-
     FilterType type;
     QString name;
 
@@ -81,7 +69,42 @@ public:
     QRegExp headerRegexp;
     QRegExp payloadRegexp;
 
+    //! Constructor.
+    /*!
+    */
+    QDltFilter();
+
+    //! Destructor.
+    /*!
+    */
+    ~QDltFilter();
+
+    void clear();
+
+    //! Copy operator.
+    /*!
+    */
+    QDltFilter& operator= (QDltFilter const& _filter);
+
+    //! Create regular expressions.
+    /*!
+    */
+    bool compileRegexps();
+
+    //! Ccheck if filter matches.
+    /*!
+      \return true if filter matches the msg, else false
+    */
+    bool match(QDltMsg &msg);
+
+    //! Save filter parameters in XML file.
+    /*!
+    */
     void SaveFilterItem(QXmlStreamWriter &xml);
+
+    //! Load filter parameters from XML file.
+    /*!
+    */
     void LoadFilterItem(QXmlStreamReader &xml);
 
 protected:

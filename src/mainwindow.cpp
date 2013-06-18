@@ -1378,6 +1378,88 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
     }
 }
 
+void MainWindow::applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins)
+{
+    QDltMsg msg;
+    PluginItem *item;
+    QProgressDialog fileprogress("Create default filter index.", "Cancel", 0, qfile.size(), this);
+    fileprogress.setWindowModality(Qt::WindowModal);
+
+    /* clear all default filter cache index */
+    defaultFilter.clearFilterIndex();
+
+    /* run through the whole open file */
+    for(int ix=0;ix<qfile.size();ix++)
+    {
+        /* Fill message from file */
+        if(!qfile.getMsg(ix, msg))
+        {
+            /* Skip broken messages */
+            continue;
+        }
+
+        /* Process all decoderplugins */
+        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
+        {
+            item = (PluginItem*)activeDecoderPlugins.at(idp);
+            if(item->plugindecoderinterface->isMsg(msg, 0))
+            {
+                item->plugindecoderinterface->decodeMsg(msg, 0);
+                /* TODO: Do we, or do we not want to break here?
+                 * Perhaps user wants to stack multiple plugins */
+                break;
+            }
+        }
+
+        /* run through all default filter */
+        for(int num=0;num<defaultFilter.defaultFilterList.size();num++)
+        {
+            QDltFilterList *filterList;
+            filterList = defaultFilter.defaultFilterList[num];
+
+            /* check if filter matches message */
+            if(filterList->checkFilter(msg))
+            {
+                QDltFilterIndex *filterIndex;
+                filterIndex = defaultFilter.defaultFilterIndex[num];
+
+                /* if filter match add message to index cache */
+                filterIndex->indexFilter.append(ix);
+
+            }
+        }
+
+        /* Update progress every 0.5% */
+        if( 0 == (ix%1000))
+        {
+            fileprogress.setValue(ix);
+            fileprogress.setLabelText(
+                        QString("Create default index for Message %1/%2")
+                        .arg(ix).arg(qfile.size()));
+            if(fileprogress.wasCanceled())
+            {
+                break;
+            }
+            QApplication::processEvents();
+        }
+    }
+
+    /* update plausibility checks of filter index cache, filename and filesize */
+    for(int num=0;num<defaultFilter.defaultFilterIndex.size();num++)
+    {
+        QDltFilterIndex *filterIndex;
+        filterIndex = defaultFilter.defaultFilterIndex[num];
+
+        filterIndex->setDltFileName(qfile.getFileName());
+        filterIndex->setAllIndexSize(qfile.size());
+    }
+
+    if(fileprogress.wasCanceled())
+    {
+        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
+    }
+}
+
 void MainWindow::reloadLogFile()
 {
     PluginItem *item = 0;
@@ -1437,6 +1519,41 @@ void MainWindow::reloadLogFile()
 
     /* We might have had readyRead events, which we missed */
     readyRead();
+}
+
+void MainWindow::reloadLogFileDefaultFilter()
+{
+    PluginItem *item = 0;
+    QList<PluginItem*> activeViewerPlugins;
+    QList<PluginItem*> activeDecoderPlugins;
+
+    /* Collect all plugins */
+    if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+    {
+        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+        {
+            item = (PluginItem*)project.plugin->topLevelItem(i);
+
+            if(item->getMode() != PluginItem::ModeDisable)
+            {
+                if(item->plugindecoderinterface)
+                {
+                    activeDecoderPlugins.append(item);
+                }
+                if(item->pluginviewerinterface)
+                {
+
+                    item->pluginviewerinterface->initFileStart(&qfile);
+                    activeViewerPlugins.append(item);
+                }
+            }
+        }
+    }
+
+    /* Apply collected plugins.
+     * Please note that filterIndex is created as a side effect */
+    applyPluginsDefaultFilter(activeViewerPlugins,activeDecoderPlugins);
+
 }
 
 void MainWindow::applySettings()
@@ -5008,7 +5125,7 @@ void MainWindow::on_action_menuFilter_Clear_all_triggered() {
 }
 
 void MainWindow::filterUpdate() {
-    QDltFilter filter;
+    QDltFilter *filter;
 
     /* update all filters from filter configuration to DLT filter list */
 
@@ -5020,7 +5137,8 @@ void MainWindow::filterUpdate() {
     {
         FilterItem *item = (FilterItem*)project.filter->topLevelItem(num);
 
-        filter = item->filter;
+        filter = new QDltFilter();
+        *filter = item->filter;
 
         if(item->filter.type == QDltFilter::marker)
         {
@@ -5030,9 +5148,9 @@ void MainWindow::filterUpdate() {
             item->setForeground(1,DltUiUtils::optimalTextColor(item->filter.filterColour));
         }
 
-        if(filter.enableRegexp)
+        if(filter->enableRegexp)
         {
-            if(!filter.compileRegexps())
+            if(!filter->compileRegexps())
             {
                 // This is also validated in the UI part
                 qDebug() << "Error compiling a regexp" << endl;
@@ -5435,74 +5553,55 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 
 void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
 {
-    QDir dir;
-
+    /* check if not "no default filter" item selected */
     if(ui->comboBoxFilterSelection->currentIndex()==0)
+    {
+        /* reset all default filter index */
+        defaultFilter.clearFilterIndex();
+
         return;
-
-    if(settings->defaultFilterPath)
-    {
-        dir.setPath(settings->defaultFilterPathName);
-        if(!dir.exists() || !dir.isReadable())
-        {
-            QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(settings->defaultFilterPathName));
-            return;
-        }
-    }
-    else
-    {
-        dir.setPath(QCoreApplication::applicationDirPath());
-        if(!dir.cd("filters"))
-        {
-            return;
-        }
     }
 
-    QString fileName = dir.path()+"/"+arg1;
-
-    if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
+    /* load current selected filter */
+    if(!arg1.isEmpty() && project.LoadFilter(arg1,true))
     {
-        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-        setCurrentFilters(fileName);
+        workingDirectory.setDlfDirectory(QFileInfo(arg1).absolutePath());
+        setCurrentFilters(arg1);
 
-        // Now check if filter index already stored
-        QDltFilterIndex index = defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()];
-        if(index.allIndexSize == qfile.size() &&
-           index.dltFileName == qfile.getFileName())
+        /* if filter index already stored default filter cache, use index from cache */
+        QDltFilterIndex *index = defaultFilter.defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()-1];
+
+        /* check if filename and qfile size is matching cache entry */
+        if(index->allIndexSize == qfile.size() &&
+           index->dltFileName == qfile.getFileName())
         {
-            // filter index cache found
+            /* filter index cache found */
+            /* copy index into file */
+            qfile.setIndexFilter(index->indexFilter);
 
-            // copy index into file
-            qfile.setIndexFilter(index.indexFilter);
-
+            /* update ui */
             applyConfigEnabled(false);
             saveSelection();
             filterUpdate();
-
-
-            //reloadLogFile();
             tableModel->modelChanged();
             m_searchtableModel->modelChanged();
-
-
             restoreSelection();
         }
         else
         {
-            // filter index cache not found
-
-            // Activate filter
+            /* filter index cache not found */
+            /* Activate filter and create index there as usual */
             on_applyConfig_clicked();
 
-            // Now store the created index in the filter list
-            QDltFilterIndex index = defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()];
-            index.indexFilter = qfile.getIndexFilter();
-            index.dltFileName = qfile.getFileName();
-            index.allIndexSize = qfile.size();
-            defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()] = index;
+            /* Now store the created index in the default filter cache */
+            QDltFilterIndex *index = defaultFilter.defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()-1];
+            index->setIndexFilter(qfile.getIndexFilter());
+            index->setDltFileName(qfile.getFileName());
+            index->setAllIndexSize(qfile.size());
         }
     }
 
+    /* update ui */
     on_filterWidget_itemSelectionChanged();
 }
 
@@ -5510,13 +5609,16 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
 {
     QDir dir;
 
+    /* clear combobox default filter */
     ui->comboBoxFilterSelection->clear();
+
+    /* add "no default filter" entry */
     ui->comboBoxFilterSelection->addItem("<No default filter selected>");
 
-    defaultFilterIndex.clear();
+    /* clear default filter list */
+    defaultFilter.clear();
 
-    defaultFilterIndex.append(QDltFilterIndex()); // for first dummy item
-
+    /* get the default filter path */
     if(settings->defaultFilterPath)
     {
         dir.setPath(settings->defaultFilterPathName);
@@ -5535,35 +5637,36 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
         }
     }
 
-    /* set filter for default filter files */
-    QStringList filters;
-    filters << "*.dlf";
-    dir.setNameFilters(filters);
+    /* load the default filter list */
+    defaultFilter.load(dir.absolutePath());
 
-    /* iterate through all plugins */
-    foreach (QString fileName, dir.entryList(QDir::Files))
-    {
-        ui->comboBoxFilterSelection->addItem(fileName);
-        defaultFilterIndex.append(QDltFilterIndex());
-    }
+    /* default filter list update combobox */
+    QDltFilterList *filterList;
+    foreach(filterList,defaultFilter.defaultFilterList)
+        ui->comboBoxFilterSelection->addItem(filterList->getFilename());
 
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
 {
-
+    /* reset default filter list and reload from directory all default filter */
+    reloadLogFileDefaultFilter();
 }
 
 void MainWindow::applyConfigEnabled(bool enabled)
 {
     if(enabled)
     {
+        /* show apply config button */
         ui->applyConfig->startPulsing(pulseButtonColor);
         ui->applyConfig->setEnabled(true);
+
+        /* reset default filter selection and default filter index */
         resetDefaultFilter();
     }
     else
     {
+        /* hide apply config button */
         ui->applyConfig->stopPulsing();
         ui->applyConfig->setEnabled(false);
     }
@@ -5571,7 +5674,14 @@ void MainWindow::applyConfigEnabled(bool enabled)
 
 void MainWindow::resetDefaultFilter()
 {
+    /* reset all default filter index */
+    defaultFilter.clearFilterIndex();
+
+    /* select "no default filter" entry */
     ui->comboBoxFilterSelection->setCurrentIndex(0); //no default filter anymore
-    for(int num=0; num<defaultFilterIndex.size();num++)
-        defaultFilterIndex[num] = QDltFilterIndex();
+}
+
+void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
+{
+    on_actionDefault_Filter_Create_Index_triggered();
 }

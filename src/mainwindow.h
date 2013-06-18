@@ -200,6 +200,7 @@ private:
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
     void reloadLogFile();
+    void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file);
 
@@ -228,6 +229,7 @@ private:
     void updatePlugins();
     void updatePlugin(PluginItem *item);
     void applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins);
+    void applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
@@ -429,6 +431,8 @@ private slots:
 
     void on_actionDefault_Filter_Create_Index_triggered();
 
+    void on_pushButtonDefaultFilterUpdateCache_clicked();
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
@@ -441,8 +445,7 @@ public:
     /* DLT file handling */
     QDltFile qfile;
 
-    /* Default Filter Index */
-    QList<QDltFilterIndex> defaultFilterIndex;
+    QDltDefaultFilter defaultFilter;
 
 };
 

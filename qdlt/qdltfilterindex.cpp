@@ -28,3 +28,17 @@ extern "C"
 #include "dlt_common.h"
 }
 
+void QDltFilterIndex::setIndexFilter(QList<unsigned long> _indexFilter)
+{
+    indexFilter = _indexFilter;
+}
+
+void QDltFilterIndex::setDltFileName(QString _dltFileName)
+{
+    dltFileName = _dltFileName;
+}
+
+void QDltFilterIndex::setAllIndexSize(int _allIndexSize)
+{
+    allIndexSize = _allIndexSize;
+}

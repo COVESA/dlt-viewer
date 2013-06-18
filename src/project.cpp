@@ -1115,7 +1115,9 @@ bool Project::SaveFilter(QString filename)
     for(int num = 0; num < filter->topLevelItemCount (); num++)
     {
         FilterItem *item = (FilterItem*)filter->topLevelItem(num);
-        filterList.filters.append(item->filter);
+        QDltFilter *filter = new QDltFilter();
+        *filter = item->filter;
+        filterList.filters.append(filter);
     }
 
     return filterList.SaveFilter(filename);
@@ -1133,7 +1135,7 @@ bool Project::LoadFilter(QString filename, bool replace){
     for(int num=0;num<filterList.filters.size();num++)
     {
         FilterItem *filteritem = new FilterItem();
-        filteritem->filter = filterList.filters[num];
+        filteritem->filter = *(filterList.filters[num]);
         filter->addTopLevelItem(filteritem);
         filteritem->update();
     }

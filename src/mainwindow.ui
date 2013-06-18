@@ -471,12 +471,18 @@
         <attribute name="title">
          <string>Filter</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QGridLayout" name="gridLayout_2">
          <property name="margin">
-          <number>2</number>
+          <number>3</number>
          </property>
-         <item>
+         <property name="spacing">
+          <number>3</number>
+         </property>
+         <item row="0" column="0">
           <widget class="QComboBox" name="comboBoxFilterSelection">
+           <property name="toolTip">
+            <string>Default filter List</string>
+           </property>
            <property name="editable">
             <bool>false</bool>
            </property>
@@ -485,7 +491,29 @@
            </property>
           </widget>
          </item>
-         <item>
+         <item row="0" column="1">
+          <widget class="QPushButton" name="pushButtonDefaultFilterUpdateCache">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>45</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="toolTip">
+            <string>Update Default Filter Cache</string>
+           </property>
+           <property name="text">
+            <string>Update</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="0" colspan="2">
           <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -1268,15 +1296,15 @@
   </action>
   <action name="actionDefault_Filter_Reload">
    <property name="text">
-    <string>Reload Default Filter</string>
+    <string>Reload Default Filter List</string>
    </property>
   </action>
   <action name="actionDefault_Filter_Create_Index">
    <property name="enabled">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="text">
-    <string>Create All Default Filter Index</string>
+    <string>Update Default Filter Cache</string>
    </property>
   </action>
  </widget>

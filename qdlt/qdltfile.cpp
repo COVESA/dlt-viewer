@@ -386,7 +386,7 @@ void QDltFile::clearFilter()
     filterList.clearFilter();
 }
 
-void QDltFile::addFilter(QDltFilter &_filter)
+void QDltFile::addFilter(QDltFilter *_filter)
 {
     filterList.addFilter(_filter);
 }

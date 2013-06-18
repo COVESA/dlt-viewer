@@ -36,42 +36,57 @@ QDltFilterList::QDltFilterList()
 
 QDltFilterList::~QDltFilterList()
 {
-
+    clearFilter();
 }
 
 QDltFilterList& QDltFilterList::operator= (QDltFilterList const& _filterList)
 {
-    filters = _filterList.filters;
+    QDltFilter *filter_source,*filter_copy;
+    clearFilter();
+    for(int numfilter=0;numfilter<_filterList.filters.size();numfilter++)
+    {
+        filter_copy = new QDltFilter();
+        filter_source = filters[numfilter];
+        *filter_copy = *filter_source;
+        filters.append(filter_copy);
+    }
 
     return *this;
 }
 
 void QDltFilterList::clearFilter()
 {
+    QDltFilter *filter;
+
+    for(int numfilter=0;numfilter<filters.size();numfilter++)
+    {
+        filter = filters[numfilter];
+        delete filter;
+    }
     filters.clear();
     qDebug() << "clearFilter: Clear filter";
 }
 
-void QDltFilterList::addFilter(QDltFilter &_filter)
+void QDltFilterList::addFilter(QDltFilter *_filter)
 {
     filters.append(_filter);
-    qDebug() << "addFilter: Add Filter" << _filter.apid << _filter.ctid;
+    qDebug() << "addFilter: Add Filter" << _filter->apid << _filter->ctid;
 }
 
 QColor QDltFilterList::checkMarker(QDltMsg &msg)
 {
-    QDltFilter filter;
+    QDltFilter *filter;
     QColor color;
 
     for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
         filter = filters[numfilter];
 
-        if(filter.type == QDltFilter::marker && filter.enableFilter)
+        if(filter->type == QDltFilter::marker && filter->enableFilter)
         {
-            if(filter.match(msg))
+            if(filter->match(msg))
             {
-                color = filter.filterColour;
+                color = filter->filterColour;
                 break;
             }
         }
@@ -81,7 +96,7 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
 
 bool QDltFilterList::checkFilter(QDltMsg &msg)
 {
-    QDltFilter filter;
+    QDltFilter *filter;
     bool found = false;
     bool filterActivated = false;
 
@@ -91,7 +106,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
         filter = filters[numfilter];
-        if(filter.type == QDltFilter::positive && filter.enableFilter){
+        if(filter->type == QDltFilter::positive && filter->enableFilter){
             filterActivated = true;
         }
     }
@@ -105,8 +120,8 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
         filter = filters[numfilter];
-        if(filter.type == QDltFilter::positive && filter.enableFilter) {
-            found = filter.match(msg);
+        if(filter->type == QDltFilter::positive && filter->enableFilter) {
+            found = filter->match(msg);
             if (found)
               break;
         }
@@ -121,8 +136,8 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         for(int numfilter=0;numfilter<filters.size();numfilter++)
           {
             filter = filters[numfilter];
-            if(filter.type == QDltFilter::negative && filter.enableFilter){
-                if (filter.match(msg))
+            if(filter->type == QDltFilter::negative && filter->enableFilter){
+                if (filter->match(msg))
                   {
                     // a negative filter has matched -> found = false
                     found = false;
@@ -135,14 +150,16 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     return found;
 }
 
-bool QDltFilterList::SaveFilter(QString filename)
+bool QDltFilterList::SaveFilter(QString _filename)
 {
-    QFile file(filename);
+    QFile file(_filename);
     if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
     {
             QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
             return false;
     }
+
+    filename = _filename;
 
     QXmlStreamWriter xml(&file);
 
@@ -155,10 +172,10 @@ bool QDltFilterList::SaveFilter(QString filename)
     /* Write Filter */
     for(int num = 0; num < filters.size(); num++)
     {
-        QDltFilter filter = filters[num];
+        QDltFilter *filter = filters[num];
 
         xml.writeStartElement("filter");
-        filter.SaveFilterItem(xml);
+        filter->SaveFilterItem(xml);
 
         xml.writeEndElement(); // filter
     }
@@ -171,14 +188,16 @@ bool QDltFilterList::SaveFilter(QString filename)
     return true;
 }
 
-bool QDltFilterList::LoadFilter(QString filename, bool replace){
+bool QDltFilterList::LoadFilter(QString _filename, bool replace){
 
-    QFile file(filename);
+    QFile file(_filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
         QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
         return false;
     }
+
+    filename = _filename;
 
     QDltFilter filter;
 
@@ -202,7 +221,9 @@ bool QDltFilterList::LoadFilter(QString filename, bool replace){
           {
               if(xml.name() == QString("filter"))
               {
-                    filters.append(filter);
+                    QDltFilter *filter_new = new QDltFilter();
+                    *filter_new = filter;
+                    filters.append(filter_new);
               }
 
           }

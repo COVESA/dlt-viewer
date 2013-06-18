@@ -163,7 +163,7 @@ public:
     /*!
       \param filter the filter configuration
     */
-    void addFilter(QDltFilter &filter);
+    void addFilter(QDltFilter *filter);
 
     //! Get the status of the filter.
     /*!
