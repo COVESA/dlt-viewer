@@ -298,6 +298,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     filter.enableLogLevelMax = false;
     filter.enableLogLevelMin = false;
     filter.enableCtrlMsgs = false;
+    filter.enableMarker = false;
 
     filter.filterColour = QColor();
 
@@ -327,10 +328,16 @@ void FilterItem::update()
     switch(filter.type)
     {
     case QDltFilter::positive:
-        text += QString("POSITIVE ");
+        if(filter.isMarker())
+            text += QString("POSITIVE MARKER ");
+        else
+            text += QString("POSITIVE ");
         break;
     case QDltFilter::negative:
-        text += QString("NEGATIVE ");
+        if(filter.isMarker())
+            text += QString("NEGATIVE MARKER ");
+        else
+            text += QString("NEGATIVE ");
         break;
     case QDltFilter::marker:
         text += QString("MARKER ");
@@ -423,7 +430,7 @@ void FilterItem::update()
         }
         text += " ";
     }
-    if(filter.type == QDltFilter::marker)
+    if(filter.isMarker())
     {
         text += filter.filterColour.name();
 

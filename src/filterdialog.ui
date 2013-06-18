@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>345</width>
-    <height>388</height>
+    <height>357</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,10 +18,100 @@
     <normaloff>:/toolbar/png/edit-cut.png</normaloff>:/toolbar/png/edit-cut.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="7" column="0">
-    <widget class="QCheckBox" name="checkBoxApplicationId">
+   <item row="1" column="2">
+    <widget class="QCheckBox" name="checkBoxActive">
      <property name="text">
-      <string>Application Id:</string>
+      <string>Active</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="12" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEditPayloadText"/>
+   </item>
+   <item row="11" column="1">
+    <widget class="QCheckBox" name="checkBoxPayloadText">
+     <property name="text">
+      <string>Payload Text:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="2">
+    <widget class="QLineEdit" name="lineEditName">
+     <property name="text">
+      <string>New Filter</string>
+     </property>
+    </widget>
+   </item>
+   <item row="15" column="1">
+    <widget class="QCheckBox" name="checkBoxLogLevelMin">
+     <property name="text">
+      <string>Log Level Min</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1">
+    <widget class="QPushButton" name="buttonSelectColor">
+     <property name="text">
+      <string>Select marker color</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="2">
+    <widget class="QLabel" name="labelSelectedColor">
+     <property name="autoFillBackground">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
+   </item>
+   <item row="16" column="1" colspan="2">
+    <widget class="QComboBox" name="comboBoxLogLevelMin">
+     <item>
+      <property name="text">
+       <string>off</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>fatal</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>error</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>warn</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>info</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>debug</string>
+      </property>
+     </item>
+     <item>
+      <property name="text">
+       <string>verbose</string>
+      </property>
+     </item>
+    </widget>
+   </item>
+   <item row="20" column="0">
+    <widget class="QCheckBox" name="checkBoxCtrlMsgs">
+     <property name="text">
+      <string>Control Messages</string>
      </property>
     </widget>
    </item>
@@ -32,10 +122,10 @@
      </property>
     </widget>
    </item>
-   <item row="11" column="0">
-    <widget class="QCheckBox" name="checkBoxHeaderText">
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="checkBoxApplicationId">
      <property name="text">
-      <string>Header Text:</string>
+      <string>Application Id:</string>
      </property>
     </widget>
    </item>
@@ -43,30 +133,6 @@
     <widget class="QLineEdit" name="lineEditContextId">
      <property name="maxLength">
       <number>4</number>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLineEdit" name="lineEditEcuId"/>
-   </item>
-   <item row="5" column="0">
-    <widget class="QCheckBox" name="checkBoxEcuId">
-     <property name="text">
-      <string>ECU Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Type:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Name:</string>
      </property>
     </widget>
    </item>
@@ -89,6 +155,13 @@
      </item>
     </widget>
    </item>
+   <item row="11" column="0">
+    <widget class="QCheckBox" name="checkBoxHeaderText">
+     <property name="text">
+      <string>Header Text:</string>
+     </property>
+    </widget>
+   </item>
    <item row="7" column="1">
     <widget class="QCheckBox" name="checkBoxContextId">
      <property name="text">
@@ -99,10 +172,44 @@
    <item row="12" column="0">
     <widget class="QLineEdit" name="lineEditHeaderText"/>
    </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_3">
+     <property name="text">
+      <string>Name:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="6" column="0">
+    <widget class="QLineEdit" name="lineEditEcuId"/>
+   </item>
    <item row="15" column="0">
     <widget class="QCheckBox" name="checkBoxLogLevelMax">
      <property name="text">
       <string>Log Level Max</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Type:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0">
+    <widget class="QCheckBox" name="checkBoxEcuId">
+     <property name="text">
+      <string>ECU Id:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="2">
+    <widget class="QCheckBox" name="checkBoxRegexp">
+     <property name="toolTip">
+      <string>Enable this option, to use regular expressions for header and payload text.</string>
+     </property>
+     <property name="text">
+      <string>RegExp</string>
      </property>
     </widget>
    </item>
@@ -155,110 +262,10 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QLineEdit" name="lineEditName">
+   <item row="2" column="2">
+    <widget class="QCheckBox" name="checkBoxMarker">
      <property name="text">
-      <string>New Filter</string>
-     </property>
-    </widget>
-   </item>
-   <item row="20" column="0">
-    <widget class="QCheckBox" name="checkBoxCtrlMsgs">
-     <property name="text">
-      <string>Control Messages</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QCheckBox" name="checkBoxActive">
-     <property name="text">
-      <string>Active</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="11" column="1">
-    <widget class="QCheckBox" name="checkBoxPayloadText">
-     <property name="text">
-      <string>Payload Text:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditPayloadText"/>
-   </item>
-   <item row="15" column="1">
-    <widget class="QCheckBox" name="checkBoxLogLevelMin">
-     <property name="text">
-      <string>Log Level Min</string>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="1" colspan="2">
-    <widget class="QComboBox" name="comboBoxLogLevelMin">
-     <item>
-      <property name="text">
-       <string>off</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>fatal</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>error</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>warn</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>info</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>debug</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>verbose</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="buttonSelectColor">
-     <property name="text">
-      <string>Select marker color</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="labelSelectedColor">
-     <property name="autoFillBackground">
-      <bool>true</bool>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QCheckBox" name="checkBoxRegexp">
-     <property name="toolTip">
-      <string>Enable this option, to use regular expressions for header and payload text.</string>
-     </property>
-     <property name="text">
-      <string>RegExp</string>
+      <string>Marker</string>
      </property>
     </widget>
    </item>

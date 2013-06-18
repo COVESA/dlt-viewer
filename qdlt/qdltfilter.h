@@ -60,6 +60,7 @@ public:
     bool enableCtrlMsgs;
     bool enableLogLevelMax;
     bool enableLogLevelMin;
+    bool enableMarker;
 
     QColor filterColour;
     int logLevelMax;
@@ -79,7 +80,25 @@ public:
     */
     ~QDltFilter();
 
+    //! Reset all values to default values
+    /*!
+    */
     void clear();
+
+    //! Check if this is a marker.
+    /*!
+    */
+    bool isMarker();
+
+    //! Check if this is a positive filter.
+    /*!
+    */
+    bool isPositive();
+
+    //! Check if this is a negative filter.
+    /*!
+    */
+    bool isNegative();
 
     //! Copy operator.
     /*!

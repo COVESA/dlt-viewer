@@ -82,7 +82,7 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
     {
         filter = filters[numfilter];
 
-        if(filter->type == QDltFilter::marker && filter->enableFilter)
+        if(filter->isMarker() && filter->enableFilter)
         {
             if(filter->match(msg))
             {
@@ -106,7 +106,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
         filter = filters[numfilter];
-        if(filter->type == QDltFilter::positive && filter->enableFilter){
+        if(filter->isPositive() && filter->enableFilter){
             filterActivated = true;
         }
     }
@@ -120,7 +120,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     for(int numfilter=0;numfilter<filters.size();numfilter++)
     {
         filter = filters[numfilter];
-        if(filter->type == QDltFilter::positive && filter->enableFilter) {
+        if(filter->isPositive() && filter->enableFilter) {
             found = filter->match(msg);
             if (found)
               break;
@@ -136,7 +136,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         for(int numfilter=0;numfilter<filters.size();numfilter++)
           {
             filter = filters[numfilter];
-            if(filter->type == QDltFilter::negative && filter->enableFilter){
+            if(filter->isNegative() && filter->enableFilter){
                 if (filter->match(msg))
                   {
                     // a negative filter has matched -> found = false

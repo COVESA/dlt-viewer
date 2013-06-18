@@ -32,6 +32,8 @@ FilterDialog::FilterDialog(QWidget *parent) :
 
     ui->buttonSelectColor->setEnabled(false);
     ui->labelSelectedColor->setVisible(false);
+
+    ui->checkBoxMarker->setEnabled(true);
 }
 
 FilterDialog::~FilterDialog()
@@ -43,6 +45,9 @@ FilterDialog::~FilterDialog()
 void FilterDialog::setType(int value)
 {
     ui->comboBoxType->setCurrentIndex(value);
+
+    /* update ui */
+    on_checkBoxMarker_clicked();
 }
 
 int FilterDialog::getType()
@@ -241,6 +246,17 @@ bool FilterDialog::getEnableActive(){
     return (ui->checkBoxActive->checkState() == Qt::Checked);
 }
 
+void FilterDialog::setEnableMarker(bool state){
+    ui->checkBoxMarker->setCheckState(state?Qt::Checked:Qt::Unchecked);
+
+    /* update ui */
+    on_checkBoxMarker_clicked();
+}
+
+bool FilterDialog::getEnableMarker(){
+    return (ui->checkBoxMarker->checkState() == Qt::Checked);
+}
+
 void FilterDialog::on_buttonSelectColor_clicked()
 {
     QColor selectedBackgroundColor = QColorDialog::getColor();
@@ -254,18 +270,19 @@ void FilterDialog::on_buttonSelectColor_clicked()
 }
 
 void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
-    switch(index){
-    case 0:
-    case 1:
-            ui->buttonSelectColor->setEnabled(false);
-            ui->labelSelectedColor->setVisible(false);
+    on_checkBoxMarker_clicked();
+}
 
-            break;
-    case 2:
-            ui->buttonSelectColor->setEnabled(true);
-            ui->labelSelectedColor->setVisible(true);
-            break;
-    }
+
+void FilterDialog::on_checkBoxMarker_clicked()
+{
+    int index = ui->comboBoxType->currentIndex();
+    bool checkedMarker = ui->checkBoxMarker->isChecked();
+
+    ui->buttonSelectColor->setEnabled(index == 2 || (index<2 && checkedMarker) );
+    ui->labelSelectedColor->setVisible(index == 2 || (index<2 && checkedMarker) );
+
+    ui->checkBoxMarker->setEnabled(index != 2);
 }
 
 void FilterDialog::on_lineEditApplicationId_textEdited(const QString &)
@@ -345,3 +362,4 @@ void FilterDialog::validate()
 
     emit accept();
 }
+

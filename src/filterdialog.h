@@ -90,6 +90,9 @@ public:
     void setEnableCtrlMsgs(bool state);
     bool getEnableCtrlMsgs();
 
+    void setEnableMarker(bool state);
+    bool getEnableMarker();
+
 private:
     Ui::FilterDialog *ui;
 
@@ -105,6 +108,7 @@ private slots:
     void on_lineEditPayloadText_textEdited(const QString &arg1);
     void on_comboBoxLogLevelMax_currentIndexChanged(int index);
     void on_comboBoxLogLevelMin_currentIndexChanged(int index);
+    void on_checkBoxMarker_clicked();
 };
 
 #endif // FILTERDIALOG_H

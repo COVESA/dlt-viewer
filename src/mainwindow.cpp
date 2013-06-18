@@ -4972,6 +4972,7 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setEnableCtrlMsgs(item->filter.enableCtrlMsgs);
     dlg.setEnableLogLevelMax(item->filter.enableLogLevelMax);
     dlg.setEnableLogLevelMin(item->filter.enableLogLevelMin);
+    dlg.setEnableMarker(item->filter.enableMarker);
 
     dlg.setFilterColour(item->filter.filterColour);
 
@@ -5001,6 +5002,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.enableCtrlMsgs = dlg.getEnableCtrlMsgs();
     item->filter.enableLogLevelMax = dlg.getEnableLogLevelMax();
     item->filter.enableLogLevelMin = dlg.getEnableLogLevelMin();
+    item->filter.enableMarker = dlg.getEnableMarker();
 
     item->filter.filterColour = dlg.getFilterColour();
     item->filter.logLevelMax = dlg.getLogLevelMax();
@@ -5014,13 +5016,13 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
      * view or pulse the button depending on if it is a filter or
      * marker. */
     filterUpdate();
-    if(item->filter.type == QDltFilter::marker)
-    {
-        tableModel->modelChanged();
-    }
-    else
+    if(item->filter.isPositive() || item->filter.isNegative())
     {
         applyConfigEnabled(true);
+    }
+    if(item->filter.isMarker())
+    {
+        tableModel->modelChanged();
     }
 }
 
@@ -5100,7 +5102,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
         /* delete filter */
         FilterItem *item = (FilterItem *)widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
         filterUpdate();
-        if(item->filter.type == QDltFilter::marker)
+        if(item->filter.isMarker())
         {
             tableModel->modelChanged();
         }
@@ -5140,12 +5142,19 @@ void MainWindow::filterUpdate() {
         filter = new QDltFilter();
         *filter = item->filter;
 
-        if(item->filter.type == QDltFilter::marker)
+        if(item->filter.isMarker())
         {
             item->setBackground(0,item->filter.filterColour);
             item->setBackground(1,item->filter.filterColour);
             item->setForeground(0,DltUiUtils::optimalTextColor(item->filter.filterColour));
             item->setForeground(1,DltUiUtils::optimalTextColor(item->filter.filterColour));
+        }
+        else
+        {
+            item->setBackground(0,QColor(0xff,0xff,0xff));
+            item->setBackground(1,QColor(0xff,0xff,0xff));
+            item->setForeground(0,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
+            item->setForeground(1,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
         }
 
         if(filter->enableRegexp)

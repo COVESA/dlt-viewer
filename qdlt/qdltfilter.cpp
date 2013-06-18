@@ -59,6 +59,7 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     enableCtrlMsgs = _filter.enableCtrlMsgs;
     enableLogLevelMax = _filter.enableLogLevelMax;
     enableLogLevelMin = _filter.enableLogLevelMin;
+    enableMarker = _filter.enableMarker;
 
     filterColour = _filter.filterColour;
     logLevelMax = _filter.logLevelMax;
@@ -92,10 +93,28 @@ void QDltFilter::clear()
     enableCtrlMsgs = false;
     enableLogLevelMax = false;
     enableLogLevelMin = false;
+    enableMarker = false;
 
     filterColour = QColor();
     logLevelMax = 6;
     logLevelMin = 0;
+}
+
+bool QDltFilter::isMarker()
+{
+    return ( type == QDltFilter::marker ||
+            ((type == QDltFilter::positive) && enableMarker) ||
+            ((type == QDltFilter::negative) && enableMarker) );
+}
+
+bool QDltFilter::isPositive()
+{
+    return ( type == QDltFilter::positive );
+}
+
+bool QDltFilter::isNegative()
+{
+    return ( type == QDltFilter::negative );
 }
 
 bool QDltFilter::compileRegexps()
@@ -222,6 +241,10 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           enableLogLevelMin = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("enableMarker"))
+    {
+          enableMarker = xml.readElementText().toInt();;
+    }
     if(xml.name() == QString("filterColour"))
     {
           filterColour = QColor(xml.readElementText());
@@ -257,6 +280,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enablectrlmsgs",QString("%1").arg(enableCtrlMsgs));
     xml.writeTextElement("enableLogLevelMin",QString("%1").arg(enableLogLevelMin));
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
+    xml.writeTextElement("enableLMarker",QString("%1").arg(enableMarker));
 
     xml.writeTextElement("filterColour",filterColour.name());
 
