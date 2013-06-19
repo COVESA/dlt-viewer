@@ -481,7 +481,7 @@
          <item row="0" column="0">
           <widget class="QComboBox" name="comboBoxFilterSelection">
            <property name="toolTip">
-            <string>Default filter List</string>
+            <string>Multifilter List</string>
            </property>
            <property name="editable">
             <bool>false</bool>
@@ -501,15 +501,15 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>45</width>
+             <width>50</width>
              <height>16777215</height>
             </size>
            </property>
            <property name="toolTip">
-            <string>Update Default Filter Cache</string>
+            <string>Refresh Multifilter Index</string>
            </property>
            <property name="text">
-            <string>Update</string>
+            <string>Refresh</string>
            </property>
           </widget>
          </item>
@@ -1296,7 +1296,7 @@
   </action>
   <action name="actionDefault_Filter_Reload">
    <property name="text">
-    <string>Reload Default Filter List</string>
+    <string>Reload Multifilter List</string>
    </property>
   </action>
   <action name="actionDefault_Filter_Create_Index">
@@ -1304,7 +1304,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Update Default Filter Cache</string>
+    <string>Refresh Multifilter Index</string>
    </property>
   </action>
  </widget>

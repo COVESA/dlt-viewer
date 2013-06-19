@@ -165,6 +165,11 @@ public:
     */
     void addFilter(QDltFilter *filter);
 
+    //! Update presorted filter list.
+    /*!
+    */
+    void updateSortedFilter();
+
     //! Get the status of the filter.
     /*!
       \return true if filtering is enabled, fals if filtering is disabled

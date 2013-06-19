@@ -1592,6 +1592,10 @@ void MainWindow::on_action_menuFile_Settings_triggered()
     /* show settings dialog */
     settings->writeDlg();
 
+    /* store old values */
+    int defaultFilterPath = settings->defaultFilterPath;
+    QString defaultFilterPathName = settings->defaultFilterPathName;
+
     if(settings->exec()==1)
     {
         /* change settings and store settings persistently */
@@ -1600,6 +1604,12 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 
         /* Apply settings to table */
         applySettings();
+
+        /* reload multifilter list if changed */
+        if((defaultFilterPath != settings->defaultFilterPath)||(settings->defaultFilterPath && defaultFilterPathName != settings->defaultFilterPathName))
+        {
+            on_actionDefault_Filter_Reload_triggered();
+        }
 
         updateScrollButton();
     }
@@ -5168,6 +5178,7 @@ void MainWindow::filterUpdate() {
 
         qfile.addFilter(filter);
     }
+    qfile.updateSortedFilter();
 }
 
 
@@ -5634,6 +5645,10 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
         if(!dir.exists() || !dir.isReadable())
         {
             QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(settings->defaultFilterPathName));
+
+            /* update tooltip */
+            ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
+
             return;
         }
     }
@@ -5642,6 +5657,9 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
         dir.setPath(QCoreApplication::applicationDirPath());
         if(!dir.cd("filters"))
         {
+            /* update tooltip */
+            ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
+
             return;
         }
     }
@@ -5653,6 +5671,9 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     QDltFilterList *filterList;
     foreach(filterList,defaultFilter.defaultFilterList)
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
+
+    /* update tooltip */
+    ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
 
 }
 

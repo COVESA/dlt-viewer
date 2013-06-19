@@ -78,17 +78,14 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
     QDltFilter *filter;
     QColor color;
 
-    for(int numfilter=0;numfilter<filters.size();numfilter++)
+    for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
-        filter = filters[numfilter];
+        filter = mfilters[numfilter];
 
-        if(filter->isMarker() && filter->enableFilter)
+        if(filter->match(msg))
         {
-            if(filter->match(msg))
-            {
-                color = filter->filterColour;
-                break;
-            }
+            color = filter->filterColour;
+            break;
         }
     }
     return color;
@@ -103,12 +100,10 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     /* If there are no positive filters, or all positive filters
      * are disabled, the default case is to show all messages. Only
      * negative filters will be applied */
-    for(int numfilter=0;numfilter<filters.size();numfilter++)
+    for(int numfilter=0;numfilter<pfilters.size();numfilter++)
     {
-        filter = filters[numfilter];
-        if(filter->isPositive() && filter->enableFilter){
-            filterActivated = true;
-        }
+        filter = pfilters[numfilter];
+        filterActivated = true;
     }
 
     if(filterActivated==false)
@@ -117,14 +112,12 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         found = false;
 
 
-    for(int numfilter=0;numfilter<filters.size();numfilter++)
+    for(int numfilter=0;numfilter<pfilters.size();numfilter++)
     {
-        filter = filters[numfilter];
-        if(filter->isPositive() && filter->enableFilter) {
-            found = filter->match(msg);
-            if (found)
-              break;
-        }
+        filter = pfilters[numfilter];
+        found = filter->match(msg);
+        if (found)
+          break;
     }
 
     if (found || filterActivated==false ){
@@ -133,18 +126,16 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         //if no positive filters are active or no one exists, we need also to filter negatively
         // if the message has been discarded by all positive filters before, we do not need to filter it away a second time
 
-        for(int numfilter=0;numfilter<filters.size();numfilter++)
-          {
-            filter = filters[numfilter];
-            if(filter->isNegative() && filter->enableFilter){
-                if (filter->match(msg))
-                  {
-                    // a negative filter has matched -> found = false
-                    found = false;
-                    break;
-                  }
-              }
-          }
+        for(int numfilter=0;numfilter<nfilters.size();numfilter++)
+        {
+            filter = nfilters[numfilter];
+            if (filter->match(msg))
+            {
+                // a negative filter has matched -> found = false
+                found = false;
+                break;
+            }
+        }
       }
 
     return found;
@@ -235,5 +226,41 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
 
     file.close();
 
+    /* update sorted filter list immediatly after loading new filter */
+    updateSortedFilter();
+
     return true;
+}
+
+void QDltFilterList::updateSortedFilter()
+{
+    mfilters.clear();
+    pfilters.clear();
+    nfilters.clear();
+
+    QDltFilter *filter;
+
+    for(int numfilter=0;numfilter<filters.size();numfilter++)
+    {
+        filter = filters[numfilter];
+
+        if(filter->isMarker() && filter->enableFilter)
+        {
+            /* add to marker list */
+            mfilters.append(filter);
+        }
+
+        if(filter->isPositive() && filter->enableFilter)
+        {
+            /* add to positive list */
+            pfilters.append(filter);
+        }
+
+        if(filter->isNegative() && filter->enableFilter)
+        {
+            /* add to negative list */
+            nfilters.append(filter);
+        }
+    }
+
 }

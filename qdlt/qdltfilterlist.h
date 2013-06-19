@@ -103,11 +103,25 @@ public:
     */
     QString getFilename() { return filename; }
 
+    //! Update the presorted list for performance improvement.
+    /*!
+    */
+    void updateSortedFilter();
+
 protected:
 private:
 
     //! The filename of the filter list including complete path.
     QString filename;
+
+    //! List of mfilters.
+    QList<QDltFilter*> mfilters;
+
+    //! List of pfilters.
+    QList<QDltFilter*> pfilters;
+
+    //! List of nfilters.
+    QList<QDltFilter*> nfilters;
 
 };
 

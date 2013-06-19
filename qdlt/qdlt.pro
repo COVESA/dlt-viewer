@@ -24,6 +24,13 @@ CONFIG                 += warn_on qt
 QT                     += network
 QT                     += gui
 
+# Detect QT5 and comply to new Widgets hierarchy
+greaterThan(QT_VERSION, 4.8.4) {
+    QT += widgets
+    INCLUDEPATH += QtWidgets
+    DEFINES += QT5
+}
+
 OBJECTS_DIR             = build/obj
 MOC_DIR                 = build/moc
 

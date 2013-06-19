@@ -391,6 +391,11 @@ void QDltFile::addFilter(QDltFilter *_filter)
     filterList.addFilter(_filter);
 }
 
+void QDltFile::updateSortedFilter()
+{
+    filterList.updateSortedFilter();
+}
+
 bool QDltFile::isFilter()
 {
     return filterFlag;
