@@ -5505,6 +5505,7 @@ void MainWindow::saveSelection()
     {
         int sr = rows.at(i).row();
         previousSelection.append(qfile.getMsgFilterPos(sr));
+        qDebug() << "Save Selection" << qfile.getMsgFilterPos(sr);
     }
 }
 
@@ -5519,7 +5520,9 @@ void MainWindow::restoreSelection()
     {
         if(j == 0)
         {
+            qDebug() << "Restore First Selection" << previousSelection.at(j);
             firstSelection = nearest_line(previousSelection.at(j));
+            jump_to_line(firstSelection);
         }
         int nearest = nearest_line(previousSelection.at(j));
         QModelIndex idx = tableModel->index(nearest, 0);
@@ -5528,6 +5531,7 @@ void MainWindow::restoreSelection()
     ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
     scrollToTarget = tableModel->index(firstSelection, 0);
     ui->tableView->scrollTo(scrollToTarget, QTableView::PositionAtTop);
+
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index)
@@ -5595,13 +5599,15 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
         if(index->allIndexSize == qfile.size() &&
            index->dltFileName == qfile.getFileName())
         {
+            /* save selection */
+            saveSelection();
+
             /* filter index cache found */
             /* copy index into file */
             qfile.setIndexFilter(index->indexFilter);
 
             /* update ui */
             applyConfigEnabled(false);
-            saveSelection();
             filterUpdate();
             tableModel->modelChanged();
             m_searchtableModel->modelChanged();
