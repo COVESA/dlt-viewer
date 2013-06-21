@@ -154,6 +154,18 @@ Section "Plugins" secplug
 SectionEnd
 
 ;--------------------------------
+;Filters Section
+;--------------------------------
+Section "Filters" secplug
+    SetDetailsPrint listonly
+    SectionIn 1 2 3
+    SetShellVarContext all
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    ${FileDir} $INSTDIR filters ${WORKING_DIR}
+SectionEnd
+
+;--------------------------------
 ;SDK Section
 ;--------------------------------
 Section "SDK" secsdk

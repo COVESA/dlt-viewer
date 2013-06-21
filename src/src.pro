@@ -142,7 +142,13 @@ OTHER_FILES += ../ReleaseNotes_Viewer.txt \
     ../README.txt \
     ../MPL.txt \
     ../LICENSE.txt \
-    ../INSTALL.txt
+    ../INSTALL.txt \
+    ../build_windows_installer.bat \
+    ../build_sdk_windows.bat \
+    ../build_sdk_msvc_windows64.bat \
+    ../build_sdk_msvc_windows.bat \
+    ../installer/UninstallLog.nsh \
+    ../installer/dlt_installer.nsi
 
 # This contains all the button graphics for toolbar
 RESOURCES += resource.qrc

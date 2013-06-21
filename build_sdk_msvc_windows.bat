@@ -40,6 +40,7 @@ mkdir %SDK_DIR%\sdk\src
 mkdir %SDK_DIR%\sdk\src\dummydecoderplugin
 mkdir %SDK_DIR%\sdk\src\dummyviewerplugin
 mkdir %SDK_DIR%\sdk\src\dummycontrolplugin
+mkdir %SDK_DIR%\filters
 
 ECHO Copy files
 copy %QTDIR%\bin\icuin49.dll %SDK_DIR%
@@ -94,6 +95,8 @@ copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %SDK_DIR%\sdk\src\dummycontrolplugi
 
 copy %SOURCE_DIR%\plugin\examples\nonverboseplugin_configuration.xml %SDK_DIR%\plugins\examples
 copy %SOURCE_DIR%\plugin\examples\filetransferplugin_configuration.xml %SDK_DIR%\plugins\examples
+
+copy %SOURCE_DIR%\filters\* %SDK_DIR%\filters
 
 echo *************************
 echo * Finish                *
