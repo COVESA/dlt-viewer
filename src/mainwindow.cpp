@@ -5644,30 +5644,26 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* clear default filter list */
     defaultFilter.clear();
 
-    /* get the default filter path */
+    /* get the filter path */
     if(settings->defaultFilterPath)
     {
         dir.setPath(settings->defaultFilterPathName);
-        if(!dir.exists() || !dir.isReadable())
-        {
-            QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(settings->defaultFilterPathName));
-
-            /* update tooltip */
-            ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
-
-            return;
-        }
     }
     else
     {
-        dir.setPath(QCoreApplication::applicationDirPath());
-        if(!dir.cd("filters"))
-        {
-            /* update tooltip */
-            ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
+        dir.setPath(QCoreApplication::applicationDirPath()+"/filters");
+    }
 
-            return;
-        }
+    /* update tooltip */
+    ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
+
+    /* check if directory exists */
+    if(!dir.exists() || !dir.isReadable())
+    {
+        QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(dir.absolutePath()));
+
+
+        return;
     }
 
     /* load the default filter list */
@@ -5677,9 +5673,6 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     QDltFilterList *filterList;
     foreach(filterList,defaultFilter.defaultFilterList)
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
-
-    /* update tooltip */
-    ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
 
 }
 

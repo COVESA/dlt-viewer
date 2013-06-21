@@ -102,9 +102,7 @@ void QDltFilter::clear()
 
 bool QDltFilter::isMarker()
 {
-    return ( type == QDltFilter::marker ||
-            ((type == QDltFilter::positive) && enableMarker) ||
-            ((type == QDltFilter::negative) && enableMarker) );
+    return ( type == QDltFilter::marker || enableMarker );
 }
 
 bool QDltFilter::isPositive()

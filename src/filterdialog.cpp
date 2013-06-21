@@ -279,8 +279,8 @@ void FilterDialog::on_checkBoxMarker_clicked()
     int index = ui->comboBoxType->currentIndex();
     bool checkedMarker = ui->checkBoxMarker->isChecked();
 
-    ui->buttonSelectColor->setEnabled(index == 2 || (index<2 && checkedMarker) );
-    ui->labelSelectedColor->setVisible(index == 2 || (index<2 && checkedMarker) );
+    ui->buttonSelectColor->setEnabled(index == QDltFilter::marker || (index<QDltFilter::marker && checkedMarker) );
+    ui->labelSelectedColor->setVisible(index == QDltFilter::marker || (index<QDltFilter::marker && checkedMarker) );
 
     ui->checkBoxMarker->setEnabled(index != 2);
 }
