@@ -324,6 +324,11 @@
           <property name="text">
            <string>Apply Configuration</string>
           </property>
+          <property name="icon">
+           <iconset resource="resource.qrc">
+            <normaloff>:/toolbar/png/weather-storm.png</normaloff>
+            <disabledoff>:/toolbar/png/weather-clear.png</disabledoff>:/toolbar/png/weather-storm.png</iconset>
+          </property>
          </widget>
         </item>
        </layout>
