@@ -69,14 +69,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              }
              return QVariant();
          }
-         for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
+         if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
-
-             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
+             for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
              {
-                 item->plugindecoderinterface->decodeMsg(msg,0);
-                 break;
+                 PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
+
+                 if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
+                 {
+                     item->plugindecoderinterface->decodeMsg(msg,0);
+                     break;
+                 }
              }
          }
 
@@ -196,14 +199,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              return QVariant(QBrush(searchBackgroundColor()));
          }
 
-         for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
+         if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
-
-             if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
+             for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
              {
-                 item->plugindecoderinterface->decodeMsg(msg,0);
-                 break;
+                 PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
+
+                 if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
+                 {
+                     item->plugindecoderinterface->decodeMsg(msg,0);
+                     break;
+                 }
              }
          }
 
