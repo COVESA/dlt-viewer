@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.10.0 ALPHA
+Version 2.10.0 BETA
 
 Known issues
 ------------
@@ -16,7 +16,11 @@ Known issues
 
 Changes
 -------
-2.10.0 ALPHA
+2.10.0 BETA
+  * Multifilter support for fast indexing of multiple filters
+  * Added icons for apply config again
+  * Split up qdlt library for filters and filter index
+  * Performance improvement in filter handling
   * Created a Windows installer for DLT-viewer. Included in build scripts.
   * Optional suppressing of plugin  message box error when started via commandline parameter -s
   * Greyed out non relevant tab in "ECU ADD/config" menu
@@ -38,6 +42,8 @@ Changes
   * Added Refresh Rate Setting for updating view after incoming messages.
   * Change filter button to checkboxes and a "Apply changes"-button.
 
+  * Fixed Disable Plugins not working in all use cases
+  * Fixed Changing filters not shows last selected message again
   * Fixed lost selection of messages after disabling filter
   * Fixed Empty Tmp files not deleted
   * Fixed Plugin destructors are not called
