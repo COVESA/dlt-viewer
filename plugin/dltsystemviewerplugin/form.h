@@ -22,7 +22,6 @@
 
 #include <QWidget>
 #include <QTreeWidgetItem>
-
 #include "plugininterface.h"
 
 namespace Ui {

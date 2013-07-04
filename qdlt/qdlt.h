@@ -35,5 +35,7 @@
 #include <qdltconnection.h>
 #include <qdlttcpconnection.h>
 #include <qdltserialconnection.h>
+#include <qdltplugin.h>
+#include <qdltpluginmanager.h>
 
 #endif // QDLT_H

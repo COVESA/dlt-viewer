@@ -60,7 +60,7 @@ copy %BUILD_DIR%\qdlt.dll %SDK_DIR%
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\nonverboseplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %SDK_DIR%\plugins
-
+copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %SDK_DIR%\plugins
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %SDK_DIR%
 copy %SOURCE_DIR%\README.txt %SDK_DIR%
@@ -68,7 +68,6 @@ copy %SOURCE_DIR%\LICENSE.txt %SDK_DIR%
 copy %SOURCE_DIR%\MPL.txt %SDK_DIR%
 
 copy %SOURCE_DIR%\qdlt\*.h %SDK_DIR%\sdk\include
-copy %SOURCE_DIR%\src\plugininterface.h %SDK_DIR%\sdk\include
 
 copy %BUILD_DIR%\libqdlt.a %SDK_DIR%\sdk\lib
 copy %BUILD_DIR%\libqextserialport.a %SDK_DIR%\sdk\lib

@@ -192,8 +192,6 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
     int ctr = 0;
     m_searchtablemodel->clear_SearchResults();
 
-
-
     QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
@@ -233,16 +231,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
         /* get the message with the selected item id */
         buf = file->getMsgFilter(searchLine);
         msg.setMsg(buf);
-        for(int num2 = 0; num2 < plugin->topLevelItemCount (); num2++)
-        {
-            PluginItem *item = (PluginItem*)plugin->topLevelItem(num2);
-
-            if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,1))
-            {
-                item->plugindecoderinterface->decodeMsg(msg,1);
-                break;
-            }
-        }
+        pluginManager->decodeMsg(msg,1);
 
         bool pluginFound = false;
 

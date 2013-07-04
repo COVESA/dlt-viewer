@@ -469,7 +469,7 @@ MyPluginDockWidget::~MyPluginDockWidget(){
 
 void MyPluginDockWidget::closeEvent(QCloseEvent *event)
 {
-    pluginitem->setMode(PluginItem::ModeDisable);
+    pluginitem->setMode(QDltPlugin::ModeDisable);
 
     pluginitem->update();
 
@@ -480,22 +480,19 @@ void MyPluginDockWidget::closeEvent(QCloseEvent *event)
 
 
 
-PluginItem::PluginItem(QTreeWidgetItem *parent)
+PluginItem::PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin)
     : QTreeWidgetItem(parent,plugin_type)
 {
-    plugininterface = 0;
-    plugindecoderinterface = 0;
-    pluginviewerinterface = 0;
-    plugincontrolinterface = 0;
-    plugincommandinterface = 0;
 
     widget = 0;
     dockWidget = 0;
 
     loader = 0;
 
-    mode = ModeShow;
+    mode = QDltPlugin::ModeShow;
     type = 0;
+
+    plugin = _plugin;
 }
 
 PluginItem::~PluginItem()
@@ -510,19 +507,19 @@ PluginItem::~PluginItem()
 void PluginItem::update()
 {
     QStringList types;
-    QStringList list = plugininterface->infoConfig();
+    QStringList list = plugin->infoConfig();
 
-    if(pluginviewerinterface)
+    if(plugin->isViewer())
         types << "View";
-    if(plugindecoderinterface)
+    if(plugin->isDecoder())
         types << "Decode";
-    if(plugincontrolinterface)
+    if(plugin->isControl())
         types << "Ctrl";
-    if(plugincommandinterface)
+    if(plugin->isCommand())
         types << "Command";
 
     QString *modeString;
-    switch(mode){
+    switch(plugin->getMode()){
         case 0:
             modeString = new QString("Disabled");
             break;
@@ -535,7 +532,7 @@ void PluginItem::update()
     }
 
     //setData(0,0,QString("%1 (%2:%3|%4 %5)").arg(this->getName()).arg(types.join("")).arg(*modeString).arg(list.size()).arg(this->getFilename()));
-    setData(0,0,QString("%1").arg(this->getName()));
+    setData(0,0,QString("%1").arg(plugin->getName()));
     setData(1,0,QString("%1").arg(types.join("")));
     setData(2,0,QString("%1").arg(*modeString));
     setData(3,0,QString("%1").arg(list.size()));
@@ -545,24 +542,15 @@ void PluginItem::update()
 }
 
 QString PluginItem::getName(){
-    return name;
-}
-void PluginItem::setName(QString n){
-    name = n;
+    return plugin->getName();
 }
 
 QString PluginItem::getPluginVersion(){
-    return pluginVersion;
-}
-void PluginItem::setPluginVersion(QString v){
-    pluginVersion = v;
+    return plugin->getPluginVersion();
 }
 
 QString PluginItem::getPluginInterfaceVersion(){
-    return pluginInterfaceVersion;
-}
-void PluginItem::setPluginInterfaceVersion(QString iv){
-    pluginInterfaceVersion = iv;
+    return plugin->getPluginInterfaceVersion();
 }
 
 QString PluginItem::getFilename(){
@@ -572,7 +560,6 @@ void PluginItem::setFilename(QString f){
     filename = f;
 }
 
-
 int PluginItem::getType(){
     return type;
 }
@@ -581,20 +568,20 @@ void PluginItem::setType(int t){
 }
 
 int PluginItem::getMode(){
-    return mode;
+    return plugin->getMode();
 }
-void PluginItem::setMode(int m){
 
-    mode = m;
-
+void PluginItem::setMode(int t)
+{
+    plugin->setMode((QDltPlugin::Mode)t);
 }
 
 void PluginItem::savePluginModeToSettings(){
-    return DltSettingsManager::getInstance()->setValue("plugin/pluginmodefor"+this->getName(),QVariant(mode));
+    DltSettingsManager::getInstance()->setValue("plugin/pluginmodefor"+this->getName(),QVariant(plugin->getMode()));
 }
 
-int PluginItem::getPluginModeFromSettings(){
-    return DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+this->getName(),QVariant(PluginItem::ModeDisable)).toInt();
+void PluginItem::loadPluginModeFromSettings(){
+    plugin->setMode((QDltPlugin::Mode)DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+this->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
 }
 
 Project::Project()
@@ -750,7 +737,7 @@ bool Project::Load(QString filename)
               }
               if(xml.name() == QString("plugin"))
               {
-                  pluginitem = new PluginItem();
+                  pluginitem = new PluginItem(0,0);
 
               }
               if(xml.name() == QString("id"))

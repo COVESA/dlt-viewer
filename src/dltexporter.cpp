@@ -10,22 +10,6 @@ DltExporter::DltExporter(QObject *parent) :
 {
 }
 
-void DltExporter::iterateDecodersForMsg(QTreeWidget *plugins, QDltMsg &msg, int triggeredByUser)
-{
-    for(int i = 0; i < plugins->topLevelItemCount (); i++)
-    {
-        PluginItem *item = (PluginItem*)plugins->topLevelItem(i);
-
-        if(item->getMode() != item->ModeDisable &&
-                item->plugindecoderinterface &&
-                item->plugindecoderinterface->isMsg(msg,triggeredByUser))
-        {
-            item->plugindecoderinterface->decodeMsg(msg,triggeredByUser);
-            break;
-        }
-    }
-}
-
 QString DltExporter::escapeCSVValue(QString arg)
 {
     QString retval = arg.replace(QChar('\"'), QString("\"\""));
@@ -73,7 +57,7 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
 }
 
 
-bool DltExporter::prepareCSVExport(QDltFile *from, QFile *to, QTreeWidget *plugins, QModelIndexList *selection)
+bool DltExporter::prepareCSVExport(QDltFile *from, QFile *to, QModelIndexList *selection)
 {
     /* Check that we actually have input file */
     if(from == NULL)
@@ -83,13 +67,6 @@ bool DltExporter::prepareCSVExport(QDltFile *from, QFile *to, QTreeWidget *plugi
         return false;
     }
 
-    /* The TreeWidget must exist, even if it is empty */
-    if(plugins == NULL)
-    {
-        QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                              QString("No plugins passed to DltExporter."));
-        return false;
-    }
     /* If we have selection list. It must contain something */
     if(selection != NULL && selection->count() <= 0)
     {
@@ -152,9 +129,9 @@ int DltExporter::getMsg(QDltFile *file, QDltMsg &msg, int which, QModelIndexList
 }
 
 
-void DltExporter::exportCSV(QDltFile *from, QFile *to, QTreeWidget *plugins, QModelIndexList *selection)
+void DltExporter::exportCSV(QDltFile *from, QFile *to, QDltPluginManager *pluginManager, QModelIndexList *selection)
 {
-    if(!prepareCSVExport(from, to, plugins, selection))
+    if(!prepareCSVExport(from, to, selection))
     {
         return;
     }
@@ -189,7 +166,7 @@ void DltExporter::exportCSV(QDltFile *from, QFile *to, QTreeWidget *plugins, QMo
             // Skip index if no data was retrieved
             continue;
         }
-        iterateDecodersForMsg(plugins, currentMessage, 1);
+        pluginManager->decodeMsg(currentMessage,0);
         writeCSVLine(msgIndex, to, currentMessage);
     }
     to->close();

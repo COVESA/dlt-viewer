@@ -74,7 +74,6 @@ copy %SOURCE_DIR%\LICENSE.txt %SDK_DIR%
 copy %SOURCE_DIR%\MPL.txt %SDK_DIR%
 
 copy %SOURCE_DIR%\qdlt\*.h %SDK_DIR%\sdk\include
-copy %SOURCE_DIR%\src\plugininterface.h %SDK_DIR%\sdk\include
 
 copy %BUILD_DIR%\qdlt.lib %SDK_DIR%\sdk\lib
 copy %BUILD_DIR%\qextserialport.lib %SDK_DIR%\sdk\lib

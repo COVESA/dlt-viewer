@@ -71,16 +71,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
-             {
-                 PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
-
-                 if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
-                 {
-                     item->plugindecoderinterface->decodeMsg(msg,0);
-                     break;
-                 }
-             }
+             pluginManager->decodeMsg(msg,1);
          }
 
          switch(index.column())
@@ -201,16 +192,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
-             {
-                 PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
-
-                 if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
-                 {
-                     item->plugindecoderinterface->decodeMsg(msg,0);
-                     break;
-                 }
-             }
+             pluginManager->decodeMsg(msg,1);
          }
 
          QColor color = qfile->checkMarker(msg);

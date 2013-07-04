@@ -48,7 +48,7 @@ private:
      * \return true if everything is ok. False if some parameters are unacceptable.
      * \sa exportCSV
      */
-    bool prepareCSVExport(QDltFile *from, QFile *to, QTreeWidget *plugins, QModelIndexList *selection = NULL);
+    bool prepareCSVExport(QDltFile *from, QFile *to, QModelIndexList *selection = NULL);
 
     /* Fill a message with data from QDltFile.
      * \param file QDltFile to get the message from
@@ -72,7 +72,7 @@ public:
      * \param plugins The treewidget representing plugins. Needed to run decoders.
      * \param limit Limit export to these messages. Leave to NULL to export everything
      */
-    void exportCSV(QDltFile *from, QFile *to, QTreeWidget *plugins, QModelIndexList *selection = NULL);
+    void exportCSV(QDltFile *from, QFile *to, QDltPluginManager *pluginManager, QModelIndexList *selection = NULL);
 
 signals:
     

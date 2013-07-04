@@ -224,12 +224,11 @@ private:
     void filterUpdate();
 
     void loadPlugins();
-    void loadPluginsPath(QDir dir);
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
-    void applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins);
-    void applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins);
+    void applyPlugins(QList<QDltPlugin *> activeViewerPlugins, QList<QDltPlugin *> activeDecoderPlugins);
+    void applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
@@ -260,7 +259,7 @@ private:
     bool openDlpFile(QString filename);
 
     void commandLineConvertToASCII();
-    void commandLineExecutePlugin(QString plugin, QString cmd, QStringList params);
+    void commandLineExecutePlugin(QString name, QString cmd, QStringList params);
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
@@ -444,6 +443,9 @@ public:
 
     /* DLT file handling */
     QDltFile qfile;
+
+    /* Loading and handling all plugins */
+    QDltPluginManager pluginManager;
 
     QDltDefaultFilter defaultFilter;
 

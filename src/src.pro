@@ -106,7 +106,6 @@ HEADERS += mainwindow.h \
     settingsdialog.h \
     injectiondialog.h \
     searchdialog.h \
-    plugininterface.h \
     version.h \
     multiplecontextdialog.h \
     optmanager.h \

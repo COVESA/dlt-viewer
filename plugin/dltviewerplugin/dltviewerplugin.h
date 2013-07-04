@@ -21,7 +21,6 @@
 #define DLTVIEWERPLUGIN_H
 
 #include <QObject>
-#include <qdlt.h>
 #include "plugininterface.h"
 #include "form.h"
 

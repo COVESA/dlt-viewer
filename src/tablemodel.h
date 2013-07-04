@@ -52,6 +52,7 @@ public:
     /* pointer to the current loaded file */
     QDltFile *qfile;
     Project *project;
+    QDltPluginManager *pluginManager;
     void modelChanged();
 
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}

@@ -21,6 +21,9 @@
 
 #include "dltsystemviewerplugin.h"
 
+#define PROC_STAT_NODE_1 1
+#define PROC_STAT_NODE_UNDEFINE -1
+
 DltSystemViewerPlugin::DltSystemViewerPlugin()
 {
     dltFile = 0;
@@ -162,7 +165,7 @@ void DltSystemViewerPlugin::updateProcesses(int , QDltMsg &msg)
         if(msg.getApid()=="SYS" && msg.getCtid()=="STAT") {
             msg.getArgument(0,arg);
             seq = arg.toString().toInt();
-            if(seq==1) {
+            if( seq == PROC_STAT_NODE_1 || seq == PROC_STAT_NODE_UNDEFINE ) {
                 msg.getArgument(1,arg);
                 datalist = arg.toString().split(" ");
                 form->setUser(QString("%1").arg(((datalist.at(2).toInt())-lastValueUser)*10000/(msg.getTimestamp()-lastTimeStamp)));

@@ -91,7 +91,7 @@ public:
     void addToSearchIndex(int searchLine);
     QDltFile *file;
     QTableView *table;
-    QTreeWidget *plugin;
+    QDltPluginManager *pluginManager;
     QList<QLineEdit*> *lineEdits;
     QCheckBox *regexpCheckBox;
     QCheckBox *CheckBoxSearchtoList;

@@ -22,7 +22,6 @@
 
 #include <QObject>
 #include <QHash>
-#include "nonverboseplugin.h"
 #include "plugininterface.h"
 
 #if defined(_MSC_VER)

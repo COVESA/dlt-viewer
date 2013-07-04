@@ -190,6 +190,7 @@ void MainWindow::initState()
     tableModel = new TableModel("Hello Tree");
     tableModel->qfile = &qfile;
     tableModel->project = &project;
+    tableModel->pluginManager = &pluginManager;
 
     /* initialise project configuration */
     project.ecu = ui->configWidget;
@@ -212,7 +213,7 @@ void MainWindow::initView()
 {
 
     /* update default filter selection */
-    ui->comboBoxFilterSelection->addItem("<No default filter selected>");
+    ui->comboBoxFilterSelection->addItem("<No filter selected>");
     on_actionDefault_Filter_Reload_triggered();
 
     /* set table size and en */
@@ -312,12 +313,13 @@ void MainWindow::initSearchTable()
     searchDlg = new SearchDialog(this);
     searchDlg->file = &qfile;
     searchDlg->table = ui->tableView;
-    searchDlg->plugin = project.plugin;
+    searchDlg->pluginManager = &pluginManager;
 
     /* initialise DLT Search handling */
     m_searchtableModel = new SearchTableModel("Search Index Mainwindow");
     m_searchtableModel->qfile = &qfile;
     m_searchtableModel->project = &project;
+    m_searchtableModel->pluginManager = &pluginManager;
 
     searchDlg->registerSearchTableModel(m_searchtableModel);
 
@@ -516,52 +518,39 @@ void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString me
 
 }
 
-void MainWindow::commandLineExecutePlugin(QString plugin, QString cmd, QStringList params)
+void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList params)
 {
-    bool plugin_found = false;
-    for(int i = 0;i < project.plugin->topLevelItemCount();i++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
-        if(item->getName().compare(plugin, Qt::CaseInsensitive) == 0)
-        {
-            plugin_found = true;
-            /* Check that this is a command plugin */
-            QDltPluginCommandInterface *cmdif = item->plugincommandinterface;
-            if(cmdif == NULL)
-            {
-                QString msg("Error: ");
-                msg = msg+plugin+" is not a command plugin.";
-                ErrorMessage(QMessageBox::Critical, plugin, msg);
-                exit(-1);
-            }
-            if(!cmdif->command(cmd, params))
-            {
-                if(item->plugininterface)
-                {
-                    QString msg("Error: ");
-                    msg.append(plugin);
-                    msg.append(item->plugininterface->error());
-                    ErrorMessage(QMessageBox::Warning,plugin, msg);
-                }
-                else
-                {
-                    QString msg("Error: unhandled case in: ");
-                    msg.append(__func__);
-                    ErrorMessage(QMessageBox::Critical,"commandLineExecutePlugin", msg);
-                }
-                exit(-1);
-            }
-            else
-            {
-                exit(0);
-            }
-        }
-    }
+    QDltPlugin *plugin = pluginManager.findPlugin(name);
 
-    if(!plugin_found)
+    if(!plugin)
     {
         qDebug() << "Plugin not found " << plugin;
+        return;
+
     }
+
+    /* Check that this is a command plugin */
+    if(!plugin->isCommand())
+    {
+        QString msg("Error: ");
+        msg = msg+name+" is not a command plugin.";
+        ErrorMessage(QMessageBox::Critical, name, msg);
+        exit(-1);
+    }
+    if(!plugin->command(cmd, params))
+    {
+        QString msg("Error: ");
+        msg.append(name);
+        msg.append(plugin->error());
+        ErrorMessage(QMessageBox::Warning,name, msg);
+
+        exit(-1);
+    }
+    else
+    {
+        exit(0);
+    }
+
 }
 
 void MainWindow::deleteactualFile(){
@@ -1114,7 +1103,7 @@ void MainWindow::on_action_menuFile_Export_CSV_triggered()
     workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
     DltExporter exporter(this);
     QFile outfile(fileName);
-    exporter.exportCSV(&qfile, &outfile, project.plugin);
+    exporter.exportCSV(&qfile, &outfile, &pluginManager);
 }
 
 void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
@@ -1166,7 +1155,7 @@ void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
 
     QFile outfile(fileName);
     DltExporter exporter(this);
-    exporter.exportCSV(&qfile, &outfile, project.plugin, &list);
+    exporter.exportCSV(&qfile, &outfile, &pluginManager, &list);
 }
 
 
@@ -1301,10 +1290,10 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     outputfileIsFromCLI = false;
     return;
 }
-void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins)
+void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins)
 {
     QDltMsg msg;
-    PluginItem *item;
+    QDltPlugin *item;
     QProgressDialog fileprogress("Applying plugins.", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowModality(Qt::WindowModal);
     qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
@@ -1321,22 +1310,12 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
         /* Process all viewer plugins */
         for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
         {
-            item = (PluginItem*)activeViewerPlugins.at(ivp);
-            item->pluginviewerinterface->initMsg(ix, msg);
+            item = (QDltPlugin*)activeViewerPlugins.at(ivp);
+            item->initMsg(ix, msg);
         }
 
         /* Process all decoderplugins */
-        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
-        {
-            item = (PluginItem*)activeDecoderPlugins.at(idp);
-            if(item->plugindecoderinterface->isMsg(msg, 0))
-            {
-                item->plugindecoderinterface->decodeMsg(msg, 0);
-                /* TODO: Do we, or do we not want to break here?
-                 * Perhaps user wants to stack multiple plugins */
-                break;
-            }
-        }
+        pluginManager.decodeMsg(msg,1);
 
         /* Add to filterindex if matches */
         if(qfile.checkFilter(msg))
@@ -1347,8 +1326,8 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
         /* Offer messages again to viewer plugins after decode */
         for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
         {
-            item = (PluginItem *)activeViewerPlugins.at(ivp);
-            item->pluginviewerinterface->initMsgDecoded(ix, msg);
+            item = (QDltPlugin *)activeViewerPlugins.at(ivp);
+            item->initMsgDecoded(ix, msg);
         }
 
         /* Update progress every 0.5% */
@@ -1367,8 +1346,8 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
     }
 
     for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = (PluginItem*)activeViewerPlugins.at(i);
-        item->pluginviewerinterface->initFileFinish();
+        item = (QDltPlugin*)activeViewerPlugins.at(i);
+        item->initFileFinish();
 
     }
 
@@ -1378,10 +1357,9 @@ void MainWindow::applyPlugins(QList<PluginItem*> activeViewerPlugins, QList<Plug
     }
 }
 
-void MainWindow::applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugins, QList<PluginItem*>activeDecoderPlugins)
+void MainWindow::applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins)
 {
     QDltMsg msg;
-    PluginItem *item;
     QProgressDialog fileprogress("Create default filter index.", "Cancel", 0, qfile.size(), this);
     fileprogress.setWindowModality(Qt::WindowModal);
 
@@ -1399,17 +1377,7 @@ void MainWindow::applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugin
         }
 
         /* Process all decoderplugins */
-        for(int idp = 0; idp < activeDecoderPlugins.size();idp++)
-        {
-            item = (PluginItem*)activeDecoderPlugins.at(idp);
-            if(item->plugindecoderinterface->isMsg(msg, 0))
-            {
-                item->plugindecoderinterface->decodeMsg(msg, 0);
-                /* TODO: Do we, or do we not want to break here?
-                 * Perhaps user wants to stack multiple plugins */
-                break;
-            }
-        }
+        pluginManager.decodeMsg(msg,1);
 
         /* run through all default filter */
         for(int num=0;num<defaultFilter.defaultFilterList.size();num++)
@@ -1462,9 +1430,8 @@ void MainWindow::applyPluginsDefaultFilter(QList<PluginItem*> activeViewerPlugin
 
 void MainWindow::reloadLogFile()
 {
-    PluginItem *item = 0;
-    QList<PluginItem*> activeViewerPlugins;
-    QList<PluginItem*> activeDecoderPlugins;
+    QList<QDltPlugin*> activeViewerPlugins;
+    QList<QDltPlugin*> activeDecoderPlugins;
 
     saveAndDisconnectCurrentlyConnectedSerialECUs();
 
@@ -1481,23 +1448,12 @@ void MainWindow::reloadLogFile()
     /* Collect all plugins */
     if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
     {
-        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+        activeViewerPlugins = pluginManager.getViewerPlugins();
+        activeDecoderPlugins = pluginManager.getDecoderPlugins();
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
         {
-            item = (PluginItem*)project.plugin->topLevelItem(i);
-
-            if(item->getMode() != PluginItem::ModeDisable)
-            {
-                if(item->plugindecoderinterface)
-                {
-                    activeDecoderPlugins.append(item);
-                }
-                if(item->pluginviewerinterface)
-                {
-
-                    item->pluginviewerinterface->initFileStart(&qfile);
-                    activeViewerPlugins.append(item);
-                }
-            }
+            QDltPlugin *plugin = activeViewerPlugins[i];
+            plugin->initFileStart(&qfile);
         }
     }
 
@@ -1523,31 +1479,14 @@ void MainWindow::reloadLogFile()
 
 void MainWindow::reloadLogFileDefaultFilter()
 {
-    PluginItem *item = 0;
-    QList<PluginItem*> activeViewerPlugins;
-    QList<PluginItem*> activeDecoderPlugins;
+    QList<QDltPlugin*> activeViewerPlugins;
+    QList<QDltPlugin*> activeDecoderPlugins;
 
     /* Collect all plugins */
     if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
     {
-        for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
-        {
-            item = (PluginItem*)project.plugin->topLevelItem(i);
-
-            if(item->getMode() != PluginItem::ModeDisable)
-            {
-                if(item->plugindecoderinterface)
-                {
-                    activeDecoderPlugins.append(item);
-                }
-                if(item->pluginviewerinterface)
-                {
-
-                    item->pluginviewerinterface->initFileStart(&qfile);
-                    activeViewerPlugins.append(item);
-                }
-            }
-        }
+        activeViewerPlugins = pluginManager.getViewerPlugins();
+        activeDecoderPlugins = pluginManager.getDecoderPlugins();
     }
 
     /* Apply collected plugins.
@@ -1660,21 +1599,7 @@ bool MainWindow::anyPluginsEnabled()
         return false;
     }
 
-    bool foundEnabledPlugin = false;
-    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
-
-        if(item->getMode() != PluginItem::ModeDisable)
-        {
-            if(item->plugindecoderinterface || item->pluginviewerinterface)
-            {
-                foundEnabledPlugin = true;
-                break;
-            }
-        }
-    }
-    return foundEnabledPlugin;
+    return (pluginManager.sizeEnabled()>0);
 }
 
 bool MainWindow::anyFiltersEnabled()
@@ -1825,15 +1750,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
 
-        for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
-
-            if(item->plugincontrolinterface)
-            {
-                item->plugincontrolinterface->stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline);
-            }
-
-        }
+        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline);
     }
 }
 
@@ -2467,11 +2384,11 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
         menu.addAction(action);
         menu.addSeparator();
 
-        if(item->pluginviewerinterface)
+        if(item->getPlugin()->isViewer())
         {
             /* If a viewer plugin is disabled, or enabled but not shown,
              * add 'show' action. Else add 'hide' action */
-            if(item->getMode() != PluginItem::ModeShow)
+            if(item->getPlugin()->getMode() != QDltPlugin::ModeShow)
             {
                 action = new QAction("Plugin Show", this);
                 connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Show_triggered()));
@@ -2487,7 +2404,7 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
 
         /* If the plugin is shown or enabled, present the 'disable' option.
          * Else, present the 'enable' option */
-        if(item->getMode() != PluginItem::ModeDisable)
+        if(item->getMode() != QDltPlugin::ModeDisable)
         {
             action = new QAction("Plugin Disable", this);
             connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Disable_triggered()));
@@ -2830,9 +2747,9 @@ void MainWindow::read(EcuItem* ecuitem)
 {
     int32_t bytesRcvd = 0;
     QDltMsg qmsg;
-    PluginItem *item = 0;
-    QList<PluginItem*> activeViewerPlugins;
-    QList<PluginItem*> activeDecoderPlugins;
+    QDltPlugin *item = 0;
+    QList<QDltPlugin*> activeViewerPlugins;
+    QList<QDltPlugin*> activeDecoderPlugins;
 
     if (!ecuitem)
         return;
@@ -2929,25 +2846,14 @@ void MainWindow::read(EcuItem* ecuitem)
 
         if (outputfile.isOpen() )
         {
+            activeDecoderPlugins = pluginManager.getDecoderPlugins();
+            activeViewerPlugins = pluginManager.getViewerPlugins();
 
-            for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
+            for(int i = 0; i < activeViewerPlugins.size(); i++)
             {
-                item = (PluginItem*)project.plugin->topLevelItem(i);
-
-                if(item->getMode() != PluginItem::ModeDisable)
-                {
-                    if(item->plugindecoderinterface)
-                    {
-                        activeDecoderPlugins.append(item);
-                    }
-                    if(item->pluginviewerinterface)
-                    {
-                        item->pluginviewerinterface->updateFileStart();
-                        activeViewerPlugins.append(item);
-                    }
-                }
+                item = activeViewerPlugins[i];
+                item->updateFileStart();
             }
-
 
             /* read received messages in DLT file parser and update DLT message list view */
             /* update indexes  and table view */
@@ -2958,28 +2864,19 @@ void MainWindow::read(EcuItem* ecuitem)
                 qmsg.setMsg(qfile.getMsg(num));
 
                 for(int i = 0; i < activeViewerPlugins.size(); i++){
-                    item = (PluginItem*)activeViewerPlugins.at(i);
-                    item->pluginviewerinterface->updateMsg(num,qmsg);
+                    item = activeViewerPlugins.at(i);
+                    item->updateMsg(num,qmsg);
                 }
 
-                for(int i = 0; i < activeDecoderPlugins.size(); i++)
-                {
-                    item = (PluginItem*)activeDecoderPlugins.at(i);
-
-                    if(item->plugindecoderinterface->isMsg(qmsg,0))
-                    {
-                        item->plugindecoderinterface->decodeMsg(qmsg,0);
-                        break;
-                    }
-                }
+                pluginManager.decodeMsg(qmsg,1);
 
                 if(qfile.checkFilter(qmsg)) {
                     qfile.addFilterIndex(num);
                 }
 
                 for(int i = 0; i < activeViewerPlugins.size(); i++){
-                    item = (PluginItem*)activeViewerPlugins.at(i);
-                    item->pluginviewerinterface->updateMsgDecoded(num,qmsg);
+                    item = activeViewerPlugins[i];
+                    item->updateMsgDecoded(num,qmsg);
                 }
             }
 
@@ -2987,8 +2884,8 @@ void MainWindow::read(EcuItem* ecuitem)
                 draw_timer.start(draw_interval);
 
             for(int i = 0; i < activeViewerPlugins.size(); i++){
-                item = (PluginItem*)activeViewerPlugins.at(i);
-                item->pluginviewerinterface->updateFileFinish();
+                item = activeViewerPlugins.at(i);
+                item->updateFileFinish();
             }
         }
     }
@@ -3022,31 +2919,19 @@ void MainWindow::drawUpdatedView()
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {
-    PluginItem *item = 0;
-    QList<PluginItem*> activeViewerPlugins;
-    QList<PluginItem*> activeDecoderPlugins;
+    QDltPlugin *item = 0;
+    QList<QDltPlugin*> activeViewerPlugins;
+    QList<QDltPlugin*> activeDecoderPlugins;
     QDltMsg msg;
-    //qfile.getMsg(qfile.getMsgFilterPos(index.row()), msg);
+    int msgIndex;
+
+    msgIndex = qfile.getMsgFilterPos(index.row());
     msg.setMsg(qfile.getMsgFilter(index.row()));
+    activeViewerPlugins = pluginManager.getViewerPlugins();
+    activeDecoderPlugins = pluginManager.getDecoderPlugins();
 
-    int msgIndex = qfile.getMsgFilterPos(index.row());
-
-    for(int i = 0; i < project.plugin->topLevelItemCount(); i++)
-    {
-        item = (PluginItem*)project.plugin->topLevelItem(i);
-
-        if(item->getMode() != PluginItem::ModeDisable)
-        {
-            if(item->plugindecoderinterface)
-            {
-                activeDecoderPlugins.append(item);
-            }
-            if(item->pluginviewerinterface)
-            {
-                activeViewerPlugins.append(item);
-            }
-        }
-    }
+    qDebug() << "Message at row" << index.row() << "at index" << msgIndex << "selected.";
+    qDebug() << "Viewer plugins" << activeViewerPlugins.size() << "decoder plugins" << activeDecoderPlugins.size() ;
 
     if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
     {
@@ -3056,27 +2941,16 @@ void MainWindow::on_tableView_clicked(QModelIndex index)
     // Update plugins
     for(int i = 0; i < activeViewerPlugins.size() ; i++)
     {
-        item = (PluginItem*)activeViewerPlugins.at(i);
-        item->pluginviewerinterface->selectedIdxMsg(msgIndex,msg);
+        item = (QDltPlugin*)activeViewerPlugins.at(i);
+        item->selectedIdxMsg(msgIndex,msg);
 
     }
 
-
-    for(int i = 0; i < activeDecoderPlugins.size(); i++)
-    {
-        item = (PluginItem*)activeDecoderPlugins.at(i);
-
-        if(item->plugindecoderinterface->isMsg(msg,0))
-        {
-            item->plugindecoderinterface->decodeMsg(msg,0);
-            break;
-        }
-    }
-
+    pluginManager.decodeMsg(msg,1);
 
     for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = (PluginItem*)activeViewerPlugins.at(i);
-        item->pluginviewerinterface->selectedIdxMsgDecoded(msgIndex,msg);
+        item = (QDltPlugin*)activeViewerPlugins.at(i);
+        item->selectedIdxMsgDecoded(msgIndex,msg);
     }
 
 }
@@ -4394,18 +4268,13 @@ void MainWindow::stateChangedSerial(bool dsrChanged){
                 }
             }
 
-            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
-                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
-
-                if(item->plugincontrolinterface)
-                {
-                    if(dsrChanged){
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
-                    }else{
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
-                    }
-
-                }
+            if(dsrChanged)
+            {
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline);
+            }
+            else
+            {
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
             }
 
         }
@@ -4434,32 +4303,23 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
                 }
             }
 
-            for(int pnum = 0; pnum < project.plugin->topLevelItemCount (); pnum++) {
-                PluginItem *item = (PluginItem*)project.plugin->topLevelItem(pnum);
-
-                if(item->plugincontrolinterface)
-                {
-                    switch(socketState){
-                    case QAbstractSocket::UnconnectedState:
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
-                        break;
-                    case QAbstractSocket::ConnectingState:
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionConnecting);
-                        break;
-                    case QAbstractSocket::ConnectedState:
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOnline);
-                        break;
-                    case QAbstractSocket::ClosingState:
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
-                        break;
-                    default:
-                        item->plugincontrolinterface->stateChanged(num,QDltConnection::QDltConnectionOffline);
-                        break;
-                    }
-
-                }
+            switch(socketState){
+            case QAbstractSocket::UnconnectedState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                break;
+            case QAbstractSocket::ConnectingState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting);
+                break;
+            case QAbstractSocket::ConnectedState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline);
+                break;
+            case QAbstractSocket::ClosingState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                break;
+            default:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                break;
             }
-
         }
     }
 }
@@ -4481,109 +4341,42 @@ void MainWindow::on_action_menuSearch_Find_triggered()
 
 void MainWindow::loadPlugins()
 {
-    QDir pluginsDir;
-
-    /* The viewer loosk in the relativ to the executable in the ./plugins directory */
-    pluginsDir.setPath(QCoreApplication::applicationDirPath());
-    if(pluginsDir.cd("plugins"))
-    {
-        loadPluginsPath(pluginsDir);
-    }
-
+    /* load plugins from subdirectory plugins, from directory if set in settings and from /usr/share/dlt-viewer/plugins in Linux */
     if(settings->pluginsPath)
+        pluginManager.loadPlugins(settings->pluginsPathName);
+    else
+        pluginManager.loadPlugins(QString());
+
+    /* update plugin widgets */
+    QList<QDltPlugin*> plugins = pluginManager.getPlugins();
+    for (int idx = 0; idx < plugins.size();idx++ )
     {
-        pluginsDir.setPath(settings->pluginsPathName);
-        if(pluginsDir.exists() && pluginsDir.isReadable())
+      QDltPlugin* plugin = plugins[idx];
+
+      PluginItem* item = new PluginItem(0,plugin);
+
+      plugin->setMode((QDltPlugin::Mode) DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
+
+      if(plugin->isViewer())
+      {
+        item->widget = plugin->initViewer();
+        item->dockWidget = new MyPluginDockWidget(item,this);
+        item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+        item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
+        item->dockWidget->setWidget(item->widget);
+        item->dockWidget->setObjectName(plugin->getName());
+
+        addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
+
+        if(plugin->getMode() != QDltPlugin::ModeShow)
         {
-            loadPluginsPath(pluginsDir);
+            item->dockWidget->hide();
         }
-    }
+      }
 
-    /* Load plugins from system directory in linux */
-    pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
-    if(pluginsDir.exists() && pluginsDir.isReadable())
-    {
-        loadPluginsPath(pluginsDir);
-    }
-}
+      item->update();
+      project.plugin->addTopLevelItem(item);
 
-void MainWindow::loadPluginsPath(QDir dir)
-{
-    /* set filter for plugin files */
-    QStringList filters;
-    filters << "*.dll" << "*.so";
-    dir.setNameFilters(filters);
-
-    /* iterate through all plugins */
-    foreach (QString fileName, dir.entryList(QDir::Files))
-    {
-        QPluginLoader *pluginLoader = new QPluginLoader(dir.absoluteFilePath(fileName));
-        QObject *plugin = pluginLoader->instance();
-        if (plugin)
-        {
-            QDLTPluginInterface *plugininterface = qobject_cast<QDLTPluginInterface *>(plugin);
-            if (plugininterface)
-            {
-                if(QString::compare( plugininterface->pluginInterfaceVersion(),PLUGIN_INTERFACE_VERSION, Qt::CaseSensitive) == 0){
-
-                    PluginItem* item = new PluginItem(0);
-                    item->loader = pluginLoader;
-                    item->plugininterface = plugininterface;
-                    item->setName(plugininterface->name());
-                    item->setPluginVersion( plugininterface->pluginVersion() );
-                    item->setPluginInterfaceVersion( plugininterface->pluginInterfaceVersion() );
-                    item->setMode( item->getPluginModeFromSettings());
-
-                    QDltPluginViewerInterface *pluginviewerinterface = qobject_cast<QDltPluginViewerInterface *>(plugin);
-                    if(pluginviewerinterface)
-                    {
-                        item->pluginviewerinterface = pluginviewerinterface;
-                        item->widget = item->pluginviewerinterface->initViewer();
-
-                        if(item->widget)
-                        {
-                            item->dockWidget = new MyPluginDockWidget(item,this);
-                            item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-                            item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-                            item->dockWidget->setWidget(item->widget);
-                            item->dockWidget->setObjectName(item->getName());
-
-                            addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
-
-                            if(item->getMode() != PluginItem::ModeShow)
-                            {
-                                item->dockWidget->hide();
-                            }
-                        }
-                    }
-                    QDLTPluginDecoderInterface *plugindecoderinterface = qobject_cast<QDLTPluginDecoderInterface *>(plugin);
-                    if(plugindecoderinterface)
-                    {
-                        item->plugindecoderinterface = plugindecoderinterface;
-                    }
-                    QDltPluginControlInterface *plugincontrolinterface = qobject_cast<QDltPluginControlInterface *>(plugin);
-                    if(plugincontrolinterface)
-                    {
-                        item->plugincontrolinterface = plugincontrolinterface;
-                    }
-                    QDltPluginCommandInterface *plugincommandinterface = qobject_cast<QDltPluginCommandInterface *>(plugin);
-                    if(plugincommandinterface)
-                    {
-                        item->plugincommandinterface = plugincommandinterface;
-                    }
-                    item->update();
-
-                    project.plugin->addTopLevelItem(item);
-
-                } else {
-
-                    ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString(tr("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5")).arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
-                }
-            }
-        }
-        else {            
-            ErrorMessage(QMessageBox::Warning,QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader->errorString()));
-        }
     }
 }
 
@@ -4597,15 +4390,8 @@ void MainWindow::updatePluginsECUList()
 
         list.append(ecuitem->id + " (" + ecuitem->description + ")");
     }
-    for(int num = 0; num < project.plugin->topLevelItemCount (); num++) {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
-
-        if(item->plugincontrolinterface)
-        {
-            item->plugincontrolinterface->initControl(&qcontrol);
-            item->plugincontrolinterface->initConnections(list);
-        }
-    }
+    pluginManager.initControl(&qcontrol);
+    pluginManager.initConnections(list);
 }
 
 void MainWindow::updatePlugins() {
@@ -4620,28 +4406,28 @@ void MainWindow::updatePlugins() {
 void MainWindow::updatePlugin(PluginItem *item) {
     item->takeChildren();
 
-    bool ret = item->plugininterface->loadConfig(item->getFilename());
-    QString err_text = item->plugininterface->error();
+    bool ret = item->getPlugin()->loadConfig(item->getFilename());
+    QString err_text = item->getPlugin()->error();
 	//We should not need error handling when disabling the plugins. But why is loadConfig called then anyway?
-    if (item->getMode() != PluginItem::ModeDisable)
+    if (item->getMode() != QDltPlugin::ModeDisable)
     {
        
         if ( false == ret )
         {
             QString err_header = "Plugin Error: ";
-            err_header.append(item->plugininterface->name());
+            err_header.append(item->getName());
             QString err_body = err_header;
             err_body.append(" returned error:\n");
             err_body.append(err_text);
             err_body.append("\nin loadConfig. \nDisabling Plugin!");
             ErrorMessage(QMessageBox::Critical,err_header,err_body);
-            item->setMode(PluginItem::ModeDisable);
+            item->setMode(QDltPlugin::ModeDisable);
         }
         else if ( 0 < err_text.length() )
         {
 			//we have no error, but the plugin complains about something
             QString err_header = "Plugin Warning: ";
-            err_header.append(item->plugininterface->name());
+            err_header.append(item->getName());
             QString err_body = err_header;
             err_body.append(" returned message:\n");
             err_body.append(err_text);
@@ -4651,7 +4437,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
     }
 
 
-    QStringList list = item->plugininterface->infoConfig();
+    QStringList list = item->getPlugin()->infoConfig();
     for(int num=0;num<list.size();num++) {
         item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
     }
@@ -4659,7 +4445,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
     item->update();
 
     if(item->dockWidget) {
-        if(item->getMode() == PluginItem::ModeShow) {
+        if(item->getMode() == QDltPlugin::ModeShow) {
             item->dockWidget->show();
         }
         else {
@@ -4689,16 +4475,16 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         dlg.setPluginInterfaceVersion(item->getPluginInterfaceVersion());
         dlg.setFilename(item->getFilename());
         dlg.setMode(item->getMode());
-        if(!item->pluginviewerinterface)
+        if(!item->getPlugin()->isViewer())
             dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->getType());
         if(dlg.exec()) {
             /* Check if there was a change that requires a refresh */
             if(item->getMode() != dlg.getMode())
                 callInitFile = true;
-            if(item->getMode() == PluginItem::ModeShow && dlg.getMode() != PluginItem::ModeDisable)
+            if(item->getMode() == QDltPlugin::ModeShow && dlg.getMode() != QDltPlugin::ModeDisable)
                 callInitFile = false;
-            if(dlg.getMode() == PluginItem::ModeShow && item->getMode() != PluginItem::ModeDisable)
+            if(dlg.getMode() == QDltPlugin::ModeShow && item->getMode() != QDltPlugin::ModeDisable)
                 callInitFile = false;
             if(item->getFilename() != dlg.getFilename())
                 callInitFile = true;
@@ -4730,14 +4516,14 @@ void MainWindow::on_action_menuPlugin_Show_triggered() {
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->getMode() != PluginItem::ModeShow){
+        if(item->getMode() != QDltPlugin::ModeShow){
             int oldMode = item->getMode();
 
-            item->setMode( PluginItem::ModeShow );
+            item->setMode( QDltPlugin::ModeShow );
             item->savePluginModeToSettings();
             updatePlugin(item);
 
-            if(oldMode == PluginItem::ModeDisable){
+            if(oldMode == QDltPlugin::ModeDisable){
                 applyConfigEnabled(true);
             }
         }else{
@@ -4756,8 +4542,8 @@ void MainWindow::on_action_menuPlugin_Hide_triggered() {
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->getMode() == PluginItem::ModeShow){
-            item->setMode( PluginItem::ModeEnable );
+        if(item->getMode() == QDltPlugin::ModeShow){
+            item->setMode( QDltPlugin::ModeEnable );
             item->savePluginModeToSettings();
             updatePlugin(item);
         }else{
@@ -4781,8 +4567,8 @@ void MainWindow::action_menuPlugin_Enable_triggered()
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->getMode() == PluginItem::ModeDisable){
-            item->setMode( PluginItem::ModeEnable );
+        if(item->getMode() == QDltPlugin::ModeDisable){
+            item->setMode( QDltPlugin::ModeEnable );
             item->savePluginModeToSettings();
             updatePlugin(item);
             applyConfigEnabled(true);
@@ -4803,8 +4589,8 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
     if((list.count() == 1) ) {
         PluginItem* item = (PluginItem*) list.at(0);
 
-        if(item->getMode() != PluginItem::ModeDisable){
-            item->setMode( PluginItem::ModeDisable );
+        if(item->getMode() != QDltPlugin::ModeDisable){
+            item->setMode( QDltPlugin::ModeDisable );
             item->savePluginModeToSettings();
             updatePlugin(item);
             applyConfigEnabled(true);
@@ -5303,7 +5089,7 @@ void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
 {
     PluginItem *plugin = (PluginItem*)item;
     plugin->takeChildren();
-    QStringList list = plugin->plugininterface->infoConfig();
+    QStringList list = plugin->getPlugin()->infoConfig();
     for(int num=0;num<list.size();num++) {
         plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
     }
@@ -5331,18 +5117,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
-    for(int i = 0; i < project.plugin->topLevelItemCount (); i++)
-    {
-        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(i);
-
-        if(item->getMode() != item->ModeDisable &&
-                item->plugindecoderinterface &&
-                item->plugindecoderinterface->isMsg(msg,triggeredByUser))
-        {
-            item->plugindecoderinterface->decodeMsg(msg,triggeredByUser);
-            break;
-        }
-    }
+    pluginManager.decodeMsg(msg,1);
 }
 
 void MainWindow::on_action_menuConfig_Collapse_All_ECUs_triggered()
@@ -5639,7 +5414,7 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     ui->comboBoxFilterSelection->clear();
 
     /* add "no default filter" entry */
-    ui->comboBoxFilterSelection->addItem("<No default filter selected>");
+    ui->comboBoxFilterSelection->addItem("<No filter selected>");
 
     /* clear default filter list */
     defaultFilter.clear();

@@ -61,16 +61,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             }
             return QVariant();
         }
-        for(int num = 0; num < project->plugin->topLevelItemCount (); num++)
-        {
-            PluginItem *item = (PluginItem*)project->plugin->topLevelItem(num);
-
-            if(item->getMode() != item->ModeDisable && item->plugindecoderinterface && item->plugindecoderinterface->isMsg(msg,0))
-            {
-                item->plugindecoderinterface->decodeMsg(msg,0);
-                break;
-            }
-        }
+        pluginManager->decodeMsg(msg,1);
 
         switch(index.column())
         {

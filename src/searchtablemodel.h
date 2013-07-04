@@ -55,6 +55,7 @@ public:
     /* pointer to the current loaded file */
     QDltFile *qfile;
     Project *project;
+    QDltPluginManager *pluginManager;
     
 signals:
     

@@ -204,20 +204,16 @@ class PluginItem  : public QObject, public QTreeWidgetItem
     Q_OBJECT
 public:
 
-    PluginItem(QTreeWidgetItem *parent = 0);
+    PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin);
     ~PluginItem();
 
-    enum { ModeDisable=0, ModeEnable, ModeShow };
     enum { TypeFile, TypeDirectory };
 
     QString getName();
-    void setName(QString n);
 
     QString getPluginVersion();
-    void setPluginVersion(QString v);
 
     QString getPluginInterfaceVersion();
-    void setPluginInterfaceVersion(QString iv);
 
     QString getFilename();
     void setFilename(QString f);
@@ -226,17 +222,15 @@ public:
     void setType(int t);
 
     int getMode();
-    void setMode(int m);
+    void setMode(int t);
 
     void update();
-    void savePluginModeToSettings();
-    int getPluginModeFromSettings();
 
-    QDLTPluginInterface *plugininterface;
-    QDLTPluginDecoderInterface *plugindecoderinterface;
-    QDltPluginViewerInterface  *pluginviewerinterface;
-    QDltPluginControlInterface *plugincontrolinterface;
-    QDltPluginCommandInterface *plugincommandinterface;
+    QDltPlugin* getPlugin() { return plugin; }
+
+    void savePluginModeToSettings();
+    void loadPluginModeFromSettings();
+
     QWidget *widget;
     MyPluginDockWidget *dockWidget;
     QPluginLoader *loader;
@@ -249,6 +243,8 @@ private:
 
     int type;
     int mode;
+
+    QDltPlugin *plugin;
 
 };
 
