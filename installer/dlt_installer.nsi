@@ -156,7 +156,7 @@ SectionEnd
 ;--------------------------------
 ;Filters Section
 ;--------------------------------
-Section "Filters" secplug
+Section "Filters" secfilt
     SetDetailsPrint listonly
     SectionIn 1 2 3
     SetShellVarContext all
