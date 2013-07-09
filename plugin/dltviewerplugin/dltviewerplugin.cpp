@@ -70,7 +70,10 @@ QWidget* DltViewerPlugin::initViewer() {
 
 void DltViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
     /* Show Decoded output */
-    form->setTextBrowserMessage(msg.toStringHeader()+"<br><br>"+msg.toStringPayload());
+    QString payloadText = msg.toStringPayload(); /* text output */
+    payloadText = payloadText.replace("<","&#60;");
+    payloadText = payloadText.replace(">","&#62;");
+    form->setTextBrowserMessage(msg.toStringHeader()+"<br><br>"+payloadText);
 }
 
 void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
@@ -81,7 +84,10 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
         return;
 
     /* Show Payload*/
-    form->setTextBrowserUncoded(msg.toStringHeader()+"<br><br>"+msg.toStringPayload());
+    QString payloadText = msg.toStringPayload(); /* text output */
+    payloadText = payloadText.replace("<","&#60;");
+    payloadText = payloadText.replace(">","&#62;");
+    form->setTextBrowserUncoded(msg.toStringHeader()+"<br><br>"+payloadText);
 
     /* Show details */
     text = QString("<html><body>");
