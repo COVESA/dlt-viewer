@@ -298,6 +298,7 @@ protected:
 
 private slots:
     void on_tableView_clicked(QModelIndex index);
+    void on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
     void on_tableView_customContextMenuRequested(QPoint pos);
     void on_pluginWidget_customContextMenuRequested(QPoint pos);

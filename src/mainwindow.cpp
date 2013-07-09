@@ -304,6 +304,11 @@ void MainWindow::initSignalConnections()
     connect(searchDlg, SIGNAL(refreshedSearchIndex()), this, SLOT(searchTableRenewed()));
     connect( m_searchresultsTable, SIGNAL( doubleClicked (QModelIndex) ), this, SLOT( searchtable_cellSelected( QModelIndex ) ) );
 
+    // connect tableView selection model change to handler in mainwindow
+    connect(ui->tableView->selectionModel(),
+            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+            SLOT(on_tableView_selectionChanged(const QItemSelection &, const QItemSelection &)));
+
 }
 
 void MainWindow::initSearchTable()
@@ -2916,6 +2921,13 @@ void MainWindow::drawUpdatedView()
 
 }
 
+void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+    if(selected.size()>0)
+    {
+        on_tableView_clicked(selected[0].topLeft());
+    }
+}
 
 void MainWindow::on_tableView_clicked(QModelIndex index)
 {
