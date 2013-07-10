@@ -4147,6 +4147,7 @@ void MainWindow::openRecentFilters()
             workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
             setCurrentFilters(fileName);
             applyConfigEnabled(true);
+            ui->tabWidget->setCurrentWidget(ui->tabPFilter);
         }
     }
 }
@@ -4743,9 +4744,9 @@ void MainWindow::on_action_menuFilter_Load_triggered()
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         setCurrentFilters(fileName);
         applyConfigEnabled(true);
+        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+        on_filterWidget_itemSelectionChanged();
     }
-
-    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
@@ -5080,6 +5081,18 @@ void MainWindow::dropEvent(QDropEvent *event)
             /* Project file dropped */
             openDlpFile(filename);            
         }
+        else if(filename.endsWith(".dlf", Qt::CaseInsensitive))
+        {
+            /* Filter file dropped */
+            if(project.LoadFilter(filename,true))
+            {
+                workingDirectory.setDlfDirectory(QFileInfo(filename).absolutePath());
+                setCurrentFilters(filename);
+                applyConfigEnabled(true);
+                on_filterWidget_itemSelectionChanged();
+                ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+            }
+        }
         else
         {
             QMessageBox::warning(this, QString("Drag&Drop"),
@@ -5159,8 +5172,9 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         setCurrentFilters(fileName);
         applyConfigEnabled(true);
+        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+        on_filterWidget_itemSelectionChanged();
     }
-    on_filterWidget_itemSelectionChanged();
 }
 
 int MainWindow::nearest_line(int line){
@@ -5412,10 +5426,9 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
             index->setDltFileName(qfile.getFileName());
             index->setAllIndexSize(qfile.size());
         }
+        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+        on_filterWidget_itemSelectionChanged();
     }
-
-    /* update ui */
-    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
