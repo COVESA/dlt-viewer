@@ -152,6 +152,7 @@ private:
     QString injectionContextId;
     QString injectionServiceId;
     QString injectionData;
+    bool injectionDataBinary;
 
     /* Toggle buttons */
     QAction *scrollButton;

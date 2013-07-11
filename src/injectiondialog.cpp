@@ -19,14 +19,15 @@
 
 #include "injectiondialog.h"
 #include "ui_injectiondialog.h"
+#include "dltsettingsmanager.h"
 
 InjectionDialog::InjectionDialog(QString appid,QString conid,QWidget *parent) :
     QDialog(parent),
     ui(new Ui::InjectionDialog)
 {
     ui->setupUi(this);
-    ui->applicationidLineEdit->setText(appid);
-    ui->contextidLineEdit->setText(conid);
+    ui->applicationidComboBox->setEditText(appid);
+    ui->contextidComboBox->setEditText(conid);
 }
 
 InjectionDialog::~InjectionDialog()
@@ -46,12 +47,74 @@ void InjectionDialog::changeEvent(QEvent *e)
     }
 }
 
-void InjectionDialog::setApplicationId(QString text) { ui->applicationidLineEdit->setText(text); }
-void InjectionDialog::setContextId(QString text) { ui->contextidLineEdit->setText(text); }
-void InjectionDialog::setServiceId(QString text) { ui->serviceidLineEdit->setText(text); }
-void InjectionDialog::setData(QString text) { ui->dataLineEdit->setText(text); }
+void InjectionDialog::setApplicationId(QString text) { ui->applicationidComboBox->setEditText(text); }
+void InjectionDialog::setContextId(QString text) { ui->contextidComboBox->setEditText(text); }
+void InjectionDialog::setServiceId(QString text) { ui->serviceidComboBox->setEditText(text); }
+void InjectionDialog::setData(QString text) { ui->dataComboBox->setEditText(text); }
+void InjectionDialog::setDataBinary(bool mode) { ui->binaryRadioButton->setChecked(mode);ui->textRadioButton->setChecked(!mode); }
 
-QString InjectionDialog::getApplicationId() { return ui->applicationidLineEdit->text(); }
-QString InjectionDialog::getContextId() { return ui->contextidLineEdit->text(); }
-QString InjectionDialog::getServiceId() { return ui->serviceidLineEdit->text(); }
-QString InjectionDialog::getData() { return ui->dataLineEdit->text(); }
+QString InjectionDialog::getApplicationId() { return ui->applicationidComboBox->currentText(); }
+QString InjectionDialog::getContextId() { return ui->contextidComboBox->currentText(); }
+QString InjectionDialog::getServiceId() { return ui->serviceidComboBox->currentText(); }
+QString InjectionDialog::getData() { return ui->dataComboBox->currentText(); }
+bool InjectionDialog::getDataBinary() { return ui->binaryRadioButton->isChecked(); }
+
+void InjectionDialog::updateHistory()
+{
+    QStringList list;
+    list = DltSettingsManager::getInstance()->value("injection/applicationid").toStringList();
+    ui->applicationidComboBox->clear();
+    foreach(QString text,list)
+       ui->applicationidComboBox->addItem(text);
+
+    list = DltSettingsManager::getInstance()->value("injection/contextid").toStringList();
+    ui->contextidComboBox->clear();
+    foreach(QString text,list)
+       ui->contextidComboBox->addItem(text);
+
+    list = DltSettingsManager::getInstance()->value("injection/serviceid").toStringList();
+    ui->serviceidComboBox->clear();
+    foreach(QString text,list)
+       ui->serviceidComboBox->addItem(text);
+
+    list = DltSettingsManager::getInstance()->value("injection/data").toStringList();
+    ui->dataComboBox->clear();
+    foreach(QString text,list)
+       ui->dataComboBox->addItem(text);
+
+}
+
+void InjectionDialog::storeHistory()
+{
+    QStringList list;
+
+    list = DltSettingsManager::getInstance()->value("injection/applicationid").toStringList();
+    list.removeAll(getApplicationId());
+    list.prepend(getApplicationId());
+    while (list.size() > INJECTION_MAX_HISTORY)
+        list.removeLast();
+    DltSettingsManager::getInstance()->setValue("injection/applicationid",list);
+
+    list = DltSettingsManager::getInstance()->value("injection/contextid").toStringList();
+    list.removeAll(getContextId());
+    list.prepend(getContextId());
+    while (list.size() > INJECTION_MAX_HISTORY)
+        list.removeLast();
+    DltSettingsManager::getInstance()->setValue("injection/contextid",list);
+
+    list = DltSettingsManager::getInstance()->value("injection/serviceid").toStringList();
+    list.removeAll(getServiceId());
+    list.prepend(getServiceId());
+    while (list.size() > INJECTION_MAX_HISTORY)
+        list.removeLast();
+    DltSettingsManager::getInstance()->setValue("injection/serviceid",list);
+
+    list = DltSettingsManager::getInstance()->value("injection/data").toStringList();
+    list.removeAll(getData());
+    list.prepend(getData());
+    while (list.size() > INJECTION_MAX_HISTORY)
+        list.removeLast();
+    DltSettingsManager::getInstance()->setValue("injection/data",list);
+
+}
+

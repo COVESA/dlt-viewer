@@ -34,6 +34,7 @@
 #include <QDateTime>
 #include <QLabel>
 #include <QInputDialog>
+#include <QByteArray>
 
 /**
  * From QDlt.
@@ -208,6 +209,7 @@ void MainWindow::initState()
     injectionContextId.clear();
     injectionServiceId.clear();
     injectionData.clear();
+    injectionDataBinary = false;
 }
 
 void MainWindow::initView()
@@ -3592,6 +3594,7 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
     if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
     {
         DltMessage msg;
+        QByteArray hexData;
 
         /* initialise new message */
         dlt_message_init(&msg,0);
@@ -3601,14 +3604,31 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         // data        uint8[]
 
         /* prepare payload of data */
-        size = (injectionData.length() + 1);
+        if(injectionDataBinary)
+        {
+            hexData = QByteArray::fromHex(injectionData.toLatin1());
+            size = hexData.size();
+        }
+        else
+        {
+            size = (injectionData.length() + 1);
+        }
+
         msg.datasize = 4 + 4 + size;
         if (msg.databuffer) free(msg.databuffer);
         msg.databuffer = (uint8_t *) malloc(msg.datasize);
 
         memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
         memcpy(msg.databuffer+4, &size, sizeof(size));
-        memcpy(msg.databuffer+8, injectionData.toUtf8(), size);
+
+        if(injectionDataBinary)
+        {
+            memcpy(msg.databuffer+8,hexData.data(),hexData.size());
+        }
+        else
+        {
+            memcpy(msg.databuffer+8, injectionData.toUtf8(), size);
+        }
 
         /* send message */
         controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
@@ -3773,6 +3793,7 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
     {
         /* show Injection dialog */
         InjectionDialog dlg("","");
+        dlg.updateHistory();
 
         if(conitem)
         {
@@ -3791,6 +3812,7 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
         }
         dlg.setServiceId(injectionServiceId);
         dlg.setData(injectionData);
+        dlg.setDataBinary(injectionDataBinary);
 
         if(dlg.exec())
         {
@@ -3798,6 +3820,9 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
             injectionContextId = dlg.getContextId();
             injectionServiceId = dlg.getServiceId();
             injectionData = dlg.getData();
+            injectionDataBinary = dlg.getDataBinary();
+
+            dlg.storeHistory();
 
             SendInjection(ecuitem);
         }

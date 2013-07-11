@@ -26,6 +26,8 @@ namespace Ui {
     class InjectionDialog;
 }
 
+#define INJECTION_MAX_HISTORY 10
+
 class InjectionDialog : public QDialog {
     Q_OBJECT
 public:
@@ -36,11 +38,16 @@ public:
     void setContextId(QString text);
     void setServiceId(QString text);
     void setData(QString text);
+    void setDataBinary(bool mode);
 
     QString getApplicationId();
     QString getContextId();
     QString getServiceId();
     QString getData();
+    bool getDataBinary();
+
+    void updateHistory();
+    void storeHistory();
 
 protected:
     void changeEvent(QEvent *e);

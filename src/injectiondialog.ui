@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>439</width>
-    <height>177</height>
+    <width>441</width>
+    <height>168</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,13 @@
     <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <item row="3" column="0">
+    <widget class="QRadioButton" name="textRadioButton">
+     <property name="text">
+      <string>Text Data</string>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -25,10 +32,20 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1">
-    <widget class="QLineEdit" name="applicationidLineEdit">
-     <property name="maxLength">
-      <number>4</number>
+   <item row="4" column="0">
+    <widget class="QLabel" name="label_4">
+     <property name="text">
+      <string>Data:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="3">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
    </item>
@@ -39,13 +56,6 @@
      </property>
     </widget>
    </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="contextidLineEdit">
-     <property name="maxLength">
-      <number>4</number>
-     </property>
-    </widget>
-   </item>
    <item row="2" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
@@ -53,26 +63,38 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="serviceidLineEdit"/>
+   <item row="4" column="1" colspan="2">
+    <widget class="QComboBox" name="dataComboBox">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="text">
-      <string>Data:</string>
+   <item row="0" column="1">
+    <widget class="QComboBox" name="applicationidComboBox">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QComboBox" name="contextidComboBox">
+     <property name="editable">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QComboBox" name="serviceidComboBox">
+     <property name="editable">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
    <item row="3" column="1">
-    <widget class="QLineEdit" name="dataLineEdit"/>
-   </item>
-   <item row="4" column="0" colspan="2">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <widget class="QRadioButton" name="binaryRadioButton">
+     <property name="text">
+      <string>Binary Data (Hex, e.g. &quot;DF 12 00 34 56&quot;)</string>
      </property>
     </widget>
    </item>
