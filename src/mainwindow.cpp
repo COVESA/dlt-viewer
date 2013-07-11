@@ -33,6 +33,7 @@
 #include <QUrl>
 #include <QDateTime>
 #include <QLabel>
+#include <QInputDialog>
 
 /**
  * From QDlt.
@@ -5095,14 +5096,48 @@ void MainWindow::dropEvent(QDropEvent *event)
         }
         else
         {
-            QMessageBox::warning(this, QString("Drag&Drop"),
-                                 QString("No DLT log file or project file dropped!\n")+filename);
+            /* ask for active decoder plugin to load configuration */
+            QStringList items;
+            QList<QDltPlugin*> list = pluginManager.getDecoderPlugins();
+            for(int num=0;num<list.size();num++)
+            {
+                items << list[num]->getName();
+            }
+
+            bool ok;
+            QString item = QInputDialog::getItem(this, tr("DLT Viewer"),
+                                                     tr("Select Plugin to load configuration:"), items, 0, false, &ok);
+            if (ok && !item.isEmpty())
+            {
+                QDltPlugin* plugin = pluginManager.findPlugin(item);
+                if(plugin)
+                {
+                    plugin->loadConfig(filename);
+                    for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+                    {
+                        PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
+                        if(pluginitem->getPlugin() == plugin)
+                        {
+                            /* update plugin */
+                            pluginitem->setFilename( filename );
+
+                            /* update plugin item */
+                            updatePlugin(pluginitem);
+                            applyConfigEnabled(true);
+
+                            ui->tabWidget->setCurrentWidget(ui->tabPlugin);
+
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
     else
     {
         QMessageBox::warning(this, QString("Drag&Drop"),
-                             QString("No DLT log file or project file dropped!\n")+filename);
+                             QString("No dlt file or project file or other file dropped!\n")+filename);
     }
 }
 
