@@ -93,7 +93,8 @@ SOURCES += main.cpp \
     workingdirectory.cpp \
     jumptodialog.cpp\
     searchtablemodel.cpp \
-    pulsebutton.cpp
+    pulsebutton.cpp \
+    plugintreewidget.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -121,7 +122,8 @@ HEADERS += mainwindow.h \
     dltuiutils.h \
     jumptodialog.h \
     pulsebutton.h \
-    searchtablemodel.h
+    searchtablemodel.h \
+    plugintreewidget.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \

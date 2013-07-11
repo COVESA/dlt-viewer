@@ -421,7 +421,7 @@
           <number>2</number>
          </property>
          <item>
-          <widget class="QTreeWidget" name="pluginWidget">
+          <widget class="PluginTreeWidget" name="pluginWidget">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
            </property>
@@ -1319,6 +1319,11 @@
    <class>FilterTreeWidget</class>
    <extends>QTreeWidget</extends>
    <header>filtertreewidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>PluginTreeWidget</class>
+   <extends>QTreeWidget</extends>
+   <header>plugintreewidget.h</header>
   </customwidget>
   <customwidget>
    <class>DltTableView</class>
