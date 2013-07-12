@@ -284,6 +284,7 @@ void SettingsDialog::writeDlg()
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxUpdateContextLoadingFile->setCheckState(updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
 
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     int refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
@@ -346,6 +347,7 @@ void SettingsDialog::readDlg()
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
+    updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
 
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     int refreshrate = ui->spinBoxFrequency->value();
@@ -410,6 +412,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 
     /* other */
     settings->setValue("startup/writeControl",writeControl);
+    settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
 
     /* For settings integrity validation */
     settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
@@ -467,6 +470,7 @@ void SettingsDialog::readSettings()
 
     /* other */
     writeControl = settings->value("startup/writeControl",1).toInt();
+    updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
 }
 
 

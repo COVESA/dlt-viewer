@@ -1345,6 +1345,47 @@ void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDlt
             item->initMsgDecoded(ix, msg);
         }
 
+        /* update context configuration when loading file */
+        if(settings->updateContextLoadingFile)
+        {
+            /* analyse message, check if DLT control message response */
+            if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
+            {
+                /* find ecu item */
+                EcuItem *ecuitemFound = 0;
+                for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+                {
+                    EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+                    if(ecuitem->id == msg.getEcuid())
+                    {
+                        ecuitemFound = ecuitem;
+                        break;
+                    }
+                }
+
+                if(!ecuitemFound)
+                {
+                    /* no Ecuitem found, create a new one */
+                    ecuitemFound = new EcuItem(0);
+
+                    /* update ECU item */
+                    ecuitemFound->id = msg.getEcuid();
+                    ecuitemFound->update();
+
+                    /* add ECU to configuration */
+                    project.ecu->addTopLevelItem(ecuitemFound);
+
+                    /* Update the ECU list in control plugins */
+                    updatePluginsECUList();
+
+                    pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline);
+
+                }
+
+                controlMessage_ReceiveControlMessage(ecuitemFound,msg);
+            }
+        }
+
         /* Update progress every 0.5% */
         if( 0 == (ix%1000))
         {

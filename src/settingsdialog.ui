@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>499</width>
-    <height>699</height>
+    <height>619</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -544,17 +544,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoScroll">
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
             <property name="text">
-             <string>Auto scroll</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="checkBoxWriteControl">
-            <property name="text">
-             <string>Write Control Messages to Log File</string>
+             <string>Auto mark warn messages</string>
             </property>
            </widget>
           </item>
@@ -565,10 +558,24 @@
             </property>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="checkBoxWriteControl">
             <property name="text">
-             <string>Auto mark warn messages</string>
+             <string>Write Control Messages to Log File</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoScroll">
+            <property name="text">
+             <string>Auto scroll</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
+            <property name="text">
+             <string>Update Contexts when loading log file</string>
             </property>
            </widget>
           </item>

@@ -59,6 +59,7 @@ public:
     int autoMarkFatalError;
     int autoMarkWarn;
     int writeControl;
+    int updateContextLoadingFile;
 
     int fontSize;
     int showIndex;
