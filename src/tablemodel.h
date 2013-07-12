@@ -24,6 +24,7 @@
 #include <QModelIndex>
 #include <QVariant>
 #include <QMutex>
+#include <QStyledItemDelegate>
 
 #include "project.h"
 #include "qdlt.h"
@@ -60,6 +61,13 @@ private:
     int lastSearchIndex;
 
     QColor searchBackgroundColor() const;
+};
+
+class HtmlDelegate : public QStyledItemDelegate
+{
+protected:
+    void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+    QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const;
 };
 
 #endif // TABLEMODEL_H

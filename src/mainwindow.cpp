@@ -62,6 +62,7 @@ extern "C" {
 #include "dltexporter.h"
 #include "jumptodialog.h"
 #include "fieldnames.h"
+#include "tablemodel.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -221,6 +222,12 @@ void MainWindow::initView()
 
     /* set table size and en */
     ui->tableView->setModel(tableModel);
+
+    /* For future use enable HTML View in Table */
+    //HtmlDelegate* delegate = new HtmlDelegate();
+    //ui->tableView->setItemDelegate(delegate);
+    //ui->tableView->setItemDelegateForColumn(FieldNames::Payload,delegate);
+
     ui->tableView->setColumnWidth(0,50);
     ui->tableView->setColumnWidth(1,150);
     ui->tableView->setColumnWidth(2,70);
