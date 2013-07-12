@@ -20,9 +20,9 @@
 #include "ecudialog.h"
 #include "ui_ecudialog.h"
 #include "qextserialenumerator.h"
-EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
-                     int loglevel, int tracestatus,int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
-                     bool timingPackets, bool sendGetLogInfo, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent) :
+EcuDialog::EcuDialog(QString id, QString description, int interface, QString hostname, unsigned int tcpport, QString port, BaudRateType baudrate,
+                     int loglevel, int tracestatus, int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial, bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
+                     bool timingPackets, bool sendGetLogInfo, bool sendDefaultLogLevel, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EcuDialog)
 {
@@ -95,6 +95,7 @@ EcuDialog::EcuDialog(QString id,QString description,int interface,QString hostna
     ui->checkBoxTiming->setCheckState(timingPackets?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxGetLogInfo->setCheckState(sendGetLogInfo?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxDefaultLogLevel->setCheckState(sendDefaultLogLevel?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxUpdate->setCheckState(update?Qt::Checked:Qt::Unchecked);
 
@@ -219,6 +220,11 @@ int EcuDialog::sendGetLogInfo()
     return (ui->checkBoxGetLogInfo->checkState() == Qt::Checked);
 }
 
+int EcuDialog::sendDefaultLogLevel()
+{
+    return (ui->checkBoxDefaultLogLevel->checkState() == Qt::Checked);
+}
+
 int EcuDialog::update()
 {
     return  ui->checkBoxUpdate->isChecked();
@@ -287,6 +293,7 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->setSyncSerialHeaderTcp(this->syncSerialHeaderTcp());
     item->timingPackets = this->timingPackets();
     item->sendGetLogInfo = this->sendGetLogInfo();
+    item->sendDefaultLogLevel = this->sendDefaultLogLevel();
     item->updateDataIfOnline = this->update();
     item->autoReconnect = this->autoReconnect();
     item->autoReconnectTimeout = this->autoReconnectTimeout();

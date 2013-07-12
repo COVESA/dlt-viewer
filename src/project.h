@@ -68,6 +68,7 @@ public:
     int verbosemode;
     bool timingPackets;
     bool sendGetLogInfo;
+    bool sendDefaultLogLevel;
     enum {invalid,unknown,valid} status;
 
     /* configuration update */

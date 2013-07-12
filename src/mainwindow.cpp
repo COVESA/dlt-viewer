@@ -1778,7 +1778,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 
     /* show ECU configuration dialog */
     EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,
-                  false,true,false,true,false,false,true,true,5);
+                  false,true,false,true,false,false,true,true,true,5);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -1826,7 +1826,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         /* show ECU configuration dialog */
         EcuDialog dlg(ecuitem->id,ecuitem->description,ecuitem->interfacetype,ecuitem->getHostname(),ecuitem->getTcpport(),ecuitem->getPort(),ecuitem->getBaudrate(),
                       ecuitem->loglevel,ecuitem->tracestatus,ecuitem->verbosemode,ecuitem->getSendSerialHeaderTcp(),ecuitem->getSendSerialHeaderSerial(),ecuitem->getSyncSerialHeaderTcp(),ecuitem->getSyncSerialHeaderSerial(),
-                      ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->updateDataIfOnline,ecuitem->autoReconnect,ecuitem->autoReconnectTimeout);
+                      ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->sendDefaultLogLevel,ecuitem->updateDataIfOnline,ecuitem->autoReconnect,ecuitem->autoReconnectTimeout);
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -4320,9 +4320,13 @@ void MainWindow::tableViewValueChanged(int value)
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
     /* update default log level, trace status and timing packets */
-    controlMessage_SetDefaultLogLevel(ecuitem,ecuitem->loglevel);
-    controlMessage_SetDefaultTraceStatus(ecuitem,ecuitem->tracestatus);
-    controlMessage_SetVerboseMode(ecuitem,ecuitem->verbosemode);
+    if (ecuitem->sendDefaultLogLevel)
+    {
+        controlMessage_SetDefaultLogLevel(ecuitem,ecuitem->loglevel);
+        controlMessage_SetDefaultTraceStatus(ecuitem,ecuitem->tracestatus);
+        controlMessage_SetVerboseMode(ecuitem,ecuitem->verbosemode);
+    }
+
     controlMessage_SetTimingPackets(ecuitem,ecuitem->timingPackets);
 
     if (ecuitem->sendGetLogInfo)
