@@ -20,22 +20,13 @@
 #include "ecudialog.h"
 #include "ui_ecudialog.h"
 #include "qextserialenumerator.h"
-EcuDialog::EcuDialog(QString id, QString description, int interface, QString hostname, unsigned int tcpport, QString port, BaudRateType baudrate,
-                     int loglevel, int tracestatus, int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial, bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
-                     bool timingPackets, bool sendGetLogInfo, bool sendDefaultLogLevel, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent) :
+EcuDialog::EcuDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EcuDialog)
 {
     ui->setupUi(this);
 
-    ui->idLineEdit->setText(id);
-    ui->descriptionLineEdit->setText(description);
-    ui->comboBoxInterface->setCurrentIndex(interface);
-    ui->comboBoxHostname->setEditText(hostname);
-    ui->lineEditTcpPort->setText(QString("%1").arg(tcpport));
-    ui->comboBoxPort->setEditText(port);
     ui->comboBoxPort->setEditable(true);
-    //ui->comboBoxBaudrate->setCurrentIndex(baudrate);
 
 #if defined(Q_OS_UNIX) || defined(qdoc)
     ui->comboBoxBaudrate->addItem(QLatin1String("50"), BAUD50 );                //POSIX ONLY
@@ -78,29 +69,46 @@ EcuDialog::EcuDialog(QString id, QString description, int interface, QString hos
     ui->comboBoxBaudrate->addItem(QLatin1String("38400"),  BAUD38400 );
     ui->comboBoxBaudrate->addItem(QLatin1String("57600"), BAUD57600 );
     ui->comboBoxBaudrate->addItem(QLatin1String("115200"), BAUD115200 );
+    ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
+
+}
+
+EcuDialog::~EcuDialog()
+{
+    delete ui;
+}
+
+void EcuDialog::setData(EcuItem &item)
+{
+    ui->idLineEdit->setText(item.id);
+    ui->descriptionLineEdit->setText(item.description);
+    ui->comboBoxInterface->setCurrentIndex(item.interfacetype);
+    ui->comboBoxHostname->setEditText(item.getHostname());
+    ui->lineEditTcpPort->setText(QString("%1").arg(item.getTcpport()));
+    ui->comboBoxPort->setEditText(item.getPort());
 
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
     for(int i=0; i<ui->comboBoxBaudrate->count(); i++){
-        if(baudrate == (BaudRateType)ui->comboBoxBaudrate->itemData(i).toInt())
+        if(item.getBaudrate() == (BaudRateType)ui->comboBoxBaudrate->itemData(i).toInt())
             ui->comboBoxBaudrate->setCurrentIndex(i);
     }
 
-    ui->loglevelComboBox->setCurrentIndex(loglevel);
-    ui->tracestatusComboBox->setCurrentIndex(tracestatus);
-    ui->comboBoxVerboseMode->setCurrentIndex(verbosemode);
-    ui->checkBoxSendSerialHeaderSerial->setCheckState(sendSerialHeaderSerial?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxSendSerialHeaderTcp->setCheckState(sendSerialHeaderTcp?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxSyncToSerialHeaderSerial->setCheckState(syncSerialHeaderSerial?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxSyncToSerialHeaderTcp->setCheckState(syncSerialHeaderTcp?Qt::Checked:Qt::Unchecked);   
-    ui->checkBoxTiming->setCheckState(timingPackets?Qt::Checked:Qt::Unchecked);
+    ui->loglevelComboBox->setCurrentIndex(item.loglevel);
+    ui->tracestatusComboBox->setCurrentIndex(item.tracestatus);
+    ui->comboBoxVerboseMode->setCurrentIndex(item.verbosemode);
+    ui->checkBoxSendSerialHeaderSerial->setCheckState(item.getSendSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSendSerialHeaderTcp->setCheckState(item.getSendSerialHeaderTcp()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSyncToSerialHeaderSerial->setCheckState(item.getSyncSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSyncToSerialHeaderTcp->setCheckState(item.getSyncSerialHeaderTcp()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxTiming->setCheckState(item.timingPackets?Qt::Checked:Qt::Unchecked);
 
-    ui->checkBoxGetLogInfo->setCheckState(sendGetLogInfo?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxDefaultLogLevel->setCheckState(sendDefaultLogLevel?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxGetLogInfo->setCheckState(item.sendGetLogInfo?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxDefaultLogLevel->setCheckState(item.sendDefaultLogLevel?Qt::Checked:Qt::Unchecked);
 
-    ui->checkBoxUpdate->setCheckState(update?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxUpdate->setCheckState(item.updateDataIfOnline?Qt::Checked:Qt::Unchecked);
 
-    ui->checkBoxAutoReconnect->setCheckState(autoReconnect?Qt::Checked:Qt::Unchecked);
-    ui->spinBoxAutoreconnect->setValue(autoReconnectTimeout);
+    ui->checkBoxAutoReconnect->setCheckState(item.autoReconnect?Qt::Checked:Qt::Unchecked);
+    ui->spinBoxAutoreconnect->setValue(item.autoReconnectTimeout);
 
     if (ui->comboBoxInterface->currentIndex() == 0)
       {
@@ -112,11 +120,6 @@ EcuDialog::EcuDialog(QString id, QString description, int interface, QString hos
         ui->tabWidget->setTabEnabled(2,true);
         ui->tabWidget->setTabEnabled(1,false);
       }
-}
-
-EcuDialog::~EcuDialog()
-{
-    delete ui;
 }
 
 void EcuDialog::changeEvent(QEvent *e)

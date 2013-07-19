@@ -35,39 +35,40 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,ecu_type)
 {
     /* initialise receive buffer and message*/
+    id = "ECU";
+    description = "A new ECU";
+    interfacetype = 0; /* default TCP */
+    hostname = "localhost";
+    tcpport = DLT_DAEMON_TCP_PORT;
+    baudrate = BAUD115200; /* default 115200 */
+    loglevel = DLT_LOG_INFO;
+    tracestatus = DLT_TRACE_STATUS_OFF;
+    verbosemode = 1;
+    sendSerialHeaderTcp = false;
+    sendSerialHeaderSerial = true;
+    syncSerialHeaderTcp = false;
+    syncSerialHeaderSerial = true;
+    timingPackets = false;
+    sendGetLogInfo = false;
+    sendDefaultLogLevel = true;
+    updateDataIfOnline = true;
+    autoReconnect = true;
+    autoReconnectTimeout = 5;
+
     totalBytesRcvd = 0;
     totalBytesRcvdLastTimeout = 0;
 
     tryToConnect = 0;
     connected = 0;
 
-    interfacetype = 0; /* default TCP */
-    loglevel = DLT_LOG_INFO;
-    tracestatus = DLT_TRACE_STATUS_OFF;
-    verbosemode = 1;
     status = EcuItem::unknown;
 
-    this->sendSerialHeaderTcp = false;
-
-    baudrate = BAUD115200; /* default 115200 */
-    sendSerialHeaderSerial = true;
-
     m_serialport = 0;
-
-    tcpport = DLT_DAEMON_TCP_PORT;
 
     /* Limit size of socket receiption buffer to limit application buffer size */
     /* qt sets buffer normally to unlimited */
     //socket.setReadBufferSize(64000);
 
-    timingPackets = false;
-
-    sendGetLogInfo = false;
-    sendDefaultLogLevel = true;
-
-    updateDataIfOnline = false;
-
-    autoReconnect = true;
     autoReconnectTimestamp = QDateTime::currentDateTime();
 }
 

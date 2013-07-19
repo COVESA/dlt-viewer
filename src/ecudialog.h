@@ -30,10 +30,10 @@ namespace Ui {
 class EcuDialog : public QDialog {
     Q_OBJECT
 public:
-    EcuDialog(QString id,QString description,int interfacetype,QString hostname,unsigned int tcpport,QString port,BaudRateType baudrate,
-              int loglevel, int tracestatus, int verbosemode, bool sendSerialHeaderTcp, bool sendSerialHeaderSerial,bool syncSerialHeaderTcp, bool syncSerialHeaderSerial,
-              bool timingPackets, bool sendGetLogInfo, bool sendDefaultLogLevel, bool update, bool autoReconnect, int autoReconnectTimeout, QWidget *parent = 0);
+    EcuDialog(QWidget *parent = 0);
     ~EcuDialog();
+
+    void setData(EcuItem &item);
 
     QString id();
     QString description();

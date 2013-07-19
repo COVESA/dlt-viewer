@@ -228,6 +228,7 @@ private:
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
+    void contextLoadingFile(QDltMsg &msg);
     void applyPlugins(QList<QDltPlugin *> activeViewerPlugins, QList<QDltPlugin *> activeDecoderPlugins);
     void applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins);
 
@@ -258,6 +259,7 @@ private:
 
     bool openDltFile(QString fileName);
     bool openDlpFile(QString filename);
+    bool openDlfFile(QString filename, bool replace);
 
     void commandLineConvertToASCII();
     void commandLineExecutePlugin(QString name, QString cmd, QStringList params);
@@ -298,7 +300,6 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
-    void on_tableView_clicked(QModelIndex index);
     void on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
     void on_tableView_customContextMenuRequested(QPoint pos);

@@ -1305,6 +1305,47 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     outputfileIsFromCLI = false;
     return;
 }
+
+void MainWindow::contextLoadingFile(QDltMsg &msg)
+{
+    /* analyse message, check if DLT control message response */
+    if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
+    {
+        /* find ecu item */
+        EcuItem *ecuitemFound = 0;
+        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+        {
+            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+            if(ecuitem->id == msg.getEcuid())
+            {
+                ecuitemFound = ecuitem;
+                break;
+            }
+        }
+
+        if(!ecuitemFound)
+        {
+            /* no Ecuitem found, create a new one */
+            ecuitemFound = new EcuItem(0);
+
+            /* update ECU item */
+            ecuitemFound->id = msg.getEcuid();
+            ecuitemFound->update();
+
+            /* add ECU to configuration */
+            project.ecu->addTopLevelItem(ecuitemFound);
+
+            /* Update the ECU list in control plugins */
+            updatePluginsECUList();
+
+            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline);
+
+        }
+
+        controlMessage_ReceiveControlMessage(ecuitemFound,msg);
+    }
+}
+
 void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins)
 {
     QDltMsg msg;
@@ -1348,42 +1389,7 @@ void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDlt
         /* update context configuration when loading file */
         if(settings->updateContextLoadingFile)
         {
-            /* analyse message, check if DLT control message response */
-            if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
-            {
-                /* find ecu item */
-                EcuItem *ecuitemFound = 0;
-                for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-                {
-                    EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-                    if(ecuitem->id == msg.getEcuid())
-                    {
-                        ecuitemFound = ecuitem;
-                        break;
-                    }
-                }
-
-                if(!ecuitemFound)
-                {
-                    /* no Ecuitem found, create a new one */
-                    ecuitemFound = new EcuItem(0);
-
-                    /* update ECU item */
-                    ecuitemFound->id = msg.getEcuid();
-                    ecuitemFound->update();
-
-                    /* add ECU to configuration */
-                    project.ecu->addTopLevelItem(ecuitemFound);
-
-                    /* Update the ECU list in control plugins */
-                    updatePluginsECUList();
-
-                    pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline);
-
-                }
-
-                controlMessage_ReceiveControlMessage(ecuitemFound,msg);
-            }
+            contextLoadingFile(msg);
         }
 
         /* Update progress every 0.5% */
@@ -1677,6 +1683,19 @@ bool MainWindow::anyFiltersEnabled()
     return foundEnabledFilter;
 }
 
+bool MainWindow::openDlfFile(QString fileName,bool replace)
+{
+    if(!fileName.isEmpty() && project.LoadFilter(fileName,replace))
+    {
+        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
+        setCurrentFilters(fileName);
+        applyConfigEnabled(true);
+        on_filterWidget_itemSelectionChanged();
+        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+    }
+    return true;
+}
+
 bool MainWindow::openDlpFile(QString fileName)
 {
     /* Open existing project */
@@ -1777,8 +1796,9 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     QStringList portListPreset = getSerialPortsWithQextEnumerator();
 
     /* show ECU configuration dialog */
-    EcuDialog dlg("ECU","A new ECU",0,"localhost",DLT_DAEMON_TCP_PORT,"COM0",BAUD115200,DLT_LOG_INFO,DLT_TRACE_STATUS_OFF,1,
-                  false,true,false,true,false,false,true,true,true,5);
+    EcuDialog dlg;
+    EcuItem initItem;
+    dlg.setData(initItem);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -1824,9 +1844,8 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
         /* show ECU configuration dialog */
-        EcuDialog dlg(ecuitem->id,ecuitem->description,ecuitem->interfacetype,ecuitem->getHostname(),ecuitem->getTcpport(),ecuitem->getPort(),ecuitem->getBaudrate(),
-                      ecuitem->loglevel,ecuitem->tracestatus,ecuitem->verbosemode,ecuitem->getSendSerialHeaderTcp(),ecuitem->getSendSerialHeaderSerial(),ecuitem->getSyncSerialHeaderTcp(),ecuitem->getSyncSerialHeaderSerial(),
-                      ecuitem->timingPackets,ecuitem->sendGetLogInfo,ecuitem->sendDefaultLogLevel,ecuitem->updateDataIfOnline,ecuitem->autoReconnect,ecuitem->autoReconnectTimeout);
+        EcuDialog dlg;
+        dlg.setData(*ecuitem);
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
@@ -2976,46 +2995,41 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
 {
     if(selected.size()>0)
     {
-        on_tableView_clicked(selected[0].topLeft());
+        QModelIndex index =  selected[0].topLeft();
+        QDltPlugin *item = 0;
+        QList<QDltPlugin*> activeViewerPlugins;
+        QList<QDltPlugin*> activeDecoderPlugins;
+        QDltMsg msg;
+        int msgIndex;
+
+        msgIndex = qfile.getMsgFilterPos(index.row());
+        msg.setMsg(qfile.getMsgFilter(index.row()));
+        activeViewerPlugins = pluginManager.getViewerPlugins();
+        activeDecoderPlugins = pluginManager.getDecoderPlugins();
+
+        qDebug() << "Message at row" << index.row() << "at index" << msgIndex << "selected.";
+        qDebug() << "Viewer plugins" << activeViewerPlugins.size() << "decoder plugins" << activeDecoderPlugins.size() ;
+
+        if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
+        {
+            return;
+        }
+
+        // Update plugins
+        for(int i = 0; i < activeViewerPlugins.size() ; i++)
+        {
+            item = (QDltPlugin*)activeViewerPlugins.at(i);
+            item->selectedIdxMsg(msgIndex,msg);
+
+        }
+
+        pluginManager.decodeMsg(msg,1);
+
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = (QDltPlugin*)activeViewerPlugins.at(i);
+            item->selectedIdxMsgDecoded(msgIndex,msg);
+        }
     }
-}
-
-void MainWindow::on_tableView_clicked(QModelIndex index)
-{
-    QDltPlugin *item = 0;
-    QList<QDltPlugin*> activeViewerPlugins;
-    QList<QDltPlugin*> activeDecoderPlugins;
-    QDltMsg msg;
-    int msgIndex;
-
-    msgIndex = qfile.getMsgFilterPos(index.row());
-    msg.setMsg(qfile.getMsgFilter(index.row()));
-    activeViewerPlugins = pluginManager.getViewerPlugins();
-    activeDecoderPlugins = pluginManager.getDecoderPlugins();
-
-    qDebug() << "Message at row" << index.row() << "at index" << msgIndex << "selected.";
-    qDebug() << "Viewer plugins" << activeViewerPlugins.size() << "decoder plugins" << activeDecoderPlugins.size() ;
-
-    if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
-    {
-        return;
-    }
-
-    // Update plugins
-    for(int i = 0; i < activeViewerPlugins.size() ; i++)
-    {
-        item = (QDltPlugin*)activeViewerPlugins.at(i);
-        item->selectedIdxMsg(msgIndex,msg);
-
-    }
-
-    pluginManager.decodeMsg(msg,1);
-
-    for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = (QDltPlugin*)activeViewerPlugins.at(i);
-        item->selectedIdxMsgDecoded(msgIndex,msg);
-    }
-
 }
 
 void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg &msg)
@@ -4216,13 +4230,7 @@ void MainWindow::openRecentFilters()
     {
         fileName = action->data().toString();
 
-        if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
-        {
-            workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-            setCurrentFilters(fileName);
-            applyConfigEnabled(true);
-            ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-        }
+        openDlfFile(fileName,true);
     }
 }
 
@@ -4817,14 +4825,7 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
-    if(!fileName.isEmpty() && project.LoadFilter(fileName,true))
-    {
-        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-        setCurrentFilters(fileName);
-        applyConfigEnabled(true);
-        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-        on_filterWidget_itemSelectionChanged();
-    }
+    openDlfFile(fileName,true);
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
@@ -5162,14 +5163,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         else if(filename.endsWith(".dlf", Qt::CaseInsensitive))
         {
             /* Filter file dropped */
-            if(project.LoadFilter(filename,true))
-            {
-                workingDirectory.setDlfDirectory(QFileInfo(filename).absolutePath());
-                setCurrentFilters(filename);
-                applyConfigEnabled(true);
-                on_filterWidget_itemSelectionChanged();
-                ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-            }
+            openDlfFile(filename,true);
         }
         else
         {
@@ -5179,6 +5173,15 @@ void MainWindow::dropEvent(QDropEvent *event)
             for(int num=0;num<list.size();num++)
             {
                 items << list[num]->getName();
+            }
+
+            /* check if decoder plugin list is empty */
+            if(list.size()==0)
+            {
+                /* show warning */
+                QMessageBox::warning(this, QString("Drag&Drop"),
+                                     QString("No decoder plugin active to load configuration of file:\n")+filename);
+                return;
             }
 
             bool ok;
@@ -5279,14 +5282,7 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
-    if(!fileName.isEmpty() && project.LoadFilter(fileName,false))
-    {
-        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-        setCurrentFilters(fileName);
-        applyConfigEnabled(true);
-        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-        on_filterWidget_itemSelectionChanged();
-    }
+    openDlfFile(fileName,false);
 }
 
 int MainWindow::nearest_line(int line){

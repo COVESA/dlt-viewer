@@ -72,6 +72,8 @@ public:
 
 private:
 
+    QString stringToHtml(QString str);
+
     QDltFile *dltFile;
     QString errorText;
 

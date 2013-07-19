@@ -70,10 +70,7 @@ QWidget* DltViewerPlugin::initViewer() {
 
 void DltViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
     /* Show Decoded output */
-    QString payloadText = msg.toStringPayload(); /* text output */
-    payloadText = payloadText.replace("<","&#60;");
-    payloadText = payloadText.replace(">","&#62;");
-    form->setTextBrowserMessage(msg.toStringHeader()+"<br><br>"+payloadText);
+    form->setTextBrowserMessage(msg.toStringHeader()+"<br><br>"+stringToHtml(msg.toStringPayload()));
 }
 
 void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
@@ -84,10 +81,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     //    return;
 
     /* Show Payload*/
-    QString payloadText = msg.toStringPayload(); /* text output */
-    payloadText = payloadText.replace("<","&#60;");
-    payloadText = payloadText.replace(">","&#62;");
-    form->setTextBrowserUncoded(msg.toStringHeader()+"<br><br>"+payloadText);
+    form->setTextBrowserUncoded(msg.toStringHeader()+"<br><br>"+stringToHtml(msg.toStringPayload()));
 
     /* Show details */
     text = QString("<html><body>");
@@ -139,10 +133,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
                 // Necessary to display < and > as characters in a HTML context.
                 // Otherwise < and > would be handled as HTML tags and not the complete payload would be displayed.
-                QString payloadText = argument.toString(); /* text output */
-                payloadText = payloadText.replace("<","&#60;");
-                payloadText = payloadText.replace(">","&#62;");
-                text += payloadText;
+                text += stringToHtml(argument.toString());
                 text += QString("</td>");
                 text += QString("<td>");
                 text += argument.toString(true); /* Binary output */
@@ -344,6 +335,15 @@ void DltViewerPlugin::printStatistics() {
 
     form->setTextBrowserStatistics(text);
 }
+
+QString DltViewerPlugin::stringToHtml(QString str)
+{
+    str = str.replace("<","&#60;");
+    str = str.replace(">","&#62;");
+
+    return str;
+}
+
 
 #ifndef QT5
 Q_EXPORT_PLUGIN2(dltviewerplugin, DltViewerPlugin);
