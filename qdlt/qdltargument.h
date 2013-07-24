@@ -53,7 +53,7 @@ public:
     ~QDltArgument();
 
     //! The type definition of a DLT message argument.
-    typedef enum { DltTypeInfoUnknown = -2, DltTypeInfoStrg = 0,DltTypeInfoBool,DltTypeInfoSInt,DltTypeInfoUInt, DltTypeInfoFloa, DltTypeInfoRawd, DltTypeInfoTrai } DltTypeInfoDef;
+    typedef enum { DltTypeInfoUnknown = -2, DltTypeInfoStrg = 0,DltTypeInfoBool,DltTypeInfoSInt,DltTypeInfoUInt, DltTypeInfoFloa, DltTypeInfoRawd, DltTypeInfoTrai, DltTypeInfoUtf8  } DltTypeInfoDef;
 
     //! Get the byte offset of the parameter starting in the payload.
     /*!

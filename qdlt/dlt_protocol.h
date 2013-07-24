@@ -153,14 +153,14 @@
 #define DLT_TYPE_INFO_STRU	0x00004000 /**< Struct */
 #define DLT_TYPE_INFO_SCOD	0x00038000 /**< coding of the type string: 0 = ASCII, 1 = UTF-8 */
 
-#define DLT_TYLE_8BIT		1
-#define DLT_TYLE_16BIT		2
-#define DLT_TYLE_32BIT		3
-#define DLT_TYLE_64BIT		4
-#define DLT_TYLE_128BIT		5
+#define DLT_TYLE_8BIT		0x00000001
+#define DLT_TYLE_16BIT		0x00000002
+#define DLT_TYLE_32BIT		0x00000003
+#define DLT_TYLE_64BIT		0x00000004
+#define DLT_TYLE_128BIT		0x00000005
 
-#define DLT_SCOD_ASCII      0
-#define DLT_SCOD_UTF8       1
+#define DLT_SCOD_ASCII      0x00000000
+#define DLT_SCOD_UTF8       0x00008000
 
 /*
  * Definitions of DLT services.

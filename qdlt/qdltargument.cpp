@@ -102,7 +102,14 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
 
     if (dltType& DLT_TYPE_INFO_STRG)
     {
-        typeInfo = DltTypeInfoStrg;
+        if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_UTF8)
+        {
+            typeInfo = DltTypeInfoUtf8;
+        }
+        else
+        {
+            typeInfo = DltTypeInfoStrg;
+        }
     }
     else if (dltType & DLT_TYPE_INFO_BOOL)
     {
@@ -135,7 +142,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     }
 
     /* get length of string, raw data or trace info */
-    if(typeInfo == DltTypeInfoStrg || typeInfo == DltTypeInfoRawd || typeInfo == DltTypeInfoTrai)
+    if(typeInfo == DltTypeInfoStrg || typeInfo == DltTypeInfoRawd || typeInfo == DltTypeInfoTrai || typeInfo == DltTypeInfoUtf8)
     {
         if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
             return false;
@@ -184,7 +191,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     }
 
     /* get data */
-    if(typeInfo == DltTypeInfoStrg || typeInfo == DltTypeInfoRawd || typeInfo == DltTypeInfoTrai)
+    if(typeInfo == DltTypeInfoStrg || typeInfo == DltTypeInfoRawd || typeInfo == DltTypeInfoTrai || typeInfo == DltTypeInfoUtf8)
     {
         if((unsigned int)payload.size()<(offset+length))
             return false;
@@ -293,6 +300,11 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
             return false;
         case DltTypeInfoStrg:
             dltType |= DLT_TYPE_INFO_STRG;
+            dltType |= DLT_SCOD_ASCII;
+            break;
+        case DltTypeInfoUtf8:
+            dltType |= DLT_TYPE_INFO_STRG;
+            dltType |= DLT_SCOD_UTF8;
             break;
         case DltTypeInfoBool:
             dltType |= DLT_TYPE_INFO_BOOL;
@@ -341,7 +353,7 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
     }
 
     /* add the string or raw data size to the payload */
-    if((typeInfo == DLT_TYPE_INFO_RAWD) || (typeInfo == DLT_TYPE_INFO_STRG)) {
+    if((typeInfo & DLT_TYPE_INFO_RAWD) || (typeInfo & DLT_TYPE_INFO_STRG)) {
         payload += QByteArray((const char*)&dltType,sizeof(unsigned int));
     }
 
@@ -378,6 +390,11 @@ QString QDltArgument::toString(bool binary)
     case DltTypeInfoStrg:
         if(data.size()) {
             text += QString("%1").arg(QString(getData()));
+        }
+        break;
+    case DltTypeInfoUtf8:
+        if(data.size()) {
+            text += QString::fromUtf8(data.data());
         }
         break;
     case DltTypeInfoBool:
@@ -495,6 +512,11 @@ QVariant QDltArgument::getValue()
     case DltTypeInfoStrg:
         if(data.size()) {
             return QVariant(QString(getData()));
+        }
+        break;
+    case DltTypeInfoUtf8:
+        if(data.size()) {
+            return QVariant(QString::fromUtf8(data.data()));
         }
         break;
     case DltTypeInfoBool:

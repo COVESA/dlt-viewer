@@ -194,7 +194,7 @@ bool NonverbosePlugin::loadConfig(QString filename)
                       else if (text == "S_STRG_UTF8")
                       {
                           //pdu->typeInfo = DLT_TYPE_INFO_STRG | DLT_SCOD_UTF8;
-                          pdu->typeInfo = QDltArgument::DltTypeInfoStrg;
+                          pdu->typeInfo = QDltArgument::DltTypeInfoUtf8;
                       }
                       else if (text == "S_RAWD" || text == "S_RAW")
                       {
@@ -510,7 +510,7 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
                 argument.setEndianness(msg.getEndianness());
                 argument.setOffsetPayload(offset);
 
-                if( (pdu->typeInfo == QDltArgument::DltTypeInfoStrg) || (pdu->typeInfo == QDltArgument::DltTypeInfoRawd))
+                if( (pdu->typeInfo == QDltArgument::DltTypeInfoStrg) || (pdu->typeInfo == QDltArgument::DltTypeInfoRawd) || (pdu->typeInfo == QDltArgument::DltTypeInfoUtf8))
                 {
                     if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
                         break;

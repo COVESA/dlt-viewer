@@ -72,7 +72,9 @@ HEADERS += qdlt.h \
     qdltdefaultfilter.h \
     plugininterface.h \
     qdltpluginmanager.h \
-    qdltplugin.h
+    qdltplugin.h \
+    dlt_types.h \
+    dlt_protocol.h
 
 unix:VERSION            = 1.0.0
 
