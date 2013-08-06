@@ -200,6 +200,8 @@ void SettingsDialog::writeDlg()
     ui->lineEditPluginsPath->setText(pluginsPathName);
     ui->checkBoxDefaultFilterPath->setCheckState(defaultFilterPath?Qt::Checked:Qt::Unchecked);
     ui->lineEditDefaultFilterPath->setText(defaultFilterPathName);
+    ui->checkBoxPluginsAutoload->setCheckState(pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
+    ui->lineEditPluginsAutoload->setText(pluginsAutoloadPathName);
     ui->checkBoxAutoConnect->setCheckState(autoConnect?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
@@ -315,6 +317,8 @@ void SettingsDialog::readDlg()
     pluginsPathName = ui->lineEditPluginsPath->text();
     defaultFilterPath = (ui->checkBoxDefaultFilterPath->checkState() == Qt::Checked);
     defaultFilterPathName = ui->lineEditDefaultFilterPath->text();
+    pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
+    pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
     autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
     autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
@@ -383,6 +387,8 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/pluginsPathName",pluginsPathName);
     settings->setValue("startup/defaultFilterPath",defaultFilterPath);
     settings->setValue("startup/defaultFilterPathName",defaultFilterPathName);
+    settings->setValue("startup/pluginsAutoloadPath",pluginsAutoloadPath);
+    settings->setValue("startup/pluginsAutoloadPathName",pluginsAutoloadPathName);
     settings->setValue("startup/autoConnect",autoConnect);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
@@ -438,9 +444,11 @@ void SettingsDialog::readSettings()
     defaultLogFile = settings->value("startup/defaultLogFile",0).toInt();
     defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
     pluginsPath = settings->value("startup/pluginsPath",0).toInt();
-    pluginsPathName = settings->value("startup/pluginsPathName",QDir().currentPath()).toString();
+    pluginsPathName = settings->value("startup/pluginsPathName",QString("")).toString();
     defaultFilterPath = settings->value("startup/defaultFilterPath",0).toInt();
-    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir().currentPath()).toString();
+    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QString("")).toString();
+    pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
+    pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
@@ -565,6 +573,20 @@ void SettingsDialog::on_toolButtonTempPath_clicked()
     tempOwnPath = QFileInfo(fileName).absolutePath();
 
     ui->lineEditOwnTemp->setText(fileName);
+}
+
+void SettingsDialog::on_toolButtonPluginsAutoload_clicked()
+{
+    QString fileName = QFileDialog::getExistingDirectory(this,
+        tr("Plugins configuration directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change current working directory */
+    pluginsAutoloadPathName = QFileInfo(fileName).absolutePath();
+
+    ui->lineEditPluginsAutoload->setText(fileName);
 }
 
 void SettingsDialog::on_groupBoxConId_clicked(bool checked)

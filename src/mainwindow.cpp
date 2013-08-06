@@ -256,10 +256,12 @@ void MainWindow::initView()
     totalByteErrorsRcvd = 0;
     totalSyncFoundRcvd = 0;
     statusFilename = new QLabel("no log file loaded");
+    statusFileVersion = new QLabel("Version: <unknown>");
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
     statusSyncFoundReceived = new QLabel("Sync found: 0");
     statusBar()->addWidget(statusFilename);
+    statusBar()->addWidget(statusFileVersion);
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
@@ -1363,6 +1365,17 @@ void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDlt
             continue;
         }
 
+        /* check if it is a version messages and
+           version string not already parsed */
+        if(msg.getType()==QDltMsg::DltTypeControl &&
+           msg.getSubtype()==QDltMsg::DltControlResponse &&
+           msg.getCtrlServiceId() == 0x13 &&
+           !autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+        {
+            versionString(msg);
+            autoloadPluginsVersionEcus.append(msg.getEcuid());
+        }
+
         /* Process all viewer plugins */
         for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
         {
@@ -1490,7 +1503,7 @@ void MainWindow::applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugin
     }
 }
 
-void MainWindow::reloadLogFile()
+void MainWindow::reloadLogFile(bool update)
 {
     QList<QDltPlugin*> activeViewerPlugins;
     QList<QDltPlugin*> activeDecoderPlugins;
@@ -1506,6 +1519,14 @@ void MainWindow::reloadLogFile()
     /* Create the main index */
     ui->tableView->lock();
     dltIndexer->index();
+
+    /* clear autoload plugins ecu list */
+    if(!update)
+    {
+        autoloadPluginsVersionEcus.clear();
+        autoloadPluginsVersionStrings.clear();
+        statusFileVersion->setText("Version: <unknown>");
+    }
 
     /* Collect all plugins */
     if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
@@ -3046,6 +3067,16 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
     service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
 
+    /* check if plugin autoload enabled and
+     * it is a version message and
+       version string not already parsed */
+    if(service_id == 0x13 &&
+       !autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+    {
+        versionString(msg);
+        autoloadPluginsVersionEcus.append(msg.getEcuid());
+    }
+
     switch (service_id)
     {
     case DLT_SERVICE_ID_GET_LOG_INFO:
@@ -4553,6 +4584,62 @@ void MainWindow::updatePlugin(PluginItem *item) {
     }
 }
 
+void MainWindow::versionString(QDltMsg &msg)
+{
+    // get the version string from the version message
+    // Skip the ServiceID, Status and Length bytes and start from the String containing the ECU Software Version
+    QByteArray payload = msg.getPayload();
+    QByteArray data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
+    QString version = msg.toAscii(data,true);
+    version = version.trimmed(); // remove all white spaces at beginning and end
+    qDebug() << "AutoloadPlugins Version:" << version;
+    autoloadPluginsVersionStrings.append(version);
+    statusFileVersion->setText("Version: "+autoloadPluginsVersionStrings.join(" "));
+
+    if(settings->pluginsAutoloadPath)
+    {
+        // Iterate through all enabled decoder plugins
+        for(int num = 0; num < project.plugin->topLevelItemCount(); num++) {
+            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+
+            if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
+            {
+                QString searchPath = settings->pluginsAutoloadPathName+ "\\" + item->getName();
+
+                qDebug() << "AutoloadPlugins Search:" << searchPath;
+
+                // search for files in plugin directory which contains version string
+                QStringList nameFilter("*"+version+"*");
+                QDir directory(searchPath);
+                QStringList txtFilesAndDirectories = directory.entryList(nameFilter);
+                if(txtFilesAndDirectories.size()>1)
+                    txtFilesAndDirectories.sort(); // sort if several files are found
+
+                if(!txtFilesAndDirectories.isEmpty() )
+                {
+                    // file with version string found
+                    QString filename = searchPath + "\\" + txtFilesAndDirectories[0];
+
+                    // check if filename already loaded
+                    if(item->getFilename()!=filename)
+                    {
+                        qDebug() << "AutoloadPlugins Load:" << filename;
+
+                        // load new configuration
+                        item->setFilename(filename);
+                        item->getPlugin()->loadConfig(filename);
+                        item->update();
+                    }
+                    else
+                    {
+                        qDebug() << "AutoloadPlugins already loaded:" << filename;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void MainWindow::on_action_menuPlugin_Edit_triggered() {
     /* get selected plugin */
     bool callInitFile = false;
@@ -5400,7 +5487,7 @@ void MainWindow::on_applyConfig_clicked()
     applyConfigEnabled(false);
     saveSelection();
     filterUpdate();
-    reloadLogFile();
+    reloadLogFile(true);
     restoreSelection();
 }
 

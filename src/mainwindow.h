@@ -130,6 +130,7 @@ private:
 
     /* Status line items */
     QLabel *statusFilename;
+    QLabel *statusFileVersion;
     QLabel *statusBytesReceived;
     QLabel *statusByteErrorsReceived;
     QLabel *statusSyncFoundReceived;
@@ -161,6 +162,9 @@ private:
 
     QTableView *m_searchresultsTable;
 
+    /* Autoload plugins configuration */
+    QStringList autoloadPluginsVersionEcus;
+    QStringList autoloadPluginsVersionStrings;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
@@ -200,7 +204,12 @@ private:
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
-    void reloadLogFile();
+    /**
+        * @brief Reload the complete log file
+        * @param update if this parameter is false, the file is loaded the first time, if true the reload is performed because of a changed configuration
+        *
+        */
+    void reloadLogFile(bool update=false);
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file);
@@ -231,6 +240,7 @@ private:
     void contextLoadingFile(QDltMsg &msg);
     void applyPlugins(QList<QDltPlugin *> activeViewerPlugins, QList<QDltPlugin *> activeDecoderPlugins);
     void applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins);
+    void versionString(QDltMsg &msg);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
