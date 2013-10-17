@@ -472,10 +472,8 @@ void MainWindow::initFileHandling()
         this->setWindowState(Qt::WindowMinimized);
 }
 
-void MainWindow::commandLineConvertToASCII(){
-    QByteArray data;
-    QDltMsg msg;
-    QString text;
+void MainWindow::commandLineConvertToASCII()
+{
 
     qfile.enableFilter(true);
     openDltFile(OptManager::getInstance()->getConvertSourceFile());
@@ -483,36 +481,10 @@ void MainWindow::commandLineConvertToASCII(){
     outputfileIsTemporary = false;
 
     QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
-    if(!asciiFile.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        //Error output
-        exit(0);
-    }
 
-    for(int num = 0;num< qfile.sizeFilter();num++)
-    {
-
-        /* get message from log file */
-        data = qfile.getMsgFilter(num);
-        msg.setMsg(data);
-
-        /* decode message is necessary */
-        iterateDecodersForMsg(msg,1);
-
-        /* get message ASCII text */
-        text.clear();
-        text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
-        text += msg.toStringHeader();
-        text += " ";
-        text += msg.toStringPayload();
-        text += "\n";
-
-        /* write to file */
-        asciiFile.write(text.toLatin1().constData());
-
-    }
-
-    asciiFile.close();
+    /* start exporter */
+    DltExporter exporter;
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
 }
 
 void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
@@ -897,284 +869,108 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
 }
 
-void MainWindow::on_action_menuFile_Export_ASCII_triggered()
-{
-    QDltMsg msg;
-    QByteArray data;
-    QString text;
-    QString fileName = QFileDialog::getSaveFileName(this,
-        tr("Export to ASCII"), workingDirectory.getExportDirectory(), tr("ASCII Files (*.txt);;All files (*.*)"));
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change last export directory */
-    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-
-    QFile outfile(fileName);
-    if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
-
-    QProgressDialog fileprogress("Export to ASCII...", "Cancel", 0, qfile.sizeFilter(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
-    const int qsz = qfile.sizeFilter();
-    for(int num = 0;num< qsz;num++)
-    {
-        if( 0 == (num%1000))
-            fileprogress.setValue(num);
-
-        /* get message form log file */
-        data = qfile.getMsgFilter(num);
-        msg.setMsg(data);
-
-        /* decode message is necessary */
-        iterateDecodersForMsg(msg,1);
-
-        /* get message ASCII text */
-        text.clear();
-        text += QString("%1 ").arg(qfile.getMsgFilterPos(num));
-        text += msg.toStringHeader();
-        text += " ";
-        text += msg.toStringPayload();
-        text += "\n";
-
-        /* write to file */
-        outfile.write(text.toLatin1().constData());
-    }
-    outfile.close();
-}
-
-void MainWindow::on_action_menuFile_Export_Selection_triggered()
-{
-    exportSelection(false,true);
-}
-
-void MainWindow::on_action_menuFile_Export_Selection_ASCII_triggered()
-{
-    exportSelection(true,true);
-}
-
 void MainWindow::exportSelection(bool ascii = true,bool file = false)
 {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
-    qSort(list.begin(), list.end());
 
-    QDltMsg msg;
-    QByteArray data;
-    QString textExport;
-    QString text;
+    DltExporter exporter;
+    exporter.exportMessages(&qfile,0,&pluginManager,DltExporter::FormatClipboard,DltExporter::SelectionSelected,&list);
+}
 
-    if(list.count()<=0)
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("No messages selected"));
+void MainWindow::on_actionExport_triggered()
+{
+    /* export dialog */
+    exporterDialog.exec();
+    if(exporterDialog.result() != QDialog::Accepted)
         return;
-    }
 
-    QString fileName;
+    DltExporter::DltExportFormat exportFormat = exporterDialog.getFormat();
+    DltExporter::DltExportSelection exportSelection = exporterDialog.getSelection();
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
-    if(file)
+    /* check plausibility */
+    if(exportSelection == DltExporter::SelectionAll)
     {
-        if(ascii)
+        qDebug() << "DLT Export of all" << qfile.size() << "messages";
+        if(qfile.size() <= 0)
         {
-            fileName = QFileDialog::getSaveFileName(this,
-                tr("Export Selection"), workingDirectory.getExportDirectory(), tr("Text Files (*.txt)"));
-        }
-        else
-        {
-            fileName = QFileDialog::getSaveFileName(this,
-                tr("Export Selection"), workingDirectory.getExportDirectory(), tr("DLT Files (*.dlt)"));
-        }
-        if(fileName.isEmpty())
-        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export. Make sure you have a DLT file open."));
             return;
         }
-        else
+    }
+    else if(exportSelection == DltExporter::SelectionFiltered)
+    {
+        qDebug() << "DLT Export of filterd" << qfile.sizeFilter() << "messages";
+        if(qfile.sizeFilter() <= 0)
         {
-            /* change last export directory */
-            workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
+            return;
+        }
+    }
+    else if(exportSelection == DltExporter::SelectionSelected)
+    {
+        qDebug() << "DLT Export of selected" << list.count() << "messages";
+        if(list.count() <= 0)
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("No messages selected. Select something from the main view."));
+            return;
         }
     }
 
+    /* ask for filename */
+    QFileDialog dialog(this);
+    QStringList filters;
 
+    if(exportFormat == DltExporter::FormatDlt)
+    {
+        filters << "DLT Files (*.dlt)" <<"All files (*.*)";
+        dialog.setDefaultSuffix("dlt");
+        dialog.setWindowTitle("Export to DLT file");
+        qDebug() << "DLT Export to Dlt";
+    }
+    else if(exportFormat == DltExporter::FormatAscii)
+    {
+        filters << "Ascii Files (*.txt)" <<"All files (*.*)";
+        dialog.setDefaultSuffix("txt");
+        dialog.setWindowTitle("Export to Ascii file");
+        qDebug() << "DLT Export to Ascii";
+    }
+    else if(exportFormat == DltExporter::FormatCsv)
+    {
+        filters << "CSV Files (*.csv)" <<"All files (*.*)";
+        dialog.setDefaultSuffix("csv");
+        dialog.setWindowTitle("Export to CSV file");
+        qDebug() << "DLT Export to CSV";
+    }
+
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDirectory(workingDirectory.getExportDirectory());
+    dialog.setNameFilters(filters);
+    dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+    QString fileName = dialog.selectedFiles()[0];
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change last export directory */
+    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
+    DltExporter exporter(this);
     QFile outfile(fileName);
-    if(file)
-    {
-        if (ascii)
-        {
-            if(!outfile.open(QIODevice::WriteOnly | QIODevice::Text))
-                return;
-        }
-        else
-        {
-            if(!outfile.open(QIODevice::WriteOnly))
-                return;
-        }
-    }
 
-
-    QProgressDialog fileprogress("Export...", "Cancel", 0, list.count(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
-    for(int num=0; num < list.count();num++)
-    {
-        if(0 == num%1000)
-            fileprogress.setValue(num);
-
-        QModelIndex index = list[num];
-
-        /* get the message with the selected item id */
-        if(index.column()==0)
-        {
-            data = qfile.getMsgFilter(index.row());
-
-            if(ascii)
-            {
-                msg.setMsg(data);
-
-                /* decode message is necessary */
-                iterateDecodersForMsg(msg,1);
-
-                /* get message ASCII text */
-                text.clear();
-                text += QString("%1 ").arg(qfile.getMsgFilterPos(index.row()));
-                text += msg.toStringHeader();
-                text += " ";
-                text += msg.toStringPayload();
-                text += "\n";
-
-                if(file)
-                {
-                    // write to file
-                    outfile.write(text.toLatin1().constData());
-                }
-                else
-                {
-                    // write to clipboard
-                    textExport += text;
-                }
-            }
-            else
-            {
-                if(file)
-                {
-                    // write to file
-                    outfile.write(data);
-                }
-                else
-                {
-                    // write to clipboard
-                }
-            }
-        }
-    }
-
-    if(file)
-    {
-        outfile.close();
-    }
+    if(exportSelection == DltExporter::SelectionSelected)
+        exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection,&list);
     else
-    {
-        QClipboard *clipboard = QApplication::clipboard();
-        clipboard->setText(textExport);
-    }
+        exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection);
 
 }
-
-void MainWindow::on_action_menuFile_Export_CSV_triggered()
-{
-    if(qfile.sizeFilter() <= 0)
-    {
-        QMessageBox::critical(this, QString("DLT Viewer"),
-                              QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
-        return;
-    }
-
-    QFileDialog dialog(this);
-    QStringList filters;
-    filters << "CSV Files (*.csv)" <<"All files (*.*)";
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setDefaultSuffix("csv");
-    dialog.setDirectory(workingDirectory.getExportDirectory());
-    dialog.setNameFilters(filters);
-    dialog.setWindowTitle("Export to CSV file");
-    dialog.exec();
-    if(dialog.result() != QFileDialog::Accepted ||
-        dialog.selectedFiles().count() < 1)
-    {
-        return;
-    }
-
-
-
-
-    QString fileName = dialog.selectedFiles()[0];
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change last export directory */
-    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-    DltExporter exporter(this);
-    QFile outfile(fileName);
-    exporter.exportCSV(&qfile, &outfile, &pluginManager);
-}
-
-void MainWindow::on_action_menuFile_Export_Selection_CSV_triggered()
-{
-    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
-    if(qfile.sizeFilter() <= 0)
-    {
-        QMessageBox::critical(this, QString("DLT Viewer"),
-                              QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
-        return;
-    }
-
-    if(list.count() <= 0)
-    {
-        QMessageBox::critical(this, QString("DLT Viewer"),
-                              QString("No messages selected. Select something from the main view."));
-        return;
-    }
-
-    QFileDialog dialog(this);
-    QStringList filters;
-    filters << "CSV Files (*.csv)" <<"All files (*.*)";
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    dialog.setDefaultSuffix("csv");
-    dialog.setDirectory(workingDirectory.getExportDirectory());
-    dialog.setNameFilters(filters);
-    dialog.setWindowTitle("Export to CSV file");
-    dialog.exec();
-    if(dialog.result() != QFileDialog::Accepted ||
-        dialog.selectedFiles().count() < 1)
-    {
-        return;
-    }
-
-
-
-
-
-
-    QString fileName = dialog.selectedFiles()[0];
-
-    if(fileName.isEmpty())
-    {
-        return;
-    }
-
-    /* change last export directory */
-    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-
-    QFile outfile(fileName);
-    DltExporter exporter(this);
-    exporter.exportCSV(&qfile, &outfile, &pluginManager, &list);
-}
-
 
 void MainWindow::on_action_menuFile_SaveAs_triggered()
 {
@@ -5162,26 +4958,11 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
-    action = new QAction("&Export ASCII", this);
+    action = new QAction("&Export...", this);
     if(qfile.sizeFilter() <= 0)
         action->setEnabled(false);
     else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Export_ASCII_triggered()));
-
-    menu.addAction(action);
-
-    action = new QAction("Export Selection", this);
-    if(list.count() <= 0)
-        action->setEnabled(false);
-    else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Export_Selection_triggered()));
-    menu.addAction(action);
-
-    action = new QAction("Export Selection ASCII", this);
-    if(list.count() <= 0)
-        action->setEnabled(false);
-    else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFile_Export_Selection_ASCII_triggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionExport_triggered()));
     menu.addAction(action);
 
     menu.addSeparator();
@@ -5341,7 +5122,6 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
     }
 }
 
-
 void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
     pluginManager.decodeMsg(msg,1);
@@ -5356,8 +5136,6 @@ void MainWindow::on_action_menuConfig_Expand_All_ECUs_triggered()
 {
     ui->configWidget->expandAll();
 }
-
-
 
 void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 {

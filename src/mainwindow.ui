@@ -79,16 +79,6 @@
       <string>Recent files</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuExport">
-     <property name="title">
-      <string>Export</string>
-     </property>
-     <addaction name="action_menuFile_Export_Selection"/>
-     <addaction name="action_menuFile_Export_ASCII"/>
-     <addaction name="action_menuFile_Export_Selection_ASCII"/>
-     <addaction name="action_menuFile_Export_CSV"/>
-     <addaction name="action_menuFile_Export_Selection_CSV"/>
-    </widget>
     <addaction name="action_menuFile_New"/>
     <addaction name="action_menuFile_Open"/>
     <addaction name="action_menuFile_SaveAs"/>
@@ -100,7 +90,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="action_menuFile_Append_DLT_File"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
-    <addaction name="menuExport"/>
+    <addaction name="actionExport"/>
     <addaction name="separator"/>
     <addaction name="action_menuFile_Settings"/>
     <addaction name="separator"/>
@@ -1310,6 +1300,11 @@
    </property>
    <property name="text">
     <string>Refresh Multifilter Index</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export...</string>
    </property>
   </action>
  </widget>

@@ -11,14 +11,14 @@
 class DltExporter : public QObject
 {
     Q_OBJECT
+
+public:
+
+    typedef enum { FormatDlt,FormatAscii,FormatCsv,FormatClipboard } DltExportFormat;
+
+    typedef enum { SelectionAll,SelectionFiltered,SelectionSelected } DltExportSelection;
+
 private:
-    /* This is a re-implementation from MainWindow.
-     * Iterate through plugins and apply the first one.
-     * \param plugin TreeWidget from UI, containing all the plugins
-     * \param msg QDltMessage to feed to plugin and receive the result in
-     * \param triggeredByUser If this was triggered by user or framework
-     */
-    void iterateDecodersForMsg(QTreeWidget *plugins, QDltMsg &msg, int triggeredByUser);
 
     /* Add double quotes to a value.
      * Also escape any exiting double quotes with another double quote.
@@ -40,24 +40,10 @@ private:
      */
     void writeCSVLine(int index, QFile *to, QDltMsg msg);
 
-    /* Check that the parameters are valid, opens the file, and writes the header.
-     * \param from QDltFile to pull messages from
-     * \param to Regular file to export to
-     * \param plugins The treewidget representing plugins. Needed to run decoders.
-     * \param limit Limit export to these messages. Leave to NULL to export everything
-     * \return true if everything is ok. False if some parameters are unacceptable.
-     * \sa exportCSV
-     */
-    bool prepareCSVExport(QDltFile *from, QFile *to, QModelIndexList *selection = NULL);
-
-    /* Fill a message with data from QDltFile.
-     * \param file QDltFile to get the message from
-     * \param msg QDltMsg where to put the result
-     * \param which Index to retrieve. Either of selection or complete file
-     * \param selection Selection, if any, to get index from. Pass null to use direct index.
-     * \return True index of retrieved msg in file. -1 if there was no data to retrieve. Not necessarily an error.
-     */
-    int getMsg(QDltFile *file, QDltMsg &msg, int which, QModelIndexList *selection);
+    bool start();
+    bool finish();
+    bool getMsg(int num, QDltMsg &msg, QByteArray &buf);
+    bool exportMsg(int num, QDltMsg &msg,QByteArray &buf);
 
 public:
 
@@ -69,15 +55,29 @@ public:
     /* Export some messages from QDltFile to a CSV file.
      * \param from QDltFile to pull messages from
      * \param to Regular file to export to
-     * \param plugins The treewidget representing plugins. Needed to run decoders.
-     * \param limit Limit export to these messages. Leave to NULL to export everything
+     * \param pluginManager The treewidget representing plugins. Needed to run decoders.
+     * \param exportFormat
+     * \param exportSelection
+     * \param selection Limit export to these messages. Leave to NULL to export everything,
      */
-    void exportCSV(QDltFile *from, QFile *to, QDltPluginManager *pluginManager, QModelIndexList *selection = NULL);
+    void exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
+                             DltExporter::DltExportFormat exportFormat, DltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
+
 
 signals:
     
 public slots:
     
+private:
+    int size;
+    QDltFile *from;
+    QFile *to;
+    QString clipboardString;
+    QDltPluginManager *pluginManager;
+    QModelIndexList *selection;
+    QList<int> selectedRows;
+    DltExporter::DltExportFormat exportFormat;
+    DltExporter::DltExportSelection exportSelection;
 };
 
 #endif // DLTEXPORTER_H

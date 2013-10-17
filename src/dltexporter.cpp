@@ -1,5 +1,7 @@
 #include <QProgressDialog>
 #include <QMessageBox>
+#include <QApplication>
+#include <QClipboard>
 
 #include "dltexporter.h"
 #include "fieldnames.h"
@@ -56,118 +58,210 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     to->write(text.toLatin1().constData());
 }
 
-
-bool DltExporter::prepareCSVExport(QDltFile *from, QFile *to, QModelIndexList *selection)
+bool DltExporter::start()
 {
-    /* Check that we actually have input file */
-    if(from == NULL)
-    {
-        QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                              QString("Dlt file not present in DltExporter."));
-        return false;
-    }
-
-    /* If we have selection list. It must contain something */
-    if(selection != NULL && selection->count() <= 0)
-    {
-        QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                              QString("No messages selected."));
-        return false;
-    }
-
-    /* Sort the selection list. */
-    if(selection != NULL)
+    /* Sort the selection list and create Row list */
+    if(exportSelection == DltExporter::SelectionSelected && selection != NULL)
     {
         qSort(selection->begin(), selection->end());
+        selectedRows.clear();
+        for(int num=0;num<selection->count();num++)
+        {
+            QModelIndex index = selection->at(num);
+            if(index.column() == 0)
+                selectedRows.append(index.row());
+        }
     }
 
-    /* Try to open the export file */
-    if(!to->open(QIODevice::WriteOnly))
+    /* open the export file */
+    if(exportFormat == DltExporter::FormatAscii ||
+       exportFormat == DltExporter::FormatCsv)
     {
-        QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                              QString("Cannot open the export file."));
-        return false;
+        if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
+        {
+            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                                  QString("Cannot open the export file."));
+            return false;
+        }
+    }
+    else if(exportFormat == DltExporter::FormatDlt)
+    {
+        if(!to->open(QIODevice::WriteOnly))
+        {
+            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                                  QString("Cannot open the export file."));
+            return false;
+        }
     }
 
-    /* Write the first line of CSV file */
-    if(!writeCSVHeader(to))
+    /* write CSV header if CSV export */
+    if(exportFormat == DltExporter::FormatCsv)
     {
-        QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                              QString("Cannot write to export file."));
-        return false;
+        /* Write the first line of CSV file */
+        if(!writeCSVHeader(to))
+        {
+            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                                  QString("Cannot write to export file."));
+            return false;
+        }
     }
+
+    /* calculate size */
+    if(exportSelection == DltExporter::SelectionAll)
+        size = from->size();
+    else if(exportSelection == DltExporter::SelectionFiltered)
+        size = from->sizeFilter();
+    else if(exportSelection == DltExporter::SelectionSelected)
+        size = selectedRows.size();
+    else
+        return false;
+
+    /* success */
     return true;
 }
 
-int DltExporter::getMsg(QDltFile *file, QDltMsg &msg, int which, QModelIndexList *selection)
+bool DltExporter::finish()
 {
-    // Simply get directly from index if theres no selection
-    if(selection == NULL)
+
+    if(exportFormat == DltExporter::FormatAscii ||
+       exportFormat == DltExporter::FormatCsv ||
+       exportFormat == DltExporter::FormatDlt)
     {
-        return file->getMsg(which, msg) ? which : -1;
+        /* close outpur file */
+        to->close();
+    }
+    else if (exportFormat == DltExporter::FormatClipboard)
+    {
+        /* export to clipboard */
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(clipboardString);
     }
 
-    // Retrieve one index from model...
-    QModelIndex index = selection->at(which);
-
-    // On new row...
-    if(index.column() == 0)
-    {
-        // Get msg data from file that refers to this row
-        QByteArray data = file->getMsgFilter(index.row());
-        if(data.isEmpty())
-        {
-            return -1;
-        }
-        msg.setMsg(data);
-        return file->getMsgFilterPos(index.row());
-    }
-    else
-    {
-        return -1;
-    }
+    return true;
 }
 
-
-void DltExporter::exportCSV(QDltFile *from, QFile *to, QDltPluginManager *pluginManager, QModelIndexList *selection)
+bool DltExporter::getMsg(int num,QDltMsg &msg,QByteArray &buf)
 {
-    if(!prepareCSVExport(from, to, selection))
+    buf.clear();
+    if(exportSelection == DltExporter::SelectionAll)
+        buf = from->getMsg(num);
+    else if(exportSelection == DltExporter::SelectionFiltered)
+        buf = from->getMsgFilter(num);
+    else if(exportSelection == DltExporter::SelectionSelected)
+        buf = from->getMsgFilter(selectedRows[num]);
+    else
+        return false;
+    if(buf.isEmpty())
+        return false;
+    return msg.setMsg(buf);
+}
+
+bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
+{
+    if(exportFormat == DltExporter::FormatDlt)
+        to->write(buf);
+    else if(exportFormat == DltExporter::FormatAscii ||
+            exportFormat == DltExporter::FormatClipboard)
     {
+        QString text;
+
+        /* get message ASCII text */
+        if(exportSelection == DltExporter::SelectionAll)
+            text += QString("%1 ").arg(num);
+        else if(exportSelection == DltExporter::SelectionFiltered)
+            text += QString("%1 ").arg(from->getMsgFilterPos(num));
+        else if(exportSelection == DltExporter::SelectionSelected)
+            text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
+        else
+            return false;
+        text += msg.toStringHeader();
+        text += " ";
+        text += msg.toStringPayload();
+        text += "\n";
+
+        if(exportFormat == DltExporter::FormatAscii)
+            /* write to file */
+            to->write(text.toLatin1().constData());
+        else if(exportFormat == DltExporter::FormatClipboard)
+            clipboardString += text;
+    }
+    else if(exportFormat == DltExporter::FormatCsv)
+    {
+        if(exportSelection == DltExporter::SelectionAll)
+            writeCSVLine(num, to, msg);
+        else if(exportSelection == DltExporter::SelectionFiltered)
+            writeCSVLine(from->getMsgFilterPos(num), to, msg);
+        else if(exportSelection == DltExporter::SelectionSelected)
+            writeCSVLine(from->getMsgFilterPos(selectedRows[num]), to, msg);
+        else
+            return false;
+    }
+
+    return true;
+}
+
+void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
+                         DltExporter::DltExportFormat exportFormat, DltExporter::DltExportSelection exportSelection, QModelIndexList *selection)
+{
+    QDltMsg msg;
+    QByteArray buf;
+
+    /* initialise values */
+    this->size = 0;
+    this->from = from;
+    this->to = to;
+    clipboardString.clear();
+    this->pluginManager = pluginManager;
+    this->selection = selection;
+    this->exportFormat = exportFormat;
+    this->exportSelection = exportSelection;
+
+    /* start export */
+    if(!start())
+    {
+        qDebug() << "DLT Export start() failed";
         return;
     }
+    qDebug() << "DLT Export" << size << "messages";
 
-    int maxProgress = 0;
-    if(selection == NULL)
-    {
-        maxProgress = from->size();
-    }
-    else
-    {
-        maxProgress = selection->count();
-    }
-
-    QProgressDialog fileprogress("Export...", "Cancel", 0, maxProgress, qobject_cast<QWidget *>(parent()));
+    /* init fileprogress */
+    QProgressDialog fileprogress("Export...", "Cancel", 0, this->size, qobject_cast<QWidget *>(parent()));
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
 
-    QDltMsg currentMessage;
-
-    for(int i = 0; i < maxProgress;i++)
+    for(int num = 0;num<size;num++)
     {
         /* Update progress dialog every 1000 lines */
-        if( 0 == (i%1000))
+        if( 0 == (num%1000))
         {
-            fileprogress.setValue(i);
+            fileprogress.setValue(num);
         }
-        int msgIndex = getMsg(from, currentMessage, i, selection);
-        if(msgIndex < 0)
+
+        /* get message */
+        if(!getMsg(num,msg,buf))
         {
-            // Skip index if no data was retrieved
-            continue;
+            finish();
+            qDebug() << "DLT Export getMsg() failed";
+            return;
         }
-        pluginManager->decodeMsg(currentMessage,0);
-        writeCSVLine(msgIndex, to, currentMessage);
+
+        /* decode message if needed */
+        if(exportFormat != DltExporter::FormatDlt)
+            pluginManager->decodeMsg(msg,false);
+
+        /* export message */
+        if(!exportMsg(num,msg,buf))
+        {
+            finish();
+            qDebug() << "DLT Export exportMsg() failed";
+            return;
+        }
     }
-    to->close();
+
+    if(!finish())
+    {
+        qDebug() << "DLT Export finish() failed";
+        return;
+    }
 }

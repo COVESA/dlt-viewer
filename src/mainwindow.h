@@ -37,6 +37,7 @@
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
+#include "exporterdialog.h"
 
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
@@ -143,6 +144,8 @@ private:
     QShortcut *m_shortcut_searchnext;
     QShortcut *m_shortcut_searchprev;
 
+    /* Export */
+    ExporterDialog exporterDialog;
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settings;
@@ -330,17 +333,13 @@ private slots:
     void on_action_menuFile_New_triggered();
     void on_action_menuFile_SaveAs_triggered();
     void on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered();
-    void on_action_menuFile_Export_Selection_triggered();
     void on_action_menuFile_Append_DLT_File_triggered();
-    void on_action_menuFile_Export_Selection_ASCII_triggered();
-    void on_action_menuFile_Export_ASCII_triggered();
-    void on_action_menuFile_Export_CSV_triggered();
-    void on_action_menuFile_Export_Selection_CSV_triggered();
     void on_action_menuFile_Import_DLT_Stream_triggered();
     void on_action_menuFile_Quit_triggered();
     void on_action_menuFile_Settings_triggered();
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Open_triggered();
+    void on_actionExport_triggered();
 
     // Search methods
     void on_action_menuSearch_Find_triggered();

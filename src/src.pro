@@ -94,7 +94,8 @@ SOURCES += main.cpp \
     jumptodialog.cpp\
     searchtablemodel.cpp \
     pulsebutton.cpp \
-    plugintreewidget.cpp
+    plugintreewidget.cpp \
+    exporterdialog.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -123,7 +124,8 @@ HEADERS += mainwindow.h \
     jumptodialog.h \
     pulsebutton.h \
     searchtablemodel.h \
-    plugintreewidget.h
+    plugintreewidget.h \
+    exporterdialog.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \
@@ -136,7 +138,8 @@ FORMS += mainwindow.ui \
     injectiondialog.ui \
     searchdialog.ui \
     multiplecontextdialog.ui \
-    jumptodialog.ui
+    jumptodialog.ui \
+    exporterdialog.ui
 
 # Related files
 OTHER_FILES += ../ReleaseNotes_Viewer.txt \
