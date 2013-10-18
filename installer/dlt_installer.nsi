@@ -9,10 +9,10 @@
 !Define PRODUCT_NAME "DLTViewer"
 Name "${PRODUCT_NAME}"
 !Define EXE_NAME "dlt_viewer.exe"
-!Define PRODUCT_VERSION "2.10_RC-13215"
+!Define PRODUCT_VERSION "2.9.1"
 !Define VER_MAJOR 2
-!Define VER_MINOR 10
-!Define VER_REVISION 0
+!Define VER_MINOR 9
+!Define VER_REVISION 1
 !Define PRODUCT_SUPPORT_SITE \
     "http://dlt.bmwgroup.net"
 !Define PRODUCT_DIR_REGKEY \
@@ -188,6 +188,18 @@ Section "Documentation" secdoc
     SetOutPath $INSTDIR
     SetOverwrite on
     ${FileDir} $INSTDIR doc ${WORKING_DIR}
+SectionEnd
+
+;--------------------------------
+;Sqldrivers Section
+;--------------------------------
+Section "Sqldrivers" secsql
+    SetDetailsPrint listonly
+    SectionIn 1
+    SetShellVarContext all
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    ${FileDir} $INSTDIR sqldrivers ${WORKING_DIR}
 SectionEnd
 
 ;--------------------------------

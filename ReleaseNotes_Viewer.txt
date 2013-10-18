@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.10.0 BETA
+Version 2.9.1 STABLE
 
 Known issues
 ------------
@@ -16,7 +16,23 @@ Known issues
 
 Changes
 -------
-2.10.0 BETA
+
+2.9.1
+  * New centralized export functionality for DLT, ASCII and CSV.
+  * Implementation of autoloading plugins configuration.
+  * Fix: DLT Trace can't be copy pasted (non Verbose).
+  * Added sqldriver directory for installation. Needed for plugins using sqldriver.
+  * Bug 86 - DLT Viever 2.10.0 RC DLT_13265.
+  * Bug 84 - Adding utf8 support to dlt-daemon, dlt-viewer.
+  * DLT viewer should only send optional configuration when connecting to target
+  * Added context registration information to ECU structure also when loading DLT files.
+  * Enhancement of Send Injection Dialog
+  * Add support for Drag and Drop to plugin configuration.
+  * Drag and Drop now supports dlf filter files
+  * Fixed: DLT Viewer plugin will not update decoded views, if plugin enabled after loading log file
+  * Bug-11: DLT-viewer, plugin API: selectedIdxMsg() only triggered on mouse click
+  * Bug-4: DLT-Viewer - Message incomplete in DLT-Viewer-Plugin
+  * Plugin support moved to qdlt library
   * Multifilter support for fast indexing of multiple filters
   * Added icons for apply config again
   * Split up qdlt library for filters and filter index
@@ -40,8 +56,7 @@ Changes
   * Split up constructor in sub-functions to get better overview.
   * Search to List implemented.
   * Added Refresh Rate Setting for updating view after incoming messages.
-  * Change filter button to checkboxes and a "Apply changes"-button.
-
+  * Change filter button to checkboxes and a "Apply changes"-button
   * Fixed Disable Plugins not working in all use cases
   * Fixed Changing filters not shows last selected message again
   * Fixed lost selection of messages after disabling filter
