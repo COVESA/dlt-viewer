@@ -4,15 +4,22 @@ echo * Configuration         *
 echo *************************
 
 echo Setting up environment for Qt usage...
-set QTSDK=C:\Qt\4.8.2
-set QTDIR=C:\Qt\4.8.2
-set PATH=%QTDIR%\bin;%PATH%
-set PATH=C:\MinGW\bin;%PATH%
+
+set QTDIR=C:\Qt\Qt5.1.1\5.1.1\mingw48_32
+set MINGW_DIR=C:\Qt\Qt5.1.1\Tools\mingw48_32
+
+set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%
+set QTSDK=%QTDIR%
+
+echo *************************
+echo * QTDIR = %QTDIR%
+echo * MINGW_DIR = %MINGW_DIR%
+echo *************************
 
 echo Setting up environment for DLT Viewer SDK...
+
 set SDK_DIR=c:\DltViewerSDK
 set PWD=%~dp0
-set MINGW_DIR=C:\MinGW
 set SOURCE_DIR=%PWD%
 set BUILD_DIR=%PWD%build\release
 
@@ -29,7 +36,7 @@ echo *************************
 echo * Create SDK            *
 echo *************************
 
-ECHO Create directories
+echo Create directories
 mkdir %SDK_DIR%
 mkdir %SDK_DIR%\plugins
 mkdir %SDK_DIR%\plugins\examples
@@ -42,17 +49,22 @@ mkdir %SDK_DIR%\sdk\src\dummyviewerplugin
 mkdir %SDK_DIR%\sdk\src\dummycontrolplugin
 mkdir %SDK_DIR%\filters
 
-ECHO Copy files
-copy %MINGW_DIR%\bin\mingwm10.dll %SDK_DIR%
-copy %MINGW_DIR%\bin\libgcc_s_dw2-1.dll %SDK_DIR%
-copy "%MINGW_DIR%\bin\libstdc++-6.dll" %SDK_DIR%
-copy %QTDIR%\bin\QtCore4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtGui4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtNetwork4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtSql4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtSvg4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtXml4.dll %SDK_DIR%
-copy %QTDIR%\bin\QtOpenGL4.dll %SDK_DIR%
+echo Copy files
+copy %QTDIR%\bin\icuin51.dll %SDK_DIR%
+copy %QTDIR%\bin\icuuc51.dll %SDK_DIR%
+copy %QTDIR%\bin\icudt51.dll %SDK_DIR%
+copy %QTDIR%\bin\libwinpthread-1.dll %SDK_DIR%
+copy %QTDIR%\bin\libgcc_s_dw2-1.dll %SDK_DIR%
+copy "%QTDIR%\bin\libstdc++-6.dll" %SDK_DIR%
+copy %QTDIR%\bin\Qt5Core.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Gui.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Network.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Sql.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Svg.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Widgets.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5PrintSupport.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5Xml.dll %SDK_DIR%
+copy %QTDIR%\bin\Qt5OpenGL.dll %SDK_DIR%
 
 copy %BUILD_DIR%\dlt_viewer.exe %SDK_DIR%
 copy %BUILD_DIR%\qextserialport.dll %SDK_DIR%
