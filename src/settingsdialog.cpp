@@ -21,6 +21,8 @@
 #include <QFileDialog>
 #include <qmessagebox.h>
 #include <QDebug>
+#include <QFileInfo>
+#include <QDateTime>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
@@ -202,6 +204,9 @@ void SettingsDialog::writeDlg()
     ui->lineEditDefaultFilterPath->setText(defaultFilterPathName);
     ui->checkBoxPluginsAutoload->setCheckState(pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
     ui->lineEditPluginsAutoload->setText(pluginsAutoloadPathName);
+    ui->checkBoxFilterCache->setCheckState(filterCache?Qt::Checked:Qt::Unchecked);
+    ui->spinBoxIndexCacheDays->setValue(filterCacheDays);
+    ui->lineEditFilterCache->setText(filterCacheName);
     ui->checkBoxAutoConnect->setCheckState(autoConnect?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
@@ -319,6 +324,9 @@ void SettingsDialog::readDlg()
     defaultFilterPathName = ui->lineEditDefaultFilterPath->text();
     pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
     pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
+    filterCache = (ui->checkBoxFilterCache->checkState() == Qt::Checked);
+    filterCacheDays = ui->spinBoxIndexCacheDays->value();
+    filterCacheName = ui->lineEditFilterCache->text();
     autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
     autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
@@ -389,6 +397,9 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/defaultFilterPathName",defaultFilterPathName);
     settings->setValue("startup/pluginsAutoloadPath",pluginsAutoloadPath);
     settings->setValue("startup/pluginsAutoloadPathName",pluginsAutoloadPathName);
+    settings->setValue("startup/filterCache",filterCache);
+    settings->setValue("startup/filterCacheDays",filterCacheDays);
+    settings->setValue("startup/filterCacheName",filterCacheName);
     settings->setValue("startup/autoConnect",autoConnect);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
@@ -445,10 +456,13 @@ void SettingsDialog::readSettings()
     defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
     pluginsPath = settings->value("startup/pluginsPath",0).toInt();
     pluginsPathName = settings->value("startup/pluginsPathName",QString("")).toString();
-    defaultFilterPath = settings->value("startup/defaultFilterPath",0).toInt();
-    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QString("")).toString();
+    defaultFilterPath = settings->value("startup/defaultFilterPath",1).toInt();
+    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QCoreApplication::applicationDirPath()+"/filters").toString();
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
+    filterCache = settings->value("startup/filterCache",1).toInt();
+    filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
+    filterCacheName = settings->value("startup/filterCacheName",QCoreApplication::applicationDirPath()+"/cache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
@@ -589,6 +603,21 @@ void SettingsDialog::on_toolButtonPluginsAutoload_clicked()
     ui->lineEditPluginsAutoload->setText(fileName);
 }
 
+
+void SettingsDialog::on_toolButtonFilterCache_clicked()
+{
+    QString fileName = QFileDialog::getExistingDirectory(this,
+        tr("Filter Cache directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change current working directory */
+    filterCacheName = QFileInfo(fileName).absolutePath();
+
+    ui->lineEditFilterCache->setText(fileName);
+}
+
 void SettingsDialog::on_groupBoxConId_clicked(bool checked)
 {
     if(checked){
@@ -623,3 +652,44 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
         ui->labelTimezone->setEnabled(true);
     }
 }
+
+
+void SettingsDialog::on_pushButtonClearIndexCache_clicked()
+{
+    QString path = ui->lineEditFilterCache->text();
+    QDir dir(path);
+    dir.setNameFilters(QStringList() << "*.dix");
+    dir.setFilter(QDir::Files);
+    foreach(QString dirFile, dir.entryList())
+    {
+        dir.remove(dirFile);
+    }
+}
+
+void SettingsDialog::clearIndexCacheAfterDays()
+{
+    // calculate comparison date
+    QDateTime comparisonDate(QDateTime::currentDateTime());
+    comparisonDate = comparisonDate.addSecs((quint64)filterCacheDays*-1*60*60*24);
+
+    // check if index cache is enabled
+    if(!filterCache)
+        return;
+
+    // go through each file and check modification date of file
+    QString path = filterCacheName;
+    QDir dir(path);
+    dir.setNameFilters(QStringList() << "*.dix");
+    dir.setFilter(QDir::Files);
+    foreach(QString dirFile, dir.entryList())
+    {
+        QFileInfo info(path+"/"+dirFile);
+        QDateTime fileDate = info.lastRead();
+
+        //qDebug() << fileDate.toString("dd.MM.yyyy hh:mm:ss.zzz") << comparisonDate.toString("dd.MM.yyyy hh:mm:ss.zzz");
+
+        if(fileDate < comparisonDate)
+            dir.remove(dirFile);
+    }
+}
+

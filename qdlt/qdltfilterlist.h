@@ -47,6 +47,8 @@ public:
     */
     QDltFilterList();
 
+    QDltFilterList(const QDltFilterList &other);
+
     //! The destructor.
     /*!
     */
@@ -97,6 +99,11 @@ public:
     /*!
     */
     bool LoadFilter(QString _filename,bool replace);
+
+    //! Save the filter in a byte array and create a MD5 checksum over the byte array.
+    /*!
+    */
+    QByteArray createMD5();
 
     //! Return the filename.
     /*!

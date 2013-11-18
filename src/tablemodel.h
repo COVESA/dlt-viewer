@@ -56,9 +56,12 @@ public:
     QDltPluginManager *pluginManager;
     void modelChanged();
 
+    void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
+
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
 private:
     int lastSearchIndex;
+    bool emptyForceFlag;
 
     QColor searchBackgroundColor() const;
 };

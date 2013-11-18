@@ -57,6 +57,12 @@ public:
     */
     int size();
 
+    //! Get the file size of the DLT log file.
+    /*!
+      \return the size of the DLT file.
+    */
+    unsigned long fileSize();
+
     //! Get the number of filtered DLT message in the DLT log file.
     /*!
       \return the number of filtered DLT messages in the currently opened DLT file.

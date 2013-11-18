@@ -26,6 +26,7 @@
 #include <QShortcut>
 #include <QMessageBox>
 #include <QColor>
+#include <QProgressBar>
 
 #include "tablemodel.h"
 #include "project.h"
@@ -135,6 +136,8 @@ private:
     QLabel *statusBytesReceived;
     QLabel *statusByteErrorsReceived;
     QLabel *statusSyncFoundReceived;
+    QProgressBar *statusProgressBar;
+
     unsigned long totalBytesRcvd;
     unsigned long totalByteErrorsRcvd;
     unsigned long totalSyncFoundRcvd;
@@ -212,7 +215,9 @@ private:
         * @param update if this parameter is false, the file is loaded the first time, if true the reload is performed because of a changed configuration
         *
         */
-    void reloadLogFile(bool update=false);
+    void reloadLogFileStop();
+    void reloadLogFile(bool update=false, bool updateFilterIndexOnly=false, bool multithreaded = true);
+
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file);
@@ -241,9 +246,8 @@ private:
     void updatePlugins();
     void updatePlugin(PluginItem *item);
     void contextLoadingFile(QDltMsg &msg);
-    void applyPlugins(QList<QDltPlugin *> activeViewerPlugins, QList<QDltPlugin *> activeDecoderPlugins);
-    void applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins);
     void versionString(QDltMsg &msg);
+    void pluginsAutoload(QString version);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
@@ -313,6 +317,15 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void reloadLogFileProgressMax(quint64 num);
+    void reloadLogFileProgress(quint64 num);
+    void reloadLogFileProgressText(QString text);
+    void reloadLogFileVersionString(QString ecuId, QString version);
+    void reloadLogFileGetLogInfo(int index);
+    void reloadLogFileFinishIndex();
+    void reloadLogFileFinishFilter();
+    void reloadLogFileFinishDefaultFilter();
+
     void on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
     void on_tableView_customContextMenuRequested(QPoint pos);
@@ -460,6 +473,7 @@ public:
     QDltPluginManager pluginManager;
 
     QDltDefaultFilter defaultFilter;
+
 
 };
 

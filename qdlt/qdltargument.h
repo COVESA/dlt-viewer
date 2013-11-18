@@ -28,6 +28,7 @@
 #include <QDateTime>
 #include <QColor>
 #include <QMutex>
+#include <QVariant>
 #include <time.h>
 
 #include "export_rules.h"

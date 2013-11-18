@@ -21,6 +21,7 @@
 
 #include <QtDebug>
 #include <QMessageBox>
+#include <QCryptographicHash>
 
 #include "qdlt.h"
 
@@ -32,6 +33,11 @@ extern "C"
 QDltFilterList::QDltFilterList()
 {
 
+}
+
+QDltFilterList::QDltFilterList(const QDltFilterList &other)
+{
+    *this = other;
 }
 
 QDltFilterList::~QDltFilterList()
@@ -46,10 +52,12 @@ QDltFilterList& QDltFilterList::operator= (QDltFilterList const& _filterList)
     for(int numfilter=0;numfilter<_filterList.filters.size();numfilter++)
     {
         filter_copy = new QDltFilter();
-        filter_source = filters[numfilter];
+        filter_source = _filterList.filters[numfilter];
         *filter_copy = *filter_source;
         filters.append(filter_copy);
     }
+
+    updateSortedFilter();
 
     return *this;
 }
@@ -177,6 +185,33 @@ bool QDltFilterList::SaveFilter(QString _filename)
     file.close();
 
     return true;
+}
+
+QByteArray QDltFilterList::createMD5()
+{
+    QByteArray data;
+    QXmlStreamWriter xml(&data);
+
+    xml.setAutoFormatting(true);
+
+    xml.writeStartDocument();
+    xml.writeStartElement("dltfilter");
+
+    /* Write Filter */
+    for(int num = 0; num < filters.size(); num++)
+    {
+        QDltFilter *filter = filters[num];
+
+        xml.writeStartElement("filter");
+        filter->SaveFilterItem(xml);
+
+        xml.writeEndElement(); // filter
+    }
+
+    xml.writeEndElement(); // dltfilter
+    xml.writeEndDocument();
+
+    return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
 bool QDltFilterList::LoadFilter(QString _filename, bool replace){

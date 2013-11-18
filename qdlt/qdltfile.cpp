@@ -50,6 +50,11 @@ int QDltFile::size()
     return indexAll.size();
 }
 
+unsigned long QDltFile::fileSize()
+{
+    return infile.size();
+}
+
 int QDltFile::sizeFilter()
 {
     if(filterFlag)

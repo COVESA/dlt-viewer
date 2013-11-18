@@ -77,8 +77,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initState();
 
-
-
     /* Apply loaded settings */
     applySettings();
 
@@ -90,8 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initFileHandling();
 
-
-
+    // check and clear index cache if needed
+    settings->clearIndexCacheAfterDays();
 
     /* Command plugin */
     if(OptManager::getInstance()->isPlugin())
@@ -110,10 +108,6 @@ MainWindow::MainWindow(QWidget *parent) :
     /* start timer for autoconnect */
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
     timer.start(1000);
-
-
-
-
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -260,11 +254,13 @@ void MainWindow::initView()
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
     statusSyncFoundReceived = new QLabel("Sync found: 0");
+    statusProgressBar = new QProgressBar();
     statusBar()->addWidget(statusFilename);
     statusBar()->addWidget(statusFileVersion);
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
+    statusBar()->addWidget(statusProgressBar);
 
     /* Create search text box */
     searchTextbox = new QLineEdit();
@@ -386,7 +382,17 @@ void MainWindow::initSearchTable()
 void MainWindow::initFileHandling()
 {
     /* Initialize dlt-file indexer  */
-    dltIndexer = new DltFileIndexer(&qfile, this);
+    dltIndexer = new DltFileIndexer(&qfile,&pluginManager,&defaultFilter, this);
+
+    /* connect signals */
+    connect(dltIndexer, SIGNAL(progressMax(quint64)), this, SLOT(reloadLogFileProgressMax(quint64)));
+    connect(dltIndexer, SIGNAL(progress(quint64)), this, SLOT(reloadLogFileProgress(quint64)));
+    connect(dltIndexer, SIGNAL(progressText(QString)), this, SLOT(reloadLogFileProgressText(QString)));
+    connect(dltIndexer, SIGNAL(versionString(QString,QString)), this, SLOT(reloadLogFileVersionString(QString,QString)));
+    connect(dltIndexer, SIGNAL(getLogInfo(int)), this, SLOT(reloadLogFileGetLogInfo(int)));
+    connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
+    connect(dltIndexer, SIGNAL(finishFilter()), this, SLOT(reloadLogFileFinishFilter()));
+    connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
 
     /* Plugins/Filters enabled checkboxes */
     ui->pluginsEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
@@ -701,7 +707,12 @@ bool MainWindow::openDltFile(QString fileName)
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
-        reloadLogFile();
+        if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+            // if dlt viewer started as converter or with plugin option load file non multithreaded
+            reloadLogFile(false,false,false);
+        else
+            // normally load log file mutithreaded
+            reloadLogFile();
         ret = true;
     }
     else
@@ -1144,178 +1155,107 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
     }
 }
 
-void MainWindow::applyPlugins(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins)
+void MainWindow::reloadLogFileStop()
 {
-    QDltMsg msg;
-    QDltPlugin *item;
-    QProgressDialog fileprogress("Applying plugins.", "Cancel", 0, qfile.size(), this);
-    fileprogress.setWindowModality(Qt::WindowModal);
+}
+
+void MainWindow::reloadLogFileProgressMax(quint64 num)
+{
+    statusProgressBar->setRange(0,num);
+}
+
+void MainWindow::reloadLogFileProgress(quint64 num)
+{
+    statusProgressBar->setValue(num);
+}
+
+void MainWindow::reloadLogFileProgressText(QString text)
+{
+    statusProgressBar->setFormat(QString("%1 %p%").arg(text));
+}
+
+void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
+{
+    // version message found in loading file
+    if(!autoloadPluginsVersionEcus.contains(ecuId))
+    {
+        autoloadPluginsVersionStrings.append(version);
+        autoloadPluginsVersionEcus.append(ecuId);
+
+        statusFileVersion->setText("Version: "+autoloadPluginsVersionStrings.join(" "));
+
+        if(settings->pluginsAutoloadPath)
+        {
+            pluginsAutoload(version);
+        }
+    }
+}
+
+void MainWindow::reloadLogFileGetLogInfo(int index)
+{
+    // control message get log info found in loading file
+    if(settings->updateContextLoadingFile)
+    {
+        QDltMsg msg;
+
+        if(qfile.getMsg(index,msg))
+            contextLoadingFile(msg);
+    }
+}
+
+void MainWindow::reloadLogFileFinishIndex()
+{
+    // show already unfiltered messages
+    tableModel->setForceEmpty(false);
+    tableModel->modelChanged();
+}
+
+void MainWindow::reloadLogFileFinishFilter()
+{
+    // unlock table view
+    //ui->tableView->unlock();
+
+    // run through all viewer plugins
+    // must be run in the UI thread, if some gui actions are performed
+    if((dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+    {
+        QList<QDltPlugin*> activeViewerPlugins;
+        activeViewerPlugins = pluginManager.getViewerPlugins();
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+            item->initFileFinish();
+        }
+    }
+
+    // enable filter if requested
     qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
 
-    for(int ix=0;ix<qfile.size();ix++)
-    {
-        /* Fill message from file */
-        if(!qfile.getMsg(ix, msg))
-        {
-            /* Skip broken messages */
-            continue;
-        }
+    // update table
+    tableModel->setForceEmpty(false);
+    tableModel->modelChanged();
+    m_searchtableModel->modelChanged();
 
-        /* check if it is a version messages and
-           version string not already parsed */
-        if(msg.getType()==QDltMsg::DltTypeControl &&
-           msg.getSubtype()==QDltMsg::DltControlResponse &&
-           msg.getCtrlServiceId() == 0x13 &&
-           !autoloadPluginsVersionEcus.contains(msg.getEcuid()))
-        {
-            versionString(msg);
-            autoloadPluginsVersionEcus.append(msg.getEcuid());
-        }
+    // reconnect ecus again
+    connectPreviouslyConnectedECUs();
 
-        /* Process all viewer plugins */
-        for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
-        {
-            item = (QDltPlugin*)activeViewerPlugins.at(ivp);
-            item->initMsg(ix, msg);
-        }
+    // We might have had readyRead events, which we missed
+    readyRead();
 
-        /* Process all decoderplugins */
-        pluginManager.decodeMsg(msg,1);
+    // hide progress bar when finished
+    statusProgressBar->reset();
+    statusProgressBar->hide();
 
-        /* Add to filterindex if matches */
-        if(qfile.checkFilter(msg))
-        {
-            qfile.addFilterIndex(ix);
-        }
-
-        /* Offer messages again to viewer plugins after decode */
-        for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
-        {
-            item = (QDltPlugin *)activeViewerPlugins.at(ivp);
-            item->initMsgDecoded(ix, msg);
-        }
-
-        /* update context configuration when loading file */
-        if(settings->updateContextLoadingFile)
-        {
-            contextLoadingFile(msg);
-        }
-
-        /* Update progress every 0.5% */
-        if( 0 == (ix%1000))
-        {
-            fileprogress.setValue(ix);
-            fileprogress.setLabelText(
-                        QString("Applying Plugins for Message %1/%2")
-                        .arg(ix).arg(qfile.size()));
-            if(fileprogress.wasCanceled())
-            {
-                break;
-            }
-            QApplication::processEvents();
-        }
-    }
-
-    for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = (QDltPlugin*)activeViewerPlugins.at(i);
-        item->initFileFinish();
-
-    }
-
-    if(fileprogress.wasCanceled())
-    {
-        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
-    }
 }
 
-void MainWindow::applyPluginsDefaultFilter(QList<QDltPlugin*> activeViewerPlugins, QList<QDltPlugin*>activeDecoderPlugins)
+void MainWindow::reloadLogFileFinishDefaultFilter()
 {
-    QDltMsg msg;
-    QProgressDialog fileprogress("Create default filter index.", "Cancel", 0, qfile.size(), this);
-    fileprogress.setWindowModality(Qt::WindowModal);
-
-    /* clear all default filter cache index */
-    defaultFilter.clearFilterIndex();
-
-    /* run through the whole open file */
-    for(int ix=0;ix<qfile.size();ix++)
-    {
-        /* Fill message from file */
-        if(!qfile.getMsg(ix, msg))
-        {
-            /* Skip broken messages */
-            continue;
-        }
-
-        /* Process all decoderplugins */
-        pluginManager.decodeMsg(msg,1);
-
-        /* run through all default filter */
-        for(int num=0;num<defaultFilter.defaultFilterList.size();num++)
-        {
-            QDltFilterList *filterList;
-            filterList = defaultFilter.defaultFilterList[num];
-
-            /* check if filter matches message */
-            if(filterList->checkFilter(msg))
-            {
-                QDltFilterIndex *filterIndex;
-                filterIndex = defaultFilter.defaultFilterIndex[num];
-
-                /* if filter match add message to index cache */
-                filterIndex->indexFilter.append(ix);
-
-            }
-        }
-
-        /* Update progress every 0.5% */
-        if( 0 == (ix%1000))
-        {
-            fileprogress.setValue(ix);
-            fileprogress.setLabelText(
-                        QString("Create default index for Message %1/%2")
-                        .arg(ix).arg(qfile.size()));
-            if(fileprogress.wasCanceled())
-            {
-                break;
-            }
-            QApplication::processEvents();
-        }
-    }
-
-    /* update plausibility checks of filter index cache, filename and filesize */
-    for(int num=0;num<defaultFilter.defaultFilterIndex.size();num++)
-    {
-        QDltFilterIndex *filterIndex;
-        filterIndex = defaultFilter.defaultFilterIndex[num];
-
-        filterIndex->setDltFileName(qfile.getFileName());
-        filterIndex->setAllIndexSize(qfile.size());
-    }
-
-    if(fileprogress.wasCanceled())
-    {
-        QMessageBox::warning(this, tr("DLT Viewer"), tr("You canceled the initialisation progress. Not all messages could be processed by the enabled Plugins!"), QMessageBox::Ok);
-    }
+    // hide progress bar when finished
+    statusProgressBar->reset();
+    statusProgressBar->hide();
 }
 
-void MainWindow::reloadLogFile(bool update)
+void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool multithreaded)
 {
-    QList<QDltPlugin*> activeViewerPlugins;
-    QList<QDltPlugin*> activeDecoderPlugins;
-
-    saveAndDisconnectCurrentlyConnectedSerialECUs();
-
-    ui->tableView->selectionModel()->clear();
-    m_searchtableModel->clear_SearchResults();
-    ui->dockWidgetSearchIndex->hide();
-
-    qfile.open(outputfile.fileName());
-
-    /* Create the main index */
-    ui->tableView->lock();
-    dltIndexer->index();
-
     /* clear autoload plugins ecu list */
     if(!update)
     {
@@ -1324,54 +1264,94 @@ void MainWindow::reloadLogFile(bool update)
         statusFileVersion->setText("Version: <unknown>");
     }
 
-    /* Collect all plugins */
-    if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+    // update indexFilter only if index already generated
+    if(updateFilterIndexOnly)
+    {   if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+            dltIndexer->setMode(DltFileIndexer::modeFilter);
+        else
+            dltIndexer->setMode(DltFileIndexer::modeNone);
+    }
+    else
+        dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
+
+    // prevent further receiving any new messages
+    saveAndDisconnectCurrentlyConnectedSerialECUs();
+
+    // clear all tables
+    ui->tableView->selectionModel()->clear();
+    m_searchtableModel->clear_SearchResults();
+    ui->dockWidgetSearchIndex->hide();
+
+    // force empty table
+    tableModel->setForceEmpty(true);
+    tableModel->modelChanged();
+
+    // stop last indexing process, if any
+    dltIndexer->stop();
+
+    // open qfile
+    qfile.open(outputfile.fileName());
+    //qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    qfile.enableFilter(false);
+
+    // lock table view
+    //ui->tableView->lock();
+
+    // initialise progress bar
+    statusProgressBar->reset();
+    statusProgressBar->show();
+
+    // set name of opened log file in status bar
+    statusFilename->setText(outputfile.fileName());
+
+    // enable plugins
+    dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setMultithreaded(multithreaded);
+    if(settings->filterCache)
+        dltIndexer->setFilterCache(settings->filterCacheName);
+    else
+        dltIndexer->setFilterCache(QString(""));
+
+    // run through all viewer plugins
+    // must be run in the UI thread, if some gui actions are performed
+    if( (dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
     {
+        QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
-        activeDecoderPlugins = pluginManager.getDecoderPlugins();
-        for(int i = 0; i < activeViewerPlugins.size(); i++)
-        {
-            QDltPlugin *plugin = activeViewerPlugins[i];
-            plugin->initFileStart(&qfile);
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+            item->initFileStart(&qfile);
         }
     }
 
-    dltIndexer->lock();
-    /* Apply collected plugins.
-     * Please note that filterIndex is created as a side effect */
-    applyPlugins(activeViewerPlugins, activeDecoderPlugins);
-    dltIndexer->unlock();
+    // start indexing
+    if(multithreaded)
+        dltIndexer->start();
+    else
+        dltIndexer->run();
 
-    ui->tableView->unlock();
-
-    tableModel->modelChanged();
-    m_searchtableModel->modelChanged();
-
-    /* set name of opened log file in status bar */
-    statusFilename->setText(outputfile.fileName());
-
-    connectPreviouslyConnectedECUs();
-
-    /* We might have had readyRead events, which we missed */
-    readyRead();
 }
 
 void MainWindow::reloadLogFileDefaultFilter()
 {
-    QList<QDltPlugin*> activeViewerPlugins;
-    QList<QDltPlugin*> activeDecoderPlugins;
 
-    /* Collect all plugins */
-    if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
-    {
-        activeViewerPlugins = pluginManager.getViewerPlugins();
-        activeDecoderPlugins = pluginManager.getDecoderPlugins();
-    }
+    // stop last indexing process, if any
+    dltIndexer->stop();
 
-    /* Apply collected plugins.
-     * Please note that filterIndex is created as a side effect */
-    applyPluginsDefaultFilter(activeViewerPlugins,activeDecoderPlugins);
+    // set indexing mode
+    dltIndexer->setMode(DltFileIndexer::modeDefaultFilter);
 
+    // initialise progress bar
+    statusProgressBar->reset();
+    statusProgressBar->show();
+
+    // enable plugins
+    dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+
+    // start indexing
+    dltIndexer->start();
 }
 
 void MainWindow::applySettings()
@@ -4394,46 +4374,52 @@ void MainWindow::versionString(QDltMsg &msg)
 
     if(settings->pluginsAutoloadPath)
     {
-        // Iterate through all enabled decoder plugins
-        for(int num = 0; num < project.plugin->topLevelItemCount(); num++) {
-            PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+        pluginsAutoload(version);
+    }
+}
 
-            if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
+void MainWindow::pluginsAutoload(QString version)
+{
+    // Iterate through all enabled decoder plugins
+    for(int num = 0; num < project.plugin->topLevelItemCount(); num++) {
+        PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
+
+        if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
+        {
+            QString searchPath = settings->pluginsAutoloadPathName+ "\\" + item->getName();
+
+            qDebug() << "AutoloadPlugins Search:" << searchPath;
+
+            // search for files in plugin directory which contains version string
+            QStringList nameFilter("*"+version+"*");
+            QDir directory(searchPath);
+            QStringList txtFilesAndDirectories = directory.entryList(nameFilter);
+            if(txtFilesAndDirectories.size()>1)
+                txtFilesAndDirectories.sort(); // sort if several files are found
+
+            if(!txtFilesAndDirectories.isEmpty() )
             {
-                QString searchPath = settings->pluginsAutoloadPathName+ "\\" + item->getName();
+                // file with version string found
+                QString filename = searchPath + "\\" + txtFilesAndDirectories[0];
 
-                qDebug() << "AutoloadPlugins Search:" << searchPath;
-
-                // search for files in plugin directory which contains version string
-                QStringList nameFilter("*"+version+"*");
-                QDir directory(searchPath);
-                QStringList txtFilesAndDirectories = directory.entryList(nameFilter);
-                if(txtFilesAndDirectories.size()>1)
-                    txtFilesAndDirectories.sort(); // sort if several files are found
-
-                if(!txtFilesAndDirectories.isEmpty() )
+                // check if filename already loaded
+                if(item->getFilename()!=filename)
                 {
-                    // file with version string found
-                    QString filename = searchPath + "\\" + txtFilesAndDirectories[0];
+                    qDebug() << "AutoloadPlugins Load:" << filename;
 
-                    // check if filename already loaded
-                    if(item->getFilename()!=filename)
-                    {
-                        qDebug() << "AutoloadPlugins Load:" << filename;
-
-                        // load new configuration
-                        item->setFilename(filename);
-                        item->getPlugin()->loadConfig(filename);
-                        item->update();
-                    }
-                    else
-                    {
-                        qDebug() << "AutoloadPlugins already loaded:" << filename;
-                    }
+                    // load new configuration
+                    item->setFilename(filename);
+                    item->getPlugin()->loadConfig(filename);
+                    item->update();
+                }
+                else
+                {
+                    qDebug() << "AutoloadPlugins already loaded:" << filename;
                 }
             }
         }
     }
+
 }
 
 void MainWindow::on_action_menuPlugin_Edit_triggered() {
@@ -5265,7 +5251,7 @@ void MainWindow::on_applyConfig_clicked()
     applyConfigEnabled(false);
     saveSelection();
     filterUpdate();
-    reloadLogFile(true);
+    reloadLogFile(true,true);
     restoreSelection();
 }
 
@@ -5417,15 +5403,14 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* clear default filter list */
     defaultFilter.clear();
 
+    // check if default filter enabled
+    if(!settings->defaultFilterPath)
+    {
+        return;
+    }
+
     /* get the filter path */
-    if(settings->defaultFilterPath)
-    {
-        dir.setPath(settings->defaultFilterPathName);
-    }
-    else
-    {
-        dir.setPath(QCoreApplication::applicationDirPath()+"/filters");
-    }
+    dir.setPath(settings->defaultFilterPathName);
 
     /* update tooltip */
     ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));

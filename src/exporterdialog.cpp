@@ -31,6 +31,7 @@ DltExporter::DltExportFormat ExporterDialog::getFormat()
         return DltExporter::FormatAscii;
     if(ui->radioButtonCsv->isChecked())
         return DltExporter::FormatCsv;
+    return DltExporter::FormatDlt;
 }
 
 void ExporterDialog::setSelection(DltExporter::DltExportSelection exportSelection)
@@ -51,4 +52,5 @@ DltExporter::DltExportSelection ExporterDialog::getSelection()
         return DltExporter::SelectionFiltered;
     if(ui->radioButtonSelection->isChecked())
         return DltExporter::SelectionSelected;
+    return DltExporter::SelectionAll;
 }

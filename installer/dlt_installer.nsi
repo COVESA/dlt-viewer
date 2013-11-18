@@ -203,6 +203,30 @@ Section "Sqldrivers" secsql
 SectionEnd
 
 ;--------------------------------
+;Platforms Section
+;--------------------------------
+Section "Platforms" secpla
+    SetDetailsPrint listonly
+    SectionIn 1
+    SetShellVarContext all
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    ${FileDir} $INSTDIR platforms ${WORKING_DIR}
+SectionEnd
+
+;--------------------------------
+;Cache Section
+;--------------------------------
+Section "Cache" seccac
+    SetDetailsPrint listonly
+    SectionIn 1
+    SetShellVarContext all
+    SetOutPath $INSTDIR
+    SetOverwrite on
+    ${FileDir} $INSTDIR cache ${WORKING_DIR}
+SectionEnd
+
+;--------------------------------
 ;Uninstaller Section
 ;--------------------------------
 ;--------------------------------

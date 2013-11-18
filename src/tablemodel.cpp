@@ -31,6 +31,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      : QAbstractTableModel(parent)
  {
      lastSearchIndex = -1;
+     emptyForceFlag = false;
  }
 
  TableModel::~TableModel()
@@ -282,14 +283,25 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
  int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {
-    return qfile->sizeFilter();
+     if(emptyForceFlag)
+         return 0;
+     else
+         return qfile->sizeFilter();
  }
 
  void TableModel::modelChanged()
  {
-     QModelIndex lIndex = index(0, 1);
-     QModelIndex lLeft = index(qfile->sizeFilter()-1, 0);
-     QModelIndex lRight = index(qfile->sizeFilter()-1, columnCount() - 1);
+     if(emptyForceFlag)
+     {
+         QModelIndex lIndex = index(0, 1);
+         QModelIndex lLeft = index(qfile->sizeFilter()-1, 0);
+         QModelIndex lRight = index(qfile->sizeFilter()-1, columnCount() - 1);
+     }else
+     {
+         QModelIndex lIndex = index(0, 1);
+         QModelIndex lLeft = index(0, 0);
+         QModelIndex lRight = index(0, columnCount() - 1);
+     }
      emit(layoutChanged());
  }
 
