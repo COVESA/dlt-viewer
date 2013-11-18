@@ -5178,6 +5178,11 @@ int MainWindow::nearest_line(int line){
     return row;
 }
 
+void MainWindow::jumpToMsgSignal(int index)
+{
+    jump_to_line(index);
+}
+
 bool MainWindow::jump_to_line(int line)
 {
 

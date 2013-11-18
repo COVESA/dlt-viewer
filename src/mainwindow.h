@@ -460,6 +460,7 @@ private slots:
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
+    void jumpToMsgSignal(int index);
 
 public:   
 

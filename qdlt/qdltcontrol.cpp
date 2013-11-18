@@ -34,6 +34,8 @@ QDltControl::QDltControl(QObject *_server)
 
     connect(this, SIGNAL(sendInjectionSignal(int,QString,QString,int,QByteArray)),
             server, SLOT(sendInjection(int,QString,QString,int,QByteArray)));
+    connect(this, SIGNAL(jumpToMsgSignal(int)),
+            server, SLOT(jumpToMsgSignal(int)));
 }
 
 QDltControl::~QDltControl()
@@ -45,4 +47,10 @@ void QDltControl::sendInjection(int index,QString applicationId,QString contextI
 {
     emit sendInjectionSignal(index,applicationId,contextId,serviceId,data);
 }
+
+void QDltControl::jumpToMsg(int index)
+{
+    emit jumpToMsgSignal(index);
+}
+
 

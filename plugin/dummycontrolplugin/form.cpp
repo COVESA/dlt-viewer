@@ -45,3 +45,9 @@ void Form::on_pushButton_clicked()
     if(plugin->dltControl)
         plugin->dltControl->sendInjection(ui->comboBoxConnections->currentIndex(),ui->lineEditApplicationId->text(),ui->lineEditContextId->text(),ui->lineEditServiceId->text().toInt(),ui->lineEditData->text().toLatin1());
 }
+
+void Form::on_pushButtonJumpTo_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->jumpToMsg(ui->lineEditJumpTo->text().toUInt());
+}

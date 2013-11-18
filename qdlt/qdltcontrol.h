@@ -40,9 +40,11 @@ public:
     ~QDltControl();
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+    void jumpToMsg(int index);
 
 signals:
     void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
+    void jumpToMsgSignal(int index);
 
 protected:
 private:

@@ -44,7 +44,7 @@ private:
 
 private slots:
     void on_pushButton_clicked();
-
+    void on_pushButtonJumpTo_clicked();
 };
 
 #endif // FORM_H
