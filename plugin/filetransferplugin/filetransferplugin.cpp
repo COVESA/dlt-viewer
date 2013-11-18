@@ -58,6 +58,15 @@ QString FiletransferPlugin::error() {
 
 bool FiletransferPlugin::loadConfig(QString filename) {
 
+    if ( filename.length() <= 0 )
+    {
+        // no configuration file provided, return to default configuration
+        config.setDefault();
+        // return no error
+        errorText = "";
+        return true;
+    }
+
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {

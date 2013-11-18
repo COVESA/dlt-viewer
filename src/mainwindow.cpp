@@ -4325,9 +4325,9 @@ void MainWindow::updatePlugin(PluginItem *item) {
             QString err_body = err_header;
             err_body.append(" returned error:\n");
             err_body.append(err_text);
-            err_body.append("\nin loadConfig. \nDisabling Plugin!");
+            err_body.append("\nin loadConfig!");
             ErrorMessage(QMessageBox::Critical,err_header,err_body);
-            item->setMode(QDltPlugin::ModeDisable);
+            //item->setMode(QDltPlugin::ModeDisable);
         }
         else if ( 0 < err_text.length() )
         {

@@ -25,6 +25,8 @@ public:
     void setFlAppIdTag(QString newTag);
     void setFlCtIdTag(QString newTag);
 
+    void setDefault();
+
 private:
     QString tagFLST;
     QString tagFLDA;

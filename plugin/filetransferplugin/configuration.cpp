@@ -2,9 +2,9 @@
 
 using namespace std;
 
-Configuration::Configuration():tagFLST("FLST"),tagFLDA("FLDA"),tagFLFI("FLFI"),tagFLER("FLER"),tagFLIF("FLIF"),tagFLAppId("FLTR"),tagFLCtId("FLTR")
+Configuration::Configuration()
 {
-
+    setDefault();
 }
 
 Configuration::~Configuration()
@@ -27,3 +27,14 @@ void Configuration::setFlerTag(QString newTag) { tagFLER = newTag; }
 void Configuration::setFlifTag(QString newTag) { tagFLIF = newTag; }
 void Configuration::setFlAppIdTag(QString newTag) { tagFLAppId = newTag; }
 void Configuration::setFlCtIdTag(QString newTag) { tagFLCtId = newTag; }
+
+void Configuration::setDefault()
+{
+    tagFLST = "FLST";
+    tagFLDA = "FLDA";
+    tagFLFI = "FLFI";
+    tagFLER = "FLER";
+    tagFLIF = "FLIF";
+    tagFLAppId = "SYS";
+    tagFLCtId = "FILE";
+}
