@@ -74,6 +74,7 @@ public:
 
     //control plugin interface
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState);
+    bool autoscrollStateChanged(bool enabled);
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
 

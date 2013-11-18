@@ -197,7 +197,7 @@ void MainWindow::initState()
 
     /* Load Plugins before loading default project */
     loadPlugins();
-
+    pluginManager.autoscrollStateChanged(settings->autoScroll);
 
     /* initialize injection */
     injectionAplicationId.clear();
@@ -3922,10 +3922,10 @@ void MainWindow::on_configWidget_itemSelectionChanged()
 void MainWindow::updateScrollButton()
 {
     // Mapping: variable to button
-    if (settings->autoScroll == Qt::Unchecked )
-        scrollButton->setChecked(false);
-    else
-        scrollButton->setChecked(true);
+    scrollButton->setChecked(settings->autoScroll);
+
+    // inform plugins about changed autoscroll status
+    pluginManager.autoscrollStateChanged(settings->autoScroll);
 }
 
 
@@ -5227,6 +5227,9 @@ void MainWindow::on_actionAutoScroll_triggered(bool checked)
 
     if (autoScrollOld!=settings->autoScroll)
         settings->writeSettings(this);
+
+    // inform plugins about changed autoscroll status
+    pluginManager.autoscrollStateChanged(settings->autoScroll);
 }
 
 void MainWindow::on_actionConnectAll_triggered()

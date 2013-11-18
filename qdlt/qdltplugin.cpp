@@ -250,3 +250,12 @@ bool QDltPlugin::stateChanged(int index, QDltConnection::QDltConnectionState con
     else
         return false;
 }
+
+bool QDltPlugin::autoscrollStateChanged(bool enabled)
+{
+    if(plugincontrolinterface)
+        return plugincontrolinterface->autoscrollStateChanged(enabled);
+    else
+        return false;
+}
+

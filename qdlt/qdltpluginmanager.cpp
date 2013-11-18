@@ -167,6 +167,18 @@ bool QDltPluginManager::stateChanged(int index, QDltConnection::QDltConnectionSt
     return true;
 }
 
+bool  QDltPluginManager::autoscrollStateChanged(bool enabled)
+{
+    for(int num=0;num<plugins.size();num++)
+    {
+        QDltPlugin *plugin = plugins[num];
+        if(plugin->isControl() )
+            plugin->autoscrollStateChanged(enabled);
+    }
+    return true;
+}
+
+
 bool QDltPluginManager::initControl(QDltControl *control)
 {
     for(int num=0;num<plugins.size();num++)

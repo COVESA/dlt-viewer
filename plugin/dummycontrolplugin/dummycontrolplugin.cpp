@@ -109,6 +109,12 @@ bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionS
     return true;
 }
 
+bool DummyControlPlugin::autoscrollStateChanged(bool enabled)
+{
+    form->autoscrollStateChanged(enabled);
+
+    return true;
+}
 
 void DummyControlPlugin::selectedIdxMsg(int , QDltMsg &) {
 

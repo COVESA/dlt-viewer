@@ -37,6 +37,7 @@ public:
     ~Form();
 
     void setConnections(QStringList list);
+    void autoscrollStateChanged(bool enabled);
 
 private:
     Ui::Form *ui;

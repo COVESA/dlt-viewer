@@ -40,6 +40,11 @@ void Form::setConnections(QStringList list)
     ui->comboBoxConnections->insertItems(0,list);
 }
 
+void Form::autoscrollStateChanged(bool enabled)
+{
+    ui->checkBoxAutoscroll->setChecked(enabled);
+}
+
 void Form::on_pushButton_clicked()
 {
     if(plugin->dltControl)

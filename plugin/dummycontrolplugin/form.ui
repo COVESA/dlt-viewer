@@ -7,41 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>309</width>
-    <height>233</height>
+    <height>256</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>ApplicationId:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QLineEdit" name="lineEditApplicationId">
-     <property name="text">
-      <string>LOG</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>ContextId:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="1">
-    <widget class="QLineEdit" name="lineEditContextId">
-     <property name="text">
-      <string>TEST</string>
-     </property>
-    </widget>
-   </item>
    <item row="3" column="0">
     <widget class="QLabel" name="label_3">
      <property name="text">
@@ -80,6 +52,34 @@
      </property>
     </widget>
    </item>
+   <item row="1" column="0">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>ApplicationId:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QLineEdit" name="lineEditApplicationId">
+     <property name="text">
+      <string>LOG</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>ContextId:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QLineEdit" name="lineEditContextId">
+     <property name="text">
+      <string>TEST</string>
+     </property>
+    </widget>
+   </item>
    <item row="6" column="0" colspan="2">
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
@@ -97,6 +97,16 @@
        <widget class="QLineEdit" name="lineEditJumpTo"/>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item row="7" column="0">
+    <widget class="QCheckBox" name="checkBoxAutoscroll">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
+     <property name="text">
+      <string>Autoscroll</string>
+     </property>
     </widget>
    </item>
   </layout>

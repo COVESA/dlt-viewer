@@ -318,10 +318,19 @@ public:
       \return True if everything went ok. False if there was an error.
     */
     virtual bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState) = 0;
+
+    //! Autoscroll state changed
+    /*!
+      The Autoscroll feature of the viewer was enabled or disabled
+
+      \param enabled True if Autoscroll is enabled, false if not
+      \return True if everything went ok. False if there was an error.
+    */
+    virtual bool autoscrollStateChanged(bool enabled) = 0;
 };
 
 Q_DECLARE_INTERFACE(QDltPluginControlInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.0");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.1");
 
 //! DLT Command Plugin Interface
 /*!

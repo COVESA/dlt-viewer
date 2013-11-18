@@ -68,6 +68,7 @@ public:
     bool initConnections(QStringList list);
     bool controlMsg(int index, QDltMsg &msg);
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState);
+    bool autoscrollStateChanged(bool enabled);
 
     /* internal variables */
     Form *form;
