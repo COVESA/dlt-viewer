@@ -22,9 +22,9 @@
 
 #define PACKAGE_VERSION_STATE "STABLE"
 #define PACKAGE_MAJOR_VERSION "2"
-#define PACKAGE_MINOR_VERSION "9"
-#define PACKAGE_PATCH_LEVEL "1"
-#define PACKAGE_VERSION "2.9.1"
+#define PACKAGE_MINOR_VERSION "10"
+#define PACKAGE_PATCH_LEVEL "0"
+#define PACKAGE_VERSION "2.10.0"
 #define PACKAGE_REVISION ""
 #define DLT_SUPPORT_MAIL_ADDRESS "genivi-diagnostic-log-and-trace@lists.genivi.org"
 #define DLT_SUPPORT_NAME "GENIVI"

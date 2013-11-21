@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.9.1 STABLE
+Version 2.10
 
 Known issues
 ------------
@@ -16,6 +16,20 @@ Known issues
 
 Changes
 -------
+
+2.10.0
+  * Plugin interface to know about "Autoscroll button" enabled or disabled.
+  * DLT Viewer Plugin Interface to scroll to a specific index
+  * Fix: Filetransfer Plugin not works with default configuration.
+  * Do not disable plugins, if configuration cannot be loaded.
+  * Implementation of background Indexer and index cache.
+  * Fixed Qt5 build missing platform plugin windows.
+  * Fixed: Missing return value in exporterdialog.cpp.
+  * Fixed: QVariant not declared in QDltArgument.
+  * Added performance counter for indexing.
+  * Removed file mapping based indexing.
+  * Enable default filter and index cache by default.
+  * Added Windows Batch file to build with Qt5.1.1
 
 2.9.1
   * New centralized export functionality for DLT, ASCII and CSV.
