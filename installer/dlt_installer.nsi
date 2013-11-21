@@ -9,10 +9,10 @@
 !Define PRODUCT_NAME "DLTViewer"
 Name "${PRODUCT_NAME}"
 !Define EXE_NAME "dlt_viewer.exe"
-!Define PRODUCT_VERSION "2.9.1"
+!Define PRODUCT_VERSION "2.10.0"
 !Define VER_MAJOR 2
-!Define VER_MINOR 9
-!Define VER_REVISION 1
+!Define VER_MINOR 10
+!Define VER_REVISION 0
 !Define PRODUCT_SUPPORT_SITE \
     "http://dlt.bmwgroup.net"
 !Define PRODUCT_DIR_REGKEY \
@@ -22,8 +22,7 @@ Name "${PRODUCT_NAME}"
 !Define REG_KEY "SOFTWARE\$(^Name)"
 !Define INSTALL_ROOT_KEY "HKLM"
 !Define CONF_FILE "$INSTDIR\config.ini"
-!Define WORKING_DIR "C:\DltViewerSDK"
-
+!Define WORKING_DIR "c:\DltViewerSDK"
 
 SetPluginUnload  alwaysoff
 
