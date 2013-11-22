@@ -9,10 +9,10 @@
 !Define PRODUCT_NAME "DLTViewer"
 Name "${PRODUCT_NAME}"
 !Define EXE_NAME "dlt_viewer.exe"
-!Define PRODUCT_VERSION "2.10.0"
+!Define PRODUCT_VERSION "2.10.1"
 !Define VER_MAJOR 2
 !Define VER_MINOR 10
-!Define VER_REVISION 0
+!Define VER_REVISION 1
 !Define PRODUCT_SUPPORT_SITE \
     "http://dlt.bmwgroup.net"
 !Define PRODUCT_DIR_REGKEY \

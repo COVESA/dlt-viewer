@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.10.0
+Version 2.10.1 ALPHA
 
 Known issues
 ------------
@@ -16,6 +16,12 @@ Known issues
 
 Changes
 -------
+
+2.10.1
+  * First implementation of dlt statistic plugin.
+  * Statistic features removed from dlt viewer plugin.
+  * Fixed warnings with windows mingw32 compiler.
+  * Plugin API parameter triggeredByUser is wrongly set.
 
 2.10.0
   * Plugin interface to know about "Autoscroll button" enabled or disabled.
