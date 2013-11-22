@@ -65,11 +65,6 @@ public:
     /* internal variables */
     Form *form;
 
-    /* statistics functions */
-    void resetStatistics();
-    void updateStatistics(int index, QDltMsg &msg);
-    void printStatistics();
-
 private:
 
     QString stringToHtml(QString str);
@@ -77,16 +72,6 @@ private:
     QDltFile *dltFile;
     QString errorText;
 
-    int counterMessages;
-
-    int counterVerboseLogs;
-    int counterVerboseTraces;
-    int countersVerboseLogs[QDltMsg::DltLogVerbose+1];
-    int countersVerboseTraces[QDltMsg::DltNetworkTraceMost+1];
-
-
-    int counterNonVerboseControl;
-    int countersNonVerboseControl[QDltMsg::DltControlTime+1];
 
 };
 

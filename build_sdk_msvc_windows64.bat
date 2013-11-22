@@ -67,7 +67,8 @@ copy %BUILD_DIR%\qdlt.dll %SDK_DIR%
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\nonverboseplugin.dll %SDK_DIR%\plugins
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %SDK_DIR%\plugins
-
+copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %SDK_DIR%\plugins
+copy %BUILD_DIR%\plugins\dltstatisticplugin.dll %SDK_DIR%\plugins
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %SDK_DIR%
 copy %SOURCE_DIR%\README.txt %SDK_DIR%

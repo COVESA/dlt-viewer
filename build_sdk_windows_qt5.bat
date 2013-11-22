@@ -173,9 +173,6 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\doc
-IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
 
 copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
@@ -195,7 +192,14 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %BUILD_DIR%\plugins\filetransferplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+copy %BUILD_DIR%\plugins\dltstatisticplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+
+copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 

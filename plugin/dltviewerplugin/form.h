@@ -39,15 +39,7 @@ public:
     void setTextBrowserAscii(QString text);
     void setTextBrowserBinary(QString text);
     void setTextBrowserMixed(QString text);
-    void setTextBrowserStatistics(QString text);
     void setTextBrowserUncoded(QString text);
-
-/*
-    void setMessages(int message);
-    void setSelectedMessage(int message);
-    void setVerboseMessages(int message);
-    void setNonVerboseMessages(int message);
-*/
 
 private:
     Ui::Form *ui;

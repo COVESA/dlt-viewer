@@ -152,7 +152,8 @@ OTHER_FILES += ../ReleaseNotes_Viewer.txt \
     ../build_sdk_msvc_windows64.bat \
     ../build_sdk_msvc_windows.bat \
     ../installer/UninstallLog.nsh \
-    ../installer/dlt_installer.nsi
+    ../installer/dlt_installer.nsi \
+    ../build_sdk_windows_qt5.bat
 
 # This contains all the button graphics for toolbar
 RESOURCES += resource.qrc

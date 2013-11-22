@@ -62,11 +62,3 @@ void Form::setTextBrowserUncoded(QString text)
     ui->textBrowserUncoded->setText(text);
 }
 
-void Form::setTextBrowserStatistics(QString text)
-{
-    if(text.isNull())
-        ui->textBrowserStatistics->setText("");
-    else
-        ui->textBrowserStatistics->setText(text);
-
-}
