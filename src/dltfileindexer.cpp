@@ -1,4 +1,6 @@
 #include "dltfileindexer.h"
+#include "optmanager.h"
+
 #include <QDebug>
 #include <QMessageBox>
 #include <QApplication>
@@ -172,6 +174,9 @@ bool DltFileIndexer::indexFilter()
     // clear index filter
     indexFilterList.clear();
 
+    // get silent mode
+    bool silentMode = !OptManager::getInstance()->issilentMode();
+
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
 
@@ -210,7 +215,7 @@ bool DltFileIndexer::indexFilter()
         }
 
         /* Process all decoderplugins */
-        pluginManager->decodeMsg(msg,1);
+        pluginManager->decodeMsg(msg,silentMode);
 
         /* Add to filterindex if matches */
         if(filtersEnabled && filterList.checkFilter(msg))
@@ -290,6 +295,9 @@ bool DltFileIndexer::indexDefaultFilter()
     // clear all default filter cache index
     defaultFilter->clearFilterIndex();
 
+    // get silent mode
+    bool silentMode = !OptManager::getInstance()->issilentMode();
+
     /* run through the whole open file */
     for(int ix=0;ix<dltFile->size();ix++)
     {
@@ -301,7 +309,7 @@ bool DltFileIndexer::indexDefaultFilter()
         }
 
         /* Process all decoderplugins */
-        pluginManager->decodeMsg(msg,1);
+        pluginManager->decodeMsg(msg,silentMode);
 
         /* run through all default filter */
         for(int num=0;num<defaultFilter->defaultFilterList.size();num++)

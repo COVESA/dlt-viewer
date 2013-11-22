@@ -21,6 +21,7 @@
 #include "ui_searchdialog.h"
 #include "mainwindow.h"
 #include "dltsettingsmanager.h"
+#include "optmanager.h"
 
 #include <QMessageBox>
 #include <QProgressBar>
@@ -197,6 +198,8 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
 
+    bool silentMode = !OptManager::getInstance()->issilentMode();
+
     do
     {
         ctr++;
@@ -231,7 +234,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
         /* get the message with the selected item id */
         buf = file->getMsgFilter(searchLine);
         msg.setMsg(buf);
-        pluginManager->decodeMsg(msg,1);
+        pluginManager->decodeMsg(msg,silentMode);
 
         bool pluginFound = false;
 

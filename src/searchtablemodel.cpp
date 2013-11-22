@@ -21,6 +21,7 @@
 #include "fieldnames.h"
 #include "dltsettingsmanager.h"
 #include "dltuiutils.h"
+#include "optmanager.h"
 
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -61,7 +62,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             }
             return QVariant();
         }
-        pluginManager->decodeMsg(msg,1);
+        pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
 
         switch(index.column())
         {

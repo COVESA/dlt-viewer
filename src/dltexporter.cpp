@@ -6,6 +6,7 @@
 #include "dltexporter.h"
 #include "fieldnames.h"
 #include "project.h"
+#include "optmanager.h"
 
 DltExporter::DltExporter(QObject *parent) :
     QObject(parent)
@@ -230,6 +231,8 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
 
+    bool silentMode = !OptManager::getInstance()->issilentMode();
+
     for(int num = 0;num<size;num++)
     {
         /* Update progress dialog every 1000 lines */
@@ -248,7 +251,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 
         /* decode message if needed */
         if(exportFormat != DltExporter::FormatDlt)
-            pluginManager->decodeMsg(msg,false);
+            pluginManager->decodeMsg(msg,silentMode);
 
         /* export message */
         if(!exportMsg(num,msg,buf))

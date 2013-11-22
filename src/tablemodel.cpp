@@ -25,6 +25,7 @@
 #include "fieldnames.h"
 #include "dltsettingsmanager.h"
 #include "dltuiutils.h"
+#include "optmanager.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
@@ -73,7 +74,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             pluginManager->decodeMsg(msg,1);
+             pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
          }
 
          switch(index.column())
@@ -194,7 +195,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             pluginManager->decodeMsg(msg,1);
+             pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
          }
 
          QColor color = qfile->checkMarker(msg);

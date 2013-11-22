@@ -2732,6 +2732,8 @@ void MainWindow::read(EcuItem* ecuitem)
             int oldsize = qfile.size();
             qfile.updateIndex();
 
+            bool silentMode = !OptManager::getInstance()->issilentMode();
+
             for(int num=oldsize;num<qfile.size();num++) {
                 qmsg.setMsg(qfile.getMsg(num));
 
@@ -2740,7 +2742,7 @@ void MainWindow::read(EcuItem* ecuitem)
                     item->updateMsg(num,qmsg);
                 }
 
-                pluginManager.decodeMsg(qmsg,1);
+                pluginManager.decodeMsg(qmsg,silentMode);
 
                 if(qfile.checkFilter(qmsg)) {
                     qfile.addFilterIndex(num);
@@ -2820,7 +2822,7 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
 
         }
 
-        pluginManager.decodeMsg(msg,1);
+        pluginManager.decodeMsg(msg,!OptManager::getInstance()->issilentMode());
 
         for(int i = 0; i < activeViewerPlugins.size(); i++){
             item = (QDltPlugin*)activeViewerPlugins.at(i);
@@ -3106,10 +3108,11 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         /* update indexes  and table view */
         int oldsize = qfile.size();
         qfile.updateIndex();
+        bool silentMode = !OptManager::getInstance()->issilentMode();
         for(int num=oldsize;num<qfile.size();num++) {
             data = qfile.getMsg(num);
             qmsg.setMsg(data);
-            iterateDecodersForMsg(qmsg,0);
+            iterateDecodersForMsg(qmsg,silentMode);
             if(qfile.checkFilter(qmsg)) {
                 qfile.addFilterIndex(num);
             }
@@ -4602,7 +4605,7 @@ void MainWindow::filterAddTable() {
     msg.setMsg(data);
 
     /* decode message if necessary */
-    iterateDecodersForMsg(msg,1);
+    iterateDecodersForMsg(msg,!OptManager::getInstance()->issilentMode());
 
     /* show filter dialog */
     FilterDialog dlg;
@@ -5110,7 +5113,7 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
-    pluginManager.decodeMsg(msg,1);
+    pluginManager.decodeMsg(msg,triggeredByUser);
 }
 
 void MainWindow::on_action_menuConfig_Collapse_All_ECUs_triggered()
