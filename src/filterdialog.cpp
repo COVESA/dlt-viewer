@@ -270,6 +270,8 @@ void FilterDialog::on_buttonSelectColor_clicked()
 }
 
 void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
+    Q_UNUSED(index);
+
     on_checkBoxMarker_clicked();
 }
 

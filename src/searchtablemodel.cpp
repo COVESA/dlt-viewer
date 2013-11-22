@@ -233,9 +233,9 @@ int SearchTableModel::rowCount(const QModelIndex & /*parent*/) const
 
 void SearchTableModel::modelChanged()
 {    
-    QModelIndex lIndex = index(0, 1);    
-    QModelIndex lLeft = index(m_searchResultList.size()-1, 0);
-    QModelIndex lRight = index(m_searchResultList.size()-1, columnCount() - 1);
+    index(0, 1);
+    index(m_searchResultList.size()-1, 0);
+    index(m_searchResultList.size()-1, columnCount() - 1);
     emit(layoutChanged());
 }
 

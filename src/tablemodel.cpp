@@ -295,14 +295,14 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
  {
      if(emptyForceFlag)
      {
-         QModelIndex lIndex = index(0, 1);
-         QModelIndex lLeft = index(qfile->sizeFilter()-1, 0);
-         QModelIndex lRight = index(qfile->sizeFilter()-1, columnCount() - 1);
+         index(0, 1);
+         index(qfile->sizeFilter()-1, 0);
+         index(qfile->sizeFilter()-1, columnCount() - 1);
      }else
      {
-         QModelIndex lIndex = index(0, 1);
-         QModelIndex lLeft = index(0, 0);
-         QModelIndex lRight = index(0, columnCount() - 1);
+         index(0, 1);
+         index(0, 0);
+         index(0, columnCount() - 1);
      }
      emit(layoutChanged());
  }

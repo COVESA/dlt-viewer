@@ -3043,6 +3043,8 @@ int dlt_message_print_mixed_html(DltMessage *message, char *text, uint32_t size,
 
 int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,int32_t *datalength,char *text,int textlength,int byteLength,int verbose)
 {
+    verbose = verbose; // unused
+
     int16_t length=0,length_tmp=0; /* the macro can set this variable to -1 */
     uint16_t length2=0,length2_tmp=0,length3=0,length3_tmp=0;
 

@@ -475,7 +475,8 @@ QString QDltArgument::toString(bool binary)
             {
                 unsigned int tmp;
                 tmp = DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData())));
-                text += QString("%1").arg((double)(*(float*)((void*)&tmp)));
+                void *buf = (void *) &tmp;
+                text += QString("%1").arg((double)(*((float*)buf)));
             }
             break;
         case 8:
@@ -484,7 +485,8 @@ QString QDltArgument::toString(bool binary)
             else {
                 unsigned int tmp;
                 tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
-                text += QString("%1").arg((double)(*(double*)((void*)&tmp)));
+                void *buf = (void *) &tmp;
+                text += QString("%1").arg((double)(*((double*)buf)));
             }
             break;
         default:
@@ -583,7 +585,8 @@ QVariant QDltArgument::getValue()
             {
                 unsigned int tmp;
                 tmp = DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData())));
-                return QVariant((double)(*(float*)((void*)&tmp)));
+                void *buf = (void*) &tmp;
+                return QVariant((double)(*((float*)buf)));
             }
         case 8:
             if(endianness == DltEndiannessLittleEndian)
@@ -591,7 +594,8 @@ QVariant QDltArgument::getValue()
             else {
                 unsigned int tmp;
                 tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
-                return QVariant((double)(*(double*)((void*)&tmp)));
+                void *buf = (void*) &tmp;
+                return QVariant((double)(*((double*)buf)));
             }
         default:
             break;

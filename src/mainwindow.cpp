@@ -882,6 +882,9 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
 void MainWindow::exportSelection(bool ascii = true,bool file = false)
 {
+    Q_UNUSED(ascii);
+    Q_UNUSED(file);
+
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
     DltExporter exporter;
@@ -2792,6 +2795,8 @@ void MainWindow::drawUpdatedView()
 
 void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
+    Q_UNUSED(deselected);
+
     if(selected.size()>0)
     {
         QModelIndex index =  selected[0].topLeft();

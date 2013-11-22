@@ -333,6 +333,8 @@ void FiletransferPlugin::doFLFI(QDltMsg *msg){
 }
 
 void FiletransferPlugin::doFLIF(QDltMsg *msg){
+    Q_UNUSED(msg);
+
 //empty.
 //not implemented yet. Would handle extended file information: file serialnumber, name ,size, creation date, number of packages
 }

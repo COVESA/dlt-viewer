@@ -531,6 +531,9 @@ void PluginItem::update()
         case 2:
             modeString = new QString("Enabled&Visible");
             break;
+        default:
+            modeString = new QString("");
+            break;
     }
 
     //setData(0,0,QString("%1 (%2:%3|%4 %5)").arg(this->getName()).arg(types.join("")).arg(*modeString).arg(list.size()).arg(this->getFilename()));
