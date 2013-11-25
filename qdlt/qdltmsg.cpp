@@ -509,11 +509,9 @@ QString QDltMsg::toStringPayload()
     if((getMode()==QDltMsg::DltModeNonVerbose) && (getType()!=QDltMsg::DltTypeControl) && (getNumberOfArguments() == 0)) {
         text += QString("[%1] ").arg(getMessageId());
         data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
-        //text += toAscii(data);
-        //text += toAsciiTable(data,false,false,true,8,64,false);
         if(!data.isEmpty())
         {
-            text += toAscii(data, true);
+            text += toAsciiTable(data,false,false,true,1024,1024,false);
             text += "|";
             text += toAscii(data, false);
         }

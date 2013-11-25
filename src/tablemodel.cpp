@@ -18,6 +18,7 @@
  */
 
 #include <QtGui>
+#include <QApplication>
 #include <qmessagebox.h>
 
 #include "tablemodel.h"
