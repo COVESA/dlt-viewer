@@ -221,11 +221,14 @@ void SettingsDialog::writeDlg()
         ui->checkBoxDST->setEnabled(false);
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
+        ui->checkBoxAutomaticTimezone->setEnabled(false);
     }else{
         ui->checkBoxDST->setEnabled(true);
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);
+        ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
+    ui->checkBoxAutomaticTimezone->setChecked(automaticTimezoneFromDlt?Qt::Checked:Qt::Unchecked);
     ui->checkBoxDST->setCheckState(dst?Qt::Checked:Qt::Unchecked);
     ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(utcOffset)));
 
@@ -292,6 +295,7 @@ void SettingsDialog::writeDlg()
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
     ui->checkBoxUpdateContextLoadingFile->setCheckState(updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxUpdateContextUnregister->setCheckState(updateContextsUnregister?Qt::Checked:Qt::Unchecked);
 
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     int refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
@@ -337,6 +341,7 @@ void SettingsDialog::readDlg()
 
     /* Time settings */
     automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
+    automaticTimezoneFromDlt = ( ui->checkBoxAutomaticTimezone->isChecked() == true ? 1:0);
     utcOffset = ui->comboBoxUTCOffset->itemData(ui->comboBoxUTCOffset->currentIndex()).toLongLong();
     dst =           ( ui->checkBoxDST->isChecked()== true ? 1:0);
 
@@ -360,6 +365,7 @@ void SettingsDialog::readDlg()
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
     updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
+    updateContextsUnregister = (ui->checkBoxUpdateContextUnregister->checkState() == Qt::Checked);
 
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     int refreshrate = ui->spinBoxFrequency->value();
@@ -408,6 +414,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     /* table */
     settings->setValue("startup/fontSize",fontSize);
     settings->setValue("startup/automaticTimeSettings",automaticTimeSettings);
+    settings->setValue("startup/automaticTimezoneFromDlt",automaticTimezoneFromDlt);
     settings->setValue("startup/utcOffset",utcOffset);
     settings->setValue("startup/dst",dst);
     settings->setValue("startup/showIndex",showIndex);
@@ -430,6 +437,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     /* other */
     settings->setValue("startup/writeControl",writeControl);
     settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
+    settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
 
     /* For settings integrity validation */
     settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
@@ -471,6 +479,7 @@ void SettingsDialog::readSettings()
     /* table */
     fontSize = settings->value("startup/fontSize",8).toInt();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
+    automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
     utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)timezone*-1)).toLongLong();
     dst = settings->value("startup/dst",daylight == 0 ? 0 : 1).toInt();
     showIndex = settings->value("startup/showIndex",1).toInt();
@@ -493,6 +502,7 @@ void SettingsDialog::readSettings()
     /* other */
     writeControl = settings->value("startup/writeControl",1).toInt();
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
+    updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
 }
 
 
@@ -646,10 +656,12 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
         ui->checkBoxDST->setEnabled(false);
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
+        ui->checkBoxAutomaticTimezone->setEnabled(false);
     }else{
         ui->checkBoxDST->setEnabled(true);
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);
+        ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
 }
 

@@ -81,7 +81,14 @@ unsigned int QDltMsg::getCtrlServiceId()
 
 QString QDltMsg::getCtrlServiceIdString()
 {
-    return QString(( ctrlServiceId<=20 )?qDltCtrlServiceId[ctrlServiceId]:"");
+    if(ctrlServiceId == DLT_SERVICE_ID_UNREGISTER_CONTEXT)
+        return QString("unregister_context");
+    else if(ctrlServiceId == DLT_SERVICE_ID_CONNECTION_INFO)
+        return QString("connection_info");
+    else if(ctrlServiceId == DLT_SERVICE_ID_TIMEZONE)
+        return QString("timezone");
+    else
+        return QString(( ctrlServiceId<=20 )?qDltCtrlServiceId[ctrlServiceId]:"");
 }
 
 unsigned char QDltMsg::getCtrlReturnType()
@@ -522,15 +529,59 @@ QString QDltMsg::toStringPayload()
         text += QString("[%1 %2] ").arg(getCtrlServiceIdString()).arg(getCtrlReturnTypeString());
 
         // ServiceID of Get ECU Software Version
-        if(getCtrlServiceId() == 0x13)
+        if(getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
         {
             // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU Software Version
             data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
             text += toAscii(data,true);
         }
+        else if(getCtrlServiceId() == DLT_SERVICE_ID_CONNECTION_INFO)
+        {
+            if(payload.size() == sizeof(DltServiceConnectionInfo))
+            {
+                DltServiceConnectionInfo *service;
+                service = (DltServiceConnectionInfo*) payload.constData();
+                switch(service->state)
+                {
+                case DLT_CONNECTION_STATUS_DISCONNECTED:
+                    text += "disconnected";
+                    break;
+                case DLT_CONNECTION_STATUS_CONNECTED:
+                    text += "connected";
+                    break;
+                default:
+                    text += "unknown";
+                }
+                text += " " + QString(QByteArray(service->comid,4));
+            }
+            else
+            {
+                data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
+                text += toAscii(data);
+            }
+        }
+        else if(getCtrlServiceId() == DLT_SERVICE_ID_TIMEZONE)
+        {
+            if(payload.size() == sizeof(DltServiceTimezone))
+            {
+                DltServiceTimezone *service;
+                service = (DltServiceTimezone*) payload.constData();
+
+                if(endianness == DltEndiannessLittleEndian)
+                    text += QString("%1 s").arg(service->timezone);
+                else
+                    text += QString("%1 s").arg(DLT_SWAP_32(service->timezone));
+                text += QString(" %1").arg(service->isdst?"DST":"");
+            }
+            else
+            {
+                data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
+                text += toAscii(data);
+            }
+        }
         else
         {
-            data = payload.mid(6,(payload.size()>262)?256:(payload.size()-6));
+            data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
             text += toAscii(data);
         }
 

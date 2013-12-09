@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>439</width>
-    <height>619</height>
+    <width>487</width>
+    <height>581</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -355,7 +355,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>Project</string>
+       <string>Project Table</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_6">
        <item row="0" column="0">
@@ -583,23 +583,43 @@
             <property name="checkable">
              <bool>true</bool>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
+            <layout class="QGridLayout" name="gridLayout_9">
+             <item row="0" column="0" colspan="3">
+              <widget class="QCheckBox" name="checkBoxAutomaticTimezone">
+               <property name="text">
+                <string>Automatically update timezone  from DLT</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QComboBox" name="comboBoxUTCOffset"/>
+             </item>
+             <item row="1" column="2">
+              <widget class="QCheckBox" name="checkBoxDST">
+               <property name="text">
+                <string>Daylight Saving Time</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
               <widget class="QLabel" name="labelTimezone">
                <property name="text">
                 <string>Time zone</string>
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QComboBox" name="comboBoxUTCOffset"/>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkBoxDST">
-               <property name="text">
-                <string>Daylight Saving Time</string>
+             <item row="2" column="2">
+              <spacer name="verticalSpacer_3">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
                </property>
-              </widget>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>40</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
@@ -607,23 +627,43 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="0">
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>Project Other</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
         <widget class="QGroupBox" name="groupBox_2">
          <property name="title">
           <string>Other</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="7" column="0">
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoScroll">
+            <property name="text">
+             <string>Auto scroll</string>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkBoxAutoConnect">
             <property name="text">
              <string>Auto connect to ECUs at start</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
-            <property name="text">
-             <string>Auto mark warn messages</string>
             </property>
            </widget>
           </item>
@@ -634,6 +674,20 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
+            <property name="text">
+             <string>Update Contexts when loading log file</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
+            <property name="text">
+             <string>Auto mark warn messages</string>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="0">
            <widget class="QCheckBox" name="checkBoxWriteControl">
             <property name="text">
@@ -641,17 +695,10 @@
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoScroll">
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
             <property name="text">
-             <string>Auto scroll</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
-            <property name="text">
-             <string>Update Contexts when loading log file</string>
+             <string>Update Context Unregister</string>
             </property>
            </widget>
           </item>

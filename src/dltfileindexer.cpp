@@ -195,13 +195,49 @@ bool DltFileIndexer::indexFilter()
         if((mode == modeIndex || mode == modeIndexAndFilter) &&
            msg.getType()==QDltMsg::DltTypeControl &&
            msg.getSubtype()==QDltMsg::DltControlResponse &&
-           msg.getCtrlServiceId() == 0x13)
+           msg.getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
         {
             QByteArray payload = msg.getPayload();
             QByteArray data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
             QString version = msg.toAscii(data,true);
             version = version.trimmed(); // remove all white spaces at beginning and end
             versionString(msg.getEcuid(),version);
+        }
+
+        /* check if it is a timezone message */
+        if((mode == modeIndex || mode == modeIndexAndFilter) &&
+           msg.getType()==QDltMsg::DltTypeControl &&
+           msg.getSubtype()==QDltMsg::DltControlResponse &&
+           msg.getCtrlServiceId() == DLT_SERVICE_ID_TIMEZONE)
+        {
+            QByteArray payload = msg.getPayload();
+            if(payload.size() == sizeof(DltServiceTimezone))
+            {
+                DltServiceTimezone *service;
+                service = (DltServiceTimezone*) payload.constData();
+
+                if(msg.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
+                    timezone(service->timezone,service->isdst);
+                else
+                    timezone(DLT_SWAP_32(service->timezone),service->isdst);
+            }
+        }
+
+        /* check if it is a timezone message */
+        if((mode == modeIndex || mode == modeIndexAndFilter) &&
+           msg.getType()==QDltMsg::DltTypeControl &&
+           msg.getSubtype()==QDltMsg::DltControlResponse &&
+           msg.getCtrlServiceId() == DLT_SERVICE_ID_UNREGISTER_CONTEXT)
+        {
+            QByteArray payload = msg.getPayload();
+            if(payload.size() == sizeof(DltServiceUnregisterContext))
+            {
+                DltServiceUnregisterContext *service;
+                service = (DltServiceUnregisterContext*) payload.constData();
+
+                unregisterContext(msg.getEcuid(),QString(QByteArray(service->apid,4)),QString(QByteArray(service->ctid,4)));
+            }
+
         }
 
         /* Process all viewer plugins */

@@ -393,6 +393,8 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
     connect(dltIndexer, SIGNAL(finishFilter()), this, SLOT(reloadLogFileFinishFilter()));
     connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
+    connect(dltIndexer, SIGNAL(timezone(int,unsigned char)), this, SLOT(controlMessage_Timezone(int,unsigned char)));
+    connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
 
     /* Plugins/Filters enabled checkboxes */
     ui->pluginsEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
@@ -3012,6 +3014,31 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
 
         break;
     }
+    case DLT_SERVICE_ID_TIMEZONE:
+    {
+        if(payload.size() == sizeof(DltServiceTimezone))
+        {
+            DltServiceTimezone *service;
+            service = (DltServiceTimezone*) payload.constData();
+
+            if(msg.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
+                controlMessage_Timezone(service->timezone, service->isdst);
+            else
+                controlMessage_Timezone(DLT_SWAP_32(service->timezone), service->isdst);
+        }
+        break;
+    }
+    case DLT_SERVICE_ID_UNREGISTER_CONTEXT:
+    {
+        if(payload.size() == sizeof(DltServiceUnregisterContext))
+        {
+            DltServiceUnregisterContext *service;
+            service = (DltServiceUnregisterContext*) payload.constData();
+
+            controlMessage_UnregisterContext(msg.getEcuid(),QString(QByteArray(service->apid,4)),QString(QByteArray(service->ctid,4)));
+        }
+        break;
+    }
     } // switch
 }
 
@@ -3792,6 +3819,54 @@ void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QStri
     conitem->status = ContextItem::valid;
     conitem->update();
     appitem->addChild(conitem);
+}
+
+void MainWindow::controlMessage_Timezone(int timezone, unsigned char dst)
+{
+    if(!project.settings->automaticTimeSettings && project.settings->automaticTimezoneFromDlt)
+    {
+        project.settings->utcOffset = timezone;
+        project.settings->dst = dst;
+    }
+}
+
+void MainWindow::controlMessage_UnregisterContext(QString ecuId,QString appId,QString ctId)
+{
+    if(!project.settings->updateContextsUnregister)
+        return;
+
+    /* find ecu item */
+    EcuItem *ecuitemFound = 0;
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem->id == ecuId)
+        {
+            ecuitemFound = ecuitem;
+            break;
+        }
+    }
+
+    if(!ecuitemFound)
+        return;
+
+    /* First try to find existing context */
+    for(int numapp = 0; numapp < ecuitemFound->childCount(); numapp++)
+    {
+        ApplicationItem * appitem = (ApplicationItem *) ecuitemFound->child(numapp);
+
+        for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+        {
+            ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+
+            if(appitem->id == appId && conitem->id == ctId)
+            {
+                /* remove context */
+                delete conitem->parent()->takeChild(conitem->parent()->indexOfChild(conitem));
+                return;
+            }
+        }
+    }
 }
 
 void MainWindow::on_action_menuHelp_Support_triggered()

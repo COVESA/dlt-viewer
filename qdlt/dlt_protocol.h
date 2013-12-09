@@ -185,6 +185,9 @@
 #define DLT_SERVICE_ID_SET_DEFAULT_TRACE_STATUS        0x12 /**< Service ID: Set default trace status */
 #define DLT_SERVICE_ID_GET_SOFTWARE_VERSION            0x13 /**< Service ID: Get software version */
 #define DLT_SERVICE_ID_MESSAGE_BUFFER_OVERFLOW         0x14 /**< Service ID: Message buffer overflow */
+#define DLT_SERVICE_ID_UNREGISTER_CONTEXT             0xf01 /**< Service ID: Message unregister context */
+#define DLT_SERVICE_ID_CONNECTION_INFO                0xf02 /**< Service ID: Message connection info */
+#define DLT_SERVICE_ID_TIMEZONE						  0xf03 /**< Service ID: Timezone */
 #define DLT_SERVICE_ID_CALLSW_CINJECTION              0xFFF /**< Service ID: Message Injection (minimal ID) */
 
 /*
@@ -193,6 +196,12 @@
 #define DLT_SERVICE_RESPONSE_OK            0x00 /**< Control message response: OK */
 #define DLT_SERVICE_RESPONSE_NOT_SUPPORTED 0x01 /**< Control message response: Not supported */
 #define DLT_SERVICE_RESPONSE_ERROR         0x02 /**< Control message response: Error */
+
+/*
+ * Definitions of DLT service connection state
+ */
+#define DLT_CONNECTION_STATUS_DISCONNECTED 		0x01 /**< Client is disconnected */
+#define DLT_CONNECTION_STATUS_CONNECTED 		0x02 /**< Client is connected */
 
 /**
   \}

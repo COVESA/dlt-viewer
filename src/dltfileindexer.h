@@ -143,6 +143,12 @@ signals:
     // version log message parsed
     void versionString(QString ecuId, QString version);
 
+    // control message timezone parsed
+    void timezone(int timezone, unsigned char dst);
+
+    // control message unregister context
+    void unregisterContext(QString ecuId,QString appId,QString ctId);
+
     // get log info message found
     void getLogInfo(int index);
 

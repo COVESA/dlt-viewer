@@ -65,6 +65,7 @@ public:
     int autoMarkWarn;
     int writeControl;
     int updateContextLoadingFile;
+    int updateContextsUnregister;
 
     int fontSize;
     int showIndex;
@@ -83,6 +84,7 @@ public:
     int showPayload;
 
     int automaticTimeSettings;
+    int automaticTimezoneFromDlt;
     qlonglong utcOffset;
     int dst;
 
