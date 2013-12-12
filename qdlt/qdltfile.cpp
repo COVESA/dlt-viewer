@@ -36,23 +36,55 @@ QDltFile::QDltFile()
 
 QDltFile::~QDltFile()
 {
-    if(infile.isOpen()) {
-        infile.close();
-    }
+    clear();
 }
 
-void QDltFile::setDltIndex(QList<unsigned long> &_indexAll){
-    indexAll = _indexAll;
+void QDltFile::clear()
+{
+    for(int num=0;num<files.size();num++)
+    {
+        if(files[num]->infile.isOpen()) {
+             files[num]->infile.close();
+        }
+        delete(files[num]);
+    }
+    files.clear();
+}
+
+int QDltFile::getNumberOfFiles()
+{
+    return files.size();
+}
+
+void QDltFile::setDltIndex(QList<unsigned long> &_indexAll, int num){
+    if(num<0 || num>=files.size())
+        return;
+
+    files[num]->indexAll = _indexAll;
 }
 
 int QDltFile::size()
 {
-    return indexAll.size();
+    int size=0;
+
+    for(int num=0;num<files.size();num++)
+    {
+        size += files[num]->indexAll.size();
+    }
+
+    return size;
 }
 
 unsigned long QDltFile::fileSize()
 {
-    return infile.size();
+    unsigned long size=0;
+
+    for(int num=0;num<files.size();num++)
+    {
+        size += files[num]->infile.size();
+    }
+
+    return size;
 }
 
 int QDltFile::sizeFilter()
@@ -60,24 +92,26 @@ int QDltFile::sizeFilter()
     if(filterFlag)
         return indexFilter.size();
     else
-        return indexAll.size();
+        return size();
 }
 
-bool QDltFile::open(QString _filename) {
+bool QDltFile::open(QString _filename, bool append) {
 
     qDebug() << "Open file" << _filename << "started";
 
     /* check if file is already opened */
-    if(infile.isOpen()) {
-        qWarning() << "infile.isOpen: file is already open";
-        infile.close();
-    }
+    if(!append)
+        clear();
+
+    /* create new file item */
+    QDltFileItem *item = new QDltFileItem();
+    files.append(item);
 
     /* set new filename */
-    infile.setFileName(_filename);
+    item->infile.setFileName(_filename);
 
     /* open the log file read only */
-    if(infile.open(QIODevice::ReadOnly)==false) {
+    if(item->infile.open(QIODevice::ReadOnly)==false) {
         /* open file failed */
         qWarning() << "open of file" << _filename << "failed";
         return false;
@@ -90,7 +124,10 @@ bool QDltFile::open(QString _filename) {
 
 void QDltFile::clearIndex()
 {
-    indexAll.clear();
+    for(int num=0;num<files.size();num++)
+    {
+        files[num]->indexAll.clear();
+    }
 }
 
 bool QDltFile::createIndex()
@@ -98,13 +135,6 @@ bool QDltFile::createIndex()
     bool ret = false;
 
     qDebug() << "Create index started";
-
-    /* check if file is already opened */
-    if(!infile.isOpen()) {
-        /* return empty buffer */
-        qDebug() << "createIndex: Infile is not open";
-        return ret;
-    }
 
     clearIndex();
 
@@ -114,7 +144,7 @@ bool QDltFile::createIndex()
 
     ret = updateIndex();
 
-    qDebug() << "Create index finished - "<< indexAll.size() << "messages found";
+    qDebug() << "Create index finished - "<< size() << "messages found";
 
     return ret;
 }
@@ -124,68 +154,73 @@ bool QDltFile::updateIndex()
     QByteArray buf;
     unsigned long pos = 0;
 
-    /* check if file is already opened */
-    if(!infile.isOpen()) {
-        qDebug() << "updateIndex: Infile is not open";
-        return false;
-    }
-
     mutexQDlt.lock();
 
-    /* start at last found position */
-    if(indexAll.size()) {
-        /* move behind last found position */
-        pos = indexAll[indexAll.size()-1] + 4;
-        infile.seek(pos);
-    }
-    else {
-        /* the file was empty the last call */
-        infile.seek(0);
-    }
-
-    /* Align kbytes, 1MB read at a time */
-    static const int READ_BUF_SZ = 1024 * 1024;
-
-    /* walk through the whole file and find all DLT0x01 markers */
-    /* store the found positions in the indexAll */
-    char lastFound = 0;
-
-    while(true) {
-
-        /* read buffer from file */
-        buf = infile.read(READ_BUF_SZ);
-        if(buf.isEmpty())
-            break; // EOF
-
-        /* Use primitive buffer for faster access */
-        int cbuf_sz = buf.size();
-        const char *cbuf = buf.constData();
-
-        /* find marker in buffer */
-        for(int num=0;num<cbuf_sz;num++) {
-            if(cbuf[num] == 'D')
-            {
-                lastFound = 'D';
-            }
-            else if(lastFound == 'D' && cbuf[num] == 'L')
-            {
-                lastFound = 'L';
-            }
-            else if(lastFound == 'L' && cbuf[num] == 'T')
-            {
-                lastFound = 'T';
-            }
-            else if(lastFound == 'T' && cbuf[num] == 0x01)
-            {
-                indexAll.append(pos+num-3);
-                lastFound = 0;
-            }
-            else
-            {
-                lastFound = 0;
-            }
+    for(int num=0;num<files.size();num++)
+    {
+        /* check if file is already opened */
+        if(!files[num]->infile.isOpen()) {
+            qDebug() << "updateIndex: Infile is not open";
+            mutexQDlt.unlock();
+            return false;
         }
-        pos += cbuf_sz;
+
+
+        /* start at last found position */
+        if(files[num]->indexAll.size()) {
+            /* move behind last found position */
+            pos = files[num]->indexAll[files[num]->indexAll.size()-1] + 4;
+            files[num]->infile.seek(pos);
+        }
+        else {
+            /* the file was empty the last call */
+            files[num]->infile.seek(0);
+        }
+
+        /* Align kbytes, 1MB read at a time */
+        static const int READ_BUF_SZ = 1024 * 1024;
+
+        /* walk through the whole file and find all DLT0x01 markers */
+        /* store the found positions in the indexAll */
+        char lastFound = 0;
+
+        while(true) {
+
+            /* read buffer from file */
+            buf = files[num]->infile.read(READ_BUF_SZ);
+            if(buf.isEmpty())
+                break; // EOF
+
+            /* Use primitive buffer for faster access */
+            int cbuf_sz = buf.size();
+            const char *cbuf = buf.constData();
+
+            /* find marker in buffer */
+            for(int num=0;num<cbuf_sz;num++) {
+                if(cbuf[num] == 'D')
+                {
+                    lastFound = 'D';
+                }
+                else if(lastFound == 'D' && cbuf[num] == 'L')
+                {
+                    lastFound = 'L';
+                }
+                else if(lastFound == 'L' && cbuf[num] == 'T')
+                {
+                    lastFound = 'T';
+                }
+                else if(lastFound == 'T' && cbuf[num] == 0x01)
+                {
+                    files[num]->indexAll.append(pos+num-3);
+                    lastFound = 0;
+                }
+                else
+                {
+                    lastFound = 0;
+                }
+            }
+            pos += cbuf_sz;
+        }
     }
 
     mutexQDlt.unlock();
@@ -218,7 +253,7 @@ bool QDltFile::updateIndexFilter()
         index = 0;
     }
 
-    for(int num=index;num<indexAll.size();num++) {
+    for(int num=index;num<size();num++) {
         buf = getMsg(num);
         if(!buf.isEmpty()) {
             msg.setMsg(buf);
@@ -275,33 +310,54 @@ QColor QDltFile::checkMarker(QDltMsg &msg)
     return filterList.checkMarker(msg);
 }
 
-QString QDltFile::getFileName()
+QString QDltFile::getFileName(int num)
 {
-    return infile.fileName();
+    if(num<0 || num>=files.size())
+        return QString();
+
+    return files[num]->infile.fileName();
 }
 
 void QDltFile::close()
 {
     /* close file */
-    infile.close();
+    clear();
 }
 
 QByteArray QDltFile::getMsg(int index)
 {
     QByteArray buf;
+    int num;
 
-    /* check if file is already opened */
-    if(!infile.isOpen()) {
-        /* return empty buffer */
-        qDebug() << "getMsg: Infile is not open";
+
+    /* check if index is in range */
+    if(index<0 ) {
+        qDebug() << "getMsg: Index is out of range";
 
         /* return empty data buffer */
         return QByteArray();
     }
 
-    /* check if index is in range */
-    if(index<0 || index>=indexAll.size()) {
+    for(num=0;num<files.size();num++)
+    {
+        if(index<files[num]->indexAll.size())
+            break;
+        else
+            index -= files[num]->indexAll.size();
+    }
+
+    if(num>=files.size())
+    {
         qDebug() << "getMsg: Index is out of range";
+
+        /* return empty data buffer */
+        return QByteArray();
+    }
+
+    /* check if file is already opened */
+    if(!files[num]->infile.isOpen()) {
+        /* return empty buffer */
+        qDebug() << "getMsg: Infile is not open";
 
         /* return empty data buffer */
         return QByteArray();
@@ -310,15 +366,15 @@ QByteArray QDltFile::getMsg(int index)
     mutexQDlt.lock();
 
     /* move to file position selected by index */
-    infile.seek(indexAll[index]);
+    files[num]->infile.seek(files[num]->indexAll[index]);
 
     /* read DLT message from file */
-    if(index == (indexAll.size()-1))
+    if(index == (files[num]->indexAll.size()-1))
         /* last message in file */
-        buf = infile.read(infile.size()-indexAll[index]);
+        buf = files[num]->infile.read(files[num]->infile.size()-files[num]->indexAll[index]);
     else
         /* any other file position */
-        buf = infile.read(indexAll[index+1]-indexAll[index]);
+        buf = files[num]->infile.read(files[num]->indexAll[index+1]-files[num]->indexAll[index]);
 
     mutexQDlt.unlock();
 
@@ -352,7 +408,7 @@ QByteArray QDltFile::getMsgFilter(int index)
     }
     else {
         /* check if index is in range */
-        if(index<0 || index>=indexAll.size()) {
+        if(index<0 || index>=size()) {
             qDebug() << "getMsgFilter: Index is out of range";
 
             /* return empty data buffer */
@@ -376,7 +432,7 @@ int QDltFile::getMsgFilterPos(int index)
     }
     else {
         /* check if index is in range */
-        if(index<0 || index>=indexAll.size()) {
+        if(index<0 || index>=size()) {
             qDebug() << "getMsgFilter: Index is out of range";
 
             /* return invalid */

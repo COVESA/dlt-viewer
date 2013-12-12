@@ -28,7 +28,7 @@ public:
     typedef enum { modeNone, modeIndex, modeIndexAndFilter, modeFilter, modeDefaultFilter } IndexingMode;
 
     // create main index
-    bool index();
+    bool index(int num);
 
     // create index based on filters and apply plugins
     bool indexFilter();

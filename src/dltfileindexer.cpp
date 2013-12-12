@@ -44,7 +44,7 @@ DltFileIndexer::~DltFileIndexer()
 {
 }
 
-bool DltFileIndexer::index()
+bool DltFileIndexer::index(int num)
 {
     QTime time;
 
@@ -60,8 +60,8 @@ bool DltFileIndexer::index()
     }
 
     // prepare indexing
-    dltFile->clearIndex();
-    QFile f(dltFile->getFileName());
+    //dltFile->clearIndex();
+    QFile f(dltFile->getFileName(num));
 
     // open file
     if(!f.open(QIODevice::ReadOnly))
@@ -432,7 +432,7 @@ void DltFileIndexer::run()
 
     // calculate runs
     if(mode == modeIndexAndFilter)
-        maxRun = 2;
+        maxRun = dltFile->getNumberOfFiles()+1;
     else
         maxRun = 1;
     currentRun = 1;
@@ -440,14 +440,17 @@ void DltFileIndexer::run()
     // index
     if(mode == modeIndex || mode == modeIndexAndFilter)
     {
-        if(!index())
+        for(int num=0;num<dltFile->getNumberOfFiles();num++)
         {
-            // error
-            return;
+            if(!index(num))
+            {
+                // error
+                return;
+            }
+            dltFile->setDltIndex(indexAllList,num);
+            currentRun++;
         }
-        dltFile->setDltIndex(indexAllList);
         emit(finishIndex());
-        currentRun++;
     }
 
     // indexFilter
@@ -634,7 +637,11 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList)
     qDebug() << "md5FilterList:" << md5FilterList.toHex();
 
     // create string to be hashed
-    hashString = QFileInfo(dltFile->getFileName()).baseName();
+    hashString.clear();
+    for(int num=0;num<dltFile->getNumberOfFiles();num++)
+    {
+        hashString += QFileInfo(dltFile->getFileName(num)).baseName();
+    }
     hashString += "_" + QString("%1").arg(dltFile->fileSize());
     qDebug() << "hashString:" << hashString;
 

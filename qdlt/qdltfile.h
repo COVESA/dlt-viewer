@@ -32,6 +32,20 @@
 
 #include "export_rules.h"
 
+class QDLT_EXPORT QDltFileItem
+{
+public:
+    //! DLT log file.
+    QFile infile;
+
+    //! Index of all DLT messages.
+    /*!
+      Index contains positions of beginning of DLT messages in DLT log file.
+    */
+    QList<unsigned long> indexAll;
+
+};
+
 //! Access to a DLT log file.
 /*!
   This class provide access to DLT log file.
@@ -50,6 +64,10 @@ public:
       \return The name of the plugin
     */
     ~QDltFile();
+
+    void clear();
+
+    int getNumberOfFiles();
 
     //! Get the number of DLT message in the DLT log file.
     /*!
@@ -75,7 +93,7 @@ public:
       \param filename The DLT filename.
       \return true if the file is successfully opened with no error, false if an error occured.
     */
-    bool open(QString _filename);
+    bool open(QString _filename,bool append = false);
 
     //! Close teh currently opened DLT log file.
     /*!
@@ -86,7 +104,7 @@ public:
     /*!
       \param New index list of all DLT messages
     */
-    void setDltIndex(QList<unsigned long> &_indexAll);
+    void setDltIndex(QList<unsigned long> &_indexAll,int num = 0);
 
     //! Clears the internal index of all DLT messages.
     /*!
@@ -224,7 +242,7 @@ public:
     /*!
      * \return File name
      **/
-    QString getFileName();
+    QString getFileName(int num = 0);
 
     //! Get Index of all DLT messages matching filter
     /*!
@@ -244,14 +262,8 @@ private:
     //! Mutex to lock critical path for infile
     QMutex mutexQDlt;
 
-    //! DLT log file.
-    QFile infile;
-
-    //! Index of all DLT messages.
-    /*!
-      Index contains positions of beginning of DLT messages in DLT log file.
-    */
-    QList<unsigned long> indexAll;
+    //!all files including indexes
+    QList<QDltFileItem*> files;
 
     //! Index of all DLT messages matching filter.
     /*!

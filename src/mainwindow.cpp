@@ -423,7 +423,7 @@ void MainWindow::initFileHandling()
     outputfileIsTemporary = false;
     if(OptManager::getInstance()->isLogFile())
     {
-        openDltFile(OptManager::getInstance()->getLogFile());
+        openDltFile(QStringList(OptManager::getInstance()->getLogFile()));
         /* Command line file is treated as temp file */
         outputfileIsTemporary = true;
         outputfileIsFromCLI = true;
@@ -434,7 +434,7 @@ void MainWindow::initFileHandling()
         statusFilename->setText("no log file loaded");
         if(settings->defaultLogFile)
         {
-            openDltFile(settings->defaultLogFileName);
+            openDltFile(QStringList(settings->defaultLogFileName));
             outputfileIsFromCLI = false;
             outputfileIsTemporary = false;
         }
@@ -484,7 +484,7 @@ void MainWindow::commandLineConvertToASCII()
 {
 
     qfile.enableFilter(true);
-    openDltFile(OptManager::getInstance()->getConvertSourceFile());
+    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
@@ -641,16 +641,16 @@ void MainWindow::on_action_menuFile_New_triggered()
 
 void MainWindow::on_action_menuFile_Open_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Open DLT Log file"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+        tr("Open one or more DLT Log files"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
 
-    if(fileName.isEmpty())
+    if(fileNames.isEmpty())
         return;
 
     /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
 
-    openDltFile(fileName);
+    openDltFile(fileNames);
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
@@ -676,7 +676,7 @@ void MainWindow::openRecentFile()
         workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
          /* open existing file and append new data */
-        if (true == openDltFile(fileName))
+        if (true == openDltFile(QStringList(fileName)))
           {
             outputfileIsTemporary = false;
             outputfileIsFromCLI = false;
@@ -688,10 +688,16 @@ void MainWindow::openRecentFile()
     }
 }
 
-bool MainWindow::openDltFile(QString fileName)
+bool MainWindow::openDltFile(QStringList fileNames)
 {
     /* close existing file */
     bool ret = false;
+
+    if(fileNames.size()==0)
+        return false;
+
+    openFileNames = fileNames;
+
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
@@ -705,8 +711,8 @@ bool MainWindow::openDltFile(QString fileName)
     }
 
     /* open existing file and append new data */
-    outputfile.setFileName(fileName);
-    setCurrentFile(fileName);
+    outputfile.setFileName(fileNames.last());
+    setCurrentFile(fileNames.last());
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
@@ -721,7 +727,7 @@ bool MainWindow::openDltFile(QString fileName)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot open log file \"%1\"\n%2")
-                              .arg(fileName)
+                              .arg(fileNames.last())
                               .arg(outputfile.errorString()));
         ret = false;
 
@@ -1295,7 +1301,14 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
     dltIndexer->stop();
 
     // open qfile
-    qfile.open(outputfile.fileName());
+    if(!updateFilterIndexOnly)
+    {
+        for(int num=0;num<openFileNames.size();num++)
+        {
+            qDebug() << "Open file" << openFileNames[num];
+            qfile.open(openFileNames[num],num!=0);
+        }
+    }
     //qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableFilter(false);
 
@@ -5079,76 +5092,85 @@ void MainWindow::dragEnterEvent(QDragEnterEvent *event)
 void MainWindow::dropEvent(QDropEvent *event)
 {
     QString filename;
+    QStringList filenames;
+
     if (event->mimeData()->hasUrls())
     {
-        QUrl url = event->mimeData()->urls()[0];
-        filename = url.toLocalFile();
+        for(int num = 0;num<event->mimeData()->urls().size();num++)
+        {
+            QUrl url = event->mimeData()->urls()[num];
+            filename = url.toLocalFile();
 
-        if(filename.endsWith(".dlt", Qt::CaseInsensitive))
-        {
-            /* DLT log file dropped */
-            openDltFile(filename);
-            outputfileIsTemporary = false;
-            outputfileIsFromCLI   = false;
-            workingDirectory.setDltDirectory(QFileInfo(filename).absolutePath());
-        }
-        else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
-        {
-            /* Project file dropped */
-            openDlpFile(filename);            
-        }
-        else if(filename.endsWith(".dlf", Qt::CaseInsensitive))
-        {
-            /* Filter file dropped */
-            openDlfFile(filename,true);
-        }
-        else
-        {
-            /* ask for active decoder plugin to load configuration */
-            QStringList items;
-            QList<QDltPlugin*> list = pluginManager.getDecoderPlugins();
-            for(int num=0;num<list.size();num++)
+            if(filename.endsWith(".dlt", Qt::CaseInsensitive))
             {
-                items << list[num]->getName();
+                filenames.append(filename);
+                workingDirectory.setDltDirectory(QFileInfo(filename).absolutePath());
             }
-
-            /* check if decoder plugin list is empty */
-            if(list.size()==0)
+            else if(filename.endsWith(".dlp", Qt::CaseInsensitive))
             {
-                /* show warning */
-                QMessageBox::warning(this, QString("Drag&Drop"),
-                                     QString("No decoder plugin active to load configuration of file:\n")+filename);
-                return;
+                /* Project file dropped */
+                openDlpFile(filename);
             }
-
-            bool ok;
-            QString item = QInputDialog::getItem(this, tr("DLT Viewer"),
-                                                     tr("Select Plugin to load configuration:"), items, 0, false, &ok);
-            if (ok && !item.isEmpty())
+            else if(filename.endsWith(".dlf", Qt::CaseInsensitive))
             {
-                QDltPlugin* plugin = pluginManager.findPlugin(item);
-                if(plugin)
+                /* Filter file dropped */
+                openDlfFile(filename,true);
+            }
+            else
+            {
+                /* ask for active decoder plugin to load configuration */
+                QStringList items;
+                QList<QDltPlugin*> list = pluginManager.getDecoderPlugins();
+                for(int num=0;num<list.size();num++)
                 {
-                    plugin->loadConfig(filename);
-                    for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+                    items << list[num]->getName();
+                }
+
+                /* check if decoder plugin list is empty */
+                if(list.size()==0)
+                {
+                    /* show warning */
+                    QMessageBox::warning(this, QString("Drag&Drop"),
+                                         QString("No decoder plugin active to load configuration of file:\n")+filename);
+                    return;
+                }
+
+                bool ok;
+                QString item = QInputDialog::getItem(this, tr("DLT Viewer"),
+                                                         tr("Select Plugin to load configuration:"), items, 0, false, &ok);
+                if (ok && !item.isEmpty())
+                {
+                    QDltPlugin* plugin = pluginManager.findPlugin(item);
+                    if(plugin)
                     {
-                        PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
-                        if(pluginitem->getPlugin() == plugin)
+                        plugin->loadConfig(filename);
+                        for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
                         {
-                            /* update plugin */
-                            pluginitem->setFilename( filename );
+                            PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
+                            if(pluginitem->getPlugin() == plugin)
+                            {
+                                /* update plugin */
+                                pluginitem->setFilename( filename );
 
-                            /* update plugin item */
-                            updatePlugin(pluginitem);
-                            applyConfigEnabled(true);
+                                /* update plugin item */
+                                updatePlugin(pluginitem);
+                                applyConfigEnabled(true);
 
-                            ui->tabWidget->setCurrentWidget(ui->tabPlugin);
+                                ui->tabWidget->setCurrentWidget(ui->tabPlugin);
 
-                            break;
+                                break;
+                            }
                         }
                     }
                 }
             }
+        }
+        if(!filenames.isEmpty())
+        {
+            /* DLT log file dropped */
+            openDltFile(filenames);
+            outputfileIsTemporary = false;
+            outputfileIsFromCLI   = false;
         }
     }
     else

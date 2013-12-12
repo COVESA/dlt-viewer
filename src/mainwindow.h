@@ -274,7 +274,7 @@ private:
     bool anyPluginsEnabled();
     bool anyFiltersEnabled();
 
-    bool openDltFile(QString fileName);
+    bool openDltFile(QStringList fileName);
     bool openDlpFile(QString filename);
     bool openDlfFile(QString filename, bool replace);
 
@@ -477,6 +477,8 @@ public:
     QDltPluginManager pluginManager;
 
     QDltDefaultFilter defaultFilter;
+
+    QStringList openFileNames;
 
 
 };
