@@ -32,6 +32,7 @@ extern "C"
 QDltFile::QDltFile()
 {
     filterFlag = false;
+    sortByTimeFlag = false;
 }
 
 QDltFile::~QDltFile()
@@ -467,12 +468,17 @@ void QDltFile::enableFilter(bool state)
     filterFlag = state;
 }
 
+void QDltFile::enableSortByTime(bool state)
+{
+    sortByTimeFlag = state;
+}
+
 QList<unsigned long> QDltFile::getIndexFilter()
 {
     return indexFilter;
 }
 
-void QDltFile::setIndexFilter(QList<unsigned long> &_indexFilter)
+void QDltFile::setIndexFilter(QList<unsigned long> _indexFilter)
 {
     indexFilter = _indexFilter;
 }

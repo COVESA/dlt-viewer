@@ -21,6 +21,7 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     pluginsEnabled = true;
     filtersEnabled = true;
     multithreaded = true;
+    sortByTimeEnabled = false;
 
     mode = modeIndexAndFilter;
 }
@@ -52,9 +53,10 @@ bool DltFileIndexer::index(int num)
     time.start();
 
     // load filter index if enabled
-    if(!filterCache.isEmpty() && loadIndexCache())
+    if(!filterCache.isEmpty() && loadIndexCache(dltFile->getFileName(num)))
     {
         // loading index from filter is succesful
+        qDebug() << "Loaded index cache for file" << dltFile->getFileName(num);
         msecsIndexCounter = time.elapsed();
         return true;
     }
@@ -136,17 +138,22 @@ bool DltFileIndexer::index(int num)
     // close file
     f.close();
 
+    qDebug() << "Created index for file" << dltFile->getFileName(num);
+
     // update performance counter
     msecsIndexCounter = time.elapsed();
 
     // write index if enabled
     if(!filterCache.isEmpty())
-        saveIndexCache();
+    {
+        saveIndexCache(dltFile->getFileName(num));
+        qDebug() << "Saved index cache for file" << dltFile->getFileName(num);
+    }
 
     return true;
 }
 
-bool DltFileIndexer::indexFilter()
+bool DltFileIndexer::indexFilter(QStringList filenames)
 {
     QDltMsg msg;
     QDltPlugin *item;
@@ -160,9 +167,10 @@ bool DltFileIndexer::indexFilter()
     filterList = dltFile->getFilterList();
 
     // load filter index, if enabled and not an initial loading of file
-    if(!filterCache.isEmpty() && mode != modeIndexAndFilter && loadFilterIndexCache(filterList,indexFilterList))
+    if(!filterCache.isEmpty() && mode != modeIndexAndFilter && loadFilterIndexCache(filterList,indexFilterList,filenames))
     {
         // loading filter index from filter is succesful
+        qDebug() << "Loaded filter index cache for files" << filenames;
         msecsFilterCounter = time.elapsed();
         return true;
     }
@@ -173,6 +181,7 @@ bool DltFileIndexer::indexFilter()
 
     // clear index filter
     indexFilterList.clear();
+    indexFilterListSorted.clear();
 
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
@@ -256,7 +265,10 @@ bool DltFileIndexer::indexFilter()
         /* Add to filterindex if matches */
         if(filtersEnabled && filterList.checkFilter(msg))
         {
-            indexFilterList.append(ix);
+            if(sortByTimeEnabled)
+                indexFilterListSorted.insert((unsigned long)msg.getTime()*1000000+msg.getMicroseconds(),ix);
+            else
+                indexFilterList.append(ix);
         }
 
         /* Offer messages again to viewer plugins after decode */
@@ -306,12 +318,21 @@ bool DltFileIndexer::indexFilter()
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
 
+    qDebug() << "Created filter index for files" << filenames;
+
     // update performance counter
     msecsFilterCounter = time.elapsed();
 
+    // use sorted values if sort by time enabled
+    if(sortByTimeEnabled)
+        indexFilterList = indexFilterListSorted.values();
+
     // write filter index if enabled
     if(!filterCache.isEmpty())
-        saveFilterIndexCache(filterList,indexFilterList);
+    {
+        saveFilterIndexCache(filterList,indexFilterList,filenames);
+        qDebug() << "Saved filter index cache for files" << filenames;
+    }
 
     return true;
 }
@@ -391,7 +412,7 @@ bool DltFileIndexer::indexDefaultFilter()
 
         // write filter index if enabled
         if(!filterCache.isEmpty())
-            saveFilterIndexCache(*filterList,filterIndex->indexFilter);
+            saveFilterIndexCache(*filterList,filterIndex->indexFilter,QStringList(dltFile->getFileName()));
     }
 
     // update performance counter
@@ -456,7 +477,10 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter || mode == modeNone)
     {
-        if((mode != modeNone) && !indexFilter())
+        QStringList filenames;
+        for(int num=0;num<dltFile->getNumberOfFiles();num++)
+            filenames.append(QFileInfo(dltFile->getFileName(num)).fileName());
+        if((mode != modeNone) && !indexFilter(filenames))
         {
             // error
             return;
@@ -500,107 +524,97 @@ void DltFileIndexer::stop()
 }
 
 // load/safe index from/to file
-bool DltFileIndexer::loadIndexCache()
+bool DltFileIndexer::loadIndexCache(QString filename)
 {
-    QString filename;
+    QString filenameCache;
 
     // check if caching is enabled
     if(filterCache.isEmpty())
         return false;
 
     // get the filename for the cache file
-    filename = filenameIndexCache();
+    filenameCache = filenameIndexCache(filename);
 
     // load the cache file
-    if(!loadIndex(filterCache + "\\" +filename,indexAllList))
+    if(!loadIndex(filterCache + "\\" +filenameCache,indexAllList))
     {
         // loading cache file failed
-        qDebug() << "Load Index from file" << filterCache + "\\" +filename << "failed";
         return false;
     }
-
-    qDebug() << "Loaded Index from file" << filterCache + "\\" +filename;
 
     return true;
 }
 
-bool DltFileIndexer::saveIndexCache()
+bool DltFileIndexer::saveIndexCache(QString filename)
 {
-    QString filename;
+    QString filenameCache;
 
     // check if caching is enabled
     if(filterCache.isEmpty())
         return false;
 
     // get the filename for the cache file
-    filename = filenameIndexCache();
+    filenameCache = filenameIndexCache(filename);
 
     // save the cache file
-    if(!saveIndex(filterCache + "\\" +filename,indexAllList))
+    if(!saveIndex(filterCache + "\\" +filenameCache,indexAllList))
     {
         // saving cache file failed
-        qDebug() << "Save Index to file" << filterCache + "\\" +filename << "failed";
         return false;
     }
-
-    qDebug() << "Saved Index to file" << filterCache + "\\" +filename;
 
     return true;
 }
 
-QString DltFileIndexer::filenameIndexCache()
+QString DltFileIndexer::filenameIndexCache(QString filename)
 {
     QString hashString;
     QByteArray hashByteArray;
     QByteArray md5;
-    QString filename;
+    QString filenameCache;
 
     // create string to be hashed
-    hashString = QFileInfo(dltFile->getFileName()).baseName();
+    hashString = QFileInfo(filename).fileName();
     hashString += "_" + QString("%1").arg(dltFile->fileSize());
-    qDebug() << "hashString:" << hashString;
 
     // create byte array from hash string
     hashByteArray = hashString.toLatin1();
-    qDebug() << "hashByteArray:" << hashByteArray.toHex();
 
     // create MD5 from byte array
     md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
-    qDebug() << "md5:" << md5.toHex();
 
     // create filename
-    filename = QString(md5.toHex())+".dix";
-    qDebug() << "filename:" << filename;
+    filenameCache = QString(md5.toHex())+".dix";
 
-    return filename;
+    qDebug() << filename << ">>" << filenameCache;
+
+    return filenameCache;
 }
 
 // read/write index cache
-bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index)
+bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index,QStringList filenames)
 {
-    QString filename;
+    QString filenameCache;
 
     // check if caching is enabled
     if(filterCache.isEmpty())
         return false;
 
     // get the filename for the cache file
-    filename = filenameFilterIndexCache(filterList);
+    filenameCache = filenameFilterIndexCache(filterList,filenames);
 
     // load the cache file
-    if(!loadIndex(filterCache + "\\" +filename,index))
+    if(!loadIndex(filterCache + "\\" +filenameCache,index))
     {
         // loading of cache file failed
-        qDebug() << "Load Filter Index from file" << filterCache + "\\" +filename << "failed";
         return false;
     }
 
-    qDebug() << "Loaded Filter Index from file" << filterCache + "\\" +filename;
 
     return true;
 }
 
-bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index)
+bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> index,QStringList filenames)
 {
     QString filename;
 
@@ -609,22 +623,19 @@ bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QList<unsi
         return false;
 
     // get the filename for the cache file
-    filename = filenameFilterIndexCache(filterList);
+    filename = filenameFilterIndexCache(filterList,filenames);
 
     // save the cache file
     if(!saveIndex(filterCache + "\\" +filename,index))
     {
         // saving of cache file failed
-        qDebug() << "Save Filter Index to file" << filterCache + "\\" +filename << "failed";
         return false;
     }
-
-    qDebug() << "Saved Filter Index to file" << filterCache + "\\" +filename;
 
     return true;
 }
 
-QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList)
+QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStringList filenames)
 {
     QString hashString;
     QByteArray hashByteArray;
@@ -634,28 +645,26 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList)
 
     // get filter list
     md5FilterList = filterList.createMD5();
-    qDebug() << "md5FilterList:" << md5FilterList.toHex();
 
     // create string to be hashed
-    hashString.clear();
-    for(int num=0;num<dltFile->getNumberOfFiles();num++)
-    {
-        hashString += QFileInfo(dltFile->getFileName(num)).baseName();
-    }
+    if(sortByTimeEnabled)
+        filenames.sort();
+    hashString = filenames.join('_');
     hashString += "_" + QString("%1").arg(dltFile->fileSize());
-    qDebug() << "hashString:" << hashString;
 
     // create byte array from hash string
     hashByteArray = hashString.toLatin1();
-    qDebug() << "hashByteArray:" << hashByteArray.toHex();
 
     // create MD5 from byte array
     md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
-    qDebug() << "md5:" << md5.toHex();
 
     // create filename
-    filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+".dix";
-    qDebug() << "filename:" << filename;
+    if(sortByTimeEnabled)
+        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_S.dix";
+    else
+        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+".dix";
+
+    qDebug() << filenames << ">>" << filename;
 
     return filename;
 }

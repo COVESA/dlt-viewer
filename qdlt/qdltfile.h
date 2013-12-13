@@ -206,6 +206,12 @@ public:
     */
     void enableFilter(bool state);
 
+    //! Enable or disable sort by time.
+    /*!
+      \return state true if sort by time, false if sort by time is disabled
+    */
+    void enableSortByTime(bool state);
+
     //! Check if message matches the filter.
     /*!
       \param msg The message to be checked
@@ -254,7 +260,7 @@ public:
     /*!
      * \param _indexFilter List of file positions
      **/
-    void setIndexFilter(QList<unsigned long> &_indexFilter);
+    void setIndexFilter(QList<unsigned long> _indexFilter);
 
 protected:
 
@@ -280,6 +286,13 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
+
+    //! Enabling sortByTime.
+    /*!
+      true sorting is enabled.
+      false sorting is disabled.
+    */
+    bool sortByTimeFlag;
 };
 
 

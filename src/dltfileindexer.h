@@ -31,18 +31,18 @@ public:
     bool index(int num);
 
     // create index based on filters and apply plugins
-    bool indexFilter();
+    bool indexFilter(QStringList filenames);
     bool indexDefaultFilter();
 
     // load/save filter index from/to file
-    bool loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index);
-    bool saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index);
-    QString filenameFilterIndexCache(QDltFilterList &filterList);
+    bool loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index, QStringList filenames);
+    bool saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> index, QStringList filenames);
+    QString filenameFilterIndexCache(QDltFilterList &filterList, QStringList filenames);
 
     // load/save index from/to file
-    bool loadIndexCache();
-    bool saveIndexCache();
-    QString filenameIndexCache();
+    bool loadIndexCache(QString filename);
+    bool saveIndexCache(QString filename);
+    QString filenameIndexCache(QString filename);
 
     // load/save index from/to file
     bool saveIndex(QString filename, QList<unsigned long> &index);
@@ -64,6 +64,10 @@ public:
     // enable/disable filters
     void setFiltersEnabled(bool enable) { filtersEnabled = enable; }
     bool getFiltersEnabled() { return filtersEnabled; }
+
+    // enable/disable sort by time
+    void setSortByTimeEnabled(bool enable) { sortByTimeEnabled = enable; }
+    bool setSortByTimeEnabled() { return sortByTimeEnabled; }
 
     // enable/disable multithreaded
     void setMultithreaded(bool enable) { multithreaded = enable; }
@@ -112,11 +116,13 @@ private:
 
     // filtered index
     QList<unsigned long> indexFilterList;
+    QMultiMap<unsigned long,unsigned long> indexFilterListSorted;
 
     // some flags
     bool pluginsEnabled;
     bool filtersEnabled;
     bool multithreaded;
+    bool sortByTimeEnabled;
 
     // filter cache path
     QString filterCache;

@@ -457,6 +457,8 @@ private slots:
 
     void on_pushButtonDefaultFilterUpdateCache_clicked();
 
+    void on_checkBoxSortByTime_clicked(bool checked);
+
 public slots:
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();

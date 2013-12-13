@@ -399,6 +399,8 @@ void MainWindow::initFileHandling()
     /* Plugins/Filters enabled checkboxes */
     ui->pluginsEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
     ui->filtersEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
+    ui->checkBoxSortByTime->setChecked(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
     /* Process Project */
     if(OptManager::getInstance()->isProjectFile())
@@ -1240,6 +1242,7 @@ void MainWindow::reloadLogFileFinishFilter()
 
     // enable filter if requested
     qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    qfile.enableSortByTime(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
     // update table
     tableModel->setForceEmpty(false);
@@ -1325,6 +1328,7 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", true).toBool());
     dltIndexer->setMultithreaded(multithreaded);
     if(settings->filterCache)
         dltIndexer->setFilterCache(settings->filterCacheName);
@@ -1367,6 +1371,7 @@ void MainWindow::reloadLogFileDefaultFilter()
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", true).toBool());
 
     // start indexing
     dltIndexer->start();
@@ -5356,6 +5361,13 @@ void MainWindow::on_pluginsEnabled_clicked(bool checked)
 void MainWindow::on_filtersEnabled_clicked(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
+    ui->checkBoxSortByTime->setEnabled(checked);
+    applyConfigEnabled(true);
+}
+
+void MainWindow::on_checkBoxSortByTime_clicked(bool checked)
+{
+    DltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
     applyConfigEnabled(true);
 }
 
