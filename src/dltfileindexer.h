@@ -13,6 +13,27 @@
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 1
 
+class DltFileIndexerKey
+{
+public:
+    DltFileIndexerKey(time_t time,unsigned int microseconds);
+
+    friend bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2);
+
+private:
+    time_t time;
+    unsigned int microseconds;
+};
+
+inline bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2)
+{
+    if(key1.time<key2.time)
+        return true;
+    if(key1.time>key2.time)
+        return false;
+    return (key1.microseconds<key2.microseconds);
+}
+
 class DltFileIndexer : public QThread
 {
     Q_OBJECT
@@ -116,7 +137,7 @@ private:
 
     // filtered index
     QList<unsigned long> indexFilterList;
-    QMultiMap<unsigned long,unsigned long> indexFilterListSorted;
+    QMultiMap<DltFileIndexerKey,unsigned long> indexFilterListSorted;
 
     // some flags
     bool pluginsEnabled;

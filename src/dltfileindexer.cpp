@@ -12,6 +12,12 @@ extern "C" {
     #include "dlt_user.h"
 }
 
+DltFileIndexerKey::DltFileIndexerKey(time_t time,unsigned int microseconds)
+{
+    this->time = time;
+    this->microseconds = microseconds;
+}
+
 DltFileIndexer::DltFileIndexer(QObject *parent) :
     QThread(parent)
 {
@@ -266,7 +272,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         if(filtersEnabled && filterList.checkFilter(msg))
         {
             if(sortByTimeEnabled)
-                indexFilterListSorted.insert((unsigned long)msg.getTime()*1000000+msg.getMicroseconds(),ix);
+                indexFilterListSorted.insert(DltFileIndexerKey(msg.getTime(),msg.getMicroseconds()),ix);
             else
                 indexFilterList.append(ix);
         }
