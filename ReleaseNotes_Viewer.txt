@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.10.1 ALPHA
+Version 2.10.1
 
 Known issues
 ------------
@@ -18,6 +18,11 @@ Changes
 -------
 
 2.10.1
+  * Sort multiple log files by time.
+  * Open and display multiple DLT files at once.
+  * Optional automatic timezone settings.
+  * Added new control messages connection state, timezone and context unregister.
+  * Remove installer script from OSS repository.
   * First implementation of dlt statistic plugin.
   * Statistic features removed from dlt viewer plugin.
   * Fixed warnings with windows mingw32 compiler.
