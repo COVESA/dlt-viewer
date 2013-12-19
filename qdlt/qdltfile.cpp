@@ -157,10 +157,10 @@ bool QDltFile::updateIndex()
 
     mutexQDlt.lock();
 
-    for(int num=0;num<files.size();num++)
+    for(int numFile=0;numFile<files.size();numFile++)
     {
         /* check if file is already opened */
-        if(!files[num]->infile.isOpen()) {
+        if(!files[numFile]->infile.isOpen()) {
             qDebug() << "updateIndex: Infile is not open";
             mutexQDlt.unlock();
             return false;
@@ -168,14 +168,14 @@ bool QDltFile::updateIndex()
 
 
         /* start at last found position */
-        if(files[num]->indexAll.size()) {
+        if(files[numFile]->indexAll.size()) {
             /* move behind last found position */
-            pos = files[num]->indexAll[files[num]->indexAll.size()-1] + 4;
-            files[num]->infile.seek(pos);
+            pos = files[numFile]->indexAll[files[numFile]->indexAll.size()-1] + 4;
+            files[numFile]->infile.seek(pos);
         }
         else {
             /* the file was empty the last call */
-            files[num]->infile.seek(0);
+            files[numFile]->infile.seek(0);
         }
 
         /* Align kbytes, 1MB read at a time */
@@ -188,7 +188,7 @@ bool QDltFile::updateIndex()
         while(true) {
 
             /* read buffer from file */
-            buf = files[num]->infile.read(READ_BUF_SZ);
+            buf = files[numFile]->infile.read(READ_BUF_SZ);
             if(buf.isEmpty())
                 break; // EOF
 
@@ -212,7 +212,7 @@ bool QDltFile::updateIndex()
                 }
                 else if(lastFound == 'T' && cbuf[num] == 0x01)
                 {
-                    files[num]->indexAll.append(pos+num-3);
+                    files[numFile]->indexAll.append(pos+num-3);
                     lastFound = 0;
                 }
                 else

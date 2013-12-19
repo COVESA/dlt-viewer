@@ -448,7 +448,10 @@ void MainWindow::initFileHandling()
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
             if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+            {
+                openFileNames = QStringList(fn);
                 reloadLogFile();
+            }
             else
                 QMessageBox::critical(0, QString("DLT Viewer"),
                                       QString("Cannot load temporary log file \"%1\"\n%2")
@@ -633,7 +636,10 @@ void MainWindow::on_action_menuFile_New_triggered()
     outputfileIsFromCLI = false;
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    {
+        openFileNames = QStringList(fileName);
         reloadLogFile();
+    }
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
                               QString("Cannot create new log file \"%1\"\n%2")
@@ -698,8 +704,6 @@ bool MainWindow::openDltFile(QStringList fileNames)
     if(fileNames.size()==0)
         return false;
 
-    openFileNames = fileNames;
-
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
@@ -717,6 +721,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
     setCurrentFile(fileNames.last());
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
+        openFileNames = fileNames;
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false,false);
@@ -1065,6 +1070,7 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
     setCurrentFile(fileName);
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
+        openFileNames = QStringList(fileName);
         reloadLogFile();
     }
     else
@@ -1102,6 +1108,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
+        openFileNames = QStringList(fn);
         reloadLogFile();
     }
     else
