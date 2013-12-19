@@ -655,7 +655,7 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     // create string to be hashed
     if(sortByTimeEnabled)
         filenames.sort();
-    hashString = filenames.join('_');
+    hashString = filenames.join(QString("_"));
     hashString += "_" + QString("%1").arg(dltFile->fileSize());
 
     // create byte array from hash string
