@@ -278,7 +278,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* Offer messages again to viewer plugins after decode */
-        if(pluginsEnabled)
+        if((mode == modeIndex || mode == modeIndexAndFilter) && pluginsEnabled)
         {
             for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
             {
