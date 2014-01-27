@@ -46,6 +46,9 @@ extern "C" {
     #include "dlt_user.h"
 }
 
+#include <unistd.h>     /* for read(), close() */
+#include <sys/time.h>	/* for gettimeofday() */
+
 #include "mainwindow.h"
 
 #include "ecudialog.h"
@@ -2683,14 +2686,24 @@ void MainWindow::read(EcuItem* ecuitem)
         while((ecuitem->interfacetype == 0 && ecuitem->tcpcon.parse(qmsg)) ||
               (ecuitem->interfacetype == 1 && ecuitem->serialcon.parse(qmsg)))
         {
+            struct timeval tv;
+
             DltStorageHeader str;
             str.pattern[0]='D';
             str.pattern[1]='L';
             str.pattern[2]='T';
             str.pattern[3]=0x01;
+
+            /* get time of day */
+            #if defined(_MSC_VER)
+                time(&(storageheader->seconds));
+            #else
+                gettimeofday(&tv, NULL);
+            #endif
+
             QDateTime time = QDateTime::currentDateTime();
-            str.seconds = (time_t)time.toTime_t(); /* value is long */
-            str.microseconds = (int32_t)time.time().msec(); /* value is long */
+            str.seconds = (time_t)tv.tv_sec; /* value is long */
+            str.microseconds = (int32_t)tv.tv_usec; /* value is long */
             str.ecu[0]=0;
             str.ecu[1]=0;
             str.ecu[2]=0;
