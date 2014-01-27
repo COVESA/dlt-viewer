@@ -289,7 +289,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
 
     /* extract session id */
     if (DLT_IS_HTYP_WSID(standardheader->htyp)) {
-        sessionid = headerextra.tmsp;
+        sessionid = headerextra.seid;
     }
 
     /* extract message counter */
