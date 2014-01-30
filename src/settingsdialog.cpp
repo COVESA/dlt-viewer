@@ -211,6 +211,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkWarn->setCheckState(autoMarkWarn?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxLoggingOnlyMode->setCheckState(loggingOnlyMode?Qt::Checked:Qt::Unchecked);
 
     /* table */
     ui->spinBoxFontSize->setValue(fontSize);
@@ -335,6 +336,7 @@ void SettingsDialog::readDlg()
     autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
     autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
+    loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
 
     /* table */
     fontSize = ui->spinBoxFontSize->value();
@@ -410,6 +412,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
+    settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -475,6 +478,7 @@ void SettingsDialog::readSettings()
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
+    loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
 
     /* table */
     fontSize = settings->value("startup/fontSize",8).toInt();

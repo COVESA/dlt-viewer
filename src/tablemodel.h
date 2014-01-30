@@ -57,11 +57,13 @@ public:
     void modelChanged();
 
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
+    void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
 
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
 private:
     int lastSearchIndex;
     bool emptyForceFlag;
+    bool loggingOnlyMode;
 
     QColor searchBackgroundColor() const;
 };

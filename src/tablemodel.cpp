@@ -34,6 +34,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  {
      lastSearchIndex = -1;
      emptyForceFlag = false;
+     loggingOnlyMode = false;
  }
 
  TableModel::~TableModel()
@@ -60,7 +61,11 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         if(!qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg))
+         if(loggingOnlyMode)
+         {
+             msg = QDltMsg();
+         }
+         else if(!qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg))
          {
              if(index.column() == FieldNames::Index)
              {
@@ -155,6 +160,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case FieldNames::ArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
          case FieldNames::Payload:
+             if(loggingOnlyMode)
+                 return QString("Logging only Mode! Disable in Project Settings!");
              /* display payload */
              return msg.toStringPayload();
          }
@@ -287,6 +294,8 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
  {
      if(emptyForceFlag)
          return 0;
+     else if(loggingOnlyMode)
+         return 1;
      else
          return qfile->sizeFilter();
  }

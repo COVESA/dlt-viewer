@@ -66,6 +66,7 @@ public:
     int writeControl;
     int updateContextLoadingFile;
     int updateContextsUnregister;
+    int loggingOnlyMode;
 
     int fontSize;
     int showIndex;

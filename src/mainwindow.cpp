@@ -1254,6 +1254,9 @@ void MainWindow::reloadLogFileFinishFilter()
     qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableSortByTime(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
+    // updateIndex, if messages are received in between
+    updateIndex();
+
     // update table
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
@@ -1280,6 +1283,14 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
 
 void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool multithreaded)
 {
+    /* check if in logging only mode, then do not create index */
+    tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
+    tableModel->modelChanged();
+    if(settings->loggingOnlyMode)
+    {
+        return;
+    }
+
     /* clear autoload plugins ecu list */
     if(!update)
     {
@@ -1426,6 +1437,7 @@ void MainWindow::on_action_menuFile_Settings_triggered()
     /* store old values */
     int defaultFilterPath = settings->defaultFilterPath;
     QString defaultFilterPathName = settings->defaultFilterPathName;
+    int loggingOnlyMode=settings->loggingOnlyMode;
 
     if(settings->exec()==1)
     {
@@ -1443,6 +1455,17 @@ void MainWindow::on_action_menuFile_Settings_triggered()
         }
 
         updateScrollButton();
+
+        if(loggingOnlyMode!=settings->loggingOnlyMode)
+        {
+            tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
+            tableModel->modelChanged();
+            if(!settings->loggingOnlyMode)
+                QMessageBox::information(0, QString("DLT Viewer"),
+                                         QString("Logging only mode disabled! Please reload DLT file to view file!"));
+
+
+        }
     }
 }
 
@@ -2652,9 +2675,6 @@ void MainWindow::read(EcuItem* ecuitem)
 {
     int32_t bytesRcvd = 0;
     QDltMsg qmsg;
-    QDltPlugin *item = 0;
-    QList<QDltPlugin*> activeViewerPlugins;
-    QList<QDltPlugin*> activeDecoderPlugins;
 
     if (!ecuitem)
         return;
@@ -2761,54 +2781,64 @@ void MainWindow::read(EcuItem* ecuitem)
 
         if (outputfile.isOpen() )
         {
-            activeDecoderPlugins = pluginManager.getDecoderPlugins();
-            activeViewerPlugins = pluginManager.getViewerPlugins();
-
-            for(int i = 0; i < activeViewerPlugins.size(); i++)
-            {
-                item = activeViewerPlugins[i];
-                item->updateFileStart();
-            }
-
-            /* read received messages in DLT file parser and update DLT message list view */
-            /* update indexes  and table view */
-            int oldsize = qfile.size();
-            qfile.updateIndex();
-
-            bool silentMode = !OptManager::getInstance()->issilentMode();
-
-            for(int num=oldsize;num<qfile.size();num++) {
-                qmsg.setMsg(qfile.getMsg(num));
-
-                for(int i = 0; i < activeViewerPlugins.size(); i++){
-                    item = activeViewerPlugins.at(i);
-                    item->updateMsg(num,qmsg);
-                }
-
-                pluginManager.decodeMsg(qmsg,silentMode);
-
-                if(qfile.checkFilter(qmsg)) {
-                    qfile.addFilterIndex(num);
-                }
-
-                for(int i = 0; i < activeViewerPlugins.size(); i++){
-                    item = activeViewerPlugins[i];
-                    item->updateMsgDecoded(num,qmsg);
-                }
-            }
-
-            if (!draw_timer.isActive())
-                draw_timer.start(draw_interval);
-
-            for(int i = 0; i < activeViewerPlugins.size(); i++){
-                item = activeViewerPlugins.at(i);
-                item->updateFileFinish();
-            }
+            if(!dltIndexer->isRunning())
+                updateIndex();
         }
     }
 }
 
+void MainWindow::updateIndex()
+{
+    QList<QDltPlugin*> activeViewerPlugins;
+    QList<QDltPlugin*> activeDecoderPlugins;
+    QDltPlugin *item = 0;
+    QDltMsg qmsg;
 
+    activeDecoderPlugins = pluginManager.getDecoderPlugins();
+    activeViewerPlugins = pluginManager.getViewerPlugins();
+
+    for(int i = 0; i < activeViewerPlugins.size(); i++)
+    {
+        item = activeViewerPlugins[i];
+        item->updateFileStart();
+    }
+
+    /* read received messages in DLT file parser and update DLT message list view */
+    /* update indexes  and table view */
+    int oldsize = qfile.size();
+    qfile.updateIndex();
+
+    bool silentMode = !OptManager::getInstance()->issilentMode();
+
+    for(int num=oldsize;num<qfile.size();num++) {
+        qmsg.setMsg(qfile.getMsg(num));
+
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = activeViewerPlugins.at(i);
+            item->updateMsg(num,qmsg);
+        }
+
+        pluginManager.decodeMsg(qmsg,silentMode);
+
+        if(qfile.checkFilter(qmsg)) {
+            qfile.addFilterIndex(num);
+        }
+
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = activeViewerPlugins[i];
+            item->updateMsgDecoded(num,qmsg);
+        }
+    }
+
+    if (!draw_timer.isActive())
+        draw_timer.start(draw_interval);
+
+    for(int i = 0; i < activeViewerPlugins.size(); i++){
+        item = activeViewerPlugins.at(i);
+        item->updateFileFinish();
+    }
+
+}
 
 void MainWindow::draw_timeout()
 {
@@ -3176,21 +3206,9 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
         /* read received messages in DLT file parser and update DLT message list view */
         /* update indexes  and table view */
-        int oldsize = qfile.size();
-        qfile.updateIndex();
-        bool silentMode = !OptManager::getInstance()->issilentMode();
-        for(int num=oldsize;num<qfile.size();num++) {
-            data = qfile.getMsg(num);
-            qmsg.setMsg(data);
-            iterateDecodersForMsg(qmsg,silentMode);
-            if(qfile.checkFilter(qmsg)) {
-                qfile.addFilterIndex(num);
-            }
-        }
-        tableModel->modelChanged();
-        if(settings->autoScroll) {
-            ui->tableView->scrollToBottom();
-        }
+        if(!dltIndexer->isRunning())
+            updateIndex();
+
         dltIndexer->unlock();
     }
 }

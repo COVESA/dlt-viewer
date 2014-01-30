@@ -717,6 +717,10 @@ bool Project::Load(QString filename)
               {
                   settings->showPayload = xml.readElementText().toInt();
               }
+              if(xml.name() == QString("loggingOnlyMode"))
+              {
+                  settings->loggingOnlyMode = xml.readElementText().toInt();
+              }
 
 
               /* Connection, plugin and filter */
@@ -1022,6 +1026,7 @@ bool Project::Save(QString filename)
             xml.writeTextElement("autoMarkWarn",QString("%1").arg(settings->autoMarkWarn));
             xml.writeTextElement("writeControl",QString("%1").arg(settings->writeControl));
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(settings->updateContextLoadingFile));
+            xml.writeTextElement("loggingOnlyMode",QString("%1").arg(settings->loggingOnlyMode));
         xml.writeEndElement(); // other
     xml.writeEndElement(); // settings
 
