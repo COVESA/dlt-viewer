@@ -18,6 +18,10 @@ Changes
 -------
 
 2.10.1
+  * Fixed crash when open big DLT Files at startup with autoconnect at startup.
+  * Added Logging only mode.
+  * Fixed reception time from milliseconds to microseconds.
+  * Fixed extraction of session id.
   * Sort multiple log files by time.
   * Open and display multiple DLT files at once.
   * Optional automatic timezone settings.
