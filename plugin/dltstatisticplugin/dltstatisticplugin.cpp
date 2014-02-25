@@ -173,6 +173,9 @@ void DltStatisticPlugin::initMsgDecoded(int , QDltMsg &){
 }
 
 void DltStatisticPlugin::initFileFinish(){
+    if(!dltFile)
+        return;
+
     counterMessages = dltFile->size();
     printStatistics();
 
@@ -195,6 +198,9 @@ void DltStatisticPlugin::updateMsgDecoded(int , QDltMsg &){
 }
 
 void DltStatisticPlugin::updateFileFinish(){
+    if(!dltFile)
+        return;
+
     counterMessages = dltFile->size();
     printStatistics();
 
