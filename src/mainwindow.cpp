@@ -4423,6 +4423,9 @@ void MainWindow::loadPlugins()
       project.plugin->addTopLevelItem(item);
 
     }
+
+    /* initialise control interface */
+    pluginManager.initControl(&qcontrol);
 }
 
 void MainWindow::updatePluginsECUList()
@@ -4435,7 +4438,6 @@ void MainWindow::updatePluginsECUList()
 
         list.append(ecuitem->id + " (" + ecuitem->description + ")");
     }
-    pluginManager.initControl(&qcontrol);
     pluginManager.initConnections(list);
 }
 
