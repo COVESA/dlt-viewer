@@ -2,4 +2,6 @@
 *.pro.user
 build/
 .project
-/Makefile
+Makefile
+buildlib/
+release/
