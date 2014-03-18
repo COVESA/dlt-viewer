@@ -4254,9 +4254,9 @@ void MainWindow::tableViewValueChanged(int value)
         /* Only enable, if disabled */
         if (settings->autoScroll==Qt::Unchecked)
         {
-            /* enable scrolling */
-            on_actionAutoScroll_triggered(Qt::Checked);
-            updateScrollButton();
+            /* do not automatically enable scrolling when scrolling to bottom */
+            //on_actionAutoScroll_triggered(Qt::Checked);
+            //updateScrollButton();
         }
     }
     else
