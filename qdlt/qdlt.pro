@@ -31,8 +31,11 @@ greaterThan(QT_VERSION, 4.8.4) {
     DEFINES += QT5
 }
 
-OBJECTS_DIR             = build/obj
-MOC_DIR                 = build/moc
+# Put intermediate files in the build directory
+MOC_DIR     = build/moc
+OBJECTS_DIR = build/obj
+RCC_DIR     = build/rcc
+UI_DIR      = build/ui
 
 INCLUDEPATH = ../qextserialport/src ../src
 

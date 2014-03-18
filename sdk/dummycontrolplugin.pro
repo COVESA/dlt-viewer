@@ -2,6 +2,12 @@ TEMPLATE  = lib
 
 CONFIG   += plugin
 
+# Put intermediate files in the build directory
+MOC_DIR     = build/moc
+OBJECTS_DIR = build/obj
+RCC_DIR     = build/rcc
+UI_DIR      = build/ui
+
 CONFIG(debug, debug|release) {
     DESTDIR = ../../../plugins
     QMAKE_LIBDIR += ../../lib

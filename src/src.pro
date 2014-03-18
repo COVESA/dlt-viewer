@@ -57,9 +57,11 @@ greaterThan(QT_VER_MAJ, 4) {
     DEFINES += QT5
 }
 
-# Compile time directories
-OBJECTS_DIR = obj
-MOC_DIR = moc
+# Put intermediate files in the build directory
+MOC_DIR     = build/moc
+OBJECTS_DIR = build/obj
+RCC_DIR     = build/rcc
+UI_DIR      = build/ui
 
 # Executable name
 TARGET = dlt_viewer

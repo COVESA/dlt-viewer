@@ -5,6 +5,12 @@ greaterThan(QT_VER_MAJ, 4) {
     QT += printsupport
 }
 
+# Put intermediate files in the build directory
+MOC_DIR     = build/moc
+OBJECTS_DIR = build/obj
+RCC_DIR     = build/rcc
+UI_DIR      = build/ui
+
 # target name
 TARGET = $$qtLibraryTarget(filetransferplugin)
 
