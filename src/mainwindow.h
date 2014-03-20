@@ -342,18 +342,28 @@ private slots:
 
     void on_pluginWidget_itemExpanded(QTreeWidgetItem* item);
 
+// File methods
 
-    // File methods
+private slots:
+
     void on_action_menuFile_New_triggered();
     void on_action_menuFile_SaveAs_triggered();
     void on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered();
     void on_action_menuFile_Append_DLT_File_triggered();
     void on_action_menuFile_Import_DLT_Stream_triggered();
-    void on_action_menuFile_Quit_triggered();
     void on_action_menuFile_Settings_triggered();
-    void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Open_triggered();
     void on_actionExport_triggered();
+
+public slots:
+
+    void on_New_triggered(QString fileName);
+    void on_Open_triggered(QStringList filenames);
+    void on_SaveAs_triggered(QString fileName);
+    void on_action_menuFile_Clear_triggered();
+    void on_action_menuFile_Quit_triggered();
+
+private slots:
 
     // Search methods
     void on_action_menuSearch_Find_triggered();
@@ -461,6 +471,7 @@ private slots:
     void on_checkBoxSortByTime_clicked(bool checked);
 
 public slots:
+
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void jumpToMsgSignal(int index);

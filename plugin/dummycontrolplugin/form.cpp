@@ -21,6 +21,8 @@
 #include "ui_form.h"
 #include "dummycontrolplugin.h"
 
+#include <qfiledialog.h>
+
 Form::Form(DummyControlPlugin *_plugin,QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Form)
@@ -55,4 +57,69 @@ void Form::on_pushButtonJumpTo_clicked()
 {
     if(plugin->dltControl)
         plugin->dltControl->jumpToMsg(ui->lineEditJumpTo->text().toUInt());
+}
+
+void Form::on_pushButtonClearFile_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->clearFile();
+}
+
+void Form::on_pushButtonNewFile_clicked()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("New DLT Log file"), tr(""), tr("DLT Files (*.dlt);;All files (*.*)"));
+
+    if(fileName.isEmpty())
+    {
+        return;
+    }
+
+    if(plugin->dltControl)
+        plugin->dltControl->newFile(fileName);
+}
+
+void Form::on_pushButtonQuit_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->quitDltViewer();
+}
+
+void Form::on_pushButtonOpenFile_clicked()
+{
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+        tr("Open one or more DLT Log files"), tr(""), tr("DLT Files (*.dlt);;All files (*.*)"));
+
+    if(fileNames.isEmpty())
+        return;
+
+    if(plugin->dltControl)
+        plugin->dltControl->openFile(fileNames);
+}
+
+void Form::on_pushButtonSaveAsFile_clicked()
+{
+    QFileDialog dialog(this);
+    QStringList filters;
+    filters << "DLT Files (*.dlt)" <<"All files (*.*)";
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    dialog.setDefaultSuffix("dlt");
+    dialog.setNameFilters(filters);
+    dialog.setWindowTitle("Save DLT Log file");
+    dialog.exec();
+    if(dialog.result() != QFileDialog::Accepted ||
+        dialog.selectedFiles().count() < 1)
+    {
+        return;
+    }
+
+    QString fileName = dialog.selectedFiles()[0];
+
+    if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
+    {
+        return;
+    }
+
+    if(plugin->dltControl)
+        plugin->dltControl->saveAsFile(fileName);
 }

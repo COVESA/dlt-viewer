@@ -46,6 +46,11 @@ private:
 private slots:
     void on_pushButton_clicked();
     void on_pushButtonJumpTo_clicked();
+    void on_pushButtonClearFile_clicked();
+    void on_pushButtonNewFile_clicked();
+    void on_pushButtonQuit_clicked();
+    void on_pushButtonOpenFile_clicked();
+    void on_pushButtonSaveAsFile_clicked();
 };
 
 #endif // FORM_H

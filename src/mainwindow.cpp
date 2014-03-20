@@ -617,6 +617,12 @@ void MainWindow::on_action_menuFile_New_triggered()
         return;
     }
 
+    on_New_triggered(fileName);
+}
+
+void MainWindow::on_New_triggered(QString fileName)
+{
+
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
@@ -658,10 +664,16 @@ void MainWindow::on_action_menuFile_Open_triggered()
     if(fileNames.isEmpty())
         return;
 
-    /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
+    on_Open_triggered(fileNames);
+}
 
-    openDltFile(fileNames);
+void MainWindow::on_Open_triggered(QStringList filenames)
+{
+
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(filenames[0]).absolutePath());
+
+    openDltFile(filenames);
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
@@ -1022,14 +1034,18 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
         return;
     }
 
-
-
     QString fileName = dialog.selectedFiles()[0];
 
     if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
     {
         return;
     }
+
+    on_SaveAs_triggered(fileName);
+}
+
+void MainWindow::on_SaveAs_triggered(QString fileName)
+{
 
     /* check if filename is the same as already open */
     if(outputfile.fileName()==fileName)

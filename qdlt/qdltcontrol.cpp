@@ -36,6 +36,16 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(sendInjection(int,QString,QString,int,QByteArray)));
     connect(this, SIGNAL(jumpToMsgSignal(int)),
             server, SLOT(jumpToMsgSignal(int)));
+    connect(this, SIGNAL(openFileSignal(QStringList)),
+            server, SLOT(on_Open_triggered(QStringList)));
+    connect(this, SIGNAL(newFileSignal(QString)),
+            server, SLOT(on_New_triggered(QString)));
+    connect(this, SIGNAL(saveAsFileSignal(QString)),
+            server, SLOT(on_SaveAs_triggered(QString)));
+    connect(this, SIGNAL(clearFileSignal()),
+            server, SLOT(on_action_menuFile_Clear_triggered()));
+    connect(this, SIGNAL(quitDltViewerSignal()),
+            server, SLOT(on_action_menuFile_Quit_triggered()));
 }
 
 QDltControl::~QDltControl()
@@ -53,4 +63,27 @@ void QDltControl::jumpToMsg(int index)
     emit jumpToMsgSignal(index);
 }
 
+void QDltControl::newFile(QString filename)
+{
+    emit newFileSignal(filename);
+}
 
+void QDltControl::openFile(QStringList filenames)
+{
+    emit openFileSignal(filenames);
+}
+
+void QDltControl::saveAsFile(QString filename)
+{
+    emit saveAsFileSignal(filename);
+}
+
+void QDltControl::clearFile()
+{
+    emit clearFileSignal();
+}
+
+void QDltControl::quitDltViewer()
+{
+    emit quitDltViewerSignal();
+}
