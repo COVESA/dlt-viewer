@@ -392,7 +392,6 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(progress(quint64)), this, SLOT(reloadLogFileProgress(quint64)));
     connect(dltIndexer, SIGNAL(progressText(QString)), this, SLOT(reloadLogFileProgressText(QString)));
     connect(dltIndexer, SIGNAL(versionString(QString,QString)), this, SLOT(reloadLogFileVersionString(QString,QString)));
-    connect(dltIndexer, SIGNAL(getLogInfo(int)), this, SLOT(reloadLogFileGetLogInfo(int)));
     connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
     connect(dltIndexer, SIGNAL(finishFilter()), this, SLOT(reloadLogFileFinishFilter()));
     connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
@@ -1230,18 +1229,6 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
     }
 }
 
-void MainWindow::reloadLogFileGetLogInfo(int index)
-{
-    // control message get log info found in loading file
-    if(settings->updateContextLoadingFile)
-    {
-        QDltMsg msg;
-
-        if(qfile.getMsg(index,msg))
-            contextLoadingFile(msg);
-    }
-}
-
 void MainWindow::reloadLogFileFinishIndex()
 {
     // show already unfiltered messages
@@ -1277,6 +1264,19 @@ void MainWindow::reloadLogFileFinishFilter()
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     m_searchtableModel->modelChanged();
+
+    // process getLogInfoMessages
+    if((dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
+    {
+        QList<int> list = dltIndexer->getGetLogInfoList();
+        QDltMsg msg;
+
+        for(int num=0;num<list.size();num++)
+        {
+            if(qfile.getMsg(list[num],msg))
+                contextLoadingFile(msg);
+        }
+    }
 
     // reconnect ecus again
     connectPreviouslyConnectedECUs();

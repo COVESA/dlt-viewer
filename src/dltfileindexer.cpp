@@ -188,6 +188,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // clear index filter
     indexFilterList.clear();
     indexFilterListSorted.clear();
+    getLogInfoList.clear();
 
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
@@ -304,7 +305,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
             if(service_id == DLT_SERVICE_ID_GET_LOG_INFO)
             {
-                emit(getLogInfo(ix));
+                getLogInfoList.append(ix);
             }
         }
 

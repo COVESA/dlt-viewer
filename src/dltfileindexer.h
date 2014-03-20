@@ -101,6 +101,7 @@ public:
     // get index of all messages
     QList<unsigned long> getIndexAll() { return indexAllList; }
     QList<unsigned long> getIndexFilters() { return indexFilterList; }
+    QList<int> getGetLogInfoList() { return getLogInfoList; }
 
     // main thread routine
     void run();
@@ -139,6 +140,9 @@ private:
     QList<unsigned long> indexFilterList;
     QMultiMap<DltFileIndexerKey,unsigned long> indexFilterListSorted;
 
+    // getLogInfoList
+    QList<int> getLogInfoList;
+
     // some flags
     bool pluginsEnabled;
     bool filtersEnabled;
@@ -175,9 +179,6 @@ signals:
 
     // control message unregister context
     void unregisterContext(QString ecuId,QString appId,QString ctId);
-
-    // get log info message found
-    void getLogInfo(int index);
 
     // index creation finished
     void finishIndex();

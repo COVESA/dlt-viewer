@@ -322,7 +322,6 @@ private slots:
     void reloadLogFileProgress(quint64 num);
     void reloadLogFileProgressText(QString text);
     void reloadLogFileVersionString(QString ecuId, QString version);
-    void reloadLogFileGetLogInfo(int index);
     void reloadLogFileFinishIndex();
     void reloadLogFileFinishFilter();
     void reloadLogFileFinishDefaultFilter();

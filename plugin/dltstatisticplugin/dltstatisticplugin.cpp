@@ -105,13 +105,13 @@ void DltStatisticPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     if(!dltFile)
         return;
 
-    qDebug() << "undecoded: " << msg.toStringPayload();
+    //qDebug() << "undecoded: " << msg.toStringPayload();
 
 }
 
 void DltStatisticPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
 
-    qDebug() << "decoded: " << msg.toStringPayload();
+    //qDebug() << "decoded: " << msg.toStringPayload();
 
 }
 
