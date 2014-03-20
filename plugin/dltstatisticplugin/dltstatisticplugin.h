@@ -76,7 +76,8 @@ public:
     void show(bool value);
     void updateCounters(int index, QDltMsg &msg);
     void clear();
-    void update();
+    void updateData();
+    void updateWidget();
 
     // statistic functions
     void resetStatistics();
@@ -89,6 +90,9 @@ public slots:
     void cursorTime2Changed(time_t time);
 
 private:
+
+    // add message to timeline
+    void addToTimeline(int index,QDltMsg &msg);
 
     // helper function
     QString stringToHtml(QString str);

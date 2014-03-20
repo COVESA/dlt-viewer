@@ -38,13 +38,16 @@ Form::Form(QWidget *parent) :
     bandwidthWidget->show();
     ui->tabBandwidth->setVisible(true);
     bandwidthWidget->setYUnitText("Bytes/s");
+
+    ui->pushButtonUpdate->setEnabled(false);
 }
 
 Form::~Form()
 {
     delete ui;
 }
-void Form::update(time_t min,time_t max,QMap<time_t,int> &timeline,QMap<time_t,int> &bandwidth)
+
+void Form::updateTimelinesData(time_t min,time_t max,QMap<time_t,int> &timeline,QMap<time_t,int> &bandwidth)
 {
     timelineWidget->setBeginTime(min);
     timelineWidget->setEndTime(max);
@@ -55,6 +58,12 @@ void Form::update(time_t min,time_t max,QMap<time_t,int> &timeline,QMap<time_t,i
     bandwidthWidget->setData(bandwidth);
 }
 
+void Form::updateTimelinesWidget()
+{
+    timelineWidget->update();
+    bandwidthWidget->update();
+}
+
 void Form::setTextBrowserOverview(QString text)
 {
     if(text.isNull())
@@ -62,4 +71,15 @@ void Form::setTextBrowserOverview(QString text)
     else
         ui->textBrowserOverview->setText(text);
 
+}
+
+void Form::on_pushButtonUpdate_clicked()
+{
+    updateTimelinesWidget();
+    ui->pushButtonUpdate->setEnabled(false);
+}
+
+void Form::enableUpdateButton(bool enable)
+{
+    ui->pushButtonUpdate->setEnabled(enable);
 }

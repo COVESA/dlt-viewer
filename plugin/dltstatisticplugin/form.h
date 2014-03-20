@@ -36,12 +36,18 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
 
-    void update(time_t min,time_t max,QMap<time_t,int> &timeline,QMap<time_t,int> &bandwidth);
+    void updateTimelinesData(time_t min,time_t max,QMap<time_t,int> &timeline,QMap<time_t,int> &bandwidth);
+    void updateTimelinesWidget();
 
     void setTextBrowserOverview(QString text);
 
     QDltTimelineWidget *timelineWidget;
     QDltTimelineWidget *bandwidthWidget;
+
+    void enableUpdateButton(bool enable);
+
+private slots:
+    void on_pushButtonUpdate_clicked();
 
 private:
     Ui::Form *ui;

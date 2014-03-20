@@ -84,7 +84,8 @@ QWidget* DltStatisticPlugin::initViewer()
     connect(form->bandwidthWidget,SIGNAL(cursorTime1Changed(time_t)),this,SLOT(cursorTime1Changed(time_t)));
     connect(form->bandwidthWidget,SIGNAL(cursorTime2Changed(time_t)),this,SLOT(cursorTime2Changed(time_t)));
 
-    update();
+    updateData();
+    updateWidget();
 
     return form;
 }
@@ -119,17 +120,18 @@ void DltStatisticPlugin::initFileStart(QDltFile *file){
     dltFile = file;
 
     clear();
-    update();
+    updateData();
+    updateWidget();
 
     resetStatistics();
 
     counterMessages = dltFile->size();
+
+    form->enableUpdateButton(false);
 }
 
-void DltStatisticPlugin::initMsg(int index, QDltMsg &msg){
-
-    updateCounters(index, msg);
-
+void DltStatisticPlugin::addToTimeline(int index,QDltMsg &msg)
+{
     if(msg.getTime()!=0 && msg.getTime()!=0xffffffff)
     {
         if(timeline.contains(msg.getTime()))
@@ -164,6 +166,13 @@ void DltStatisticPlugin::initMsg(int index, QDltMsg &msg){
                 maximumTime = msg.getTime();
         }
     }
+}
+
+void DltStatisticPlugin::initMsg(int index, QDltMsg &msg){
+
+    updateCounters(index, msg);
+
+    addToTimeline(index,msg);
 
     updateStatistics(index, msg);
 }
@@ -179,7 +188,8 @@ void DltStatisticPlugin::initFileFinish(){
     counterMessages = dltFile->size();
     printStatistics();
 
-    update();
+    updateData();
+    updateWidget();
 }
 
 void DltStatisticPlugin::updateFileStart(){
@@ -191,6 +201,9 @@ void DltStatisticPlugin::updateMsg(int index, QDltMsg &msg){
             return;
 
         updateCounters(index,msg);
+
+        addToTimeline(index,msg);
+
         updateStatistics(index, msg);
 }
 
@@ -204,7 +217,8 @@ void DltStatisticPlugin::updateFileFinish(){
     counterMessages = dltFile->size();
     printStatistics();
 
-    update();
+    form->enableUpdateButton(true);
+    updateData();
 }
 
 bool DltStatisticPlugin::initControl(QDltControl *control)
@@ -243,9 +257,14 @@ void DltStatisticPlugin::clear()
     maximumTime = 0;
 }
 
-void DltStatisticPlugin::update()
+void DltStatisticPlugin::updateData()
 {
-    form->update(minimumTime,maximumTime,timeline,bandwidth);
+    form->updateTimelinesData(minimumTime,maximumTime,timeline,bandwidth);
+}
+
+void DltStatisticPlugin::updateWidget()
+{
+    form->update();
 }
 
 void DltStatisticPlugin::resetStatistics() {

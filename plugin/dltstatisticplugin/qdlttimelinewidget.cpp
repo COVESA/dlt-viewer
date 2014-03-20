@@ -178,16 +178,11 @@ void QDltTimelineWidget::contextMenuEvent ( QContextMenuEvent * event )
 void QDltTimelineWidget::setBeginTime(time_t time)
 {
     beginTime = time;
-
-    update();
 }
 
 void QDltTimelineWidget::setEndTime(time_t time)
 {
     endTime = time;
-
-    update();
-
 }
 
 void QDltTimelineWidget::setCursorTime1(time_t time)
@@ -195,7 +190,6 @@ void QDltTimelineWidget::setCursorTime1(time_t time)
     cursorTime1 = time;
 
     update();
-
 }
 
 void QDltTimelineWidget::setCursorTime2(time_t time)
@@ -203,7 +197,6 @@ void QDltTimelineWidget::setCursorTime2(time_t time)
     cursorTime2 = time;
 
     update();
-
 }
 
 void QDltTimelineWidget::setData(QMap<time_t,int> &_data)
@@ -219,8 +212,6 @@ void QDltTimelineWidget::setData(QMap<time_t,int> &_data)
         if(imax.value()>maxValue)
             maxValue = imax.value();
     }
-
-    update();
 }
 
 QString QDltTimelineWidget::timeString(time_t time)
