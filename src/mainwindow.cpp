@@ -3976,7 +3976,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Architecture: Little Endian\n\n")+
                          #endif
-                             QString("(C) 2010 BMW AG\n"));
+                             QString("(C) 2010,2014 BMW AG\n"));
 }
 
 
