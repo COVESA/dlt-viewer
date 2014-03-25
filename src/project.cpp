@@ -451,7 +451,7 @@ void FilterItem::update()
 
 
 MyPluginDockWidget::MyPluginDockWidget(){
-
+    pluginitem = NULL;
 }
 
 MyPluginDockWidget::MyPluginDockWidget(PluginItem *i, QWidget *parent){
@@ -591,7 +591,10 @@ void PluginItem::loadPluginModeFromSettings(){
 
 Project::Project()
 {
-
+    ecu = NULL;
+    filter = NULL;
+    plugin = NULL;
+    settings = NULL;
 }
 
 Project::~Project()

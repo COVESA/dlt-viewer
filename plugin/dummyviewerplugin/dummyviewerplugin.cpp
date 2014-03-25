@@ -23,7 +23,11 @@
 
 DummyViewerPlugin::DummyViewerPlugin()
 {
-    dltFile = 0;
+    form = NULL;
+    dltFile = NULL;
+    counterMessages = 0;
+    counterNonVerboseMessages = 0;
+    counterVerboseMessages = 0;
 }
 
 DummyViewerPlugin::~DummyViewerPlugin()

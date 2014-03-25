@@ -27,6 +27,9 @@
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
     QAbstractTableModel(parent)
 {
+    qfile = NULL;
+    project = NULL;
+    pluginManager = NULL;
 }
 
 SearchTableModel::~SearchTableModel()

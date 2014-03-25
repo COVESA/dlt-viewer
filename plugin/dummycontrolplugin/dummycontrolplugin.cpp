@@ -23,6 +23,10 @@
 
 DummyControlPlugin::DummyControlPlugin()
 {
+    form = NULL;
+    counterMessages = 0;
+    counterNonVerboseMessages = 0;
+    counterVerboseMessages = 0;
     dltFile = 0;
     dltControl = 0;
     ecuList = 0;

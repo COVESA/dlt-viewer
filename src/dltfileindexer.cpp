@@ -21,30 +21,44 @@ DltFileIndexerKey::DltFileIndexerKey(time_t time,unsigned int microseconds)
 DltFileIndexer::DltFileIndexer(QObject *parent) :
     QThread(parent)
 {
-    this->dltFile = 0;
-    this->pluginManager = 0;
+    mode = modeIndexAndFilter;
+    this->dltFile = NULL;
+    this->pluginManager = NULL;
+    defaultFilter = NULL;
+    stopFlag = 0;
 
     pluginsEnabled = true;
     filtersEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = false;
 
-    mode = modeIndexAndFilter;
+    maxRun = 0;
+    currentRun = 0;
+    msecsIndexCounter = 0;
+    msecsFilterCounter = 0;
+    msecsDefaultFilterCounter = 0;
 }
 
 
 DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManager, QDltDefaultFilter *defaultFilter, QMainWindow *parent) :
     QThread(parent)
 {
+    mode = modeIndexAndFilter;
     this->dltFile = dltFile;
     this->pluginManager = pluginManager;
     this->defaultFilter = defaultFilter;
+    stopFlag = 0;
 
     pluginsEnabled = true;
     filtersEnabled = true;
     multithreaded = true;
+    sortByTimeEnabled = 0;
 
-    mode = modeIndexAndFilter;
+    maxRun = 0;
+    currentRun = 0;
+    msecsIndexCounter = 0;
+    msecsFilterCounter = 0;
+    msecsDefaultFilterCounter = 0;
 }
 
 DltFileIndexer::~DltFileIndexer()
@@ -130,7 +144,8 @@ bool DltFileIndexer::index(int num)
             /* stop if requested */
             if(stopFlag)
             {
-                delete data;
+                delete[] data;
+                f.close();
                 return false;
             }
         }
@@ -139,7 +154,7 @@ bool DltFileIndexer::index(int num)
     while(length>0);
 
     // delete buffer
-    delete data;
+    delete[] data;
 
     // close file
     f.close();

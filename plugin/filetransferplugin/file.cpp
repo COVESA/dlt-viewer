@@ -26,24 +26,32 @@ using namespace std;
 
 File::File():QTreeWidgetItem()
 {
-
+    fileSerialNumber = 0;
+    packages = 0;
+    receivedPackages = 0;
+    sizeInBytes = 0;
+    buffer = 0;
+    dltFileIndex = NULL;
+    dltFile = NULL;
+    fileData = NULL;
 }
 
 File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
 {
-    dltFile = qfile;
-
     receivedPackages = 0;
-    //fileSerialNumber = -1;
-    //packages = -1;
-    //receivedPackages = -1;
-    //sizeInBytes = -1;
-    //buffer = -1;
+    fileSerialNumber = 0;
+    packages = 0;
+    receivedPackages = 0;
+    sizeInBytes = 0;
+    buffer = 0;
+    dltFileIndex = NULL;
+    dltFile = qfile;
+    fileData = NULL;
+
     this->setText(COLUMN_STATUS, "Incomplete");
     this->setTextColor(COLUMN_STATUS,Qt::white);
     this->setBackgroundColor(COLUMN_STATUS,Qt::red);
     this->setText(COLUMN_RECPACKAGES, "0");
-
 }
 
 File::~File()
@@ -172,6 +180,7 @@ bool File::saveFile(QString newFile){
 
     QFile file(newFile);
     if (!file.open(QIODevice::WriteOnly)){
+        freeFile();
         return false;
     }
 

@@ -32,6 +32,9 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
  TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
+     qfile = NULL;
+     project = NULL;
+     pluginManager = NULL;
      lastSearchIndex = -1;
      emptyForceFlag = false;
      loggingOnlyMode = false;

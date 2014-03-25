@@ -453,7 +453,8 @@ int dlt_filter_load(DltFilter *filter,const char *filename,int verbose)
     while (!feof(handle))
     {
         str1[0]=0;
-        if (fscanf(handle,"%s",str1)!=1)
+        /* 254 == DLT_COMMON_BUFFER_LENGTH - 1 */
+        if (fscanf(handle,"%254s",str1)!=1)
         {
             break;
         }
@@ -472,7 +473,8 @@ int dlt_filter_load(DltFilter *filter,const char *filename,int verbose)
         }
 
         str1[0]=0;
-        if (fscanf(handle,"%s",str1)!=1)
+        /* 254 == DLT_COMMON_BUFFER_LENGTH - 1 */
+        if (fscanf(handle,"%254s",str1)!=1)
         {
             break;
         }
@@ -498,6 +500,7 @@ int dlt_filter_load(DltFilter *filter,const char *filename,int verbose)
         {
             sprintf(str, "Maximum number (%d) of allowed filters reached!\n", DLT_FILTER_MAX);
             dlt_log(LOG_ERR, str);
+            fclose(handle);
             return 0;
         }
     }

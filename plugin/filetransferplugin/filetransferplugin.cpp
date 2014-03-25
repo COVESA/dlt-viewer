@@ -25,7 +25,8 @@
 #include <QDir>
 
 FiletransferPlugin::FiletransferPlugin() {
-    dltFile = 0;
+    form = NULL;
+    dltFile = NULL;
 }
 
 FiletransferPlugin::~FiletransferPlugin() {

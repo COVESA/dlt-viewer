@@ -26,7 +26,15 @@
 
 DltSystemViewerPlugin::DltSystemViewerPlugin()
 {
-    dltFile = 0;
+    form = NULL;
+    counterMessages = 0;
+    counterNonVerboseMessages = 0;
+    counterVerboseMessages = 0;
+    lastValueUser = 0;
+    lastValueNice = 0;
+    lastValueKernel = 0;
+    lastTimeStamp = 0;
+    dltFile = NULL;
 }
 
 DltSystemViewerPlugin::~DltSystemViewerPlugin()

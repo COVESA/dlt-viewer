@@ -22,6 +22,7 @@
 #include "dltviewerplugin.h"
 
 DltViewerPlugin::DltViewerPlugin() {
+    form = NULL;
     dltFile = 0;
 }
 

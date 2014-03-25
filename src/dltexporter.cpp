@@ -11,6 +11,13 @@
 DltExporter::DltExporter(QObject *parent) :
     QObject(parent)
 {
+    size = 0;
+    from = NULL;
+    to = NULL;
+    pluginManager = NULL;
+    selection = NULL;
+    exportFormat = FormatDlt;
+    exportSelection = SelectionAll;
 }
 
 QString DltExporter::escapeCSVValue(QString arg)

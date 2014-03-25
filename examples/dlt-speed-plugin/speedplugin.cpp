@@ -26,6 +26,7 @@
 
 SpeedPlugin::SpeedPlugin()
 {
+    form = NULL;
     dltFile = 0;
     msgIndex = 0;
 }
