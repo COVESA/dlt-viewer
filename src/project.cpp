@@ -918,7 +918,7 @@ bool Project::Load(QString filename)
           {
               if(xml.name() == QString("ecu"))
               {
-                  if(ecu)
+                  if(ecu && ecuitem)
                   {
                     ecu->addTopLevelItem(ecuitem);
                     ecuitem->update();
@@ -948,7 +948,7 @@ bool Project::Load(QString filename)
               }
               if(xml.name() == QString("pfilter")) // this should be filter, but to be compatible keep it
               {
-                  if(filter)
+                  if(filter && filteritem)
                   {
                     filter->addTopLevelItem(filteritem);
                     filteritem->update();

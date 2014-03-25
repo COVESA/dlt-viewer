@@ -1040,7 +1040,7 @@ int dlt_message_payload(DltMessage *msg,char *text,int textlength,int type,int v
     /* At this point, it is ensured that a extended header is available */
 
     /* verbose mode */
-    type_info=0;
+    // type_info=0;
     type_info_tmp=0;
 
     for (num=0;num<(int)(msg->extendedheader->noar);num++)
@@ -3207,7 +3207,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 			{
 				if (type_info & DLT_TYPE_INFO_SINT)
 				{
-					value16i=0;
+                    // value16i=0;
 					value16i_tmp=0;
 					DLT_MSG_READ_VALUE(value16i_tmp,*ptr,*datalength,int16_t);
                     if((*datalength)<0)
@@ -3217,7 +3217,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 				}
 				else
 				{
-					value16u=0;
+                    // value16u=0;
 					value16u_tmp=0;
 					DLT_MSG_READ_VALUE(value16u_tmp,*ptr,*datalength,uint16_t);
                     if((*datalength)<0)
@@ -3231,7 +3231,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 			{
 				if (type_info & DLT_TYPE_INFO_SINT)
 				{
-					value32i=0;
+                    // value32i=0;
 					value32i_tmp=0;
 					DLT_MSG_READ_VALUE(value32i_tmp,*ptr,*datalength,int32_t);
                     if((*datalength)<0)
@@ -3241,7 +3241,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 				}
 				else
 				{
-					value32u=0;
+                    // value32u=0;
 					value32u_tmp=0;
 					DLT_MSG_READ_VALUE(value32u_tmp,*ptr,*datalength,uint32_t);
                     if((*datalength)<0)
@@ -3255,7 +3255,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 			{
 				if (type_info & DLT_TYPE_INFO_SINT)
 				{
-					value64i=0;
+                    // value64i=0;
 					value64i_tmp=0;
 					DLT_MSG_READ_VALUE(value64i_tmp,*ptr,*datalength,int64_t);
                     if((*datalength)<0)
@@ -3269,7 +3269,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 				}
 				else
 				{
-					value64u=0;
+                    // value64u=0;
 					value64u_tmp=0;
 					DLT_MSG_READ_VALUE(value64u_tmp,*ptr,*datalength,uint64_t);
                     if((*datalength)<0)

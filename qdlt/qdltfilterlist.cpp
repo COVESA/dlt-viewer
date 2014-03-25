@@ -108,11 +108,8 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     /* If there are no positive filters, or all positive filters
      * are disabled, the default case is to show all messages. Only
      * negative filters will be applied */
-    for(int numfilter=0;numfilter<pfilters.size();numfilter++)
-    {
-        filter = pfilters[numfilter];
+    if(pfilters.size())
         filterActivated = true;
-    }
 
     if(filterActivated==false)
         found = true;

@@ -2699,7 +2699,7 @@ void MainWindow::read(EcuItem* ecuitem)
     if(ecuitem->interfacetype == 0)
     {
         /* TCP */
-        bytesRcvd = ecuitem->socket.bytesAvailable();
+        // bytesRcvd = ecuitem->socket.bytesAvailable();
         data = ecuitem->socket.readAll();
         bytesRcvd = data.size();
         ecuitem->tcpcon.add(data);
@@ -2707,7 +2707,7 @@ void MainWindow::read(EcuItem* ecuitem)
     else if(ecuitem->m_serialport)
     {
         /* serial */
-        bytesRcvd = ecuitem->m_serialport->bytesAvailable();
+        // bytesRcvd = ecuitem->m_serialport->bytesAvailable();
         data = ecuitem->m_serialport->readAll();
         bytesRcvd = data.size();
         ecuitem->serialcon.add(data);
