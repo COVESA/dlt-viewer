@@ -96,6 +96,9 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui->comboBoxUTCOffset->addItem("UTC+12:45",12*3600+45*60);
     ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
     ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
+
+    maxFileSizeMB = 0;
+    appendDateTime = 0;
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -212,6 +215,9 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkWarn->setCheckState(autoMarkWarn?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(loggingOnlyMode?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMaxFileSizeMB->setChecked(maxFileSizeMB);
+    ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(maxFileSizeMB));
+    ui->checkBoxAppendDateTime->setCheckState(appendDateTime?Qt::Checked:Qt::Unchecked);
 
     /* table */
     ui->spinBoxFontSize->setValue(fontSize);
@@ -337,6 +343,11 @@ void SettingsDialog::readDlg()
     autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
     autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
     loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
+    if(ui->groupBoxMaxFileSizeMB->isChecked())
+        maxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toInt();
+    else
+        maxFileSizeMB = 0;
+    appendDateTime = (ui->checkBoxAppendDateTime->checkState() == Qt::Checked);
 
     /* table */
     fontSize = ui->spinBoxFontSize->value();
@@ -413,6 +424,8 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
+    settings->setValue("startup/maxFileSizeMB",maxFileSizeMB);
+    settings->setValue("startup/appendDateTime",appendDateTime);
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -479,6 +492,8 @@ void SettingsDialog::readSettings()
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
+    maxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toInt();
+    appendDateTime = settings->value("startup/appendDateTime",0).toInt();
 
     /* table */
     fontSize = settings->value("startup/fontSize",8).toInt();

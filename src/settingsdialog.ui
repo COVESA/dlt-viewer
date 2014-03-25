@@ -647,10 +647,24 @@
             </property>
            </widget>
           </item>
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoScroll">
+            <property name="text">
+             <string>Auto scroll</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
             <property name="text">
              <string>Auto mark warn messages</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0">
+           <widget class="QCheckBox" name="checkBoxLoggingOnlyMode">
+            <property name="text">
+             <string>Logging only mode (Disables View and Plugins)</string>
             </property>
            </widget>
           </item>
@@ -661,6 +675,24 @@
             </property>
            </widget>
           </item>
+          <item row="8" column="0">
+           <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
+            <property name="title">
+             <string>Maximum File Size (in MBytes)</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QLineEdit" name="lineEditMaxFileSizeMB"/>
+             </item>
+            </layout>
+           </widget>
+          </item>
           <item row="6" column="0">
            <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
             <property name="text">
@@ -668,7 +700,7 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
+          <item row="10" column="0">
            <spacer name="verticalSpacer_2">
             <property name="orientation">
              <enum>Qt::Vertical</enum>
@@ -681,10 +713,10 @@
             </property>
            </spacer>
           </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoScroll">
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
             <property name="text">
-             <string>Auto scroll</string>
+             <string>Auto mark fatal/error messages</string>
             </property>
            </widget>
           </item>
@@ -695,17 +727,10 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
+          <item row="9" column="0">
+           <widget class="QCheckBox" name="checkBoxAppendDateTime">
             <property name="text">
-             <string>Auto mark fatal/error messages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QCheckBox" name="checkBoxLoggingOnlyMode">
-            <property name="text">
-             <string>Logging only mode (Disables View and Plugins)</string>
+             <string>Append Date/Time to filename when closing DLT Viewer</string>
             </property>
            </widget>
           </item>

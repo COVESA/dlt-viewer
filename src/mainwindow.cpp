@@ -138,6 +138,21 @@ MainWindow::~MainWindow()
         }
     }
 
+    // rename output filename if flag set in settings
+    if(settings->appendDateTime)
+    {
+        // get new filename
+        QFileInfo info(outputfile.fileName());
+        QString newFilename = info.baseName()+
+                (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
+                (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
+                QString(".dlt");
+        QFileInfo infoNew(info.absolutePath(),newFilename);
+
+        // rename old file
+        outputfile.rename(infoNew.absoluteFilePath());
+    }
+
     delete ui;
     delete tableModel;
     delete searchDlg;
@@ -2758,11 +2773,39 @@ void MainWindow::read(EcuItem* ecuitem)
                 {
                     // https://bugreports.qt-project.org/browse/QTBUG-26069
                     outputfile.seek(outputfile.size());
+                    QByteArray bufferHeader = qmsg.getHeader();
+                    QByteArray bufferPayload = qmsg.getPayload();
+
+                    // set start time when writing first data
+                    if(startLoggingDateTime.isNull())
+                        startLoggingDateTime = QDateTime::currentDateTime();
+
+                    // check if files size limit reached
+                    if(settings->maxFileSizeMB && ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())>(((size_t)settings->maxFileSizeMB)*1000*1000)))
+                    {
+                        // get new filename
+                        QFileInfo info(outputfile.fileName());
+                        QString newFilename = info.baseName()+
+                                (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
+                                (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
+                                QString(".dlt");
+                        QFileInfo infoNew(info.absolutePath(),newFilename);
+
+                        // rename old file
+                        outputfile.rename(infoNew.absoluteFilePath());
+
+                        // set new start time
+                        startLoggingDateTime = QDateTime::currentDateTime();
+
+                        // create new file
+                        on_New_triggered(info.absoluteFilePath());
+                    }
+
+                    // write datat into file
                     outputfile.write((char*)&str,sizeof(DltStorageHeader));
-                    QByteArray buffer = qmsg.getHeader();
-                    outputfile.write(buffer);
-                    buffer = qmsg.getPayload();
-                    outputfile.write(buffer);
+                    outputfile.write(bufferHeader);
+                    outputfile.write(bufferPayload);
+
                     outputfile.flush();
                 }
             }

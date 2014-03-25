@@ -67,6 +67,8 @@ public:
     int updateContextLoadingFile;
     int updateContextsUnregister;
     int loggingOnlyMode;
+    int maxFileSizeMB;
+    int appendDateTime;
 
     int fontSize;
     int showIndex;

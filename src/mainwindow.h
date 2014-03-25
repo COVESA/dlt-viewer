@@ -493,6 +493,9 @@ public:
 
     QStringList openFileNames;
 
+    /* store startLoggingDateTime when logging first data */
+    QDateTime startLoggingDateTime;
+
 
 };
 
