@@ -165,7 +165,7 @@ void DltViewerPlugin::initFileStart(QDltFile *file){
     dltFile = file;
 }
 
-void DltViewerPlugin::initMsg(int index, QDltMsg &msg){
+void DltViewerPlugin::initMsg(int /*index*/, QDltMsg & /*msg*/){
 }
 
 void DltViewerPlugin::initMsgDecoded(int , QDltMsg &){
@@ -179,7 +179,7 @@ void DltViewerPlugin::updateFileStart(){
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void DltViewerPlugin::updateMsg(int index, QDltMsg &msg){
+void DltViewerPlugin::updateMsg(int /*index*/, QDltMsg &/*msg*/){
 }
 
 void DltViewerPlugin::updateMsgDecoded(int , QDltMsg &){

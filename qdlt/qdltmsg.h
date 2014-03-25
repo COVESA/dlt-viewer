@@ -73,7 +73,7 @@ public:
     /*!
       \return The time when the DLT message is logged.
     */
-    unsigned int getTime() { return time; }
+    time_t getTime() { return time; }
 
     //! Set the time of the DLT message, when the DLT message is logged.
     /*!

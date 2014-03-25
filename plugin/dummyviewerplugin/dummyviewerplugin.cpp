@@ -98,7 +98,7 @@ void DummyViewerPlugin::updateCounters(int , QDltMsg &msg)
 }
 
 
-void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &/*msg*/) {
     if(!dltFile)
         return;
 
@@ -107,7 +107,7 @@ void DummyViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     form->setSelectedMessage(index);
 }
 
-void DummyViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
+void DummyViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/){
 
     //qDebug() << "decoded: " << msg.toStringPayload();
 

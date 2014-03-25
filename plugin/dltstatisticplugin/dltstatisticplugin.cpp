@@ -101,7 +101,7 @@ void DltStatisticPlugin::updateCounters(int index, QDltMsg &msg)
 }
 
 
-void DltStatisticPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
+void DltStatisticPlugin::selectedIdxMsg(int /*index*/, QDltMsg &/*msg*/) {
     if(!dltFile)
         return;
 
@@ -109,7 +109,7 @@ void DltStatisticPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
 }
 
-void DltStatisticPlugin::selectedIdxMsgDecoded(int , QDltMsg &msg){
+void DltStatisticPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/){
 
     //qDebug() << "decoded: " << msg.toStringPayload();
 
@@ -130,9 +130,9 @@ void DltStatisticPlugin::initFileStart(QDltFile *file){
     form->enableUpdateButton(false);
 }
 
-void DltStatisticPlugin::addToTimeline(int index,QDltMsg &msg)
+void DltStatisticPlugin::addToTimeline(int /*index*/,QDltMsg &msg)
 {
-    if(msg.getTime()!=0 && msg.getTime()!=0xffffffff)
+    if(msg.getTime()!=0)
     {
         if(timeline.contains(msg.getTime()))
             timeline[msg.getTime()] = timeline[msg.getTime()] + 1;
@@ -142,7 +142,7 @@ void DltStatisticPlugin::addToTimeline(int index,QDltMsg &msg)
 
     int size = msg.getPayloadSize()+msg.getHeaderSize();
 
-    if(msg.getTime()!=0 && msg.getTime()!=0xffffffff)
+    if(msg.getTime()!=0)
     {
         if(bandwidth.contains(msg.getTime()))
             bandwidth[msg.getTime()] = bandwidth[msg.getTime()] + size;
@@ -151,7 +151,7 @@ void DltStatisticPlugin::addToTimeline(int index,QDltMsg &msg)
     }
 
     // calculate min and max time
-    if(msg.getTime()!=0 &&  msg.getTime()!=0xffffffff)
+    if(msg.getTime()!=0)
     {
         if(minimumTime==0 && maximumTime ==0)
         {
@@ -228,7 +228,7 @@ bool DltStatisticPlugin::initControl(QDltControl *control)
     return true;
 }
 
-bool DltStatisticPlugin::initConnections(QStringList list)
+bool DltStatisticPlugin::initConnections(QStringList /*list*/)
 {
     return true;
 }
@@ -238,12 +238,12 @@ bool DltStatisticPlugin::controlMsg(int , QDltMsg &)
     return true;
 }
 
-bool DltStatisticPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState){
+bool DltStatisticPlugin::stateChanged(int /*index*/, QDltConnection::QDltConnectionState /*connectionState*/){
 
     return true;
 }
 
-bool DltStatisticPlugin::autoscrollStateChanged(bool enabled)
+bool DltStatisticPlugin::autoscrollStateChanged(bool /*enabled*/)
 {
     return true;
 }
