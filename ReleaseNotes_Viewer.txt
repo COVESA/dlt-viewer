@@ -4,20 +4,25 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.11.0 Alpha
+Version 2.11.0 STABLE
 
 Known issues
 ------------
 
-  * Selecting all lines with ctrl-a in a very large file (630MB) leads to a crash on right click or on clicking File->export du to very high memory 
-    consumption.
-  * A crash has been observed, when closing the Viewer during an active connection with many enabled plugins . More information required.
-
+  * none
 
 Changes
 -------
 
 2.11.0
+  * Completed .gitignore with more files to ensure clean statuses on Linux machines
+  * Moved intermediate compile time files to a build sub-directory for all project parts
+  * Split log files when reaching maximum size and attach date and time to filename.
+  * Fixed llvm static analyser problems findings.
+  * Fixed all warnings.
+  * cppcheck fixes for all errors and warnings.
+  * Fixed: Hang of dlt viewer when loading files with a lot of getLogInfo messages
+  * Added update button to statistic plugin.
   * New Plugin Interfaces in QDltControl: New, Open, SaveAs, Clear and Quit
   * Fixed: do not automatically enable scrolling when scrolling to bottom
   * Fixed: Plugin interface initControl only called when updating ECU list
