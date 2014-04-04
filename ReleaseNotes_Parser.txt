@@ -1,0 +1,22 @@
+DLT Parser  - Release Notes
+===========================
+Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
+
+Version
+-------
+Version 0.0.5 ALPHA
+
+Known issues
+------------
+
+  * If started with GUI, a commandline window opens (because als concole mode possible)
+
+Changes
+-------
+
+0.0.5
+  * Parser: Added Windows build script.
+  * Parser: Added missing command line options and examples.
+  * Parser: First version of convert and update id functions.
+  * Initial version of reference DLT parser.
+
