@@ -80,9 +80,9 @@ bool QDltParser::parseFile(QString fileName)
                 return false;
             }
         }
-        else if(text.contains("#define") && text.contains("DLT_ID_"))
+        else if(text.contains("#define") && text.contains("DLT_MSG_ID_"))
         {
-            qDebug() << "parseFile" << "#define DLT_ID_";
+            qDebug() << "parseFile" << "#define DLT_MSG_ID_";
             if(!parseMessageId(text))
             {
                 return false;
@@ -208,7 +208,7 @@ bool QDltParser::parseMessage(QFile &file,QFile &fileWrite,int &linecounter,QStr
             QByteArray hashByteArray = hashString.toLatin1();
             QByteArray md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
 
-            frame->idString = QString("DLT_ID_%1_%2_%3").arg(frame->appid).arg(frame->ctid).arg(QString(md5.toHex()).left(8));
+            frame->idString = QString("DLT_MSG_ID_%1_%2_%3").arg(frame->appid).arg(frame->ctid).arg(QString(md5.toHex()).left(8));
             fileWrite.write(QString("%1);\n").arg(frame->idString).toLatin1());
         }
         /* write output lines to do not change line number order */
@@ -282,7 +282,7 @@ void QDltParser::parseMessageStringList(QDltFibexFrame *frame,QFile &fileWrite,Q
                     QByteArray hashByteArray = hashString.toLatin1();
                     QByteArray md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
 
-                    frame->idString = QString("DLT_ID_%1_%2_%3").arg(frame->appid).arg(frame->ctid).arg(QString(md5.toHex()).left(8));
+                    frame->idString = QString("DLT_MSG_ID_%1_%2_%3").arg(frame->appid).arg(frame->ctid).arg(QString(md5.toHex()).left(8));
 
                     /* write output file */
                     fileWrite.write(QString("%1,").arg(frame->idString).toLatin1());
@@ -623,10 +623,26 @@ bool QDltParser::parseContextsRegisterContext(QString text)
     return true;
 }
 
-bool QDltParser::update()
+bool QDltParser::parseCheck()
 {
     QDltFibexFrame *frame;
 
+    // check application ids
+    if(applications.size()<1)
+    {
+        errorString = "No application is registered!";
+        return false;
+    }
+
+    // find an application id
+    QString appid;
+    QMapIterator<QString,QString> i(applications);
+    while (i.hasNext()) {
+        i.next();
+        appid = i.key();
+    }
+
+    // check and set context ids and application ids in frames
     for(int i = 0;i<messages.size();i++)
     {
         frame = messages.at(i);
@@ -638,8 +654,26 @@ bool QDltParser::update()
             errorString = "Context not found: " + frame->context;
             return false;
         }
+        if(con->conid.isEmpty())
+        {
+            errorString = "Context " + frame->context + " has no context id!";
+            return false;
+        }
         frame->ctid = con->conid;
-        frame->appid = con->appid;
+        if(con->appid.isEmpty())
+        {
+            if(applications.size()>1)
+            {
+                errorString = "Context " + frame->context + " has no application id and more than one application is registered!";
+                return false;
+            }
+            con->appid = appid;
+            frame->appid = appid;  // when common api is not used, the register context macro does not contain the appid; use global one
+        }
+        else
+        {
+            frame->appid = con->appid;
+        }
 
         // search id
         uint32_t id = messageIds[frame->idString];
@@ -1528,4 +1562,205 @@ bool QDltParser::checkDoubleIds(QString &text,bool perApplication)
     {
         return false;
     }
+}
+
+bool QDltParser::parseConfiguration(QString fileName)
+{
+    /* parse configuration file */
+    QFile file(fileName);
+
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        errorString = "Cannot open file " + fileName;
+        return false;
+    }
+
+    while (!file.atEnd()) {
+        QByteArray line = file.readLine();
+
+        QString text(line);
+
+        text.remove(QChar('\n'));
+        text.remove(QChar('\r'));
+
+        QStringList list = text.split(" ");
+
+        if(list.size()<1)
+        {
+            // do nothing
+        }
+        else if(list[0]=="clear")
+        {
+            clear();
+        }
+        else if(list[0]=="read-fibex")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            if(!readFibex(filename))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="write-fibex")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            if(!writeFibex(filename))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="write-csv")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            if(!writeCsv(filename))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="write-id")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            if(!writeIdHeader(filename,false))
+            {
+                file.close();
+                 return false;
+            }
+        }
+        else if(list[0]=="write-id-app")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            if(!writeIdHeader(filename,true))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="check-double")
+        {
+            QString text;
+            if(!checkDoubleIds(text,false))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="check-double-app")
+        {
+            QString text;
+            if(!checkDoubleIds(text,true))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="parse-file")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            // parse file
+            if(!parseFile(filename))
+            {
+                file.close();
+                return false;
+            }
+
+            // update message ids and application/context ids
+            if(!parseCheck())
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="converte-file")
+        {
+            if(list.size()<2)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            QString filename = list[1];
+            // parse file
+            if(!converteFile(filename))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="update-id")
+        {
+            if(list.size()<3)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            uint32_t startId = list[1].toUInt();
+            uint32_t endId = list[2].toUInt();
+            // parse file
+            if(!generateId(startId,endId,false))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else if(list[0]=="update-id-app")
+        {
+            if(list.size()<3)
+            {
+                errorString = "Missing parameters in line " + text;
+                return false;
+            }
+            uint32_t startId = list[1].toUInt();
+            uint32_t endId = list[2].toUInt();
+            // parse file
+            if(!generateId(startId,endId,true))
+            {
+                file.close();
+                return false;
+            }
+        }
+        else
+        {
+            if(!list[0].isEmpty())
+            {
+                errorString = "Unknown command " + list[0];
+                return false;
+            }
+        }
+    }
+
+    file.close();
+
+    return true;
 }

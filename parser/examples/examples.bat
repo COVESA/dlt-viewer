@@ -119,7 +119,52 @@ echo ************************************
 
 mkdir result\example_4
 
-%DLT_PARSER_EXE% --no-gui --parse-dir result\example_4 --check-double-app --write-fibex result\example_4\fibex.xml --write-csv result\example_4\export.csv
+%DLT_PARSER_EXE% --no-gui --parse-dir example_4 --check-double-app --write-fibex result\example_4\fibex.xml --write-csv result\example_4\export.csv
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+
+echo ************************************
+echo ***        Example 5             ***
+echo ************************************
+echo ***     Embedded DLT             ***
+echo ************************************
+echo ** Converte file                  **
+echo ** Parse Directory                **
+echo ** - generate IDs                 **
+echo ** - check double                 **
+echo ** - Write IDs Header             **
+echo ** - Write XML                    **
+echo ** - Write CSV                    **
+echo ************************************
+
+mkdir result\example_5
+copy example_5\* result\example_5
+
+%DLT_PARSER_EXE% --no-gui --parse-file result\example_5\example5.cpp --converte-file result\example_5\example5.cpp 
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+%DLT_PARSER_EXE% --no-gui --parse-file result\example_5\example5.cpp --update-id 1000 2000 --check-double --write-fibex result\example_5\example5.xml --write-csv result\example_5\example5.csv --write-id result\example_5
+IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+echo ************************************
+echo ***        Example 6             ***
+echo ************************************
+echo ***     Configuration File       ***
+echo ************************************
+echo ** Converte file                  **
+echo ** - parse Files                  **
+echo ** - converte Files               **
+echo ** - generate IDs                 **
+echo ** - check double                 **
+echo ** - Write IDs Header             **
+echo ** - Write XML                    **
+echo ** - Write CSV                    **
+echo ************************************
+
+mkdir result\example_6
+copy example_6\* result\example_6
+
+%DLT_PARSER_EXE% --no-gui --parse-cfg result\example_6\parse.cfg 
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 

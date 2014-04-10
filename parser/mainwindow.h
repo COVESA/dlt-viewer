@@ -104,8 +104,6 @@ public:
 
     bool parseDirectory(QString dirName, parseType type, bool convert, bool create, QProgressDialog &progress);
 
-    bool parseConfiguration(QString fileName);
-
     void updateTree();
     void updateTreeApplications();
     void updateTreeContexts();

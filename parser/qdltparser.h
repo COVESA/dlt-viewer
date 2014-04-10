@@ -100,6 +100,8 @@ public:
     void clear();
 
     bool parseFile(QString fileName);
+    bool parseConfiguration(QString fileName);
+    bool parseCheck();
     bool converteFile(QString fileName);
 
     QString getLastError() { return errorString; }
@@ -109,7 +111,6 @@ public:
     QMap<QString,QString> getApplications() { return applications; }
     QMap<QString,uint32_t> getMessageIds() { return messageIds; }
 
-    bool update();
     bool checkDoubleIds(QString &text, bool perApplication);
     bool checkId(uint32_t startId, uint32_t endId, uint32_t &id);
     bool checkId(uint32_t startId,uint32_t endId,uint32_t &id, bool perApplication,QString appId);

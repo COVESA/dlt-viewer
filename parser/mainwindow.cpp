@@ -23,6 +23,7 @@
 #include <qfiledialog.h>
 #include <qmessagebox.h>
 #include <QFile>
+#include <QStringList>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QLabel>
@@ -94,14 +95,14 @@ int MainWindow::argsParser()
     }
     if(!argParseCfg.isEmpty())
     {
-        if(!parseConfiguration(argParseCfg))
+        if(!parser.parseConfiguration(argParseCfg))
         {
             std::cout << "Error: Parse Cfg: "<< parser.getLastError().toLatin1().data() << std::endl;
             return -1;
         }
 
         // update message ids and application/context ids
-        if(!parser.update())
+        if(!parser.parseCheck())
         {
             std::cout << "Error: Parse Cfg: "<< parser.getLastError().toLatin1().data() << std::endl;
             return -1;
@@ -122,7 +123,7 @@ int MainWindow::argsParser()
         }
 
         // update message ids and application/context ids
-        if(!parser.update())
+        if(!parser.parseCheck())
         {
             std::cout << "Error: Parse File: "<< parser.getLastError().toLatin1().data() << std::endl;
             return -1;
@@ -150,7 +151,7 @@ int MainWindow::argsParser()
         progress.close();
 
         // update message ids and application/context ids
-        if(!parser.update())
+        if(!parser.parseCheck())
         {
             std::cout << "Error: Parse Directory: "<< parser.getLastError().toLatin1().data() << std::endl;
             return -1;
@@ -429,64 +430,6 @@ bool MainWindow::parseDirectory(QString dirName, parseType type,bool convert,boo
     return true;
 }
 
-bool MainWindow::parseConfiguration(QString fileName)
-{
-    /* parse configuration file */
-    QFile file(fileName);
-
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-             return false;
-    }
-
-    while (!file.atEnd()) {
-        QByteArray line = file.readLine();
-
-        QString text(line);
-
-        text.remove(QChar('\n'));
-        text.remove(QChar('\r'));
-
-        qDebug() << text ;
-
-        if(text.startsWith('X'))
-        {
-            QString filename = text.mid(2);
-            if(!parser.readFibex(filename))
-            {
-                file.close();
-                return false;
-            }
-        }
-        else if(text.startsWith('D'))
-        {
-            QString dirname = text.mid(2);
-            QProgressDialog progress("Parsing Directory...", "Abort parsing", 0, 100, this);
-            progress.setWindowModality(Qt::WindowModal);
-            progress.setMinimumDuration(1000);
-            if(!parseDirectory(dirname,parseTypeContexts,false,true,progress))
-            {
-                progress.close();
-                file.close();
-                return false;
-            }
-            progress.close();
-        }
-        else if(text.startsWith('F'))
-        {
-            QString filename = text.mid(2);
-            if(!parser.parseFile(filename))
-            {
-                file.close();
-                return false;
-            }
-        }
-    }
-
-    file.close();
-
-    return true;
-}
 
 void MainWindow::on_actionInfo_triggered()
 {
@@ -502,7 +445,7 @@ void MainWindow::on_actionInfo_triggered()
 void MainWindow::on_actionCommandline_options_triggered()
 {
     /* display information abouit command line argumentss */
-    QMessageBox::information(0, QString("Commandline arguments:n"),
+    QMessageBox::information(0, QString("Commandline arguments"),
                                 QString(commandLineOptions));
 }
 
@@ -534,7 +477,10 @@ void MainWindow::on_action_Open_triggered()
     filenameWidget->setText(fibexFileName);
 
     /* read Fibex file */
-    parser.readFibex(fileName);
+    if(!parser.readFibex(fileName))
+    {
+        QMessageBox::warning(this,"Open Fibex",parser.getLastError());
+    }
 
     /* update tree */
     updateTree();
@@ -572,7 +518,7 @@ void MainWindow::on_actionCheck_double_IDs_triggered()
 {
     QString text;
 
-    if(parser.checkDoubleIds(text,false))
+    if(!parser.checkDoubleIds(text,false))
     {
         /* double Ids found and display list of double Ids */
         QMessageBox msgBox;
@@ -595,7 +541,7 @@ void MainWindow::on_actionCheck_double_IDs_per_context_triggered()
 {
     QString text;
 
-    if(parser.checkDoubleIds(text,true))
+    if(!parser.checkDoubleIds(text,true))
     {
         /* double Ids found and display list of double Ids */
         QMessageBox msgBox;
@@ -636,7 +582,7 @@ void MainWindow::on_actionParseFile_triggered()
     }
 
     // update message ids and application/context ids
-    if(!parser.update())
+    if(!parser.parseCheck())
     {
         QMessageBox::warning(this,"Parse File",parser.getLastError());
         return;
@@ -675,7 +621,7 @@ void MainWindow::on_actionParseDirectory_triggered()
     progress.close();
 
     // update message ids and application/context ids
-    if(!parser.update())
+    if(!parser.parseCheck())
     {
         QMessageBox::warning(this,"Parse Directory",parser.getLastError());
         return;
@@ -700,7 +646,11 @@ void MainWindow::on_actionParseConfiguration_triggered()
         return;
     }
 
-    parseConfiguration(fileName);
+    if(!parser.parseConfiguration(fileName))
+    {
+        QMessageBox::warning(this,"Parse Configuration",parser.getLastError());
+        return;
+    }
 
     /* update tree */
     updateTree();
