@@ -4,6 +4,10 @@ QT_VERSION = $$split(QT_VERSION, ".")
 QT_VER_MAJ = $$member(QT_VERSION, 0)
 QT_VER_MIN = $$member(QT_VERSION, 1)
 
+# Unix executable install path
+target.path = /usr/bin
+INSTALLS += target
+
 # Library definitions for debug and release builds
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
