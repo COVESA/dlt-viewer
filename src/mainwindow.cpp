@@ -81,11 +81,10 @@ MainWindow::MainWindow(QWidget *parent) :
     initState();
 
     /* Apply loaded settings */
-    applySettings();
-
     initSearchTable();
 
     initView();
+    applySettings();
 
     initSignalConnections();
 
@@ -249,9 +248,10 @@ void MainWindow::initView()
     ui->tableView->setColumnWidth(6,40);
     ui->tableView->setColumnWidth(7,50);
     ui->tableView->setColumnWidth(8,50);
-    ui->tableView->setColumnWidth(9,40);
+    ui->tableView->setColumnWidth(9,50);
     ui->tableView->setColumnWidth(10,40);
-    ui->tableView->setColumnWidth(11,400);
+    ui->tableView->setColumnWidth(11,40);
+    ui->tableView->setColumnWidth(12,400);
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -1444,12 +1444,14 @@ void MainWindow::applySettings()
 
     settings->showEcuId?ui->tableView->showColumn(4):ui->tableView->hideColumn(4);
     settings->showApId?ui->tableView->showColumn(5):ui->tableView->hideColumn(5);
-    settings->showType?ui->tableView->showColumn(7):ui->tableView->hideColumn(7);
+    settings->showCtId?ui->tableView->showColumn(6):ui->tableView->hideColumn(6);
+    settings->showSessionId?ui->tableView->showColumn(7):ui->tableView->hideColumn(7);
+    settings->showType?ui->tableView->showColumn(8):ui->tableView->hideColumn(8);
 
-    settings->showSubtype?ui->tableView->showColumn(8):ui->tableView->hideColumn(8);
-    settings->showMode?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
-    settings->showNoar?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
-    settings->showPayload?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
+    settings->showSubtype?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
+    settings->showMode?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
+    settings->showNoar?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
+    settings->showPayload?ui->tableView->showColumn(12):ui->tableView->hideColumn(12);
 
     DltSettingsManager *settingsmanager = DltSettingsManager::getInstance();
 

@@ -154,6 +154,20 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
               default:
                  return msg.getCtid();
              }
+         case FieldNames::SessionId:
+             switch(project->settings->showSessionName){
+             case 0:
+                 return QString("%1").arg(msg.getSessionid());
+                 break;
+             case 1:
+                 if(!msg.getSessionName().isEmpty())
+                    return msg.getSessionName();
+                else
+                    return QString("%1").arg(msg.getSessionid());
+                 break;
+              default:
+                 return QString("%1").arg(msg.getSessionid());
+             }
          case FieldNames::Type:
              return msg.getTypeString();
          case FieldNames::Subtype:

@@ -30,7 +30,7 @@
 #include "qdlt.h"
 
 #define DLT_VIEWER_LIST_BUFFER_SIZE 100024
-#define DLT_VIEWER_COLUMN_COUNT 12
+#define DLT_VIEWER_COLUMN_COUNT 13
 
 extern "C"
 {

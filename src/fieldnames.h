@@ -21,6 +21,7 @@ public:
         EcuId,
         AppId,
         ContextId,
+        SessionId,
         Type,
         Subtype,
         Mode,

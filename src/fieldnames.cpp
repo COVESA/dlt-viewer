@@ -42,6 +42,17 @@ QString FieldNames::getName(Fields cn, SettingsDialog *settings)
         case 1:
              return QString("Ctid Desc");
         }
+    case SessionId:
+        if(settings == NULL)
+        {
+            return QString("SessionId");
+        }
+        switch(settings->showSessionName){
+        case 0:
+             return QString("SessionId");
+        case 1:
+             return QString("SessionName");
+        }
     case Type:
         return QString("Type");
     case Subtype:

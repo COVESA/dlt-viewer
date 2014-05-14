@@ -264,8 +264,8 @@ void SettingsDialog::writeDlg()
         ui->radioButtonAppIdDesc->setChecked(true);
         break;
     default:
-        ui->radioButtonConId->setChecked(true);
-        ui->radioButtonConIdDesc->setChecked(false);
+        ui->radioButtonAppId->setChecked(true);
+        ui->radioButtonAppIdDesc->setChecked(false);
         break;
     }
 
@@ -289,6 +289,29 @@ void SettingsDialog::writeDlg()
     default:
         ui->radioButtonConId->setChecked(true);
         ui->radioButtonConIdDesc->setChecked(false);
+        break;
+    }
+
+    ui->groupBoxSessionId->setChecked(showSessionId?Qt::Checked:Qt::Unchecked);
+    if(ui->groupBoxSessionId->isChecked()){
+        ui->radioButtonSessionId->setEnabled(true);
+        ui->radioButtonSessionName->setEnabled(true);
+    }else{
+        ui->radioButtonSessionId->setEnabled(false);
+        ui->radioButtonSessionName->setEnabled(false);
+    }
+    switch(showSessionName){
+    case 0:
+        ui->radioButtonSessionId->setChecked(true);
+        ui->radioButtonSessionName->setChecked(false);
+        break;
+    case 1:
+        ui->radioButtonSessionId->setChecked(false);
+        ui->radioButtonSessionName->setChecked(true);
+        break;
+    default:
+        ui->radioButtonSessionId->setChecked(true);
+        ui->radioButtonSessionName->setChecked(false);
         break;
     }
 
@@ -368,6 +391,8 @@ void SettingsDialog::readDlg()
     showApIdDesc =  ( ui->radioButtonAppIdDesc->isChecked()== true ? 1:0);
     showCtId =      ( ui->groupBoxConId->isChecked() == true ? 1:0);
     showCtIdDesc =  ( ui->radioButtonConIdDesc->isChecked()== true ? 1:0);
+    showSessionId =   ( ui->groupBoxSessionId->isChecked() == true ? 1:0);
+    showSessionName = ( ui->radioButtonSessionName->isChecked()== true ? 1:0);
     showType =      ( ui->checkBoxType->checkState() == Qt::Checked);
 
     showSubtype = ( ui->checkBoxSubtype->checkState() == Qt::Checked);
@@ -443,6 +468,8 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/showApIdDesc",showApIdDesc);
     settings->setValue("startup/showCtId",showCtId);
     settings->setValue("startup/showCtIdDesc",showCtIdDesc);
+    settings->setValue("startup/showSessionId",showSessionId);
+    settings->setValue("startup/showSessionName",showSessionName);
     settings->setValue("startup/showType",showType);
 
     settings->setValue("startup/showSubtype",showSubtype);
@@ -511,6 +538,8 @@ void SettingsDialog::readSettings()
     showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
     showCtId = settings->value("startup/showCtId",1).toInt();
     showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
+    showSessionId = settings->value("startup/showSessionId",1).toInt();
+    showSessionName = settings->value("startup/showSessionName",0).toInt();
     showType = settings->value("startup/showType",1).toInt();
 
     showSubtype = settings->value("startup/showSubtype",1).toInt();
@@ -658,6 +687,17 @@ void SettingsDialog::on_groupBoxConId_clicked(bool checked)
     }
 }
 
+void SettingsDialog::on_groupBoxSessionId_clicked(bool checked)
+{
+    if(checked){
+        ui->radioButtonSessionId->setEnabled(true);
+        ui->radioButtonSessionName->setEnabled(true);
+    }else{
+        ui->radioButtonSessionId->setEnabled(false);
+        ui->radioButtonSessionName->setEnabled(false);
+    }
+}
+
 void SettingsDialog::on_groupBoxAppId_clicked(bool checked)
 {
     if(checked){
@@ -723,4 +763,3 @@ void SettingsDialog::clearIndexCacheAfterDays()
             dir.remove(dirFile);
     }
 }
-

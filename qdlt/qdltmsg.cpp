@@ -441,6 +441,7 @@ void QDltMsg::clear()
     microseconds = 0;
     timestamp = 0;
     sessionid = 0;
+    sessionName.clear();
     numberOfArguments = 0;
     messageId = 0;
     ctrlServiceId = 0;

@@ -131,6 +131,18 @@ public:
     */
     void setSessionid(unsigned int _sessionid) { sessionid = _sessionid; }
 
+    //! Get the session name of the DLT message.
+    /*!
+      \return The session name of the DLT message.
+    */
+    QString getSessionName() { return sessionName; }
+
+    //! Set the session name of the DLT message.
+    /*!
+      \param sessionName The session name of the DLT message.
+    */
+    void setSessionName(QString sessionName) { this->sessionName = sessionName; }
+
     //! Get the message counter of the DLT message.
     /*!
       The message counter is increased by one for each message of a context.
@@ -456,6 +468,9 @@ private:
 
     //! The session id of the DLT message.
     unsigned int sessionid;
+
+    //! The session name of the DLT message.
+    QString sessionName;
 
     //! The message counter of a context.
     unsigned char messageCounter;

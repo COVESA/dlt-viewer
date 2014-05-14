@@ -80,6 +80,8 @@ public:
     int showApIdDesc;
     int showCtId;
     int showCtIdDesc;
+    int showSessionId;
+    int showSessionName;
     int showType;
     int showSubtype;
     int showMode;
@@ -133,6 +135,7 @@ private slots:
     void on_toolButtonPluginsAutoload_clicked();
     void on_toolButtonFilterCache_clicked();
     void on_pushButtonClearIndexCache_clicked();
+    void on_groupBoxSessionId_clicked(bool checked);
 };
 
 #endif // SETTINGSDIALOG_H

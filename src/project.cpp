@@ -700,6 +700,14 @@ bool Project::Load(QString filename)
               {
                   settings->showCtIdDesc = xml.readElementText().toInt();
               }
+              if(xml.name() == QString("showSessionId"))
+              {
+                  settings->showSessionId = xml.readElementText().toInt();
+              }
+              if(xml.name() == QString("showSessionName"))
+              {
+                  settings->showSessionName = xml.readElementText().toInt();
+              }
               if(xml.name() == QString("showType"))
               {
                   settings->showType = xml.readElementText().toInt();
