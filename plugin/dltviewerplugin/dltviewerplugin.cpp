@@ -88,7 +88,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     text += QString("<h3>Header</h3>");
     text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
     qDebug() << text;
-    text += QString("<tr><th>Index</th><th>Time</th><th>Timestamp</th><th>Count</th><th>Ecuid</th><th>Apid</th><th>Ctid</th>");
+    text += QString("<tr><th>Index</th><th>Time</th><th>Timestamp</th><th>Count</th><th>Ecuid</th><th>Apid</th><th>Ctid</th><th>SessionId</th>");
     text += QString("<th>Type</th><th>Subtype</th><th>Mode</th><th>Endianness</th><th>#Args</th></tr>");
     //text += QString("<tr><td>%1</td>").arg(dltFile->getMsgFilterPos(index));
     text += QString("<tr><td>%1</td>").arg(index);
@@ -98,6 +98,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     text += QString("<td>%1</td>").arg(msg.getEcuid());
     text += QString("<td>%1</td>").arg(msg.getApid());
     text += QString("<td>%1</td>").arg(msg.getCtid());
+    text += QString("<td>%1</td>").arg(msg.getSessionid());
     text += QString("<td>%1</td>").arg(msg.getTypeString());
     text += QString("<td>%1</td>").arg(msg.getSubtypeString());
     text += QString("<td>%1</td>").arg(msg.getModeString());
