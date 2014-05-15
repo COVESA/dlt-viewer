@@ -65,10 +65,10 @@ bool NonverbosePlugin::loadConfig(QString filename)
         delete pdu;
     pdumap.clear();    
 
-    foreach(DltFibexFrame *frame, framemap)
+    foreach(DltFibexFrame *frame, framemapwithkey)
         delete frame;
+    framemapwithkey.clear();
     framemap.clear();
-
 
     if ( filename.length() <= 0 )
     {
@@ -343,12 +343,25 @@ bool NonverbosePlugin::loadConfig(QString filename)
               {
                   if(frame)
                   {
-                      if (framemap.contains(frame->id)){
-                          // we don't add another instance but add a warning msgbox.
-                          warning_text+=frame->id + ", ";
-                          delete frame;
-                      }else{
-                        framemap[frame->id] = frame;
+                      if (framemap.contains(frame->id))
+                      {
+                            if( framemapwithkey.contains(DltFibexKey(frame->id,frame->appid,frame->ctid)))
+                            {
+                                // do not add frame, if Id, appid and ctid already exist
+                                // show warning instead
+                                warning_text+=frame->id + ", ";
+                                delete frame;
+                                frame=0;
+                            }
+                            else
+                            {
+                                framemapwithkey[DltFibexKey(frame->id,frame->appid,frame->ctid)] = frame;
+                            }
+                      }
+                      else
+                      {
+                            framemapwithkey[DltFibexKey(frame->id,frame->appid,frame->ctid)] = frame;
+                            framemap[frame->id] = frame;
                       }
                       frame = 0;
                   }
@@ -456,7 +469,13 @@ bool NonverbosePlugin::isMsg(QDltMsg &msg, int triggeredByUser)
     }
 
     QString idtext = QString("ID_%1").arg(msg.getMessageId());
-    return framemap.contains(idtext);
+
+    if(!msg.getApid().isEmpty() && !msg.getCtid().isEmpty())
+        // search in full key, if msg already contains AppId and CtId
+        return framemapwithkey.contains(DltFibexKey(idtext,msg.getApid(),msg.getCtid()));
+    else
+        // search only for id
+        return framemap.contains(idtext);
 }
 
 bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
@@ -476,14 +495,30 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     }
 
     QString idtext = QString("ID_%1").arg(msg.getMessageId());
-    if(!framemap.contains(idtext))
-        return false;
-
-    DltFibexFrame *frame = framemap[idtext];
+    DltFibexFrame *frame;
+    if(!msg.getApid().isEmpty() && !msg.getCtid().isEmpty())
+    {
+        // search in full key, if msg already contains AppId and CtId
+        frame = framemapwithkey[DltFibexKey(idtext,msg.getApid(),msg.getCtid())];
+    }
+    else
+    {
+        // search only for id
+        frame = framemap[idtext];
+    }
+    if(!frame)
+            return false;
 
     /* set message data */
-    msg.setApid(frame->appid);
-    msg.setCtid(frame->ctid);
+
+    // set ApId only if it is empty
+    if(msg.getApid().isEmpty())
+        msg.setApid(frame->appid);
+
+    // set Context Id only if it is empty
+    if(msg.getCtid().isEmpty())
+        msg.setCtid(frame->ctid);
+
     msg.setNumberOfArguments(frame->pdureflist.size());
     msg.setType((QDltMsg::DltTypeDef)(frame->messageType));
     msg.setSubtype(frame->messageInfo);

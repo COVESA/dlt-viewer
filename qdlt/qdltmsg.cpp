@@ -296,7 +296,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     messageCounter = standardheader->mcnt;
 
     /* extract number of arguments */
-    if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
+    if (DLT_IS_HTYP_UEH(standardheader->htyp) && (mode == DltModeVerbose)) {
         numberOfArguments = extendedheader->noar;
     }
 
@@ -308,8 +308,8 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     /* copy payload */
     payload = buf.mid(headersize,datasize);
 
-    /* set messageid if non verbose and no extended header */
-    if(!DLT_IS_HTYP_UEH(standardheader->htyp) && payload.size()>=4) {
+    /* set messageid if non verbose */
+    if((mode == DltModeNonVerbose) && payload.size()>=4) {
         /* message id is always in big endian format */
         if(endianness == DltEndiannessLittleEndian) {
             messageId = (*((unsigned int*) payload.constData()));

@@ -32,6 +32,35 @@
 
 #define NON_VERBOSE_PLUGIN_VERSION "1.0.0"
 
+class DltFibexKey
+{
+public:
+    DltFibexKey(QString id,QString appid,QString ctid)
+    {
+        this->id = id;
+        this->appid = appid;
+        this->ctid = ctid;
+    }
+
+    friend bool operator==(const DltFibexKey &e1, const DltFibexKey &e2);
+    friend uint qHash(const DltFibexKey &key);
+
+    QString id;
+    QString appid;
+    QString ctid;
+};
+
+inline bool operator==(const DltFibexKey &e1, const DltFibexKey &e2)
+{
+    return (e1.id == e2.id)
+           && (e1.appid == e2.appid) && (e1.ctid == e2.ctid);
+}
+
+inline uint qHash(const DltFibexKey &key)
+{
+    return qHash(key.id) ^ qHash(key.appid) ^ qHash(key.ctid);
+}
+
 /**
  * The structure of a Fibex PDU information.
  */
@@ -102,6 +131,7 @@ public:
     //is it necessary that this is public?
     QHash<QString, DltFibexPdu *> pdumap;
     QHash<QString, DltFibexFrame *> framemap;
+    QHash<DltFibexKey, DltFibexFrame *> framemapwithkey;
 
 private:
     QString m_error_string;
