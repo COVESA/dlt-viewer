@@ -1380,7 +1380,7 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
     if(settings->filterCache)
         dltIndexer->setFilterCache(settings->filterCacheName);
@@ -1423,7 +1423,7 @@ void MainWindow::reloadLogFileDefaultFilter()
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
     // start indexing
     dltIndexer->start();
