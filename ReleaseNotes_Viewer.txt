@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.11.0 STABLE
+Version 2.12.0 ALPHA
 
 Known issues
 ------------
@@ -13,6 +13,18 @@ Known issues
 
 Changes
 -------
+
+2.12.0
+  * Fix: DLT Viewer shows messages sorted by time, even if the option is not enabled at startup
+  * Updated build script to Qt 5.3.
+  * Fixed use of non verbose mode with extended header.
+  * Extended non verbose plugin to differentiate messages by appid and ctid.
+  * Add session id to table view.
+  * Show Session/Process Id in DLT Viewer Plugin.
+  * Parser: Added Linux installation path
+  * Parser: Added DLT Embedded Example and further fix.
+  * Fixed missing refresh on some PCs.
+  * Parser: Initial version of reference DLT parser.
 
 2.11.0
   * Completed .gitignore with more files to ensure clean statuses on Linux machines
