@@ -648,6 +648,10 @@ bool Project::Load(QString filename)
               {
                   settings->autoMarkWarn = xml.readElementText().toInt();
               }
+              if(xml.name() == QString("autoMarkMarker"))
+              {
+                  settings->autoMarkMarker = xml.readElementText().toInt();
+              }
               if(xml.name() == QString("fontSize"))
               {
                   settings->fontSize = xml.readElementText().toInt();
@@ -1035,6 +1039,7 @@ bool Project::Save(QString filename)
             xml.writeTextElement("autoScroll",QString("%1").arg(settings->autoScroll));
             xml.writeTextElement("autoMarkFatalError",QString("%1").arg(settings->autoMarkFatalError));
             xml.writeTextElement("autoMarkWarn",QString("%1").arg(settings->autoMarkWarn));
+            xml.writeTextElement("autoMarkMarker",QString("%1").arg(settings->autoMarkMarker));
             xml.writeTextElement("writeControl",QString("%1").arg(settings->writeControl));
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(settings->updateContextLoadingFile));
             xml.writeTextElement("loggingOnlyMode",QString("%1").arg(settings->loggingOnlyMode));

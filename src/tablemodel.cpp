@@ -26,6 +26,7 @@
 #include "dltsettingsmanager.h"
 #include "dltuiutils.h"
 #include "optmanager.h"
+#include "dlt_protocol.h"
 
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
@@ -234,6 +235,10 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              }
              if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn"){
                 return QVariant(QBrush(QColor(255,255,0)));
+             }
+             if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
+                msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER){
+                return QVariant(QBrush(QColor(0,255,0)));
              }
 
              return QVariant(QBrush(QColor(255,255,255)));

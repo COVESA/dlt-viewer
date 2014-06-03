@@ -2178,7 +2178,7 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         menu.addAction(action);
 
         action = new QAction("Get Local Time", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Local_Time_triggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Local_Time_2_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
@@ -3274,6 +3274,82 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
 }
 
+void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
+{
+    QByteArray data;
+    QDltMsg qmsg;
+
+    /* prepare storage header */
+    msg.storageheader = (DltStorageHeader*)msg.headerbuffer;
+    dlt_set_storageheader(msg.storageheader,"DLTV");
+
+    /* prepare standard header */
+    msg.standardheader = (DltStandardHeader*)(msg.headerbuffer + sizeof(DltStorageHeader));
+    msg.standardheader->htyp = DLT_HTYP_WEID | DLT_HTYP_WTMS | DLT_HTYP_UEH | DLT_HTYP_PROTOCOL_VERSION1 ;
+
+#if (BYTE_ORDER==BIG_ENDIAN)
+    msg.standardheader->htyp = (msg.standardheader->htyp | DLT_HTYP_MSBF);
+#endif
+
+    msg.standardheader->mcnt = 0;
+
+    /* Set header extra parameters */
+    dlt_set_id(msg.headerextra.ecu,"DLTV");
+    msg.headerextra.tmsp = dlt_uptime();
+
+    /* Copy header extra parameters to headerbuffer */
+    dlt_message_set_extraparameters(&msg,0);
+
+    /* prepare extended header */
+    msg.extendedheader = (DltExtendedHeader*)(msg.headerbuffer + sizeof(DltStorageHeader) + sizeof(DltStandardHeader) + DLT_STANDARD_HEADER_EXTRA_SIZE(msg.standardheader->htyp) );
+    msg.extendedheader->msin = DLT_MSIN_CONTROL_RESPONSE;
+    msg.extendedheader->noar = 1; /* number of arguments */
+    if (appid.isEmpty())
+    {
+        dlt_set_id(msg.extendedheader->apid,"DLTV");       /* application id */
+    }
+    else
+    {
+        dlt_set_id(msg.extendedheader->apid, appid.toLatin1());
+    }
+    if (contid.isEmpty())
+    {
+        dlt_set_id(msg.extendedheader->ctid,"DLTV");       /* context id */
+    }
+    else
+    {
+        dlt_set_id(msg.extendedheader->ctid, contid.toLatin1());
+    }
+
+    /* prepare length information */
+    msg.headersize = sizeof(DltStorageHeader) + sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + DLT_STANDARD_HEADER_EXTRA_SIZE(msg.standardheader->htyp);
+    msg.standardheader->len = DLT_HTOBE_16(msg.headersize - sizeof(DltStorageHeader) + msg.datasize);
+
+    /* Skip the file handling, if indexer is working on the file */
+    if(dltIndexer->tryLock())
+    {
+        /* store ctrl message in log file */
+        if (outputfile.isOpen())
+        {
+            if (settings->writeControl)
+            {
+                // https://bugreports.qt-project.org/browse/QTBUG-26069
+                outputfile.seek(outputfile.size());
+                outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+                outputfile.write((const char*)msg.databuffer,msg.datasize);
+                outputfile.flush();
+            }
+        }
+
+        /* read received messages in DLT file parser and update DLT message list view */
+        /* update indexes  and table view */
+        if(!dltIndexer->isRunning())
+            updateIndex();
+
+        dltIndexer->unlock();
+    }
+}
+
 void MainWindow::on_action_menuDLT_Get_Default_Log_Level_triggered()
 {
     /* get selected ECU in configuration */
@@ -3601,6 +3677,29 @@ void MainWindow::ControlServiceRequest(EcuItem* ecuitem, int service_id )
     dlt_message_free(&msg,0);
 }
 
+void MainWindow::controlMessage_Marker()
+{
+    DltMessage msg;
+
+    /* initialise new message */
+    dlt_message_init(&msg,0);
+
+    /* prepare payload */
+    msg.datasize = sizeof(DltServiceMarker);
+    if (msg.databuffer) free(msg.databuffer);
+    msg.databuffer = (uint8_t *) malloc(msg.datasize);
+    DltServiceMarker *resp;
+    resp = (DltServiceMarker*) msg.databuffer;
+    resp->service_id = DLT_SERVICE_ID_MARKER;
+    resp->status = DLT_SERVICE_RESPONSE_OK;
+
+    /* send message */
+    controlMessage_WriteControlMessage(msg,QString(""),QString(""));
+
+    /* free message */
+    dlt_message_free(&msg,0);
+}
+
 void MainWindow::SendInjection(EcuItem* ecuitem)
 {
     unsigned int serviceID;
@@ -3704,7 +3803,7 @@ void MainWindow::on_action_menuDLT_Get_Software_Version_triggered()
                              QString("No ECU selected in configuration!"));
 }
 
-void MainWindow::on_action_menuDLT_Get_Local_Time_triggered()
+void MainWindow::on_action_menuDLT_Get_Local_Time_2_triggered()
 {
     /* get selected ECU from configuration */
     QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
@@ -4092,7 +4191,7 @@ void MainWindow::on_configWidget_itemSelectionChanged()
 
     ui->action_menuDLT_Get_Default_Log_Level->setEnabled(ecuitem && ecuitem->connected && !appitem);
     ui->action_menuDLT_Set_Default_Log_Level->setEnabled(ecuitem && ecuitem->connected && !appitem);
-    ui->action_menuDLT_Get_Local_Time->setEnabled(ecuitem && ecuitem->connected && !appitem);
+    ui->action_menuDLT_Get_Local_Time_2->setEnabled(ecuitem && ecuitem->connected && !appitem);
     ui->action_menuDLT_Get_Software_Version->setEnabled(ecuitem && ecuitem->connected && !appitem);
     ui->action_menuDLT_Store_Config->setEnabled(ecuitem && ecuitem->connected && !appitem);
     ui->action_menuDLT_Get_Log_Info->setEnabled(ecuitem && ecuitem->connected && !appitem);
@@ -5394,6 +5493,11 @@ void MainWindow::jumpToMsgSignal(int index)
     jump_to_line(index);
 }
 
+void MainWindow::markerSignal()
+{
+    controlMessage_Marker();
+}
+
 bool MainWindow::jump_to_line(int line)
 {
 
@@ -5697,4 +5801,9 @@ void MainWindow::resetDefaultFilter()
 void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
 {
     on_actionDefault_Filter_Create_Index_triggered();
+}
+
+void MainWindow::on_actionMarker_triggered()
+{
+    controlMessage_Marker();
 }

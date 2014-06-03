@@ -63,6 +63,7 @@ public:
     int autoScroll;
     int autoMarkFatalError;
     int autoMarkWarn;
+    int autoMarkMarker;
     int writeControl;
     int updateContextLoadingFile;
     int updateContextsUnregister;

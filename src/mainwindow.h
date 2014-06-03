@@ -226,6 +226,7 @@ private:
     void SendInjection(EcuItem* ecuitem);
 
     void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
+    void controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid);
     void controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,int log_level);
     void controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status);
     void controlMessage_SetTraceStatus(EcuItem* ecuitem,QString app, QString con,int status);
@@ -236,6 +237,7 @@ private:
     void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,QDltMsg &msg);
     void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
     void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
+    void controlMessage_Marker();
 
     void filterDialogRead(FilterDialog &dlg,FilterItem* item);
     void filterDialogWrite(FilterDialog &dlg,FilterItem* item);
@@ -399,7 +401,7 @@ private slots:
 
     // DLT methods
     void on_action_menuDLT_Send_Injection_triggered();
-    void on_action_menuDLT_Get_Local_Time_triggered();
+    void on_action_menuDLT_Get_Local_Time_2_triggered();
     void on_action_menuDLT_Get_Software_Version_triggered();
     void on_action_menuDLT_Reset_to_Factory_Default_triggered();
     void on_action_menuDLT_Store_Config_triggered();
@@ -469,11 +471,14 @@ private slots:
 
     void on_checkBoxSortByTime_clicked(bool checked);
 
+    void on_actionMarker_triggered();
+
 public slots:
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void jumpToMsgSignal(int index);
+    void markerSignal();
 
     void controlMessage_Timezone(int timezone, unsigned char dst);
     void controlMessage_UnregisterContext(QString ecuId,QString appId,QString ctId);

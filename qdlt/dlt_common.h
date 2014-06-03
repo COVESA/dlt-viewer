@@ -511,6 +511,15 @@ typedef struct
 } PACKED DltServiceTimezone;
 
 /**
+ * The structure of the DLT Service Marker
+ */
+typedef struct
+{
+    uint32_t service_id;            /**< service ID */
+    uint8_t status;                 /**< reponse status */
+} PACKED DltServiceMarker;
+
+/**
  * Structure to store filter parameters.
  * ID are maximal four characters. Unused values are filled with zeros.
  * If every value as filter is valid, the id should be empty by having only zero values.

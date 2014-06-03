@@ -47,6 +47,7 @@ public:
     void saveAsFile(QString filename);
     void clearFile();
     void quitDltViewer();
+    void marker();
 
 signals:
     void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
@@ -56,6 +57,7 @@ signals:
     void saveAsFileSignal(QString filename);
     void clearFileSignal();
     void quitDltViewerSignal();
+    void markerSignal();
 
 protected:
 private:

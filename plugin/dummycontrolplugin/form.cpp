@@ -123,3 +123,9 @@ void Form::on_pushButtonSaveAsFile_clicked()
     if(plugin->dltControl)
         plugin->dltControl->saveAsFile(fileName);
 }
+
+void Form::on_pushButtonMarker_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->marker();
+}

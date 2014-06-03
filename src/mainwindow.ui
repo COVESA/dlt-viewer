@@ -76,7 +76,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -202,7 +202,9 @@
     <addaction name="separator"/>
     <addaction name="action_menuDLT_Send_Injection"/>
     <addaction name="action_menuDLT_Get_Software_Version"/>
-    <addaction name="action_menuDLT_Get_Local_Time"/>
+    <addaction name="action_menuDLT_Get_Local_Time_2"/>
+    <addaction name="separator"/>
+    <addaction name="actionMarker"/>
     <addaction name="separator"/>
     <addaction name="action_menuDLT_Edit_All_Log_Levels"/>
    </widget>
@@ -249,6 +251,8 @@
    <addaction name="actionSettings"/>
    <addaction name="separator"/>
    <addaction name="actionAutoScroll"/>
+   <addaction name="separator"/>
+   <addaction name="actionMarker"/>
   </widget>
   <widget class="QToolBar" name="searchToolbar">
    <property name="windowTitle">
@@ -912,14 +916,6 @@
     <string>Get Software Version</string>
    </property>
   </action>
-  <action name="action_menuDLT_Get_Local_Time">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="text">
-    <string>Get Local Time</string>
-   </property>
-  </action>
   <action name="action_menuDLT_Send_Injection">
    <property name="enabled">
     <bool>false</bool>
@@ -1357,6 +1353,29 @@
   <action name="actionExport">
    <property name="text">
     <string>Export...</string>
+   </property>
+  </action>
+  <action name="actionMarker">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/mark.png</normaloff>:/toolbar/png/mark.png</iconset>
+   </property>
+   <property name="text">
+    <string>Marker</string>
+   </property>
+   <property name="toolTip">
+    <string>Write Marker into DLT File</string>
+   </property>
+  </action>
+  <action name="action_menuDLT_Get_Local_Time_2">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Get Local Time</string>
    </property>
   </action>
  </widget>

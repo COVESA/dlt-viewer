@@ -36,6 +36,8 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(sendInjection(int,QString,QString,int,QByteArray)));
     connect(this, SIGNAL(jumpToMsgSignal(int)),
             server, SLOT(jumpToMsgSignal(int)));
+    connect(this, SIGNAL(markerSignal()),
+            server, SLOT(markerSignal()));
     connect(this, SIGNAL(openFileSignal(QStringList)),
             server, SLOT(on_Open_triggered(QStringList)));
     connect(this, SIGNAL(newFileSignal(QString)),
@@ -86,4 +88,9 @@ void QDltControl::clearFile()
 void QDltControl::quitDltViewer()
 {
     emit quitDltViewerSignal();
+}
+
+void QDltControl::marker()
+{
+    emit markerSignal();
 }

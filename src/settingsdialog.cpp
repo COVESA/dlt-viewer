@@ -214,6 +214,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkWarn->setCheckState(autoMarkWarn?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutoMarkMarker->setCheckState(autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(loggingOnlyMode?Qt::Checked:Qt::Unchecked);
     ui->groupBoxMaxFileSizeMB->setChecked(maxFileSizeMB);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(maxFileSizeMB));
@@ -365,6 +366,7 @@ void SettingsDialog::readDlg()
     autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
     autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
+    autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
     loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
     if(ui->groupBoxMaxFileSizeMB->isChecked())
         maxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toInt();
@@ -447,7 +449,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/autoConnect",autoConnect);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
-    settings->setValue("startup/autoMarkWarn",autoMarkWarn);
+    settings->setValue("startup/autoMarkMarker",autoMarkMarker);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
     settings->setValue("startup/maxFileSizeMB",maxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
@@ -518,6 +520,7 @@ void SettingsDialog::readSettings()
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
+    autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
     maxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toInt();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();

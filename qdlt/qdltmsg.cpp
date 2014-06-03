@@ -87,6 +87,8 @@ QString QDltMsg::getCtrlServiceIdString()
         return QString("connection_info");
     else if(ctrlServiceId == DLT_SERVICE_ID_TIMEZONE)
         return QString("timezone");
+    else if(ctrlServiceId == DLT_SERVICE_ID_MARKER)
+        return QString("marker");
     else
         return QString(( ctrlServiceId<=20 )?qDltCtrlServiceId[ctrlServiceId]:"");
 }
@@ -537,6 +539,12 @@ QString QDltMsg::toStringPayload()
     }
 
     if( getType()==QDltMsg::DltTypeControl && getSubtype()==QDltMsg::DltControlResponse) {
+
+        if(getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+        {
+            return "MARKER";
+        }
+
         text += QString("[%1 %2] ").arg(getCtrlServiceIdString()).arg(getCtrlReturnTypeString());
 
         // ServiceID of Get ECU Software Version

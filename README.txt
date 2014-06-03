@@ -47,6 +47,7 @@ Dynamically linked open source software
 * GCC (GPL)
 * qextserialport (MIT License - Version 1.2 BETA)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
+* Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple LIcenses)
 
 License
 -------
