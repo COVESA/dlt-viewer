@@ -21,6 +21,7 @@
 
 #include "dltdbusplugin.h"
 #include "dbus.h"
+#include <dlt_user.h>
 
 DltDBusPlugin::DltDBusPlugin() {
     dltFile = 0;
@@ -224,16 +225,17 @@ bool DltDBusPlugin::isMsg(QDltMsg & msg, int triggeredByUser)
 
 bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    QDltArgument argument;
+    QDltArgument argument1,argument2,argument;
     Q_UNUSED(triggeredByUser);
 
     if(!checkIfMsg(msg))
         return false;
 
-    msg.getArgument(1,argument);
+    msg.getArgument(0,argument1);
+    msg.getArgument(1,argument2);
 
     /* Show DBus message Decoding */
-    QByteArray data = argument.getData();
+    QByteArray data = argument1.getData() + argument2.getData();
     DltDBusDecoder dbusMsg;
     QString text;
     if(dbusMsg.decode(data))
@@ -269,13 +271,13 @@ bool DltDBusPlugin::checkIfMsg(QDltMsg &msg)
 {
     QDltArgument argument1,argument2;
 
-    if(msg.getApid()!="DBUS" || msg.getCtid()!="DBus" || msg.getNumberOfArguments()!=2)
+    if(msg.getType()==DLT_NW_TRACE_IPC || msg.getNumberOfArguments()!=2)
         return false;
 
     msg.getArgument(0,argument1);
     msg.getArgument(1,argument2);
 
-    if(argument1.getTypeInfo()!=QDltArgument::DltTypeInfoStrg || argument1.toString()!="dbus message" || argument2.getTypeInfo()!=QDltArgument::DltTypeInfoRawd)
+    if(argument1.getTypeInfo()!=QDltArgument::DltTypeInfoRawd || argument2.getTypeInfo()!=QDltArgument::DltTypeInfoRawd)
         return false;
 
     return true;
