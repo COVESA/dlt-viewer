@@ -22,10 +22,12 @@
 
 #include <QObject>
 #include <QHash>
+#include <QMap>
 
 #include "dbus.h"
 
 #include "plugininterface.h"
+#include "qdltsegmentedmsg.h"
 #include "form.h"
 
 #define DLT_DBUS_PLUGIN_VERSION "1.0.0"
@@ -102,15 +104,17 @@ public:
 private:
 
     void methodsAddMsg(QDltMsg &msg);
+    void segmentedMsg(QDltMsg &msg);
 
     QString stringToHtml(QString str);
-    bool checkIfMsg(QDltMsg &msg);
-    QString decodeMessageToString(DltDBusDecoder &dbusMsg);
+    bool checkIfDBusMsg(QDltMsg &msg);
+    QString decodeMessageToString(DltDBusDecoder &dbusMsg, bool headerOnly = false);
 
     QDltFile *dltFile;
     QString errorText;
 
     QHash<DltDbusMethodKey,QString> methods;
+    QMap<uint32_t,QDltSegmentedMsg*> segmentedMessages;
 };
 
 #endif // DLTDBUSPLUGIN_H

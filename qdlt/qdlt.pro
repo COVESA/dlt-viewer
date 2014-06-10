@@ -54,7 +54,8 @@ SOURCES +=  \
     qdltfilterindex.cpp \
     qdltdefaultfilter.cpp \
     qdltpluginmanager.cpp \
-    qdltplugin.cpp
+    qdltplugin.cpp \
+    qdltsegmentedmsg.cpp
 
 
 HEADERS += qdlt.h \
@@ -77,7 +78,8 @@ HEADERS += qdlt.h \
     qdltpluginmanager.h \
     qdltplugin.h \
     dlt_types.h \
-    dlt_protocol.h
+    dlt_protocol.h \
+    qdltsegmentedmsg.h
 
 unix:VERSION            = 1.0.0
 

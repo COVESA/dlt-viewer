@@ -126,10 +126,13 @@ int DltDBusDecoder::padding(uint32_t pos,int alignement)
     return alignement-(pos % alignement);
 }
 
-bool DltDBusDecoder::decode(QByteArray &data)
+bool DltDBusDecoder::decode(QByteArray &data,bool headerOnly)
 {
     if(!decodeHeader(data))
         return false;
+
+    if(headerOnly)
+        return true;
 
     return decodePayload();
 }

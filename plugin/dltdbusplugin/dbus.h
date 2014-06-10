@@ -141,7 +141,7 @@ public:
     DltDBusDecoder();
     ~DltDBusDecoder();
 
-    bool decode(QByteArray &data);
+    bool decode(QByteArray &data, bool headerOnly = false);
     bool decodeHeader(QByteArray &data);
     bool decodePayload();
 

@@ -76,7 +76,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg) {
     QString text;
     QDltArgument argument;
 
-    if(!checkIfMsg(msg))
+    if(!checkIfDBusMsg(msg))
     {
         form->setTextBrowserDBus("no DBus message!");
         form->setTextBrowserHeader("no DBus message!");
@@ -162,19 +162,31 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg) {
 void DltDBusPlugin::initFileStart(QDltFile *file){
     dltFile = file;
     methods.clear();
+
+    // clear old map
+    QMapIterator<uint32_t, QDltSegmentedMsg*> i(segmentedMessages);
+    while (i.hasNext()) {
+        i.next();
+        delete i.value();
+    }
+    segmentedMessages.clear();
 }
 
 void DltDBusPlugin::methodsAddMsg(QDltMsg &msg)
 {
-    QDltArgument argument;
+    QDltArgument argument1,argument2;
 
-    if(!checkIfMsg(msg))
+    msg.getArgument(0,argument1);
+    msg.getArgument(1,argument2);
+
+    // check if single network message
+    if(msg.getNumberOfArguments()!=2 ||
+       argument1.getTypeInfo()!=QDltArgument::DltTypeInfoRawd ||
+       argument2.getTypeInfo()!=QDltArgument::DltTypeInfoRawd)
         return;
 
-    msg.getArgument(1,argument);
-
     /* Show DBus message Decoding */
-    QByteArray data = argument.getData();
+    QByteArray data = argument1.getData()+argument2.getData();
     DltDBusDecoder dbusMsg;
     QString text;
     if(dbusMsg.decode(data))
@@ -190,8 +202,96 @@ void DltDBusPlugin::methodsAddMsg(QDltMsg &msg)
     }
 }
 
+void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
+{
+    QDltArgument argument1,argument2;
+    uint32_t handle;
+
+    msg.getArgument(0,argument1);
+    msg.getArgument(1,argument2);
+
+    // get handle
+    if(argument2.getTypeInfo()!=QDltArgument::DltTypeInfoUInt)
+    {
+         return;
+    }
+    handle = argument2.getValue().toUInt();
+
+    // check if this is a segmented network message
+    if(argument1.getTypeInfo()!=QDltArgument::DltTypeInfoStrg)
+    {
+        return;
+    }
+
+    //qDebug() << "segmentedMsg" << handle << argument1.getValue().toString();
+
+    if(argument1.getValue().toString()=="NWST")
+    {
+      if(segmentedMessages.contains(handle))
+      {
+          // message already exists, this should not happen
+          qDebug() << "Segment" << handle << "already exists!";
+          return;
+      }
+
+      // add new segmented message
+      QDltSegmentedMsg *seg = new QDltSegmentedMsg();
+      segmentedMessages[handle] = seg;
+
+      if(seg->add(msg))
+      {
+          // something went wrong
+          qDebug() << seg->getError();
+          return;
+      }
+
+    }
+    else if(argument1.getValue().toString()=="NWCH")
+    {
+        if(segmentedMessages.contains(handle))
+        {
+            if(segmentedMessages[handle]->add(msg))
+            {
+                // something went wrong
+                qDebug() << segmentedMessages[handle]->getError();
+                return;
+            }
+        }
+    }
+    else if(argument1.getValue().toString()=="NWEN")
+    {
+       if(segmentedMessages.contains(handle))
+       {
+           if(segmentedMessages[handle]->add(msg))
+           {
+               // something went wrong
+               qDebug() << segmentedMessages[handle]->getError();
+               return;
+           }
+           if(segmentedMessages[handle]->complete())
+           {
+                //qDebug() << "Complete segemented message" << segmentedMessages[handle]->getPayload().size();
+           }
+           else
+           {
+                qDebug() << "Incomplete segemented message" << handle;
+           }
+       }
+    }
+
+}
+
 void DltDBusPlugin::initMsg(int /*index*/, QDltMsg &msg){
+
+    if(!checkIfDBusMsg(msg))
+        return;
+
+    // add method call
     methodsAddMsg(msg);
+
+    // add segment
+    segmentedMsg(msg);
+
 }
 
 void DltDBusPlugin::initMsgDecoded(int , QDltMsg &){
@@ -206,7 +306,14 @@ void DltDBusPlugin::updateFileStart(){
 }
 
 void DltDBusPlugin::updateMsg(int /*index*/, QDltMsg &msg){
+    if(!checkIfDBusMsg(msg))
+        return;
+
+    // add method call
     methodsAddMsg(msg);
+
+    // add segment
+    segmentedMsg(msg);
 }
 
 void DltDBusPlugin::updateMsgDecoded(int , QDltMsg &){
@@ -220,40 +327,113 @@ bool DltDBusPlugin::isMsg(QDltMsg & msg, int triggeredByUser)
 {
     Q_UNUSED(triggeredByUser);
 
-    return checkIfMsg(msg);
+    return checkIfDBusMsg(msg);
 }
 
 bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
     QDltArgument argument1,argument2,argument;
+    QString text;
     Q_UNUSED(triggeredByUser);
 
-    if(!checkIfMsg(msg))
+    if(!checkIfDBusMsg(msg))
         return false;
 
     msg.getArgument(0,argument1);
     msg.getArgument(1,argument2);
 
-    /* Show DBus message Decoding */
-    QByteArray data = argument1.getData() + argument2.getData();
-    DltDBusDecoder dbusMsg;
-    QString text;
-    if(dbusMsg.decode(data))
+    // check if it is a common network message
+    if(msg.getNumberOfArguments()==2 &&
+       argument1.getTypeInfo()==QDltArgument::DltTypeInfoRawd &&
+       argument2.getTypeInfo()==QDltArgument::DltTypeInfoRawd)
     {
-        text += decodeMessageToString(dbusMsg);
+        // this is a single network message
+        QByteArray data = argument1.getData() + argument2.getData();
+        DltDBusDecoder dbusMsg;
+        if(dbusMsg.decode(data))
+        {
+            text += decodeMessageToString(dbusMsg);
+        }
+        else
+        {
+            text += "DBus Decoder error: " + dbusMsg.getLastError();
+        }
+        msg.removeArgument(1);
+        msg.removeArgument(0);
+    }
+    else if(argument1.getTypeInfo()==QDltArgument::DltTypeInfoStrg &&
+       argument1.getValue().toString()=="NWTR")
+    {
+        // this is a truncated network message
+        // decode header only
+        // this is a single network message
+        QByteArray data = argument1.getData() + argument2.getData();
+        DltDBusDecoder dbusMsg;
+        if(dbusMsg.decode(data,true))
+        {
+            text += decodeMessageToString(dbusMsg,true);
+        }
+        else
+        {
+            text += "DBus Decoder error: " + dbusMsg.getLastError();
+        }
+        msg.removeArgument(1);
+        msg.removeArgument(0);
+    }
+    else if(argument1.getTypeInfo()==QDltArgument::DltTypeInfoStrg &&
+            argument1.getValue().toString()=="NWEN")
+    {
+        // this is the end of a segmented message
+        // decode now the whole message
+        // get handle
+        if(argument2.getTypeInfo()==QDltArgument::DltTypeInfoUInt)
+        {
+            uint32_t handle = argument2.getValue().toUInt();
+            if(segmentedMessages.contains(handle))
+            {
+                if(segmentedMessages[handle]->complete())
+                {
+                    // show decoded message
+                    QByteArray data = segmentedMessages[handle]->getHeader() + segmentedMessages[handle]->getPayload() ;
+                    DltDBusDecoder dbusMsg;
+                    if(dbusMsg.decode(data))
+                    {
+                        text += decodeMessageToString(dbusMsg);
+                    }
+                    else
+                    {
+                        text += "DBus Decoder error: " + dbusMsg.getLastError();
+                    }
+                }
+                else
+                {
+                    text += "Incomplete segmented message " + QString("%1").arg(handle);
+                }
+            }
+            else
+            {
+                text += "Unknown segmented message " + QString("%1").arg(handle);
+            }
+        }
+        else
+        {
+            text += "Type error in segmented message";
+        }
+        msg.removeArgument(1);
+        msg.removeArgument(0);
     }
     else
     {
-        text += "DBus Decoder error: " + dbusMsg.getLastError();
+        text = "DBus decode error!";
     }
+
+    /* Add decoded parameter*/
     argument.setTypeInfo(QDltArgument::DltTypeInfoStrg);
     argument.setEndianness(msg.getEndianness());
     argument.setOffsetPayload(0);
     QByteArray dataText;
     dataText.append(text);
     argument.setData(dataText);
-    msg.removeArgument(1);
-    msg.removeArgument(0);
     msg.addArgument(argument);
 
     return true;
@@ -267,23 +447,36 @@ QString DltDBusPlugin::stringToHtml(QString str)
     return str;
 }
 
-bool DltDBusPlugin::checkIfMsg(QDltMsg &msg)
+bool DltDBusPlugin::checkIfDBusMsg(QDltMsg &msg)
 {
     QDltArgument argument1,argument2;
 
-    if(msg.getType()==DLT_NW_TRACE_IPC || msg.getNumberOfArguments()!=2)
+    // at least two arguments in network message
+    if(msg.getType()!=QDltMsg::DltTypeNwTrace || msg.getSubtype()!=QDltMsg::DltNetworkTraceIpc || msg.getNumberOfArguments()<2)
         return false;
 
     msg.getArgument(0,argument1);
     msg.getArgument(1,argument2);
 
-    if(argument1.getTypeInfo()!=QDltArgument::DltTypeInfoRawd || argument2.getTypeInfo()!=QDltArgument::DltTypeInfoRawd)
-        return false;
+    // check if this is a segmented network message
+    if(argument1.getTypeInfo()==QDltArgument::DltTypeInfoStrg && (
+       argument1.getValue().toString()=="NWCH" ||
+       argument1.getValue().toString()=="NWST" ||
+       argument1.getValue().toString()=="NWEN" ||
+       argument1.getValue().toString()=="NWTR"))
+        return true;
 
-    return true;
+    // check if it is a common network message
+    if(msg.getNumberOfArguments()==2 &&
+       argument1.getTypeInfo()==QDltArgument::DltTypeInfoRawd &&
+       argument2.getTypeInfo()==QDltArgument::DltTypeInfoRawd)
+        return true;
+
+    // no known network message
+    return false;
 }
 
-QString DltDBusPlugin::decodeMessageToString(DltDBusDecoder &dbusMsg)
+QString DltDBusPlugin::decodeMessageToString(DltDBusDecoder &dbusMsg,bool headerOnly)
 {
     QList<DltDBusParameter> parameters = dbusMsg.getParameters();
     QString text;
@@ -301,8 +494,15 @@ QString DltDBusPlugin::decodeMessageToString(DltDBusDecoder &dbusMsg)
             text = QString("S [%1] ").arg(dbusMsg.getSender()) + dbusMsg.getInterface() + "." + dbusMsg.getMember() + " (";
             break;
         default:
-            text = dbusMsg.getMessageTypeStringShort() + " " + dbusMsg.getInterface() + "." + dbusMsg.getMember() + " (";
+            text = dbusMsg.getMessageTypeStringShort() + " " + dbusMsg.getInterface() + "." + dbusMsg.getMember();
     }
+
+    if(headerOnly)
+    {
+        return text;
+    }
+
+    text += " (";
 
     bool start = true;
     char lastType = 0;
