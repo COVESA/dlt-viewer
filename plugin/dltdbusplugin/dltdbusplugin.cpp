@@ -223,8 +223,6 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
         return;
     }
 
-    //qDebug() << "segmentedMsg" << handle << argument1.getValue().toString();
-
     if(argument1.getValue().toString()=="NWST")
     {
       if(segmentedMessages.contains(handle))
