@@ -15,6 +15,14 @@ Changes
 -------
 
 2.12.0
+  * Support of segmented network messages in dbus plugin.
+  * Adapted DBus Plugin to Network API.
+  * Added DBus plugin
+  * Added marker support.
+  * Removed unsupported platforms build scripts.
+  * Removed dlt statistic plugin, which will not be supported anymore.
+  * Added Header output to DLT Viewer plugin.
+  * Fixed: Crash when receiving corrupted messages.
   * Fix: DLT Viewer shows messages sorted by time, even if the option is not enabled at startup
   * Updated build script to Qt 5.3.
   * Fixed use of non verbose mode with extended header.
