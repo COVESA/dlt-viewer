@@ -73,7 +73,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 qmake ../BuildDltViewer.pro
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-mingw32-make.exe release
+mingw32-make.exe -j 4 release
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo ************************************
