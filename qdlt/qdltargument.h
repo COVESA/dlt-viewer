@@ -194,6 +194,9 @@ private:
     //! The endianness of the argument.
     DltEndiannessDef endianness;
 
+    //! This type of the argument linke in the DLT message header
+    unsigned int dltType;
+
     //! This type of the argument.
     DltTypeInfoDef typeInfo;
 

@@ -161,7 +161,8 @@
 
 #define DLT_SCOD_ASCII      0x00000000
 #define DLT_SCOD_UTF8       0x00008000
-
+#define DLT_SCOD_HEX        0x00010000
+#define DLT_SCOD_BIN        0x00018000
 /*
  * Definitions of DLT services.
  */

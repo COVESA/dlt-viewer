@@ -94,10 +94,12 @@ public:
 
     //! Convert byte array to text output.
     /*!
-      \param ascii true output in ascii, false output in hex
+      \param bytes The data to be converted
+      \param type 1 output in ascii, 0 output in hex, 2 output in binary
+      \param size_bytes grouping of bytes together
       \return The string with ascii output.
     */
-    QString toAscii(QByteArray &bytes,bool ascii = false);
+    QString toAscii(QByteArray &bytes,int type = false,int size_bytes = 1);
 
     //! The endianness of the message.
     typedef enum { DltEndiannessUnknown = -2, DltEndiannessLittleEndian = 0, DltEndiannessBigEndian = 1 } DltEndiannessDef;

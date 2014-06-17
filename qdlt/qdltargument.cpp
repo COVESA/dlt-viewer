@@ -79,7 +79,6 @@ QString QDltArgument::getTypeInfoString()
 
 bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndiannessDef _endianess)
 {
-    unsigned int dltType;
     unsigned short length=0,length2=0,length3=0;
 
     /* clear old data */
@@ -494,7 +493,24 @@ QString QDltArgument::toString(bool binary)
         }
         break;
     case DltTypeInfoRawd:
-        text += toAscii(data);
+        if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_BIN)
+        {
+            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
+                text += toAscii(data,2,2); // show binary
+            else
+                text += toAscii(data,2); // show binary
+        }
+        else
+        {
+            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
+                text += toAscii(data,0,2); // show hex
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_32BIT)
+                text += toAscii(data,0,4); // show hex
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_64BIT)
+                text += toAscii(data,0,8); // show hex
+            else
+                text += toAscii(data,0); // show hex
+        }
         break;
     case DltTypeInfoTrai:
         text += QString("?");

@@ -94,6 +94,20 @@ typedef enum
 } DltLogLevelType;
 
 /**
+ * Definitions of DLT Format
+ */
+typedef enum
+{
+    DLT_FORMAT_DEFAULT   =          0x00,   /**< no sepecial format */
+    DLT_FORMAT_HEX8  =   		0x01, 	/**< Hex 8 */
+    DLT_FORMAT_HEX16 =   		0x02, 	/**< Hex 16 */
+    DLT_FORMAT_HEX32 =   		0x03, 	/**< Hex 32 */
+    DLT_FORMAT_HEX64 =   		0x04, 	/**< Hex 64 */
+    DLT_FORMAT_BIN8  =   		0x05, 	/**< Binary 8 */
+    DLT_FORMAT_BIN16 =   		0x06 	/**< Binary 16  */
+} DltFormatType;
+
+/**
  * Definitions of DLT trace status
  */
 typedef enum
