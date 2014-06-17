@@ -19,6 +19,7 @@
 
 #include <QtGui>
 #include <QMessageBox>
+#include <QDir>
 
 #include "nonverboseplugin.h"
 #include "dlt_protocol.h"
@@ -57,24 +58,55 @@ QString NonverbosePlugin::error()
 
 bool NonverbosePlugin::loadConfig(QString filename)
 {
+   /* remove all stored items */
+   m_error_string.clear();
+   clear();
 
-   bool ret = true;
-  /* remove all stored items */
-    m_error_string ="";
+   if ( filename.isEmpty() )
+       // empty filename is valid, only clear plugin data
+       return true;
+
+    QDir dir(filename);
+
+    if(dir.exists())
+    {
+        // this is a directory, load all files in directory
+        dir.setFilter(QDir::Files);
+        QStringList filters;
+        filters << "*.xml" << "*.XML";
+        dir.setNameFilters(filters);
+        QFileInfoList list = dir.entryInfoList();
+        for (int i = 0; i < list.size(); ++i) {
+            QFileInfo fileInfo = list.at(i);
+            if(!parseFile(fileInfo.filePath()))
+            {
+                m_error_string = fileInfo.fileName()+":\n"+m_error_string;
+                return false;
+            }
+        }
+        return true;
+    }
+    else
+    {
+        return parseFile(filename);
+    }
+}
+
+void NonverbosePlugin::clear()
+{
     foreach(DltFibexPdu *pdu, pdumap)
         delete pdu;
-    pdumap.clear();    
+    pdumap.clear();
 
     foreach(DltFibexFrame *frame, framemapwithkey)
         delete frame;
     framemapwithkey.clear();
     framemap.clear();
+}
 
-    if ( filename.length() <= 0 )
-    {
-        m_error_string = "No XML specified. Plugin only works with valid configuration file";
-        return false;
-    }
+bool NonverbosePlugin::parseFile(QString filename)
+{
+    bool ret = true;
 
     QFile file(filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))

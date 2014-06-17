@@ -75,9 +75,24 @@ QString PluginDialog::getFilename() {
 
 void PluginDialog::on_toolButton_clicked() {
     QString name = ui->lineEditName->text();
-    QString fileName = QFileDialog::getOpenFileName(this,
-        QString("Open ")+name+QString(" configuration file"),
-        workingDirectory.getPluginDirectory(name), tr("Plugin configuration (*.*)"));
+    QString fileName;
+
+    if(ui->comboBoxType->currentIndex()==0)
+    {
+        // filename
+        fileName = QFileDialog::getOpenFileName(this,
+            QString("Open ")+name+QString(" configuration file"),
+            workingDirectory.getPluginDirectory(name),
+            tr("Plugin configuration (*.*)"));
+    }
+    else
+    {
+        // directory
+        fileName = QFileDialog::getExistingDirectory(this,
+                                                     QString("Open ")+name+QString(" configuration file"),
+                                                     workingDirectory.getPluginDirectory(name),
+                                                     QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    }
 
     if(fileName.isEmpty())
         return;

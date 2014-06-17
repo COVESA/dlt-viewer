@@ -134,6 +134,9 @@ public:
     QHash<DltFibexKey, DltFibexFrame *> framemapwithkey;
 
 private:
+    bool parseFile(QString filename);
+    void clear();
+
     QString m_error_string;
 };
 
