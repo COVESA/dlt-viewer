@@ -479,6 +479,8 @@ public slots:
     void filterOrderChanged();
     void jumpToMsgSignal(int index);
     void markerSignal();
+    void connectEcuSignal(int index);
+    void disconnectEcuSignal(int index);
 
     void controlMessage_Timezone(int timezone, unsigned char dst);
     void controlMessage_UnregisterContext(QString ecuId,QString appId,QString ctId);

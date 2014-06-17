@@ -38,6 +38,10 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(jumpToMsgSignal(int)));
     connect(this, SIGNAL(markerSignal()),
             server, SLOT(markerSignal()));
+    connect(this, SIGNAL(connectEcuSignal(int)),
+            server, SLOT(connectEcuSignal(int)));
+    connect(this, SIGNAL(disconnectEcuSignal(int)),
+            server, SLOT(disconnectEcuSignal(int)));
     connect(this, SIGNAL(openFileSignal(QStringList)),
             server, SLOT(on_Open_triggered(QStringList)));
     connect(this, SIGNAL(newFileSignal(QString)),
@@ -93,4 +97,14 @@ void QDltControl::quitDltViewer()
 void QDltControl::marker()
 {
     emit markerSignal();
+}
+
+void QDltControl::connectEcu(int index)
+{
+    emit connectEcuSignal(index);
+}
+
+void QDltControl::disconnectEcu(int index)
+{
+    emit disconnectEcuSignal(index);
 }

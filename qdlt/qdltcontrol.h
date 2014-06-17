@@ -48,6 +48,8 @@ public:
     void clearFile();
     void quitDltViewer();
     void marker();
+    void connectEcu(int index);
+    void disconnectEcu(int index);
 
 signals:
     void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
@@ -58,6 +60,8 @@ signals:
     void clearFileSignal();
     void quitDltViewerSignal();
     void markerSignal();
+    void connectEcuSignal(int index);
+    void disconnectEcuSignal(int index);
 
 protected:
 private:

@@ -129,3 +129,15 @@ void Form::on_pushButtonMarker_clicked()
     if(plugin->dltControl)
         plugin->dltControl->marker();
 }
+
+void Form::on_pushButtonConnect_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->connectEcu(ui->comboBoxConnections->currentIndex());
+}
+
+void Form::on_pushButtonDisconnect_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->disconnectEcu(ui->comboBoxConnections->currentIndex());
+}

@@ -3849,6 +3849,27 @@ void MainWindow::getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,Co
 
 }
 
+void MainWindow::connectEcuSignal(int index)
+{
+    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
+
+    if(ecuitem)
+    {
+        connectECU(ecuitem);
+    }
+}
+
+void MainWindow:: disconnectEcuSignal(int index)
+{
+    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
+
+    if(ecuitem)
+    {
+        disconnectECU(ecuitem);
+    }
+}
+
+
 void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
 {
     EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
