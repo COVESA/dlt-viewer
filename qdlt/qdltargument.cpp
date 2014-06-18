@@ -416,19 +416,19 @@ QString QDltArgument::toString(bool binary)
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((short)(*(short*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_16((short)(*(short*)(data.constData()))));
+                text += QString("%1").arg((short)DLT_SWAP_16((short)(*(short*)(data.constData()))));
             break;
         case 4:
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((int)(*(int*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_32((int)(*(int*)(data.constData()))));
+                text += QString("%1").arg((int)DLT_SWAP_32((int)(*(int*)(data.constData()))));
             break;
         case 8:
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((long long)(*(long long*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_64((long long)(*(long long*)(data.constData()))));
+                text += QString("%1").arg((long long)DLT_SWAP_64((long long)(*(long long*)(data.constData()))));
             break;
         default:
             text += QString("?");
@@ -445,19 +445,19 @@ QString QDltArgument::toString(bool binary)
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((unsigned short)(*(unsigned short*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
+                text += QString("%1").arg((unsigned short)DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
             break;
         case 4:
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((unsigned int)(*(unsigned int*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
+                text += QString("%1").arg((unsigned int)DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
             break;
         case 8:
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((unsigned long long)(*(unsigned long long*)(data.constData())));
             else
-                text += QString("%1").arg(DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
+                text += QString("%1").arg((unsigned long long)DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
             break;
         default:
             text += QString("?");
