@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.12.0 ALPHA
+Version 2.12.0 STABLE
 
 Known issues
 ------------
@@ -15,6 +15,11 @@ Changes
 -------
 
 2.12.0
+  * Fixed wrongly displayed negative values in big endianess
+  * Format of Hex and Bit fields in DLT Viewer.
+  * Plugin interface for connect and disconnect
+  * Multi configuration file load in non-verbose plugin
+  * Mutlticore build script.
   * Support of segmented network messages in dbus plugin.
   * Adapted DBus Plugin to Network API.
   * Added DBus plugin
