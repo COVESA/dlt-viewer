@@ -2858,18 +2858,22 @@ void MainWindow::updateIndex()
     activeDecoderPlugins = pluginManager.getDecoderPlugins();
     activeViewerPlugins = pluginManager.getViewerPlugins();
 
-    for(int i = 0; i < activeViewerPlugins.size(); i++)
-    {
-        item = activeViewerPlugins[i];
-        item->updateFileStart();
-    }
-
     /* read received messages in DLT file parser and update DLT message list view */
     /* update indexes  and table view */
     int oldsize = qfile.size();
     qfile.updateIndex();
 
     bool silentMode = !OptManager::getInstance()->issilentMode();
+
+    if(oldsize!=qfile.size())
+    {
+        // only run through viewer plugins, if new messages are added
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
+            item = activeViewerPlugins[i];
+            item->updateFileStart();
+        }
+    }
 
     for(int num=oldsize;num<qfile.size();num++) {
         qmsg.setMsg(qfile.getMsg(num));
@@ -2894,9 +2898,13 @@ void MainWindow::updateIndex()
     if (!draw_timer.isActive())
         draw_timer.start(draw_interval);
 
-    for(int i = 0; i < activeViewerPlugins.size(); i++){
-        item = activeViewerPlugins.at(i);
-        item->updateFileFinish();
+    if(oldsize!=qfile.size())
+    {
+        // only run through viewer plugins, if new messages are added
+        for(int i = 0; i < activeViewerPlugins.size(); i++){
+            item = activeViewerPlugins.at(i);
+            item->updateFileFinish();
+        }
     }
 
 }
