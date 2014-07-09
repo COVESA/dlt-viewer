@@ -5,9 +5,8 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
-* Install Qt5. Tested with QT 5.2.1
-* Install relative new MinGW. Tested with 4.8
-* Install Qt Creator. Tested with 3.0.1.
+* Install Qt5 SDK including Qt Creator and MinGW
+* Tested with QT 5.3.1 and QT 4.8.5
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW.
 * Build Release in Qt Creator.
@@ -27,26 +26,25 @@ Instructions for installing DLT Viewer (Linux commandline)
 Create SDK (Windows)
 --------------------
 
-* Install Qt5 SDK inclduing MinGW for Windows. Tested with QT 5.2.1.
+* Install Qt5 SDK inclduing MinGW for Windows.
 * Execute build_sdk_windows_qt5.bat batch file
 
 The SDK will be installed to C:\DltViewerSDK\
 
-Create Installer (Windows)
---------------------
+Optional: Prepare Installation Qwt (Windows)
+--------------------------------------------
 
-For distribution as a package execute the build_windows_installer.bat batch file. 
-Before, make sure that all required plugins are located in the subfolder. 
+Some DLT Viewer plugins will use the Qwt library for displaying graphs.
+The Qwt library must be compiled and installed before it can be used.
 
-Rewuirements:
-* Nullsoft Scriptable Installer System is installed
-  It can be downloaded from http://nsis.sourceforge.net
-* Documentation file (e.g. DLT Viewer User Manual.pdf) is copied into C:\DltViewerSDK\doc\ 
-  If no file exists in the doc subdirectory, the build fails!  
-* Run by executing the batch file build_windows_installer.bat
-
-The installer will be copied to c:\DltViewerSDK\installer
-
+* Tested with Qwt 6.1.0
+* Install Qt5 SDK inclduing MinGW for Windows.
+* Download and extract Qwt Zip package
+* Start Qt commandline from Start->Qt_5.x.x
+* Change into Qwt directory
+* Execute qmake qwt.pro
+* Execute mingw32-make
+* Execute mingw32-make install
 
 Create SDK (Linux)
 ------------------
@@ -76,6 +74,7 @@ Create SDK Documentation (Linux)
 
 Create manuals documentation
 ----------------------------
+
 The manuals are generated with asciidoc.
 Call 
 asciidoc dlt_viewer_user_manual.txt
