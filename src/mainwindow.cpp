@@ -4717,7 +4717,7 @@ void MainWindow::pluginsAutoload(QString version)
 
         if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
         {
-            QString searchPath = settings->pluginsAutoloadPathName+ "\\" + item->getName();
+            QString searchPath = settings->pluginsAutoloadPathName+ "/" + item->getName();
 
             qDebug() << "AutoloadPlugins Search:" << searchPath;
 
@@ -4731,7 +4731,7 @@ void MainWindow::pluginsAutoload(QString version)
             if(!txtFilesAndDirectories.isEmpty() )
             {
                 // file with version string found
-                QString filename = searchPath + "\\" + txtFilesAndDirectories[0];
+                QString filename = searchPath + "/" + txtFilesAndDirectories[0];
 
                 // check if filename already loaded
                 if(item->getFilename()!=filename)

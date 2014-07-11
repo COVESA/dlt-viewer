@@ -558,7 +558,7 @@ bool DltFileIndexer::loadIndexCache(QString filename)
     filenameCache = filenameIndexCache(filename);
 
     // load the cache file
-    if(!loadIndex(filterCache + "\\" +filenameCache,indexAllList))
+    if(!loadIndex(filterCache + "/" +filenameCache,indexAllList))
     {
         // loading cache file failed
         return false;
@@ -579,7 +579,7 @@ bool DltFileIndexer::saveIndexCache(QString filename)
     filenameCache = filenameIndexCache(filename);
 
     // save the cache file
-    if(!saveIndex(filterCache + "\\" +filenameCache,indexAllList))
+    if(!saveIndex(filterCache + "/" +filenameCache,indexAllList))
     {
         // saving cache file failed
         return false;
@@ -626,7 +626,7 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QList<unsi
     filenameCache = filenameFilterIndexCache(filterList,filenames);
 
     // load the cache file
-    if(!loadIndex(filterCache + "\\" +filenameCache,index))
+    if(!loadIndex(filterCache + "/" +filenameCache,index))
     {
         // loading of cache file failed
         return false;
@@ -648,7 +648,7 @@ bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QList<unsi
     filename = filenameFilterIndexCache(filterList,filenames);
 
     // save the cache file
-    if(!saveIndex(filterCache + "\\" +filename,index))
+    if(!saveIndex(filterCache + "/" +filename,index))
     {
         // saving of cache file failed
         return false;
