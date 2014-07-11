@@ -366,11 +366,11 @@ void MainWindow::initSearchTable()
     //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
     //Ideally possible with right-click
     m_searchresultsTable->setColumnHidden(FieldNames::Counter, true);
-    //m_searchresultsTable->setColumnHidden(FieldNames::EcuId, true);
     m_searchresultsTable->setColumnHidden(FieldNames::Type, true);
     m_searchresultsTable->setColumnHidden(FieldNames::Subtype, true);
     m_searchresultsTable->setColumnHidden(FieldNames::Mode, true);
     m_searchresultsTable->setColumnHidden(FieldNames::ArgCount, true);
+    m_searchresultsTable->setColumnHidden(FieldNames::SessionId, true);
 
     QFont searchtableViewFont = m_searchresultsTable->font();
     searchtableViewFont.setPointSize(settings->fontSize);
@@ -383,14 +383,15 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setColumnWidth(FieldNames::Index,50);
     m_searchresultsTable->setColumnWidth(FieldNames::Time,150);
     m_searchresultsTable->setColumnWidth(FieldNames::TimeStamp,70);
-    m_searchresultsTable->setColumnWidth(3,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::Counter,40);
     m_searchresultsTable->setColumnWidth(FieldNames::EcuId,40);
-    m_searchresultsTable->setColumnWidth(5,40);
-    m_searchresultsTable->setColumnWidth(6,40);
-    m_searchresultsTable->setColumnWidth(7,50);
-    m_searchresultsTable->setColumnWidth(8,50);
-    m_searchresultsTable->setColumnWidth(9,40);
-    m_searchresultsTable->setColumnWidth(10,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::AppId,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::ContextId,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::SessionId,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::Type,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::Subtype,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::Mode,40);
+    m_searchresultsTable->setColumnWidth(FieldNames::ArgCount,40);
     m_searchresultsTable->setColumnWidth(FieldNames::Payload,1000);
 
     ui->dockWidgetSearchIndex->hide();    
