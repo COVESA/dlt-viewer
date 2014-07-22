@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.12.0 STABLE
+Version 2.12.1 STABLE
 
 Known issues
 ------------
@@ -13,6 +13,10 @@ Known issues
 
 Changes
 -------
+
+2.12.1
+  * Fixed directory paths in Linux
+  * Fixed missing payload in search view
 
 2.12.0
   * Fixed positive filter with marker not saved correctly
