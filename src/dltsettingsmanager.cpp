@@ -21,6 +21,8 @@
 
 #include "dltsettingsmanager.h"
 #include <QApplication>
+#include <QDir>
+#include <QMessageBox>
 
 DltSettingsManager *DltSettingsManager::m_instance = NULL;
 
@@ -38,17 +40,29 @@ void DltSettingsManager::close()
     m_instance = NULL;
 }
 
+DltSettingsManager::DltSettingsManager()
+{
+    /* check if directory for configuration exists */
 #ifdef Q_OS_WIN
-DltSettingsManager::DltSettingsManager()
-{
-    settings = new QSettings(QApplication::applicationDirPath()+"/config.ini", QSettings::IniFormat);
-}
+    QDir dir(QApplication::applicationDirPath()+"/config");
 #else
-DltSettingsManager::DltSettingsManager()
-{
-    settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "BMW","DLT Viewer");
-}
+    QDir dir("~/.dlt/config");
 #endif
+    if(!dir.exists())
+    {
+        /* directory does not exist, make it */
+        if(!dir.mkpath(dir.absolutePath()))
+        {
+            /* creation of directory fails */
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                           QString("Cannot create directory to store configuration!\n\n")+dir.absolutePath(),
+                                           QMessageBox::Ok,
+                                           QMessageBox::Ok);
+        }
+    }
+
+    settings = new QSettings(dir.absolutePath()+"/config.ini", QSettings::IniFormat);
+}
 
 DltSettingsManager::~DltSettingsManager()
 {

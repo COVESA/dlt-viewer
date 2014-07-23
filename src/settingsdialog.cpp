@@ -510,12 +510,20 @@ void SettingsDialog::readSettings()
     pluginsPath = settings->value("startup/pluginsPath",0).toInt();
     pluginsPathName = settings->value("startup/pluginsPathName",QString("")).toString();
     defaultFilterPath = settings->value("startup/defaultFilterPath",1).toInt();
+#ifdef Q_OS_WIN
     defaultFilterPathName = settings->value("startup/defaultFilterPathName",QCoreApplication::applicationDirPath()+"/filters").toString();
+#else
+    defaultFilterPathName = settings->value("startup/defaultFilterPathName","~/.dlt/filters").toString();
+#endif
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",1).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
+#ifdef Q_OS_WIN
     filterCacheName = settings->value("startup/filterCacheName",QCoreApplication::applicationDirPath()+"/cache").toString();
+#else
+    filterCacheName = settings->value("startup/filterCacheName","~/.dlt/cache").toString();
+#endif
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
@@ -750,9 +758,24 @@ void SettingsDialog::clearIndexCacheAfterDays()
     if(!filterCache)
         return;
 
-    // go through each file and check modification date of file
+    /* check if directory for configuration exists */
     QString path = filterCacheName;
     QDir dir(path);
+    if(!dir.exists())
+    {
+        /* directory does not exist, make it */
+        if(!dir.mkpath(dir.absolutePath()))
+        {
+            /* creation of directory fails */
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                           QString("Cannot create directory to store index cache files!\n\n")+dir.absolutePath(),
+                                           QMessageBox::Ok,
+                                           QMessageBox::Ok);
+        }
+        return;
+    }
+
+    // go through each file and check modification date of file
     dir.setNameFilters(QStringList() << "*.dix");
     dir.setFilter(QDir::Files);
     foreach(QString dirFile, dir.entryList())

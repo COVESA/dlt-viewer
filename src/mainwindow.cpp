@@ -5775,13 +5775,19 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* update tooltip */
     ui->comboBoxFilterSelection->setToolTip(QString("Multifilterlist in folder %1").arg(dir.absolutePath()));
 
-    /* check if directory exists */
-    if(!dir.exists() || !dir.isReadable())
+    /* check if directory for configuration exists */
+    if(!dir.exists())
     {
-        QMessageBox::warning(0, QString("DLT Viewer"),QString("A default filter path is set in the settings, but the path '%1' is not available.\n").arg(dir.absolutePath()));
-
-
-        return;
+        /* directory does not exist, make it */
+        if(!dir.mkpath(dir.absolutePath()))
+        {
+            /* creation of directory fails */
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                           QString("Cannot create directory to store cache files!\n\n")+dir.absolutePath(),
+                                           QMessageBox::Ok,
+                                           QMessageBox::Ok);
+            return;
+        }
     }
 
     /* load the default filter list */
