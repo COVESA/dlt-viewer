@@ -69,12 +69,12 @@ void OptManager::parse(QStringList *opt){
 
     if(opt->size()==2)
     {
-        if(opt->at(1).endsWith(".dlp")){
+        if(opt->at(1).endsWith(".dlp") || opt->at(1).endsWith(".DLP")){
             projectFile = QString("%1").arg(opt->at(1));
             project = true;
             return;
         }
-        if(opt->at(1).endsWith(".dlt")){
+        if(opt->at(1).endsWith(".dlt") || opt->at(1).endsWith(".DLT")){
             logFile = QString("%1").arg(opt->at(1));
             log = true;
             return;
@@ -96,7 +96,7 @@ void OptManager::parse(QStringList *opt){
         if(str.compare("-p")==0) {
             QString p1 = opt->value(i+1);
 
-            if(p1!=0 && p1.endsWith(".dlp")){
+            if(p1!=0 && (p1.endsWith(".dlp") || p1.endsWith(".DLP"))){
                 projectFile = QString("%1").arg(opt->at(i+1));
                 project = true;
               }else{
@@ -108,7 +108,7 @@ void OptManager::parse(QStringList *opt){
         if(str.compare("-l")==0) {
             QString l1 = opt->value(i+1);
 
-            if(l1!=0 && l1.endsWith(".dlt")){
+            if(l1!=0 && (l1.endsWith(".dlt")||l1.endsWith(".DLT"))){
                 logFile = QString("%1").arg(l1);
                 log = true;
               }else{
@@ -120,7 +120,7 @@ void OptManager::parse(QStringList *opt){
         if(str.compare("-f")==0) {
             QString f1 = opt->value(i+1);
 
-            if(f1!=0 && f1.endsWith(".dlf")){
+            if(f1!=0 && (f1.endsWith(".dlf")||f1.endsWith(".DLF"))){
                 filterFile = QString("%1").arg(f1);
                 filter = true;
               }else{
@@ -134,7 +134,7 @@ void OptManager::parse(QStringList *opt){
             QString c1 = opt->value(i+1);
             QString c2 = opt->value(i+2);
 
-            if(c1!=0 && c1.endsWith(".dlt") && c2!=0){
+            if(c1!=0 && (c1.endsWith(".dlt")||c1.endsWith(".DLT")) && c2!=0){
                 convertSourceFile = QString("%1").arg(c1);
                 convertDestFile = QString("%1").arg(c2);
                 convert = true;
