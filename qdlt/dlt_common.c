@@ -74,6 +74,7 @@
 
 #if defined (__WIN32__) || defined (_MSC_VER)
 #include <winsock2.h> /* for socket(), connect(), send(), and recv() */
+#include <stdint.h>
 #else
 #include <sys/socket.h> /* for socket(), connect(), send(), and recv() */
 #include <syslog.h>
@@ -2185,7 +2186,7 @@ int dlt_set_storageheader(DltStorageHeader *storageheader, const char *ecu)
 
     /* get time of day */
 #if defined(_MSC_VER)
-    time(&(storageheader->seconds));
+    time((time_t*)&(storageheader->seconds));
 #else
     gettimeofday(&tv, NULL);
 #endif

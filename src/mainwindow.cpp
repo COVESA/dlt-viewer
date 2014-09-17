@@ -41,13 +41,19 @@
  * Must be a "C" include to interpret the imports correctly
  * for MSVC compilers.
  **/
+#include "dlt_common.h"
 extern "C" {
-    #include "dlt_common.h"
+
     #include "dlt_user.h"
 }
-
+#if defined(_MSC_VER)
+#include <io.h>
+#include <time.h>
+#include <WinSock.h>
+#else 
 #include <unistd.h>     /* for read(), close() */
 #include <sys/time.h>	/* for gettimeofday() */
+#endif
 
 #include "mainwindow.h"
 
@@ -2758,7 +2764,7 @@ void MainWindow::read(EcuItem* ecuitem)
         while((ecuitem->interfacetype == 0 && ecuitem->tcpcon.parse(qmsg)) ||
               (ecuitem->interfacetype == 1 && ecuitem->serialcon.parse(qmsg)))
         {
-            struct timeval tv;
+            
 
             DltStorageHeader str;
             str.pattern[0]='D';
@@ -2768,14 +2774,18 @@ void MainWindow::read(EcuItem* ecuitem)
 
             /* get time of day */
             #if defined(_MSC_VER)
-                time(&(storageheader->seconds));
+                time_t today;
+                time(&today);
+                str.seconds = (time_t)today;
+                str.microseconds = 0; 
             #else
+                struct timeval tv;
                 gettimeofday(&tv, NULL);
+                str.seconds = (time_t)tv.tv_sec; /* value is long */
+                str.microseconds = (int32_t)tv.tv_usec; /* value is long */
             #endif
 
             QDateTime time = QDateTime::currentDateTime();
-            str.seconds = (time_t)tv.tv_sec; /* value is long */
-            str.microseconds = (int32_t)tv.tv_usec; /* value is long */
             str.ecu[0]=0;
             str.ecu[1]=0;
             str.ecu[2]=0;
