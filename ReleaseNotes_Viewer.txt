@@ -15,6 +15,14 @@ Changes
 -------
 
 2.13.0
+  * Changed build script for dlt parser to Qt 5.3.1
+  * Command line parameters also allow big letters as file ending
+  * Changed configuration, cache and filters path. Create if not exist.
+  * Fixed directory paths in Linux
+  * Fixed missing payload in search view
+  * Update readme and install text
+  * Updated qt to version 5.3.1
+  * Fixed wrong sequence of plugin updateMsgXXX API
 
 2.12.0
   * Fixed positive filter with marker not saved correctly
