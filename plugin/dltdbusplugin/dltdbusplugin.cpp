@@ -268,7 +268,27 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
            }
            if(segmentedMessages[handle]->complete())
            {
-                //qDebug() << "Complete segemented message" << segmentedMessages[handle]->getPayload().size();
+               if(argument2.getTypeInfo()==QDltArgument::DltTypeInfoUInt)
+               {
+                   // decode message and add method call to list
+                   uint32_t handle = argument2.getValue().toUInt();
+                   if(segmentedMessages.contains(handle))
+                   {
+                       if(segmentedMessages[handle]->complete())
+                       {
+                           QByteArray data = segmentedMessages[handle]->getHeader() + segmentedMessages[handle]->getPayload() ;
+                           DltDBusDecoder dbusMsg;
+                           if(dbusMsg.decode(data))
+                           {
+                               if(dbusMsg.getMessageType()==DBUS_MESSAGE_TYPE_METHOD_CALL)
+                               {
+                                   methods[DltDbusMethodKey(dbusMsg.getSender(),dbusMsg.getSerial())] = dbusMsg.getInterface() + "." + dbusMsg.getMember();
+                               }
+                           }
+                       }
+                   }
+               }
+               //qDebug() << "Complete segemented message" << segmentedMessages[handle]->getPayload().size();
            }
            else
            {
@@ -422,7 +442,8 @@ bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     }
     else
     {
-        text = "DBus decode error!";
+        // nothing to do
+        return TRUE;
     }
 
     /* Add decoded parameter*/
