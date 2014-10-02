@@ -223,7 +223,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
         /* check if it is a version messages and
            version string not already parsed */
-        if((mode == modeIndex || mode == modeIndexAndFilter) &&
+        if((mode == modeIndexAndFilter) &&
            msg.getType()==QDltMsg::DltTypeControl &&
            msg.getSubtype()==QDltMsg::DltControlResponse &&
            msg.getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
@@ -236,7 +236,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* check if it is a timezone message */
-        if((mode == modeIndex || mode == modeIndexAndFilter) &&
+        if((mode == modeIndexAndFilter) &&
            msg.getType()==QDltMsg::DltTypeControl &&
            msg.getSubtype()==QDltMsg::DltControlResponse &&
            msg.getCtrlServiceId() == DLT_SERVICE_ID_TIMEZONE)
@@ -255,7 +255,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* check if it is a timezone message */
-        if((mode == modeIndex || mode == modeIndexAndFilter) &&
+        if((mode == modeIndexAndFilter) &&
            msg.getType()==QDltMsg::DltTypeControl &&
            msg.getSubtype()==QDltMsg::DltControlResponse &&
            msg.getCtrlServiceId() == DLT_SERVICE_ID_UNREGISTER_CONTEXT)
@@ -272,7 +272,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* Process all viewer plugins */
-        if((mode == modeIndex || mode == modeIndexAndFilter) && pluginsEnabled)
+        if((mode == modeIndexAndFilter) && pluginsEnabled)
         {
             for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
             {
@@ -285,7 +285,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         pluginManager->decodeMsg(msg,silentMode);
 
         /* Add to filterindex if matches */
-        if(filtersEnabled && filterList.checkFilter(msg))
+        if(filterList.checkFilter(msg))
         {
             if(sortByTimeEnabled)
                 indexFilterListSorted.insert(DltFileIndexerKey(msg.getTime(),msg.getMicroseconds()),ix);
@@ -294,7 +294,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* Offer messages again to viewer plugins after decode */
-        if((mode == modeIndex || mode == modeIndexAndFilter) && pluginsEnabled)
+        if((mode == modeIndexAndFilter) && pluginsEnabled)
         {
             for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
             {
@@ -304,7 +304,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         /* update context configuration when loading file */
-        if( (mode == modeIndex || mode == modeIndexAndFilter) &&
+        if( (mode == modeIndexAndFilter) &&
             msg.getType()==QDltMsg::DltTypeControl &&
             msg.getSubtype()==QDltMsg::DltControlResponse )
         {
@@ -481,7 +481,7 @@ void DltFileIndexer::run()
     currentRun = 1;
 
     // index
-    if(mode == modeIndex || mode == modeIndexAndFilter)
+    if(mode == modeIndexAndFilter)
     {
         for(int num=0;num<dltFile->getNumberOfFiles();num++)
         {
@@ -495,9 +495,14 @@ void DltFileIndexer::run()
         }
         emit(finishIndex());
     }
+    else if(mode == modeNone)
+    {
+        // only update view
+        emit(finishIndex());
+    }
 
     // indexFilter
-    if(mode == modeIndexAndFilter || mode == modeFilter || mode == modeNone)
+    if(mode == modeIndexAndFilter || mode == modeFilter)
     {
         QStringList filenames;
         for(int num=0;num<dltFile->getNumberOfFiles();num++)
@@ -753,7 +758,8 @@ bool DltFileIndexer::loadIndex(QString filename, QList<unsigned long> &index)
     do
     {
         length = file.read((char*)&value,sizeof(value));
-        index.append(value);
+        if(length==sizeof(value))
+            index.append(value);
     }
     while(length==sizeof(value));
 

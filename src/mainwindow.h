@@ -216,7 +216,7 @@ private:
         *
         */
     void reloadLogFileStop();
-    void reloadLogFile(bool update=false, bool updateFilterIndexOnly=false, bool multithreaded = true);
+    void reloadLogFile(bool update=false, bool multithreaded = true);
 
     void reloadLogFileDefaultFilter();
 
@@ -301,6 +301,7 @@ private:
      */
     void ErrorMessage(QMessageBox::Icon level, QString title,  QString message);
 
+    void clearSelection();
     void saveSelection();
     void restoreSelection();
     QList<int> previousSelection;

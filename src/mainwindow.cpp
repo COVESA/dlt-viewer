@@ -754,7 +754,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
         openFileNames = fileNames;
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
-            reloadLogFile(false,false,false);
+            reloadLogFile(false,false);
         else
             // normally load log file mutithreaded
             reloadLogFile();
@@ -1251,6 +1251,8 @@ void MainWindow::reloadLogFileFinishIndex()
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     this->update(); // force update
+    restoreSelection();
+
 }
 
 void MainWindow::reloadLogFileFinishFilter()
@@ -1260,7 +1262,7 @@ void MainWindow::reloadLogFileFinishFilter()
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
-    if((dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+    if((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
@@ -1281,10 +1283,11 @@ void MainWindow::reloadLogFileFinishFilter()
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     this->update(); // force update
+    restoreSelection();
     m_searchtableModel->modelChanged();
 
     // process getLogInfoMessages
-    if((dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
+    if(( dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
     {
         QList<int> list = dltIndexer->getGetLogInfoList();
         QDltMsg msg;
@@ -1315,7 +1318,7 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
     statusProgressBar->hide();
 }
 
-void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool multithreaded)
+void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
@@ -1334,14 +1337,18 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
     }
 
     // update indexFilter only if index already generated
-    if(updateFilterIndexOnly)
+    if(update)
     {   if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
             dltIndexer->setMode(DltFileIndexer::modeFilter);
         else
             dltIndexer->setMode(DltFileIndexer::modeNone);
+        saveSelection();
     }
     else
+    {
         dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
+        clearSelection();
+    }
 
     // prevent further receiving any new messages
     saveAndDisconnectCurrentlyConnectedSerialECUs();
@@ -1359,7 +1366,7 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
     dltIndexer->stop();
 
     // open qfile
-    if(!updateFilterIndexOnly)
+    if(!update)
     {
         for(int num=0;num<openFileNames.size();num++)
         {
@@ -1392,7 +1399,7 @@ void MainWindow::reloadLogFile(bool update, bool updateFilterIndexOnly, bool mul
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
-    if( (dltIndexer->getMode() == DltFileIndexer::modeIndex || dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+    if( (dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
@@ -5611,10 +5618,14 @@ void MainWindow::on_checkBoxSortByTime_clicked(bool checked)
 void MainWindow::on_applyConfig_clicked()
 {
     applyConfigEnabled(false);
-    saveSelection();
     filterUpdate();
-    reloadLogFile(true,true);
-    restoreSelection();
+    reloadLogFile(true);
+}
+
+void MainWindow::clearSelection()
+{
+    previousSelection.clear();
+    ui->tableView->selectionModel()->clear();
 }
 
 void MainWindow::saveSelection()
@@ -5627,33 +5638,46 @@ void MainWindow::saveSelection()
     {
         int sr = rows.at(i).row();
         previousSelection.append(qfile.getMsgFilterPos(sr));
-        qDebug() << "Save Selection" << qfile.getMsgFilterPos(sr);
+        qDebug() << "Save Selection " << i << " at line " << qfile.getMsgFilterPos(sr);
     }
 }
 
 void MainWindow::restoreSelection()
 {
-    int firstSelection = 0;
-    QModelIndex scrollToTarget = tableModel->index(0, 0);
-
-    /* Try to re-select old indices */
+    int firstIndex = 0;
+    //QModelIndex scrollToTarget = tableModel->index(0, 0);
     QItemSelection newSelection;
+
+    // clear current selection model
+    ui->tableView->selectionModel()->clear();
+
+    // check if anything was selected
+    if(previousSelection.count()==0)
+        return;
+
+    // restore all selected lines
     for(int j=0;j<previousSelection.count();j++)
     {
-        if(j == 0)
+        int nearestIndex = nearest_line(previousSelection.at(j));
+
+        qDebug() << "Restore Selection" << j << "at index" << nearestIndex << "at line" << previousSelection.at(0);
+
+        if(j==0)
         {
-            qDebug() << "Restore First Selection" << previousSelection.at(j);
-            firstSelection = nearest_line(previousSelection.at(j));
-            jump_to_line(firstSelection);
+            firstIndex = nearestIndex;
         }
-        int nearest = nearest_line(previousSelection.at(j));
-        QModelIndex idx = tableModel->index(nearest, 0);
+
+        QModelIndex idx = tableModel->index(nearestIndex, 0);
         newSelection.select(idx, idx);
     }
-    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
-    scrollToTarget = tableModel->index(firstSelection, 0);
-    ui->tableView->scrollTo(scrollToTarget, QTableView::PositionAtTop);
 
+    // set all selections
+    ui->tableView->selectionModel()->select(newSelection, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+
+    // scroll to first selected row
+    ui->tableView->setFocus();  // focus must be set before scrollto is possible
+    QModelIndex idx = tableModel->index(firstIndex, 0, QModelIndex());
+    ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
 }
 
 void MainWindow::on_tabWidget_currentChanged(int index)
