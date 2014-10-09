@@ -2819,6 +2819,19 @@ void MainWindow::read(EcuItem* ecuitem)
                     outputfile.write(bufferPayload);
 
                     outputfile.flush();
+
+                    /* in Logging only mode send all message to plugins */
+                    if(settings->loggingOnlyMode)
+                    {
+                        QList<QDltPlugin*> activeViewerPlugins;
+                        activeViewerPlugins = pluginManager.getViewerPlugins();
+                        for(int i = 0; i < activeViewerPlugins.size(); i++){
+                            QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+                            item->updateMsg(-1,qmsg);
+                            pluginManager.decodeMsg(qmsg,!OptManager::getInstance()->issilentMode());
+                            item->updateMsgDecoded(-1,qmsg);
+                        }
+                    }
                 }
             }
 
