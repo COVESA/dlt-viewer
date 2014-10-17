@@ -57,7 +57,7 @@ int QDltFile::getNumberOfFiles()
     return files.size();
 }
 
-void QDltFile::setDltIndex(QList<unsigned long> &_indexAll, int num){
+void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num){
     if(num<0 || num>=files.size())
         return;
 
@@ -76,9 +76,9 @@ int QDltFile::size()
     return size;
 }
 
-unsigned long QDltFile::fileSize()
+qint64 QDltFile::fileSize()
 {
-    unsigned long size=0;
+    qint64 size=0;
 
     for(int num=0;num<files.size();num++)
     {
@@ -153,7 +153,7 @@ bool QDltFile::createIndex()
 bool QDltFile::updateIndex()
 {
     QByteArray buf;
-    unsigned long pos = 0;
+    qint64 pos = 0;
 
     mutexQDlt.lock();
 
@@ -366,16 +366,19 @@ QByteArray QDltFile::getMsg(int index)
 
     mutexQDlt.lock();
 
+    QDltFileItem* file = files[num];
+    qint64 positionForIndex = file->indexAll[index];
+
     /* move to file position selected by index */
-    files[num]->infile.seek(files[num]->indexAll[index]);
+    file->infile.seek(positionForIndex);
 
     /* read DLT message from file */
-    if(index == (files[num]->indexAll.size()-1))
+    if(index == (file->indexAll.size()-1))
         /* last message in file */
-        buf = files[num]->infile.read(files[num]->infile.size()-files[num]->indexAll[index]);
+        buf = file->infile.read(file->infile.size() - positionForIndex);
     else
         /* any other file position */
-        buf = files[num]->infile.read(files[num]->indexAll[index+1]-files[num]->indexAll[index]);
+        buf = file->infile.read(file->indexAll[index+1] - positionForIndex);
 
     mutexQDlt.unlock();
 
@@ -385,9 +388,7 @@ QByteArray QDltFile::getMsg(int index)
 
 bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
-    QByteArray data;
-
-    data = getMsg(index);
+    QByteArray data = getMsg(index);
 
     if(data.isEmpty())
         return false;
@@ -473,12 +474,12 @@ void QDltFile::enableSortByTime(bool state)
     sortByTimeFlag = state;
 }
 
-QList<unsigned long> QDltFile::getIndexFilter()
+QVector<qint64> QDltFile::getIndexFilter()
 {
     return indexFilter;
 }
 
-void QDltFile::setIndexFilter(QList<unsigned long> _indexFilter)
+void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
     indexFilter = _indexFilter;
 }

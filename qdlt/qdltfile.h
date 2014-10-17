@@ -42,7 +42,7 @@ public:
     /*!
       Index contains positions of beginning of DLT messages in DLT log file.
     */
-    QList<unsigned long> indexAll;
+    QVector<qint64> indexAll;
 
 };
 
@@ -79,7 +79,7 @@ public:
     /*!
       \return the size of the DLT file.
     */
-    unsigned long fileSize();
+    qint64 fileSize();
 
     //! Get the number of filtered DLT message in the DLT log file.
     /*!
@@ -104,7 +104,7 @@ public:
     /*!
       \param New index list of all DLT messages
     */
-    void setDltIndex(QList<unsigned long> &_indexAll,int num = 0);
+    void setDltIndex(QVector<qint64> &_indexAll, int num = 0);
 
     //! Clears the internal index of all DLT messages.
     /*!
@@ -254,13 +254,13 @@ public:
     /*!
      * \return List of file positions
      **/
-    QList<unsigned long> getIndexFilter();
+    QVector<qint64> getIndexFilter();
 
     //! Set Index of all DLT messages matching filter
     /*!
      * \param _indexFilter List of file positions
      **/
-    void setIndexFilter(QList<unsigned long> _indexFilter);
+    void setIndexFilter(QVector<qint64> _indexFilter);
 
 protected:
 
@@ -275,7 +275,7 @@ private:
     /*!
       Index contains positions of DLT messages in indexAll.
     */
-    QList<unsigned long> indexFilter;
+    QVector<qint64> indexFilter;
 
     //! This contains the list of filters.
     QDltFilterList filterList;

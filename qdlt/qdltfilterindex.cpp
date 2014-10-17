@@ -28,7 +28,7 @@ extern "C"
 #include "dlt_common.h"
 }
 
-void QDltFilterIndex::setIndexFilter(QList<unsigned long> _indexFilter)
+void QDltFilterIndex::setIndexFilter(QVector<qint64> _indexFilter)
 {
     indexFilter = _indexFilter;
 }

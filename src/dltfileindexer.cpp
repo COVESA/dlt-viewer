@@ -347,7 +347,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // use sorted values if sort by time enabled
     if(sortByTimeEnabled)
-        indexFilterList = indexFilterListSorted.values();
+        indexFilterList = QVector<qint64>::fromList(indexFilterListSorted.values());
 
     // write filter index if enabled
     if(!filterCache.isEmpty())
@@ -619,7 +619,7 @@ QString DltFileIndexer::filenameIndexCache(QString filename)
 }
 
 // read/write index cache
-bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index,QStringList filenames)
+bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qint64> &index, QStringList filenames)
 {
     QString filenameCache;
 
@@ -641,7 +641,7 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QList<unsi
     return true;
 }
 
-bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> index,QStringList filenames)
+bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QVector<qint64> index, QStringList filenames)
 {
     QString filename;
 
@@ -696,10 +696,10 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     return filename;
 }
 
-bool DltFileIndexer::saveIndex(QString filename, QList<unsigned long> &index)
+bool DltFileIndexer::saveIndex(QString filename, QVector<qint64> &index)
 {
     quint32 version = DLT_FILE_INDEXER_FILE_VERSION;
-    unsigned long value;
+    qint64 value;
 
     QFile file(filename);
 
@@ -726,10 +726,10 @@ bool DltFileIndexer::saveIndex(QString filename, QList<unsigned long> &index)
     return true;
 }
 
-bool DltFileIndexer::loadIndex(QString filename, QList<unsigned long> &index)
+bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
 {
     quint32 version;
-    unsigned long value;
+    qint64 value;
     int length;
 
     QFile file(filename);

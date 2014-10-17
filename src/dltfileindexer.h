@@ -11,7 +11,7 @@
 #include "qdlt.h"
 
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
-#define DLT_FILE_INDEXER_FILE_VERSION 1
+#define DLT_FILE_INDEXER_FILE_VERSION 2
 
 class DltFileIndexerKey
 {
@@ -56,8 +56,8 @@ public:
     bool indexDefaultFilter();
 
     // load/save filter index from/to file
-    bool loadFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> &index, QStringList filenames);
-    bool saveFilterIndexCache(QDltFilterList &filterList, QList<unsigned long> index, QStringList filenames);
+    bool loadFilterIndexCache(QDltFilterList &filterList, QVector<qint64> &index, QStringList filenames);
+    bool saveFilterIndexCache(QDltFilterList &filterList, QVector<qint64> index, QStringList filenames);
     QString filenameFilterIndexCache(QDltFilterList &filterList, QStringList filenames);
 
     // load/save index from/to file
@@ -66,8 +66,8 @@ public:
     QString filenameIndexCache(QString filename);
 
     // load/save index from/to file
-    bool saveIndex(QString filename, QList<unsigned long> &index);
-    bool loadIndex(QString filename, QList<unsigned long> &index);
+    bool saveIndex(QString filename, QVector<qint64> &index);
+    bool loadIndex(QString filename, QVector<qint64> &index);
 
     // Accessors to mutex
     void lock();
@@ -99,8 +99,8 @@ public:
     QString getFilterCache() { return filterCache; }
 
     // get index of all messages
-    QList<unsigned long> getIndexAll() { return indexAllList; }
-    QList<unsigned long> getIndexFilters() { return indexFilterList; }
+    QVector<qint64> getIndexAll() { return indexAllList; }
+    QVector<qint64> getIndexFilters() { return indexFilterList; }
     QList<int> getGetLogInfoList() { return getLogInfoList; }
 
     // main thread routine
@@ -134,11 +134,11 @@ private:
     QList<QDltPlugin*> activeDecoderPlugins;
 
     // full index
-    QList<unsigned long> indexAllList;
+    QVector<qint64> indexAllList;
 
     // filtered index
-    QList<unsigned long> indexFilterList;
-    QMultiMap<DltFileIndexerKey,unsigned long> indexFilterListSorted;
+    QVector<qint64> indexFilterList;
+    QMultiMap<DltFileIndexerKey,qint64> indexFilterListSorted;
 
     // getLogInfoList
     QList<int> getLogInfoList;

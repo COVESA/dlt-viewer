@@ -45,12 +45,12 @@ public:
     /*!
       Index contains positions of DLT messages in indexAll.
     */
-    QList<unsigned long> indexFilter;
+    QVector<qint64> indexFilter;
 
     //! Set the filter index cache.
     /*!
     */
-    void setIndexFilter(QList<unsigned long> _indexFilter);
+    void setIndexFilter(QVector<qint64> _indexFilter);
 
     //! Set filename for plausibility check.
     /*!
