@@ -224,7 +224,7 @@ typedef enum
 
 #else /* DLT_VERBOSE_MODE */
 
-#define DLT_CSTRING(TEXT) 	DLT_ARG_NONE, 0
+#define DLT_CSTRING(TEXT) 	DLT_ARG_NONE
 
 #endif /* DLT_VERBOSE_MODE */
 
