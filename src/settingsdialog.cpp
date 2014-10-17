@@ -449,6 +449,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/autoConnect",autoConnect);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
+    settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/autoMarkMarker",autoMarkMarker);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
     settings->setValue("startup/maxFileSizeMB",maxFileSizeMB);
