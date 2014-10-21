@@ -8,13 +8,15 @@ TARGET = $$qtLibraryTarget(dltdbusplugin)
 HEADERS += \
     dltdbusplugin.h \
     form.h \
-    dbus.h
+    dbus.h \
+    dltdbuscatalog.h
 
 # plugin source files
 SOURCES += \
     dltdbusplugin.cpp \
     form.cpp \
-    dbus.cpp
+    dbus.cpp \
+    dltdbuscatalog.cpp
 
 # plugin forms
 FORMS += \

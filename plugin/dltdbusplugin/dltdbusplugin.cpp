@@ -48,10 +48,48 @@ QString DltDBusPlugin::description() {
 }
 
 QString DltDBusPlugin::error() {
-    return QString();
+    return errorText;
 }
 
-bool DltDBusPlugin::loadConfig(QString /*filename*/) {
+bool DltDBusPlugin::loadConfig(QString filename) {
+
+    /* remove all stored items */
+    errorText.clear();
+    catalog.clear();
+
+    if ( filename.isEmpty() )
+        // empty filename is valid, only clear plugin data
+        return true;
+
+     QDir dir(filename);
+
+     if(dir.exists())
+     {
+         // this is a directory, load all files in directory
+         dir.setFilter(QDir::Files);
+         QStringList filters;
+         filters << "*.xml" << "*.XML";
+         dir.setNameFilters(filters);
+         QFileInfoList list = dir.entryInfoList();
+         for (int i = 0; i < list.size(); ++i) {
+             QFileInfo fileInfo = list.at(i);
+             if(!catalog.parse(fileInfo.filePath()))
+             {
+                 errorText = fileInfo.fileName()+":\n"+catalog.errorString;
+                 return false;
+             }
+         }
+         return true;
+     }
+     else
+     {
+         if(!catalog.parse(filename))
+         {
+             errorText = filename+":\n"+catalog.errorString;
+             return false;
+         }
+     }
+
     return true;
 }
 
@@ -60,7 +98,7 @@ bool DltDBusPlugin::saveConfig(QString /*filename*/) {
 }
 
 QStringList DltDBusPlugin::infoConfig() {
-    return QStringList();
+    return catalog.info();
 }
 
 QWidget* DltDBusPlugin::initViewer() {

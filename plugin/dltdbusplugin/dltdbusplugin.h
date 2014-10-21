@@ -28,6 +28,7 @@
 
 #include "plugininterface.h"
 #include "qdltsegmentedmsg.h"
+#include "dltdbuscatalog.h"
 #include "form.h"
 
 #define DLT_DBUS_PLUGIN_VERSION "1.0.0"
@@ -115,6 +116,8 @@ private:
 
     QHash<DltDbusMethodKey,QString> methods;
     QMap<uint32_t,QDltSegmentedMsg*> segmentedMessages;
+
+    DltDBusCatalog catalog;
 };
 
 #endif // DLTDBUSPLUGIN_H
