@@ -14,7 +14,7 @@ unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 
 # Local includes
-INCLUDEPATH = ../qextserialport/src ../qdlt
+INCLUDEPATH = . ../qextserialport/src ../qdlt
 
 # Icon for application (The smiley face)
 icons.path = /usr/share/pixmaps

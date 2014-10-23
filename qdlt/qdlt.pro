@@ -37,7 +37,7 @@ OBJECTS_DIR = build/obj
 RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
-INCLUDEPATH = ../qextserialport/src ../src
+INCLUDEPATH = . ../qextserialport/src ../src
 
 SOURCES +=  \
             dlt_common.c \
