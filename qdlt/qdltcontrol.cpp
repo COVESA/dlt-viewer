@@ -52,6 +52,8 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(on_action_menuFile_Clear_triggered()));
     connect(this, SIGNAL(quitDltViewerSignal()),
             server, SLOT(on_action_menuFile_Quit_triggered()));
+    connect(this, SIGNAL(reopenFileSignal()),
+            server, SLOT(reopenFileSignal()));
 }
 
 QDltControl::~QDltControl()
@@ -107,4 +109,9 @@ void QDltControl::connectEcu(int index)
 void QDltControl::disconnectEcu(int index)
 {
     emit disconnectEcuSignal(index);
+}
+
+void QDltControl::reopenFile()
+{
+    emit reopenFileSignal();
 }

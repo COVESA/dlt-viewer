@@ -482,6 +482,7 @@ public slots:
     void markerSignal();
     void connectEcuSignal(int index);
     void disconnectEcuSignal(int index);
+    void reopenFileSignal();
 
     void controlMessage_Timezone(int timezone, unsigned char dst);
     void controlMessage_UnregisterContext(QString ecuId,QString appId,QString ctId);

@@ -141,3 +141,10 @@ void Form::on_pushButtonDisconnect_clicked()
     if(plugin->dltControl)
         plugin->dltControl->disconnectEcu(ui->comboBoxConnections->currentIndex());
 }
+
+
+void Form::on_pushButtonReopenFile_clicked()
+{
+    if(plugin->dltControl)
+        plugin->dltControl->reopenFile();
+}

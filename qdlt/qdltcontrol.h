@@ -45,6 +45,7 @@ public:
     void newFile(QString filename);
     void openFile(QStringList filenames);
     void saveAsFile(QString filename);
+    void reopenFile();
     void clearFile();
     void quitDltViewer();
     void marker();
@@ -62,6 +63,7 @@ signals:
     void markerSignal();
     void connectEcuSignal(int index);
     void disconnectEcuSignal(int index);
+    void reopenFileSignal();
 
 protected:
 private:

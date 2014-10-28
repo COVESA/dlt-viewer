@@ -5550,6 +5550,15 @@ void MainWindow::markerSignal()
     controlMessage_Marker();
 }
 
+void MainWindow::reopenFileSignal()
+{
+    applyConfigEnabled(false);
+    filterUpdate();
+
+    // force always reparsing of log file
+    reloadLogFile(false);
+}
+
 bool MainWindow::jump_to_line(int line)
 {
 
