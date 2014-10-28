@@ -156,13 +156,13 @@ QList<QDltPlugin*> QDltPluginManager::getViewerPlugins()
     return list;
 }
 
-bool QDltPluginManager::stateChanged(int index, QDltConnection::QDltConnectionState connectionState)
+bool QDltPluginManager::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname)
 {
     for(int num=0;num<plugins.size();num++)
     {
         QDltPlugin *plugin = plugins[num];
         if(plugin->isControl() )
-            plugin->stateChanged(index,connectionState);
+            plugin->stateChanged(index,connectionState,hostname);
     }
     return true;
 }

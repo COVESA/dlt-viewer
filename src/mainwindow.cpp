@@ -1201,7 +1201,7 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
             /* Update the ECU list in control plugins */
             updatePluginsECUList();
 
-            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline);
+            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
 
         }
 
@@ -1722,7 +1722,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
         /* Update the ECU list in control plugins */
         updatePluginsECUList();
 
-        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline);
+        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
     }
 }
 
@@ -4527,11 +4527,11 @@ void MainWindow::stateChangedSerial(bool dsrChanged){
 
             if(dsrChanged)
             {
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
             }
             else
             {
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
             }
 
         }
@@ -4562,19 +4562,19 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
 
             switch(socketState){
             case QAbstractSocket::UnconnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
                 break;
             case QAbstractSocket::ConnectingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting,ecuitem->getHostname());
                 break;
             case QAbstractSocket::ConnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
                 break;
             case QAbstractSocket::ClosingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
                 break;
             default:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline);
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
                 break;
             }
         }

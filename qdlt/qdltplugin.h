@@ -112,7 +112,7 @@ public:
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
     bool controlMsg(int index, QDltMsg &msg);
-    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
     bool autoscrollStateChanged(bool enabled);
 
     // command plugin interfaces

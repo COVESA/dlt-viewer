@@ -106,9 +106,9 @@ void DummyControlPlugin::updateCounters(int ,int )
 
 }
 
-bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState){
+bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
 
-    qDebug() << ecuList->at(index) << "ConnectionState: " << connectionState << endl;
+    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
 
     return true;
 }

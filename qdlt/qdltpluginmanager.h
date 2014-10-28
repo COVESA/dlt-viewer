@@ -73,7 +73,7 @@ public:
     QDltPlugin* findPlugin(QString &name);
 
     //control plugin interface
-    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
     bool autoscrollStateChanged(bool enabled);
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);

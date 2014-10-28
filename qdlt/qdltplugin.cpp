@@ -243,10 +243,10 @@ bool QDltPlugin::controlMsg(int index, QDltMsg &msg)
         return false;
 }
 
-bool QDltPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState)
+bool QDltPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname)
 {
     if(plugincontrolinterface)
-        return plugincontrolinterface->stateChanged(index,connectionState);
+        return plugincontrolinterface->stateChanged(index,connectionState,hostname);
     else
         return false;
 }

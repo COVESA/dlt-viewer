@@ -315,9 +315,10 @@ public:
 
       \param ecuItem The ecuItem changed the connection state
       \param connectionState The new connection state of the ecuItem
+      \param hostname The hostname of the connected ECU, if it is a TCP connection, else empty
       \return True if everything went ok. False if there was an error.
     */
-    virtual bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState) = 0;
+    virtual bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname) = 0;
 
     //! Autoscroll state changed
     /*!
