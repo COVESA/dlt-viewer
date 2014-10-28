@@ -291,6 +291,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
 bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
 {
     unsigned int dltType = 0;
+    bool appendSize = false;
 
     /* add the type info in verbose mode */
     if(verboseMode) {
@@ -300,10 +301,12 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
         case DltTypeInfoStrg:
             dltType |= DLT_TYPE_INFO_STRG;
             dltType |= DLT_SCOD_ASCII;
+            appendSize = true;
             break;
         case DltTypeInfoUtf8:
             dltType |= DLT_TYPE_INFO_STRG;
             dltType |= DLT_SCOD_UTF8;
+            appendSize = true;
             break;
         case DltTypeInfoBool:
             dltType |= DLT_TYPE_INFO_BOOL;
@@ -319,6 +322,7 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
             break;
         case DltTypeInfoRawd:
             dltType |= DLT_TYPE_INFO_RAWD;
+            appendSize = true;
             break;
         case DltTypeInfoTrai:
             // dltType |= DLT_TYPE_INFO_TRAI;
@@ -352,8 +356,9 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
     }
 
     /* add the string or raw data size to the payload */
-    if((typeInfo & DLT_TYPE_INFO_RAWD) || (typeInfo & DLT_TYPE_INFO_STRG)) {
-        payload += QByteArray((const char*)&dltType,sizeof(unsigned int));
+    if(appendSize) {
+        ushort size = data.size();
+        payload += QByteArray((const char*)&size, sizeof(ushort));
     }
 
     /* add the value to the payload */
