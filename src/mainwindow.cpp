@@ -1250,6 +1250,7 @@ void MainWindow::reloadLogFileFinishIndex()
     // show already unfiltered messages
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
+    this->update(); // force update
 }
 
 void MainWindow::reloadLogFileFinishFilter()
@@ -1279,6 +1280,7 @@ void MainWindow::reloadLogFileFinishFilter()
     // update table
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
+    this->update(); // force update
     m_searchtableModel->modelChanged();
 
     // process getLogInfoMessages
