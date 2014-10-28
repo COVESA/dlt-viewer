@@ -15,6 +15,15 @@ Changes
 -------
 
 2.13.0
+  * Fixes Bug 240: DLT Viewer is now able to handle large DLT files
+  * Added new plugin control interface reopenFile.
+  * Added hostname parameter to plugin interface stateChanged
+  * First import of DBus catalog.
+  * Send updateMsg and updateMsgDecoded also in logging only mode.
+  * Fixed false creation of filter index cache file
+  * Fixed showing corrupted message when index cache file is empty.
+  * Fixed not keeping selected DLT message when filter is changed.
+  * Fixed dbus plugin segmented messages
   * Changed build script for dlt parser to Qt 5.3.1
   * Command line parameters also allow big letters as file ending
   * Changed configuration, cache and filters path. Create if not exist.
