@@ -46,7 +46,7 @@ DltSettingsManager::DltSettingsManager()
 #ifdef Q_OS_WIN
     QDir dir(QApplication::applicationDirPath()+"/config");
 #else
-    QDir dir("~/.dlt/config");
+    QDir dir(QDir::homePath()+"/.dlt/config");
 #endif
     if(!dir.exists())
     {
