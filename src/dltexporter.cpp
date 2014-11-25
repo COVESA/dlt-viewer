@@ -29,7 +29,7 @@ QString DltExporter::escapeCSVValue(QString arg)
 
 bool DltExporter::writeCSVHeader(QFile *file)
 {
-    QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\"\r\n");
+    QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\"\n");
     header = header.arg(FieldNames::getName(FieldNames::Index))
                     .arg(FieldNames::getName(FieldNames::Time))
                     .arg(FieldNames::getName(FieldNames::TimeStamp))
@@ -60,8 +60,8 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(",");
-    text += escapeCSVValue(msg.toStringPayload());
-    text += "\r\n";
+    text += escapeCSVValue(msg.toStringPayload().simplified());
+    text += "\n";
 
     to->write(text.toLatin1().constData());
 }
@@ -184,7 +184,7 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
             return false;
         text += msg.toStringHeader();
         text += " ";
-        text += msg.toStringPayload();
+        text += msg.toStringPayload().simplified();
         text += "\n";
 
         if(exportFormat == DltExporter::FormatAscii)
