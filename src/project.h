@@ -69,6 +69,7 @@ public:
     bool timingPackets;
     bool sendGetLogInfo;
     bool sendDefaultLogLevel;
+    bool sendGetSoftwareVersion;
     enum {invalid,unknown,valid} status;
 
     /* configuration update */

@@ -3696,6 +3696,28 @@ void MainWindow::controlMessage_GetLogInfo(EcuItem* ecuitem)
     dlt_message_free(&msg,0);
 }
 
+void MainWindow::controlMessage_GetSoftwareVersion(EcuItem* ecuitem)
+{
+    DltMessage msg;
+
+    /* initialise new message */
+    dlt_message_init(&msg,0);
+
+    /* prepare payload */
+    msg.datasize = sizeof(DltServiceGetSoftwareVersion);
+    if (msg.databuffer) free(msg.databuffer);
+    msg.databuffer = (uint8_t *) malloc(msg.datasize);
+    DltServiceGetSoftwareVersion *req;
+    req = (DltServiceGetSoftwareVersion*) msg.databuffer;
+    req->service_id = DLT_SERVICE_ID_GET_SOFTWARE_VERSION;
+
+    /* send message */
+    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
+
+    /* free message */
+    dlt_message_free(&msg,0);
+}
+
 void MainWindow::ControlServiceRequest(EcuItem* ecuitem, int service_id )
 {
     DltMessage msg;
@@ -4501,6 +4523,10 @@ void MainWindow::tableViewValueChanged(int value)
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
     /* update default log level, trace status and timing packets */
+    if (ecuitem->sendGetSoftwareVersion)
+    {
+        controlMessage_GetSoftwareVersion(ecuitem);
+    }
     if (ecuitem->sendDefaultLogLevel)
     {
         controlMessage_SetDefaultLogLevel(ecuitem,ecuitem->loglevel);

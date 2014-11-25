@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>440</width>
-    <height>523</height>
+    <width>390</width>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -166,20 +166,6 @@
          </property>
         </widget>
        </item>
-       <item row="12" column="0">
-        <widget class="QComboBox" name="comboBoxVerboseMode">
-         <item>
-          <property name="text">
-           <string>Non-Verbose Mode</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Verbose Mode</string>
-          </property>
-         </item>
-        </widget>
-       </item>
        <item row="11" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
@@ -208,10 +194,31 @@
          </property>
         </widget>
        </item>
-       <item row="16" column="0">
+       <item row="17" column="0">
         <widget class="QCheckBox" name="checkBoxDefaultLogLevel">
          <property name="text">
           <string>Send &quot;Default Log Level,Trace Status and Verbose Mode&quot; if online</string>
+         </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QComboBox" name="comboBoxVerboseMode">
+         <item>
+          <property name="text">
+           <string>Non-Verbose Mode</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Verbose Mode</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="16" column="0">
+        <widget class="QCheckBox" name="checkBoxGetSoftwareVersion">
+         <property name="text">
+          <string>Send &quot;Get SW Version&quot; if online</string>
          </property>
         </widget>
        </item>

@@ -51,6 +51,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     timingPackets = false;
     sendGetLogInfo = false;
     sendDefaultLogLevel = true;
+    sendGetSoftwareVersion = true;
     updateDataIfOnline = true;
     autoReconnect = true;
     autoReconnectTimeout = 5;
@@ -816,6 +817,11 @@ bool Project::Load(QString filename)
                   if(ecuitem)
                       ecuitem->sendDefaultLogLevel = xml.readElementText().toInt();
               }
+              if(xml.name() == QString("sendGetSoftwareVersion"))
+              {
+                  if(ecuitem)
+                      ecuitem->sendGetSoftwareVersion = xml.readElementText().toInt();
+              }
               if(xml.name() == QString("updatedata"))
               {
                   if(ecuitem)
@@ -1070,6 +1076,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("timingpackets",QString("%1").arg(ecuitem->timingPackets));
         xml.writeTextElement("sendgetloginfo",QString("%1").arg(ecuitem->sendGetLogInfo));
         xml.writeTextElement("sendDefaultLogLevel",QString("%1").arg(ecuitem->sendDefaultLogLevel));
+        xml.writeTextElement("sendGetSoftwareVersion",QString("%1").arg(ecuitem->sendGetSoftwareVersion));
         xml.writeTextElement("updatedata",QString("%1").arg(ecuitem->updateDataIfOnline));
         xml.writeTextElement("autoReconnect",QString("%1").arg(ecuitem->autoReconnect));
         xml.writeTextElement("autoReconnectTimeout",QString("%1").arg(ecuitem->autoReconnectTimeout));

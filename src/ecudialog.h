@@ -52,6 +52,7 @@ public:
     int timingPackets();
     int sendGetLogInfo();
     int sendDefaultLogLevel();
+    int sendGetSoftwareVersion();
     int update();
     int autoReconnect();
     int autoReconnectTimeout();

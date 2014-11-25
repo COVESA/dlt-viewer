@@ -233,6 +233,7 @@ private:
     void controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int status);
     void controlMessage_SetVerboseMode(EcuItem* ecuitem, int mode);
     void controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable);
+    void controlMessage_GetSoftwareVersion(EcuItem* ecuitem);
     void controlMessage_GetLogInfo(EcuItem* ecuitem);
     void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,QDltMsg &msg);
     void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);

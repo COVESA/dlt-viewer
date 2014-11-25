@@ -104,6 +104,7 @@ void EcuDialog::setData(EcuItem &item)
 
     ui->checkBoxGetLogInfo->setCheckState(item.sendGetLogInfo?Qt::Checked:Qt::Unchecked);
     ui->checkBoxDefaultLogLevel->setCheckState(item.sendDefaultLogLevel?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxGetSoftwareVersion->setCheckState(item.sendGetSoftwareVersion?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxUpdate->setCheckState(item.updateDataIfOnline?Qt::Checked:Qt::Unchecked);
 
@@ -228,6 +229,11 @@ int EcuDialog::sendDefaultLogLevel()
     return (ui->checkBoxDefaultLogLevel->checkState() == Qt::Checked);
 }
 
+int EcuDialog::sendGetSoftwareVersion()
+{
+    return (ui->checkBoxGetSoftwareVersion->checkState() == Qt::Checked);
+}
+
 int EcuDialog::update()
 {
     return  ui->checkBoxUpdate->isChecked();
@@ -297,6 +303,7 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->timingPackets = this->timingPackets();
     item->sendGetLogInfo = this->sendGetLogInfo();
     item->sendDefaultLogLevel = this->sendDefaultLogLevel();
+    item->sendGetSoftwareVersion = this->sendGetSoftwareVersion();
     item->updateDataIfOnline = this->update();
     item->autoReconnect = this->autoReconnect();
     item->autoReconnectTimeout = this->autoReconnectTimeout();
