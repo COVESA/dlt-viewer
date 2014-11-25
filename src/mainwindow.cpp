@@ -1066,7 +1066,16 @@ void MainWindow::on_SaveAs_triggered(QString fileName)
     if(outputfile.fileName()==fileName)
     {
         QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("File is already open!"));
+                              QString("File is already open:\n")+fileName);
+        return;
+    }
+
+    /* check if file is writable */
+    QFileInfo fileinfo(QFileInfo(fileName).absolutePath());
+    if(!fileinfo.isDir() || !fileinfo.isWritable())
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                              QString("Cannot write new file:\n")+fileName);
         return;
     }
 
