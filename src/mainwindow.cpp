@@ -4166,7 +4166,13 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                              QString("Package Revision: %1\n\n").arg(PACKAGE_REVISION)+
                              QString("Build Date: %1\n").arg(__DATE__)+
                              QString("Build Time: %1\n").arg(__TIME__)+
-                             QString("Qt Version: %1\n\n").arg(QT_VERSION_STR)+
+                             QString("Qt Version: %1\n").arg(QT_VERSION_STR)+
+                         #if defined(Q_OS_WIN) && !defined(Q_CC_GNU)
+                             QString("Compiler: msvc\n")+
+                         #else
+                             QString("Compiler: gcc\n")+
+                         #endif
+                         QString("Compiler Version: %1\n\n").arg(__VERSION__)+
                          #if (BYTE_ORDER==BIG_ENDIAN)
                              QString("Architecture: Big Endian\n\n")+
                          #else
