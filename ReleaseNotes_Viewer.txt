@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.13.0 ALPHA
+Version 2.13.0
 
 Known issues
 ------------
@@ -15,6 +15,17 @@ Changes
 -------
 
 2.13.0
+  * Some changes for MSVC
+  * Optional send "Get ECU SW Version" when online
+  * write settings: autoMarkWarn added
+  * DLT embedded fix for non-verbose DLT_CSTRING
+  * Added check if directory is writable when file save as.
+  * allow compilation using i686-w64-mingw32-qmake-qt4 under cygwin
+  * Fixed absolute home path for settings file in Linux
+  * Remove all white spaces (Carriage return, linefeed, tabs) from payload before export
+  * Output info about used compiler in Info Dialog.
+  * Added missing license headers.
+  * fix qdlt qdltargument size
   * Fixes Bug 240: DLT Viewer is now able to handle large DLT files
   * Added new plugin control interface reopenFile.
   * Added hostname parameter to plugin interface stateChanged
