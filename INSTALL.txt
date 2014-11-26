@@ -6,7 +6,7 @@ Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
 * Install Qt5 SDK including Qt Creator and MinGW
-* Tested with QT 5.3.1 and QT 4.8.5
+* Tested with QT 5.3.2 and QT 4.8.5
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW.
 * Build Release in Qt Creator.
@@ -37,7 +37,7 @@ Optional: Prepare Installation Qwt (Windows)
 Some DLT Viewer plugins will use the Qwt library for displaying graphs.
 The Qwt library must be compiled and installed before it can be used.
 
-* Tested with Qwt 6.1.0
+* Tested with Qwt 6.1.1
 * Install Qt5 SDK inclduing MinGW for Windows.
 * Download and extract Qwt Zip package
 * Start Qt commandline from Start->Qt_5.x.x
