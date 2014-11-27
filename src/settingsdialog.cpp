@@ -514,7 +514,7 @@ void SettingsDialog::readSettings()
 #ifdef Q_OS_WIN
     defaultFilterPathName = settings->value("startup/defaultFilterPathName",QCoreApplication::applicationDirPath()+"/filters").toString();
 #else
-    defaultFilterPathName = settings->value("startup/defaultFilterPathName","~/.dlt/filters").toString();
+    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir::homePath()+"/.dlt/filters").toString();
 #endif
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
@@ -523,7 +523,7 @@ void SettingsDialog::readSettings()
 #ifdef Q_OS_WIN
     filterCacheName = settings->value("startup/filterCacheName",QCoreApplication::applicationDirPath()+"/cache").toString();
 #else
-    filterCacheName = settings->value("startup/filterCacheName","~/.dlt/cache").toString();
+    filterCacheName = settings->value("startup/filterCacheName",QDir::homePath()+"/.dlt/cache").toString();
 #endif
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
