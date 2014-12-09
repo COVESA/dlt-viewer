@@ -17,7 +17,7 @@ headers.files = *.h
 
 INSTALLS += headers
 
-target.path = /usr/lib
+target.path = $$[QT_INSTALL_LIBS]
 INSTALLS += target
 
 CONFIG                 += warn_on qt
