@@ -481,7 +481,7 @@ bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     else
     {
         // nothing to do
-        return TRUE;
+        return true;
     }
 
     /* Add decoded parameter*/
