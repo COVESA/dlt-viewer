@@ -35,6 +35,7 @@
 #include <QLabel>
 #include <QInputDialog>
 #include <QByteArray>
+#include <QSysInfo>
 
 /**
  * From QDlt.
@@ -4214,6 +4215,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                              QString("Compiler: gcc\n")+
                          #endif
                          QString("Compiler Version: %1\n\n").arg(__VERSION__)+
+                         QString("Architecture: %1 Bit\n").arg(QSysInfo::WordSize)+
                          #if (BYTE_ORDER==BIG_ENDIAN)
                              QString("Architecture: Big Endian\n\n")+
                          #else

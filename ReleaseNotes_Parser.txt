@@ -15,6 +15,7 @@ Changes
 -------
 
 0.0.5
+  * Updated qt to version 5.4.0
   * Parser: Added Windows build script.
   * Parser: Added missing command line options and examples.
   * Parser: First version of convert and update id functions.

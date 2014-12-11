@@ -15,6 +15,10 @@ Changes
 -------
 
 2.13.0
+  * Updated qt to version 5.4.0
+  * Fix installation path for x86_64 linux
+  * Fix Ubuntu 64bit build
+  * Fix linux home path for cache and filters
   * Some changes for MSVC
   * Optional send "Get ECU SW Version" when online
   * write settings: autoMarkWarn added
