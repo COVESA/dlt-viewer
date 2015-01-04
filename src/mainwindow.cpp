@@ -1530,6 +1530,9 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 
 
         }
+
+        // update table, perhaps settings changed table, e.g. number of columns
+        tableModel->modelChanged();
     }
 }
 

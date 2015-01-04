@@ -26,7 +26,8 @@ public:
         Subtype,
         Mode,
         ArgCount,
-        Payload
+        Payload,
+        Arg0  //Arg0 must always be last field or tablemodels have to be changed as well
     };
 
     /* Get name for one column/field.

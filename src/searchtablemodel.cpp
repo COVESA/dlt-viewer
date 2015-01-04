@@ -161,6 +161,20 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         case FieldNames::Payload:
             /* display payload */
             return msg.toStringPayload();
+        default:
+            if (index.column()>=FieldNames::Arg0)
+            {
+                int col=index.column()-FieldNames::Arg0; //arguments a zero based
+                QDltArgument arg;
+                if (msg.getArgument(col,arg))
+                {
+                    return arg.toString();
+                }
+                else
+                 return QString(" - ");
+
+            }
+
         }
     }
 
@@ -258,7 +272,7 @@ void SearchTableModel::modelChanged()
 
 int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
 {
-    return DLT_VIEWER_SEARCHCOLUMN_COUNT;
+    return DLT_VIEWER_SEARCHCOLUMN_COUNT+project->settings->showArguments;
 }
 
 void SearchTableModel::clear_SearchResults()

@@ -322,6 +322,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(showPayload?Qt::Checked:Qt::Unchecked);
+    ui->spinBox_showArguments->setValue(showArguments);
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
@@ -401,6 +402,7 @@ void SettingsDialog::readDlg()
     showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
+    showArguments = (ui->spinBox_showArguments->value());
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -479,6 +481,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/showMode",showMode);
     settings->setValue("startup/showNoar",showNoar);
     settings->setValue("startup/showPayload",showPayload);
+    settings->setValue("startup/showArguments",showArguments);
 
     /* other */
     settings->setValue("startup/writeControl",writeControl);
@@ -558,6 +561,7 @@ void SettingsDialog::readSettings()
     showMode = settings->value("startup/showMode",1).toInt();
     showNoar = settings->value("startup/showNoar",1).toInt();
     showPayload = settings->value("startup/showPayload",1).toInt();
+    showArguments = settings->value("startup/showArguments",0).toInt();
 
     /* other */
     writeControl = settings->value("startup/writeControl",1).toInt();
@@ -790,3 +794,27 @@ void SettingsDialog::clearIndexCacheAfterDays()
             dir.remove(dirFile);
     }
 }
+
+    void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
+    {
+        if (checked)
+        {
+          if (ui->spinBox_showArguments->value()<=0) ui->spinBox_showArguments->setValue(5); //set to default
+        }
+        else
+        {
+          ui->spinBox_showArguments->setValue(0);
+        }
+    }
+
+    void SettingsDialog::on_spinBox_showArguments_valueChanged(int i)
+    {
+     if (i<=0)
+     {
+      ui->groupBoxArguments->setChecked(false);
+     }
+     else
+     {
+         if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
+     }
+    }

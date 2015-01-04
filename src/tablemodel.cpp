@@ -48,7 +48,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
-     return DLT_VIEWER_COLUMN_COUNT;
+     return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
@@ -182,6 +182,19 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  return QString("Logging only Mode! Disable in Project Settings!");
              /* display payload */
              return msg.toStringPayload();
+         default:
+             if (index.column()>=FieldNames::Arg0)
+             {
+                 int col=index.column()-FieldNames::Arg0; //arguments a zero based
+                 QDltArgument arg;
+                 if (msg.getArgument(col,arg))
+                 {
+                     return arg.toString();
+                 }
+                 else
+                  return QString(" - ");
+
+             }
          }
      }
 

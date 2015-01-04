@@ -64,6 +64,11 @@ QString FieldNames::getName(Fields cn, SettingsDialog *settings)
     case Payload:
         return QString("Payload");
     default:
+        if (cn>=Arg0)
+        {
+            return QString("Arg%1").arg(cn-Arg0);
+        }
+        else
         return QString();
     }
 }

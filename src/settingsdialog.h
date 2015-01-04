@@ -88,6 +88,7 @@ public:
     int showMode;
     int showNoar;
     int showPayload;
+    int showArguments;
 
     int automaticTimeSettings;
     int automaticTimezoneFromDlt;
@@ -137,6 +138,9 @@ private slots:
     void on_toolButtonFilterCache_clicked();
     void on_pushButtonClearIndexCache_clicked();
     void on_groupBoxSessionId_clicked(bool checked);
+    void on_groupBoxArguments_clicked(bool checked);
+    void on_spinBox_showArguments_valueChanged(int i);
+
 };
 
 #endif // SETTINGSDIALOG_H
