@@ -5133,7 +5133,11 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setHeaderText(item->filter.header);
     dlg.setPayloadText(item->filter.payload);
 
-    dlg.setEnableRegexp(item->filter.enableRegexp);
+    dlg.setEnableRegexp_Context(item->filter.enableRegexp_Context);
+    dlg.setEnableRegexp_Header (item->filter.enableRegexp_Header);
+    dlg.setEnableRegexp_Payload(item->filter.enableRegexp_Payload);
+    dlg.setIgnoreCase_Header(item->filter.ignoreCase_Header);
+    dlg.setIgnoreCase_Payload(item->filter.ignoreCase_Payload);
     dlg.setActive(item->filter.enableFilter);
     dlg.setEnableEcuId(item->filter.enableEcuid);
     dlg.setEnableApplicationId(item->filter.enableApid);
@@ -5163,7 +5167,11 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.header = dlg.getHeaderText();
     item->filter.payload = dlg.getPayloadText();
 
-    item->filter.enableRegexp = dlg.getEnableRegexp();
+    item->filter.enableRegexp_Context = dlg.getEnableRegexp_Context();
+    item->filter.enableRegexp_Header = dlg.getEnableRegexp_Header();
+    item->filter.enableRegexp_Payload = dlg.getEnableRegexp_Payload();
+    item->filter.ignoreCase_Header = dlg.getIgnoreCase_Header();
+    item->filter.ignoreCase_Payload = dlg.getIgnoreCase_Payload();
     item->filter.enableFilter = dlg.getEnableActive();
     item->filter.enableEcuid = dlg.getEnableEcuId();
     item->filter.enableApid = dlg.getEnableApplicationId();
@@ -5328,7 +5336,7 @@ void MainWindow::filterUpdate() {
             item->setForeground(1,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
         }
 
-        if(filter->enableRegexp)
+        if(filter->enableRegexp_Context || filter->enableRegexp_Header || filter->enableRegexp_Payload)
         {
             if(!filter->compileRegexps())
             {

@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QColorDialog>
+#include <QAbstractButton>
 #include "project.h"
 #include "qdlt.h"
 
@@ -46,8 +47,21 @@ public:
     void setActive(bool state);
     bool getEnableActive();
 
-    void setEnableRegexp(bool state);
-    bool getEnableRegexp();
+    void setEnableRegexp_Context(bool state);
+    bool getEnableRegexp_Context();
+
+    void setEnableRegexp_Header(bool state);
+    bool getEnableRegexp_Header();
+
+    void setEnableRegexp_Payload(bool state);
+    bool getEnableRegexp_Payload();
+
+    void setIgnoreCase_Header(bool state);
+    bool getIgnoreCase_Header();
+
+    void setIgnoreCase_Payload(bool state);
+    bool getIgnoreCase_Payload();
+
 
     void setEcuId(QString id);
     QString getEcuId();
@@ -110,6 +124,19 @@ private slots:
     void on_comboBoxLogLevelMax_currentIndexChanged(int index);
     void on_comboBoxLogLevelMin_currentIndexChanged(int index);
     void on_checkBoxMarker_clicked();
+    void on_pushButton_c0_clicked();
+    void on_pushButton_c1_clicked();
+    void on_pushButton_c2_clicked();
+    void on_pushButton_c3_clicked();
+    void on_pushButton_c4_clicked();
+    void on_pushButton_c5_clicked();
+    void on_pushButton_c6_clicked();
+    void on_pushButton_c7_clicked();
+    void on_pushButton_c8_clicked();
+    void on_pushButton_c9_clicked();
+    void on_pushButton_c10_clicked();
+    void on_buttonGroup_filterType_buttonClicked( int id );
+
 };
 
 #endif // FILTERDIALOG_H

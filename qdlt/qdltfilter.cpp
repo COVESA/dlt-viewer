@@ -49,7 +49,12 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     header = _filter.header;
     payload = _filter.payload;
 
-    enableRegexp = _filter.enableRegexp;
+    enableRegexp_Context = _filter.enableRegexp_Context;
+    enableRegexp_Header  = _filter.enableRegexp_Header;
+    enableRegexp_Payload = _filter.enableRegexp_Payload;
+    ignoreCase_Header    = _filter.ignoreCase_Header;
+    ignoreCase_Payload   = _filter.ignoreCase_Payload;
+
     enableFilter = _filter.enableFilter;
     enableEcuid = _filter.enableEcuid;
     enableApid = _filter.enableApid;
@@ -68,6 +73,7 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     // generated from header and payload string
     headerRegexp = _filter.headerRegexp;
     payloadRegexp = _filter.payloadRegexp;
+    contextRegexp = _filter.contextRegexp;
 
     return *this;
 }
@@ -83,7 +89,11 @@ void QDltFilter::clear()
     header.clear();
     payload.clear();
 
-    enableRegexp = false;
+    enableRegexp_Context = false;
+    enableRegexp_Header = false;
+    enableRegexp_Payload = false;
+    ignoreCase_Header  = false;
+    ignoreCase_Payload = false;
     enableFilter = false;
     enableEcuid = false;
     enableApid = false;
@@ -119,7 +129,10 @@ bool QDltFilter::compileRegexps()
 {
     headerRegexp.setPattern(header);
     payloadRegexp.setPattern(payload);
-    return (headerRegexp.isValid() && payloadRegexp.isValid());
+    contextRegexp.setPattern(ctid);
+    headerRegexp.setCaseSensitivity(ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive);
+    payloadRegexp.setCaseSensitivity(ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive);
+    return (headerRegexp.isValid() && payloadRegexp.isValid() && contextRegexp.isValid());
 }
 
 bool QDltFilter::match(QDltMsg &msg)
@@ -130,27 +143,45 @@ bool QDltFilter::match(QDltMsg &msg)
     if(enableApid && (msg.getApid() != apid)) {
         return false;
     }
-    if(enableCtid && (msg.getCtid() != ctid)) {
-        return false;
+
+    if(enableRegexp_Context)
+    {
+        if(enableCtid && contextRegexp.indexIn(msg.getCtid()) < 0) {
+            return false;
+        }
     }
-    if(enableRegexp)
+    else
+    {
+        if(enableCtid && !(msg.getCtid().contains(ctid))) {
+            return false;
+        }
+    }
+
+    if(enableRegexp_Header)
     {
         if(enableHeader && headerRegexp.indexIn(msg.toStringHeader()) < 0) {
             return false;
         }
+    }
+    else
+    {
+        if(enableHeader && !(msg.toStringHeader().contains(header,ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive))) {
+            return false;
+        }
+    }
+    if(enableRegexp_Payload)
+    {
         if(enablePayload && payloadRegexp.indexIn(msg.toStringPayload()) < 0) {
             return false;
         }
     }
     else
     {
-        if(enableHeader && !(msg.toStringHeader().contains(header))) {
-            return false;
-        }
-        if(enablePayload && !(msg.toStringPayload().contains(payload))) {
+        if(enablePayload && !(msg.toStringPayload().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive))) {
             return false;
         }
     }
+
     if(enableCtrlMsgs && !((msg.getType() == QDltMsg::DltTypeControl))) {
         return false;
     }
@@ -199,9 +230,30 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           payload = xml.readElementText();
     }
-    if(xml.name() == QString("enableregexp"))
+    if(xml.name() == QString("enableregexp"))    //legacy
     {
-          enableRegexp = xml.readElementText().toInt();
+        enableRegexp_Context = xml.readElementText().toInt();
+        enableRegexp_Header  = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("enableregexp_Context"))
+    {
+          enableRegexp_Context = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("enableregexp_Header"))
+    {
+          enableRegexp_Header = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("enableregexp_Payload"))
+    {
+          enableRegexp_Payload = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("ignoreCase_Header"))
+    {
+          ignoreCase_Header = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("ignoreCase_Payload"))
+    {
+          ignoreCase_Payload = xml.readElementText().toInt();
     }
     if(xml.name() == QString("enablefilter"))
     {
@@ -268,7 +320,11 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("headertext",header);
     xml.writeTextElement("payloadtext",payload);
 
-    xml.writeTextElement("enableregexp",QString("%1").arg(enableRegexp));
+    xml.writeTextElement("enableregexp_Context",QString("%1").arg(enableRegexp_Context));
+    xml.writeTextElement("enableregexp_Header",QString("%1").arg(enableRegexp_Header));
+    xml.writeTextElement("enableregexp_Payload",QString("%1").arg(enableRegexp_Payload));
+    xml.writeTextElement("ignoreCase_Header",QString("%1").arg(ignoreCase_Header));
+    xml.writeTextElement("ignoreCase_Payload",QString("%1").arg(ignoreCase_Payload));
     xml.writeTextElement("enablefilter",QString("%1").arg(enableFilter));
     xml.writeTextElement("enableecuid",QString("%1").arg(enableEcuid));
     xml.writeTextElement("enableapplicationid",QString("%1").arg(enableApid));

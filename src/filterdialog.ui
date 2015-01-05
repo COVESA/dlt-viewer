@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>345</width>
-    <height>357</height>
+    <width>524</width>
+    <height>507</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,241 +18,7 @@
     <normaloff>:/toolbar/png/edit-cut.png</normaloff>:/toolbar/png/edit-cut.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="1" column="2">
-    <widget class="QCheckBox" name="checkBoxActive">
-     <property name="text">
-      <string>Active</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditPayloadText"/>
-   </item>
-   <item row="11" column="1">
-    <widget class="QCheckBox" name="checkBoxPayloadText">
-     <property name="text">
-      <string>Payload Text:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <widget class="QLineEdit" name="lineEditName">
-     <property name="text">
-      <string>New Filter</string>
-     </property>
-    </widget>
-   </item>
-   <item row="15" column="1">
-    <widget class="QCheckBox" name="checkBoxLogLevelMin">
-     <property name="text">
-      <string>Log Level Min</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="buttonSelectColor">
-     <property name="text">
-      <string>Select marker color</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QLabel" name="labelSelectedColor">
-     <property name="autoFillBackground">
-      <bool>true</bool>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="1" colspan="2">
-    <widget class="QComboBox" name="comboBoxLogLevelMin">
-     <item>
-      <property name="text">
-       <string>off</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>fatal</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>error</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>warn</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>info</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>debug</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>verbose</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="20" column="0">
-    <widget class="QCheckBox" name="checkBoxCtrlMsgs">
-     <property name="text">
-      <string>Control Messages</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QLineEdit" name="lineEditApplicationId">
-     <property name="maxLength">
-      <number>4</number>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="0">
-    <widget class="QCheckBox" name="checkBoxApplicationId">
-     <property name="text">
-      <string>Application Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="8" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditContextId">
-     <property name="maxLength">
-      <number>4</number>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QComboBox" name="comboBoxType">
-     <item>
-      <property name="text">
-       <string>positive</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>negative</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>marker</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="11" column="0">
-    <widget class="QCheckBox" name="checkBoxHeaderText">
-     <property name="text">
-      <string>Header Text:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="7" column="1">
-    <widget class="QCheckBox" name="checkBoxContextId">
-     <property name="text">
-      <string>Context Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="12" column="0">
-    <widget class="QLineEdit" name="lineEditHeaderText"/>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label_3">
-     <property name="text">
-      <string>Name:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLineEdit" name="lineEditEcuId"/>
-   </item>
-   <item row="15" column="0">
-    <widget class="QCheckBox" name="checkBoxLogLevelMax">
-     <property name="text">
-      <string>Log Level Max</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="text">
-      <string>Type:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QCheckBox" name="checkBoxEcuId">
-     <property name="text">
-      <string>ECU Id:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QCheckBox" name="checkBoxRegexp">
-     <property name="toolTip">
-      <string>Enable this option, to use regular expressions for header and payload text.</string>
-     </property>
-     <property name="text">
-      <string>RegExp</string>
-     </property>
-    </widget>
-   </item>
-   <item row="16" column="0">
-    <widget class="QComboBox" name="comboBoxLogLevelMax">
-     <item>
-      <property name="text">
-       <string>off</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>fatal</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>error</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>warn</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>info</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>debug</string>
-      </property>
-     </item>
-     <item>
-      <property name="text">
-       <string>verbose</string>
-      </property>
-     </item>
-    </widget>
-   </item>
-   <item row="21" column="0">
+   <item row="26" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -262,11 +28,827 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="2">
-    <widget class="QCheckBox" name="checkBoxMarker">
-     <property name="text">
-      <string>Marker</string>
+   <item row="0" column="0">
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEditName">
+       <property name="text">
+        <string>New Filter</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="label_3">
+       <property name="text">
+        <string>Name:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="checkBoxActive">
+       <property name="text">
+        <string>Active</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>56</height>
+      </size>
      </property>
+     <property name="title">
+      <string>Type</string>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QPushButton" name="pushButton_Positive">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Positive</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resource.qrc">
+          <normaloff>:/icons/png/mark_g.png</normaloff>
+          <normalon>:/icons/png/mark.png</normalon>:/icons/png/mark_g.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+        <property name="default">
+         <bool>false</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup_filterType</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_Negative">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Negative</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resource.qrc">
+          <normaloff>:/icons/png/dialog-error-3_g.png</normaloff>
+          <normalon>:/icons/png/dialog-error-3.png</normalon>:/icons/png/dialog-error-3_g.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup_filterType</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_Marker">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Marker</string>
+        </property>
+        <property name="icon">
+         <iconset resource="resource.qrc">
+          <normaloff>:/icons/png/colorize-2_g.png</normaloff>
+          <normalon>:/icons/png/colorize-2.png</normalon>:/icons/png/colorize-2_g.png</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="autoExclusive">
+         <bool>true</bool>
+        </property>
+        <property name="flat">
+         <bool>false</bool>
+        </property>
+        <attribute name="buttonGroup">
+         <string notr="true">buttonGroup_filterType</string>
+        </attribute>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="comboBoxType">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <item>
+         <property name="text">
+          <string>positive</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>negative</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>marker</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="7" column="0" colspan="3">
+    <layout class="QGridLayout" name="gridLayout_3">
+     <item row="3" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditHeaderText"/>
+     </item>
+     <item row="4" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditPayloadText"/>
+     </item>
+     <item row="2" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Context">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for ContextId  text.</string>
+       </property>
+       <property name="text">
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditContextId">
+       <property name="maxLength">
+        <number>40</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QCheckBox" name="checkBox_IgnoreCase_Header">
+       <property name="toolTip">
+        <string>Enable this option, to ignore case on header search expression</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>ic</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QCheckBox" name="checkBoxCtrlMsgs">
+       <property name="text">
+        <string>Control Messages</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="checkBoxContextId">
+       <property name="text">
+        <string>Context Id:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="checkBoxEcuId">
+       <property name="text">
+        <string>ECU Id:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="checkBoxApplicationId">
+       <property name="text">
+        <string>Application Id:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="checkBoxHeaderText">
+       <property name="text">
+        <string>Header Text:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QComboBox" name="comboBoxLogLevelMax">
+       <item>
+        <property name="text">
+         <string>off</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>fatal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>error</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>warn</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>info</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>debug</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>verbose</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="6" column="0">
+      <widget class="QCheckBox" name="checkBoxLogLevelMax">
+       <property name="text">
+        <string>Log Level Max</string>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="0">
+      <widget class="QCheckBox" name="checkBoxLogLevelMin">
+       <property name="text">
+        <string>Log Level Min</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QCheckBox" name="checkBoxPayloadText">
+       <property name="text">
+        <string>Payload Text:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditEcuId"/>
+     </item>
+     <item row="4" column="4">
+      <widget class="QCheckBox" name="checkBox_IgnoreCase_Payload">
+       <property name="toolTip">
+        <string>Enable this option, to ignore case on payload search expression</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>ic</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Header">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for header  text.</string>
+       </property>
+       <property name="text">
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Payload">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for payload text.</string>
+       </property>
+       <property name="text">
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditApplicationId">
+       <property name="maxLength">
+        <number>4</number>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QComboBox" name="comboBoxLogLevelMin">
+       <item>
+        <property name="text">
+         <string>off</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>fatal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>error</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>warn</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>info</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>debug</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>verbose</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item row="6" column="0" colspan="2">
+    <widget class="QGroupBox" name="groupBox_marker">
+     <property name="minimumSize">
+      <size>
+       <width>500</width>
+       <height>70</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>70</height>
+      </size>
+     </property>
+     <property name="title">
+      <string>Marker Color</string>
+     </property>
+     <property name="checkable">
+      <bool>true</bool>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <widget class="QWidget" name="gridLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>461</width>
+        <height>41</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_colors">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="pushButton_c0">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QPushButton" name="pushButton_c1">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(180, 255, 185);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pushButton_c2">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(252, 233, 79);
+</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="4">
+        <widget class="QPushButton" name="pushButton_c3">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(138, 226, 52);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QPushButton" name="pushButton_c4">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(114, 159, 207);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QPushButton" name="pushButton_c5">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 255, 255);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QPushButton" name="pushButton_c6">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(110, 105, 255);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="8">
+        <widget class="QPushButton" name="pushButton_c7">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(194, 194, 194);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="9">
+        <widget class="QPushButton" name="pushButton_c8">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(190, 139, 185);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="10">
+        <widget class="QPushButton" name="pushButton_c9">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(255, 43, 43);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="11">
+        <widget class="QPushButton" name="pushButton_c10">
+         <property name="minimumSize">
+          <size>
+           <width>15</width>
+           <height>15</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">background-color: rgb(110, 105, 255);</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="flat">
+          <bool>false</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="12">
+        <widget class="QPushButton" name="buttonSelectColor">
+         <property name="maximumSize">
+          <size>
+           <width>70</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Pick..</string>
+         </property>
+         <property name="icon">
+          <iconset resource="resource.qrc">
+           <normaloff>:/icons/png/colorize-2.png</normaloff>
+           <normalon>:/icons/png/colorize-2.png</normalon>:/icons/png/colorize-2.png</iconset>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelSelectedColor">
+         <property name="maximumSize">
+          <size>
+           <width>80</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="palette">
+          <palette>
+           <active>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </active>
+           <inactive>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </inactive>
+           <disabled>
+            <colorrole role="Base">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+            <colorrole role="Window">
+             <brush brushstyle="SolidPattern">
+              <color alpha="255">
+               <red>255</red>
+               <green>255</green>
+               <blue>255</blue>
+              </color>
+             </brush>
+            </colorrole>
+           </disabled>
+          </palette>
+         </property>
+         <property name="autoFillBackground">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>selected color</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </widget>
    </item>
   </layout>
@@ -311,4 +893,7 @@
  <slots>
   <slot>validate()</slot>
  </slots>
+ <buttongroups>
+  <buttongroup name="buttonGroup_filterType"/>
+ </buttongroups>
 </ui>

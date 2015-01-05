@@ -30,5 +30,11 @@
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>
+        <file>png/mark.png</file>
+        <file>png/mark_g.png</file>
+        <file>png/colorize-2.png</file>
+        <file>png/colorize-2_g.png</file>
+        <file>png/dialog-error-3.png</file>
+        <file>png/dialog-error-3_g.png</file>
     </qresource>
 </RCC>

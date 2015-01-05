@@ -21,6 +21,7 @@
 #include "ui_filterdialog.h"
 #include <QMessageBox>
 #include <QCloseEvent>
+#include "DltUiUtils.h"
 
 FilterDialog::FilterDialog(QWidget *parent) :
     QDialog(parent),
@@ -29,11 +30,18 @@ FilterDialog::FilterDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->buttonSelectColor, SIGNAL(pressed()), this, SLOT(on_buttonSelectColor_clicked()));
-
-    ui->buttonSelectColor->setEnabled(false);
-    ui->labelSelectedColor->setVisible(false);
-
-    ui->checkBoxMarker->setEnabled(true);
+    ui->pushButton_c0->setStyleSheet ("QPushButton {background-color: rgb(255, 0  , 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c1->setStyleSheet ("QPushButton {background-color: rgb(255, 255, 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c2->setStyleSheet ("QPushButton {background-color: rgb(  0, 255, 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c3->setStyleSheet ("QPushButton {background-color: rgb(000, 255, 255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c4->setStyleSheet ("QPushButton {background-color: rgb(000, 000, 255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c5->setStyleSheet ("QPushButton {background-color: rgb(255, 000, 255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c6->setStyleSheet ("QPushButton {background-color: rgb(255, 150, 150);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c7->setStyleSheet ("QPushButton {background-color: rgb(255, 255, 192);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c8->setStyleSheet ("QPushButton {background-color: rgb(150, 255, 150);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c9->setStyleSheet ("QPushButton {background-color: rgb(150, 150 ,255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->pushButton_c10->setStyleSheet("QPushButton {background-color: rgb(255, 150 ,255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
+    ui->comboBoxType->setVisible(false);
 }
 
 FilterDialog::~FilterDialog()
@@ -65,14 +73,54 @@ QString FilterDialog::getName()
     return ui->lineEditName->text();
 }
 
-void FilterDialog::setEnableRegexp(bool state)
+void FilterDialog::setEnableRegexp_Context(bool state)
 {
-    ui->checkBoxRegexp->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxRegexp_Context->setChecked(state?Qt::Checked:Qt::Unchecked);
 }
 
-bool FilterDialog::getEnableRegexp()
+bool FilterDialog::getEnableRegexp_Context()
 {
-    return (ui->checkBoxRegexp->checkState() == Qt::Checked);
+    return (ui->checkBoxRegexp_Context->checkState() == Qt::Checked);
+}
+
+void FilterDialog::setEnableRegexp_Header(bool state)
+{
+    ui->checkBoxRegexp_Header->setChecked(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableRegexp_Header()
+{
+    return (ui->checkBoxRegexp_Header->checkState() == Qt::Checked);
+}
+
+void FilterDialog::setEnableRegexp_Payload(bool state)
+{
+    ui->checkBoxRegexp_Payload->setChecked(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableRegexp_Payload()
+{
+    return (ui->checkBoxRegexp_Payload->checkState() == Qt::Checked);
+}
+
+void FilterDialog::setIgnoreCase_Header(bool state)
+{
+    ui->checkBox_IgnoreCase_Header->setChecked(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getIgnoreCase_Header()
+{
+    return (ui->checkBox_IgnoreCase_Header->checkState() == Qt::Checked);
+}
+
+void FilterDialog::setIgnoreCase_Payload(bool state)
+{
+    ui->checkBox_IgnoreCase_Payload->setChecked(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getIgnoreCase_Payload()
+{
+    return (ui->checkBox_IgnoreCase_Payload->checkState() == Qt::Checked);
 }
 
 void FilterDialog::setEcuId(QString id)
@@ -178,7 +226,9 @@ bool FilterDialog::getEnablePayloadText()
 void FilterDialog::setFilterColour(QColor color)
 {
    QPalette palette = ui->labelSelectedColor->palette();
-   palette.setColor(QPalette::Background,color);
+   palette.setColor(QPalette::Active,this->backgroundRole(),color);
+   palette.setColor(QPalette::Inactive,this->backgroundRole(),QColor(255,255,255,255));
+   palette.setColor(QPalette::Foreground,DltUiUtils::optimalTextColor(color));
    ui->labelSelectedColor->setPalette(palette);
 
 }
@@ -247,14 +297,12 @@ bool FilterDialog::getEnableActive(){
 }
 
 void FilterDialog::setEnableMarker(bool state){
-    ui->checkBoxMarker->setCheckState(state?Qt::Checked:Qt::Unchecked);
-
+    ui->groupBox_marker->setChecked(state?Qt::Checked:Qt::Unchecked);
     /* update ui */
-    on_checkBoxMarker_clicked();
 }
 
 bool FilterDialog::getEnableMarker(){
-    return (ui->checkBoxMarker->checkState() == Qt::Checked);
+    return (ui->groupBox_marker->isCheckable()&&ui->groupBox_marker->isChecked());
 }
 
 void FilterDialog::on_buttonSelectColor_clicked()
@@ -262,10 +310,7 @@ void FilterDialog::on_buttonSelectColor_clicked()
     QColor selectedBackgroundColor = QColorDialog::getColor();
     if(selectedBackgroundColor.isValid())
     {
-        QPalette palette = ui->labelSelectedColor->palette();
-        palette.setColor(QPalette::Background,selectedBackgroundColor);
-        ui->labelSelectedColor->setPalette(palette);
-
+        this->setFilterColour(selectedBackgroundColor);
     }
 }
 
@@ -279,12 +324,14 @@ void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
 void FilterDialog::on_checkBoxMarker_clicked()
 {
     int index = ui->comboBoxType->currentIndex();
-    bool checkedMarker = ui->checkBoxMarker->isChecked();
+    switch (index)
+        {
+            case 0: ui->pushButton_Positive->setChecked(true);break;
+            case 1: ui->pushButton_Negative->setChecked(true);break;
+            case 2: ui->pushButton_Marker->setChecked(true);break;
+        }
+    on_buttonGroup_filterType_buttonClicked( -1 );
 
-    ui->buttonSelectColor->setEnabled(index == QDltFilter::marker || (index<QDltFilter::marker && checkedMarker) );
-    ui->labelSelectedColor->setVisible(index == QDltFilter::marker || (index<QDltFilter::marker && checkedMarker) );
-
-    ui->checkBoxMarker->setEnabled(index != 2);
 }
 
 void FilterDialog::on_lineEditApplicationId_textEdited(const QString &)
@@ -340,10 +387,13 @@ void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int )
 void FilterDialog::validate()
 {
     QString
-    error =  "Could not parse %1 regular expression. ";
-    error += "Please correct the error or remove the regular expression.";
+    error =  "Could not parse %1 regular expression. \n";
+    error += "Please correct the error or remove the regular expression.\n";
+    error += "Expression: '%2' \n";
+    error += "Error: %3 ";
 
-    if(!getEnableRegexp())
+
+    if(!(getEnableRegexp_Context()||getEnableRegexp_Header()||getEnableRegexp_Payload()))
     {
         emit accept();
         return;
@@ -352,16 +402,67 @@ void FilterDialog::validate()
     QRegExp rx;
     rx.setPattern(getPayloadText());
     if(!rx.isValid()) {
-        QMessageBox::warning(this, "Warning", error.arg("payload"));
+        QMessageBox::warning(this, "Warning", error.arg("PAYLOAD").arg(rx.pattern()).arg(rx.errorString()));
         return;
     }
 
     rx.setPattern(getHeaderText());
     if(!rx.isValid()) {
-        QMessageBox::warning(this, "Warning", error.arg("header"));
+        QMessageBox::warning(this, "Warning", error.arg("HEADER").arg(rx.pattern()).arg(rx.errorString()));
+        return;
+    }
+
+    rx.setPattern(getContextId());
+    if(!rx.isValid()) {
+        QMessageBox::warning(this, "Warning", error.arg("CONTEXTID").arg(rx.pattern()).arg(rx.errorString()));
         return;
     }
 
     emit accept();
 }
+
+
+void FilterDialog::on_pushButton_c0_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c1_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c2_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c3_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c4_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c5_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c6_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c7_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c8_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c9_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c10_clicked(){ setFilterColour(((QPushButton *)sender())->palette().background().color());}
+
+void FilterDialog::on_buttonGroup_filterType_buttonClicked( int id )
+{
+    Q_UNUSED(id)
+    if (ui->pushButton_Marker->isChecked())
+      {
+       ui->groupBox_marker->setEnabled(true);
+       ui->comboBoxType->setCurrentText("marker");
+       ui->groupBox_marker->setChecked(true);
+       ui->groupBox_marker->setCheckable(false);
+      }
+    else
+    {
+        ui->groupBox_marker->setCheckable(true);
+    }
+    if ( ui->pushButton_Negative->isChecked())
+      {
+        ui->groupBox_marker->setEnabled(false);
+        ui->comboBoxType->setCurrentText("negative");
+        ui->groupBox_marker->setChecked(false);
+        ui->groupBox_marker->setCheckable(false);
+
+      }
+    if (ui->pushButton_Positive->isChecked())
+      {
+        ui->groupBox_marker->setEnabled(true);
+        ui->comboBoxType->setCurrentText("positive");
+        ui->groupBox_marker->setCheckable(true);
+        ui->groupBox_marker->setChecked(false);
+      }
+}
+
 

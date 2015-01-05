@@ -291,7 +291,9 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     filter.name = "New Filter";
 
     setCheckState(0,Qt::Checked);
-    filter.enableRegexp = false;
+    filter.enableRegexp_Context = false;
+    filter.enableRegexp_Header = false;
+    filter.enableRegexp_Payload = false;
     filter.enableFilter = false;
     filter.enableEcuid = false;
     filter.enableApid = false;
@@ -347,7 +349,7 @@ void FilterItem::update()
         break;
     }
 
-    if(filter.enableRegexp){
+    if(filter.enableRegexp_Context || filter.enableRegexp_Header || filter.enableRegexp_Payload){
         text += "RegExp";
     }
 
