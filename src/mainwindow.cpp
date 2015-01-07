@@ -120,6 +120,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
+
+    /*sync checkboxes with action toolbar*/
+    ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
+    ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
+    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
 }
 
 MainWindow::~MainWindow()
@@ -5647,6 +5652,33 @@ void MainWindow::on_actionJump_To_triggered()
 
 }
 
+void MainWindow::on_actionApply_Configuration_triggered(bool checked)
+{
+    Q_UNUSED(checked)
+    this->on_applyConfig_clicked();
+}
+
+void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
+{
+    ui->pluginsEnabled->setChecked(checked);
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    on_applyConfig_clicked();
+}
+
+void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
+{
+    ui->filtersEnabled->setChecked(checked);
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    on_applyConfig_clicked();
+}
+
+void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
+{
+    ui->checkBoxSortByTime->setChecked(checked);
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    on_applyConfig_clicked();
+}
+
 void MainWindow::on_actionAutoScroll_triggered(bool checked)
 {
     int autoScrollOld = settings->autoScroll;
@@ -5671,20 +5703,20 @@ void MainWindow::on_actionDisconnectAll_triggered()
     disconnectAll();
 }
 
-void MainWindow::on_pluginsEnabled_clicked(bool checked)
+void MainWindow::on_pluginsEnabled_toggled(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", checked);
     applyConfigEnabled(true);
 }
 
-void MainWindow::on_filtersEnabled_clicked(bool checked)
+void MainWindow::on_filtersEnabled_toggled(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
     applyConfigEnabled(true);
 }
 
-void MainWindow::on_checkBoxSortByTime_clicked(bool checked)
+void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
 {
     DltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
     applyConfigEnabled(true);
@@ -5692,6 +5724,36 @@ void MainWindow::on_checkBoxSortByTime_clicked(bool checked)
 
 void MainWindow::on_applyConfig_clicked()
 {
+    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
+    if (ui->checkBoxSortByTime->isChecked())
+        {
+            ui->actionToggle_SortByTimeEnabled->setText("Stop sorting by Time");
+        }
+        else
+        {
+            ui->actionToggle_SortByTimeEnabled->setText("Sort by Time");
+        }
+
+    ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
+    if (ui->pluginsEnabled->isChecked())
+        {
+            ui->actionToggle_PluginsEnabled->setText("Disable Plugins");
+        }
+        else
+        {
+            ui->actionToggle_PluginsEnabled->setText("Enable Plugins");
+        }
+
+    ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
+    if (ui->filtersEnabled->isChecked())
+        {
+            ui->actionToggle_FiltersEnabled->setText("Disable Filters");
+        }
+        else
+        {
+            ui->actionToggle_FiltersEnabled->setText("Enable Filters");
+        }
+
     applyConfigEnabled(false);
     filterUpdate();
     reloadLogFile(true);
@@ -5913,6 +5975,8 @@ void MainWindow::applyConfigEnabled(bool enabled)
     {
         /* show apply config button */
         ui->applyConfig->startPulsing(pulseButtonColor);
+        ui->actionApply_Configuration->setCheckable(true);
+        ui->actionApply_Configuration->setChecked(true);
         ui->applyConfig->setEnabled(true);
 
         /* reset default filter selection and default filter index */
@@ -5922,6 +5986,7 @@ void MainWindow::applyConfigEnabled(bool enabled)
     {
         /* hide apply config button */
         ui->applyConfig->stopPulsing();
+        ui->actionApply_Configuration->setCheckable(false);
         ui->applyConfig->setEnabled(false);
     }
 }

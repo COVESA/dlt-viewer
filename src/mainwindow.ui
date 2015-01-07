@@ -76,7 +76,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>19</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -143,6 +143,7 @@
     <addaction name="action_menuConfig_Context_Edit"/>
     <addaction name="action_menuConfig_Context_Delete"/>
     <addaction name="separator"/>
+    <addaction name="actionApply_Configuration"/>
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">
@@ -168,6 +169,9 @@
     <addaction name="separator"/>
     <addaction name="actionDefault_Filter_Reload"/>
     <addaction name="actionDefault_Filter_Create_Index"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggle_FiltersEnabled"/>
+    <addaction name="actionToggle_SortByTimeEnabled"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
@@ -177,6 +181,8 @@
     <addaction name="action_menuPlugin_Show"/>
     <addaction name="action_menuPlugin_Hide"/>
     <addaction name="action_menuPlugin_Disable"/>
+    <addaction name="separator"/>
+    <addaction name="actionToggle_PluginsEnabled"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -253,6 +259,11 @@
    <addaction name="actionAutoScroll"/>
    <addaction name="separator"/>
    <addaction name="actionMarker"/>
+   <addaction name="separator"/>
+   <addaction name="actionApply_Configuration"/>
+   <addaction name="actionToggle_FiltersEnabled"/>
+   <addaction name="actionToggle_PluginsEnabled"/>
+   <addaction name="separator"/>
   </widget>
   <widget class="QToolBar" name="searchToolbar">
    <property name="windowTitle">
@@ -1376,6 +1387,68 @@
    </property>
    <property name="text">
     <string>Get Local Time</string>
+   </property>
+  </action>
+  <action name="actionApply_Configuration">
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/weather-clear.png</normaloff>
+     <normalon>:/toolbar/png/weather-storm.png</normalon>
+     <selectedoff>:/toolbar/png/weather-clear.png</selectedoff>:/toolbar/png/weather-clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Apply Configuration</string>
+   </property>
+   <property name="toolTip">
+    <string>Apply Configuration</string>
+   </property>
+  </action>
+  <action name="actionToggle_FiltersEnabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/view-filter_32_off.png</normaloff>
+     <normalon>:/toolbar/png/view-filter_32_on.png</normalon>:/toolbar/png/view-filter_32_off.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Filters</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Filters Enabled/Disabled</string>
+   </property>
+  </action>
+  <action name="actionToggle_PluginsEnabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/x-kde-nsplugin-generated_gray.png</normaloff>
+     <normalon>:/toolbar/png/x-kde-nsplugin-generated.png</normalon>:/toolbar/png/x-kde-nsplugin-generated_gray.png</iconset>
+   </property>
+   <property name="text">
+    <string>Enable Plugins</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Plugins Enabled /Disabled</string>
+   </property>
+  </action>
+  <action name="actionToggle_SortByTimeEnabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resource.qrc">
+     <normaloff>:/toolbar/png/document-open-recent-2_gray.png</normaloff>
+     <normalon>:/toolbar/png/document-open-recent-2.png</normalon>:/toolbar/png/document-open-recent-2_gray.png</iconset>
+   </property>
+   <property name="text">
+    <string>Sort By Time</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Sorted By Time</string>
    </property>
   </action>
  </widget>

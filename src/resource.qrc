@@ -21,6 +21,12 @@
         <file>png/action-regexp.png</file>
         <file>png/action-searchlist.png</file>
         <file>png/mark.png</file>
+        <file>png/view-filter_32_off.png</file>
+        <file>png/view-filter_32_on.png</file>
+        <file>png/x-kde-nsplugin-generated.png</file>
+        <file>png/x-kde-nsplugin-generated_gray.png</file>
+        <file>png/document-open-recent-2.png</file>
+        <file>png/document-open-recent-2_gray.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>

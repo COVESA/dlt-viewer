@@ -458,8 +458,8 @@ private slots:
     void on_actionDisconnectAll_triggered();
 
     // Config Items
-    void on_pluginsEnabled_clicked(bool checked);
-    void on_filtersEnabled_clicked(bool checked);
+    void on_pluginsEnabled_toggled(bool checked);
+    void on_filtersEnabled_toggled(bool checked);
     void on_applyConfig_clicked();
     void on_tabWidget_currentChanged(int index);
 
@@ -471,9 +471,15 @@ private slots:
 
     void on_pushButtonDefaultFilterUpdateCache_clicked();
 
-    void on_checkBoxSortByTime_clicked(bool checked);
+    void on_checkBoxSortByTime_toggled(bool checked);
 
     void on_actionMarker_triggered();
+
+    void on_actionApply_Configuration_triggered(bool checked);
+    void on_actionToggle_PluginsEnabled_triggered(bool checked);
+    void on_actionToggle_FiltersEnabled_triggered(bool checked);
+    void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
+
 
 public slots:
 
