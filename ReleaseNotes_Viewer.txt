@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.13.0
+Version 2.14.0 ALPHA
 
 Known issues
 ------------
@@ -13,6 +13,8 @@ Known issues
 
 Changes
 -------
+
+2.14.0
 
 2.13.0
   * Updated qt to version 5.4.0
