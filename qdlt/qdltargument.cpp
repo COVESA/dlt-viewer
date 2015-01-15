@@ -87,7 +87,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     /* store offset */
     offsetPayload = offset;
 
-    /* store new endianess */
+    /* store new endianness */
     endianness = _endianess;
 
     /* get type info */

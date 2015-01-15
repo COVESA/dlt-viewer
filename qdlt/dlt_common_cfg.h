@@ -80,7 +80,7 @@
 /* Length of one char */
 #define DLT_COMMON_CHARLEN     1
 
-/* Number of indices to be allocated at one, if no more indeces are left */
+/* Number of indices to be allocated at one, if no more indices are left */
 #define DLT_COMMON_INDEX_ALLOC	   1000
 
 /* If limited output is called, 

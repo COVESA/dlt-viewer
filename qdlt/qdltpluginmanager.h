@@ -27,7 +27,7 @@ public:
     */
     int size();
 
-    //! The number of plugins and also enabled
+    //! The number of plugins that are enabled
     /*!
       \return the number of loaded plugins and enabled.
     */

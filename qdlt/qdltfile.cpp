@@ -139,7 +139,7 @@ bool QDltFile::createIndex()
 
     clearIndex();
 
-    /* Example to use QtConcurrent to call updateIndex in sepearte Thread*/
+    /* Example to use QtConcurrent to call updateIndex in separate Thread*/
     //QFuture<bool> f = QtConcurrent::run(this, &QDltFile::updateIndex);
     //f.waitForFinished();
 

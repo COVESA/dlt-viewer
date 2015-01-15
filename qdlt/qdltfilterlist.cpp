@@ -258,7 +258,7 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
 
     file.close();
 
-    /* update sorted filter list immediatly after loading new filter */
+    /* update sorted filter list immediately after loading new filter */
     updateSortedFilter();
 
     return true;

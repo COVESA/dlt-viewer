@@ -35,7 +35,7 @@
 //! Access to a DLT message.
 /*!
   This class provide access to a single DLT message from a DLT log file.
-  This class is currently not multithread save.
+  This class is currently not thread safe.
 */
 class QDLT_EXPORT QDltMsg : public QDlt
 {
@@ -293,7 +293,7 @@ public:
 
     //! Set the number of arguments in the payload.
     /*!
-      The number of arguments and the size of the argumnet list must not be the same.
+      The number of arguments and the size of the argument list must not be the same.
       E.g. if a non-verbose message is decoded these two parameters are different.
       \param noargs The number of arguments in the payload.
     */
@@ -301,27 +301,27 @@ public:
 
     //! Get the complete header of the DLT message.
     /*!
-      \return Byte Array containig the complete header of the DLT message.
+      \return Byte Array containing the complete header of the DLT message.
     */
     QByteArray getHeader() { return header; }
 
     //! Get the size of the header.
     /*!
       This value is even set, if the data was to small, but the header was read.
-      \return Byte Array containig the complete payload of the DLT message.
+      \return Byte Array containing the complete payload of the DLT message.
     */
     int getHeaderSize() { return headerSize; }
 
     //! Get the complete payload of the DLT message.
     /*!
-      \return Byte Array containig the complete payload of the DLT message.
+      \return Byte Array containing the complete payload of the DLT message.
     */
     QByteArray getPayload() { return payload; }
 
     //! Get the size of the payload.
     /*!
       This value is even set, if the data was to small, but the header was read.
-      \return Byte Array containig the complete payload of the DLT message.
+      \return Byte Array containing the complete payload of the DLT message.
     */
     int getPayloadSize() { return payloadSize; }
 
@@ -364,7 +364,7 @@ public:
     /*!
       Get the number of arguments in the argument list.
       This could be a different size of number of arguments, especially in the non verbose mode.
-      \return number of arguments in teh argument list.
+      \return number of arguments in the argument list.
     */
     int sizeArguments();
 
@@ -379,7 +379,7 @@ public:
     /*!
       This is only possible if DLT message is in verbose mode or the DLT message is converted into verbose mode.
       \param Index the number of the argument starting by zero.
-      \return True if the operation was succesfull, false if there was an error.
+      \return True if the operation was successful, false if there was an error.
     */
     bool getArgument(int index,QDltArgument &argument);
 
@@ -405,7 +405,7 @@ public:
       This function returns false, if an error in the decoded message was found.
       \param buf the buffer containing the DLT messages.
       \param withSH message to be parsed contains storage header, default true.
-      \return True if the operation was succesfull, false if there was an error.
+      \return True if the operation was successful, false if there was an error.
     */
     bool setMsg(QByteArray buf,bool withStorageHeader = true);
 
@@ -414,7 +414,7 @@ public:
       This function returns false, if an error in the data was found.
       \param buf the buffer containing the DLT messages.
       \param withStorageHeader message contains storage header, default true.
-      \return True if the operation was succesfull, false if there was an error.
+      \return True if the operation was successful, false if there was an error.
     */
     bool getMsg(QByteArray &buf,bool withStorageHeader = true);
 
@@ -436,19 +436,19 @@ protected:
 
 private:
 
-    //! The header paraemter ECU Id.
+    //! The header parameter ECU Id.
     QString ecuid;
 
-    //! The header paraemter application Id.
+    //! The header parameter application Id.
     QString apid;
 
-    //! The header paraemter context Id.
+    //! The header parameter context Id.
     QString ctid;
 
     //! The header parameter type of the message.
     DltTypeDef type;
 
-    //! The header parameter subtype of the messsage, depends on type.
+    //! The header parameter subtype of the message, depends on type.
     int subtype; /* depends on type */
 
     //! The verbose or non-verbose mode of the message.

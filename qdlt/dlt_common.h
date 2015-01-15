@@ -633,19 +633,19 @@ extern "C"
     /**
      * Helper function to print an id.
      * @param text pointer to ASCII string where to write the id
-     * @param id four byte char array as used in DLT mesages as IDs.
+     * @param id four byte char array as used in DLT messages as IDs.
      */
     QDLT_C_EXPORT void dlt_print_id(char *text,const char *id);
 
     /**
      * Helper function to set an ID parameter.
-     * @param id four byte char array as used in DLT mesages as IDs.
+     * @param id four byte char array as used in DLT messages as IDs.
      * @param text string to be copied into char array.
      */
     QDLT_C_EXPORT void dlt_set_id(char *id,const char *text);
 
     /**
-     * Helper function to remove not nice to print characters, e.g. NULL or carage return.
+     * Helper function to remove not nice to print characters, e.g. NULL or carriage return.
      * @param text pointer to string to be cleaned.
      * @param length length of string excluding terminating zero.
      */
@@ -669,7 +669,7 @@ extern "C"
     /**
      * Load filter list from file.
      * @param filter pointer to structure of organising DLT filter
-     * @param filename filename to load filters from
+     * @param filename name of the file to load filters from
      * @param verbose if set to true verbose information is printed out.
      * @return negative value if there was an error
      */
@@ -677,7 +677,7 @@ extern "C"
     /**
      * Save filter list to file.
      * @param filter pointer to structure of organising DLT filter
-     * @param filename filename to load filters from
+     * @param filename name of the file to load filters from
      * @param verbose if set to true verbose information is printed out.
      * @return negative value if there was an error
      */
@@ -770,7 +770,7 @@ extern "C"
      * @param msg pointer to structure of organising access to DLT messages
      * @param buffer pointer to memory buffer
      * @param length length of message in buffer
-     * @param resync if set to true resync to serial header is enforced
+     * @param resync if set to true re-sync to serial header is enforced
      * @param verbose if set to true verbose information is printed out.
      * @return negative value if there was an error
      */
@@ -914,7 +914,7 @@ extern "C"
     /**
      * Initialising a dlt receiver structure
      * @param receiver pointer to dlt receiver structure
-     * @param _fd handle to file/socket/fifo, fram which the data should be received
+     * @param _fd handle to file/socket/fifo, from which the data should be received
      * @param _buffersize size of data buffer for storing the received data
      * @return negative value if there was an error
      */
@@ -1116,7 +1116,7 @@ extern "C"
     QDLT_C_EXPORT int dlt_message_print_mixed_plain(DltMessage *message, char *text, uint32_t size, int verbose);
 
     /**
-     * Print payload of a DLT message as Mixed-Ouput (Hex and ASCII), for HTML text output
+     * Print payload of a DLT message as Mixed-Output (Hex and ASCII), for HTML text output
      * @param message pointer to structure of organising access to DLT messages
      * @param text pointer to a ASCII string, in which the output is written
      * @param size maximal size of text buffer

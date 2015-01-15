@@ -84,20 +84,20 @@ public:
       \param bytes The data to be converted
       \param withLineNumber Line numbers are added to each line
       \param withBinary data is output in hex format
-      \param withAscii data is output in ascii if possible
+      \param withAscii data is output in ASCII if possible
       \param blocksize Binary output in one line is grouped in blocks of bytes
       \param linesize Number of bytes written in one line
       \param toHtml true output is don in HTML, false output in text only
-      \return The string with ascii or html output.
+      \return The string with ASCII or html output.
     */
     QString toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize = 8, int linesize = 16, bool toHtml = true);
 
     //! Convert byte array to text output.
     /*!
       \param bytes The data to be converted
-      \param type 1 output in ascii, 0 output in hex, 2 output in binary
+      \param type 1 output in ASCII, 0 output in hex, 2 output in binary
       \param size_bytes grouping of bytes together
-      \return The string with ascii output.
+      \return The string with ASCII output.
     */
     QString toAscii(QByteArray &bytes,int type = false,int size_bytes = 1);
 

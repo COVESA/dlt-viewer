@@ -101,16 +101,16 @@ public:
     */
     DltEndiannessDef getEndianness() { return endianness; }
 
-    //! Set the endianess of the Argument.
+    //! Set the endianness of the Argument.
     /*!
       \sa DltEndiannessDef
-      \param _endianess The endianess of the argument.
+      \param _endianess The endianness of the argument.
     */
     void setEndianness(DltEndiannessDef _endianess) { endianness = (QDlt::DltEndiannessDef)_endianess; }
 
     //! Get the byte data of the parameter.    
     /*!
-      The endianess of the parameter is as set in the endianess parameter.
+      The endianness of the parameter is as set in the endianness parameter.
       \return The complete data of the parameter as byte array.
     */
     QByteArray getData();
@@ -160,7 +160,7 @@ public:
       \sa clear()
       \param payload This can be a filename or a directory name.
       \param offset Offset where to start parsing in the payload.
-      \param _endianess The new endianess of the argument
+      \param _endianess The new endianness of the argument
       \return The name of the unit of the variable.
     */
     bool setArgument(QByteArray &payload,unsigned int &offset,DltEndiannessDef _endianess);
@@ -169,7 +169,7 @@ public:
     /*!
       \param data byte array to be appended
       \param verboseMode data should be returned in verboseMode
-      \return true if operation was succesful, false if there was an error.
+      \return true if operation was successful, false if there was an error.
     */
     bool getArgument(QByteArray &data, bool verboseMode = true);
 
@@ -194,7 +194,7 @@ private:
     //! The endianness of the argument.
     DltEndiannessDef endianness;
 
-    //! This type of the argument linke in the DLT message header
+    //! This type of the argument linked in the DLT message header
     unsigned int dltType;
 
     //! This type of the argument.

@@ -41,7 +41,7 @@ public:
     */
     QDltSegmentedMsg();
 
-    //! Current state of reassamble
+    //! Current state of reassemble
     typedef enum { DltSegStart, DltSegChunk, DltSegError, DltSegFinish } DltSegState;
 
     //! Add message to segmented message. The handle must match the segmented message.

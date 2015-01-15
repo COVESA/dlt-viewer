@@ -155,7 +155,7 @@ bool QDltConnection::parse(QDltMsg &msg)
         }
         else
         {
-            /* msg read succesful */
+            /* msg read successful */
             data.remove(0,secondPos-4);
             if(firstPos>4)
                 /* errors found */

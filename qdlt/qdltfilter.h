@@ -117,9 +117,9 @@ public:
     */
     bool compileRegexps();
 
-    //! Ccheck if filter matches.
+    //! Check if filter matches.
     /*!
-      \return true if filter matches the msg, else false
+      \return true if filter matches the message, else false
     */
     bool match(QDltMsg &msg);
 

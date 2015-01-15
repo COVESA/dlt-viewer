@@ -57,7 +57,7 @@ public:
     */
     void setDltFileName(QString _dltFileName);
 
-    //! Set the dlt file messages size for plausibilty check.
+    //! Set the dlt file messages size for plausibility check.
     /*!
     */
     void setAllIndexSize(int _allIndexSize);

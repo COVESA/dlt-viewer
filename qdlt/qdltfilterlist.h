@@ -86,7 +86,7 @@ public:
     //! Check if message matches the filter.
     /*!
       \param msg The message to be checked
-      \return true if message wil be displayed, false if message will be filtered out
+      \return true if message will be displayed, false if message will be filtered out
     */
     bool checkFilter(QDltMsg &msg);
 

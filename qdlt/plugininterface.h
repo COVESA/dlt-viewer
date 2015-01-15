@@ -84,7 +84,7 @@ public:
       Errors should be reported by providing error message.
       \sa error()
       \param filename This can be a filename or a directory name.
-      \return True if the configuration is loaded succesful. False if there was any error or function was not supported.
+      \return True if the configuration is loaded successful. False if there was any error or function was not supported.
     */
     virtual bool loadConfig(QString filename) = 0;
 
@@ -96,14 +96,14 @@ public:
       Errors should be reported by providing error message.
       \sa error()
       \param filename This can be a filename or a directory name.
-      \return True if the configuration is stored succesful. False if there was any error or function was not supported.
+      \return True if the configuration is stored successful. False if there was any error or function was not supported.
     */
     virtual bool saveConfig(QString filename) = 0;
 
     //! Providing detaild information about the loaded configuration.
     /*!
       The plugin can provide a detailed list of the loaded configuration.
-      This is very useful to check, if the configuration is loaded succesfully.
+      This is very useful to check, if the configuration is loaded successfully.
       \return The detailed information about the loaded configuration. One string per configuration element should be used.
     */
     virtual QStringList infoConfig() = 0;
@@ -171,7 +171,7 @@ public:
 
 
     //! A new log file is opened by the DLT Viewer.
-    /*! This function is called by the the viewer everytime a new log file is opened by the viewer
+    /*! This function is called by the the viewer every time a new log file is opened by the viewer
       or a new log file is created and before all messages were processed with initMsg and initMsgDecoded.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
@@ -181,7 +181,7 @@ public:
 
 
     //! A new undecoded DLT message is processed after a new log file is opened by the DLT Viewer
-    /*! After a new log file is opened this function is called by the viewer everytime
+    /*! After a new log file is opened this function is called by the viewer every time
         a new undecoded message is processed.
       \sa QDLTPluginInterface::error()
       \param index The current DLT message index
@@ -190,7 +190,7 @@ public:
     virtual void initMsg(int index, QDltMsg &msg ) = 0;
 
     //! A new decoded DLT message is processed after a new log file is opened by the DLT Viewer
-    /*! After a new log file is opened this function is called by the viewer everytime
+    /*! After a new log file is opened this function is called by the viewer every time
         a new decoded message is processed.
       \sa QDLTPluginInterface::error()
       \param index The current DLT message index
@@ -199,7 +199,7 @@ public:
     virtual void initMsgDecoded(int index, QDltMsg &msg ) = 0;
 
     //! A new log file was opened by the DLT Viewer.
-    /*! This function is called by the the viewer everytime a new log file was opened by the viewer
+    /*! This function is called by the the viewer every time a new log file was opened by the viewer
       or a new log file is created and all messages were processed with initMsg and initMsgDecoded.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
@@ -208,7 +208,7 @@ public:
 
 
     //! A new message was received before updateMsg and updateMsgDecoded.
-    /*! This function is called by the viewer everytime a new message was received
+    /*! This function is called by the viewer every time a new message was received
         before processing the message with updateMsg and updateMsgDecoded.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
@@ -237,7 +237,7 @@ public:
 
 
     //! A new message was received after updateMsg and updateMsgDecoded.
-    /*! This function is called by the viewer everytime a new message was received
+    /*! This function is called by the viewer every time a new message was received
         after processing the message with updateMsg and updateMsgDecoded.
       Errors should be reported by providing an error message.
       \sa QDLTPluginInterface::error()
@@ -278,7 +278,7 @@ class QDltPluginControlInterface
 {
 public:
 
-    //! A control interface is provided to the pluign.
+    //! A control interface is provided to the plugin.
     /*!
       This function is called once during initialisation of the plugin.
       Errors should be reported by providing an error message.

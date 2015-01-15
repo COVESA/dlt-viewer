@@ -49,7 +49,7 @@ public:
 //! Access to a DLT log file.
 /*!
   This class provide access to DLT log file.
-  This class is currently not multithread save.
+  This class is currently not thread safe.
 */
 class QDLT_EXPORT QDltFile : public QDlt
 {
@@ -113,25 +113,25 @@ public:
 
     //! Create an internal index of all DLT messages of the currently opened DLT log file.
     /*!
-      \return true if the operation was successful, false if an error occured.
+      \return true if the operation was successful, false if an error occurred.
     */
     bool createIndex();
 
     //! Update the index of the currently opened DLT log file by checking if new DLT messages were added to the file.
     /*!
-      \return true if the operation was successful, false if an error occured.
+      \return true if the operation was successful, false if an error occurred.
     */
     bool updateIndex();
 
     //! Create an internal index of all filtered DLT messages of the currently opened DLT log file.
     /*!
-      \return true if the operation was successful, false if an error occured.
+      \return true if the operation was successful, false if an error occurred.
     */
     bool createIndexFilter();
 
     //! Update the filtered index of the currently opened DLT log file by checking if new DLT messages were added to the file.
     /*!
-      \return true if the operation was successful, false if an error occured.
+      \return true if the operation was successful, false if an error occurred.
     */
     bool updateIndexFilter();
 
@@ -140,7 +140,7 @@ public:
       This function retrieves on DLT message of the log file
       \param index The number of the DLT message in the DLT file starting from zero.
       \param msg The message which contains the DLT message after the function returns.
-      \return true if the message is valid, false if an error occured.
+      \return true if the message is valid, false if an error occurred.
     */
     bool getMsg(int index,QDltMsg &msg);
 
@@ -158,7 +158,7 @@ public:
     */
     QByteArray getMsgFilter(int index);
 
-    //! Get the poition in the log file of the filtered DLT log file selected by index
+    //! Get the position in the log file of the filtered DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number of DLT messages in the file
       \return real position in log file, -1 if invalid.
@@ -196,7 +196,7 @@ public:
 
     //! Get the status of the filter.
     /*!
-      \return true if filtering is enabled, fals if filtering is disabled
+      \return true if filtering is enabled, false if filtering is disabled
     */
     bool isFilter();
 
