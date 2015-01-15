@@ -42,7 +42,7 @@ INCLUDEPATH = . ../qextserialport/src ../src
 SOURCES +=  \
             dlt_common.c \
     qdlttcpconnection.cpp \
-    qdltserialconenction.cpp \
+    qdltserialconnection.cpp \
     qdltmsg.cpp \
     qdltfilter.cpp \
     qdltfile.cpp \
