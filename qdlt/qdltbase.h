@@ -90,7 +90,7 @@ public:
       \param toHtml true output is don in HTML, false output in text only
       \return The string with ASCII or html output.
     */
-    QString toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize = 8, int linesize = 16, bool toHtml = true);
+    QString toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize = 8, int linesize = 16, bool toHtml = true) const;
 
     //! Convert byte array to text output.
     /*!
@@ -99,7 +99,7 @@ public:
       \param size_bytes grouping of bytes together (0xff for raw format)
       \return The string with ASCII output.
     */
-    QString toAscii(QByteArray &bytes,int type = false,int size_bytes = 0xff);
+    QString toAscii(const QByteArray &bytes, int type = false, int size_bytes = 0xff) const;
 
     //! The endianness of the message.
     typedef enum { DltEndiannessUnknown = -2, DltEndiannessLittleEndian = 0, DltEndiannessBigEndian = 1 } DltEndiannessDef;

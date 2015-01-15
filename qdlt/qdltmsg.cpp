@@ -38,12 +38,12 @@ QDltMsg::~QDltMsg()
 
 }
 
-QString QDltMsg::getTypeString()
+QString QDltMsg::getTypeString() const
 {
     return QString((type>=0 && type<=7)?qDltMessageType[type]:"");
 }
 
-QString QDltMsg::getSubtypeString()
+QString QDltMsg::getSubtypeString() const
 {
     switch(type)
     {
@@ -64,22 +64,22 @@ QString QDltMsg::getSubtypeString()
     }
 }
 
-QString QDltMsg::getModeString()
+QString QDltMsg::getModeString() const
 {
     return QString((mode>=0 && mode<=1)?qDltMode[mode]:"");
 }
 
-QString QDltMsg::getEndiannessString()
+QString QDltMsg::getEndiannessString() const
 {
     return QString((endianness>=0 && endianness<=1)?qDltEndianness[endianness]:"");
 }
 
-unsigned int QDltMsg::getCtrlServiceId()
+unsigned int QDltMsg::getCtrlServiceId() const
 {
     return ctrlServiceId;
 }
 
-QString QDltMsg::getCtrlServiceIdString()
+QString QDltMsg::getCtrlServiceIdString() const
 {
     if(ctrlServiceId == DLT_SERVICE_ID_UNREGISTER_CONTEXT)
         return QString("unregister_context");
@@ -93,16 +93,16 @@ QString QDltMsg::getCtrlServiceIdString()
         return QString(( ctrlServiceId<=20 )?qDltCtrlServiceId[ctrlServiceId]:"");
 }
 
-unsigned char QDltMsg::getCtrlReturnType()
+unsigned char QDltMsg::getCtrlReturnType() const
 {
     return ctrlReturnType;
 }
 
-QString QDltMsg::getCtrlReturnTypeString()
+QString QDltMsg::getCtrlReturnTypeString() const
 {
     return QString(( ctrlReturnType<=8 )?qDltCtrlReturnType[ctrlReturnType]:"");
 }
-QString QDltMsg::getTimeString()
+QString QDltMsg::getTimeString() const
 {
     char strtime[256];
     struct tm *time_tm;
@@ -470,12 +470,12 @@ void QDltMsg::clearArguments()
     arguments.clear();
 }
 
-int QDltMsg::sizeArguments()
+int QDltMsg::sizeArguments() const
 {
     return arguments.size();
 }
 
-bool QDltMsg::getArgument(int index,QDltArgument &argument)
+bool QDltMsg::getArgument(int index,QDltArgument &argument) const
 {
       if(index<0 || index>=arguments.size())
           return false;
@@ -499,7 +499,7 @@ void QDltMsg::removeArgument(int index)
 }
 
 
-QString QDltMsg::toStringHeader()
+QString QDltMsg::toStringHeader() const
 {
     QString text;
     text.reserve(1024);
@@ -519,7 +519,7 @@ QString QDltMsg::toStringHeader()
     return text;
 }
 
-QString QDltMsg::toStringPayload()
+QString QDltMsg::toStringPayload() const
 {
     QString text;
     QDltArgument argument;

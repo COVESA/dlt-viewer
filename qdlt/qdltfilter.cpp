@@ -110,17 +110,17 @@ void QDltFilter::clear()
     logLevelMin = 0;
 }
 
-bool QDltFilter::isMarker()
+bool QDltFilter::isMarker() const
 {
     return ( type == QDltFilter::marker || enableMarker );
 }
 
-bool QDltFilter::isPositive()
+bool QDltFilter::isPositive() const
 {
     return ( type == QDltFilter::positive );
 }
 
-bool QDltFilter::isNegative()
+bool QDltFilter::isNegative() const
 {
     return ( type == QDltFilter::negative );
 }
@@ -135,7 +135,7 @@ bool QDltFilter::compileRegexps()
     return (headerRegexp.isValid() && payloadRegexp.isValid() && contextRegexp.isValid());
 }
 
-bool QDltFilter::match(QDltMsg &msg)
+bool QDltFilter::match(QDltMsg &msg) const
 {
     if(enableEcuid && (msg.getEcuid() != ecuid)) {
         return false;

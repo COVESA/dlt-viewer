@@ -95,17 +95,17 @@ public:
     //! Check if this is a marker.
     /*!
     */
-    bool isMarker();
+    bool isMarker() const;
 
     //! Check if this is a positive filter.
     /*!
     */
-    bool isPositive();
+    bool isPositive() const;
 
     //! Check if this is a negative filter.
     /*!
     */
-    bool isNegative();
+    bool isNegative() const;
 
     //! Copy operator.
     /*!
@@ -121,7 +121,7 @@ public:
     /*!
       \return true if filter matches the message, else false
     */
-    bool match(QDltMsg &msg);
+    bool match(QDltMsg &msg) const;
 
     //! Save filter parameters in XML file.
     /*!

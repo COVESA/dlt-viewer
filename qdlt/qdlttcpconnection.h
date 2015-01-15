@@ -42,11 +42,11 @@ public:
     ~QDltTCPConnection();
 
     void setHostname(QString _hostname);
-    QString getHostname();
+    QString getHostname() const;
 
     void setTcpPort(unsigned int _tcpport);
     void setDefaultTcpPort();
-    unsigned int getTcpPort();
+    unsigned int getTcpPort() const;
 
 private:
 

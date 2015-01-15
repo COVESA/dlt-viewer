@@ -46,7 +46,7 @@ void QDltTCPConnection::setHostname(QString _hostname)
     hostname = _hostname;
 }
 
-QString QDltTCPConnection::getHostname()
+QString QDltTCPConnection::getHostname() const
 {
     return hostname;
 }
@@ -61,7 +61,7 @@ void QDltTCPConnection::setDefaultTcpPort()
     tcpport = DLT_DAEMON_TCP_PORT;
 }
 
-unsigned int QDltTCPConnection::getTcpPort()
+unsigned int QDltTCPConnection::getTcpPort() const
 {
     return tcpport;
 }

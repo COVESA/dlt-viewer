@@ -60,7 +60,7 @@ public:
     /*!
       \return The offset in bytes.
     */
-    int getOffsetPayload();
+    int getOffsetPayload() const;
 
     //! Set the byte offset of the parameter starting in the payload.
     /*!
@@ -72,14 +72,14 @@ public:
     /*!
       \return The size of the parameter in bytes.
     */
-    int getDataSize();
+    int getDataSize() const;
 
     //! Get the type of the argument.
     /*!
       \sa DltTypeInfoDef
       \return The type of the argument.
     */
-    DltTypeInfoDef getTypeInfo();
+    DltTypeInfoDef getTypeInfo() const;
 
     //! Set the type of the argument.
     /*!
@@ -92,14 +92,14 @@ public:
     /*!
       \return The text of the type.
     */
-    QString getTypeInfoString();
+    QString getTypeInfoString() const;
 
     //! Get the endianness of the Argument.
     /*!
       \sa DltEndiannessDef
       \return The endianness of the DLT message.
     */
-    DltEndiannessDef getEndianness() { return endianness; }
+    DltEndiannessDef getEndianness() const { return endianness; }
 
     //! Set the endianness of the Argument.
     /*!
@@ -113,7 +113,7 @@ public:
       The endianness of the parameter is as set in the endianness parameter.
       \return The complete data of the parameter as byte array.
     */
-    QByteArray getData();
+    QByteArray getData() const;
 
     //! Set the data of the parameter.
     /*!
@@ -127,7 +127,7 @@ public:
       This value is empty if it is not used.
       \return The name of the parameter.
     */
-    QString getName();
+    QString getName() const;
 
     //! Set the name of the DLT parameter.
     /*!
@@ -143,7 +143,7 @@ public:
       The unit name is only used in integer and float arguments.
       \return The name of the unit of the variable.
     */
-    QString getUnit();
+    QString getUnit() const;
 
     //! Set the name of the unit of the DLT parameter.
     /*!
@@ -171,19 +171,19 @@ public:
       \param verboseMode data should be returned in verboseMode
       \return true if operation was successful, false if there was an error.
     */
-    bool getArgument(QByteArray &data, bool verboseMode = true);
+    bool getArgument(QByteArray &data, bool verboseMode = true) const;
 
     //! Print argument content into a string.
     /*!
       \param binary if true write parameter as  Hex, if false translate into text
       \return The payload string.
     */
-    QString toString(bool binary = false);
+    QString toString(bool binary = false) const;
 
     //! Clears all variables of the class.
     void clear();
 
-    QVariant getValue();
+    QVariant getValue() const;
 
     bool setValue(QVariant value, bool verboseMode = true);
 

@@ -46,7 +46,7 @@ void QDltConnection::setSendSerialHeader(bool _sendSerialHeader)
     sendSerialHeader = _sendSerialHeader;
 }
 
-bool QDltConnection::getSendSerialHeader()
+bool QDltConnection::getSendSerialHeader() const
 {
     return sendSerialHeader;
 }
@@ -56,7 +56,7 @@ void QDltConnection::setSyncSerialHeader(bool _syncSerialHeader)
     syncSerialHeader = _syncSerialHeader;
 }
 
-bool QDltConnection::getSyncSerialHeader()
+bool QDltConnection::getSyncSerialHeader() const
 {
     return syncSerialHeader;
 }
@@ -69,7 +69,7 @@ void QDltConnection::clear()
     syncFound = 0;
 }
 
-void QDltConnection::add(QByteArray &bytes)
+void QDltConnection::add(const QByteArray &bytes)
 {
     bytesReceived += bytes.size();
 

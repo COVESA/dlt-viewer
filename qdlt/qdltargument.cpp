@@ -39,37 +39,37 @@ QDltArgument::~QDltArgument()
 
 }
 
-int QDltArgument::getOffsetPayload()
+int QDltArgument::getOffsetPayload() const
 {
     return offsetPayload;
 }
 
-QByteArray QDltArgument::getData()
+QByteArray QDltArgument::getData() const
 {
    return data;
 }
 
-QString QDltArgument::getName()
+QString QDltArgument::getName() const
 {
     return name;
 }
 
-QString QDltArgument::getUnit()
+QString QDltArgument::getUnit() const
 {
     return unit;
 }
 
-int QDltArgument::getDataSize()
+int QDltArgument::getDataSize() const
 {
     return data.size();
 }
 
-QDltArgument::DltTypeInfoDef QDltArgument::getTypeInfo()
+QDltArgument::DltTypeInfoDef QDltArgument::getTypeInfo() const
 {
     return typeInfo;
 }
 
-QString QDltArgument::getTypeInfoString()
+QString QDltArgument::getTypeInfoString() const
 {
     if(typeInfo<0)
         return QString("");
@@ -288,7 +288,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     return true;
 }
 
-bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode)
+bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode) const
 {
     unsigned int dltType = 0;
     bool appendSize = false;
@@ -378,7 +378,7 @@ void QDltArgument::clear()
 
 }
 
-QString QDltArgument::toString(bool binary)
+QString QDltArgument::toString(bool binary) const
 {
     QString text;
     text.reserve(1024);
@@ -530,7 +530,7 @@ QString QDltArgument::toString(bool binary)
     return text;
 }
 
-QVariant QDltArgument::getValue()
+QVariant QDltArgument::getValue() const
 {
     switch(typeInfo) {
     case DltTypeInfoUnknown:

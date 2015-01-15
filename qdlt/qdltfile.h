@@ -67,25 +67,25 @@ public:
 
     void clear();
 
-    int getNumberOfFiles();
+    int getNumberOfFiles() const;
 
     //! Get the number of DLT message in the DLT log file.
     /*!
       \return the number of all DLT messages in the currently opened DLT file.
     */
-    int size();
+    int size() const;
 
     //! Get the file size of the DLT log file.
     /*!
       \return the size of the DLT file.
     */
-    qint64 fileSize();
+    qint64 fileSize() const;
 
     //! Get the number of filtered DLT message in the DLT log file.
     /*!
       \return the number of filtered DLT messages in the currently opened DLT file.
     */
-    int sizeFilter();
+    int sizeFilter() const;
 
     //! Open a DLT log file.
     /*!
@@ -142,28 +142,28 @@ public:
       \param msg The message which contains the DLT message after the function returns.
       \return true if the message is valid, false if an error occurred.
     */
-    bool getMsg(int index,QDltMsg &msg);
+    bool getMsg(int index,QDltMsg &msg) const;
 
     //! Get one DLT message of the DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number DLT messages in the file
       \return Byte array containing the complete DLT message.
     */
-    QByteArray getMsg(int index);
+    QByteArray getMsg(int index) const;
 
     //! Get one DLT message of the filtered DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number of DLT messages in the file
       \return Byte array containing the complete DLT message.
     */
-    QByteArray getMsgFilter(int index);
+    QByteArray getMsgFilter(int index) const;
 
     //! Get the position in the log file of the filtered DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number of DLT messages in the file
       \return real position in log file, -1 if invalid.
     */
-    int getMsgFilterPos(int index);
+    int getMsgFilterPos(int index) const;
 
     //! Delete all filters and markers.
     /*!
@@ -175,7 +175,7 @@ public:
     /*!
       \return filter list.
     */
-    QDltFilterList getFilterList();
+    QDltFilterList getFilterList() const;
 
     //! Set current filter list
     /*!
@@ -198,7 +198,7 @@ public:
     /*!
       \return true if filtering is enabled, false if filtering is disabled
     */
-    bool isFilter();
+    bool isFilter() const;
 
     //! Enable or disable filtering.
     /*!
@@ -254,7 +254,7 @@ public:
     /*!
      * \return List of file positions
      **/
-    QVector<qint64> getIndexFilter();
+    QVector<qint64> getIndexFilter() const;
 
     //! Set Index of all DLT messages matching filter
     /*!
@@ -266,7 +266,7 @@ protected:
 
 private:
     //! Mutex to lock critical path for infile
-    QMutex mutexQDlt;
+    mutable QMutex mutexQDlt;
 
     //!all files including indexes
     QList<QDltFileItem*> files;

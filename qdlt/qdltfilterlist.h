@@ -108,7 +108,7 @@ public:
     //! Return the filename.
     /*!
     */
-    QString getFilename() { return filename; }
+    QString getFilename() const { return filename; }
 
     //! Update the presorted list for performance improvement.
     /*!

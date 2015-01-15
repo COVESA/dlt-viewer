@@ -43,15 +43,15 @@ public:
     ~QDltConnection();
 
     void setSendSerialHeader(bool _sendSerialHeader);
-    bool getSendSerialHeader();
+    bool getSendSerialHeader() const;
 
     void setSyncSerialHeader(bool _syncSerialHeader);
-    bool getSyncSerialHeader();
+    bool getSyncSerialHeader() const;
 
     bool parse(QDltMsg &msg);
 
     void clear();
-    void add(QByteArray &bytes);
+    void add(const QByteArray &bytes);
 
     QByteArray data;
 

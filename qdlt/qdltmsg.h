@@ -73,7 +73,7 @@ public:
     /*!
       \return The time when the DLT message is logged.
     */
-    time_t getTime() { return time; }
+    time_t getTime() const { return time; }
 
     //! Set the time of the DLT message, when the DLT message is logged.
     /*!
@@ -85,7 +85,7 @@ public:
     /*!
       \return QString representing the time of the message.
     */
-    QString getTimeString();
+    QString getTimeString() const;
 
     //! Get the time of the message based on the gmtime with offset as string.
     /*!
@@ -99,7 +99,7 @@ public:
     /*!
       \return The microseconds when the DLT message is logged.
     */
-    unsigned int getMicroseconds() { return microseconds; }
+    unsigned int getMicroseconds() const { return microseconds; }
 
     //! Set the time, microseconds part, of the DLT message, when the DLT message is logged.
     /*!
@@ -111,7 +111,7 @@ public:
     /*!
       \return The uptime when the DLT message is generated.
     */
-    unsigned int getTimestamp() { return timestamp; }
+    unsigned int getTimestamp() const { return timestamp; }
 
     //! Get the uptime of the DLT message, when the DLT message is generated.
     /*!
@@ -123,7 +123,7 @@ public:
     /*!
       \return The session id of the DLT message.
     */
-    unsigned int getSessionid() { return sessionid; }
+    unsigned int getSessionid() const { return sessionid; }
 
     //! Set the session id of the DLT message.
     /*!
@@ -135,7 +135,7 @@ public:
     /*!
       \return The session name of the DLT message.
     */
-    QString getSessionName() { return sessionName; }
+    QString getSessionName() const { return sessionName; }
 
     //! Set the session name of the DLT message.
     /*!
@@ -148,7 +148,7 @@ public:
       The message counter is increased by one for each message of a context.
       \return The message counter.
     */
-    unsigned char getMessageCounter() { return messageCounter; }
+    unsigned char getMessageCounter() const { return messageCounter; }
 
     //! Set the message counter of the DLT message.
     /*!
@@ -161,7 +161,7 @@ public:
     /*!
       \return The ecu id of the DLT message.
     */
-    QString getEcuid() { return ecuid; }
+    QString getEcuid() const { return ecuid; }
 
     //! Set the ecu id of the DLT message.
     /*!
@@ -173,7 +173,7 @@ public:
     /*!
       \return The application id.
     */
-    QString getApid() { return apid; }
+    QString getApid() const { return apid; }
 
     //! Set the application id of the DLT message.
     /*!
@@ -185,7 +185,7 @@ public:
     /*!
       \return The contex id.
     */
-    QString getCtid() { return ctid; }
+    QString getCtid() const { return ctid; }
 
     //! Set the context id of the DLT message.
     /*!
@@ -199,7 +199,7 @@ public:
       \sa DltTypeDef
       \return The type of the DLT message.
     */
-    DltTypeDef getType() { return type; }
+    DltTypeDef getType() const { return type; }
 
     //! Set the type of the DLT message.
     /*!
@@ -213,14 +213,14 @@ public:
     /*!
       \return The text of the type.
     */
-    QString getTypeString();
+    QString getTypeString() const;
 
     //! Get the endianness of the DLT message.
     /*!
       \sa DltEndiannessDef
       \return The endianness of the DLT message.
     */
-    DltEndiannessDef getEndianness() { return endianness; }
+    DltEndiannessDef getEndianness() const { return endianness; }
 
     //! Set the endianness of the DLT message.
     /*!
@@ -233,7 +233,7 @@ public:
     /*!
       \return The text of endianness of the DLT message.
     */
-    QString getEndiannessString();
+    QString getEndiannessString() const;
 
     //! Get the subtype of the DLT message.
     /*!
@@ -244,7 +244,7 @@ public:
       \sa DltControlDef
       \return The subtype of the DLT message.
     */
-    int getSubtype() { return subtype; }
+    int getSubtype() const { return subtype; }
 
     //! Set the subtype of the DLT message.
     /*!
@@ -257,7 +257,7 @@ public:
     /*!
       \return The text of the subtype.
     */
-    QString getSubtypeString();
+    QString getSubtypeString() const;
 
     //! Get the mode (verbose or non-verbose) of the DLT message.
     /*!
@@ -265,7 +265,7 @@ public:
       DLT Ctrl messages are also in non-verbose mode.
       \return The mode of the DLT message.
     */
-    DltModeDef getMode() { return mode; }
+    DltModeDef getMode() const { return mode; }
 
     //! Set the mode (verbose or non-verbose) of the DLT message.
     /*!
@@ -279,7 +279,7 @@ public:
     /*!
       \return The text of the mode.
     */
-    QString getModeString();
+    QString getModeString() const;
 
     //! Get the number of arguments of the DLT message.
     /*!
@@ -289,7 +289,7 @@ public:
       In non-verbose mode this value can be invalid.
       \return The number of arguments.
     */
-    unsigned char getNumberOfArguments() { return numberOfArguments; }
+    unsigned char getNumberOfArguments() const { return numberOfArguments; }
 
     //! Set the number of arguments in the payload.
     /*!
@@ -303,62 +303,62 @@ public:
     /*!
       \return Byte Array containing the complete header of the DLT message.
     */
-    QByteArray getHeader() { return header; }
+    QByteArray getHeader() const { return header; }
 
     //! Get the size of the header.
     /*!
       This value is even set, if the data was to small, but the header was read.
       \return Byte Array containing the complete payload of the DLT message.
     */
-    int getHeaderSize() { return headerSize; }
+    int getHeaderSize() const { return headerSize; }
 
     //! Get the complete payload of the DLT message.
     /*!
       \return Byte Array containing the complete payload of the DLT message.
     */
-    QByteArray getPayload() { return payload; }
+    QByteArray getPayload() const { return payload; }
 
     //! Get the size of the payload.
     /*!
       This value is even set, if the data was to small, but the header was read.
       \return Byte Array containing the complete payload of the DLT message.
     */
-    int getPayloadSize() { return payloadSize; }
+    int getPayloadSize() const { return payloadSize; }
 
     //! Get the the message id of non-verbose DLT message.
     /*!
       This value is only useful, if the DLT message is a non-verbose message and non DLT control message.
       \return The message id of non-verbose message.
     */
-    unsigned int getMessageId() { return messageId; }
+    unsigned int getMessageId() const { return messageId; }
 
     //! Get the the service id of ctrl DLT message.
     /*!
       This value is only useful, if the DLT message is a ctrl message.
       \return The service id of a ctrl message.
     */
-    unsigned int getCtrlServiceId();
+    unsigned int getCtrlServiceId() const;
 
     //! Get the the service id string of ctrl DLT message.
     /*!
       This value is only useful, if the DLT message is a ctrl message.
       \return The service id string of a ctrl message.
     */
-    QString getCtrlServiceIdString();
+    QString getCtrlServiceIdString() const;
 
     //! Get the the ctrl return type of ctrl DLT response message.
     /*!
       This value is only useful, if the DLT message is a ctrl response message.
       \return The return type of a ctrl message.
     */
-    unsigned char getCtrlReturnType();
+    unsigned char getCtrlReturnType() const;
 
     //! Get the the return type string of ctrl DLT response message.
     /*!
       This value is only useful, if the DLT message is a ctrl response message.
       \return The return type string of a ctrl message.
     */
-    QString getCtrlReturnTypeString();
+    QString getCtrlReturnTypeString() const;
 
     //! Get argument size.
     /*!
@@ -366,7 +366,7 @@ public:
       This could be a different size of number of arguments, especially in the non verbose mode.
       \return number of arguments in the argument list.
     */
-    int sizeArguments();
+    int sizeArguments() const;
 
     //! Clear the list of arguments.
     /*!
@@ -381,7 +381,7 @@ public:
       \param Index the number of the argument starting by zero.
       \return True if the operation was successful, false if there was an error.
     */
-    bool getArgument(int index,QDltArgument &argument);
+    bool getArgument(int index,QDltArgument &argument) const;
 
     //! Add an argument to the argument list.
     /*!
@@ -425,13 +425,13 @@ public:
     /*!
       \return The header string.
     */
-    QString toStringHeader();
+    QString toStringHeader() const;
 
     //! Print Payload content into a string.
     /*!
       \return The payload string.
     */
-    QString toStringPayload();
+    QString toStringPayload() const;
 protected:
 
 private:

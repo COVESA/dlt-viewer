@@ -75,7 +75,7 @@ bool QDlt::swap(QByteArray &bytes,int size, int offset)
     return true;
 }
 
-QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
+QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml) const
 {
     QString text;
     text.reserve(1024+bytes.size());
@@ -156,7 +156,7 @@ QString QDlt::toAsciiTable(QByteArray &bytes, bool withLineNumber, bool withBina
     return text;
 }
 
-QString QDlt::toAscii(QByteArray &bytes, int type,int size_bytes)
+QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes) const
 {
     static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     if (type==1)
@@ -230,7 +230,7 @@ QString QDlt::toAscii(QByteArray &bytes, int type,int size_bytes)
             std::vector<char> str( size*3, ' ' );
 
             char* strData = &str[0];
-            char* byteData = bytes.data();
+            const char* byteData = bytes.data();
             for(int num=0;num<size;++num)
             {
                 *strData = hexmap[ (*byteData & 0xF0) >> 4 ];

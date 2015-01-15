@@ -10,12 +10,12 @@ QDltPluginManager::QDltPluginManager()
 {
 }
 
-int QDltPluginManager::size()
+int QDltPluginManager::size() const
 {
     return plugins.size();
 }
 
-int QDltPluginManager::sizeEnabled()
+int QDltPluginManager::sizeEnabled() const
 {
     int count = 0;
 

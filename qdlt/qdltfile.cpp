@@ -52,7 +52,7 @@ void QDltFile::clear()
     files.clear();
 }
 
-int QDltFile::getNumberOfFiles()
+int QDltFile::getNumberOfFiles() const
 {
     return files.size();
 }
@@ -64,7 +64,7 @@ void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num){
     files[num]->indexAll = _indexAll;
 }
 
-int QDltFile::size()
+int QDltFile::size() const
 {
     int size=0;
 
@@ -76,7 +76,7 @@ int QDltFile::size()
     return size;
 }
 
-qint64 QDltFile::fileSize()
+qint64 QDltFile::fileSize() const
 {
     qint64 size=0;
 
@@ -88,7 +88,7 @@ qint64 QDltFile::fileSize()
     return size;
 }
 
-int QDltFile::sizeFilter()
+int QDltFile::sizeFilter() const
 {
     if(filterFlag)
         return indexFilter.size();
@@ -278,7 +278,7 @@ bool QDltFile::checkFilter(QDltMsg &msg)
     return filterList.checkFilter(msg);
 }
 
-QDltFilterList QDltFile::getFilterList()
+QDltFilterList QDltFile::getFilterList() const
 {
     return filterList;
 }
@@ -325,7 +325,7 @@ void QDltFile::close()
     clear();
 }
 
-QByteArray QDltFile::getMsg(int index)
+QByteArray QDltFile::getMsg(int index) const
 {
     QByteArray buf;
     int num;
@@ -386,7 +386,7 @@ QByteArray QDltFile::getMsg(int index)
     return buf;
 }
 
-bool QDltFile::getMsg(int index,QDltMsg &msg)
+bool QDltFile::getMsg(int index,QDltMsg &msg) const
 {
     QByteArray data = getMsg(index);
 
@@ -396,7 +396,7 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     return msg.setMsg(data);
 }
 
-QByteArray QDltFile::getMsgFilter(int index)
+QByteArray QDltFile::getMsgFilter(int index) const
 {
     if(filterFlag) {
         /* check if index is in range */
@@ -420,7 +420,7 @@ QByteArray QDltFile::getMsgFilter(int index)
     }
 }
 
-int QDltFile::getMsgFilterPos(int index)
+int QDltFile::getMsgFilterPos(int index) const
 {
     if(filterFlag) {
         /* check if index is in range */
@@ -459,7 +459,7 @@ void QDltFile::updateSortedFilter()
     filterList.updateSortedFilter();
 }
 
-bool QDltFile::isFilter()
+bool QDltFile::isFilter() const
 {
     return filterFlag;
 }
@@ -474,7 +474,7 @@ void QDltFile::enableSortByTime(bool state)
     sortByTimeFlag = state;
 }
 
-QVector<qint64> QDltFile::getIndexFilter()
+QVector<qint64> QDltFile::getIndexFilter() const
 {
     return indexFilter;
 }
