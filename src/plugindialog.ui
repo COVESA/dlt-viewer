@@ -145,6 +145,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEditName</tabstop>
+  <tabstop>lineEditPluginVersion</tabstop>
+  <tabstop>lineEditPluginInterfaceVersion</tabstop>
+  <tabstop>comboBoxMode</tabstop>
+  <tabstop>comboBoxType</tabstop>
+  <tabstop>lineEditFilename</tabstop>
+  <tabstop>toolButton</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>

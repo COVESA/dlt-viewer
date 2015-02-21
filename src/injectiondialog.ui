@@ -100,6 +100,14 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>applicationidComboBox</tabstop>
+  <tabstop>contextidComboBox</tabstop>
+  <tabstop>serviceidComboBox</tabstop>
+  <tabstop>textRadioButton</tabstop>
+  <tabstop>binaryRadioButton</tabstop>
+  <tabstop>dataComboBox</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>

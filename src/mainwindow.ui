@@ -1475,6 +1475,20 @@
    <header>pulsebutton.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tableView</tabstop>
+  <tabstop>applyConfig</tabstop>
+  <tabstop>pluginsEnabled</tabstop>
+  <tabstop>filtersEnabled</tabstop>
+  <tabstop>checkBoxSortByTime</tabstop>
+  <tabstop>pluginWidget</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>configWidget</tabstop>
+  <tabstop>comboBoxFilterSelection</tabstop>
+  <tabstop>pushButtonDefaultFilterUpdateCache</tabstop>
+  <tabstop>filterWidget</tabstop>
+  <tabstop>tableView_SearchIndex</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>

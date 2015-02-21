@@ -853,6 +853,47 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>checkBoxActive</tabstop>
+  <tabstop>lineEditName</tabstop>
+  <tabstop>pushButton_Positive</tabstop>
+  <tabstop>pushButton_Negative</tabstop>
+  <tabstop>pushButton_Marker</tabstop>
+  <tabstop>comboBoxType</tabstop>
+  <tabstop>groupBox_marker</tabstop>
+  <tabstop>pushButton_c0</tabstop>
+  <tabstop>pushButton_c1</tabstop>
+  <tabstop>pushButton_c2</tabstop>
+  <tabstop>pushButton_c3</tabstop>
+  <tabstop>pushButton_c4</tabstop>
+  <tabstop>pushButton_c5</tabstop>
+  <tabstop>pushButton_c6</tabstop>
+  <tabstop>pushButton_c7</tabstop>
+  <tabstop>pushButton_c8</tabstop>
+  <tabstop>pushButton_c9</tabstop>
+  <tabstop>pushButton_c10</tabstop>
+  <tabstop>buttonSelectColor</tabstop>
+  <tabstop>checkBoxEcuId</tabstop>
+  <tabstop>lineEditEcuId</tabstop>
+  <tabstop>checkBoxApplicationId</tabstop>
+  <tabstop>lineEditApplicationId</tabstop>
+  <tabstop>checkBoxContextId</tabstop>
+  <tabstop>lineEditContextId</tabstop>
+  <tabstop>checkBoxRegexp_Context</tabstop>
+  <tabstop>checkBoxHeaderText</tabstop>
+  <tabstop>lineEditHeaderText</tabstop>
+  <tabstop>checkBoxRegexp_Header</tabstop>
+  <tabstop>checkBox_IgnoreCase_Header</tabstop>
+  <tabstop>checkBoxPayloadText</tabstop>
+  <tabstop>lineEditPayloadText</tabstop>
+  <tabstop>checkBoxRegexp_Payload</tabstop>
+  <tabstop>checkBox_IgnoreCase_Payload</tabstop>
+  <tabstop>checkBoxLogLevelMin</tabstop>
+  <tabstop>comboBoxLogLevelMin</tabstop>
+  <tabstop>checkBoxLogLevelMax</tabstop>
+  <tabstop>comboBoxLogLevelMax</tabstop>
+  <tabstop>checkBoxCtrlMsgs</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>

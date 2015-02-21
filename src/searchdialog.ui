@@ -198,6 +198,19 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEditText</tabstop>
+  <tabstop>radioButtonPosBeginning</tabstop>
+  <tabstop>radioButtonPosCurrent</tabstop>
+  <tabstop>pushButtonColor</tabstop>
+  <tabstop>checkBoxSearchIndex</tabstop>
+  <tabstop>checkBoxHeader</tabstop>
+  <tabstop>checkBoxPayload</tabstop>
+  <tabstop>checkBoxCaseSensitive</tabstop>
+  <tabstop>checkBoxRegExp</tabstop>
+  <tabstop>pushButtonPrevious</tabstop>
+  <tabstop>pushButtonNext</tabstop>
+ </tabstops>
  <resources>
   <include location="resource.qrc"/>
  </resources>
