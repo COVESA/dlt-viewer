@@ -510,6 +510,7 @@ QString QDltMsg::toStringHeader()
     text += QString(" %1").arg(getEcuid());
     text += QString(" %1").arg(getApid());
     text += QString(" %1").arg(getCtid());
+    text += QString(" %1").arg(getSessionid());
     text += QString(" %2").arg(getTypeString());
     text += QString(" %2").arg(getSubtypeString());
     text += QString(" %2").arg(getModeString());

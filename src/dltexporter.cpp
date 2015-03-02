@@ -29,7 +29,7 @@ QString DltExporter::escapeCSVValue(QString arg)
 
 bool DltExporter::writeCSVHeader(QFile *file)
 {
-    QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\"\n");
+    QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\",\"%13\"\n");
     header = header.arg(FieldNames::getName(FieldNames::Index))
                     .arg(FieldNames::getName(FieldNames::Time))
                     .arg(FieldNames::getName(FieldNames::TimeStamp))
@@ -37,6 +37,7 @@ bool DltExporter::writeCSVHeader(QFile *file)
                     .arg(FieldNames::getName(FieldNames::EcuId))
                     .arg(FieldNames::getName(FieldNames::AppId))
                     .arg(FieldNames::getName(FieldNames::ContextId))
+                    .arg(FieldNames::getName(FieldNames::SessionId))
                     .arg(FieldNames::getName(FieldNames::Type))
                     .arg(FieldNames::getName(FieldNames::Subtype))
                     .arg(FieldNames::getName(FieldNames::Mode))
@@ -56,6 +57,7 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(QString("%1").arg(msg.getEcuid())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getApid())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getCtid())).append(",");
+    text += escapeCSVValue(QString("%1").arg(msg.getSessionid())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getTypeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(",");
