@@ -441,33 +441,53 @@ QString QDltArgument::toString(bool binary)
 
         break;
     case DltTypeInfoUInt:
-        switch(data.size())
+        if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_BIN)
         {
-        case 1:
-            text += QString("%1").arg((unsigned short)(*(unsigned char*)(data.constData())));
-            break;
-        case 2:
-            if(endianness == DltEndiannessLittleEndian)
-                text += QString("%1").arg((unsigned short)(*(unsigned short*)(data.constData())));
-            else
-                text += QString("%1").arg((unsigned short)DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
-            break;
-        case 4:
-            if(endianness == DltEndiannessLittleEndian)
-                text += QString("%1").arg((unsigned int)(*(unsigned int*)(data.constData())));
-            else
-                text += QString("%1").arg((unsigned int)DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
-            break;
-        case 8:
-            if(endianness == DltEndiannessLittleEndian)
-                text += QString("%1").arg((unsigned long long)(*(unsigned long long*)(data.constData())));
-            else
-                text += QString("%1").arg((unsigned long long)DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
-            break;
-        default:
-            text += QString("?");
+            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_8BIT)
+                text += toAscii(data,2,1); // show binary
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
+                text += toAscii(data,2,2); // show binary
         }
-
+        else if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_HEX)
+        {
+            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_8BIT)
+                text += toAscii(data,0,1); // show 8 bit hex
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
+                text += toAscii(data,0,2); // show 16 bit hex
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_32BIT)
+                text += toAscii(data,0,4); // show 32 bit hex
+            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_64BIT)
+                text += toAscii(data,0,8); // show 64 bit hex
+        }
+        else
+        {
+            switch(data.size())
+            {
+            case 1:
+                text += QString("%1").arg((unsigned short)(*(unsigned char*)(data.constData())));
+                break;
+            case 2:
+                if(endianness == DltEndiannessLittleEndian)
+                    text += QString("%1").arg((unsigned short)(*(unsigned short*)(data.constData())));
+                else
+                    text += QString("%1").arg((unsigned short)DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
+                break;
+            case 4:
+                if(endianness == DltEndiannessLittleEndian)
+                    text += QString("%1").arg((unsigned int)(*(unsigned int*)(data.constData())));
+                else
+                    text += QString("%1").arg((unsigned int)DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
+                break;
+            case 8:
+                if(endianness == DltEndiannessLittleEndian)
+                    text += QString("%1").arg((unsigned long long)(*(unsigned long long*)(data.constData())));
+                else
+                    text += QString("%1").arg((unsigned long long)DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
+                break;
+            default:
+                text += QString("?");
+            }
+        }
         break;
     case DltTypeInfoFloa:
         switch(data.size())
@@ -498,24 +518,7 @@ QString QDltArgument::toString(bool binary)
         }
         break;
     case DltTypeInfoRawd:
-        if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_BIN)
-        {
-            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
-                text += toAscii(data,2,2); // show binary
-            else
-                text += toAscii(data,2); // show binary
-        }
-        else
-        {
-            if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
-                text += toAscii(data,0,2); // show hex
-            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_32BIT)
-                text += toAscii(data,0,4); // show hex
-            else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_64BIT)
-                text += toAscii(data,0,8); // show hex
-            else
-                text += toAscii(data,0); // show hex
-        }
+        text += toAscii(data,0); // show raw format (no leading 0x)
         break;
     case DltTypeInfoTrai:
         text += QString("?");

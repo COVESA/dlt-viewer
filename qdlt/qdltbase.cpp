@@ -175,30 +175,23 @@ QString QDlt::toAscii(QByteArray &bytes, int type,int size_bytes)
             return QString("");
         }
 
-        std::vector<char> str( size*9, ' ' );
+        if (1 == size_bytes)
+        {
+            uint8_t toEncode = bytes.data()[0];
+            QString encoded = QString("0b%1").arg(toEncode, 8, 2, QChar('0'));
+            return encoded.insert(6, ' '); // insert a space after 0bxxxx
+        }
+        else // has to be: (2 == size_bytes)
+        {
+            uint16_t toEncode = (uint8_t)(bytes.data()[0]) | (((uint8_t)(bytes.data()[1])) << 8);
+            QString encoded = QString("0b%1").arg(toEncode, 16, 2, QChar('0'));
+            encoded.insert(14, ' '); // insert spaces
+            encoded.insert(10, ' ');
+            encoded.insert(6, ' ');
+            return encoded;
+        }
 
-        char* strData = &str[0];
-        char* byteData = bytes.data();
-        for(int num=0;num<size;++num)
-        {
-            for(int bit=7;bit>=0;bit--)
-            {
-                if((1<<bit)&(*byteData))
-                    *strData = '1';
-                else
-                    *strData = '0';
-                ++strData;
-            }
-            if((((num+1)%size_bytes)==0) && (num!=size-1))
-                strData += 1;
-            ++byteData;
-        }
-        // add termination
-        if (size>0)
-        {
-            *(strData) = 0;
-        }
-        return QString( &str[0] );
+        return QString("");
     }
     else
     {
@@ -210,27 +203,53 @@ QString QDlt::toAscii(QByteArray &bytes, int type,int size_bytes)
             return QString("");
         }
 
-        std::vector<char> str( size*3, ' ' );
+        if (1 == size_bytes)
+        {
+            uint8_t toEncode = bytes.data()[0];
+            return QString("0x%1").arg(toEncode, 2, 16, QChar('0'));
+        }
+        if (2 == size_bytes)
+        {
+            uint16_t toEncode = (uint8_t)(bytes.data()[0]) | (((uint8_t)(bytes.data()[1])) << 8);
+            return QString("0x%1").arg(toEncode, 4, 16, QChar('0'));
+        }
+        if (4 == size_bytes)
+        {
+            uint32_t toEncode = (uint8_t)(bytes.data()[0]) | (((uint8_t)(bytes.data()[1])) << 8) | (((uint8_t)(bytes.data()[2])) << 16) | (((uint8_t)(bytes.data()[3])) << 24);
+            return QString("0x%1").arg(toEncode, 8, 16, QChar('0'));
+        }
+        if (8 == size_bytes)
+        {
+            uint32_t toEncodeLo = (uint8_t)(bytes.data()[0]) | (((uint8_t)(bytes.data()[1])) << 8) | (((uint8_t)(bytes.data()[2])) << 16) | (((uint8_t)(bytes.data()[3])) << 24);
+            uint32_t toEncodeHi = (uint8_t)(bytes.data()[4]) | (((uint8_t)(bytes.data()[5])) << 8) | (((uint8_t)(bytes.data()[6])) << 16) | (((uint8_t)(bytes.data()[7])) << 24);
+            return QString("0x%1").arg(toEncodeHi, 8, 16, QChar('0')) + QString("%1").arg(toEncodeLo, 8, 16, QChar('0'));
+        }
 
-        char* strData = &str[0];
-        char* byteData = bytes.data();
-        for(int num=0;num<size;++num)
+        if (0xff == size_bytes)
         {
-            *strData = hexmap[ (*byteData & 0xF0) >> 4 ];
-            ++strData;
-            *strData = hexmap[ *byteData & 0x0F ];
-            if((((num+1)%size_bytes)==0) && (num!=size-1))
-                strData += 2;
-            else
-                strData += 1;
-            ++byteData;
+            std::vector<char> str( size*3, ' ' );
+
+            char* strData = &str[0];
+            char* byteData = bytes.data();
+            for(int num=0;num<size;++num)
+            {
+                *strData = hexmap[ (*byteData & 0xF0) >> 4 ];
+                ++strData;
+                *strData = hexmap[ *byteData & 0x0F ];
+                if((((num+1)%1)==0) && (num!=size-1))
+                    strData += 2;
+                else
+                    strData += 1;
+                ++byteData;
+            }
+            // add termination
+            if (size>0)
+            {
+                *(strData) = 0;
+            }
+            return QString( &str[0] );
         }
-        // add termination
-        if (size>0)
-        {
-            *(strData) = 0;
-        }
-        return QString( &str[0] );
     }
+    return QString("");
 }
 

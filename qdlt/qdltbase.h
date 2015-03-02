@@ -96,10 +96,10 @@ public:
     /*!
       \param bytes The data to be converted
       \param type 1 output in ASCII, 0 output in hex, 2 output in binary
-      \param size_bytes grouping of bytes together
+      \param size_bytes grouping of bytes together (0xff for raw format)
       \return The string with ASCII output.
     */
-    QString toAscii(QByteArray &bytes,int type = false,int size_bytes = 1);
+    QString toAscii(QByteArray &bytes,int type = false,int size_bytes = 0xff);
 
     //! The endianness of the message.
     typedef enum { DltEndiannessUnknown = -2, DltEndiannessLittleEndian = 0, DltEndiannessBigEndian = 1 } DltEndiannessDef;
