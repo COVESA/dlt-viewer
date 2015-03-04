@@ -21,7 +21,7 @@
 #include "ui_filterdialog.h"
 #include <QMessageBox>
 #include <QCloseEvent>
-#include "DltUiUtils.h"
+#include "dltuiutils.h"
 
 FilterDialog::FilterDialog(QWidget *parent) :
     QDialog(parent),
