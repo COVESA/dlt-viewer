@@ -12,11 +12,11 @@ echo ************************************
 echo *** Setting up environment ***
 
 IF "%QTDIR%"=="" (
-    set QTDIR=C:\Qt\Qt5.4.0\5.4\mingw491_32
+    set QTDIR=C:\Qt\Qt5.4.1\5.4\mingw491_32
 )
 
 IF "%MINGW_DIR%"=="" (
-    set MINGW_DIR=C:\Qt\Qt5.4.0\Tools\mingw491_32
+    set MINGW_DIR=C:\Qt\Qt5.4.1\Tools\mingw491_32
 )
 
 set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%

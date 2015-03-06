@@ -37,13 +37,13 @@ Software/Hardware
 -----------------
 
 * Developed with QT 4 and QT 5 (http://qt-project.org/)
-* Tested with Windows 7 + Qt 5.4.0 + MinGW 4.9.1
+* Tested with Windows 7 + Qt 5.4.1 + MinGW 4.9.1
 * Tested with Ubuntu Linux 14.04 + Qt 4.8.5
 
 Dynamically linked open source software
 ---------------------------------------
 
-* Qt 5.4.0 (LGPLv3 - Qt)
+* Qt 5.4.1 (LGPLv3 - Qt)
 * GCC (GPL)
 * qextserialport (MIT License - Version 1.2 BETA)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
