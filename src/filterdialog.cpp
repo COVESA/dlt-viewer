@@ -437,10 +437,13 @@ void FilterDialog::on_pushButton_c10_clicked(){ setFilterColour(((QPushButton *)
 void FilterDialog::on_buttonGroup_filterType_buttonClicked( int id )
 {
     Q_UNUSED(id)
+    int i = -1;
     if (ui->pushButton_Marker->isChecked())
       {
        ui->groupBox_marker->setEnabled(true);
-       ui->comboBoxType->setCurrentText("marker");
+       i = ui->comboBoxType->findText("marker");
+       if (i != -1)
+           ui->comboBoxType->setCurrentIndex(i);
        ui->groupBox_marker->setChecked(true);
        ui->groupBox_marker->setCheckable(false);
       }
@@ -451,7 +454,9 @@ void FilterDialog::on_buttonGroup_filterType_buttonClicked( int id )
     if ( ui->pushButton_Negative->isChecked())
       {
         ui->groupBox_marker->setEnabled(false);
-        ui->comboBoxType->setCurrentText("negative");
+        i = ui->comboBoxType->findText("negative");
+        if (i != -1)
+            ui->comboBoxType->setCurrentIndex(i);
         ui->groupBox_marker->setChecked(false);
         ui->groupBox_marker->setCheckable(false);
 
@@ -459,7 +464,9 @@ void FilterDialog::on_buttonGroup_filterType_buttonClicked( int id )
     if (ui->pushButton_Positive->isChecked())
       {
         ui->groupBox_marker->setEnabled(true);
-        ui->comboBoxType->setCurrentText("positive");
+        i = ui->comboBoxType->findText("positive");
+        if (i != -1)
+            ui->comboBoxType->setCurrentIndex(i);
         ui->groupBox_marker->setCheckable(true);
         ui->groupBox_marker->setChecked(false);
       }
