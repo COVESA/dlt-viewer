@@ -226,11 +226,6 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          int currentIdx = qfile->getMsgFilterPos(index.row());
          qfile->getMsg(currentIdx, msg);
 
-         if(lastSearchIndex != -1 && currentIdx == qfile->getMsgFilterPos(lastSearchIndex))
-         {
-             return QVariant(QBrush(searchBackgroundColor()));
-         }
-
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
              pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());

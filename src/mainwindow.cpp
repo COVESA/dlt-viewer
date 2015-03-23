@@ -5574,6 +5574,7 @@ int MainWindow::nearest_line(int line){
     }
 
     // If filters are off, just go directly to the row
+    // If filters are enabled and no search result are matched, jump to beginning
     int row = 0;
     if(!qfile.isFilter())
     {
@@ -5587,20 +5588,10 @@ int MainWindow::nearest_line(int line){
         int lastFound = 0, i;
         for(i=0;i<qfile.sizeFilter();i++)
         {
-            if(qfile.getMsgFilterPos(i) < line)
-            {
-                // Track previous smaller
-                lastFound = i;
-            }
-            else if(qfile.getMsgFilterPos(i) == line)
+           if(qfile.getMsgFilterPos(i) == line)
             {
                 // It's actually visible
                 lastFound = i;
-                break;
-            }
-            else if(qfile.getMsgFilterPos(i) > line)
-            {
-                // Ok, we went past it, use the last one.
                 break;
             }
         }
@@ -5859,6 +5850,7 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 {
 
     int position = index.row();
+    printf("POSITION:%i\n", position);
     unsigned long entry;
 
     if (! m_searchtableModel->get_SearchResultEntry(position, entry) )
