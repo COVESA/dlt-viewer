@@ -217,6 +217,11 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     QByteArray buf;
 
     /* initialise values */
+    int readErrors=0;
+    int exportErrors=0;
+    int exportCounter=0;
+    int startFinishError=0;
+
     this->size = 0;
     this->from = from;
     this->to = to;
@@ -230,6 +235,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     if(!start())
     {
         qDebug() << "DLT Export start() failed";
+        startFinishError++;
         return;
     }
     qDebug() << "DLT Export" << size << "messages";
@@ -253,9 +259,11 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         /* get message */
         if(!getMsg(num,msg,buf))
         {
-            finish();
-            qDebug() << "DLT Export getMsg() failed";
-            return;
+	    //  finish();
+	    qDebug() << "DLT Export getMsg() failed on msg " << num;
+	    readErrors++;
+	    continue;
+	    //  return;
         }
 
         /* decode message if needed */
@@ -265,14 +273,20 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         /* export message */
         if(!exportMsg(num,msg,buf))
         {
-            finish();
+            // finish();
             qDebug() << "DLT Export exportMsg() failed";
-            return;
+	    exportErrors++;
+	    continue;
+            // return;
         }
+	else
+	    exportCounter++;
     }
 
-    if(!finish())
+    if (!finish()) startFinishError++;
+    if (startFinishError>0||readErrors>0||exportErrors>0)
     {
+	QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
         qDebug() << "DLT Export finish() failed";
         return;
     }
