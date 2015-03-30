@@ -65,7 +65,9 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             }
             return QVariant();
         }
-        pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+
+        if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+            pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
 
         switch(index.column())
         {

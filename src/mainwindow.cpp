@@ -406,7 +406,6 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setColumnWidth(FieldNames::ArgCount,40);
     m_searchresultsTable->setColumnWidth(FieldNames::Payload,1000);
 
-    ui->dockWidgetSearchIndex->hide();    
 
 }
 
@@ -1377,7 +1376,6 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // clear all tables
     ui->tableView->selectionModel()->clear();
     m_searchtableModel->clear_SearchResults();
-    ui->dockWidgetSearchIndex->hide();
 
     // force empty table
     tableModel->setForceEmpty(true);
