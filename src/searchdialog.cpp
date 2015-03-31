@@ -234,7 +234,8 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
         /* get the message with the selected item id */
         buf = file->getMsgFilter(searchLine);
         msg.setMsg(buf);
-        pluginManager->decodeMsg(msg,silentMode);
+        if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+            pluginManager->decodeMsg(msg,silentMode);
 
         bool pluginFound = false;
 
