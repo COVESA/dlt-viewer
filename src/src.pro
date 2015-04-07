@@ -45,6 +45,7 @@ CONFIG(debug, debug|release) {
     DESTDIR = ../release
     QMAKE_LIBDIR += ../release
     LIBS += -lqextserialport -lqdlt
+    QMAKE_RPATHDIR += ../build/release
 }
 
 # QT Features to be linked in
