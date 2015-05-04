@@ -1644,6 +1644,13 @@ bool MainWindow::openDlpFile(QString fileName)
         {
             applyConfigEnabled(true);
         }
+        // Reload logile to enable filters from project file
+        if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+            // if dlt viewer started as converter or with plugin option load file non multithreaded
+            reloadLogFile(false,false);
+        else
+            // normally load log file mutithreaded
+            reloadLogFile();
         return true;
     } else {
         return false;
