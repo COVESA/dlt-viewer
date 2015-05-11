@@ -76,7 +76,7 @@
 /**
  * Include the dlt header file for using dlt functions
  */
-#include <dlt/dlt.h>
+#include <dlt.h>
 
 #define DEFAULT_DELAY 500
 #define DEFAULT_MESSAGES 1000
@@ -113,7 +113,7 @@ void printUsage()
 {
     char version[255];
 
-    dlt_get_version(version);
+    dlt_get_version(version, 255);
 
     printf("Usage: dlt-speed-app [options] mode\n");
     printf("Generate DLT messages with current speed information.\n");
