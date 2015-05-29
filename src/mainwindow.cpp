@@ -5628,11 +5628,35 @@ bool MainWindow::jump_to_line(int line)
 {
 
     int row = nearest_line(line);
+    int column = -1;
     if (0 > row)
         return false;
 
     ui->tableView->selectionModel()->clear();
-    QModelIndex idx = tableModel->index(row, 0, QModelIndex());
+
+    // maybe a more elegant way exists... anyway this works
+    if(project.settings->showIndex == 1)
+        column = FieldNames::Index;
+    else if(project.settings->showTime == 1)
+        column = FieldNames::Time;
+    else if(project.settings->showTimestamp == 1)
+        column = FieldNames::TimeStamp;
+    else if(project.settings->showCount == 1)
+        column = FieldNames::Counter;
+    else if(project.settings->showEcuId == 1)
+        column = FieldNames::EcuId;
+    else if(project.settings->showApId == 1)
+        column = FieldNames::AppId;
+    else if(project.settings->showCtId == 1)
+        column = FieldNames::ContextId;
+    else if(project.settings->showSessionId == 1)
+        column = FieldNames::SessionId;
+    else if(project.settings->showArguments == 1)
+        column = FieldNames::ArgCount;
+    else if(project.settings->showPayload == 1)
+        column = FieldNames::Payload;
+
+    QModelIndex idx = tableModel->index(row, column, QModelIndex());
     ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
     ui->tableView->selectionModel()->select(idx, QItemSelectionModel::Select|QItemSelectionModel::Rows);
     ui->tableView->setFocus();
