@@ -2994,6 +2994,9 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
 
     if(selected.size()>0)
     {
+        /* With Autoscroll= false the tableview doesn't jump to the right edge,
+        for example, if the payload column is stretched to full size */
+        ui->tableView->setAutoScroll(false);
         QModelIndex index =  selected[0].topLeft();
         QDltPlugin *item = 0;
         QList<QDltPlugin*> activeViewerPlugins;
