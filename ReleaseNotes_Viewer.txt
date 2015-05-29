@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.14.0 ALPHA
+Version 2.14.0 STABLE
 
 Known issues
 ------------
@@ -15,6 +15,31 @@ Changes
 -------
 
 2.14.0
+  * Set Line Endings to LF. Add also .gitattributes, to change all further commits in LF. For more info look at http://git-scm.com/docs/gitattributes
+  * Improved const-correctness inside qdlt library. Note: plugin interfaces left untouched
+  * Enable the QMAKE_RPATHDIR to avoid exporting of LD_LIBRARY_PATH when using the tool without installing
+  * Fix decoded/ encoded search entries
+  * Fix Inconsintent handling of pluginEnabled checkbox. Now it decode the search results equal to the main window items
+  * In case of errors during export, exportMsg function just logs to qDebug() but does not give user information if export is ok or has failed
+    Function even will stop on first error, instead of skipping invalid messages
+  * Fix "search result does not jump to correct message when "sort by time" is checked"
+    Now jump to correct order after a double click an a search entry while "sort by time" is enabled or disabled
+  * Rearrange TabStop-order in dialog forms
+  * Fix for compiling DLT viewer for QT4 and 5. Replacing QT5-only method QComboBox::setCurrentText(...) as suggested here: 
+    http://doc.qt.io/qt-5/qcombobox.html#currentText-prop "The setter setCurrentText() simply calls setEditText() if the combo box is editable. 
+    Otherwise, if there is a matching text in the list, currentIndex is set to the corresponding index"
+  * Update qt to version 5.4.1
+  * Fix Linux build
+  * Adding support for new macros to the daemon. new macros: DLT_HEX8(VAR) 8bits variable displayed in hexadecimal with "0x" prefix DLT_HEX16(VAR) 
+    16bits displayed in hexadecimal with "0x" prefix DLT_HEX32(VAR) 32bits displayed in hexadecimal with "0x" prefix DLT_HEX64(VAR) 64bits displayed in 
+    hexadecimal with "0x" prefix DLT_BIN8(VAR) 8bits variable displayed in binary with "0b" prefix DLT_BIN16(VAR) 16bits variable displayed in binary with "0b" prefix
+  * Export SessionID/ProcessID to Clipboard and CSV Export
+  * Fixed typos and rephrased some sentences
+  * Cleanup: renamed file qdltserialconenction.cpp into qdltserialconnection.cpp
+  * Filter (separate regex settings and ignorecase) and Filterdialog redesign replaced icons with open icon library, corrected tooltips
+  * Allow to show Payload as multiple Argument columns, default set to 0 argument columns
+  * Added ActionToggleButtons to Main toolbar to Control Plugins/Filters/SortByTime Enabled checkboxes. Replaced icons with open icon library, changed action button 
+    syncronisation
 
 2.13.0
   * Updated qt to version 5.4.0
