@@ -30,5 +30,5 @@ CONFIG(debug, debug|release) {
 else {
     DESTDIR = ../../release
 }
-target.path = /usr/lib
+target.path = $$PREFIX/usr/lib
 INSTALLS += target

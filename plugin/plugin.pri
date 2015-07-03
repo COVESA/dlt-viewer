@@ -58,5 +58,5 @@ CONFIG(debug, debug|release) {
 else {
     DESTDIR = ../../release/plugins
 }
-target.path = /usr/share/dlt-viewer/plugins
+target.path = $$PREFIX/usr/share/dlt-viewer/plugins
 INSTALLS += target

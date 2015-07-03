@@ -17,23 +17,23 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qextserialport/src ../qdlt
 
 # Icon for application (The smiley face)
-icons.path = /usr/share/pixmaps
+icons.path = $$PREFIX/usr/share/pixmaps
 icons.files = icon/face-glasses.ico
 INSTALLS += icons
 
 # desktop file to show the application in start menu on Linux
 # This should work on both KDE and Gnome
-desktop.path = /usr/share/applications
+desktop.path = $$PREFIX/usr/share/applications
 desktop.files = dlt_viewer.desktop
 INSTALLS += desktop
 
 # Unix header exports
-headers.path = /usr/include/dlt-viewer
+headers.path = $$PREFIX/usr/include/dlt-viewer
 headers.files = plugininterface.h
 INSTALLS += headers
 
 # Unix executable install path
-target.path = /usr/bin
+target.path = $$PREFIX/usr/bin
 INSTALLS += target
 
 # Library definitions for debug and release builds

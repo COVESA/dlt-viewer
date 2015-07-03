@@ -12,12 +12,12 @@ DEFINES += QDLT_LIBRARY
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 
-headers.path = /usr/include/qdlt
+headers.path = $$PREFIX/usr/include/qdlt
 headers.files = *.h
 
 INSTALLS += headers
 
-target.path = $$[QT_INSTALL_LIBS]
+target.path = $$PREFIX/$$[QT_INSTALL_LIBS]
 INSTALLS += target
 
 CONFIG                 += warn_on qt
