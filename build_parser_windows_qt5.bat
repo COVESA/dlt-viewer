@@ -12,11 +12,11 @@ echo ************************************
 echo *** Setting up environment ***
 
 IF "%QTDIR%"=="" (
-    set QTDIR=C:\Qt\Qt5.4.1\5.4\mingw491_32
+    set QTDIR=C:\Qt\Qt5.5.0\5.5\mingw492_32
 )
 
 IF "%MINGW_DIR%"=="" (
-    set MINGW_DIR=C:\Qt\Qt5.4.1\Tools\mingw491_32
+    set MINGW_DIR=C:\Qt\Qt5.5.0\Tools\mingw492_32
 )
 
 set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%
@@ -85,13 +85,13 @@ mkdir %DLT_PARSER_DIR%\examples
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo *** Copy files ***
-copy %QTDIR%\bin\icuin53.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\icuin54.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\icuuc53.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\icuuc54.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\icudt53.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\icudt54.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %QTDIR%\bin\libwinpthread-1.dll %DLT_PARSER_DIR%
