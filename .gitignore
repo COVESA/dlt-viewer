@@ -5,3 +5,4 @@ build/
 Makefile
 buildlib/
 release/
+.cproject
