@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.14.0 STABLE
+Version 2.15.0 ALPHA
 
 Known issues
 ------------
