@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.15.0 ALPHA
+Version 2.14.1 ALPHA
 
 Known issues
 ------------
@@ -13,6 +13,16 @@ Known issues
 
 Changes
 -------
+2.14.1
+  * Copy new plugin to SDK.
+  * DLT Logstorage Configuration File Creator
+  * Added 4708PREFIX to install paths to be able to install to custom location given on command line
+  * Update qt to version 5.5.0
+  * Added .cproject Eclipse file to gitignore
+  * Bug fix tableview jump to the right edge
+  * Bug Fixed After disabling index row in table settings it doesn't jump anymore to correct entry in main view after searching for a term
+  * Fix path to dlt.h. pkg-config returns include path with dlt present. Remove it from #include<> * Fix call to dlt_get_version() to pass length.
+  * Fixed: Filter is not automatically activated on open of a dlp file
 
 2.14.0
   * Set Line Endings to LF. Add also .gitattributes, to change all further commits in LF. For more info look at http://git-scm.com/docs/gitattributes
