@@ -41,7 +41,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     interfacetype = INTERFACETYPE_TCP; /* default TCP */
     hostname = "localhost";
     ipport = DLT_DAEMON_TCP_PORT;
-    baudrate = BAUD115200; /* default 115200 */
+    baudrate = QSerialPort::Baud115200; /* default 115200 */
     loglevel = DLT_LOG_INFO;
     tracestatus = DLT_TRACE_STATUS_OFF;
     verbosemode = 1;
@@ -869,7 +869,7 @@ bool Project::Load(QString filename)
               {
                   //TODO (BaudRateType)?
                   if(ecuitem)
-                      ecuitem->setBaudrate((BaudRateType)xml.readElementText().toInt());
+                      ecuitem->setBaudrate((QSerialPort::BaudRate)xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("sendserialheadertcp"))

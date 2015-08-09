@@ -41,7 +41,7 @@ public:
     QString hostname();
     unsigned int tcpport();
     QString port();
-    BaudRateType baudrate();
+    QSerialPort::BaudRate baudrate();
     int loglevel();
     int tracestatus();
     int verbosemode();

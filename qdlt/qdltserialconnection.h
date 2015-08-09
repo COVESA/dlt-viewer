@@ -32,7 +32,7 @@
 
 #include "export_rules.h"
 
-class QextSerialPort;
+class QSerialPort;
 
 class QDLT_EXPORT QDltSerialConnection : public QDltConnection
 {
@@ -52,7 +52,7 @@ private:
     QString port;
     int baudrate;
 
-    QextSerialPort *m_qdltserialport;
+    QSerialPort *m_qdltserialport;
 
 };
 
