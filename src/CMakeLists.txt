@@ -64,7 +64,6 @@ add_executable (${TARGET_NAME}
 
 target_link_libraries (${TARGET_NAME}
     qdlt
-    qextserialport
     ${Qt5Core_LIBRARIES}
     ${Qt5Network_LIBRARIES}
     ${Qt5Widgets_LIBRARIES}

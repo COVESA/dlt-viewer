@@ -20,8 +20,7 @@
  */
 
 #include <QtDebug>
-
-#include <qextserialport.h>
+#include <QSerialPort>
 
 #include "qdlt.h"
 

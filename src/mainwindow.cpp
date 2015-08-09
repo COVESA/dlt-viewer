@@ -36,6 +36,9 @@
 #include <QInputDialog>
 #include <QByteArray>
 #include <QSysInfo>
+#include <QSerialPort>
+#include <QSerialPortInfo>
+
 
 /**
  * From QDlt.
@@ -65,7 +68,6 @@ extern "C" {
 #include "plugindialog.h"
 #include "settingsdialog.h"
 #include "injectiondialog.h"
-#include "qextserialenumerator.h"
 #include "version.h"
 #include "dltfileutils.h"
 #include "dltuiutils.h"
@@ -401,9 +403,7 @@ void MainWindow::initSignalConnections()
     connect( m_searchresultsTable, SIGNAL( doubleClicked (QModelIndex) ), this, SLOT( searchtable_cellSelected( QModelIndex ) ) );
 
     // connect tableView selection model change to handler in mainwindow
-    connect(ui->tableView->selectionModel(),
-            SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-            SLOT(on_tableView_selectionChanged(const QItemSelection &, const QItemSelection &)));
+    connect(ui->tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), SLOT(on_tableView_selectionChanged(const QItemSelection &, const QItemSelection &)));
 
 }
 
@@ -2029,20 +2029,18 @@ void MainWindow::on_action_menuProject_Save_triggered()
     }
 }
 
-QStringList MainWindow::getSerialPortsWithQextEnumerator(){
+QStringList MainWindow::getAvailableSerialPorts()
+{
 
 
-    QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
+    QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     QStringList portList;
-#ifdef Q_OS_WIN
-    for (int i = 0; i < ports.size(); i++) {
-        portList << ports.at(i).portName;
+
+    for (int i = 0; i < ports.size(); i++) 
+    {
+        portList << ports.at(i).portName();
     }
-#else
-    for (int i = 0; i < ports.size(); i++) {
-        portList << ports.at(i).physName;
-    }
-#endif
+
     return portList;
 }
 
@@ -2051,7 +2049,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     QStringList hostnameListPreset;
     hostnameListPreset << "localhost";
 
-    QStringList portListPreset = getSerialPortsWithQextEnumerator();
+    QStringList portListPreset = getAvailableSerialPorts();
 
     /* show ECU configuration dialog */
     EcuDialog dlg;
@@ -2097,7 +2095,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         QStringList hostnameListPreset;
         hostnameListPreset << "localhost";
 
-        QStringList portListPreset = getSerialPortsWithQextEnumerator();
+        QStringList portListPreset = getAvailableSerialPorts();
 
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
@@ -2822,6 +2820,7 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
         else
         {
             /* Serial */
+            qDebug() << "Close serial port" << ecuitem->getPort();
             ecuitem->m_serialport->close();
         }
 
@@ -2877,11 +2876,11 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         ecuitem->ipcon.clear();
         ecuitem->serialcon.clear();
 
-        qDebug()<< "Try to connect to ECU" << ecuitem->getHostname() << QDateTime::currentDateTime().toString("hh:mm:ss");
         /* start socket connection to host */
         if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
             /* TCP or UDP */
+            qDebug()<< "Try to connect to ECU" << ecuitem->getHostname() << QDateTime::currentDateTime().toString("hh:mm:ss");
             /* connect socket signals with window slots */
             if (ecuitem->socket->state()==QAbstractSocket::UnconnectedState)
             {
@@ -2900,26 +2899,30 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         else
         {
             /* Serial */
-            if(!ecuitem->m_serialport)
+            if ( NULL == ecuitem->m_serialport )
             {
-                PortSettings settings = {ecuitem->getBaudrate(), DATA_8, PAR_NONE, STOP_1, FLOW_OFF, 10}; //Before timeout was 1
-                ecuitem->m_serialport = new QextSerialPort(ecuitem->getPort(),settings);
+                qDebug()<< "Try to connect to ECU on serial port" << ecuitem->getPort() << QDateTime::currentDateTime().toString("hh:mm:ss");
+                ecuitem->m_serialport = new QSerialPort();
+                if ( NULL != ecuitem->m_serialport )
+                {
+                ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate(), QSerialPort::AllDirections);
+                ecuitem->m_serialport->setDataBits(QSerialPort::Data8);
+                ecuitem->m_serialport->setParity(QSerialPort::NoParity);
+                ecuitem->m_serialport->setStopBits(QSerialPort::OneStop);
+                ecuitem->m_serialport->setFlowControl(QSerialPort::NoFlowControl);
+                //ecuitem->m_serialport->waitForReadyRead(0); // this lead to immediate crash on Windows and Ubuntu
+                QThread::msleep(10);
                 connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
-                connect(ecuitem->m_serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
-            }
-            else
+                connect(ecuitem->m_serialport,SIGNAL(dataTerminalReadyChanged(bool)),this,SLOT(stateChangedSerial(bool)));
+                //ecuitem->m_serialport->waitForReadyRead(10);
+                }
+             }
+            else // serial port object already exists
             {
-
                 //to keep things consistent: delete old member, create new one
                 //alternatively we could just close the port, and set the new settings.
                 ecuitem->m_serialport->close();
-                //delete(ecuitem->m_serialport);
                 ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate());
-                //ecuitem->m_serialport->setDataBits(settings.DataBits);
-                //ecuitem->m_serialport->setFlowControl(settings.FlowControl);
-                //ecuitem->m_serialport->setStopBits(settings.StopBits);
-                //ecuitem->m_serialport->setParity(settings.Parity);
-                //ecuitem->m_serialport->setTimeout(settings.Timeout_Millisec);
                 ecuitem->m_serialport->setPortName(ecuitem->getPort());
             }
 
@@ -2931,12 +2934,12 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
             ecuitem->m_serialport->open(QIODevice::ReadWrite);
 
-            if(ecuitem->m_serialport->isOpen())
+            if( true == ecuitem->m_serialport->isOpen())
             {
                 ecuitem->connected = true;
                 ecuitem->update();
                 on_configWidget_itemSelectionChanged();
-
+                qDebug() << "Open serial port" << ecuitem->getPort();
                 /* send new default log level to ECU, if selected in dlg */
                 if (ecuitem->updateDataIfOnline)
                 {
@@ -2944,7 +2947,6 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 }
 
             }
-
         }
 
         if(  (settings->showCtId && settings->showCtIdDesc) || (settings->showApId && settings->showApIdDesc) ){
@@ -2991,23 +2993,26 @@ void MainWindow::checkConnectionState()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if (ecuitem->connected)
+            if (true== ecuitem->connected)
              {
                oneConnected=true;
                //qDebug()<<"Connect:at least one ECU connected";//<< ecuitem->getHostname;
              }
-            if (ecuitem->tryToConnect) oneTryConnect=true;
+            if (true == ecuitem->tryToConnect)
+            {
+                oneTryConnect=true;
+            }
 
         }
 
        // qDebug()<<"Connect:at least one ECU connected"<<oneConnected;
-    if (oneConnected)
+    if (true == oneConnected)
     {
      this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_connected.png"));
     }
     else
     {
-        if (oneTryConnect)
+        if (true == oneTryConnect)
         {
             this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_disconnected.png"));
         }
@@ -3056,8 +3061,7 @@ void MainWindow::timeout()
              * If the indexer is busy indexing,
              * do not disconnect yet. Wait for future timeouts until
              * indexer is free. */
-            if(ecuitem->isAutoReconnectTimeoutPassed() &&
-               dltIndexer->tryLock())
+            if( true == ecuitem->isAutoReconnectTimeoutPassed() &&  dltIndexer->tryLock())
             {
                 if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
                         && ecuitem->autoReconnect && ecuitem->connected != 0
@@ -3070,10 +3074,14 @@ void MainWindow::timeout()
                 dltIndexer->unlock();
             }
 
-            if( ecuitem->tryToConnect && !ecuitem->connected)
+            if( true == ecuitem->tryToConnect && false == ecuitem->connected )
             {
+                if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP )
+                {
                 qDebug() << "Reconnect timeout for" << ecuitem->getHostname();
+                }
                 connectECU(ecuitem,true);
+
             }
         }
 }

@@ -37,6 +37,7 @@ INSTALLS += target
 CONFIG                 += warn_on qt
 QT                     += network
 QT                     += gui
+QT                     += serialport
 
 # Detect QT5 and comply to new Widgets hierarchy
 greaterThan(QT_VERSION, 4.8.4) {
@@ -51,7 +52,7 @@ OBJECTS_DIR = build/obj
 RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
-INCLUDEPATH = . ../qextserialport/src ../src
+INCLUDEPATH = . ../src
 
 SOURCES +=  \
             dlt_common.c \
@@ -105,11 +106,9 @@ CONFIG(debug, debug|release) {
     DESTDIR = ../debug
     TARGET  = qdltd
     QMAKE_LIBDIR += ../debug
-    LIBS += -lqextserialportd
 }
 else {
     DESTDIR = ../release
     TARGET  = qdlt
     QMAKE_LIBDIR += ../release
-    LIBS += -lqextserialport
 }

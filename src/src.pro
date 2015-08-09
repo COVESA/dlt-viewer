@@ -30,7 +30,7 @@ unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 
 # Local includes
-INCLUDEPATH = . ../qextserialport/src ../qdlt
+INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
 icons.path = $$PREFIX/usr/share/pixmaps
@@ -60,16 +60,16 @@ macx:CONFIG -= app_bundle
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
     QMAKE_LIBDIR += ../debug
-    LIBS += -lqextserialportd -lqdltd
+    LIBS += -lqdltd
 } else {
     DESTDIR = ../release
     QMAKE_LIBDIR += ../release
-    LIBS += -lqextserialport -lqdlt
+    LIBS += -lqdlt
     QMAKE_RPATHDIR += ../build/release
 }
 
 # QT Features to be linked in
-QT += core gui network
+QT += core gui network serialport
 
 # Detect QT5 and comply to new Widgets hierarchy
 greaterThan(QT_VER_MAJ, 4) {

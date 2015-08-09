@@ -40,10 +40,9 @@ add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
                   qdltsegmentedmsg.cpp)
 
 target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                          ${CMAKE_CURRENT_SOURCE_DIR}/../qextserialport/src
-                                          ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+                                         ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-set(QDLT_LINK_LIBS Qt5::Core Qt5::Network)
+target_link_libraries(qdlt Qt5::Core Qt5::Network Qt5::SerialPort)
 
 if(WIN32)
 set(QDLT_LINK_LIBS ${QDLT_LINK_LIBS} ws2_32)

@@ -62,7 +62,6 @@ add_definitions(-DQT5)
 
 add_subdirectory(parser)
 add_subdirectory(qdlt)
-add_subdirectory(qextserialport)
 add_subdirectory(src)
 add_subdirectory(plugin)
 #add_subdirectory(dlt-console-viewer)
