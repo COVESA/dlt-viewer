@@ -2,6 +2,7 @@
 #include <QMessageBox>
 #include <QDateTime>
 #include <QDir>
+#include <QStandardPaths>
 
 DltFileUtils::DltFileUtils()
 {
@@ -37,13 +38,17 @@ QDir DltFileUtils::getTempPath(SettingsDialog *settings)
 
     if(settings->tempUseSystem)
     {
-        temp_path = QDir(QDir::tempPath());
-        if(!temp_path.exists())
+        QString temp_path_string = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+        temp_path = QDir(temp_path_string);
+        if (!temp_path.exists())
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),
+            if(!temp_path.mkpath(temp_path_string))
+            {
+                QMessageBox::critical(0, QString("DLT Viewer"),
                                   QString("System temporary directory does not exist!\n%1")
                                   .arg(temp_path.absolutePath()));
-            dir_ok = false;
+                dir_ok = false;
+            }
         }
     }
     else if(settings->tempUseOwn)
