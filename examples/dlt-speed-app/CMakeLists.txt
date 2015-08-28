@@ -45,7 +45,12 @@ pkg_check_modules(DLT REQUIRED automotive-dlt)
   
 
 # Set CMAKE variables to given values
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    SET(CMAKE_CXX_FLAGS "-std=gnu++0x")
+endif()
 SET(CMAKE_CXX_FLAGS "-Wall")
+SET(CMAKE_CXX_FLAGS "-Wextra")
+#SET(CMAKE_CXX_FLAGS "-pedantic")
 #SET(CMAKE_LD_FLAGS "-ldlt")
 SET(CMAKE_BUILD_TYPE Release)
 
