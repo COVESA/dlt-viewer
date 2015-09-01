@@ -2881,7 +2881,7 @@ void MainWindow::read(EcuItem* ecuitem)
                         QFileInfo infoNew(info.absolutePath(),newFilename);
 
                         // rename old file
-                        outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
+                       outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
 
                         // set new start time
                         startLoggingDateTime = QDateTime::currentDateTime();
