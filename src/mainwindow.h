@@ -221,6 +221,7 @@ private:
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file);
+    void exportSelection_searchTable();
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);
@@ -333,6 +334,7 @@ private slots:
     void on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
     void on_tableView_customContextMenuRequested(QPoint pos);
+    void on_tableView_SearchIndex_customContextMenuRequested(QPoint pos);
     void on_pluginWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_customContextMenuRequested(QPoint pos);
@@ -400,6 +402,7 @@ private slots:
     void on_action_menuConfig_Connect_triggered();
     void on_action_menuConfig_Delete_All_Contexts_triggered();
     void on_action_menuConfig_Copy_to_clipboard_triggered();
+    void on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered();
 
     // DLT methods
     void on_action_menuDLT_Send_Injection_triggered();

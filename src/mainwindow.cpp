@@ -947,6 +947,40 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
     exporter.exportMessages(&qfile,0,&pluginManager,DltExporter::FormatClipboard,DltExporter::SelectionSelected,&list);
 }
 
+void MainWindow::exportSelection_searchTable()
+{
+    QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selection().indexes();
+
+    // Clear the selection from main table.
+    ui->tableView->selectionModel()->clear();
+
+    // Convert the index from search table to main table entry...
+    foreach(QModelIndex index,list)
+    {
+        int position = index.row();
+        unsigned long entry;
+
+        if (! m_searchtableModel->get_SearchResultEntry(position, entry) )
+            return;
+
+        //jump_to_line
+        int row = nearest_line(entry);
+        if (0 > row)
+            return;
+
+        QModelIndex newIndex = tableModel->index(row, 0, QModelIndex());
+        // Select the row in main table mapping to the search table row
+        ui->tableView->blockSignals(true);
+        ui->tableView->selectionModel()->select(newIndex, QItemSelectionModel::Select|QItemSelectionModel::Rows);
+        ui->tableView->blockSignals(false);
+    }
+
+    QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
+
+    DltExporter exporter;
+    exporter.exportMessages(&qfile,0,&pluginManager,DltExporter::FormatClipboard,DltExporter::SelectionSelected,&finallist);
+}
+
 void MainWindow::on_actionExport_triggered()
 {
     /* export dialog */
@@ -5397,11 +5431,41 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.exec(globalPos);
 }
 
+void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
+{
+    /* show custom pop menu  for search table */
+    QPoint globalPos = ui->tableView_SearchIndex->mapToGlobal(pos);
+    QMenu menu(ui->tableView_SearchIndex);
+    QAction *action;
+
+    action = new QAction("&Copy Selection to Clipboard", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    /* show popup menu */
+    menu.exec(globalPos);
+}
+
+void MainWindow::on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered()
+{
+    exportSelection_searchTable();
+}
+
 void MainWindow::keyPressEvent ( QKeyEvent * event )
 {
     if(event->matches(QKeySequence::Copy))
     {
-        exportSelection(true,false);
+        if(ui->tableView->hasFocus())
+        {
+            exportSelection(true,false);
+        }
+
+        if(ui->tableView_SearchIndex->hasFocus())
+        {
+            exportSelection_searchTable();
+        }
     }
     if(event->matches(QKeySequence::Paste))
     {
