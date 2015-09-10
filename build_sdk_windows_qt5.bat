@@ -4,7 +4,6 @@ echo ************************************
 echo ***      DLT Viewer SDK          ***
 echo ************************************
 
-echo .
 echo ************************************
 echo ***         Configuration        ***
 echo ************************************
@@ -22,12 +21,21 @@ IF "%MINGW_DIR%"=="" (
 set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%
 set QTSDK=%QTDIR%
 
-IF "%DLT_VIEWER_SDK_DIR%"=="" (
-        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
-)
+IF '%WORKSPACE%'=='' (
+    IF '%DLT_VIEWER_SDK_DIR%'=='' (
+        set DLT_VIEWER_SDK_DIR=%USERPROFILE%\DltViewerSDK
+    )
 
-set SOURCE_DIR=%CD%
-set BUILD_DIR=%CD%\build\release
+    set SOURCE_DIR=%CD%
+    set BUILD_DIR=%CD%\build\release
+) ELSE (
+    IF '%DLT_VIEWER_SDK_DIR%'=='' (
+        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\..\GENIUS2_dlt_viewer_windows\DltViewerSDK
+    )
+
+    set SOURCE_DIR=%WORKSPACE%
+    set BUILD_DIR=%WORKSPACE%\build\release
+)
 
 echo ************************************
 echo * QTDIR     = %QTDIR%
@@ -262,19 +270,21 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 GOTO QUIT
 
-
 :ERROR_HANDLER
 echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 echo !!!       ERROR occured          !!!
 echo !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-set /p name= Continue
+IF '%WORKSPACE%'=='' (
+pause
+)
 exit 1
-
 
 :QUIT
 echo ************************************
 echo ***       SUCCESS finish         ***
 echo ************************************
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
-set /p name= Continue
+IF '%WORKSPACE%'=='' (
+pause
+)
 exit 0
