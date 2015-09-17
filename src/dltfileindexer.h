@@ -66,7 +66,7 @@ public:
     QString filenameIndexCache(QString filename);
 
     // load/save index from/to file
-    bool saveIndex(QString filename, QVector<qint64> &index);
+    bool saveIndex(QString filename, const QVector<qint64> &index);
     bool loadIndex(QString filename, QVector<qint64> &index);
 
     // Accessors to mutex

@@ -903,6 +903,12 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
         return;
     }
 
+    if (importfile.file_length <= 0) // This can happen
+    {
+        dlt_file_free(&importfile, 0);
+        return;
+    }
+
     /* get number of files in DLT log file */
     while (dlt_file_read(&importfile,0)>=0)
     {

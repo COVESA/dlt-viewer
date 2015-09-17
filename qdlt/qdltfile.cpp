@@ -170,7 +170,8 @@ bool QDltFile::updateIndex()
         /* start at last found position */
         if(files[numFile]->indexAll.size()) {
             /* move behind last found position */
-            pos = files[numFile]->indexAll[files[numFile]->indexAll.size()-1] + 4;
+            const QVector<qint64>* const_indexAll = &(files[numFile]->indexAll);
+            pos = (*const_indexAll)[files[numFile]->indexAll.size()-1] + 4;
             files[numFile]->infile.seek(pos);
         }
         else {
@@ -367,7 +368,8 @@ QByteArray QDltFile::getMsg(int index) const
     mutexQDlt.lock();
 
     QDltFileItem* file = files[num];
-    qint64 positionForIndex = file->indexAll[index];
+    const QDltFileItem* const_file = file;
+    qint64 positionForIndex = const_file->indexAll[index];
 
     /* move to file position selected by index */
     file->infile.seek(positionForIndex);
@@ -378,7 +380,7 @@ QByteArray QDltFile::getMsg(int index) const
         buf = file->infile.read(file->infile.size() - positionForIndex);
     else
         /* any other file position */
-        buf = file->infile.read(file->indexAll[index+1] - positionForIndex);
+        buf = file->infile.read(const_file->indexAll[index+1] - positionForIndex);
 
     mutexQDlt.unlock();
 

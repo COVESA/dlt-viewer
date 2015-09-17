@@ -205,6 +205,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     indexFilterListSorted.clear();
     getLogInfoList.clear();
 
+    indexFilterList.reserve(dltFile->size()); // make sure no reallocation of memory is needed to prevent memory issues
+
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
 
@@ -696,7 +698,7 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     return filename;
 }
 
-bool DltFileIndexer::saveIndex(QString filename, QVector<qint64> &index)
+bool DltFileIndexer::saveIndex(QString filename, const QVector<qint64> &index)
 {
     quint32 version = DLT_FILE_INDEXER_FILE_VERSION;
     qint64 value;
