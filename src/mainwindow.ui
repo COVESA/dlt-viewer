@@ -10,6 +10,9 @@
     <height>658</height>
    </rect>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::NoFocus</enum>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -45,6 +48,9 @@
       <property name="contextMenuPolicy">
        <enum>Qt::CustomContextMenu</enum>
       </property>
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
       </property>
@@ -76,12 +82,12 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
+     <height>27</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
     <property name="title">
-     <string>File</string>
+     <string>&amp;File</string>
     </property>
     <widget class="QMenu" name="menuRecent_files">
      <property name="title">
@@ -107,7 +113,7 @@
    </widget>
    <widget class="QMenu" name="menuProject">
     <property name="title">
-     <string>Project</string>
+     <string>&amp;Project</string>
     </property>
     <widget class="QMenu" name="menuRecent_projects">
      <property name="title">
@@ -122,7 +128,7 @@
    </widget>
    <widget class="QMenu" name="menuConfig">
     <property name="title">
-     <string>Config</string>
+     <string>&amp;Config</string>
     </property>
     <addaction name="action_menuConfig_ECU_Add"/>
     <addaction name="action_menuConfig_ECU_Edit"/>
@@ -147,7 +153,7 @@
    </widget>
    <widget class="QMenu" name="menuFilter">
     <property name="title">
-     <string>Filter</string>
+     <string>F&amp;ilter</string>
     </property>
     <widget class="QMenu" name="menuRecent_Filters">
      <property name="title">
@@ -175,7 +181,7 @@
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
-     <string>Plugin</string>
+     <string>P&amp;lugin</string>
     </property>
     <addaction name="action_menuPlugin_Edit"/>
     <addaction name="action_menuPlugin_Show"/>
@@ -186,7 +192,7 @@
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
-     <string>Help</string>
+     <string>&amp;Help</string>
     </property>
     <addaction name="action_menuHelp_Info"/>
     <addaction name="action_menuHelp_Support"/>
@@ -195,7 +201,7 @@
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
-     <string>DLT</string>
+     <string>&amp;DLT</string>
     </property>
     <addaction name="action_menuDLT_Get_Default_Log_Level"/>
     <addaction name="action_menuDLT_Set_Default_Log_Level"/>
@@ -216,14 +222,14 @@
    </widget>
    <widget class="QMenu" name="menuSearch">
     <property name="title">
-     <string>Search</string>
+     <string>&amp;Search</string>
     </property>
     <addaction name="action_menuSearch_Find"/>
     <addaction name="actionJump_To"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
-     <string>View</string>
+     <string>&amp;View</string>
     </property>
     <addaction name="actionProject"/>
     <addaction name="actionSearch_Results"/>
@@ -284,6 +290,9 @@
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidgetProject">
+   <property name="focusPolicy">
+    <enum>Qt::NoFocus</enum>
+   </property>
    <property name="features">
     <set>QDockWidget::AllDockWidgetFeatures</set>
    </property>
@@ -294,6 +303,9 @@
     <number>1</number>
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
+    <property name="focusPolicy">
+     <enum>Qt::NoFocus</enum>
+    </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="leftMargin">
       <number>2</number>
@@ -369,6 +381,9 @@
        <property name="enabled">
         <bool>true</bool>
        </property>
+       <property name="focusPolicy">
+        <enum>Qt::TabFocus</enum>
+       </property>
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>
@@ -385,6 +400,9 @@
         <bool>false</bool>
        </property>
        <widget class="QWidget" name="tabConfig">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
         <attribute name="title">
          <string>Config</string>
         </attribute>
@@ -403,8 +421,14 @@
          </property>
          <item>
           <widget class="QTreeWidget" name="configWidget">
+           <property name="focusPolicy">
+            <enum>Qt::TabFocus</enum>
+           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="tabKeyNavigation">
+            <bool>true</bool>
            </property>
            <property name="selectionMode">
             <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -472,6 +496,9 @@
           <widget class="PluginTreeWidget" name="pluginWidget">
            <property name="contextMenuPolicy">
             <enum>Qt::CustomContextMenu</enum>
+           </property>
+           <property name="tabKeyNavigation">
+            <bool>true</bool>
            </property>
            <property name="rootIsDecorated">
             <bool>true</bool>
@@ -669,6 +696,9 @@
       <widget class="QTableView" name="tableView_SearchIndex">
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
+       </property>
+       <property name="tabKeyNavigation">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

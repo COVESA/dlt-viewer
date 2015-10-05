@@ -238,6 +238,10 @@ void MainWindow::initState()
 
 void MainWindow::initView()
 {
+    /* make focus on elements visible */
+    project.ecu->setStyleSheet("QTreeWidget:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
+    ui->tableView->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
+    ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
 
     /* update default filter selection */
     ui->comboBoxFilterSelection->addItem("<No filter selected>");
@@ -5476,6 +5480,32 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     {
         QMessageBox::warning(this, QString("Cut"),
                              QString("pressed"));
+    }
+
+    // Access menu bar
+    if(event->key() == Qt::Key_F10)
+    {
+        if(ui->menuBar->activeAction() != NULL)
+        {
+            ui->menuBar->setActiveAction(NULL);
+            this->setFocus();
+        }
+        else
+        {
+            ui->menuBar->setFocus();
+            if(ui->menuBar->children().length() > 1)
+            {
+                QMenu *firstMenu = (QMenu *) ui->menuBar->children()[1];
+
+                if(firstMenu->actions().length() > 0)
+                {
+                    ui->menuBar->setActiveAction(firstMenu->actions()[0]);
+
+                    QKeyEvent rightPress(QEvent::KeyPress, Qt::Key_Right, Qt::NoModifier);
+                    qApp->sendEvent(ui->menuBar, &rightPress);
+                }
+            }
+        }
     }
 
     QMainWindow::keyPressEvent(event);
