@@ -205,8 +205,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     indexFilterListSorted.clear();
     getLogInfoList.clear();
 
-    indexFilterList.reserve(dltFile->size()); // make sure no reallocation of memory is needed to prevent memory issues
-
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
 
@@ -282,7 +280,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 item->initMsg(ix, msg);
             }
         }
-
         /* Process all decoderplugins */
         pluginManager->decodeMsg(msg,silentMode);
 
@@ -744,6 +741,8 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
         // open file failed
         return false;
     }
+
+    index.reserve((file.size() - sizeof(version)) / sizeof(value)); // prevent memory issues through reallocation
 
     // read version
     length = file.read((char*)&version,sizeof(version));
