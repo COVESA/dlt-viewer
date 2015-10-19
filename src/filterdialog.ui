@@ -81,8 +81,8 @@
         </property>
         <property name="icon">
          <iconset resource="resource.qrc">
-          <normaloff>:/icons/png/mark_g.png</normaloff>
-          <normalon>:/icons/png/mark.png</normalon>:/icons/png/mark_g.png</iconset>
+          <normaloff>:/icons/png/view-filter_32_on_g.png</normaloff>
+          <normalon>:/toolbar/png/view-filter_32_on.png</normalon>:/icons/png/view-filter_32_on_g.png</iconset>
         </property>
         <property name="iconSize">
          <size>

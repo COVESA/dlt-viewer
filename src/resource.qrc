@@ -12,7 +12,6 @@
         <file>png/go-previous.png</file>
         <file>png/go-next.png</file>
         <file>png/edit-cut.png</file>
-        <file>png/filter.png</file>
         <file>png/document-save-as2.png</file>
         <file>png/document-save-as3.png</file>
         <file>png/weather-storm.png</file>
@@ -20,7 +19,7 @@
         <file>png/weather-overcast.png</file>
         <file>png/action-regexp.png</file>
         <file>png/action-searchlist.png</file>
-        <file>png/mark.png</file>
+        <file>png/bookmark-new.png</file>
         <file>png/view-filter_32_off.png</file>
         <file>png/view-filter_32_on.png</file>
         <file>png/x-kde-nsplugin-generated.png</file>
@@ -30,11 +29,11 @@
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>
-        <file>png/mark.png</file>
-        <file>png/mark_g.png</file>
+        <file>png/bookmark-new.png</file>
         <file>png/colorize-2.png</file>
         <file>png/colorize-2_g.png</file>
         <file>png/dialog-error-3.png</file>
         <file>png/dialog-error-3_g.png</file>
+        <file>png/view-filter_32_on_g.png</file>
     </qresource>
 </RCC>

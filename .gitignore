@@ -6,3 +6,4 @@ Makefile
 buildlib/
 release/
 .cproject
+*.pro.user*

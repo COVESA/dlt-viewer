@@ -1406,7 +1406,7 @@
    </property>
    <property name="icon">
     <iconset resource="resource.qrc">
-     <normaloff>:/toolbar/png/mark.png</normaloff>:/toolbar/png/mark.png</iconset>
+     <normaloff>:/toolbar/png/bookmark-new.png</normaloff>:/toolbar/png/bookmark-new.png</iconset>
    </property>
    <property name="text">
     <string>Marker</string>
