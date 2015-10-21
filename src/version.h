@@ -20,11 +20,11 @@
 #ifndef __VERSION_H_
 #define __VERSION_H_
 
-#define PACKAGE_VERSION_STATE "ALPHA"
+#define PACKAGE_VERSION_STATE "STABLE"
 #define PACKAGE_MAJOR_VERSION "2"
-#define PACKAGE_MINOR_VERSION "14"
-#define PACKAGE_PATCH_LEVEL "1"
-#define PACKAGE_VERSION "2.14.1"
+#define PACKAGE_MINOR_VERSION "15"
+#define PACKAGE_PATCH_LEVEL "0"
+#define PACKAGE_VERSION "2.15.0"
 #define PACKAGE_REVISION ""
 #define DLT_SUPPORT_MAIL_ADDRESS "genivi-diagnostic-log-and-trace@lists.genivi.org"
 #define DLT_SUPPORT_NAME "GENIVI"

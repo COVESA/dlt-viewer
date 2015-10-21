@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.14.1 ALPHA
+Version 2.15.0 STABLE
 
 Known issues
 ------------
@@ -13,6 +13,19 @@ Known issues
 
 Changes
 -------
+2.15.0
+ * Using QStandardPaths::CacheLocation instead of '/tmp' for temporary files
+ * Added -std=gnu99, -std=gnu++11, -Wall and -Wextra compiler flags, pedantic commented out yet
+ * Added possibility to copy search table selections to clipboard using the context menu or Ctrl+C
+ * Unified Windows build script for local build and Jenkins job
+ * Made menu bar accessible by [ALT+...] combinations and the [F10] key
+ * Improved the [TAB] key focus behavior and focus visualization of some elements
+ * Added more stability for loading large files under 32bit Windows
+ * Preventing possible division by zero when using the "Append DLT File" menu option
+ * Added preparations for 64bit Windows builds
+ * Replaced some icons and deleted an unused icon due to licence issues
+ * Removed executable bits from all .png files
+
 2.14.1
   * Copy new plugin to SDK.
   * DLT Logstorage Configuration File Creator
