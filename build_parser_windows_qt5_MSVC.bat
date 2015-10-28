@@ -9,17 +9,33 @@ echo ************************************
 echo ***         Configuration        ***
 echo ************************************
 
+setlocal enabledelayedexpansion
+
+rem parameter of this batch script can be either x86 or x86_amd64
+if "%ARCHITECTURE%"=="" (
+    set ARCHITECTURE=x86
+
+    set USE_ARCH_PARAM=false
+    if "%1" NEQ "" (
+        if "%1"=="x86" set USE_ARCH_PARAM=true
+        if "%1"=="x86_amd64" set USE_ARCH_PARAM=true
+    )
+    if "!USE_ARCH_PARAM!"=="true" set ARCHITECTURE=%1
+)
+
+echo Target architecture is !ARCHITECTURE!
+
 echo *** Setting up environment ***
 
-IF "%QTDIR%"=="" (
-    set QTDIR=C:\Qt\Qt5.5.0\5.5\mingw492_32
+if "%QTDIR%"=="" (
+    if "%ARCHITECTURE%"=="x86_amd64" (
+        set QTDIR=C:\Qt\Qt5.5.0\5.5\msvc2013_64
+    ) else (set QTDIR=C:\Qt\Qt5.5.0\5.5\msvc2013)
 )
 
-IF "%MINGW_DIR%"=="" (
-    set MINGW_DIR=C:\Qt\Qt5.5.0\Tools\mingw492_32
-)
+IF "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC
 
-set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%
+set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
 set QTSDK=%QTDIR%
 
 IF "%DLT_PARSER_DIR%"=="" (
@@ -32,7 +48,7 @@ set BUILD_DIR=%CD%\build\release
 echo ************************************
 echo * QTDIR     = %QTDIR%
 echo * QTSDK     = %QTSDK%
-echo * MINGW_DIR = %MINGW_DIR%
+echo * MSVC_DIR  = %MSVC_DIR%
 echo * PATH      = %PATH%
 echo * DLT_PARSER_DIR = %DLT_PARSER_DIR%
 echo * SOURCE_DIR         = %SOURCE_DIR%
@@ -58,6 +74,14 @@ echo ************************************
 )
 
 echo ************************************
+echo ***  Configure MSVC environment  ***
+echo ************************************
+
+call vcvarsall.bat %ARCHITECTURE%
+if %ERRORLEVEL% NEQ 0 goto error
+echo configuring was successful
+
+echo ************************************
 echo ***        Build DLT Parser      ***
 echo ************************************
 
@@ -70,7 +94,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 qmake ../BuildDltParser.pro
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-mingw32-make.exe release
+nmake release
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo ************************************
@@ -94,14 +118,14 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\bin\icudt54.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\libwinpthread-1.dll %DLT_PARSER_DIR%
-IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\libgcc_s_dw2-1.dll %DLT_PARSER_DIR%
-IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy "%QTDIR%\bin\libstdc++-6.dll" %DLT_PARSER_DIR%
-IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem copy %QTDIR%\bin\libwinpthread-1.dll %DLT_PARSER_DIR%
+rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem 
+rem copy %QTDIR%\bin\libgcc_s_dw2-1.dll %DLT_PARSER_DIR%
+rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem 
+rem copy "%QTDIR%\bin\libstdc++-6.dll" %DLT_PARSER_DIR%
+rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %QTDIR%\bin\Qt5Core.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER

@@ -5,8 +5,8 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
-* Install Qt5 SDK including Qt Creator and MinGW
-* Tested with QT 5.4.1 and QT 4.8.5
+* Install Qt5 SDK including Qt Creator and MinGW (or MSVC 2013 for 32bit and 64bit Windows builds)
+* Tested with QT 5.5.0, Qt 5.4.1 and QT 4.8.5
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW.
 * Build Release in Qt Creator.
@@ -26,10 +26,19 @@ Instructions for installing DLT Viewer (Linux commandline)
 Create SDK (Windows)
 --------------------
 
+MinGW (32bit only):
 * Install Qt5 SDK inclduing MinGW for Windows.
-* Execute build_sdk_windows_qt5.bat batch file
+* If your Qt installation does not match "C:Qt\Qt5.5.0\5.5\mingw492_32",
+    you can set the correct path as environment variable "QTDIR" in your system properties.
+* Adjust and run build_sdk_windows_qt5.bat batch file
 
-The SDK will be installed to C:\DltViewerSDK\
+Microsoft Visual C++ 2013 (32bit and 64bit):
+* Install Qt5 SDK and MSVC 2013.
+* If your Qt installation does not match "C:Qt\Qt5.5.0\5.5\msvc2013" (32bit) or "C:Qt\Qt5.5.0\5.5\msvc2013_64" (64bit),
+    you can set the correct path as environment variable "QTDIR" in your system properties.
+* Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter x86 or x86_amd64
+
+The SDK will be installed to C:\Users\USERNAME\DltViewerSDK\
 
 Optional: Prepare Installation Qwt (Windows)
 --------------------------------------------
@@ -37,14 +46,30 @@ Optional: Prepare Installation Qwt (Windows)
 Some DLT Viewer plugins will use the Qwt library for displaying graphs.
 The Qwt library must be compiled and installed before it can be used.
 
-* Tested with Qwt 6.1.2
+(Tested with Qwt 6.1.2)
+
+MinGW (32bit only):
 * Install Qt5 SDK inclduing MinGW for Windows.
-* Download and extract Qwt Zip package
+* Extract Qwt Zip package
 * Start Qt commandline from Start->Qt_5.x.x
 * Change into Qwt directory
 * Execute qmake qwt.pro
 * Execute mingw32-make
 * Execute mingw32-make install
+
+Microsoft Visual C++ 2013 (32bit and 64bit):
+* Install Qt5 SDK for Visual C++ 2013
+* Extract Qwt Zip package
+* If you like, you can adjust the installation path by changing the variable "QWT_INSTALL_PREFIX" in qwtconfig.pri
+* Start Qt commandline from Start->Qt_5.x.x
+* Change into Qwt directory
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
+    for 32bit, or
+          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
+    for 64bit.
+* Execute qmake qwt.pro
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\nmake.exe"
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\nmake.exe" install
 
 Create SDK (Linux)
 ------------------

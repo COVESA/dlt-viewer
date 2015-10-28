@@ -4,21 +4,19 @@ QT_VERSION = $$split(QT_VERSION, ".")
 QT_VER_MAJ = $$member(QT_VERSION, 0)
 QT_VER_MIN = $$member(QT_VERSION, 1)
 
-*-gcc* 
-{
+*-gcc* {
     QMAKE_CFLAGS += -std=gnu99
+    QMAKE_CFLAGS += -Wall
+    QMAKE_CFLAGS += -Wextra
+    #QMAKE_CFLAGS += -pedantic
 }
-QMAKE_CFLAGS += -Wall
-QMAKE_CFLAGS += -Wextra
-#QMAKE_CFLAGS += -pedantic
 
-*-g++* 
-{
+*-g++* {
     QMAKE_CXXFLAGS += -std=gnu++0x
+    QMAKE_CXXFLAGS += -Wall
+    QMAKE_CXXFLAGS += -Wextra
+    #QMAKE_CXXFLAGS += -pedantic
 }
-QMAKE_CXXFLAGS += -Wall
-QMAKE_CXXFLAGS += -Wextra
-#QMAKE_CXXFLAGS += -pedantic
 
 # Uncomment to add debug symbols to Release build
 #QMAKE_CXXFLAGS_RELEASE += -g

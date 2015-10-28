@@ -4274,7 +4274,13 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Compiler: gcc\n")+
                          #endif
-                         QString("Compiler Version: %1\n\n").arg(__VERSION__)+
+                         QString("Compiler Version: %1\n\n").arg(
+                         #if defined(_MSC_VER)
+                                 _MSC_VER
+                         #else
+                                 __VERSION__
+                         #endif
+                                 )+
                          QString("Architecture: %1 Bit\n").arg(QSysInfo::WordSize)+
                          #if (BYTE_ORDER==BIG_ENDIAN)
                              QString("Architecture: Big Endian\n\n")+

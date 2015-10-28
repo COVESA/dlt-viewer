@@ -302,7 +302,13 @@
 /**
  * The definition of the serial header containing the characters "DLS" + 0x01.
  */
+#ifdef __cplusplus
+extern "C" {
+#endif
 QDLT_C_EXPORT extern const char dltSerialHeader[DLT_ID_SIZE];
+#ifdef __cplusplus
+}
+#endif
 
 /**
  * The definition of the serial header containing the characters "DLS" + 0x01 as char.

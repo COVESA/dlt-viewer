@@ -55,7 +55,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 
-//typedef int pid_t;
+typedef int pid_t;
 typedef unsigned int speed_t;
 
 typedef float  float32_t;
