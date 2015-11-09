@@ -31,6 +31,13 @@
        </widget>
       </item>
       <item>
+       <widget class="QRadioButton" name="radioButtonDltDecoded">
+        <property name="text">
+         <string>DLT Decoded</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QRadioButton" name="radioButtonAscii">
         <property name="text">
          <string>ASCII</string>

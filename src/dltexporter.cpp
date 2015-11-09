@@ -94,7 +94,7 @@ bool DltExporter::start()
             return false;
         }
     }
-    else if(exportFormat == DltExporter::FormatDlt)
+    else if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
     {
         if(!to->open(QIODevice::WriteOnly))
         {
@@ -135,7 +135,8 @@ bool DltExporter::finish()
 
     if(exportFormat == DltExporter::FormatAscii ||
        exportFormat == DltExporter::FormatCsv ||
-       exportFormat == DltExporter::FormatDlt)
+       exportFormat == DltExporter::FormatDlt ||
+       exportFormat == DltExporter::FormatDltDecoded)
     {
         /* close outpur file */
         to->close();
@@ -168,7 +169,7 @@ bool DltExporter::getMsg(int num,QDltMsg &msg,QByteArray &buf)
 
 bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
 {
-    if(exportFormat == DltExporter::FormatDlt)
+    if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
         to->write(buf);
     else if(exportFormat == DltExporter::FormatAscii ||
             exportFormat == DltExporter::FormatClipboard)
@@ -268,7 +269,14 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 
         /* decode message if needed */
         if(exportFormat != DltExporter::FormatDlt)
+        {
             pluginManager->decodeMsg(msg,silentMode);
+            if (exportFormat == DltExporter::FormatDltDecoded)
+            {
+                msg.setNumberOfArguments(msg.sizeArguments());
+                msg.getMsg(buf,true);
+            }
+        }
 
         /* export message */
         if(!exportMsg(num,msg,buf))

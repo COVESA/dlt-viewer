@@ -1038,7 +1038,7 @@ void MainWindow::on_actionExport_triggered()
     QFileDialog dialog(this);
     QStringList filters;
 
-    if(exportFormat == DltExporter::FormatDlt)
+    if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
     {
         filters << "DLT Files (*.dlt)" <<"All files (*.*)";
         dialog.setDefaultSuffix("dlt");

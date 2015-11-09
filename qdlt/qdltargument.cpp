@@ -330,7 +330,7 @@ bool QDltArgument::getArgument(QByteArray &payload, bool verboseMode) const
         default:
             return false;
         }
-        if((typeInfo == DLT_TYPE_INFO_SINT) || (typeInfo == DLT_TYPE_INFO_UINT) || (typeInfo == DLT_TYPE_INFO_FLOA)) {
+        if((typeInfo == DltTypeInfoSInt) || (typeInfo == DltTypeInfoUInt) || (typeInfo == DltTypeInfoFloa)) {
             switch(data.size())
             {
             case 1:
