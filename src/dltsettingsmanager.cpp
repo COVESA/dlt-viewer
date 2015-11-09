@@ -43,11 +43,7 @@ void DltSettingsManager::close()
 DltSettingsManager::DltSettingsManager()
 {
     /* check if directory for configuration exists */
-#ifdef Q_OS_WIN
-    QDir dir(QApplication::applicationDirPath()+"/config");
-#else
     QDir dir(QDir::homePath()+"/.dlt/config");
-#endif
     if(!dir.exists())
     {
         /* directory does not exist, make it */

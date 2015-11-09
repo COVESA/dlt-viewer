@@ -514,20 +514,12 @@ void SettingsDialog::readSettings()
     pluginsPath = settings->value("startup/pluginsPath",0).toInt();
     pluginsPathName = settings->value("startup/pluginsPathName",QString("")).toString();
     defaultFilterPath = settings->value("startup/defaultFilterPath",1).toInt();
-#ifdef Q_OS_WIN
-    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QCoreApplication::applicationDirPath()+"/filters").toString();
-#else
     defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir::homePath()+"/.dlt/filters").toString();
-#endif
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",1).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-#ifdef Q_OS_WIN
-    filterCacheName = settings->value("startup/filterCacheName",QCoreApplication::applicationDirPath()+"/cache").toString();
-#else
-    filterCacheName = settings->value("startup/filterCacheName",QDir::homePath()+"/.dlt/cache").toString();
-#endif
+    filterCacheName = settings->value("startup/filterCacheName",QDir::tempPath()+"/dltviewer/cache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
