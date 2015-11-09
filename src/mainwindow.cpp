@@ -2597,6 +2597,7 @@ void MainWindow::disconnectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         disconnectECU(ecuitem);
     }
+    checkConnectionState();
 }
 
 void MainWindow::disconnectECU(EcuItem *ecuitem)
@@ -2625,6 +2626,7 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
 
         ecuitem->InvalidAll();
     }
+    checkConnectionState();
 }
 
 void MainWindow::on_action_menuConfig_Connect_triggered()
@@ -2745,6 +2747,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             controlMessage_GetLogInfo(ecuitem);
         }
     }
+    checkConnectionState();
 }
 
 void MainWindow::connected()
@@ -2770,6 +2773,39 @@ void MainWindow::connected()
             ecuitem->serialcon.clear();
         }
     }
+checkConnectionState();
+}
+void MainWindow::checkConnectionState()
+{
+
+
+        bool oneConnected=false;
+        bool oneTryConnect=false;
+        /* find socket which emited signal */
+        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+        {
+            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+            if (ecuitem->connected) oneConnected=true;
+            if (ecuitem->tryToConnect) oneTryConnect=true;
+
+        }
+        qDebug()<<"Connect:at least one ECU connected"<<oneConnected;
+    if (oneConnected)
+    {
+     this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_connected.png"));
+    }
+    else
+    {
+        if (oneTryConnect)
+        {
+            this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_disconnected.png"));
+        }
+        else
+        {
+            this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive.png"));
+        }
+    }
+
 }
 
 void MainWindow::disconnected()
@@ -2793,6 +2829,7 @@ void MainWindow::disconnected()
             disconnect(&ecuitem->socket,0,0,0);
         }
     }
+      checkConnectionState();
 }
 
 

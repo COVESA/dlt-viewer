@@ -266,6 +266,7 @@ private:
 
     void connectECU(EcuItem *ecuitem,bool force = false);
     void disconnectECU(EcuItem *ecuitem);
+    void checkConnectionState();
     void read(EcuItem *ecuitem);
     void updateIndex();
     void drawUpdatedView();

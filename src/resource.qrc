@@ -26,6 +26,8 @@
         <file>png/x-kde-nsplugin-generated_gray.png</file>
         <file>png/document-open-recent-2.png</file>
         <file>png/document-open-recent-2_gray.png</file>
+        <file>png/network-transmit-receive_connected.png</file>
+        <file>png/network-transmit-receive_disconnected.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file>png/face-glasses.png</file>
