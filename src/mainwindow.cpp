@@ -5709,10 +5709,22 @@ void MainWindow::dropEvent(QDropEvent *event)
                                          QString("No decoder plugin active to load configuration of file:\n")+filename);
                     return;
                 }
-
+                QString item="";
                 bool ok;
-                QString item = QInputDialog::getItem(this, tr("DLT Viewer"),
+                if(list.size()!=1)
+                {
+
+
+
+
+                item = QInputDialog::getItem(this, tr("DLT Viewer"),
                                                          tr("Select Plugin to load configuration:"), items, 0, false, &ok);
+                }
+                else
+                {
+                   item=items.at(0);
+                   ok=true;
+                }
                 if (ok && !item.isEmpty())
                 {
                     QDltPlugin* plugin = pluginManager.findPlugin(item);
