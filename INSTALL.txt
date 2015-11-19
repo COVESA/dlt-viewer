@@ -6,7 +6,7 @@ Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
 * Install Qt5 SDK including Qt Creator and MinGW (or MSVC 2013 for 32bit and 64bit Windows builds)
-* Tested with QT 5.5.0, Qt 5.4.1 and QT 4.8.5
+* Tested with QT 5.5.1, QT 5.5.0, Qt 5.4.1 and QT 4.8.5
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW.
 * Build Release in Qt Creator.
@@ -28,13 +28,13 @@ Create SDK (Windows)
 
 MinGW (32bit only):
 * Install Qt5 SDK inclduing MinGW for Windows.
-* If your Qt installation does not match "C:Qt\Qt5.5.0\5.5\mingw492_32",
+* If your Qt installation does not match "C:Qt\Qt5.5.1\5.5\mingw492_32",
     you can set the correct path as environment variable "QTDIR" in your system properties.
 * Adjust and run build_sdk_windows_qt5.bat batch file
 
 Microsoft Visual C++ 2013 (32bit and 64bit):
 * Install Qt5 SDK and MSVC 2013.
-* If your Qt installation does not match "C:Qt\Qt5.5.0\5.5\msvc2013" (32bit) or "C:Qt\Qt5.5.0\5.5\msvc2013_64" (64bit),
+* If your Qt installation does not match "C:Qt\Qt5.5.1\5.5\msvc2013" (32bit) or "C:Qt\Qt5.5.1\5.5\msvc2013_64" (64bit),
     you can set the correct path as environment variable "QTDIR" in your system properties.
 * Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter x86 or x86_amd64
 

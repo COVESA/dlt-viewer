@@ -12,7 +12,11 @@ setlocal EnableDelayedExpansion
 
 rem parameter of this batch script can be either x86 or x86_amd64
 if "%ARCHITECTURE%"=="" (
-    set ARCHITECTURE=x86
+    if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
+        set ARCHITECTURE=x86_amd64
+    ) else (
+        set ARCHITECTURE=x86
+    )
 
     set USE_ARCH_PARAM=false
     if "%1" NEQ "" (
@@ -28,8 +32,8 @@ echo *** Setting up environment ***
 
 if "%QTDIR%"=="" (
     if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.5.0\5.5\msvc2013_64
-    ) else (set QTDIR=C:\Qt\Qt5.5.0\5.5\msvc2013)
+        set QTDIR=C:\Qt\Qt5.5.1\5.5\msvc2013_64
+    ) else (set QTDIR=C:\Qt\Qt5.5.1\5.5\msvc2013)
 )
 
 if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC
