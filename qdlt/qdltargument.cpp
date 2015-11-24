@@ -375,7 +375,7 @@ void QDltArgument::clear()
     name.clear();
     unit.clear();
     endianness = QDltArgument::DltEndiannessUnknown;
-
+    dltType = 0;
 }
 
 QString QDltArgument::toString(bool binary) const
