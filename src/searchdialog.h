@@ -25,6 +25,7 @@
 #include <QTableView>
 #include <QTreeWidget>
 #include <QCheckBox>
+#include <QCache>
 
 #include "searchtablemodel.h"
 
@@ -45,6 +46,7 @@ private:
     bool nextClicked;
     bool match;
     bool onceClicked;
+    QCache<QString, QList <unsigned long>> cachedHistoryKey;
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
@@ -64,6 +66,9 @@ public:
     void setSearchPosition(bool beginning);
     void setOnceClicked(bool clicked);
     void appendLineEdit(QLineEdit *lineEdit);
+    void cacheSearchHistory();
+    void clearCacheHistory();
+    QList <unsigned long> m_searchHistory[20];
 
     QString getText();
     bool getHeader();
@@ -113,9 +118,11 @@ public slots:
     void textEditedFromToolbar(QString newText);
     void findNextClicked();
     void findPreviousClicked();
+    void loadSearchHistory();
 
 signals:
     void refreshedSearchIndex();
+    void addActionHistory();
 };
 
 #endif // SEARCHDIALOG_H

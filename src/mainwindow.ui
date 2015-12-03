@@ -224,8 +224,14 @@
     <property name="title">
      <string>&amp;Search</string>
     </property>
+    <widget class="QMenu" name="menuHistory">
+     <property name="title">
+      <string>History</string>
+     </property>
+    </widget>
     <addaction name="action_menuSearch_Find"/>
     <addaction name="actionJump_To"/>
+    <addaction name="menuHistory"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">

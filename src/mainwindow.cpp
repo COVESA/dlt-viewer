@@ -164,6 +164,15 @@ MainWindow::~MainWindow()
         outputfile.rename(infoNew.absoluteFilePath());
     }
 
+    // deleting search history
+    for (int i= 0; i < MaxSearchHistory; i++)
+    {
+        if (NULL != searchHistoryActs[i])
+        {
+            delete searchHistoryActs[i];
+        }
+    }
+
     delete ui;
     delete tableModel;
     delete searchDlg;
@@ -317,6 +326,14 @@ void MainWindow::initView()
 
 void MainWindow::initSignalConnections()
 {
+    /* Initialize Search History */
+    for (int i= 0; i < MaxSearchHistory; i++)
+    {
+        searchHistoryActs[i] = new QAction(this);
+        searchHistoryActs[i]->setVisible(false);
+        connect(searchHistoryActs[i], SIGNAL(triggered()), searchDlg, SLOT(loadSearchHistory()));
+        ui->menuHistory->addAction(searchHistoryActs[i]);
+    }
     /* Connect RegExp settings from and to search dialog */
     connect(m_searchActions.at(ToolbarPosition::Regexp), SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
     connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), m_searchActions.at(ToolbarPosition::Regexp), SLOT(setChecked(bool)));
@@ -752,6 +769,17 @@ bool MainWindow::openDltFile(QStringList fileNames)
 
     if(fileNames.size()==0)
         return false;
+
+    //clear search history list
+    searchHistory.clear();
+    //clear all the action buttons from history
+    for (int i = 0; i < MaxSearchHistory; i++)
+    {
+        searchHistoryActs[i]->setVisible(false);
+    }
+
+    // clear the cache stored for the history
+    searchDlg->clearCacheHistory();
 
     if(outputfile.isOpen())
     {
@@ -6165,4 +6193,21 @@ void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
 void MainWindow::on_actionMarker_triggered()
 {
     controlMessage_Marker();
+}
+
+void MainWindow::onAddActionToHistory()
+{
+    QString searchText = searchDlg->getText();
+
+    if((!searchHistory.contains(searchText,Qt::CaseInsensitive)) && !searchText.isEmpty())
+    {
+        searchHistory.prepend(searchText);
+    }
+
+    int searchHistorySize = searchHistory.size();
+    for (int i = 0;i < searchHistorySize && i < MaxSearchHistory; i++)
+    {
+        searchHistoryActs[i]->setText(searchHistory[i]);
+        searchHistoryActs[i]->setVisible(true);
+    }
 }

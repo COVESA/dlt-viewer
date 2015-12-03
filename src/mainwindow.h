@@ -175,6 +175,12 @@ private:
     QStringList autoloadPluginsVersionEcus;
     QStringList autoloadPluginsVersionStrings;
 
+    /* String List Containing Search History */
+    enum { MaxSearchHistory = 20 };
+    QAction *searchHistoryActs[MaxSearchHistory];
+    QStringList searchHistory;
+
+
     /* Recent files */
     enum { MaxRecentFiles = 5 };
     QAction *recentFileActs[MaxRecentFiles];
@@ -499,6 +505,9 @@ public slots:
 
     void controlMessage_Timezone(int timezone, unsigned char dst);
     void controlMessage_UnregisterContext(QString ecuId,QString appId,QString ctId);
+
+    //History Slots
+    void onAddActionToHistory();
 
 public:   
 

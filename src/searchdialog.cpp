@@ -114,6 +114,7 @@ void SearchDialog::focusRow(int searchLine)
 
 int SearchDialog::find()
 {
+    emit addActionHistory();
     QRegExp searchTextRegExp;
 
     int searchLine;
@@ -169,6 +170,7 @@ int SearchDialog::find()
 
     if (searchtoIndex())
     {
+        cacheSearchHistory();
         emit refreshedSearchIndex();
         //if at least one element has been found -> successful search
         if ( 0 < m_searchtablemodel->get_SearchResultListSize())
@@ -425,5 +427,59 @@ void SearchDialog::registerSearchTableModel(SearchTableModel *model)
 
 void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);    
+    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
+}
+
+void SearchDialog::loadSearchHistory()
+{
+    // getting text of the action button clicked to load search history.
+    QAction *action = qobject_cast<QAction *>(sender());
+    QString text;
+    if(action)
+    {
+        text = action->text();
+    }
+
+    // creating a local list to store the indexes related to the key retrieved from the cache.
+    QList <unsigned long>* tmp;
+    if(cachedHistoryKey.size() > 0)
+    {
+        tmp = cachedHistoryKey.object(text);
+        //deleting the previous search list and adding the cached search obtained to the model.
+        m_searchtablemodel->clear_SearchResults();
+        for (int i = 0;i < tmp->size();i++)
+        {
+            m_searchtablemodel->add_SearchResultEntry(tmp->at(i));
+        }
+    }
+    emit refreshedSearchIndex();
+}
+
+void SearchDialog::cacheSearchHistory()
+{
+    // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
+    if(false == cachedHistoryKey.contains(getText()))
+    {
+        for(int i = 0;i < m_searchtablemodel->m_searchResultList.size();i++)
+        {
+            m_searchHistory[cachedHistoryKey.size()].append(m_searchtablemodel->m_searchResultList.at(i));
+        }
+        // cache and store the new search list related to the key i.e searched text.
+        cachedHistoryKey.insert(getText(),&m_searchHistory[cachedHistoryKey.size()],1);
+    }
+}
+
+void SearchDialog::clearCacheHistory()
+{
+    // obtaining the list of keys stored in cache
+    QList<QString> tmp = cachedHistoryKey.keys();
+
+    int size = cachedHistoryKey.size();
+
+    //for all the keys take out the object from cache and clear the list
+    for (int i = 0; i < size; i++)
+    {
+        QList <unsigned long>* tmpObj = cachedHistoryKey.take(tmp.at(i));
+        tmpObj->clear();
+    }
 }

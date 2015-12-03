@@ -62,7 +62,7 @@ signals:
 public slots:
 
 
-private:
+public:
     QList <unsigned long> m_searchResultList;
     
 };
