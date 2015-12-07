@@ -66,6 +66,8 @@ public:
     void setSearchPosition(bool beginning);
     void setOnceClicked(bool clicked);
     void appendLineEdit(QLineEdit *lineEdit);
+    void setApIDText(QString);
+    void setCtIDText(QString);
     void cacheSearchHistory();
     void clearCacheHistory();
     QList <unsigned long> m_searchHistory[20];
@@ -81,11 +83,15 @@ public:
     bool getClicked();
     bool getOnceClicked();
     bool searchtoIndex();
-    int getStartLine();    
+    int getStartLine();
+    QString getApIDText();
+    QString getCtIDText();
+    QString getTimeStampStart();
+    QString getTimeStampEnd();
 
     int find();
-    void findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp);
-
+    void findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd);
+    bool timeStampCheck(bool timeRange, bool timeCheck, int searchLine );
     void registerSearchTableModel(SearchTableModel *model);
     /**
      * @brief foundLine

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>420</width>
-    <height>184</height>
+    <height>318</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,33 +18,6 @@
     <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="6" column="2">
-    <widget class="QPushButton" name="pushButtonNext">
-     <property name="text">
-      <string>Next  (F3)</string>
-     </property>
-     <property name="shortcut">
-      <string>F3</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>Search in:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="2">
-    <widget class="QCheckBox" name="checkBoxRegExp">
-     <property name="text">
-      <string>Regular Expression</string>
-     </property>
-    </widget>
-   </item>
    <item row="5" column="0">
     <widget class="QLabel" name="label_4">
      <property name="layoutDirection">
@@ -55,13 +28,62 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="1">
+   <item row="7" column="1">
     <widget class="QPushButton" name="pushButtonPrevious">
      <property name="text">
       <string>Previous  (F2)</string>
      </property>
      <property name="shortcut">
       <string>F2</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="2">
+    <widget class="QCheckBox" name="checkBoxRegExp">
+     <property name="text">
+      <string>Regular Expression</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QLabel" name="label_5">
+     <property name="text">
+      <string>Highlight color:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="2">
+    <widget class="QPushButton" name="pushButtonNext">
+     <property name="text">
+      <string>Next  (F3)</string>
+     </property>
+     <property name="shortcut">
+      <string>F3</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="pushButtonColor">
+     <property name="minimumSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>22</width>
+       <height>22</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>12</width>
+       <height>12</height>
+      </size>
      </property>
     </widget>
    </item>
@@ -75,25 +97,8 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QCheckBox" name="checkBoxCaseSensitive">
-     <property name="text">
-      <string>Case Sensitive</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QCheckBox" name="checkBoxHeader">
-     <property name="text">
-      <string>Header</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
+   <item row="0" column="1" colspan="2">
+    <widget class="QLineEdit" name="lineEditText"/>
    </item>
    <item row="1" column="0" colspan="3">
     <widget class="QGroupBox" name="groupBox">
@@ -134,7 +139,17 @@
      </layout>
     </widget>
    </item>
-   <item row="6" column="0">
+   <item row="3" column="0">
+    <widget class="QLabel" name="label_2">
+     <property name="layoutDirection">
+      <enum>Qt::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>Search in:</string>
+     </property>
+    </widget>
+   </item>
+   <item row="7" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
@@ -147,6 +162,23 @@
      </property>
     </widget>
    </item>
+   <item row="2" column="2">
+    <widget class="QCheckBox" name="checkBoxSearchIndex">
+     <property name="text">
+      <string>Find All</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="1">
+    <widget class="QCheckBox" name="checkBoxCaseSensitive">
+     <property name="text">
+      <string>Case Sensitive</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
    <item row="0" column="0">
     <widget class="QLabel" name="label">
      <property name="text">
@@ -154,46 +186,125 @@
      </property>
     </widget>
    </item>
-   <item row="0" column="1" colspan="2">
-    <widget class="QLineEdit" name="lineEditText"/>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_5">
+   <item row="3" column="1">
+    <widget class="QCheckBox" name="checkBoxHeader">
      <property name="text">
-      <string>Highlight color:</string>
+      <string>Header</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
-   <item row="2" column="1">
-    <widget class="QPushButton" name="pushButtonColor">
-     <property name="minimumSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
+   <item row="6" column="0" colspan="3">
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Advanced</string>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>12</width>
-       <height>12</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="2">
-    <widget class="QCheckBox" name="checkBoxSearchIndex">
-     <property name="text">
-      <string>Find All</string>
-     </property>
+     <widget class="QLineEdit" name="apIdlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>20</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the ApId to search text only for this ApId&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_6">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>51</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>ApId:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_7">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>20</y>
+        <width>41</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>CtId:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="ctIdlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>20</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the CtId to search text only for this CtId&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="timeStartlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>50</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp start after which the text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TimeStamp start:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="timeEndlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>50</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp end before which this text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_9">
+      <property name="geometry">
+       <rect>
+        <x>210</x>
+        <y>50</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TimeStamp end:</string>
+      </property>
+     </widget>
     </widget>
    </item>
   </layout>

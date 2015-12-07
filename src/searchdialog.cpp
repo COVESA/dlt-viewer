@@ -64,6 +64,8 @@ void SearchDialog::setMatch(bool matched){match=matched;}
 void SearchDialog::setStartLine(int start){startLine=start;}
 void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
 void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
+void SearchDialog::setApIDText(QString text){ ui->apIdlineEdit->setText(text);}
+void SearchDialog::setCtIDText(QString text){ ui->ctIdlineEdit->setText(text);}
 
 QString SearchDialog::getText() { return ui->lineEditText->text(); }
 bool SearchDialog::getHeader() { return (ui->checkBoxHeader->checkState() == Qt::Checked); }
@@ -77,7 +79,10 @@ bool SearchDialog::getOnceClicked(){return onceClicked;}
 bool SearchDialog::searchtoIndex(){return (ui->checkBoxSearchIndex->checkState() ==Qt::Checked);}
 
 int SearchDialog::getStartLine( ){return startLine;}
-
+QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
+QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
+QString SearchDialog::getTimeStampStart(){return ui->timeStartlineEdit->text();}
+QString SearchDialog::getTimeStampEnd(){return ui->timeEndlineEdit->text();}
 
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
@@ -164,9 +169,7 @@ int SearchDialog::find()
         }
     }
 
-
-    findProcess(searchLine,searchBorder,searchTextRegExp);
-
+    findProcess(searchLine,searchBorder,searchTextRegExp,getApIDText(),getCtIDText(),getTimeStampStart(), getTimeStampEnd());
 
     if (searchtoIndex())
     {
@@ -186,12 +189,15 @@ int SearchDialog::find()
 }
 
 
-void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp)
+void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd)
 {
 
     QDltMsg msg;
     QByteArray buf;
     QString text;
+    QString headerText;
+    bool timeRange;
+    bool timeStampSearch = false;
     int ctr = 0;
     m_searchtablemodel->clear_SearchResults();
 
@@ -240,13 +246,32 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
             pluginManager->decodeMsg(msg,silentMode);
 
         bool pluginFound = false;
-
+        headerText.clear();
         /* search header */
         if(!pluginFound || text.isEmpty())
         {
             text += msg.toStringHeader();
         }
+        headerText = text;
+        /*Assuming that the timeStamp is the 3rd value always*/
+        QString timeSt = headerText.section(" ",2,2);
+        timeRange = false;
+        timeStampSearch = false;
+        if(tStart.size())
+        {
+            if(tEnd.size())
+            {
+                timeStampSearch = true;
+                if((tStart.toFloat() <= timeSt.toFloat()))
+                {
+                    if((tEnd.toFloat() >= timeSt.toFloat()))
+                    {
+                        timeRange = true;
+                    }
+                }
 
+            }
+        }
         if(getHeader())
         {
             if (getRegExp())
@@ -300,22 +325,81 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
             {
                 if(text.contains(getText(),getCaseSensitive()?Qt::CaseSensitive:Qt::CaseInsensitive))
                 {
-                    if ( foundLine(searchLine) )
-                        break;
+                    if(apID.size())
+                    {
+                        if(ctID.size())
+                        {
+                            if(headerText.contains(apID) && headerText.contains(ctID))
+                            {
+                                if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                        else
+                        {
+                            if(headerText.contains(apID))
+                            {
+                                if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                    }
+                    else if(ctID.size())
+                    {
+                        if(headerText.contains(ctID))
+                        {
+                            if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                                break;
+                            else
+                                continue;
+                        }
+                    }
                     else
-                        continue;
-                } else {
+                    {
+                        if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                            break;
+                        else
+                            continue;
+                    }
+                }
+                else
+                {
                     setMatch(false);
                 }
             }
         }
-
-
-
     }while( searchBorder != searchLine );
 
 }
 
+bool SearchDialog::timeStampCheck(bool timeRange, bool timeCheck,int searchLine )
+{
+    if(timeCheck)
+    {
+        if(timeRange)
+        {
+            if(foundLine(searchLine))
+                return true;
+            else
+                return false;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if(foundLine(searchLine))
+            return true;
+        else
+            return false;
+    }
+}
 
 bool SearchDialog::foundLine(int searchLine)
 {
