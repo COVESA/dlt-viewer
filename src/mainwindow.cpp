@@ -1220,6 +1220,16 @@ void MainWindow::on_action_menuFile_Clear_triggered()
         return;
     }
 
+    //clear search history list
+    searchHistory.clear();
+    //clear all the action buttons from history
+    for (int i = 0; i < MaxSearchHistory; i++)
+    {
+        searchHistoryActs[i]->setVisible(false);
+    }
+    // clear the cache stored for the history
+    searchDlg->clearCacheHistory();
+
     QString oldfn = outputfile.fileName();
 
     if(outputfile.isOpen())

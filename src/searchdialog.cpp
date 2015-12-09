@@ -50,6 +50,7 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
 SearchDialog::~SearchDialog()
 {
+    clearCacheHistory();
     delete ui;
 }
 
@@ -525,15 +526,16 @@ void SearchDialog::loadSearchHistory()
     }
 
     // creating a local list to store the indexes related to the key retrieved from the cache.
-    QList <unsigned long>* tmp;
+    QList <unsigned long> tmp ;
     if(cachedHistoryKey.size() > 0)
     {
-        tmp = cachedHistoryKey.object(text);
+        tmp = cachedHistoryKey[text];
+
         //deleting the previous search list and adding the cached search obtained to the model.
         m_searchtablemodel->clear_SearchResults();
-        for (int i = 0;i < tmp->size();i++)
+        for (int i = 0;i < tmp.size();i++)
         {
-            m_searchtablemodel->add_SearchResultEntry(tmp->at(i));
+            m_searchtablemodel->add_SearchResultEntry(tmp.at(i));
         }
     }
     emit refreshedSearchIndex();
@@ -542,28 +544,16 @@ void SearchDialog::loadSearchHistory()
 void SearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
-    if(false == cachedHistoryKey.contains(getText()))
+    QString searchBoxText = getText();
+    if(false == cachedHistoryKey.contains(searchBoxText))
     {
-        for(int i = 0;i < m_searchtablemodel->m_searchResultList.size();i++)
-        {
-            m_searchHistory[cachedHistoryKey.size()].append(m_searchtablemodel->m_searchResultList.at(i));
-        }
-        // cache and store the new search list related to the key i.e searched text.
-        cachedHistoryKey.insert(getText(),&m_searchHistory[cachedHistoryKey.size()],1);
+        m_searchHistory.append(m_searchtablemodel->m_searchResultList);
+        cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
     }
 }
 
 void SearchDialog::clearCacheHistory()
 {
     // obtaining the list of keys stored in cache
-    QList<QString> tmp = cachedHistoryKey.keys();
-
-    int size = cachedHistoryKey.size();
-
-    //for all the keys take out the object from cache and clear the list
-    for (int i = 0; i < size; i++)
-    {
-        QList <unsigned long>* tmpObj = cachedHistoryKey.take(tmp.at(i));
-        tmpObj->clear();
-    }
+    cachedHistoryKey.clear();
 }

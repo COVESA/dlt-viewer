@@ -46,7 +46,7 @@ private:
     bool nextClicked;
     bool match;
     bool onceClicked;
-    QCache<QString, QList <unsigned long>> cachedHistoryKey;
+    QHash<QString, QList <unsigned long>> cachedHistoryKey;
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
@@ -70,7 +70,7 @@ public:
     void setCtIDText(QString);
     void cacheSearchHistory();
     void clearCacheHistory();
-    QList <unsigned long> m_searchHistory[20];
+    QList < QList <unsigned long>> m_searchHistory;
 
     QString getText();
     bool getHeader();
