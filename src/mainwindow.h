@@ -39,7 +39,7 @@
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
 #include "exporterdialog.h"
-
+#include <QCompleter>
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 
@@ -112,6 +112,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    QCompleter *newCompleter;
+
 private:
     Ui::MainWindow *ui;
 
@@ -367,7 +370,7 @@ public slots:
     void on_SaveAs_triggered(QString fileName);
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Quit_triggered();
-
+    void on_action_FindNext();
 private slots:
 
     // Search methods
@@ -511,6 +514,7 @@ public:
     QDltDefaultFilter defaultFilter;
 
     QStringList openFileNames;
+    QStringList list;
 
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;

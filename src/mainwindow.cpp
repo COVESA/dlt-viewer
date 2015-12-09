@@ -299,7 +299,8 @@ void MainWindow::initView()
     /* Create search text box */
     searchTextbox = new QLineEdit();
     searchDlg->appendLineEdit(searchTextbox);
-    connect(searchTextbox, SIGNAL(textEdited(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
+    connect(searchTextbox, SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
+    connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_action_FindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
 
     /* Initialize toolbars. Most of the construction and connection is done via the
@@ -323,11 +324,14 @@ void MainWindow::initSignalConnections()
     /* Connect previous and next buttons to search dialog slots */
     connect(m_searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
+    connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_action_FindNext()));
 
     connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
     connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
     ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
 
+    /* Connect Search dialog find to action History */
+    connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
 
     /* Insert search text box to search toolbar, before previous button */
     QAction *before = m_searchActions.at(ToolbarPosition::FindPrevious);
@@ -1584,6 +1588,18 @@ void MainWindow::on_action_menuFile_Quit_triggered()
     this->close();
 
 }
+
+void MainWindow::on_action_FindNext()
+{
+    if(!searchTextbox->text().isEmpty() && !list.contains(searchTextbox->text()))
+       {
+           list.append(searchTextbox->text());
+       }
+    newCompleter = new QCompleter(list, this);
+    searchTextbox->setCompleter(newCompleter);
+    newCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+}
+
 
 
 void MainWindow::on_action_menuProject_New_triggered()
