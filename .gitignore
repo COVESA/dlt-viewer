@@ -7,3 +7,4 @@ buildlib/
 release/
 .cproject
 *.pro.user*
+.settings
