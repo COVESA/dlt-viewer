@@ -2,6 +2,7 @@
 PROJECT                 = qdlt
 TEMPLATE                = lib
 
+CONFIG += c++11
 DEFINES += QDLT_LIBRARY
 *-gcc* {
     QMAKE_CFLAGS += -std=gnu99

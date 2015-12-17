@@ -33,6 +33,7 @@ public:
     bool isLogFile();
     bool isFilterFile();
     bool isConvert();
+    bool isConvertUTF8();
     bool isPlugin();
     bool issilentMode();
 
@@ -54,6 +55,7 @@ private:
     bool log;
     bool filter;
     bool convert;
+    bool convertUTF8;
     bool plugin;
     bool silent_mode;
     QString projectFile;

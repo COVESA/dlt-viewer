@@ -19,6 +19,8 @@ void ExporterDialog::setFormat(DltExporter::DltExportFormat exportFormat)
         ui->radioButtonDlt->setChecked(true);
     else if(exportFormat == DltExporter::FormatAscii)
         ui->radioButtonAscii->setChecked(true);
+    else if (exportFormat == DltExporter::FormatUTF8)
+        ui->radioButtonUTF8->setChecked(true);
     else if(exportFormat == DltExporter::FormatCsv)
         ui->radioButtonCsv->setChecked(true);
     else if(exportFormat == DltExporter::FormatDltDecoded)
@@ -31,6 +33,8 @@ DltExporter::DltExportFormat ExporterDialog::getFormat()
         return DltExporter::FormatDlt;
     if(ui->radioButtonAscii->isChecked())
         return DltExporter::FormatAscii;
+    if(ui->radioButtonUTF8->isChecked())
+        return DltExporter::FormatUTF8;
     if(ui->radioButtonCsv->isChecked())
         return DltExporter::FormatCsv;
     if(ui->radioButtonDltDecoded->isChecked())

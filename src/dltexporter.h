@@ -14,7 +14,7 @@ class DltExporter : public QObject
 
 public:
 
-    typedef enum { FormatDlt,FormatAscii,FormatCsv,FormatClipboard,FormatDltDecoded} DltExportFormat;
+    typedef enum { FormatDlt,FormatAscii,FormatCsv,FormatClipboard,FormatDltDecoded,FormatUTF8} DltExportFormat;
 
     typedef enum { SelectionAll,SelectionFiltered,SelectionSelected } DltExportSelection;
 

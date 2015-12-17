@@ -524,7 +524,14 @@ void MainWindow::initFileHandling()
     }
     if(OptManager::getInstance()->isConvert())
     {
-        commandLineConvertToASCII();
+        if (OptManager::getInstance()->isConvertUTF8())
+        {
+            commandLineConvertToUTF8();
+        }
+        else
+        {
+            commandLineConvertToASCII();
+        }
         exit(0);
     }
 
@@ -552,6 +559,20 @@ void MainWindow::commandLineConvertToASCII()
     /* start exporter */
     DltExporter exporter;
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
+}
+
+void MainWindow::commandLineConvertToUTF8()
+{
+    qfile.enableFilter(true);
+    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
+
+    QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
+
+    /* start exporter */
+    DltExporter exporter;
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
 }
 
 void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
@@ -1083,6 +1104,13 @@ void MainWindow::on_actionExport_triggered()
         dialog.setDefaultSuffix("txt");
         dialog.setWindowTitle("Export to Ascii file");
         qDebug() << "DLT Export to Ascii";
+    }
+    else if(exportFormat == DltExporter::FormatUTF8)
+    {
+        filters << "UTF8 Text Files (*.txt)" <<"All files (*.*)";
+        dialog.setDefaultSuffix("txt");
+        dialog.setWindowTitle("Export to UTF8 file");
+        qDebug() << "DLT Export to UTF8";
     }
     else if(exportFormat == DltExporter::FormatCsv)
     {
@@ -4361,6 +4389,7 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString(" -s or --silent \t\tEnable silent mode without warning message boxes\n")+
                              QString(" -p projectfile \t\tLoading project file on startup (must end with .dlp)\n")+
                              QString(" -l logfile \t\tLoading logfile on startup (must end with .dlt)\n")+
+                             QString(" -u \t\t\tExport file UTF8 encoded\n")+
                              QString(" -f filterfile \t\tLoading filterfile on startup (must end with .dlf)\n")+
                              QString(" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)\n")+
                              QString(" -e \"plugin|command|param1|..|param<n>\" \tExecute a command plugin with <n> parameters.")

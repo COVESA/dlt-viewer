@@ -27,6 +27,7 @@ OptManager::OptManager()
     project = false;
     log = false;
     convert = false;
+    convertUTF8 = false;
     filter = false;
     plugin = false;
     silent_mode = false;
@@ -59,6 +60,7 @@ void OptManager::printUsage()
     qDebug()<<" -l logfile \tLoading logfile on startup (must end with .dlt)";
     qDebug()<<" -f filterfile \tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)";
+    qDebug()<<" -u \rConversion will be done in UTF8 instead of Ascii";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.";
     qDebug()<<" -s or --silent \tEnable silent mode without warning message boxes.";
 
@@ -144,6 +146,9 @@ void OptManager::parse(QStringList *opt){
                 exit(-1);
               }
           }
+        if(str.compare("-u")) {
+            convertUTF8 = true;
+          }
         if(str.compare("-e")==0) {
             QString c = opt->value(i+1);
             QStringList args = c.split("|");;
@@ -169,6 +174,7 @@ bool OptManager::isProjectFile(){ return project;}
 bool OptManager::isLogFile(){return log;}
 bool OptManager::isFilterFile(){return filter;}
 bool OptManager::isConvert(){return convert;}
+bool OptManager::isConvertUTF8(){return convertUTF8;}
 bool OptManager::isPlugin(){return plugin;}
 bool OptManager::issilentMode(){return silent_mode;}
 

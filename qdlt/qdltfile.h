@@ -37,6 +37,7 @@ class QDLT_EXPORT QDltFileItem
 public:
     //! DLT log file.
     QFile infile;
+    const uchar *map_;
 
     //! Index of all DLT messages.
     /*!

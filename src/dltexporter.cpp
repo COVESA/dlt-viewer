@@ -85,6 +85,7 @@ bool DltExporter::start()
 
     /* open the export file */
     if(exportFormat == DltExporter::FormatAscii ||
+       exportFormat == DltExporter::FormatUTF8 ||
        exportFormat == DltExporter::FormatCsv)
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
@@ -134,6 +135,7 @@ bool DltExporter::finish()
 {
 
     if(exportFormat == DltExporter::FormatAscii ||
+       exportFormat == DltExporter::FormatUTF8 ||
        exportFormat == DltExporter::FormatCsv ||
        exportFormat == DltExporter::FormatDlt ||
        exportFormat == DltExporter::FormatDltDecoded)
@@ -172,6 +174,7 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
     if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
         to->write(buf);
     else if(exportFormat == DltExporter::FormatAscii ||
+            exportFormat == DltExporter::FormatUTF8 ||
             exportFormat == DltExporter::FormatClipboard)
     {
         QString text;
@@ -189,12 +192,18 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
         text += " ";
         text += msg.toStringPayload().simplified();
         text += "\n";
-
-        if(exportFormat == DltExporter::FormatAscii)
-            /* write to file */
-            to->write(text.toLatin1().constData());
-        else if(exportFormat == DltExporter::FormatClipboard)
-            clipboardString += text;
+        try
+        {
+            if(exportFormat == DltExporter::FormatAscii)
+                /* write to file */
+                to->write(text.toLatin1().constData());
+            else if (exportFormat == DltExporter::FormatUTF8)
+                to->write(text.toUtf8().constData());
+            else if(exportFormat == DltExporter::FormatClipboard)
+                clipboardString += text;
+        }catch (...)
+        {
+        }
     }
     else if(exportFormat == DltExporter::FormatCsv)
     {

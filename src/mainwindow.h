@@ -293,6 +293,8 @@ private:
     bool openDlfFile(QString filename, bool replace);
 
     void commandLineConvertToASCII();
+    void commandLineConvertToUTF8();
+
     void commandLineExecutePlugin(QString name, QString cmd, QStringList params);
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
