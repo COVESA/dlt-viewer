@@ -550,11 +550,8 @@ void SearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
     QString searchBoxText = getText();
-    if(false == cachedHistoryKey.contains(searchBoxText))
-    {
-        m_searchHistory.append(m_searchtablemodel->m_searchResultList);
-        cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
-    }
+    m_searchHistory.append(m_searchtablemodel->m_searchResultList);
+    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
 }
 
 void SearchDialog::clearCacheHistory()
