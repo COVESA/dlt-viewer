@@ -129,6 +129,7 @@ public slots:
 signals:
     void refreshedSearchIndex();
     void addActionHistory();
+    void searchProgressChanged(bool isInProgress);
 };
 
 #endif // SEARCHDIALOG_H

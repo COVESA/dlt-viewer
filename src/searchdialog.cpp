@@ -126,9 +126,12 @@ int SearchDialog::find()
     int searchLine;
     int searchBorder;
 
+    emit searchProgressChanged(true);
 
-    if(file->sizeFilter()==0)
-            return 0;
+    if(file->sizeFilter()==0) {
+        emit searchProgressChanged(false);
+        return 0;
+    }
 
     if( (getMatch() || getSearchFromBeginning()==false) && false == searchtoIndex() ){
         QModelIndexList list = table->selectionModel()->selection().indexes();
@@ -165,17 +168,19 @@ int SearchDialog::find()
         if (!searchTextRegExp.isValid())
         {
             QMessageBox::warning(0, QString("Search"),
-                                    QString("Invalid regular expression!"));
+                                 QString("Invalid regular expression!"));
+            emit searchProgressChanged(false);
             return 0;
         }
     }
 
     findProcess(searchLine,searchBorder,searchTextRegExp,getApIDText(),getCtIDText(),getTimeStampStart(), getTimeStampEnd());
 
+    emit searchProgressChanged(false);
+
     if (searchtoIndex())
     {
         cacheSearchHistory();
-        emit refreshedSearchIndex();
         //if at least one element has been found -> successful search
         if ( 0 < m_searchtablemodel->get_SearchResultListSize())
             return 1;
@@ -204,7 +209,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
 
     QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
     fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
+    fileprogress.setWindowModality(Qt::NonModal);
     fileprogress.show();
 
     bool silentMode = !OptManager::getInstance()->issilentMode();
@@ -410,7 +415,7 @@ bool SearchDialog::foundLine(int searchLine)
     if (searchtoIndex())
     {
         addToSearchIndex(searchLine);
-
+        emit refreshedSearchIndex();
     }
     else
     {

@@ -208,6 +208,8 @@ private:
     /* Color for blinking 'Apply changes'-button */
     QColor pulseButtonColor;
 
+    bool isSearchOngoing;
+
     /* functions called in constructor */
     void initState();
     void initView();
@@ -510,6 +512,7 @@ public slots:
 
     //History Slots
     void onAddActionToHistory();
+    void onSearchProgressChanged(bool isInProgress);
 
 public:   
 

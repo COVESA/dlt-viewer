@@ -79,7 +79,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     timer(this),
     qcontrol(this),
-    pulseButtonColor(255, 40, 40)
+    pulseButtonColor(255, 40, 40),
+    isSearchOngoing(false)
 {
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
@@ -311,6 +312,7 @@ void MainWindow::initView()
     connect(searchTextbox, SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
     connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_action_FindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
+    connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
 
     /* Initialize toolbars. Most of the construction and connection is done via the
      * UI file. See mainwindow.ui, ActionEditor and Signal & Slots editor */
@@ -651,7 +653,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
 
     settings->writeSettings(this);
-    if(settings->tempCloseWithoutAsking || outputfile.size() == 0)
+    if(true == isSearchOngoing)
+    {
+        event->ignore();
+    }
+    else if(settings->tempCloseWithoutAsking || outputfile.size() == 0)
     {
 
         deleteactualFile();
@@ -6249,4 +6255,13 @@ void MainWindow::onAddActionToHistory()
         searchHistoryActs[i]->setText(searchHistory[i]);
         searchHistoryActs[i]->setVisible(true);
     }
+}
+
+void MainWindow::onSearchProgressChanged(bool isInProgress)
+{
+    isSearchOngoing = isInProgress;
+    ui->menuBar->setEnabled(!isInProgress);
+    ui->mainToolBar->setEnabled(!isInProgress);
+    ui->searchToolbar->setEnabled(!isInProgress);
+    ui->dockWidgetProject->setEnabled(!isInProgress);
 }
