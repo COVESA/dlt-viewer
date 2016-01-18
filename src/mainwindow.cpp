@@ -2602,7 +2602,7 @@ void MainWindow::disconnectAll()
 
 void MainWindow::disconnectECU(EcuItem *ecuitem)
 {
-    if(ecuitem->tryToConnect == true)
+    if(ecuitem->tryToConnect != 0)
     {
         /* disconnect from host */
         ecuitem->tryToConnect = false;
@@ -2847,7 +2847,7 @@ void MainWindow::timeout()
             if(ecuitem->isAutoReconnectTimeoutPassed() &&
                dltIndexer->tryLock())
             {
-                if(ecuitem->interfacetype == 0 && ecuitem->autoReconnect && ecuitem->connected == true && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+                if(ecuitem->interfacetype == 0 && ecuitem->autoReconnect && ecuitem->connected != 0 && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
                 {
                     disconnectECU(ecuitem);
                     ecuitem->tryToConnect = true;

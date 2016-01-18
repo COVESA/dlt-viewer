@@ -175,7 +175,7 @@ bool DltDBusDecoder::decodeHeader(QByteArray &data)
         return false;
 
     // check array size
-    if((payloadLength+arrayLength+DBUS_HEADER_MAX+4)>data.size())
+    if((payloadLength+arrayLength+DBUS_HEADER_MAX+4)>static_cast<uint32_t>(data.size()))
     {
         error = QString("decodeHeader: size error: message too short!");
         return false;
@@ -424,7 +424,7 @@ bool DltDBusDecoder::decodePayloadSignature(QByteArray signature,char *dataPtr,i
                 parameter.setType(DBUS_TYPE_ARRAY);
                 parameter.setValue(QVariant(QString('[')));
                 parameters.append(parameter);
-                while(offset < (lastOffset+lengthArray))
+                while(offset < static_cast<int>(lastOffset+lengthArray))
                 {
                     offset+=padding(offset,8);
                     if(signature[num]==(char)DBUS_TYPE_CHAR_DICT_ENTRY_BEGIN)
@@ -474,7 +474,7 @@ bool DltDBusDecoder::decodePayloadSignature(QByteArray signature,char *dataPtr,i
                 parameter.setType(DBUS_TYPE_ARRAY);
                 parameter.setValue(QVariant(QString('[')));
                 parameters.append(parameter);
-                while(offset < (lastOffset+lengthArray))
+                while(offset < static_cast<int>(lastOffset+lengthArray))
                 {
                     if(!decodePayloadParameter(signature[num],dataPtr,offset,payload.size()))
                         return false;
@@ -778,7 +778,7 @@ bool DltDBusDecoder::readString(QString &data,char *dataPtr,int &offset,int maxS
     offset += 4;
 
     // check if length fits size, including termination byte zero
-    if((offset+length+1) > maxSize)
+    if(static_cast<int>(offset+length+1) > maxSize)
     {
         error = QString("readString: length check error");
         return false;

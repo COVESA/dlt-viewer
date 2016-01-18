@@ -742,7 +742,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
         return false;
     }
 
-    index.reserve((file.size() - sizeof(version)) / sizeof(value)); // prevent memory issues through reallocation
+    index.reserve(static_cast<int>((file.size() - sizeof(version)) / sizeof(value))); // prevent memory issues through reallocation
 
     // read version
     length = file.read((char*)&version,sizeof(version));

@@ -169,7 +169,7 @@ bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
     /* calculate complete size of headers */
     extra_size = DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp)+(DLT_IS_HTYP_UEH(standardheader->htyp) ? sizeof(DltExtendedHeader) : 0);
     headersize = sizeStorageHeader + sizeof(DltStandardHeader) + extra_size;
-    if(DLT_SWAP_16(standardheader->len)<(headersize - sizeStorageHeader))
+    if(DLT_SWAP_16(standardheader->len)<(static_cast<int>(headersize) - sizeStorageHeader))
     {
         // there is something wrong with the header, at least size of header
         // at the momment no error, distinguish different errors needed

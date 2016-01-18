@@ -81,6 +81,8 @@
 #include <time.h> /* for clock_gettime() */
 #endif
 
+#include <inttypes.h> /* for PRIu64 and PRId64 */
+
 #if defined (__APPLE__)
 #include <mach/mach_time.h>
 #endif
@@ -313,7 +315,7 @@ int dlt_print_char_string(char **text,int textlength,uint8_t *ptr,int size)
 
 void dlt_print_id(char *text,const char *id)
 {
-    int i, len;
+    size_t i, len;
 
     if (text==0)
     {
@@ -1022,7 +1024,7 @@ int dlt_message_payload(DltMessage *msg,char *text,int textlength,int type,int v
 
         if (type==DLT_OUTPUT_ASCII_LIMITED)
         {
-            ret=dlt_print_hex_string(text+strlen(text),textlength-strlen(text),ptr,
+            ret=dlt_print_hex_string(text+strlen(text),(int)(textlength-strlen(text)),ptr,
                                      (datalength>DLT_COMMON_ASCII_LIMIT_MAX_CHARS?DLT_COMMON_ASCII_LIMIT_MAX_CHARS:datalength));
             if ((datalength>DLT_COMMON_ASCII_LIMIT_MAX_CHARS) &&
                     ((textlength-strlen(text))>4))
@@ -1032,7 +1034,7 @@ int dlt_message_payload(DltMessage *msg,char *text,int textlength,int type,int v
         }
         else
         {
-            ret=dlt_print_hex_string(text+strlen(text),textlength-strlen(text),ptr,datalength);
+            ret=dlt_print_hex_string(text+strlen(text),(int)(textlength-strlen(text)),ptr,datalength);
         }
 
         return ret;
@@ -1748,7 +1750,7 @@ int dlt_file_read(DltFile *file,int verbose)
         {
             /* go back to last position in file */
             fseek(file->handle,file->file_position,SEEK_SET);
-            sprintf(str,"Seek failed to skip extra header and payload data from file of size %d!\n",
+            sprintf(str,"Seek failed to skip extra header and payload data from file of size %lu!\n",
                     file->msg.headersize - sizeof(DltStorageHeader) - sizeof(DltStandardHeader) + file->msg.datasize);
             dlt_log(LOG_ERR, str);
             return -1;
@@ -3265,7 +3267,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 	#if defined (__WIN32__) && !defined(_MSC_VER)
 					sprintf(text+strlen(text),"%I64d",value64i);
 	#else
-					sprintf(text+strlen(text),"%lld",value64i);
+					sprintf(text+strlen(text),"%" PRId64,value64i);
 	#endif
 				}
 				else
@@ -3279,7 +3281,7 @@ int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,
 	#if defined (__WIN32__) && !defined(_MSC_VER)
 					sprintf(text+strlen(text),"%I64u",value64u);
 	#else
-					sprintf(text+strlen(text),"%llu",value64u);
+					sprintf(text+strlen(text),"%" PRIu64,value64u);
 	#endif
 				}
 				break;
