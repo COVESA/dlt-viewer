@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>420</width>
-    <height>318</height>
+    <width>563</width>
+    <height>431</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -149,7 +149,7 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="7" column="0" alignment="Qt::AlignHCenter">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="layoutDirection">
       <enum>Qt::LeftToRight</enum>
@@ -220,7 +220,7 @@
         <x>10</x>
         <y>20</y>
         <width>51</width>
-        <height>16</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
@@ -230,10 +230,10 @@
      <widget class="QLabel" name="label_7">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>220</x>
         <y>20</y>
-        <width>41</width>
-        <height>16</height>
+        <width>51</width>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
@@ -243,7 +243,7 @@
      <widget class="QLineEdit" name="ctIdlineEdit">
       <property name="geometry">
        <rect>
-        <x>320</x>
+        <x>340</x>
         <y>20</y>
         <width>71</width>
         <height>20</height>
@@ -272,7 +272,7 @@
         <x>10</x>
         <y>50</y>
         <width>111</width>
-        <height>16</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
@@ -282,7 +282,7 @@
      <widget class="QLineEdit" name="timeEndlineEdit">
       <property name="geometry">
        <rect>
-        <x>320</x>
+        <x>340</x>
         <y>50</y>
         <width>71</width>
         <height>20</height>
@@ -295,14 +295,66 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>210</x>
+        <x>220</x>
         <y>50</y>
         <width>111</width>
-        <height>16</height>
+        <height>21</height>
        </rect>
       </property>
       <property name="text">
        <string>TimeStamp end:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>90</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PayLoad start:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_11">
+      <property name="geometry">
+       <rect>
+        <x>220</x>
+        <y>90</y>
+        <width>111</width>
+        <height>21</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>PayLoad end:</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="payloadStartlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>130</x>
+        <y>90</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp start after which the text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="QLineEdit" name="payloadEndlineEdit">
+      <property name="geometry">
+       <rect>
+        <x>340</x>
+        <y>90</y>
+        <width>71</width>
+        <height>20</height>
+       </rect>
+      </property>
+      <property name="whatsThis">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp end before which this text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </widget>

@@ -37,7 +37,10 @@ SearchDialog::SearchDialog(QWidget *parent) :
     CheckBoxSearchtoList = ui->checkBoxSearchIndex;
     match = false;
     onceClicked = false;
-    startLine = -1;    
+    startLine = -1;
+    is_PayloadStartFound = false;
+    is_PayloadEndFound = false;
+    is_PayLoadRangeValid = false;
 
     lineEdits = new QList<QLineEdit*>();
     lineEdits->append(ui->lineEditText);
@@ -84,6 +87,8 @@ QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
 QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
 QString SearchDialog::getTimeStampStart(){return ui->timeStartlineEdit->text();}
 QString SearchDialog::getTimeStampEnd(){return ui->timeEndlineEdit->text();}
+QString SearchDialog::getPayLoadStampStart(){return ui->payloadStartlineEdit->text();}
+QString SearchDialog::getPayLoadStampEnd(){return ui->payloadEndlineEdit->text();}
 
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
@@ -174,13 +179,14 @@ int SearchDialog::find()
         }
     }
 
-    findProcess(searchLine,searchBorder,searchTextRegExp,getApIDText(),getCtIDText(),getTimeStampStart(), getTimeStampEnd());
+    findProcess(searchLine,searchBorder,searchTextRegExp,getApIDText(),getCtIDText(),getTimeStampStart(), getTimeStampEnd(),getPayLoadStampStart(),getPayLoadStampEnd());
 
     emit searchProgressChanged(false);
 
     if (searchtoIndex())
     {
         cacheSearchHistory();
+        emit refreshedSearchIndex();
         //if at least one element has been found -> successful search
         if ( 0 < m_searchtablemodel->get_SearchResultListSize())
             return 1;
@@ -195,16 +201,43 @@ int SearchDialog::find()
 }
 
 
-void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd)
+void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd, QString tpayloadStart, QString tpayloadEnd)
 {
 
     QDltMsg msg;
     QByteArray buf;
     QString text;
     QString headerText;
-    bool timeRange;
-    bool timeStampSearch = false;
+
     int ctr = 0;
+    Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
+
+    if(getCaseSensitive())
+    {
+        is_Case_Sensitive = Qt::CaseSensitive;
+    }
+
+    payloadStart = tpayloadStart;
+    payloadEnd = tpayloadEnd;
+    is_payLoadSearchSelected = false;
+    is_TimeStampSearchSelected = false;
+
+    tempPayLoad.clear();
+
+    if((false == payloadStart.isEmpty()) && ( false == payloadEnd.isEmpty()))
+    {
+        is_payLoadSearchSelected = true;
+    }
+
+    if((tStart.size()) && (tEnd.size()))
+    {
+        is_TimeStampSearchSelected = true;
+    }
+
+    is_PayloadStartFound = false;
+    is_PayloadEndFound = false;
+    is_PayLoadRangeValid = false;
+
     m_searchtablemodel->clear_SearchResults();
 
     QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
@@ -225,9 +258,12 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
             if(searchLine >= file->sizeFilter()){
                 searchLine = 0;
             }
-        }else{
+        }
+        else
+        {
             searchLine--;
-            if(searchLine <= -1){
+            if(searchLine <= -1)
+            {
                 searchLine = file->sizeFilter()-1;
             }
         }
@@ -257,27 +293,29 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
         if(!pluginFound || text.isEmpty())
         {
             text += msg.toStringHeader();
+            tempPayLoad = msg.toStringPayload();
+
         }
         headerText = text;
         /*Assuming that the timeStamp is the 3rd value always*/
         QString timeSt = headerText.section(" ",2,2);
-        timeRange = false;
-        timeStampSearch = false;
-        if(tStart.size())
-        {
-            if(tEnd.size())
-            {
-                timeStampSearch = true;
-                if((tStart.toFloat() <= timeSt.toFloat()))
-                {
-                    if((tEnd.toFloat() >= timeSt.toFloat()))
-                    {
-                        timeRange = true;
-                    }
-                }
 
+
+        is_TimeStampRangeValid = false;
+
+        if(true == is_TimeStampSearchSelected)
+        {
+            if((tStart.toFloat() <= timeSt.toFloat()))
+            {
+                if((tEnd.toFloat() >= timeSt.toFloat()))
+                {
+                    is_TimeStampRangeValid = true;
+                }
             }
         }
+
+        payLoadValidityCheck();
+
         if(getHeader())
         {
             if (getRegExp())
@@ -294,13 +332,101 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
             }
             else
             {
-                if(text.contains(getText(),getCaseSensitive()? Qt::CaseSensitive : Qt::CaseInsensitive ))
+                if(getText().isEmpty())
                 {
-                    if ( foundLine(searchLine) )
-                        break;
+                    if(apID.size())
+                    {
+                        if(ctID.size())
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive) && headerText.contains(ctID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                        else
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                    }
+                    else if(ctID.size())
+                    {
+                        if(headerText.contains(ctID,is_Case_Sensitive))
+                        {
+                            if(timeStampPayloadValidityCheck(searchLine))
+                                break;
+                            else
+                                continue;
+                        }
+                    }
+                    else if ((is_TimeStampSearchSelected) || (is_payLoadSearchSelected))
+                    {
+                        if(timeStampPayloadValidityCheck(searchLine))
+                            break;
+                        else
+                            continue;
+                    }
                     else
-                        continue;
-                }else {
+                    {
+                        if ( foundLine(searchLine) )
+                            break;
+                        else
+                            continue;
+                    }
+                }
+                else if(headerText.contains(getText(),is_Case_Sensitive))
+                {
+                    if(apID.size())
+                    {
+                        if(ctID.size())
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive) && headerText.contains(ctID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                        else
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                    break;
+                                else
+                                    continue;
+                            }
+                        }
+                    }
+                    else if(ctID.size())
+                    {
+                        if(headerText.contains(ctID,is_Case_Sensitive))
+                        {
+                            if(timeStampPayloadValidityCheck(searchLine))
+                                break;
+                            else
+                                continue;
+                        }
+                    }
+                    else if ((is_TimeStampSearchSelected) || (is_payLoadSearchSelected))
+                    {
+                        if(timeStampPayloadValidityCheck(searchLine))
+                            break;
+                        else
+                            continue;
+                    }
+                }
+                else
+                {
                     setMatch(false);
                 }
             }
@@ -317,7 +443,7 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
         {
             if (getRegExp())
             {
-                if(text.contains(searchTextRegExp))
+                if(tempPayLoad.contains(searchTextRegExp))
                 {
                     if ( foundLine(searchLine) )
                         break;
@@ -329,47 +455,122 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
             }
             else
             {
-                if(text.contains(getText(),getCaseSensitive()?Qt::CaseSensitive:Qt::CaseInsensitive))
+                if(getText().isEmpty())
                 {
                     if(apID.size())
                     {
                         if(ctID.size())
                         {
-                            if(headerText.contains(apID) && headerText.contains(ctID))
+                            if(headerText.contains(apID,is_Case_Sensitive) && headerText.contains(ctID,is_Case_Sensitive))
                             {
-                                if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                {
                                     break;
+                                }
                                 else
+                                {
                                     continue;
+                                }
                             }
                         }
                         else
                         {
-                            if(headerText.contains(apID))
+                            if(headerText.contains(apID,is_Case_Sensitive))
                             {
-                                if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                {
                                     break;
+                                }
                                 else
+                                {
                                     continue;
+                                }
                             }
                         }
                     }
                     else if(ctID.size())
                     {
-                        if(headerText.contains(ctID))
+                        if(headerText.contains(ctID,is_Case_Sensitive))
                         {
-                            if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                            if(timeStampPayloadValidityCheck(searchLine))
+                            {
                                 break;
+                            }
                             else
+                            {
                                 continue;
+                            }
                         }
                     }
                     else
                     {
-                        if(timeStampCheck(timeRange, timeStampSearch,searchLine))
+                        if(timeStampPayloadValidityCheck(searchLine))
+                        {
                             break;
+                        }
                         else
+                        {
                             continue;
+                        }
+                    }
+                }
+                else if(tempPayLoad.contains(getText(),is_Case_Sensitive))
+                {
+                    if(apID.size())
+                    {
+                        if(ctID.size())
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive) && headerText.contains(ctID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if(headerText.contains(apID,is_Case_Sensitive))
+                            {
+                                if(timeStampPayloadValidityCheck(searchLine))
+                                {
+                                    break;
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+                        }
+                    }
+                    else if(ctID.size())
+                    {
+                        if(headerText.contains(ctID,is_Case_Sensitive))
+                        {
+                            if(timeStampPayloadValidityCheck(searchLine))
+                            {
+                                break;
+                            }
+                            else
+                            {
+                                continue;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if(timeStampPayloadValidityCheck(searchLine))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
                     }
                 }
                 else
@@ -382,34 +583,116 @@ void SearchDialog::findProcess(int searchLine, int searchBorder, QRegExp &search
 
 }
 
-bool SearchDialog::timeStampCheck(bool timeRange, bool timeCheck,int searchLine )
+bool SearchDialog::payLoadValidityCheck()
 {
-    if(timeCheck)
+    // When the start payload is found, consider range as valid
+    if((tempPayLoad.contains(payloadStart)) && (false == is_PayloadEndFound))
     {
-        if(timeRange)
+        is_PayLoadRangeValid = true;
+        is_PayloadStartFound = true;
+    }
+
+    if(true == is_PayloadStartFound)
+    {
+        if(tempPayLoad.contains(payloadEnd))
         {
+
+            is_PayloadEndFound = true;
+            is_PayLoadRangeValid = false;
+        }
+    }
+
+    return is_PayLoadRangeValid;
+}
+
+bool SearchDialog::timeStampPayloadValidityCheck(int searchLine)
+{
+    if(is_TimeStampSearchSelected)
+    {
+        if(is_TimeStampRangeValid)
+        {
+            if(is_payLoadSearchSelected)
+            {
+                if(is_PayLoadRangeValid)
+                    if(foundLine(searchLine))
+                        return true;
+            }
+            else
+            {
+                if(foundLine(searchLine))
+                    return true;
+            }
+        }
+    }
+    else if(is_payLoadSearchSelected)
+    {
+        if(is_PayLoadRangeValid)
             if(foundLine(searchLine))
                 return true;
-            else
-                return false;
-        }
-        else
-        {
-            return false;
-        }
     }
     else
     {
         if(foundLine(searchLine))
             return true;
+    }
+    return false;
+}
+
+bool SearchDialog::timeStampCheck(int searchLine)
+{
+    bool retVal = false;
+    // If time stamps are given, they are considered to be of highest priority
+    if(is_TimeStampSearchSelected)
+    {
+        if(is_TimeStampRangeValid)
+        {
+            if(is_payLoadSearchSelected)
+            {
+                if(payLoadValidityCheck())
+                {
+                    if(foundLine(searchLine))
+                    {
+                        retVal = true;
+                    }
+                }
+            }
+            else
+            {
+                if(foundLine(searchLine))
+                {
+                    retVal = true;
+                }
+                else
+                {
+                    retVal = false;
+                }
+            }
+        }
+        else
+        {
+            retVal = false;
+        }
+    }
+    else
+    {
+        if(is_payLoadSearchSelected)
+        {
+            if(payLoadValidityCheck())
+            {
+                if(foundLine(searchLine))
+                    return true;
+            }
+        }
+        else if(foundLine(searchLine))
+            return true;
         else
             return false;
     }
+    return retVal;
 }
 
 bool SearchDialog::foundLine(int searchLine)
 {
-
     setMatch(true);
 
     if (searchtoIndex())
@@ -426,11 +709,14 @@ bool SearchDialog::foundLine(int searchLine)
     return false;//don't break search here
 }
 
-
-
-
 void SearchDialog::on_pushButtonNext_clicked()
 {
+    /* For every new search, start payLoad and EndpayLoad will be different and hence member variable storing previous found
+     * value shoudl eb reset. */
+    is_PayloadStartFound = false;
+    is_PayloadEndFound = false;
+    is_PayLoadRangeValid = false;
+
     setNextClicked(true);
     int result = find();
     for(int i=0; i<lineEdits->size();i++){
@@ -549,9 +835,9 @@ void SearchDialog::loadSearchHistory()
 void SearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
-    QString searchBoxText = getText();
+    QString searchBoxText = getText();  
     m_searchHistory.append(m_searchtablemodel->m_searchResultList);
-    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
+    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());    
 }
 
 void SearchDialog::clearCacheHistory()

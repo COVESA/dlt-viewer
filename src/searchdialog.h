@@ -46,11 +46,24 @@ private:
     bool nextClicked;
     bool match;
     bool onceClicked;
+    bool is_PayloadStartFound;
+    bool is_PayloadEndFound;
+    bool is_PayLoadRangeValid;
+    QString payloadStart;
+    QString payloadEnd;
+    QString tempPayLoad;
+
+    bool is_payLoadSearchSelected;
+    bool is_TimeStampSearchSelected;
+    bool is_TimeStampRangeValid;
+
     QHash<QString, QList <unsigned long>> cachedHistoryKey;
 
 public:
     explicit SearchDialog(QWidget *parent = 0);
     ~SearchDialog();
+
+    bool payLoadValidityCheck();
 
     void setText(QString text);
     void selectText();
@@ -90,8 +103,8 @@ public:
     QString getTimeStampEnd();
 
     int find();
-    void findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd);
-    bool timeStampCheck(bool timeRange, bool timeCheck, int searchLine );
+    void findProcess(int searchLine, int searchBorder, QRegExp &searchTextRegExp,QString apID, QString ctID, QString tStart, QString tEnd, QString payloadStart, QString payloadEnd);
+    bool timeStampCheck(int searchLine );
     void registerSearchTableModel(SearchTableModel *model);
     /**
      * @brief foundLine
@@ -107,6 +120,9 @@ public:
     QCheckBox *regexpCheckBox;
     QCheckBox *CheckBoxSearchtoList;
 
+    QString getPayLoadStampStart();
+    QString getPayLoadStampEnd();
+    bool timeStampPayloadValidityCheck(int searchLine);
 private:
     void updateColorbutton();
     void focusRow(int searchLine);
