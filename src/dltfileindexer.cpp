@@ -1,5 +1,7 @@
 #include "dltfileindexer.h"
 #include "optmanager.h"
+#include "dltfileindexerthread.h"
+#include "dltfileindexerdefaultfilterthread.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -38,7 +40,6 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     msecsFilterCounter = 0;
     msecsDefaultFilterCounter = 0;
 }
-
 
 DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManager, QDltDefaultFilter *defaultFilter, QMainWindow *parent) :
     QThread(parent)
@@ -176,8 +177,7 @@ bool DltFileIndexer::index(int num)
 
 bool DltFileIndexer::indexFilter(QStringList filenames)
 {
-    QDltMsg msg;
-    QDltPlugin *item;
+    QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     QTime time;
 
@@ -208,136 +208,59 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
 
-    // run through all viewer plugins
-    // must be run in the UI thread, if some gui actions are performed
+    bool hasPlugins = (activeDecoderPlugins.size() + activeViewerPlugins.size()) > 0;
+    bool hasFilters = filterList.filters.size() > 0;
 
-    // run through all DLT messages
+    bool useIndexerThread = hasPlugins || hasFilters;
+
+    DltFileIndexerThread indexerThread
+            (
+                this,
+                &filterList,
+                sortByTimeEnabled,
+                &indexFilterList,
+                &indexFilterListSorted,
+                pluginManager,
+                &activeViewerPlugins,
+                silentMode
+            );
+
+    if(useIndexerThread)
+        indexerThread.start(); // thread starts reading its queue
+
+    // Start reading messages
     for(int ix=0;ix<dltFile->size();ix++)
     {
-        /* Fill message from file */
-        if(!dltFile->getMsg(ix, msg))
-        {
-            /* Skip broken messages */
-            continue;
-        }
+        msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
 
-        /* check if it is a version messages and
-           version string not already parsed */
-        if((mode == modeIndexAndFilter) &&
-           msg.getType()==QDltMsg::DltTypeControl &&
-           msg.getSubtype()==QDltMsg::DltControlResponse &&
-           msg.getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
-        {
-            QByteArray payload = msg.getPayload();
-            QByteArray data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
-            QString version = msg.toAscii(data,true);
-            version = version.trimmed(); // remove all white spaces at beginning and end
-            versionString(msg.getEcuid(),version);
-        }
+        if(!dltFile->getMsg(ix, *msg))
+            continue; // Skip broken messages
 
-        /* check if it is a timezone message */
-        if((mode == modeIndexAndFilter) &&
-           msg.getType()==QDltMsg::DltTypeControl &&
-           msg.getSubtype()==QDltMsg::DltControlResponse &&
-           msg.getCtrlServiceId() == DLT_SERVICE_ID_TIMEZONE)
-        {
-            QByteArray payload = msg.getPayload();
-            if(payload.size() == sizeof(DltServiceTimezone))
-            {
-                DltServiceTimezone *service;
-                service = (DltServiceTimezone*) payload.constData();
+        if(useIndexerThread)
+            indexerThread.enqueueMessage(msg, ix);
+        else
+            indexerThread.processMessage(msg, ix);
 
-                if(msg.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
-                    timezone(service->timezone,service->isdst);
-                else
-                    timezone(DLT_SWAP_32(service->timezone),service->isdst);
-            }
-        }
-
-        /* check if it is a timezone message */
-        if((mode == modeIndexAndFilter) &&
-           msg.getType()==QDltMsg::DltTypeControl &&
-           msg.getSubtype()==QDltMsg::DltControlResponse &&
-           msg.getCtrlServiceId() == DLT_SERVICE_ID_UNREGISTER_CONTEXT)
-        {
-            QByteArray payload = msg.getPayload();
-            if(payload.size() == sizeof(DltServiceUnregisterContext))
-            {
-                DltServiceUnregisterContext *service;
-                service = (DltServiceUnregisterContext*) payload.constData();
-
-                unregisterContext(msg.getEcuid(),QString(QByteArray(service->apid,4)),QString(QByteArray(service->ctid,4)));
-            }
-
-        }
-
-        /* Process all viewer plugins */
-        if((mode == modeIndexAndFilter) && pluginsEnabled)
-        {
-            for(int ivp=0;ivp < activeViewerPlugins.size();ivp++)
-            {
-                item = (QDltPlugin*)activeViewerPlugins.at(ivp);
-                item->initMsg(ix, msg);
-            }
-        }
-        /* Process all decoderplugins */
-        pluginManager->decodeMsg(msg,silentMode);
-
-        /* Add to filterindex if matches */
-        if(filterList.checkFilter(msg))
-        {
-            if(sortByTimeEnabled)
-                indexFilterListSorted.insert(DltFileIndexerKey(msg.getTime(),msg.getMicroseconds()),ix);
-            else
-                indexFilterList.append(ix);
-        }
-
-        /* Offer messages again to viewer plugins after decode */
-        if((mode == modeIndexAndFilter) && pluginsEnabled)
-        {
-            for(int ivp=0;ivp<activeViewerPlugins.size();ivp++)
-            {
-                item = (QDltPlugin *)activeViewerPlugins.at(ivp);
-                item->initMsgDecoded(ix, msg);
-            }
-        }
-
-        /* update context configuration when loading file */
-        if( (mode == modeIndexAndFilter) &&
-            msg.getType()==QDltMsg::DltTypeControl &&
-            msg.getSubtype()==QDltMsg::DltControlResponse )
-        {
-            const char *ptr;
-            int32_t length;
-            uint32_t service_id=0, service_id_tmp=0;
-
-            QByteArray payload = msg.getPayload();
-            ptr = payload.constData();
-            length = payload.size();
-            DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-            service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
-
-            if(service_id == DLT_SERVICE_ID_GET_LOG_INFO)
-            {
-                getLogInfoList.append(ix);
-            }
-        }
-
-        /* Update progress every 0.5% */
-        if( 0 == (ix%1000))
-        {
+        // Update progress
+        if(ix % 1000 == 0)
             emit(progress(ix));
-        }
 
-        /* stop if requested */
+        // stop if requested
         if(stopFlag)
         {
+            if(useIndexerThread)
+                indexerThread.terminate();
+
             return false;
         }
     }
 
-    // run through all viewer plugins
-    // must be run in the UI thread, if some gui actions are performed
+    // destroy threads
+    if(useIndexerThread)
+    {
+        indexerThread.requestStop();
+        indexerThread.wait();
+    }
 
     qDebug() << "Created filter index for files" << filenames;
 
@@ -351,7 +274,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // write filter index if enabled
     if(!filterCache.isEmpty())
     {
-        saveFilterIndexCache(filterList,indexFilterList,filenames);
+        saveFilterIndexCache(filterList, indexFilterList, filenames);
         qDebug() << "Saved filter index cache for files" << filenames;
     }
 
@@ -360,7 +283,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
 bool DltFileIndexer::indexDefaultFilter()
 {
-    QDltMsg msg;
+    QSharedPointer<QDltMsg> msg;
     QTime time;
 
     // start performance counter
@@ -376,52 +299,56 @@ bool DltFileIndexer::indexDefaultFilter()
     // get silent mode
     bool silentMode = !OptManager::getInstance()->issilentMode();
 
+    bool useDefaultFilterThread = defaultFilter->defaultFilterList.size() > 0;
+
+    DltFileIndexerDefaultFilterThread defaultFilterThread
+            (
+                defaultFilter,
+                pluginManager,
+                silentMode
+            );
+
+    if(useDefaultFilterThread)
+        defaultFilterThread.start();
+
     /* run through the whole open file */
-    for(int ix=0;ix<dltFile->size();ix++)
+    for(int ix = 0; ix < dltFile->size(); ix++)
     {
+        msg = QSharedPointer<QDltMsg>::create();
         /* Fill message from file */
-        if(!dltFile->getMsg(ix, msg))
+        if(!dltFile->getMsg(ix, *msg))
         {
             /* Skip broken messages */
             continue;
         }
 
-        /* Process all decoderplugins */
-        pluginManager->decodeMsg(msg,silentMode);
+        if(useDefaultFilterThread)
+            defaultFilterThread.enqueueMessage(msg, ix);
+        else
+            defaultFilterThread.processMessage(msg, ix);
 
-        /* run through all default filter */
-        for(int num=0;num<defaultFilter->defaultFilterList.size();num++)
-        {
-            QDltFilterList *filterList;
-            filterList = defaultFilter->defaultFilterList[num];
-
-            /* check if filter matches message */
-            if(filterList->checkFilter(msg))
-            {
-                QDltFilterIndex *filterIndex;
-                filterIndex = defaultFilter->defaultFilterIndex[num];
-
-                /* if filter match add message to index cache */
-                filterIndex->indexFilter.append(ix);
-
-            }
-        }
-
-        /* Update progress every 0.5% */
-        if( 0 == (ix%1000))
-        {
+        /* Update progress */
+        if(ix % 1000 == 0)
             emit(progress(ix));
-        }
 
         /* stop if requested */
         if(stopFlag)
         {
+            if(useDefaultFilterThread)
+                defaultFilterThread.terminate();
+
             return false;
         }
     }
 
+    if(useDefaultFilterThread)
+    {
+        defaultFilterThread.requestStop();
+        defaultFilterThread.wait();
+    }
+
     /* update plausibility checks of filter index cache, filename and filesize */
-    for(int num=0;num<defaultFilter->defaultFilterIndex.size();num++)
+    for(int num=0; num < defaultFilter->defaultFilterIndex.size(); num++)
     {
         QDltFilterIndex *filterIndex;
         QDltFilterList *filterList;
@@ -433,7 +360,7 @@ bool DltFileIndexer::indexDefaultFilter()
 
         // write filter index if enabled
         if(!filterCache.isEmpty())
-            saveFilterIndexCache(*filterList,filterIndex->indexFilter,QStringList(dltFile->getFileName()));
+            saveFilterIndexCache(*filterList, filterIndex->indexFilter, QStringList(dltFile->getFileName()));
     }
 
     // update performance counter
@@ -456,6 +383,11 @@ void DltFileIndexer::unlock()
 bool DltFileIndexer::tryLock()
 {
     return indexLock.tryLock();
+}
+
+void DltFileIndexer::appendToGetLogInfoList(int value)
+{
+    getLogInfoList.append(value);
 }
 
 void DltFileIndexer::run()
@@ -534,7 +466,6 @@ void DltFileIndexer::run()
     qDebug() << "Duration Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
     time = QTime(0,0);time = time.addMSecs(msecsDefaultFilterCounter);
     qDebug() << "Duration Default Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
-
 }
 
 void DltFileIndexer::stop()
@@ -635,7 +566,6 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qi
         // loading of cache file failed
         return false;
     }
-
 
     return true;
 }

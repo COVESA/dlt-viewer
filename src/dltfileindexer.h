@@ -103,6 +103,9 @@ public:
     QVector<qint64> getIndexFilters() { return indexFilterList; }
     QList<int> getGetLogInfoList() { return getLogInfoList; }
 
+    // let worker thread append to getLogInfoList
+    void appendToGetLogInfoList(int value);
+
     // main thread routine
     void run();
 
