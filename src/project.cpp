@@ -32,21 +32,22 @@ const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","
 const char *traceinfo[] = {"default","off","on"};
 
 EcuItem::EcuItem(QTreeWidgetItem *parent)
-    : QTreeWidgetItem(parent,ecu_type)
+: QTreeWidgetItem(parent,ecu_type)
+, socket(0)
 {
     /* initialise receive buffer and message*/
     id = "ECU";
     description = "A new ECU";
-    interfacetype = 0; /* default TCP */
+    interfacetype = INTERFACETYPE_TCP; /* default TCP */
     hostname = "localhost";
-    tcpport = DLT_DAEMON_TCP_PORT;
+    ipport = DLT_DAEMON_TCP_PORT;
     baudrate = BAUD115200; /* default 115200 */
     loglevel = DLT_LOG_INFO;
     tracestatus = DLT_TRACE_STATUS_OFF;
     verbosemode = 1;
-    sendSerialHeaderTcp = false;
+    sendSerialHeaderIp = false;
     sendSerialHeaderSerial = true;
-    syncSerialHeaderTcp = false;
+    syncSerialHeaderIp = false;
     syncSerialHeaderSerial = true;
     timingPackets = false;
     sendGetLogInfo = false;
@@ -105,10 +106,21 @@ void EcuItem::update()
         setBackground(0,QBrush(QColor(Qt::white)));
     }
 
-    if(interfacetype == 0)
-        setData(1,Qt::DisplayRole,QString("%1 [%2:%3]").arg(description).arg(hostname).arg(tcpport));
-    else
-        setData(1,Qt::DisplayRole,QString("%1 [%2]").arg(description).arg(port));
+    switch(interfacetype)
+    {
+        case EcuItem::INTERFACETYPE_TCP:
+            setData(1,Qt::DisplayRole,QString("%1 [%2:%3]").arg(description).arg(hostname).arg(ipport));
+            socket = & tcpsocket;
+            break;
+        case EcuItem::INTERFACETYPE_UDP:
+            setData(1,Qt::DisplayRole,QString("%1 [%2:%3]").arg(description).arg(hostname).arg(ipport));
+            socket = & udpsocket;
+            break;
+        case EcuItem::INTERFACETYPE_SERIAL:
+            setData(1,Qt::DisplayRole,QString("%1 [%2]").arg(description).arg(port));
+            socket = 0;
+            break;
+    }
 
     setData(2,Qt::DisplayRole,QString("Default: %1").arg(loginfo[loglevel+1]));
     setData(3,Qt::DisplayRole,QString("Default: %1").arg(traceinfo[tracestatus+1]));
@@ -841,10 +853,10 @@ bool Project::Load(QString filename)
                     ecuitem->setHostname(xml.readElementText());
 
               }
-              if(xml.name() == QString("tcpport"))
+              if(xml.name() == QString("ipport"))
               {
                   if(ecuitem)
-                    ecuitem->setTcpport(xml.readElementText().toInt());
+                    ecuitem->setIpport(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("port"))
@@ -863,7 +875,7 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("sendserialheadertcp"))
               {
                   if(ecuitem)
-                      ecuitem->setSendSerialHeaderTcp(xml.readElementText().toInt());
+                      ecuitem->setSendSerialHeaderIp(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("sendserialheaderserial"))
@@ -875,7 +887,7 @@ bool Project::Load(QString filename)
               if(xml.name() == QString("synctoserialheadertcp"))
               {
                   if(ecuitem)
-                      ecuitem->setSyncSerialHeaderTcp(xml.readElementText().toInt());
+                      ecuitem->setSyncSerialHeaderIp(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("synctoserialheaderserial"))
@@ -1065,12 +1077,12 @@ bool Project::Save(QString filename)
         xml.writeTextElement("description",ecuitem->description);
         xml.writeTextElement("interface",QString("%1").arg(ecuitem->interfacetype));
         xml.writeTextElement("hostname",ecuitem->getHostname());
-        xml.writeTextElement("tcpport",QString("%1").arg(ecuitem->getTcpport()));
+        xml.writeTextElement("ipport",QString("%1").arg(ecuitem->getIpport()));
         xml.writeTextElement("port",ecuitem->getPort());
         xml.writeTextElement("baudrate",QString("%1").arg(ecuitem->getBaudrate()));
-        xml.writeTextElement("sendserialheadertcp",QString("%1").arg(ecuitem->getSendSerialHeaderTcp()));
+        xml.writeTextElement("sendserialheadertcp",QString("%1").arg(ecuitem->getSendSerialHeaderIp()));
         xml.writeTextElement("sendserialheaderserial",QString("%1").arg(ecuitem->getSendSerialHeaderSerial()));
-        xml.writeTextElement("synctoserialheadertcp",QString("%1").arg(ecuitem->getSyncSerialHeaderTcp()));
+        xml.writeTextElement("synctoserialheadertcp",QString("%1").arg(ecuitem->getSyncSerialHeaderIp()));
         xml.writeTextElement("synctoserialheaderserial",QString("%1").arg(ecuitem->getSyncSerialHeaderSerial()));
         xml.writeTextElement("loglevel",QString("%1").arg(ecuitem->loglevel));
         xml.writeTextElement("tracestatus",QString("%1").arg(ecuitem->tracestatus));

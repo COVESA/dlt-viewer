@@ -84,7 +84,7 @@ void EcuDialog::setData(EcuItem &item)
     ui->descriptionLineEdit->setText(item.description);
     ui->comboBoxInterface->setCurrentIndex(item.interfacetype);
     ui->comboBoxHostname->setEditText(item.getHostname());
-    ui->lineEditTcpPort->setText(QString("%1").arg(item.getTcpport()));
+    ui->lineEditTcpPort->setText(QString("%1").arg(item.getIpport()));
     ui->comboBoxPort->setEditText(item.getPort());
 
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
@@ -97,9 +97,9 @@ void EcuDialog::setData(EcuItem &item)
     ui->tracestatusComboBox->setCurrentIndex(item.tracestatus);
     ui->comboBoxVerboseMode->setCurrentIndex(item.verbosemode);
     ui->checkBoxSendSerialHeaderSerial->setCheckState(item.getSendSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxSendSerialHeaderTcp->setCheckState(item.getSendSerialHeaderTcp()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSendSerialHeaderTcp->setCheckState(item.getSendSerialHeaderIp()?Qt::Checked:Qt::Unchecked);
     ui->checkBoxSyncToSerialHeaderSerial->setCheckState(item.getSyncSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxSyncToSerialHeaderTcp->setCheckState(item.getSyncSerialHeaderTcp()?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSyncToSerialHeaderTcp->setCheckState(item.getSyncSerialHeaderIp()?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTiming->setCheckState(item.timingPackets?Qt::Checked:Qt::Unchecked);
 
     ui->checkBoxGetLogInfo->setCheckState(item.sendGetLogInfo?Qt::Checked:Qt::Unchecked);
@@ -111,16 +111,7 @@ void EcuDialog::setData(EcuItem &item)
     ui->checkBoxAutoReconnect->setCheckState(item.autoReconnect?Qt::Checked:Qt::Unchecked);
     ui->spinBoxAutoreconnect->setValue(item.autoReconnectTimeout);
 
-    if (ui->comboBoxInterface->currentIndex() == 0)
-      {
-      ui->tabWidget->setTabEnabled(1,true);
-      ui->tabWidget->setTabEnabled(2,false);
-      }
-    else
-      {
-        ui->tabWidget->setTabEnabled(2,true);
-        ui->tabWidget->setTabEnabled(1,false);
-      }
+    on_comboBoxInterface_currentIndexChanged(ui->comboBoxInterface->currentIndex());
 }
 
 void EcuDialog::changeEvent(QEvent *e)
@@ -290,16 +281,16 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->description = this->description();
     item->interfacetype = this->interfacetype();
     item->setHostname(this->hostname());
-    item->setTcpport(this->tcpport());
+    item->setIpport(this->tcpport());
     item->setPort(this->port());
     item->setBaudrate(this->baudrate());
     item->loglevel = this->loglevel();
     item->tracestatus = this->tracestatus();
     item->verbosemode = this->verbosemode();
     item->setSendSerialHeaderSerial(this->sendSerialHeaderSerial());
-    item->setSendSerialHeaderTcp(this->sendSerialHeaderTcp());
+    item->setSendSerialHeaderIp(this->sendSerialHeaderTcp());
     item->setSyncSerialHeaderSerial(this->syncSerialHeaderSerial());
-    item->setSyncSerialHeaderTcp(this->syncSerialHeaderTcp());
+    item->setSyncSerialHeaderIp(this->syncSerialHeaderTcp());
     item->timingPackets = this->timingPackets();
     item->sendGetLogInfo = this->sendGetLogInfo();
     item->sendDefaultLogLevel = this->sendDefaultLogLevel();
@@ -310,10 +301,10 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item){
     item->updateAutoReconnectTimestamp();
 
     /* new qdlt library */
-    item->tcpcon.setTcpPort(this->tcpport());
-    item->tcpcon.setHostname(this->hostname());
-    item->tcpcon.setSendSerialHeader(this->sendSerialHeaderTcp());
-    item->tcpcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
+    item->ipcon.setPort(this->tcpport());
+    item->ipcon.setHostname(this->hostname());
+    item->ipcon.setSendSerialHeader(this->sendSerialHeaderTcp());
+    item->ipcon.setSyncSerialHeader(this->syncSerialHeaderTcp());
     item->serialcon.setBaudrate(this->baudrate());
     item->serialcon.setPort(this->port());
     item->serialcon.setSendSerialHeader(this->sendSerialHeaderSerial());
@@ -328,15 +319,21 @@ void EcuDialog::on_checkBoxAutoReconnect_toggled(bool checked)
 
 void EcuDialog::on_comboBoxInterface_currentIndexChanged(int index)
 {
-  if (index == 0)
+    switch(index)
     {
-      //we have tcp set -> disable serial, enable tcp
-      ui->tabWidget->setTabEnabled(1,true);
-      ui->tabWidget->setTabEnabled(2,false);
-    }
-  else
-    {
-      ui->tabWidget->setTabEnabled(2,true);
-      ui->tabWidget->setTabEnabled(1,false);
+        case EcuItem::INTERFACETYPE_TCP:
+            //we have TCP set -> disable serial, enable TCP
+            ui->tabWidget->setTabEnabled(1,true);
+            ui->tabWidget->setTabEnabled(2,false);
+            break;
+        case EcuItem::INTERFACETYPE_UDP:
+            //we have UDP set -> disable serial, enable UDP
+            ui->tabWidget->setTabEnabled(1,true);
+            ui->tabWidget->setTabEnabled(2,false);
+            break;
+        case EcuItem::INTERFACETYPE_SERIAL:
+            ui->tabWidget->setTabEnabled(1,false);
+            ui->tabWidget->setTabEnabled(2,true);
+            break;
     }
 }

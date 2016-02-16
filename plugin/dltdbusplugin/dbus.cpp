@@ -200,7 +200,7 @@ bool DltDBusDecoder::decodeHeader(QByteArray &data)
         offset+=padding(offset,8);
 
         // read field code
-        unsigned char fieldCode;
+        unsigned char fieldCode = 0;
         if(!readByte(fieldCode,dataPtr,offset,arraySize))
             return false;
 
@@ -245,7 +245,7 @@ bool DltDBusDecoder::decodeHeader(QByteArray &data)
                 if(!readUint32(replySerial,dataPtr,offset,arraySize))
                     return false;
                 break;
-            case DBUS_FIELD_CODE_DESTINATION: //	6       // STRING	optional	The name of the connection this message is intended for. Only used in combination with the message bus, see the section called “Message Bus Specification”.
+            case DBUS_FIELD_CODE_DESTINATION: //	6       // STRING	optional	The name of the connection this message is intended for. Only used in combination with the message bus, see the section called "Message Bus Specification".
                 // read destination
                 if(!readString(destination,dataPtr,offset,arraySize))
                     return false;
@@ -503,7 +503,7 @@ bool DltDBusDecoder::decodePayloadParameter(char type,char *dataPtr,int &offset,
         break;
     case DBUS_TYPE_CHAR_BYTE: // 121 // (ASCII 'y')	8-bit unsigned integer
     {
-        unsigned char data;
+        unsigned char data = 0;
 
         // read parameter
         if(!readByte(data,dataPtr,offset,maxSize))

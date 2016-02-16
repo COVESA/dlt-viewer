@@ -1921,7 +1921,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             bool interfaceChanged = false;
             if((ecuitem->interfacetype != dlg.interfacetype() ||
                 ecuitem->getHostname() != dlg.hostname() ||
-                ecuitem->getTcpport() != dlg.tcpport() ||
+                ecuitem->getIpport() != dlg.tcpport() ||
                 ecuitem->getPort() != dlg.port() ||
                 ecuitem->getBaudrate() != dlg.baudrate()) &&
                     ecuitem->tryToConnect)
@@ -2559,7 +2559,7 @@ void MainWindow::saveAndDisconnectCurrentlyConnectedSerialECUs()
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if(ecuitem->connected && ecuitem->interfacetype == 1)
+        if(ecuitem &&  ecuitem->connected && ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL)
         {
             m_previouslyConnectedSerialECUs.append(num);
             disconnectECU(ecuitem);
@@ -2612,11 +2612,11 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
         on_configWidget_itemSelectionChanged();
 
         /* update conenction state */
-        if(ecuitem->interfacetype == 0)
+        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
-            /* TCP */
-            if (ecuitem->socket.state()!=QAbstractSocket::UnconnectedState)
-                ecuitem->socket.disconnectFromHost();
+            /* TCP or UDP */
+            if (ecuitem->socket->state()!=QAbstractSocket::UnconnectedState)
+                ecuitem->socket->disconnectFromHost();
         }
         else
         {
@@ -2673,25 +2673,25 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         /* reset receive buffer */
         ecuitem->totalBytesRcvd = 0;
         ecuitem->totalBytesRcvdLastTimeout = 0;
-        ecuitem->tcpcon.clear();
+        ecuitem->ipcon.clear();
         ecuitem->serialcon.clear();
 
         /* start socket connection to host */
-        if(ecuitem->interfacetype == 0)
+        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
-            /* TCP */
+            /* TCP or UDP */
             /* connect socket signals with window slots */
-            if (ecuitem->socket.state()==QAbstractSocket::UnconnectedState)
+            if (ecuitem->socket->state()==QAbstractSocket::UnconnectedState)
             {
-                disconnect(&ecuitem->socket,0,0,0);
-                connect(&ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
-                connect(&ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-                connect(&ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
-                connect(&ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
-                connect(&ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
+                disconnect(ecuitem->socket,0,0,0);
+                connect(ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
+                connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+                connect(ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+                connect(ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
+                connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
 
-                //disconnect(&ecuitem->socket,0,0,0);
-                ecuitem->socket.connectToHost(ecuitem->getHostname(),ecuitem->getTcpport());
+                //disconnect(ecuitem->socket,0,0,0);
+                ecuitem->socket->connectToHost(ecuitem->getHostname(),ecuitem->getIpport());
             }
         }
         else
@@ -2758,7 +2758,7 @@ void MainWindow::connected()
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
+        if( ecuitem->socket == sender())
         {
             /* update connection state */
             ecuitem->connected = true;
@@ -2769,7 +2769,7 @@ void MainWindow::connected()
             /* reset receive buffer */
             ecuitem->totalBytesRcvd = 0;
             ecuitem->totalBytesRcvdLastTimeout = 0;
-            ecuitem->tcpcon.clear();
+            ecuitem->ipcon.clear();
             ecuitem->serialcon.clear();
         }
     }
@@ -2816,7 +2816,7 @@ void MainWindow::disconnected()
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
+        if( ecuitem && ecuitem->socket == sender())
         {
             /* update connection state */
             ecuitem->connected = false;
@@ -2826,7 +2826,7 @@ void MainWindow::disconnected()
             on_configWidget_itemSelectionChanged();
 
             /* disconnect socket signals from window slots */
-            disconnect(&ecuitem->socket,0,0,0);
+            disconnect(ecuitem->socket,0,0,0);
         }
     }
       checkConnectionState();
@@ -2871,15 +2871,15 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
+        if( ecuitem && ecuitem->socket == sender())
         {
             /* save error */
-            ecuitem->connectError = ecuitem->socket.errorString();
+            ecuitem->connectError = ecuitem->socket->errorString();
 
-            if(ecuitem->interfacetype == 0)
+            if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
             {
                 /* disconnect socket */
-                ecuitem->socket.disconnectFromHost();
+                ecuitem->socket->disconnectFromHost();
             }
 
             /* update connection state */
@@ -2903,7 +2903,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( (&(ecuitem->socket) == sender()) || (ecuitem->m_serialport == sender()))
+            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender()))
             {
                 read(ecuitem);
             }
@@ -2921,13 +2921,13 @@ void MainWindow::read(EcuItem* ecuitem)
         return;
 
     QByteArray data;
-    if(ecuitem->interfacetype == 0)
+    if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
     {
-        /* TCP */
-        // bytesRcvd = ecuitem->socket.bytesAvailable();
-        data = ecuitem->socket.readAll();
+        /* TCP or UDP */
+        // bytesRcvd = ecuitem->socket->bytesAvailable();
+        data = ecuitem->socket->readAll();
         bytesRcvd = data.size();
-        ecuitem->tcpcon.add(data);
+        ecuitem->ipcon.add(data);
      }
     else if(ecuitem->m_serialport)
     {
@@ -2944,8 +2944,8 @@ void MainWindow::read(EcuItem* ecuitem)
 
         ecuitem->totalBytesRcvd += bytesRcvd;
 
-        while((ecuitem->interfacetype == 0 && ecuitem->tcpcon.parse(qmsg)) ||
-              (ecuitem->interfacetype == 1 && ecuitem->serialcon.parse(qmsg)))
+        while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) && ecuitem->ipcon.parse(qmsg)) ||
+              (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
         {
             
 
@@ -3044,15 +3044,15 @@ void MainWindow::read(EcuItem* ecuitem)
             }
         }
 
-        if(ecuitem->interfacetype == 0)
+        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
-            /* TCP */
-            totalByteErrorsRcvd+=ecuitem->tcpcon.bytesError;
-            ecuitem->tcpcon.bytesError = 0;
-            totalBytesRcvd+=ecuitem->tcpcon.bytesReceived;
-            ecuitem->tcpcon.bytesReceived = 0;
-            totalSyncFoundRcvd+=ecuitem->tcpcon.syncFound;
-            ecuitem->tcpcon.syncFound = 0;
+            /* TCP or UDP */
+            totalByteErrorsRcvd+=ecuitem->ipcon.bytesError;
+            ecuitem->ipcon.bytesError = 0;
+            totalBytesRcvd+=ecuitem->ipcon.bytesReceived;
+            ecuitem->ipcon.bytesReceived = 0;
+            totalSyncFoundRcvd+=ecuitem->ipcon.syncFound;
+            ecuitem->ipcon.syncFound = 0;
          }
         else if(ecuitem->m_serialport)
         {
@@ -3468,17 +3468,21 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     msg.standardheader->len = DLT_HTOBE_16(msg.headersize - sizeof(DltStorageHeader) + msg.datasize);
 
     /* send message to daemon */
-    if (ecuitem->interfacetype == 0 && ecuitem->socket.isOpen())
+    if ((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) && ecuitem->socket->isOpen())
     {
+        QByteArray tmpBuf;
+
         /* Optional: Send serial header, if requested */
-        if (ecuitem->getSendSerialHeaderTcp())
-            ecuitem->socket.write((const char*)dltSerialHeader,sizeof(dltSerialHeader));
+        if (ecuitem->getSendSerialHeaderIp())
+            tmpBuf.append((const char*)dltSerialHeader, sizeof(dltSerialHeader));
 
         /* Send data */
-        ecuitem->socket.write((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
-        ecuitem->socket.write((const char*)msg.databuffer,msg.datasize);
+        tmpBuf.append((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
+        tmpBuf.append((const char*)msg.databuffer,msg.datasize);
+
+        ecuitem->socket->write(tmpBuf);
     }
-    else if (ecuitem->interfacetype == 1 && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
+    else if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
     {
         /* Optional: Send serial header, if requested */
         if (ecuitem->getSendSerialHeaderSerial())
@@ -4800,7 +4804,7 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( &(ecuitem->socket) == sender())
+        if( ecuitem && ecuitem->socket == sender())
         {
             /* update ECU item */
             ecuitem->update();

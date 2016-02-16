@@ -25,6 +25,7 @@
 #include <QTreeWidget>
 #include <QDockWidget>
 #include <QTcpSocket>
+#include <QUdpSocket>
 #include <QObject>
 #include <QDateTime>
 #include <qextserialport.h>
@@ -53,6 +54,11 @@ enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, con
 class EcuItem  : public QTreeWidgetItem
 {
 public:
+    enum {
+        INTERFACETYPE_TCP,
+        INTERFACETYPE_UDP,
+        INTERFACETYPE_SERIAL
+    };
 
     EcuItem(QTreeWidgetItem *parent = 0);
     ~EcuItem();
@@ -77,7 +83,9 @@ public:
     void update();
 
     /* connection */
-    QTcpSocket socket;
+    QTcpSocket tcpsocket;
+    QUdpSocket udpsocket;
+    QAbstractSocket * socket;
 
     QextSerialPort *m_serialport;
 
@@ -101,25 +109,25 @@ private:
     QDateTime autoReconnectTimestamp;
     bool operator< ( const QTreeWidgetItem & other ) const;
 
-    /* configuration TCP */
+    /* configuration TCP / UDP */
      QString hostname;
-     unsigned int tcpport;
-     bool sendSerialHeaderTcp;
-     bool syncSerialHeaderTcp;
+     unsigned int ipport;
+     bool sendSerialHeaderIp;
+     bool syncSerialHeaderIp;
 
 public:
-     QDltTCPConnection tcpcon;
+     QDltIPConnection ipcon;
 
      /* Accsesors to config */
      QString getHostname() {return hostname;}
-     unsigned int getTcpport() {return tcpport;}
-     bool getSendSerialHeaderTcp() {return sendSerialHeaderTcp;}
-     bool getSyncSerialHeaderTcp() {return syncSerialHeaderTcp;}
+     unsigned int getIpport() {return ipport;}
+     bool getSendSerialHeaderIp() {return sendSerialHeaderIp;}
+     bool getSyncSerialHeaderIp() {return syncSerialHeaderIp;}
 
-     void setHostname(QString hname) {hostname = hname; tcpcon.setHostname(hostname);}
-     void setTcpport(unsigned int tp) {tcpport = tp; tcpcon.setTcpPort(tcpport);}
-     void setSendSerialHeaderTcp(bool b) {sendSerialHeaderTcp = b; tcpcon.setSendSerialHeader(sendSerialHeaderTcp);}
-     void setSyncSerialHeaderTcp(bool b) {syncSerialHeaderTcp = b; tcpcon.setSyncSerialHeader(syncSerialHeaderTcp);}
+     void setHostname(QString hname) {hostname = hname; ipcon.setHostname(hostname);}
+     void setIpport(unsigned int tp) {ipport = tp; ipcon.setPort(ipport);}
+     void setSendSerialHeaderIp(bool b) {sendSerialHeaderIp = b; ipcon.setSendSerialHeader(sendSerialHeaderIp);}
+     void setSyncSerialHeaderIp(bool b) {syncSerialHeaderIp = b; ipcon.setSyncSerialHeader(syncSerialHeaderIp);}
 
 private:
      /* Configuration serial */

@@ -33,7 +33,9 @@
 #include <qdltfile.h>
 #include <qdltcontrol.h>
 #include <qdltconnection.h>
+#include <qdltipconnection.h>
 #include <qdlttcpconnection.h>
+#include <qdltudpconnection.h>
 #include <qdltserialconnection.h>
 #include <qdltplugin.h>
 #include <qdltpluginmanager.h>

@@ -57,6 +57,11 @@
          </item>
          <item>
           <property name="text">
+           <string>UDP</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>Serial</string>
           </property>
          </item>
@@ -226,7 +231,7 @@
      </widget>
      <widget class="QWidget" name="tab_3">
       <attribute name="title">
-       <string>TCP</string>
+       <string>IP</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
        <item row="0" column="0">
@@ -269,7 +274,7 @@
        <item row="2" column="0" colspan="2">
         <widget class="QLabel" name="label_9">
          <property name="text">
-          <string>TCP Port:</string>
+          <string>IP Port:</string>
          </property>
         </widget>
        </item>

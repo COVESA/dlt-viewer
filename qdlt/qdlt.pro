@@ -55,7 +55,9 @@ INCLUDEPATH = . ../qextserialport/src ../src
 
 SOURCES +=  \
             dlt_common.c \
+    qdltipconnection.cpp \
     qdlttcpconnection.cpp \
+    qdltudpconnection.cpp \
     qdltserialconnection.cpp \
     qdltmsg.cpp \
     qdltfilter.cpp \
@@ -73,10 +75,12 @@ SOURCES +=  \
 
 
 HEADERS += qdlt.h \
-           export_rules.h \
-           dlt_common.h \
-           dlt_user.h \
+    export_rules.h \
+    dlt_common.h \
+    dlt_user.h \
+    qdltipconnection.h \
     qdlttcpconnection.h \
+    qdltudpconnection.h \
     qdltserialconnection.h \
     qdltmsg.h \
     qdltfilter.h \

@@ -52,6 +52,7 @@ struct sDltMessage;
 
 class QextSerialPort;
 class QTcpSocket;
+class QUdpSocket;
 
 //! Base class for all DLT classes.
 /*!

@@ -1,6 +1,6 @@
 /**
  * @licence app begin@
- * Copyright (C) 2011-2012  BMW AG
+ * Copyright (C) 2015-2016  Harman Becker Automotive Systems GmbH
  *
  * This file is part of GENIVI Project Dlt Viewer.
  *
@@ -12,15 +12,15 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
+ * \author Olaf Dreyer <olaf.dreyer@harman.com>
  *
- * \file qdlt.cpp
+ * \file qdltudpconnection.cpp
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
 
 #include <QtDebug>
-#include <QTcpSocket>
+#include <QUdpSocket>
 
 #include "qdlt.h"
 
@@ -29,20 +29,20 @@ extern "C"
 #include "dlt_common.h"
 }
 
-QDltTCPConnection::QDltTCPConnection()
+QDltUDPConnection::QDltUDPConnection()
 : QDltIPConnection()
 , socket(0)
 {
     hostname = "localhost";
-    port = DLT_DAEMON_TCP_PORT;
+    port = DLT_DAEMON_UDP_PORT;
 }
 
-QDltTCPConnection::~QDltTCPConnection()
+QDltUDPConnection::~QDltUDPConnection()
 {
     delete socket;
 }
 
-void QDltTCPConnection::setDefaultPort()
+void QDltUDPConnection::setDefaultPort()
 {
-    port = DLT_DAEMON_TCP_PORT;
+    port = DLT_DAEMON_UDP_PORT;
 }

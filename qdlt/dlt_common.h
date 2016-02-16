@@ -175,6 +175,7 @@
  * The standard TCP Port used for DLT daemon
  */
 #define DLT_DAEMON_TCP_PORT 3490
+#define DLT_DAEMON_UDP_PORT 3490
 
 /**
  * The size of a DLT ID

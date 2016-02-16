@@ -1,6 +1,6 @@
 /**
  * @licence app begin@
- * Copyright (C) 2011-2012  BMW AG
+ * Copyright (C) 2015-2016  Harman Becker Automotive Systems GmbH
  *
  * This file is part of GENIVI Project Dlt Viewer.
  *
@@ -12,15 +12,15 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
+ * \author Olaf Dreyer <olaf.dreyer@harman.com>
  *
- * \file qdlt.h
+ * \file qdltudpconnection.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
 
-#ifndef QDLT_TCP_CONNECTION_H
-#define QDLT_TCP_CONNECTION_H
+#ifndef QDLT_UDP_CONNECTION_H
+#define QDLT_UDP_CONNECTION_H
 
 #include <QObject>
 #include <QString>
@@ -32,19 +32,19 @@
 
 #include "export_rules.h"
 
-class QTcpSocket;
+class QUdpSocket;
 
-class QDLT_EXPORT QDltTCPConnection : public QDltIPConnection
+class QDLT_EXPORT QDltUDPConnection : public QDltIPConnection
 {
 public:
 
-    QDltTCPConnection();
-    ~QDltTCPConnection();
+    QDltUDPConnection();
+    virtual ~QDltUDPConnection();
 
     virtual void setDefaultPort();
 
 private:
-    QTcpSocket *socket;
+    QUdpSocket *socket;
 };
 
-#endif // QDLT_TCP_CONNECTION_H
+#endif // QDLT_UDP_CONNECTION_H
