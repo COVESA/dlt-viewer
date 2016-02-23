@@ -1,21 +1,26 @@
-<authorgroup> 
-   <author> 
-     <firstname>Alexander</firstname> 
-     <surname>Wenzel</surname> 
+<authorgroup>
+   <author>
+     <firstname>Alexander</firstname>
+     <surname>Wenzel</surname>
      <email>Alexander.AW.Wenzel@bmw.de</email>
-     <affiliation> 
-       <orgname>BMW</orgname> 
-     </affiliation> 
-   </author> 
+     <affiliation>
+       <orgname>BMW</orgname>
+     </affiliation>
+   </author>
 
-   <editor> 
-     <firstname>Simon</firstname> 
-     <surname>Brandner</surname> 
+   <editor>
+     <firstname>Simon</firstname>
+     <surname>Brandner</surname>
      <email>simon.brandner@partner.bmw.de</email>
-   </editor> 
-   <editor> 
+   </editor>
+   <editor>
      <firstname>Lassi</firstname> 
      <surname>Marttala</surname> 
      <email>lassi.lm.marttala@partner.bmw.de</email>
-   </editor> 
-</authorgroup> 
+   </editor>
+   <editor>
+     <firstname>Sven</firstname>
+     <surname>Hassler</surname>
+     <email>Sven_Hassler@mentor.com</email>
+   </editor>
+</authorgroup>

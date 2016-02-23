@@ -20,13 +20,13 @@ Options:
 Software/Hardware
 -----------------
 
-* Developed with: QT 5.2.1 (http://qt-project.org/)
-* MS Windows XP / Intel PC
+* Developed with: QT 5.5.1 (http://qt-project.org/)
+* MS Windows 7 / Intel PC
 
 Dynamically linked open source software
 ---------------------------------------
 
-* Qt 5.2.1 (LGPL - Qt)
+* Qt 5.5.1 (LGPL - Qt)
 * GCC (GPL)
 * (Optional) Mingw (GPL + BSD Variante + Public Domain)
 

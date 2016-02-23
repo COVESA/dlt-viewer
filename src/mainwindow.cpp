@@ -51,7 +51,7 @@ extern "C" {
 #include <io.h>
 #include <time.h>
 #include <WinSock.h>
-#else 
+#else
 #include <unistd.h>     /* for read(), close() */
 #include <sys/time.h>	/* for gettimeofday() */
 #endif
@@ -399,7 +399,7 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
 
-    m_searchresultsTable->verticalHeader()->setVisible(false);    
+    m_searchresultsTable->verticalHeader()->setVisible(false);
     m_searchresultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
@@ -538,7 +538,7 @@ void MainWindow::initFileHandling()
     }
 
 
-	draw_timer.setSingleShot (true);
+    draw_timer.setSingleShot (true);
     connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
 
 
@@ -1607,8 +1607,8 @@ void MainWindow::applySettings()
     int refreshRate = settingsmanager->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
     if ( refreshRate )
         draw_interval = 1000 / refreshRate;
-	else
-		draw_interval = 1000 / DEFAULT_REFRESH_RATE;	
+    else
+        draw_interval = 1000 / DEFAULT_REFRESH_RATE;
 }
 
 void MainWindow::on_action_menuFile_Settings_triggered()
@@ -1846,7 +1846,7 @@ QStringList MainWindow::getSerialPortsWithQextEnumerator(){
 }
 
 void MainWindow::on_action_menuConfig_ECU_Add_triggered()
-{   
+{
     QStringList hostnameListPreset;
     hostnameListPreset << "localhost";
 
@@ -2947,7 +2947,7 @@ void MainWindow::read(EcuItem* ecuitem)
         while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) && ecuitem->ipcon.parse(qmsg)) ||
               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
         {
-            
+
 
             DltStorageHeader str;
             str.pattern[0]='D';
@@ -2960,7 +2960,7 @@ void MainWindow::read(EcuItem* ecuitem)
                 time_t today;
                 time(&today);
                 str.seconds = (time_t)today;
-                str.microseconds = 0; 
+                str.microseconds = 0;
             #else
                 struct timeval tv;
                 gettimeofday(&tv, NULL);
@@ -4425,7 +4425,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Architecture: Little Endian\n\n")+
                          #endif
-                             QString("(C) 2010,2014 BMW AG\n"));
+                             QString("(C) 2016 BMW AG\n"));
 }
 
 
@@ -4477,11 +4477,11 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
 
     if((project.filter->selectedItems().count() >= 1) ) {
         ui->action_menuFilter_Delete->setEnabled(true);
-        ui->action_menuFilter_Edit->setEnabled(true);        
+        ui->action_menuFilter_Edit->setEnabled(true);
         ui->action_menuFilter_Duplicate->setEnabled(true);
     }else{
         ui->action_menuFilter_Delete->setEnabled(false);
-        ui->action_menuFilter_Edit->setEnabled(false);        
+        ui->action_menuFilter_Edit->setEnabled(false);
         ui->action_menuFilter_Duplicate->setEnabled(false);
     }
 }
@@ -4925,10 +4925,10 @@ void MainWindow::updatePlugin(PluginItem *item) {
 
     bool ret = item->getPlugin()->loadConfig(item->getFilename());
     QString err_text = item->getPlugin()->error();
-	//We should not need error handling when disabling the plugins. But why is loadConfig called then anyway?
+    //We should not need error handling when disabling the plugins. But why is loadConfig called then anyway?
     if (item->getMode() != QDltPlugin::ModeDisable)
     {
-       
+
         if ( false == ret )
         {
             QString err_header = "Plugin Error: ";
@@ -4942,7 +4942,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
         }
         else if ( 0 < err_text.length() )
         {
-			//we have no error, but the plugin complains about something
+            //we have no error, but the plugin complains about something
             QString err_header = "Plugin Warning: ";
             err_header.append(item->getName());
             QString err_body = err_header;
@@ -6131,7 +6131,7 @@ void MainWindow::searchTableRenewed()
     if ( 0 < m_searchtableModel->get_SearchResultListSize())
         ui->dockWidgetSearchIndex->show();
 
-    m_searchtableModel->modelChanged(); 
+    m_searchtableModel->modelChanged();
 }
 
 

@@ -6,9 +6,9 @@ Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
 * Install Qt5 SDK including Qt Creator and MinGW (or MSVC 2013 for 32bit and 64bit Windows builds)
-* Tested with QT 5.5.1, QT 5.5.0, Qt 5.4.1 and QT 4.8.5
+* Tested with QT 5.5.1, QT 5.5.0
 * Open project BuildDltViewer.pro in Qt Creator.
-* Ensure that build options point to correct QT and MinGW.
+* Ensure that build options point to correct QT and MinGW / MSVC.
 * Build Release in Qt Creator.
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
 
@@ -17,7 +17,7 @@ Instructions for installing DLT Viewer (Linux commandline)
 
 * mkdir build
 * cd build
-* qmake-qt4 ../BuildDltViewer.pro
+* qmake-qt5 ../BuildDltViewer.pro
 * make
 * sudo make install
 * sudo ldconfig
@@ -28,17 +28,17 @@ Create SDK (Windows)
 
 MinGW (32bit only):
 * Install Qt5 SDK inclduing MinGW for Windows.
-* If your Qt installation does not match "C:Qt\Qt5.5.1\5.5\mingw492_32",
+* If your Qt installation does not match "C:\Qt\Qt5.5.1\5.5\mingw492_32",
     you can set the correct path as environment variable "QTDIR" in your system properties.
 * Adjust and run build_sdk_windows_qt5.bat batch file
 
 Microsoft Visual C++ 2013 (32bit and 64bit):
-* Install Qt5 SDK and MSVC 2013.
-* If your Qt installation does not match "C:Qt\Qt5.5.1\5.5\msvc2013" (32bit) or "C:Qt\Qt5.5.1\5.5\msvc2013_64" (64bit),
+* Install Qt5 SDK and MSVC 2013 (you can use the free "express" version).
+* If your Qt installation does not match "C:\Qt\Qt5.5.1\5.5\msvc2013" (for 32 bit) or "C:\Qt\Qt5.5.1\5.5\msvc2013_64" (for 64 bit),
     you can set the correct path as environment variable "QTDIR" in your system properties.
-* Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter x86 or x86_amd64
+* Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter x86 or x86_amd64 (the current system's architecture is used by default).
 
-The SDK will be installed to C:\Users\USERNAME\DltViewerSDK\
+The SDK will be installed to C:\Users\%USERNAME%\DltViewerSDK\
 
 Optional: Prepare Installation Qwt (Windows)
 --------------------------------------------
@@ -58,7 +58,7 @@ MinGW (32bit only):
 * Execute mingw32-make install
 
 Microsoft Visual C++ 2013 (32bit and 64bit):
-* Install Qt5 SDK for Visual C++ 2013
+* Install Qt5 SDK for Visual C++ 2013 (you can use the free "express" version)
 * Extract Qwt Zip package
 * If you like, you can adjust the installation path by changing the variable "QWT_INSTALL_PREFIX" in qwtconfig.pri
 * Start Qt commandline from Start->Qt_5.x.x
@@ -80,11 +80,11 @@ Create SDK (Linux)
 Create SDK Documentation (Windows)
 ----------------------------------
 
-* Install doxygen
+* Install doxygen and graphviz
 * Change into project directory
-* doxygen sdk/doxygen_dlt_viewer_plugininterface.cfg
-* (Optional) doxygen sdk/doxygen_dlt_viewer.cfg
-* (Optional) doxygen sdk/doxygen_dlt_viewer_qdlt.cfg
+* doxygen sdk\doxygen_dlt_viewer_plugininterface.cfg
+* (Optional) doxygen sdk\doxygen_dlt_viewer.cfg
+* (Optional) doxygen sdk\doxygen_dlt_viewer_qdlt.cfg
 * You will find the documentation in the doc directory
 
 Create SDK Documentation (Linux)
@@ -102,10 +102,10 @@ Create manuals documentation
 
 The manuals are generated with asciidoc.
 Call 
-asciidoc dlt_viewer_user_manual.txt
-asciidoc dlt_viewer_plugins_programming_guide.txt
+    asciidoc dlt_viewer_user_manual.txt
+    asciidoc dlt_viewer_plugins_programming_guide.txt
 to generate html output.
 To generate pdfs, call
-sh onvert.sh 
+    sh convert.sh
 from within the doc directory
 
