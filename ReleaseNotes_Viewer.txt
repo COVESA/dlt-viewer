@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.16.0 STABLE
+Version 2.17.0 STABLE
 
 Known issues
 ------------
@@ -13,6 +13,23 @@ Known issues
 
 Changes
 -------
+2.17.0
+  * Updated and improved documentation
+  * Added the option to use UDP as transport protocol
+  * Drag&Drop Plugin Config files: dont ask which plugin if only 1 plugin active
+  * Implemented advanced Search with Payload Boundaries
+  * Default directory usage for WIN and LINUX: Config/Filters/Cache -> homePath/tempPath
+  * Fixed some warnings concerning datatypes
+  * Fixed manual tableview scrolling with keyboard arrows and PageUp/Down
+  * Show connection state in toolbar button icon
+  * Enabled interaction with search results while a search is ongoing
+  * Fixed issue with not closing search dialog when main window is closed
+  * Implemented UTF8 export
+  * Enabled C++11 support
+  * Increased scrolling performance with large files by using memory mapped file access
+  * Search history feature added
+  * Search text prediction feature added
+
 2.16.0
   * Initialize member variable. 
     Fixes possible decoding problems in non-verbose mode because dltType is evaluated in toString()
