@@ -112,7 +112,10 @@ SOURCES += main.cpp \
     searchtablemodel.cpp \
     pulsebutton.cpp \
     plugintreewidget.cpp \
-    exporterdialog.cpp
+    exporterdialog.cpp \
+    dltmsgqueue.cpp \
+    dltfileindexerthread.cpp \
+    dltfileindexerdefaultfilterthread.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -142,7 +145,10 @@ HEADERS += mainwindow.h \
     pulsebutton.h \
     searchtablemodel.h \
     plugintreewidget.h \
-    exporterdialog.h
+    exporterdialog.h \
+    dltmsgqueue.h \
+    dltfileindexerthread.h \
+    dltfileindexerdefaultfilterthread.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \

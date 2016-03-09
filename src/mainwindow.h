@@ -52,10 +52,10 @@
 
 /**
  * @brief Namespace to contain the toolbar positions.
- * You should always remember to update these enums if you 
+ * You should always remember to update these enums if you
  * add, remove or re-arrange actions in the toolbars!
  * If you add separators, please add "Separator" lines similar
- * to those below, to make it obvious why the numbering scheme is 
+ * to those below, to make it obvious why the numbering scheme is
  * leaping over some numbers.
  */
 namespace ToolbarPosition {
@@ -515,7 +515,7 @@ public slots:
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
 
-public:   
+public:
 
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
     Project project;

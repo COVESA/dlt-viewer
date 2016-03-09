@@ -271,7 +271,7 @@ bool QDltFile::updateIndexFilter()
 }
 
 bool QDltFile::checkFilter(QDltMsg &msg)
-{  
+{
     if(!filterFlag)
     {
         return true;
