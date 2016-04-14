@@ -1,4 +1,5 @@
 /**
+
  * @licence app begin@
  * Copyright (C) 2011-2014  BMW AG
  *
@@ -16,6 +17,13 @@
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
+ /*  Change log
+ *  12.04.2016 Gernot Wirschal added checking of APID in function checkIfDBusMsg
+ *                             to avoid overwriting of SomeIP messages
+ */
+
+
+
 
 #include <QtGui>
 
@@ -507,6 +515,10 @@ QString DltDBusPlugin::stringToHtml(QString str)
 bool DltDBusPlugin::checkIfDBusMsg(QDltMsg &msg)
 {
     QDltArgument argument1,argument2;
+
+
+    if(msg.getApid()!= "DBUS" )
+        return false;
 
     // at least two arguments in network message
     if(msg.getType()!=QDltMsg::DltTypeNwTrace || msg.getSubtype()!=QDltMsg::DltNetworkTraceIpc || msg.getNumberOfArguments()<2)
