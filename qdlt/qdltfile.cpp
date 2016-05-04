@@ -118,7 +118,6 @@ bool QDltFile::open(QString _filename, bool append) {
         return false;
     }
 
-    item->map_ = item->infile.map(0, item->infile.size());
     qDebug() << "Open file" << _filename << "finished";
 
     return true;
@@ -376,24 +375,12 @@ QByteArray QDltFile::getMsg(int index) const
     file->infile.seek(positionForIndex);
 
     /* read DLT message from file */
-    if(file->map_ != nullptr )
-    {
-        /* copy from mmap'ed file */
-        auto ptr = (const char*)(file->map_ + positionForIndex);
-
-        /* calculate message size */
-        auto size = index == (file->indexAll.size()-1) ? file->infile.size() - positionForIndex : const_file->indexAll[index+1] - positionForIndex;
-        buf = QByteArray(ptr, size);
-    }
+    if(index == (file->indexAll.size()-1))
+        /* last message in file */
+        buf = file->infile.read(file->infile.size() - positionForIndex);
     else
-    {
-        if(index == (file->indexAll.size()-1))
-            /* last message in file */
-            buf = file->infile.read(file->infile.size() - positionForIndex);
-        else
-            /* any other file position */
-            buf = file->infile.read(const_file->indexAll[index+1] - positionForIndex);
-    }
+        /* any other file position */
+        buf = file->infile.read(const_file->indexAll[index+1] - positionForIndex);
 
     mutexQDlt.unlock();
 
