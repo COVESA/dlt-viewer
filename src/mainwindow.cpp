@@ -5850,15 +5850,30 @@ int MainWindow::nearest_line(int line){
         /* Iterate through filter index, trying to find
          * matching index. If it cannot be found, just settle
          * for the last one that we saw before going over */
-        int lastFound = 0, i;
-        for(i=0;i<qfile.sizeFilter();i++)
+        int lastFound = 0;
+        for(int i=0;i<qfile.sizeFilter();i++)
         {
-           if(qfile.getMsgFilterPos(i) == line)
+            if(qfile.getMsgFilterPos(i) == line)
             {
-                // It's actually visible
+                // The correct line is visible.
+                // We can terminate the search
                 lastFound = i;
                 break;
             }
+            else if(qfile.getMsgFilterPos(i) < line)
+            {
+                // Not found found yet, but line is below current searched line.
+                // Update last found
+                lastFound = i;
+            }
+            else /* qfile.getMsgFilterPos(i) > line */
+            {
+                // Calculate, if we are nearer to the line from last found.
+                // If yes, use current line in search
+                if((qfile.getMsgFilterPos(i)-line)<(line-qfile.getMsgFilterPos(lastFound)))
+                    lastFound = i;
+                break;
+           }
         }
         row = lastFound;
     }
