@@ -1753,7 +1753,6 @@ bool MainWindow::openDlpFile(QString fileName)
     {
         /* Applies project settings and save it to registry */
         applySettings();
-        settings->writeSettings(this);
 
         /* change Project file working directory */
         workingDirectory.setDlpDirectory(QFileInfo(fileName).absolutePath());
