@@ -56,8 +56,11 @@
 #include <stdint.h>
 
 typedef int pid_t;
+#ifdef TARGET_OS_MAC
+typedef unsigned long speed_t;
+#else
 typedef unsigned int speed_t;
-
+#endif
 typedef float  float32_t;
 typedef double float64_t;
 

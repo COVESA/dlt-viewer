@@ -27,7 +27,6 @@ int QDltPluginManager::sizeEnabled() const
     }
     return count;
 }
-
 void QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
     QDir pluginsDir;
@@ -61,7 +60,7 @@ void QDltPluginManager::loadPluginsPath(QDir &dir)
 {
     /* set filter for plugin files */
     QStringList filters;
-    filters << "*.dll" << "*.so";
+    filters << "*.dll" << "*.so" << "*.dylib";
     dir.setNameFilters(filters);
 
     /* iterate through all plugins */

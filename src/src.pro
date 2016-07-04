@@ -50,6 +50,10 @@ INSTALLS += headers
 target.path = $$PREFIX/usr/bin
 INSTALLS += target
 
+# Building an app bundle for macx is not so easy, hence disable it
+# for development build
+macx:CONFIG -= app_bundle
+
 # Library definitions for debug and release builds
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
