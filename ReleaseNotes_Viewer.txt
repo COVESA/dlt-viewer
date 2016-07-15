@@ -4,15 +4,29 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.17.0 STABLE
+Version 2.18.0 STABLE
 
 Known issues
 ------------
 
   * none
 
+
 Changes
 -------
+
+2.18.0
+   * Bugfixes:
+      Fixed: SaveAs showing corrupted messages or crash of dlt-viewer.
+             Rollback of QDltFile map feature, which is unstable.
+      Fixed: Jump to line not working when filter enabled
+      Fixed: Restore of windows geometry
+      Fixed: The reconnect timeout is not working for UDP
+   * Performance improvement: Multithreaded DLT file parser
+   * Make dlt-viewer show up as an option in file managers.
+   * DBus plugin: Check if messages has Apid "DBUS" as valid dbus message
+   * Enable build for MAC
+
 2.17.0
   * Updated and improved documentation
   * Added the option to use UDP as transport protocol
