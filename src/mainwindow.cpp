@@ -126,6 +126,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
+
+    newCompleter = new QCompleter(&m_CompleterModel,this);
 }
 
 MainWindow::~MainWindow()
@@ -180,6 +182,7 @@ MainWindow::~MainWindow()
     delete dltIndexer;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
+    delete newCompleter;
 }
 
 void MainWindow::initState()
@@ -1667,7 +1670,7 @@ void MainWindow::on_action_FindNext()
        {
            list.append(searchTextbox->text());
        }
-    newCompleter = new QCompleter(list, this);
+    m_CompleterModel.setStringList(list);
     searchTextbox->setCompleter(newCompleter);
     newCompleter->setCaseSensitivity(Qt::CaseInsensitive);
 }

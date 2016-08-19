@@ -42,6 +42,7 @@
 #include <QCompleter>
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
+#include <QStringListModel>
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -329,6 +330,8 @@ private:
 
     /* default filters */
     void resetDefaultFilter();
+
+    QStringListModel m_CompleterModel;
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
