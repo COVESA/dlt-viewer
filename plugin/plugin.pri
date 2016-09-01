@@ -10,6 +10,9 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     QMAKE_CFLAGS += -std=gnu99
     QMAKE_CFLAGS += -Wall
     QMAKE_CFLAGS += -Wextra
+    # Limit symbol visibility to avoid symbol clashes between different
+    # plugins
+    QMAKE_CXXFLAGS += -fvisibility=hidden
     #QMAKE_CFLAGS += -pedantic
 }
 
@@ -17,6 +20,9 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     QMAKE_CXXFLAGS += -std=gnu++0x
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
+    # Limit symbol visibility to avoid symbol clashes between different
+    # plugins
+    QMAKE_CXXFLAGS += -fvisibility=hidden
     #QMAKE_CXXFLAGS += -pedantic
 }
 
