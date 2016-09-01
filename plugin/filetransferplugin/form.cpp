@@ -38,7 +38,7 @@ Form::Form(QWidget *parent) :
     ui->treeWidget->setSortingEnabled(true);             // should cause sort on add
     ui->treeWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)),this, SLOT(itemChanged(QTreeWidgetItem*,int)));
+    connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),this, SLOT(itemChanged(QTreeWidgetItem*,int)));
     connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this, SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
     connect(ui->treeWidget->header(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 }
@@ -66,7 +66,6 @@ void Form::on_selectButton_clicked(){
             if(tmp->isComplete())
             {
                 tmp->setCheckState(COLUMN_CHECK, Qt::Checked);
-                selectedFiles++;
             }
         }
         ++it;
@@ -90,7 +89,6 @@ void Form::on_deselectButton_clicked(){
         }
         ++it;
     }
-    selectedFiles=0;
 }
 
 void Form::itemChanged(QTreeWidgetItem* item,int i){
@@ -100,9 +98,8 @@ void Form::itemChanged(QTreeWidgetItem* item,int i){
 
         if (tmp != NULL) {
 
-            if(tmp->isComplete() && (tmp->checkState(COLUMN_CHECK) == Qt::Unchecked) )
+            if(tmp->isComplete() && (tmp->checkState(COLUMN_CHECK) == Qt::Checked) )
             {
-                tmp->setCheckState(COLUMN_CHECK, Qt::Checked);
                 selectedFiles++;
 
             }
