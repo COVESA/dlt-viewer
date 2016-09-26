@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dbuspluginconfiguration>
+<logid>
+<APID>DBSY</APID>
+<CTID>DBSY</CTID>
+</logid>
+<logid>
+<APID>DBCN</APID>
+<CTID>DBCN</CTID>
+</logid>
+</dbuspluginconfiguration>
