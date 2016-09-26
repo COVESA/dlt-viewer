@@ -20,16 +20,37 @@
  /*  Change log
  *  12.04.2016 Gernot Wirschal added checking of APID in function checkIfDBusMsg
  *                             to avoid overwriting of SomeIP messages
+ *  21.09.2016 Gernot Wirschal change loadConfig to parse xml file containing
+ *                             APID/CTID pairs which are supposed to be decoded
+ *                             as DBUS messages.
  */
 
 
 
 
 #include <QtGui>
-
+#include <QMessageBox>
 #include "dltdbusplugin.h"
 #include "dbus.h"
 #include <dlt_user.h>
+#include <QXmlStreamReader>
+
+
+int check_logid( QString &tocheck, int index )
+{
+   if ( tocheck.size() > LOGIDMAXCHAR )
+   {
+     QMessageBox::warning(0, QString("XML file - LOGID error"),
+                          QString("%1 with index %2 exceeds maximum of %3 characters !\nExit parsing file ...")
+                          .arg(tocheck).arg(index).arg(LOGIDMAXCHAR));
+     return 1;
+   }
+   else
+   {
+     return 0;
+   }
+}
+
 
 DltDBusPlugin::DltDBusPlugin() {
     dltFile = 0;
@@ -59,54 +80,135 @@ QString DltDBusPlugin::error() {
     return errorText;
 }
 
-bool DltDBusPlugin::loadConfig(QString filename) {
+bool DltDBusPlugin::loadConfig(QString filename)
+{
+ QFile file(filename);
+ QXmlStreamReader xml(&file);
+ QString temp1;
+ config_is_loaded=false;
+ int i=-1, j=0, xmlcontentinvalid=0;
 
-    /* remove all stored items */
-    errorText.clear();
-    catalog.clear();
+ dbus_mesg_identifiers.clear();
 
-    if ( filename.isEmpty() )
-        // empty filename is valid, only clear plugin data
-        return true;
+ //qDebug()<< "Enter DBus Plugin loadConfig";
 
-     QDir dir(filename);
+ if ( filename.length() <= 0 )
+ {
+     // set the default config according to GENIVI APID/CTID
+     // as given in dlt-dbus.conf on the logging device
+     //qDebug()<< "Set default configuration";
+     logid[0].apid=QString("DBUS");
+     logid[0].ctid=QString("ALL");
+     dbus_mesg_identifiers << logid[0].apid << logid[0].ctid;
+     numberof_valid_logids = 1;
+     config_is_loaded = true;
+     return true;
+ }
 
-     if(dir.exists())
-     {
-         // this is a directory, load all files in directory
-         dir.setFilter(QDir::Files);
-         QStringList filters;
-         filters << "*.xml" << "*.XML";
-         dir.setNameFilters(filters);
-         QFileInfoList list = dir.entryInfoList();
-         for (int i = 0; i < list.size(); ++i) {
-             QFileInfo fileInfo = list.at(i);
-             if(!catalog.parse(fileInfo.filePath()))
-             {
-                 errorText = fileInfo.fileName()+":\n"+catalog.errorString;
-                 return false;
-             }
-         }
-         return true;
-     }
-     else
-     {
-         if(!catalog.parse(filename))
-         {
-             errorText = filename+":\n"+catalog.errorString;
-             return false;
-         }
-     }
+  if (!file.open(QFile::ReadOnly | QFile::Text))
+ {
+     errorText = "Can not load configuration File: ";
+     errorText.append(filename);
+     return true;
+ }
 
-    return true;
+ while (!xml.atEnd())
+ {
+       xml.readNext();
+       if(xml.isStartElement())
+       {
+           if(xml.name() == QString("logid"))
+           {
+              i++;
+           }
+           else if(xml.name() == QString("APID"))
+           {
+              if ( i>= 0)
+               {
+               temp1 = xml.readElementText();
+               if ( check_logid( temp1, i ) == 0 )
+                {
+                   logid[i].apid = temp1;
+                }
+               else // logid is not correct
+               {
+                 //qDebug()<< "Something wrong with APID";
+                 xmlcontentinvalid=1;
+                 break;
+               }
+              }
+           } // is APID
+           else if(xml.name() == QString("CTID"))
+           {
+               if ( i>= 0)
+                {
+                temp1 = xml.readElementText();
+                if ( check_logid( temp1, i ) == 0 )
+                 {
+                    logid[i].ctid = temp1;
+                 }
+                else // logid is not correct
+                {
+                  //qDebug()<< "Something wrong with CTID";
+                  xmlcontentinvalid=1;
+                  break;
+                }
+               }
+           }
+           if (xml.hasError()) {
+              QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
+              xmlcontentinvalid=1;
+           }
+
+       }
+       if (i >= MAX_LOGIDS)
+       {
+        i--;
+        QMessageBox::warning(0,
+                             QString("Warning"),
+                             QString ( "Maximum number of logids exceeded in xml file !\nLimiting logid list to %1 entries").arg(MAX_LOGIDS));
+        break;        // so we stop loop if maxcount is reached
+       }
+
+ } // while
+file.close();
+
+ if (xml.hasError())
+ {
+    QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
+    xmlcontentinvalid=1;
+ }
+
+
+if ( xmlcontentinvalid == 0 )
+{
+ for (j=0;j<=i;j++)
+ {
+     dbus_mesg_identifiers << logid[j].apid << logid[j].ctid;
+     numberof_valid_logids = j;
+ }
 }
+else
+{
+  //qDebug()<< "DBus Plugin loadConfig FAIL";
+  return false;
+}
+
+config_is_loaded = true;
+//qDebug()<< "DBus Plugin loadConfig SUCCESS";
+return true;
+
+}
+
 
 bool DltDBusPlugin::saveConfig(QString /*filename*/) {
     return true;
 }
 
-QStringList DltDBusPlugin::infoConfig() {
-    return catalog.info();
+QStringList DltDBusPlugin::infoConfig()
+{
+    //qDebug()<< "return dbus_mesg_identifiers";
+    return dbus_mesg_identifiers;
 }
 
 QWidget* DltDBusPlugin::initViewer() {
@@ -128,6 +230,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg) {
         form->setTextBrowserHeader("no DBus message!");
         form->setTextBrowserPayload("no DBus message!");
         form->setTextBrowserPayloadHex("no DBus message!");
+
         return;
     }
 
@@ -274,7 +377,6 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
       if(segmentedMessages.contains(handle))
       {
           // message already exists, this should not happen
-          qDebug() << "Segment" << handle << "already exists!";
           return;
       }
 
@@ -288,8 +390,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
           qDebug() << seg->getError();
           return;
       }
-
-    }
+    } // NWST
     else if(argument1.getValue().toString()=="NWCH")
     {
         if(segmentedMessages.contains(handle))
@@ -301,7 +402,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
                 return;
             }
         }
-    }
+    } // NWCH
     else if(argument1.getValue().toString()=="NWEN")
     {
        if(segmentedMessages.contains(handle))
@@ -341,8 +442,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
                 qDebug() << "Incomplete segemented message" << handle;
            }
        }
-    }
-
+    } // NWCN
 }
 
 void DltDBusPlugin::initMsg(int /*index*/, QDltMsg &msg){
@@ -515,9 +615,25 @@ QString DltDBusPlugin::stringToHtml(QString str)
 bool DltDBusPlugin::checkIfDBusMsg(QDltMsg &msg)
 {
     QDltArgument argument1,argument2;
+    int hit=0, i=0;
 
+    if ( config_is_loaded == false )
+    {
+        return false;
+    }
 
-    if(msg.getApid()!= "DBUS" )
+    // going through the list of APID/CTID pairs to determine "DBUS messages"
+
+    while ( i <= numberof_valid_logids )
+    {
+       if ((msg.getApid() == logid[i].apid) &&  (msg.getCtid() == logid[i].ctid) )
+       {
+          hit = 1;
+          break;
+       }
+       i++;
+    }
+    if ( hit == 0)
         return false;
 
     // at least two arguments in network message
@@ -553,14 +669,14 @@ QString DltDBusPlugin::decodeMessageToString(DltDBusDecoder &dbusMsg,bool header
     switch(dbusMsg.getMessageType())
     {
         case DBUS_MESSAGE_TYPE_METHOD_CALL:
-            text = QString("C [%1,%2] ").arg(dbusMsg.getSender()).arg(dbusMsg.getSerial()) + dbusMsg.getInterface()+"."+dbusMsg.getMember()+" (";
+            text = QString("C [%1,%2] ").arg(dbusMsg.getSender()).arg(dbusMsg.getSerial()) + " " + dbusMsg.getPath() + " " + dbusMsg.getInterface()+"."+dbusMsg.getMember()+" ";
             break;
         case DBUS_MESSAGE_TYPE_METHOD_RETURN:
             method = methods[DltDbusMethodKey(dbusMsg.getDestination(),dbusMsg.getReplySerial())];
-            text = QString("R [%1,%2] ").arg(dbusMsg.getDestination()).arg(dbusMsg.getReplySerial()) + method + " (";
+            text = QString("R [%1,%2] ").arg(dbusMsg.getDestination()).arg(dbusMsg.getReplySerial()) + method + " ";
             break;
         case DBUS_MESSAGE_TYPE_SIGNAL:
-            text = QString("S [%1] ").arg(dbusMsg.getSender()) + dbusMsg.getInterface() + "." + dbusMsg.getMember() + " (";
+            text = QString("S [%1] ").arg(dbusMsg.getSender()) + " " + dbusMsg.getPath() + " " + dbusMsg.getInterface() + "." + dbusMsg.getMember() + " ";
             break;
         default:
             text = dbusMsg.getMessageTypeStringShort() + " " + dbusMsg.getInterface() + "." + dbusMsg.getMember();

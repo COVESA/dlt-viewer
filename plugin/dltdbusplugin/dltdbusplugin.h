@@ -28,10 +28,23 @@
 
 #include "plugininterface.h"
 #include "qdltsegmentedmsg.h"
-#include "dltdbuscatalog.h"
 #include "form.h"
 
-#define DLT_DBUS_PLUGIN_VERSION "1.0.0"
+#define DLT_DBUS_PLUGIN_VERSION "2.0.0"
+
+// we restrict the maximum number of APID/CTID pairs because of performance issues
+#define MAX_LOGIDS 10
+// maximum allowed number of characters for APID/ CTID
+#define LOGIDMAXCHAR 4
+
+typedef struct
+{
+    QString apid;
+    QString ctid;
+} s_logid;
+
+
+
 
 class DltDbusMethodKey
 {
@@ -114,10 +127,18 @@ private:
     QDltFile *dltFile;
     QString errorText;
 
+    // subsequent stringlist is used to store the APID/CTID combination
+    // which is used to detect/select payload to be decoded
+    QStringList dbus_mesg_identifiers;
+    s_logid logid[MAX_LOGIDS];
+    int numberof_valid_logids;
+    int countread=0;
+
+    bool config_is_loaded=false;
+
     QHash<DltDbusMethodKey,QString> methods;
     QMap<uint32_t,QDltSegmentedMsg*> segmentedMessages;
 
-    DltDBusCatalog catalog;
 };
 
 #endif // DLTDBUSPLUGIN_H
