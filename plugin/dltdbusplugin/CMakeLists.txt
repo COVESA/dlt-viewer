@@ -21,8 +21,7 @@ QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/form.ui )
 add_library(dltdbusplugin MODULE dltdbusplugin.cpp
 			  form.cpp
 			  dbus.cpp
-			  dltdbuscatalog.cpp
-                          ${UI_HEADERS})
+			  ${UI_HEADERS})
 
 target_link_libraries(dltdbusplugin qdlt Qt5::Widgets )
 
