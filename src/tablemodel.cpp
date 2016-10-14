@@ -202,20 +202,20 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          int currentIdx = qfile->getMsgFilterPos(index.row());
          qfile->getMsg(currentIdx, msg);
 
-         // Color the last search row         
+         // Color the last search row
          if(lastSearchIndex != -1 && currentIdx == qfile->getMsgFilterPos(lastSearchIndex))
          {
              return QVariant(QBrush(DltUiUtils::optimalTextColor(searchBackgroundColor())));
 
          }
-         else if (qfile->checkMarker(msg).isValid())
+         else if (QColor(qfile->checkMarker(msg)).isValid())
          {
            QColor color = qfile->checkMarker(msg);
 
               //return QVariant(QBrush(color));
               return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
          }
-         else if(project->settings->autoMarkFatalError && !qfile->checkMarker(msg).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
+         else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
             return QVariant(QBrush(QColor(255,255,255)));
          } else {
             return QVariant(QBrush(QColor(0,0,0)));

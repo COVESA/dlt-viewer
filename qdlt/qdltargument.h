@@ -26,7 +26,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#include <QColor>
+//#include <QColor>
 #include <QMutex>
 #include <QVariant>
 #include <time.h>
@@ -108,7 +108,7 @@ public:
     */
     void setEndianness(DltEndiannessDef _endianess) { endianness = (QDlt::DltEndiannessDef)_endianess; }
 
-    //! Get the byte data of the parameter.    
+    //! Get the byte data of the parameter.
     /*!
       The endianness of the parameter is as set in the endianness parameter.
       \return The complete data of the parameter as byte array.

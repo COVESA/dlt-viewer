@@ -20,7 +20,7 @@
  */
 
 #include <QtDebug>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QCryptographicHash>
 
 #include "qdlt.h"
@@ -81,10 +81,10 @@ void QDltFilterList::addFilter(QDltFilter *_filter)
     qDebug() << "addFilter: Add Filter" << _filter->apid << _filter->ctid;
 }
 
-QColor QDltFilterList::checkMarker(QDltMsg &msg)
+QString QDltFilterList::checkMarker(QDltMsg &msg)
 {
     QDltFilter *filter;
-    QColor color;
+    QString color;
 
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
@@ -151,7 +151,6 @@ bool QDltFilterList::SaveFilter(QString _filename)
     QFile file(_filename);
     if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
     {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
             return false;
     }
 
@@ -212,11 +211,12 @@ QByteArray QDltFilterList::createMD5()
 }
 
 bool QDltFilterList::LoadFilter(QString _filename, bool replace){
+    bool retVal = true;
 
     QFile file(_filename);
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+
         return false;
     }
 
@@ -252,8 +252,13 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
           }
     }
     if (xml.hasError()) {
-        QMessageBox::warning(0, QString("XML Parser error"),
-                             xml.errorString());
+    // I reluctantly comment this out
+    // DltViewer currently has no exception handling built in
+    // I don't really want to be the first one to introduce it
+
+    //    QMessageBox::warning(0, QString("XML Parser error"),
+    //                         xml.errorString());
+        retVal = false;
     }
 
     file.close();
@@ -261,7 +266,7 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
     /* update sorted filter list immediately after loading new filter */
     updateSortedFilter();
 
-    return true;
+    return retVal;
 }
 
 void QDltFilterList::updateSortedFilter()

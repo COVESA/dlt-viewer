@@ -26,7 +26,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#include <QColor>
+//#include <QColor>
 #include <QMutex>
 #include <time.h>
 
@@ -242,7 +242,7 @@ public:
       \param msg The messages to be marked
       \return 0 if message will not be marked, colour if message will be marked
     */
-    QColor checkMarker(QDltMsg &msg);
+    QString checkMarker(QDltMsg &msg);
 
     //! Get file name of the underlying file object
     /*!

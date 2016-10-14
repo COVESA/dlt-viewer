@@ -233,9 +233,9 @@ void FilterDialog::setFilterColour(QColor color)
 
 }
 
-QColor FilterDialog::getFilterColour()
+QString FilterDialog::getFilterColour()
 {
-    return ui->labelSelectedColor->palette().background().color();
+    return ui->labelSelectedColor->palette().background().color().name();
 }
 
 void FilterDialog::setLogLevelMax(int value)

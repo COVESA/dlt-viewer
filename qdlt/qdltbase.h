@@ -26,7 +26,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#include <QColor>
+//#include <QColor>
 #include <QMutex>
 #include <time.h>
 
@@ -61,7 +61,7 @@ class QUdpSocket;
 class QDLT_EXPORT QDlt
 {
 
-public:    
+public:
     //! Constructor.
     /*!
     */
