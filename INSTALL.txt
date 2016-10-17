@@ -9,7 +9,7 @@ Instructions for installing DLT Viewer (GUI)
 * Tested with QT 5.5.1, QT 5.5.0
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MinGW / MSVC.
-* Build Release in Qt Creator.
+* Build Release in Qt Creator or via CMake (see last).
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
 
 Instructions for installing DLT Viewer (Linux commandline)
@@ -109,3 +109,31 @@ To generate pdfs, call
     sh convert.sh
 from within the doc directory
 
+
+Instructions for building DLT Viewer with CMake (Linux commandline)
+----------------------------------------------------------
+CMake is a "meta" make system.  This means CMake creates a make system 
+for various make solutions including command line build tools like
+"Unix Makefiles", or IDE tools like "Visual Studio".  
+See:  https://cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html
+
+CMake encourages the "out of source" build paradigm. Assuming DLT Viewer 
+code has been unpacked in path/src, we encourage not building in that directory
+
+* mkdir build
+* cd build
+* cmake "GENERATOR OF CHOICE" path/src
+
+At this stage, CMake will have produced a set of filesthat can be used by the
+selected make system, be it "Unix Makefiles", "Visual Studio 6" or  other.
+Often a DLT-Viewer.EXTENSION file will be present in the build directory.
+
+In the case of "Unix Makefiles" building is now as simple as
+
+* sudo make install
+* sudo ldconfig
+* Optional: set the library path: LD_LIBRARY_PATH = .
+
+Various solutions exist for cmake configuration to be informed about 
+non-standard installation paths for required components.  See CMake
+documentation for details. (hint: QTDIR)
