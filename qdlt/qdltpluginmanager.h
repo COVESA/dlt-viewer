@@ -41,7 +41,7 @@ public:
       - /usr/share/dlt-viewer/plugins
       \param settingsPluginPath Full path name.
     */
-    QStringList loadPlugins(const QString &settingsPluginPath);
+    void loadPlugins(const QString &settingsPluginPath);
 
     //! Loads the configuration of the plugin with the pluginName
     /*!
@@ -84,7 +84,7 @@ private:
     QList<QDltPlugin*> plugins;
 
     //! Loads all plugins from a special directory
-    QStringList loadPluginsPath(QDir &dir);
+    void loadPluginsPath(QDir &dir);
 
 };
 

@@ -1,7 +1,7 @@
 # Copyright (C) 2016, Jack S. Smith
-#
+# 
 # This file is part of GENIVI DLT-Viewer project.
-#
+#   
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License (MPL), v. 2.0.
 # If a copy of the MPL was not distributed with this file,
@@ -35,7 +35,7 @@ target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../qextserialport/src
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-#target_link_libraries(qdlt Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network)
-target_link_libraries(qdlt Qt5::Core Qt5::Network)
+target_link_libraries(qdlt Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network)
+#target_link_libraries(qdlt Qt5::Core Qt5::Network)
 
 install(TARGETS qdlt DESTINATION deploy)

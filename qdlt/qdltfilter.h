@@ -26,7 +26,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
+#include <QColor>
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>
@@ -68,7 +68,7 @@ public:
     bool enableLogLevelMin;
     bool enableMarker;
 
-    QString filterColour;
+    QColor filterColour;
     int logLevelMax;
     int logLevelMin;
 

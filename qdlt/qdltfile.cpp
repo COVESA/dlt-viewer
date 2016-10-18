@@ -302,11 +302,11 @@ void QDltFile::addFilterIndex (int index)
 
 }
 
-QString QDltFile::checkMarker(QDltMsg &msg)
+QColor QDltFile::checkMarker(QDltMsg &msg)
 {
     if(!filterFlag)
     {
-        return QString("#000000");
+        return QColor();
     }
 
     return filterList.checkMarker(msg);

@@ -317,7 +317,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     filter.enableCtrlMsgs = false;
     filter.enableMarker = false;
 
-    filter.filterColour = "#000000";  // default constructor for QColor initialized at RGB 0,0,0
+    filter.filterColour = QColor();
 
     filter.logLevelMax = 6;
     filter.logLevelMin = 0;
@@ -449,13 +449,12 @@ void FilterItem::update()
     }
     if(filter.isMarker())
     {
-        QColor color(filter.filterColour);
-        text += color.name();
+        text += filter.filterColour.name();
 
-        setBackground(0,color);
-        setBackground(1,color);
-        setForeground(0,DltUiUtils::optimalTextColor(color));
-        setForeground(1,DltUiUtils::optimalTextColor(color));
+        setBackground(0,filter.filterColour);
+        setBackground(1,filter.filterColour);
+        setForeground(0,DltUiUtils::optimalTextColor(filter.filterColour));
+        setForeground(1,DltUiUtils::optimalTextColor(filter.filterColour));
     }
 
     if(text.isEmpty()) {
@@ -1176,10 +1175,7 @@ bool Project::LoadFilter(QString filename, bool replace){
 
     QDltFilterList filterList;
 
-    if(!filterList.LoadFilter(filename,replace))
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-    }
+    filterList.LoadFilter(filename,replace);
 
     if(replace)
         filter->clear();

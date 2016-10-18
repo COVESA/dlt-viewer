@@ -1,7 +1,7 @@
 # Copyright (C) 2016, Jack S. Smith
-#
+# 
 # This file is part of GENIVI DLT-Viewer project.
-#
+#   
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License (MPL), v. 2.0.
 # If a copy of the MPL was not distributed with this file,
@@ -37,7 +37,7 @@ add_library (qextserialport ${QEXT_SERIALPORT_SOURCES})
 target_include_directories (qextserialport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Refactoring GUI components out of this is a good idea
-qt5_use_modules(qextserialport Core)
-#qt5_use_modules(qextserialport Widgets)
+#qt5_use_modules(qextserialport Core)
+qt5_use_modules(qextserialport Widgets)
 
 install(TARGETS qextserialport DESTINATION deploy)

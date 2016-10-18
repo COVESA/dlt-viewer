@@ -26,7 +26,7 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
+#include <QColor>
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>
@@ -81,7 +81,7 @@ public:
       \param msg The messages to be marked
       \return 0 if message will not be marked, colour if message will be marked
     */
-    QString checkMarker(QDltMsg &msg);
+    QColor checkMarker(QDltMsg &msg);
 
     //! Check if message matches the filter.
     /*!

@@ -3,8 +3,7 @@
 #include <QDir>
 #include <QCoreApplication>
 #include <QPluginLoader>
-//#include <QMessageBox>
-#include <QTextStream>
+#include <QMessageBox>
 #include <QString>
 
 QDltPluginManager::QDltPluginManager()
@@ -28,15 +27,15 @@ int QDltPluginManager::sizeEnabled() const
     }
     return count;
 }
-QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
+void QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
     QDir pluginsDir;
-    QStringList errorStrings;
+
     /* The viewer looks in the relativ to the executable in the ./plugins directory */
     pluginsDir.setPath(QCoreApplication::applicationDirPath());
     if(pluginsDir.cd("plugins"))
     {
-        errorStrings << loadPluginsPath(pluginsDir);
+        loadPluginsPath(pluginsDir);
     }
 
     /* load plugins form settings path if set */
@@ -45,7 +44,7 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
         pluginsDir.setPath(settingsPluginPath);
         if(pluginsDir.exists() && pluginsDir.isReadable())
         {
-            errorStrings << loadPluginsPath(pluginsDir);
+            loadPluginsPath(pluginsDir);
         }
     }
 
@@ -53,16 +52,14 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
     pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
     if(pluginsDir.exists() && pluginsDir.isReadable())
     {
-        errorStrings << loadPluginsPath(pluginsDir);
+        loadPluginsPath(pluginsDir);
     }
-
-    return errorStrings;
 }
 
-QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
+void QDltPluginManager::loadPluginsPath(QDir &dir)
 {
     /* set filter for plugin files */
-    QStringList filters, errorStrings;
+    QStringList filters;
     filters << "*.dll" << "*.so" << "*.dylib";
     dir.setNameFilters(filters);
 
@@ -86,34 +83,14 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 
                 } else {
 
-                    // This is an abomination - it's unreadable 425+ chars long
-                    // QMessageBox::warning(0, QString("DLT Viewer"),QString("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5").arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
-
-                    QTextStream errStr;
-                    errStr << "-------------"
-                           << "Error: Plugin could not be loaded!\n"
-                           << "Mismatch with plugin interface version of DLT Viewer.\n\n"
-                           << "Plugin name: " << plugininterface->name() << "\n"
-                           << "Plugin version: " << plugininterface->pluginVersion() << "\n"
-                           << "Plugin interface version: " << plugininterface->pluginInterfaceVersion() << "\n"
-                           << "Plugin path: " << dir.absolutePath() << "\n\n"
-                           << "DLT Viewer - Plugin interface version: " << PLUGIN_INTERFACE_VERSION  << "\n";
-                    errorStrings.append(*(errStr.string()));
+                    QMessageBox::warning(0, QString("DLT Viewer"),QString("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5").arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
                 }
             }
         }
         else {
-            //QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
-
-             QTextStream  errStr;
-             errStr << "-------------"
-                    << "The plugin " << dir.absoluteFilePath(fileName) << "cannot be loaded.\n\n"
-                    << "Error: " << pluginLoader.errorString() << "\n";
-             errorStrings.append(*(errStr.string()));
-
+            QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
         }
     }
-    return errorStrings;
 }
 
 void QDltPluginManager::loadConfig(QString pluginName,QString filename)

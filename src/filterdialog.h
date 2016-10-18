@@ -89,7 +89,7 @@ public:
     bool getEnablePayloadText();
 
     void setFilterColour(QColor color);
-    QString getFilterColour();
+    QColor getFilterColour();
 
 
     void setLogLevelMax(int value);

@@ -1,7 +1,7 @@
 # Copyright (C) 2016, Jack S. Smith
-#
+# 
 # This file is part of GENIVI DLT-Viewer project.
-#
+#   
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License (MPL), v. 2.0.
 # If a copy of the MPL was not distributed with this file,

@@ -20,7 +20,7 @@
  */
 
 #include <QtDebug>
-//#include <QMessageBox>
+#include <QMessageBox>
 #include <QDir>
 
 #include "qdlt.h"

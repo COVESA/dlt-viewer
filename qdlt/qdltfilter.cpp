@@ -105,7 +105,7 @@ void QDltFilter::clear()
     enableLogLevelMin = false;
     enableMarker = false;
 
-    filterColour = "#000000"; // QColor() default contructor initializes to an invalid color RGB 0,0,0
+    filterColour = QColor();
     logLevelMax = 6;
     logLevelMin = 0;
 }
@@ -297,7 +297,7 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     }
     if(xml.name() == QString("filterColour"))
     {
-          filterColour = xml.readElementText();
+          filterColour = QColor(xml.readElementText());
     }
     if(xml.name() == QString("logLevelMax"))
     {
@@ -336,7 +336,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
     xml.writeTextElement("enableMarker",QString("%1").arg(enableMarker));
 
-    xml.writeTextElement("filterColour",filterColour);
+    xml.writeTextElement("filterColour",filterColour.name());
 
     xml.writeTextElement("logLevelMax",QString("%1").arg(logLevelMax));
     xml.writeTextElement("logLevelMin",QString("%1").arg(logLevelMin));

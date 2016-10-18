@@ -526,10 +526,6 @@ void MainWindow::initFileHandling()
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
 
         }
-        else
-        {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-        }
     }
     if(OptManager::getInstance()->isConvert())
     {
@@ -1749,10 +1745,6 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
         applyConfigEnabled(true);
         on_filterWidget_itemSelectionChanged();
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-    }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
     }
     return true;
 }
@@ -4867,19 +4859,10 @@ void MainWindow::on_action_menuSearch_Find_triggered()
 void MainWindow::loadPlugins()
 {
     /* load plugins from subdirectory plugins, from directory if set in settings and from /usr/share/dlt-viewer/plugins in Linux */
-    QStringList errList;
     if(settings->pluginsPath)
-        errList = pluginManager.loadPlugins(settings->pluginsPathName);
+        pluginManager.loadPlugins(settings->pluginsPathName);
     else
-        errList = pluginManager.loadPlugins(QString());
-
-    if(errList.size() > 0)
-    {
-        // We have some error messages from the plugin manager
-        QStringList::const_iterator iter;
-        for(iter = errList.constBegin(); iter != errList.constEnd(); ++iter)
-            QMessageBox::warning(0, QString("DLT Viewer"), (*iter).toLocal8Bit().constData());
-    }
+        pluginManager.loadPlugins(QString());
 
     /* update plugin widgets */
     QList<QDltPlugin*> plugins = pluginManager.getPlugins();
@@ -5313,8 +5296,7 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
     if(!fileName.isEmpty())
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-        if(!project.SaveFilter(fileName))
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
+        project.SaveFilter(fileName);
         setCurrentFilters(fileName);
     }
 }
@@ -5540,10 +5522,10 @@ void MainWindow::filterUpdate() {
 
         if(item->filter.isMarker())
         {
-            item->setBackground(0,QColor(item->filter.filterColour));
-            item->setBackground(1,QColor(item->filter.filterColour));
-            item->setForeground(0,DltUiUtils::optimalTextColor(QColor(item->filter.filterColour)));
-            item->setForeground(1,DltUiUtils::optimalTextColor(QColor(item->filter.filterColour)));
+            item->setBackground(0,item->filter.filterColour);
+            item->setBackground(1,item->filter.filterColour);
+            item->setForeground(0,DltUiUtils::optimalTextColor(item->filter.filterColour));
+            item->setForeground(1,DltUiUtils::optimalTextColor(item->filter.filterColour));
         }
         else
         {
@@ -6237,10 +6219,6 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
         }
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
         on_filterWidget_itemSelectionChanged();
-    }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
     }
 }
 
