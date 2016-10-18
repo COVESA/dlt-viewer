@@ -4,7 +4,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 Version
 -------
-Version 2.18.0 STABLE
+Version 2.18.0 RELEASE
 
 Known issues
 ------------
@@ -22,10 +22,17 @@ Changes
       Fixed: Jump to line not working when filter enabled
       Fixed: Restore of windows geometry
       Fixed: The reconnect timeout is not working for UDP
+      Fix check box in file transfer plugin view
+      Fix for search prediction crash issue
+      Limit symbol visibility in plugins
    * Performance improvement: Multithreaded DLT file parser
    * Make dlt-viewer show up as an option in file managers.
    * DBus plugin: Check if messages has Apid "DBUS" as valid dbus message
    * Enable build for MAC
+   * Mark the next button in the search dialog as default
+   * DBUS plugin: read configuration file to define APID/CTID to
+     enable DBus message decoding
+   * Add cmake build support
 
 2.17.0
   * Updated and improved documentation
