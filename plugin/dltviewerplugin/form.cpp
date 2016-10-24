@@ -39,6 +39,7 @@ void Form::setTextBrowserDetails(QString text)
 
 void Form::setTextBrowserMessage(QString text)
 {
+    text.replace(QString("\n"), QString("<br>"));
     ui->textBrowserMessage->setText(text);
 }
 
