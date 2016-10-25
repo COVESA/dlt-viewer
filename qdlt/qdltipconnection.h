@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include "export_rules.h"
+#include "qdltconnection.h"
 
 class QDLT_EXPORT QDltIPConnection : public QDltConnection
 {

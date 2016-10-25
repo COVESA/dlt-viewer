@@ -35,7 +35,6 @@ target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../qextserialport/src
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-#target_link_libraries(qdlt Qt5::Core Qt5::Widgets Qt5::Gui Qt5::Network)
 target_link_libraries(qdlt Qt5::Core Qt5::Network)
 
 install(TARGETS qdlt DESTINATION deploy)

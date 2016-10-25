@@ -36,8 +36,6 @@ add_library (qextserialport ${QEXT_SERIALPORT_SOURCES})
 # when other libraries or executables link to qextserialport
 target_include_directories (qextserialport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Refactoring GUI components out of this is a good idea
 qt5_use_modules(qextserialport Core)
-#qt5_use_modules(qextserialport Widgets)
 
 install(TARGETS qextserialport DESTINATION deploy)
