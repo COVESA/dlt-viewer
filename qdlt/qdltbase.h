@@ -26,7 +26,6 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
 #include <QMutex>
 #include <time.h>
 
@@ -46,6 +45,7 @@ extern "C" {
 }
 
 #define DLT_MAX_MESSAGE_LEN 1024*64
+#define DEFAULT_COLOR "#FFFFFF"
 
 struct sDltFile;
 struct sDltMessage;

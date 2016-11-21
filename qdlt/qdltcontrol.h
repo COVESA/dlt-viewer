@@ -22,11 +22,11 @@
 #ifndef QDLT_CONTROL_H
 #define QDLT_CONTROL_H
 
+#include <QStringList>
 #include <QObject>
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
 #include <QMutex>
 #include <time.h>
 

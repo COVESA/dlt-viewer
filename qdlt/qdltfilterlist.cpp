@@ -25,6 +25,7 @@
 
 #include "qdlt.h"
 
+
 extern "C"
 {
 #include "dlt_common.h"
@@ -84,7 +85,7 @@ void QDltFilterList::addFilter(QDltFilter *_filter)
 QString QDltFilterList::checkMarker(QDltMsg &msg)
 {
     QDltFilter *filter;
-    QString color;
+    QString color=DEFAULT_COLOR;
 
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
@@ -93,6 +94,7 @@ QString QDltFilterList::checkMarker(QDltMsg &msg)
         if(filter->match(msg))
         {
             color = filter->filterColour;
+            //qDebug() << "Filter color " << filter->filterColour;
             break;
         }
     }

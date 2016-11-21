@@ -306,7 +306,7 @@ QString QDltFile::checkMarker(QDltMsg &msg)
 {
     if(!filterFlag)
     {
-        return QString("#000000");
+        return QString(DEFAULT_COLOR);
     }
 
     return filterList.checkMarker(msg);
