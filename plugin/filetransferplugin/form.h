@@ -38,8 +38,8 @@ public:
     void clearSelectedFiles();
 private:
     Ui::Form *ui;
+    int selectedFiles=0;
 
-    int selectedFiles;
 
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);
@@ -53,6 +53,9 @@ private slots:
     void on_saveButton_clicked();
     void on_selectButton_clicked();
     void on_deselectButton_clicked();
+    void savetofile();
+    void on_saveRightButton_clicked();
+
 };
 
 #endif // FORM_H

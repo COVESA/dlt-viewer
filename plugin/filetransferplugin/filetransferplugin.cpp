@@ -24,16 +24,19 @@
 #include "file.h"
 #include <QDir>
 
-FiletransferPlugin::FiletransferPlugin() {
+FiletransferPlugin::FiletransferPlugin()
+{
     form = NULL;
     dltFile = NULL;
 }
 
-FiletransferPlugin::~FiletransferPlugin() {
+FiletransferPlugin::~FiletransferPlugin()
+{
 
 }
 
-QString FiletransferPlugin::name() {
+QString FiletransferPlugin::name()
+{
     return QString("Filetransfer Plugin");
 }
 
@@ -47,17 +50,20 @@ QString FiletransferPlugin::pluginInterfaceVersion()
     return PLUGIN_INTERFACE_VERSION;
 }
 
-QString FiletransferPlugin::description() {
+QString FiletransferPlugin::description()
+{
     QString description("This plugin enables the user to get a list of embedded files in a dlt log and save these files to disk. ");
     description += ("For more informations about this plugin please have a look on the dlt filetransfer documentation (generate it with doxygen).");
     return description;
 }
 
-QString FiletransferPlugin::error() {
+QString FiletransferPlugin::error()
+{
     return errorText;
 }
 
-bool FiletransferPlugin::loadConfig(QString filename) {
+bool FiletransferPlugin::loadConfig(QString filename)
+{
 
     if ( filename.length() <= 0 )
     {
@@ -108,7 +114,8 @@ bool FiletransferPlugin::loadConfig(QString filename) {
               }
           }
     }
-    if (xml.hasError()) {
+    if (xml.hasError())
+    {
         QMessageBox::warning(0, QString("XML Parser error"),
                              xml.errorString());
     }
@@ -118,12 +125,14 @@ bool FiletransferPlugin::loadConfig(QString filename) {
     return true;
 }
 
-bool FiletransferPlugin::saveConfig(QString /*filename*/) {
+bool FiletransferPlugin::saveConfig(QString /*filename*/)
+{
 
     return true;
 }
 
-QStringList FiletransferPlugin::infoConfig() {
+QStringList FiletransferPlugin::infoConfig()
+{
 
     QStringList list;
 
@@ -137,126 +146,167 @@ QStringList FiletransferPlugin::infoConfig() {
     return list;
 }
 
-QWidget* FiletransferPlugin::initViewer() {
+QWidget* FiletransferPlugin::initViewer()
+{
     form = new Form();
-
     return form;
 }
 
-void FiletransferPlugin::selectedIdxMsg(int , QDltMsg &) {
+void FiletransferPlugin::selectedIdxMsg(int , QDltMsg &)
+{
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void FiletransferPlugin::selectedIdxMsgDecoded(int , QDltMsg &){
+void FiletransferPlugin::selectedIdxMsgDecoded(int , QDltMsg &)
+{
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void FiletransferPlugin::initFileStart(QDltFile *file){
+void FiletransferPlugin::initFileStart(QDltFile *file)
+{
     dltFile = file;
 
     form->getTreeWidget()->clear();
     form->clearSelectedFiles();
 }
 
-void FiletransferPlugin::initMsg(int index, QDltMsg &msg){
+void FiletransferPlugin::initMsg(int index, QDltMsg &msg)
+{
+   // this function is called when live trace is acvtive
+   updateFiletransfer(index,msg);
+}
+
+void FiletransferPlugin::initMsgDecoded(int , QDltMsg &)
+{
+//empty. Implemented because derived plugin interface functions are virtual.
+}
+
+void FiletransferPlugin::initFileFinish()
+{
+//empty. Implemented because derived plugin interface functions are virtual.
+}
+
+void FiletransferPlugin::updateFileStart()
+{
+//empty. Implemented because derived plugin interface functions are virtual.
+}
+
+void FiletransferPlugin::updateMsg(int index, QDltMsg &msg)
+{
+  // this function is called when a dlt file is read
     updateFiletransfer(index,msg);
+  // end of void function
 }
 
-void FiletransferPlugin::initMsgDecoded(int , QDltMsg &){
-//empty. Implemented because derived plugin interface functions are virtual.
-}
-
-void FiletransferPlugin::initFileFinish(){
-//empty. Implemented because derived plugin interface functions are virtual.
-}
-
-void FiletransferPlugin::updateFileStart(){
-//empty. Implemented because derived plugin interface functions are virtual.
-}
-
-void FiletransferPlugin::updateMsg(int index, QDltMsg &msg){
-    updateFiletransfer(index,msg);
-
-}
-
-void FiletransferPlugin::updateMsgDecoded(int , QDltMsg &){
-//empty. Implemented because derived plugin interface functions are virtual.
+void FiletransferPlugin::updateMsgDecoded(int , QDltMsg &)
+{//empty. Implemented because derived plugin interface functions are virtual.
 }
 
 void FiletransferPlugin::updateFileFinish(){
 
 }
 
-void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg) {
+void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
+{
+
 
     QDltArgument msgFirstArgument;
     QDltArgument msgLastArgument;
 
 
     if(!dltFile)
+    {
+        //qDebug()<< "dltfile object does not exist";
         return;
+    }
 
     if(msg.getType() != QDltMsg::DltTypeLog)
+    {
         return;
+    }
+
 
     if(config.getFlAppIdTag().compare(msg.getApid()) != 0 || config.getFlCtIdTag().compare(msg.getCtid()) != 0)
+    {
+        // message is not of APID and CTID combination defined to indicate file transfer
         return;
+    }
 
-        if(!msg.getArgument(PROTOCOL_ALL_STARTFLAG,msgFirstArgument))
-            return;
+    if(!msg.getArgument(PROTOCOL_ALL_STARTFLAG,msgFirstArgument))
+    {
+        return;
+    }
 
-        if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 )
-        {
-            msg.getArgument(PROTOCOL_FLST_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFlstTag()) == 0)
-            {
-                doFLST(&msg);
-            }
-            return;
-        }
-        if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 ) {
+    // so we have a valid file transfer packet and now we look for the tag contained in the message
+
+    if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 )
+    {
             msg.getArgument(PROTOCOL_FLDA_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFldaTag()) == 0)
             {
                 doFLDA(index,&msg);
             }
             return;
-        }
-        if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
+     }
+
+
+    if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 )
+    {
+            msg.getArgument(PROTOCOL_FLST_ENDFLAG,msgLastArgument);
+            if(msgLastArgument.toString().compare(config.getFlstTag()) == 0)
+            {
+                doFLST(&msg);
+            }
+            return;
+    }
+
+
+    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 )
+    {
             msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
                 doFLFI(&msg);
             }
             return;
-        }
-        if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) {
+    }
+
+    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 )
+    {
             msg.getArgument(PROTOCOL_FLIF_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
                 doFLIF(&msg);
             }
             return;
-        }
-        if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 ) {
+
+    }
+
+    if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 )
+    {
             msg.getArgument(PROTOCOL_FLER_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlerTag()) == 0)
             {
                 doFLER(&msg);
             }
             return;
-        }
+    }
 
+    // end of void function
 }
 
-void FiletransferPlugin::doFLST(QDltMsg *msg){
+
+void FiletransferPlugin::doFLST(QDltMsg *msg)
+{
 
     QDltArgument argument;
     msg->getArgument(PROTOCOL_FLST_FILEID,argument);
 
     File *file = new File(dltFile,0);
+    // set the attributes of the dynamic widget
     file->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled );
     file->setCheckState(COLUMN_CHECK, Qt::Unchecked);
+
 
     msg->getArgument(PROTOCOL_FLST_FILEID,argument);
     file->setFileSerialNumber(argument.toString());
@@ -276,9 +326,10 @@ void FiletransferPlugin::doFLST(QDltMsg *msg){
     msg->getArgument(PROTOCOL_FLST_BUFFERSIZE,argument);
     file->setBuffersize(argument.toString());
 
+    // We create the dynamic widget for this file transfer
     QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(file->getFileSerialNumber(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
-
-    if(result.isEmpty()){
+    if(result.isEmpty())
+    {
         form->getTreeWidget()->addTopLevelItem(file);
     }
     else
@@ -288,9 +339,11 @@ void FiletransferPlugin::doFLST(QDltMsg *msg){
       form->getTreeWidget()->addTopLevelItem(file);
     }
 
+  return;
 }
 
-void FiletransferPlugin::doFLDA(int index,QDltMsg *msg){
+void FiletransferPlugin::doFLDA(int index,QDltMsg *msg)
+{
     QDltArgument argument;
     msg->getArgument(PROTOCOL_FLDA_FILEID,argument);
 
@@ -299,6 +352,7 @@ void FiletransferPlugin::doFLDA(int index,QDltMsg *msg){
     if(result.isEmpty())
     {
         //Transfer for this file started before sending FLST
+      return;
     }
     else
     {
@@ -311,9 +365,11 @@ void FiletransferPlugin::doFLDA(int index,QDltMsg *msg){
             file->setQFileIndexForPackage(packageNumber.toString(),index);
         }
     }
+  return;
 }
 
-void FiletransferPlugin::doFLFI(QDltMsg *msg){
+void FiletransferPlugin::doFLFI(QDltMsg *msg)
+{
     QDltArgument argument;
     msg->getArgument(PROTOCOL_FLFI_FILEID,argument);
 
@@ -322,6 +378,7 @@ void FiletransferPlugin::doFLFI(QDltMsg *msg){
     if(result.isEmpty())
     {
         //Transfer for this file started before sending FLST
+      return;
     }
     else
     {
@@ -331,16 +388,19 @@ void FiletransferPlugin::doFLFI(QDltMsg *msg){
             file->setComplete();
         }
     }
+  return;
 }
 
-void FiletransferPlugin::doFLIF(QDltMsg *msg){
+void FiletransferPlugin::doFLIF(QDltMsg *msg)
+{
     Q_UNUSED(msg);
 
 //empty.
 //not implemented yet. Would handle extended file information: file serialnumber, name ,size, creation date, number of packages
 }
 
-void FiletransferPlugin::doFLER(QDltMsg *msg){
+void FiletransferPlugin::doFLER(QDltMsg *msg)
+{
     QDltArgument filename;
     msg->getArgument(PROTOCOL_FLER_FILENAME,filename);
     QDltArgument errorCode1;
@@ -352,7 +412,8 @@ void FiletransferPlugin::doFLER(QDltMsg *msg){
 
     QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(filename.toString(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILENAME);
 
-    if(result.isEmpty()){
+    if(result.isEmpty())
+    {
        form->getTreeWidget()->addTopLevelItem(file);
     }
     else
@@ -410,13 +471,16 @@ bool FiletransferPlugin::exportAll(QDir extract_dir)
         errorText = "No filetransfer files in the loaded DLT file.";
         return false;
     }
-    while (*it) {
+    while (*it)
+    {
         File *tmp = dynamic_cast<File*>(*it);
-        if (tmp != NULL && tmp->isComplete()) {
+        if (tmp != NULL && tmp->isComplete())
+        {
 
             QString absolutePath = extract_dir.filePath(tmp->getFilename());
 
-            if(!tmp->saveFile(absolutePath) ){
+            if(!tmp->saveFile(absolutePath) )
+            {
                 ret = false;
                 errorText += ", " + tmp->getFilenameOnTarget();
             }

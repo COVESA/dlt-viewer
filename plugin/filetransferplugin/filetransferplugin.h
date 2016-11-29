@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "configuration.h"
 
-#define FILETRANSFER_PLUGIN_VERSION "1.0.0"
+#define FILETRANSFER_PLUGIN_VERSION "1.1.0"
 
 class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface
 {

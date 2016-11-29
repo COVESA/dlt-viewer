@@ -15,6 +15,13 @@
  * \file form.cpp
  * For further information see http://www.genivi.org/.
  * @licence end@
+ *
+ * Changes:
+ * Date         Author          Description
+ * 30.11.2016   Gernot Wirschal Added extra function to save single file with right mouse click
+ *                              bug fix for "save all selected": in Form::itemChanged
+ *                              where slectedFiles did count < 0
+ *
  */
 
 #include "form.h"
@@ -49,20 +56,25 @@ Form::~Form()
 }
 
 
-QTreeWidget* Form::getTreeWidget(){
+QTreeWidget* Form::getTreeWidget()
+{
     return ui->treeWidget;
 }
 
-void Form::sectionInTableDoubleClicked(int logicalIndex){
+void Form::sectionInTableDoubleClicked(int logicalIndex)
+{
         ui->treeWidget->resizeColumnToContents(logicalIndex);
+        return;
 }
 
-void Form::on_selectButton_clicked(){
+void Form::on_selectButton_clicked()
+{
     QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NotChecked|QTreeWidgetItemIterator::NoChildren);
     while (*it) {
         File *tmp = dynamic_cast<File*>(*it);
 
-        if (tmp != NULL) {
+        if (tmp != NULL)
+        {
             if(tmp->isComplete())
             {
                 tmp->setCheckState(COLUMN_CHECK, Qt::Checked);
@@ -70,17 +82,20 @@ void Form::on_selectButton_clicked(){
         }
         ++it;
     }
+    return;
 }
 
 
-void Form::on_deselectButton_clicked(){
+void Form::on_deselectButton_clicked()
+{
     QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );//| QTreeWidgetItemIterator::Checked);
 
-    while (*it) {
+    while (*it)
+    {
         File *tmp = dynamic_cast<File*>(*it);
 
-        if (tmp != NULL) {
-
+        if (tmp != NULL)
+        {
             if(tmp->isComplete())
             {
                 tmp->setCheckState(COLUMN_CHECK, Qt::Unchecked);
@@ -89,37 +104,45 @@ void Form::on_deselectButton_clicked(){
         }
         ++it;
     }
+    return;
 }
 
-void Form::itemChanged(QTreeWidgetItem* item,int i){
+void Form::itemChanged(QTreeWidgetItem* item,int i)
+{
 
-    if(i == COLUMN_CHECK){
+    if(i == COLUMN_CHECK)
+    {
         File *tmp = dynamic_cast<File*>(item);
 
-        if (tmp != NULL) {
+        if (tmp != NULL)
+        {
 
             if(tmp->isComplete() && (tmp->checkState(COLUMN_CHECK) == Qt::Checked) )
             {
                 selectedFiles++;
 
             }
-            else{
+            else
+            {
                 tmp->setCheckState(COLUMN_CHECK, Qt::Unchecked);
-                selectedFiles--;
+                if (--selectedFiles < 0)
+                    selectedFiles = 0;
 
             }
-        }
-    }
-
+        } // NULL
+    } // COLUMN_CHECK
+ return;
 }
 
-void Form::clearSelectedFiles(){
+void Form::clearSelectedFiles()
+{
     selectedFiles = 0;
 }
 
-void Form::on_saveButton_clicked(){
-
-    if(selectedFiles <= 0){
+void Form::on_saveButton_clicked()
+{
+    if(selectedFiles <= 0)
+    {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Information);
         msgBox.setText("No files are selected.");
@@ -129,56 +152,179 @@ void Form::on_saveButton_clicked(){
         msgBox.exec();
         return;
     }
+    savetofile();
+    return;
+}
 
-    QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"),
-                                                     QDir::currentPath(),QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    if(path != NULL){
-
-        QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );//| QTreeWidgetItemIterator::Checked);
-
+void Form::savetofile()
+{
+    QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"), QDir::currentPath(), QFileDialog::DontResolveSymlinks);
+    if(path != NULL)
+    {
+        QDir::setCurrent(path); // because we want to keep the last selected path to offer next time again
+        QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );
         QString text;
         QString infoText;
         QString detailedText;
         QMessageBox msgBox;
+        QString absolutePath;
+        QString FiletoSave;
+        File *tmpfile;
+        unsigned int number_of_saved_files=0;
         msgBox.setWindowTitle("Filetransfer Plugin");
-        bool errorOccured = false;
+        bool errorOccured = true;
 
-        while (*it) {
-            File *tmp = dynamic_cast<File*>(*it);
-
-            if (tmp != NULL && tmp->isComplete() && (tmp->checkState(COLUMN_CHECK) == Qt::Checked)) {
-                QString absolutePath = path+"//"+tmp->getFilename();
-                if(!tmp->saveFile(absolutePath) ){
-                    errorOccured = true;
-
-                    text = ("Save incomplete.");
-                    infoText ="The selected files were not saved to "+path+".\n";
-
-                    detailedText += tmp->getFilenameOnTarget() + "\n";
+        while (*it)
+        {
+            tmpfile = dynamic_cast<File*>(*it);
+            if (tmpfile == NULL)
+            {
+              qDebug()<< "File handle is NULL";
+              msgBox.setIcon(QMessageBox::Critical);
+              text += ("Not vaild file selected");
+              msgBox.setText(text);
+              msgBox.setStandardButtons(QMessageBox::Ok);
+              msgBox.setDefaultButton(QMessageBox::Ok);
+              msgBox.exec();
+            }
+            else if ( !tmpfile->isComplete() && (tmpfile->checkState(COLUMN_CHECK) == Qt::Checked))
+            {
+              // if it is not selected we do not care ...
+              FiletoSave = tmpfile->getFilename();
+              qDebug()<< "File is not complete" <<  FiletoSave;
+              msgBox.setIcon(QMessageBox::Critical);
+              text += ("File is not complete: ");
+              text += FiletoSave;
+              msgBox.setText(text);
+              msgBox.setStandardButtons(QMessageBox::Ok);
+              msgBox.setDefaultButton(QMessageBox::Ok);
+              msgBox.exec();
+            }
+            else if (tmpfile->checkState(COLUMN_CHECK) == Qt::Checked)
+            {
+                FiletoSave = tmpfile->getFilename();
+                absolutePath = path+"//"+FiletoSave;
+                if(!tmpfile->saveFile(absolutePath) )
+                {
+                    qDebug()<< "File save incomplete: " <<  FiletoSave;
+                    text = ("File save incomplete");
+                    infoText ="The selected file "+FiletoSave+ " was not saved to "+path+".\n";
+                    detailedText = tmpfile->getFilenameOnTarget() + "\n";
                     msgBox.setIcon(QMessageBox::Critical);
+                    msgBox.setText(text);
+                    msgBox.setInformativeText(infoText);
+                    msgBox.setDetailedText(detailedText);
+                    msgBox.setStandardButtons(QMessageBox::Ok);
+                    msgBox.setDefaultButton(QMessageBox::Ok);
+                    msgBox.exec();
+                }
+                else
+                {
+                    qDebug()<< "Successfully saved " <<  FiletoSave;
+                    number_of_saved_files++;
+                    errorOccured = false; // we indicate that at least one file save was successful
                 }
             }
-
+            else // file is not marked
+            {
+               FiletoSave = tmpfile->getFilename();
+               qDebug()<< "File " <<  FiletoSave <<  " not marked for save";
+            }
             ++it;
-        }
+        } // while
 
-        if(!errorOccured)
+       if(false == errorOccured ) // no error
         {
             msgBox.setIcon(QMessageBox::Information);
-            text += ("Save successful.");
-            infoText += ("All selected files were saved to "+path+".\n");
+            text = ("Save successful");
+            infoText = QString("%1 selected files were saved to %2\n").arg(number_of_saved_files).arg(path);
+            msgBox.setText(text);
+            msgBox.setInformativeText(infoText);
+            msgBox.setDetailedText("");
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.exec();
         }
-
-        msgBox.setText(text);
-        msgBox.setInformativeText(infoText);
-        msgBox.setDetailedText(detailedText);
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setDefaultButton(QMessageBox::Ok);
-        msgBox.exec();
+    }// if path
+    else
+    {
+     qDebug()<< "Filesave canceled";
     }
+    return; // void, but anyway ...
 }
 
-void Form::itemDoubleClicked ( QTreeWidgetItem * item, int){
+
+void Form::on_saveRightButton_clicked()
+{
+    QString FiletoSave;
+    QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"), QDir::currentPath(), QFileDialog::DontResolveSymlinks);
+
+    if(path != NULL)
+    {
+        QDir::setCurrent(path); // because we want to keep the last selected path to offer next time again
+        QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );
+        QMessageBox msgBox;
+        QModelIndex index_to_widget = ui->treeWidget->currentIndex();
+        QString text;
+        QString infoText;
+        QString detailedText;
+        File *tmpfile;
+        unsigned int index_of_selected_entry = index_to_widget.row();
+        bool errorOccured = false;
+        msgBox.setWindowTitle("Filetransfer Plugin");
+
+        // so we set the pointer to actually highlighted entry below the mouse
+        for ( unsigned int i=0; i < index_of_selected_entry; i++)
+        {
+            it++;
+        }
+
+        tmpfile = dynamic_cast<File*>(*it);
+        FiletoSave = tmpfile->getFilename();
+
+        if (tmpfile != NULL && tmpfile->isComplete() )
+            {
+                QString absolutePath = path+"//"+FiletoSave;
+                qDebug()<< "Try to save " << FiletoSave << "to " << absolutePath;
+
+                if(!tmpfile->saveFile(absolutePath) )
+                {
+                    errorOccured = true; // so we want to indicate at least one error anyway
+                    text = ("File save incomplete");
+                    infoText = FiletoSave;
+                    infoText += " was not saved to "+path+".\n";
+                    detailedText += tmpfile->getFilenameOnTarget() + "\n";
+                    msgBox.setIcon(QMessageBox::Critical);
+               }
+               else
+               {
+                 msgBox.setIcon(QMessageBox::Information);
+                 text = ("File save successful");
+                 infoText = FiletoSave+"\n";
+                 infoText += ("was saved to \n "+path+"\n");
+                 qDebug()<< "Saved " << FiletoSave;
+               }
+
+            } // if tmp != NULL
+            else
+            {
+               msgBox.setIcon(QMessageBox::Information);
+               text = ("Not vaild file selected");
+               qDebug()<< "Not vaild file selected";
+            }
+            msgBox.setText(text);
+            msgBox.setInformativeText(infoText);
+            msgBox.setDetailedText(detailedText);
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            msgBox.setDefaultButton(QMessageBox::Ok);
+            msgBox.exec();
+    } // path = null
+    return;
+}
+
+
+void Form::itemDoubleClicked ( QTreeWidgetItem * item, int)
+{
 
     File *tmp = dynamic_cast<File*>(item);
     if (tmp != NULL && tmp->isComplete())
@@ -198,31 +344,31 @@ void Form::itemDoubleClicked ( QTreeWidgetItem * item, int){
         }
         tmp->freeFile();
     }
-
-
+    return;
 }
 
 void Form::on_treeWidget_customContextMenuRequested(QPoint pos)
 {
-    /* show custom pop menu  for configuration */
+    /* show custom popup menu for configuration */
     QPoint globalPos = ui->treeWidget->mapToGlobal(pos);
     QMenu menu(ui->treeWidget);
     QAction *action;
-
     QList<QTreeWidgetItem *> list = ui->treeWidget->selectedItems();
 
     if(list.count() == 1)
     {
-        action = new QAction("&Save selected file", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_actionSave_triggered()));
+        action = new QAction("&Save this file", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_saveRightButton_clicked()));
         menu.addAction(action);
 
         /* show popup menu */
         menu.exec(globalPos);
     }
-
+    return;
 }
-void Form::on_actionSave_triggered(){
+
+void Form::on_actionSave_triggered()
+{
     QList<QTreeWidgetItem *> list = ui->treeWidget->selectedItems();
     if((list.count() == 1))
     {
@@ -232,4 +378,6 @@ void Form::on_actionSave_triggered(){
         on_saveButton_clicked();
         itemChanged(tmpFile,COLUMN_CHECK);
     }
+    return;
 }
+
