@@ -36,7 +36,7 @@ License
 
 Full information on the license for this software is available in the "LICENSE.txt" file.
 
-## Source Code for DLT Viewer (This repositoriy)
+## Source Code for DLT Viewer (This repository)
 
 https://github.com/GENIVI/dlt-viewer
 
