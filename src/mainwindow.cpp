@@ -509,6 +509,7 @@ void MainWindow::initFileHandling()
             if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
             {
                 openFileNames = QStringList(fn);
+                isDltFileReadOnly = false;
                 reloadLogFile();
             }
             else
@@ -732,6 +733,7 @@ void MainWindow::on_New_triggered(QString fileName)
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         openFileNames = QStringList(fileName);
+        isDltFileReadOnly = false;
         reloadLogFile();
     }
     else
@@ -833,6 +835,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         openFileNames = fileNames;
+        isDltFileReadOnly = false;
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
@@ -843,12 +846,27 @@ bool MainWindow::openDltFile(QStringList fileNames)
     }
     else
     {
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("Cannot open log file \"%1\"\n%2")
-                              .arg(fileNames.last())
-                              .arg(outputfile.errorString()));
-        ret = false;
-
+        /* try opening read only */
+        if(outputfile.open(QIODevice::ReadOnly))
+        {
+            openFileNames = fileNames;
+            isDltFileReadOnly = true;
+            if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+                // if dlt viewer started as converter or with plugin option load file non multithreaded
+                reloadLogFile(false,false);
+            else
+                // normally load log file mutithreaded
+                reloadLogFile();
+            ret = true;
+        }
+        else
+        {
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot open log file \"%1\"\n%2")
+                                  .arg(fileNames.last())
+                                  .arg(outputfile.errorString()));
+            ret = false;
+        }
     }
 
     return ret;
@@ -1242,6 +1260,7 @@ void MainWindow::on_SaveAs_triggered(QString fileName)
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         openFileNames = QStringList(fileName);
+        isDltFileReadOnly = false;
         reloadLogFile();
     }
     else
@@ -1290,6 +1309,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         openFileNames = QStringList(fn);
+        isDltFileReadOnly = false;
         reloadLogFile();
     }
     else
@@ -1531,7 +1551,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusProgressBar->show();
 
     // set name of opened log file in status bar
-    statusFilename->setText(outputfile.fileName());
+    if(isDltFileReadOnly)
+        statusFilename->setText(outputfile.fileName()+" (ReadOnly)");
+    else
+        statusFilename->setText(outputfile.fileName());
 
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());

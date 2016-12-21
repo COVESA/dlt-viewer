@@ -211,6 +211,9 @@ private:
 
     bool isSearchOngoing;
 
+    /* DLT File opened only Read only */
+    bool isDltFileReadOnly;
+
     /* functions called in constructor */
     void initState();
     void initView();
