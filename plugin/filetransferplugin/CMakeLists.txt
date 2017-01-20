@@ -30,6 +30,5 @@ add_library(filetransferplugin 	MODULE filetransferplugin.cpp
 				configuration.cpp
 				${UI_HEADERS})
 
-target_link_libraries(filetransferplugin qdlt Qt5::Widgets Qt5::PrintSupport )
-
-install(TARGETS filetransferplugin DESTINATION deploy/plugins)
+target_link_libraries(filetransferplugin Qt5::PrintSupport )
+add_plugin(filetransferplugin)

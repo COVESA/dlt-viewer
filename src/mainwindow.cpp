@@ -4889,6 +4889,8 @@ void MainWindow::loadPlugins()
 
       PluginItem* item = new PluginItem(0,plugin);
 
+      qDebug() << "Loaded plugin: " << plugin->getName();
+
       plugin->setMode((QDltPlugin::Mode) DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
 
       if(plugin->isViewer())
