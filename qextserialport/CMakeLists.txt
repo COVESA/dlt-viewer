@@ -38,4 +38,4 @@ target_include_directories (qextserialport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 qt5_use_modules(qextserialport Core)
 
-install(TARGETS qextserialport DESTINATION deploy)
+install(TARGETS qextserialport DESTINATION ${LIBRARY_INSTALLATION_PATH})
