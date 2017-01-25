@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent) :
     initSearchTable();
 
     initView();
+
     applySettings();
 
     initSignalConnections();
@@ -302,14 +303,29 @@ void MainWindow::initView()
     totalBytesRcvd = 0;
     totalByteErrorsRcvd = 0;
     totalSyncFoundRcvd = 0;
-    statusFilename = new QLabel("no log file loaded");
+
+    /* filename string */
+    statusFilename = new QLabel("No log file loaded");
+    //qDebug() << "Initial label width" << statusFilename->width() <<  __LINE__;
+
+    statusFilename->setMinimumWidth(480); // 640 is the initial width of the label
+                                          // for some reason we need this for the very
+                                          // first call when setting the tempfile string
+                                          // unless this there are is displayed "..."
+                                          // more propper solution appreciated ...
+
+    /* version string */
     statusFileVersion = new QLabel("Version: <unknown>");
+    int maxWidth = QFontMetrics(statusFileVersion->font()).averageCharWidth() * 70;
+    statusFileVersion->setMaximumWidth(maxWidth);
+
+
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
     statusSyncFoundReceived = new QLabel("Sync found: 0");
     statusProgressBar = new QProgressBar();
-    statusBar()->addWidget(statusFilename);
-    statusBar()->addWidget(statusFileVersion);
+    statusBar()->addWidget(statusFilename, 1);
+    statusBar()->addWidget(statusFileVersion, 1);
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
@@ -515,7 +531,6 @@ void MainWindow::initFileHandling()
     else
     {
         /* load default log file */
-        statusFilename->setText("no log file loaded");
         if(settings->defaultLogFile)
         {
             openDltFile(QStringList(settings->defaultLogFileName));
@@ -1541,7 +1556,10 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
         autoloadPluginsVersionStrings.append(version);
         autoloadPluginsVersionEcus.append(ecuId);
 
-        statusFileVersion->setText("Version: "+autoloadPluginsVersionStrings.join(" "));
+	QFontMetrics fm = QFontMetrics(statusFileVersion->font());
+	QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
+        statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
+        statusFileVersion->setToolTip(versionString);
 
         if(settings->pluginsAutoloadPath)
         {
@@ -1670,7 +1688,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     dltIndexer->stop();
 
     // open qfile
-    if(!update)
+    if( false == update)
     {
         for(int num=0;num<openFileNames.size();num++)
         {
@@ -1689,10 +1707,17 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusProgressBar->show();
 
     // set name of opened log file in status bar
-    if(isDltFileReadOnly)
-        statusFilename->setText(outputfile.fileName()+" (ReadOnly)");
-    else
-        statusFilename->setText(outputfile.fileName());
+    QFontMetrics fm = QFontMetrics(statusFilename->font());
+    QString name = outputfile.fileName();
+
+    if ( true == isDltFileReadOnly )
+    {
+	name += " (ReadOnly)";
+    }
+
+    statusFilename->setText(fm.elidedText(name, Qt::ElideLeft, statusFilename->width()));
+    statusFilename->setMinimumWidth(0); // this is the rollback of the workaround for first call
+    statusFilename->setToolTip(name);
 
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
@@ -2005,6 +2030,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
 }
 
 QStringList MainWindow::getSerialPortsWithQextEnumerator(){
+
 
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList portList;
@@ -5184,7 +5210,10 @@ void MainWindow::versionString(QDltMsg &msg)
     version = version.trimmed(); // remove all white spaces at beginning and end
     qDebug() << "AutoloadPlugins Version:" << version;
     autoloadPluginsVersionStrings.append(version);
-    statusFileVersion->setText("Version: "+autoloadPluginsVersionStrings.join(" "));
+    QFontMetrics fm = QFontMetrics(statusFileVersion->font());
+    QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
+    statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
+    statusFileVersion->setToolTip(versionString);
 
     if(settings->pluginsAutoloadPath)
     {
