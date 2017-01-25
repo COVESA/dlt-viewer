@@ -295,12 +295,14 @@ void MainWindow::initView()
     totalSyncFoundRcvd = 0;
     statusFilename = new QLabel("no log file loaded");
     statusFileVersion = new QLabel("Version: <unknown>");
+    int maxWidth = QFontMetrics(statusFileVersion->font()).averageCharWidth() * 60;
+    statusFileVersion->setMaximumWidth(maxWidth);
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
     statusSyncFoundReceived = new QLabel("Sync found: 0");
     statusProgressBar = new QProgressBar();
-    statusBar()->addWidget(statusFilename);
-    statusBar()->addWidget(statusFileVersion);
+    statusBar()->addWidget(statusFilename, 1);
+    statusBar()->addWidget(statusFileVersion, 1);
     statusBar()->addWidget(statusBytesReceived);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
@@ -1376,7 +1378,10 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
         autoloadPluginsVersionStrings.append(version);
         autoloadPluginsVersionEcus.append(ecuId);
 
-        statusFileVersion->setText("Version: "+autoloadPluginsVersionStrings.join(" "));
+	QFontMetrics fm = QFontMetrics(statusFileVersion->font());
+	QString versionString = "Version:" + autoloadPluginsVersionStrings.join(" ");
+        statusFileVersion->setText(fm.elidedText(versionString, Qt::ElideRight, statusFileVersion->width()));
+        statusFileVersion->setToolTip("Version: " + autoloadPluginsVersionStrings.join(" "));
 
         if(settings->pluginsAutoloadPath)
         {
@@ -1524,7 +1529,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusProgressBar->show();
 
     // set name of opened log file in status bar
-    statusFilename->setText(outputfile.fileName());
+    QFontMetrics fm = QFontMetrics(statusFilename->font());
+    QString name = outputfile.fileName();
+    statusFilename->setText(fm.elidedText(name, Qt::ElideLeft, statusFilename->width()));
+    statusFilename->setToolTip(name);
 
     // enable plugins
     dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
@@ -1830,6 +1838,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
 }
 
 QStringList MainWindow::getSerialPortsWithQextEnumerator(){
+
 
     QList<QextPortInfo> ports = QextSerialEnumerator::getPorts();
     QStringList portList;
