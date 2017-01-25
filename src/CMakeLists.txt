@@ -67,6 +67,6 @@ target_link_libraries(dlt-viewer  qdlt
                                   ${Qt5Widgets_LIBRARIES}
                                   ${Qt5SerialPort_LIBRARIES})
 
-install(TARGETS dlt-viewer DESTINATION deploy)
-install(DIRECTORY icon png svg DESTINATION deploy
+install(TARGETS dlt-viewer DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
+install(DIRECTORY icon png svg DESTINATION ${RESOURCE_INSTALLATION_PATH}
 			PATTERN icon/*.rc EXCLUDE )

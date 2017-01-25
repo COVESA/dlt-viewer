@@ -37,4 +37,4 @@ target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 
 target_link_libraries(qdlt Qt5::Core Qt5::Network)
 
-install(TARGETS qdlt DESTINATION deploy)
+install(TARGETS qdlt DESTINATION ${LIBRARY_INSTALLATION_PATH})
