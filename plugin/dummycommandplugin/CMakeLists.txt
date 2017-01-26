@@ -25,4 +25,5 @@
 add_library(dummycommandplugin MODULE dummycommandplugin.cpp
 	                        ${UI_HEADERS})
 
-add_plugin(dummycommandplugin)
+target_link_libraries(dummycommandplugin qdlt Qt5::Widgets )
+install(TARGETS dummycommandplugin DESTINATION deploy/plugins)

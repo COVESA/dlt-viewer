@@ -25,4 +25,5 @@ add_library(dltviewerplugin MODULE dltviewerplugin.cpp
 				form.cpp
 	                        ${UI_HEADERS})
 
-add_plugin(dltviewerplugin)
+target_link_libraries(dltviewerplugin qdlt Qt5::Widgets )
+install(TARGETS dltviewerplugin DESTINATION deploy/plugins)

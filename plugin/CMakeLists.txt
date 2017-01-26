@@ -17,20 +17,6 @@
 cmake_minimum_required (VERSION 2.8.12)
 set (CMAKE_VERBOSE_MAKEFILE FALSE)
 
-function(add_plugin NAME)
-
-    target_link_libraries(${NAME} qdlt Qt5::Widgets)
-    install(TARGETS ${NAME} DESTINATION ${PLUGIN_INSTALLATION_PATH})
-
-    # set the location of the plugins in such a way that they can be located by the dlt-viewer executable when running in
-    # directly from the build folder (without "make install")
-    set_target_properties(${NAME} PROPERTIES
-        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PLUGIN_RELATIVE_PATH}
-        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${PLUGIN_RELATIVE_PATH}
-    )
-
-endfunction()
-
 add_subdirectory(dltviewerplugin)
 add_subdirectory(nonverboseplugin)
 add_subdirectory(filetransferplugin)
@@ -41,4 +27,3 @@ add_subdirectory(dummycommandplugin)
 add_subdirectory(dummydecoderplugin)
 add_subdirectory(dltdbusplugin)
 add_subdirectory(dltlogstorageplugin)
-

@@ -45,27 +45,6 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
 
 add_definitions(-DQT5)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)   # set location for all executables in the build folder
-
-option(USE_STANDARD_INSTALLATION_LOCATION "Use standard GNU installation locations" OFF)
-
-if (USE_STANDARD_INSTALLATION_LOCATION)
-    include(GNUInstallDirs)    # for standard installation locations
-    set(PLUGIN_INSTALLATION_PATH ${CMAKE_INSTALL_LIBDIR}/dlt-viewer/plugins)
-    set(RESOURCE_INSTALLATION_PATH ${CMAKE_INSTALL_DATADIR}/dlt-viewer)
-    set(EXECUTABLE_INSTALLATION_PATH ${CMAKE_INSTALL_BINDIR})
-    set(LIBRARY_INSTALLATION_PATH ${CMAKE_INSTALL_LIBDIR})
-else()
-    set(PLUGIN_INSTALLATION_PATH deploy/plugins)
-    set(RESOURCE_INSTALLATION_PATH deploy)
-    set(EXECUTABLE_INSTALLATION_PATH deploy)
-    set(LIBRARY_INSTALLATION_PATH deploy)
-endif()
-
-file(RELATIVE_PATH PLUGIN_RELATIVE_PATH /${EXECUTABLE_INSTALLATION_PATH} /${PLUGIN_INSTALLATION_PATH})
-add_definitions(-DPLUGIN_RELATIVE_PATH=${PLUGIN_RELATIVE_PATH})
-
-
 add_subdirectory(parser)
 add_subdirectory(qdlt)
 add_subdirectory(qextserialport)

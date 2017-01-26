@@ -6,10 +6,6 @@
 //#include <QMessageBox>
 #include <QTextStream>
 #include <QString>
-#include <QDebug>
-
-#define STRINGIFY(a) str(a)
-#define str(a) #a
 
 QDltPluginManager::QDltPluginManager()
 {
@@ -37,10 +33,8 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
     QDir pluginsDir;
     QStringList errorStrings;
     /* The viewer looks in the relativ to the executable in the ./plugins directory */
-    QString defaultPluginPath = QCoreApplication::applicationDirPath() + QDir::separator() + STRINGIFY(PLUGIN_RELATIVE_PATH);
-
-    pluginsDir.setPath(defaultPluginPath);
-    if(pluginsDir.exists())
+    pluginsDir.setPath(QCoreApplication::applicationDirPath());
+    if(pluginsDir.cd("plugins"))
     {
         errorStrings << loadPluginsPath(pluginsDir);
     }
@@ -53,6 +47,13 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
         {
             errorStrings << loadPluginsPath(pluginsDir);
         }
+    }
+
+    /* Load plugins from system directory in linux */
+    pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
+    if(pluginsDir.exists() && pluginsDir.isReadable())
+    {
+        errorStrings << loadPluginsPath(pluginsDir);
     }
 
     return errorStrings;

@@ -28,4 +28,4 @@ add_executable(dlt_parser main.cpp
 
 target_link_libraries(dlt_parser Qt5::Widgets )
 
-install(TARGETS dlt_parser DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
+install(TARGETS dlt_parser DESTINATION deploy)

@@ -24,4 +24,4 @@ add_library(dltlogstorageplugin MODULE dltlogstorageconfigcreatorplugin.cpp
     ${UI_HEADERS})
 
 target_link_libraries(dltlogstorageplugin qdlt Qt5::Widgets )
-add_plugin(dltlogstorageplugin)
+install(TARGETS dltlogstorageplugin DESTINATION deploy/plugins)
