@@ -25,13 +25,21 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL Linux)
     list(APPEND QEXT_SERIALPORT_SOURCES src/qextserialport_unix.cpp
                                         src/qextserialenumerator_unix.cpp)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)  # OSX
-    list(APPEND QEXT_SERIALPORT_SOURCES src/qextserialenumerator_osx.cpp)
+    find_library(IOKIT_LIBRARY IOKit)
+    find_library(FOUNDATION_LIBRARY Foundation)
+    list(APPEND QEXT_SERIALPORT_SOURCES src/qextserialport_unix.cpp
+                                        src/qextserialenumerator_osx.cpp)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL Windows)
     list(APPEND QEXT_SERIALPORT_SOURCES src/qextserialport_win.cpp
                                         src/qextserialenumerator_win.cpp)
 endif()
 
 add_library (qextserialport ${QEXT_SERIALPORT_SOURCES})
+if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
+    target_link_libraries(qextserialport
+        ${IOKIT_LIBRARY}
+        ${FOUNDATION_LIBRARY})
+endif()
 # Make sure the compiler can find include files for our qextserialport library
 # when other libraries or executables link to qextserialport
 target_include_directories (qextserialport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
