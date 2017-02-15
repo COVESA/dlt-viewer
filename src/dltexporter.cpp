@@ -140,7 +140,7 @@ bool DltExporter::finish()
        exportFormat == DltExporter::FormatDlt ||
        exportFormat == DltExporter::FormatDltDecoded)
     {
-        /* close outpur file */
+        /* close output file */
         to->close();
     }
     else if (exportFormat == DltExporter::FormatClipboard)
@@ -248,25 +248,26 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         startFinishError++;
         return;
     }
-    qDebug() << "DLT Export" << size << "messages";
+    qDebug() << "Start DLT export of" << size << "messages";
 
     /* init fileprogress */
-    QProgressDialog fileprogress("Export...", "Cancel", 0, this->size, qobject_cast<QWidget *>(parent()));
+    QProgressDialog fileprogress("Export ...", "Cancel", 0, this->size, qobject_cast<QWidget *>(parent()));
     fileprogress.setWindowTitle("DLT Viewer");
     fileprogress.setWindowModality(Qt::WindowModal);
     fileprogress.show();
+
 
     bool silentMode = !OptManager::getInstance()->issilentMode();
 
     for(int num = 0;num<size;num++)
     {
-        /* Update progress dialog every 1000 lines */
+        // Update progress dialog every 1000 lines
         if( 0 == (num%1000))
         {
-            fileprogress.setValue(num);
+           fileprogress.setValue(num);
         }
 
-        /* get message */
+        // get message
         if(!getMsg(num,msg,buf))
         {
 	    //  finish();
@@ -276,7 +277,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 	    //  return;
         }
 
-        /* decode message if needed */
+        // decode message if needed
         if(exportFormat != DltExporter::FormatDlt)
         {
             pluginManager->decodeMsg(msg,silentMode);
@@ -287,24 +288,29 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
             }
         }
 
-        /* export message */
+        // export message
         if(!exportMsg(num,msg,buf))
         {
             // finish();
-            qDebug() << "DLT Export exportMsg() failed";
-	    exportErrors++;
-	    continue;
-            // return;
+          qDebug() << "DLT Export exportMsg() failed";
+          exportErrors++;
+          continue;
         }
-	else
+     else
 	    exportCounter++;
+    } // end "for" loop
+    fileprogress.close();
+
+    if (!finish())
+    {
+        startFinishError++;
     }
 
-    if (!finish()) startFinishError++;
     if (startFinishError>0||readErrors>0||exportErrors>0)
     {
-	QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
-        qDebug() << "DLT Export finish() failed";
-        return;
+       qDebug() << "DLT Export finish() failed";
+       QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
+       return;
     }
+    qDebug() << "DLT export done for" << exportCounter << "messages with result" << startFinishError;
 }
