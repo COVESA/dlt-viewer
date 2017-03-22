@@ -187,7 +187,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::initState()
 {
-
     /* Settings */
     settings = new SettingsDialog(&qfile,this);
     settings->assertSettingsVersion();
@@ -312,6 +311,7 @@ void MainWindow::initView()
     /* Create search text box */
     searchTextbox = new QLineEdit();
     searchDlg->appendLineEdit(searchTextbox);
+
     connect(searchTextbox, SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
     connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_action_FindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
@@ -339,6 +339,7 @@ void MainWindow::initSignalConnections()
         connect(searchHistoryActs[i], SIGNAL(triggered()), searchDlg, SLOT(loadSearchHistory()));
         ui->menuHistory->addAction(searchHistoryActs[i]);
     }
+
     /* Connect RegExp settings from and to search dialog */
     connect(m_searchActions.at(ToolbarPosition::Regexp), SIGNAL(toggled(bool)), searchDlg->regexpCheckBox, SLOT(setChecked(bool)));
     connect(searchDlg->regexpCheckBox, SIGNAL(toggled(bool)), m_searchActions.at(ToolbarPosition::Regexp), SLOT(setChecked(bool)));
@@ -466,12 +467,15 @@ void MainWindow::initFileHandling()
     {
         openDlpFile(OptManager::getInstance()->getProjectFile());
 
-    } else {
+    }
+    else
+    {
         /* Load default project file */
         this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
         if(settings->defaultProjectFile)
         {
-            if(!openDlpFile(settings->defaultProjectFileName)){
+            if(!openDlpFile(settings->defaultProjectFileName))
+            {
                 QMessageBox::critical(0, QString("DLT Viewer"),
                                       QString("Cannot load default project \"%1\"")
                                       .arg(settings->defaultProjectFileName));
@@ -532,17 +536,24 @@ void MainWindow::initFileHandling()
             QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
         }
     }
+
     if(OptManager::getInstance()->isConvert())
     {
-        if (OptManager::getInstance()->isConvertUTF8())
+        switch ( OptManager::getInstance()->get_convertionmode() )
         {
-            commandLineConvertToUTF8();
+        case e_UTF8:
+             commandLineConvertToUTF8();
+            break;
+        case e_DLT:
+             commandLineConvertToDLT();
+            break;
+        case e_ASCI:
+             commandLineConvertToASCII();
+            break;
+        default:
+             commandLineConvertToASCII();
+            break;
         }
-        else
-        {
-            commandLineConvertToASCII();
-        }
-        exit(0);
     }
 
 
@@ -554,7 +565,28 @@ void MainWindow::initFileHandling()
     bool startup_minimized = settingsmanager->value("StartUpMinimized",false).toBool();
     if (startup_minimized)
         this->setWindowState(Qt::WindowMinimized);
+
 }
+
+
+void MainWindow::commandLineConvertToDLT()
+{
+
+    qfile.enableFilter(true);
+    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
+
+    QFile dltFile(OptManager::getInstance()->getConvertDestFile());
+
+    /* start exporter */
+    DltExporter exporter;
+    qDebug() << "Commandline DLT convert to " << dltFile.fileName();
+     //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDlt,DltExporter::SelectionFiltered);
+    qDebug() << "DLT export DLT done";
+}
+
 
 void MainWindow::commandLineConvertToASCII()
 {
@@ -568,7 +600,9 @@ void MainWindow::commandLineConvertToASCII()
 
     /* start exporter */
     DltExporter exporter;
+    qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
+    qDebug() << "DLT export ASCII done";
 }
 
 void MainWindow::commandLineConvertToUTF8()
@@ -582,7 +616,9 @@ void MainWindow::commandLineConvertToUTF8()
 
     /* start exporter */
     DltExporter exporter;
+    qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
+    qDebug() << "DLT export UTF8 done";
 }
 
 void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
@@ -1536,7 +1572,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         for(int num=0;num<openFileNames.size();num++)
         {
-            qDebug() << "Open file" << openFileNames[num];
+            //qDebug() << "Open file" << openFileNames[num];
             qfile.open(openFileNames[num],num!=0);
         }
     }

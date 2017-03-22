@@ -18,6 +18,8 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     #QMAKE_CXXFLAGS += -pedantic
 }
 
+CONFIG += console
+
 # Uncomment to add debug symbols to Release build
 #QMAKE_CXXFLAGS_RELEASE += -g
 #QMAKE_CFLAGS_RELEASE += -g

@@ -39,6 +39,8 @@
 
 #include "settingsdialog.h"
 
+
+
 extern "C"
 {
 
@@ -48,6 +50,7 @@ extern "C"
 
 #define DLT_VIEWER_BUFFER_SIZE 256000
 #define RCVBUFSIZE 128000   /* Size of receive buffer */
+#define RECONNECT_TIMEOUT 5
 
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
 
@@ -98,7 +101,7 @@ public:
 
 
     /* current received message and buffer for receivig from the socket */
-    int32_t totalBytesRcvd;
+    unsigned long totalBytesRcvd;
 
     /* AutoReconnecct */
     int32_t totalBytesRcvdLastTimeout;

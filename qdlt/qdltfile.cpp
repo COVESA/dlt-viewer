@@ -98,7 +98,7 @@ int QDltFile::sizeFilter() const
 
 bool QDltFile::open(QString _filename, bool append) {
 
-    qDebug() << "Open file" << _filename << "started";
+    //qDebug() << "Open file" << _filename << "started";
 
     /* check if file is already opened */
     if(!append)
@@ -118,7 +118,7 @@ bool QDltFile::open(QString _filename, bool append) {
         return false;
     }
 
-    qDebug() << "Open file" << _filename << "finished";
+    //qDebug() << "Open file" << _filename << "finished";
 
     return true;
 }
@@ -135,7 +135,7 @@ bool QDltFile::createIndex()
 {
     bool ret = false;
 
-    qDebug() << "Create index started";
+    //qDebug() << "Create index started";
 
     clearIndex();
 

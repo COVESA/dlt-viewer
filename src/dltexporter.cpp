@@ -172,10 +172,10 @@ bool DltExporter::getMsg(int num,QDltMsg &msg,QByteArray &buf)
 bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
 {
     if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
+    {
         to->write(buf);
-    else if(exportFormat == DltExporter::FormatAscii ||
-            exportFormat == DltExporter::FormatUTF8 ||
-            exportFormat == DltExporter::FormatClipboard)
+    }
+    else if(exportFormat == DltExporter::FormatAscii || exportFormat == DltExporter::FormatUTF8 || exportFormat == DltExporter::FormatClipboard)
     {
         QString text;
 
@@ -193,7 +193,7 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
         text += msg.toStringPayload().simplified();
         text += "\n";
         try
-        {
+         {
             if(exportFormat == DltExporter::FormatAscii)
                 /* write to file */
                 to->write(text.toLatin1().constData());
@@ -201,9 +201,10 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
                 to->write(text.toUtf8().constData());
             else if(exportFormat == DltExporter::FormatClipboard)
                 clipboardString += text;
-        }catch (...)
-        {
-        }
+         }
+        catch (...)
+         {
+         }
     }
     else if(exportFormat == DltExporter::FormatCsv)
     {
@@ -248,23 +249,31 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         startFinishError++;
         return;
     }
-    qDebug() << "Start DLT export of" << size << "messages";
-
-    /* init fileprogress */
-    QProgressDialog fileprogress("Export ...", "Cancel", 0, this->size, qobject_cast<QWidget *>(parent()));
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::WindowModal);
-    fileprogress.show();
 
 
     bool silentMode = !OptManager::getInstance()->issilentMode();
+
+    qDebug() << "Start DLT export of" << size << "messages" << "silent mode" << !silentMode;
+
+    /* init fileprogress */
+
+    QProgressDialog fileprogress("Export ...", "Cancel", 0, this->size, qobject_cast<QWidget *>(parent()));
+    if (silentMode == true)
+     {
+      fileprogress.setWindowTitle("DLT Viewer");
+      fileprogress.setWindowModality(Qt::WindowModal);
+      fileprogress.show();
+     }
 
     for(int num = 0;num<size;num++)
     {
         // Update progress dialog every 1000 lines
         if( 0 == (num%1000))
         {
-           fileprogress.setValue(num);
+          if (silentMode == true)
+             {
+              fileprogress.setValue(num);
+             }
         }
 
         // get message
@@ -298,13 +307,16 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         }
      else
 	    exportCounter++;
-    } // end "for" loop
-    fileprogress.close();
+    } // for loop
+    if (silentMode == true)
+     fileprogress.close();
+
 
     if (!finish())
     {
         startFinishError++;
     }
+
 
     if (startFinishError>0||readErrors>0||exportErrors>0)
     {

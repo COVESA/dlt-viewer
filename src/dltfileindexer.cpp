@@ -77,7 +77,7 @@ bool DltFileIndexer::index(int num)
     if(!filterCache.isEmpty() && loadIndexCache(dltFile->getFileName(num)))
     {
         // loading index from filter is succesful
-        qDebug() << "Loaded index cache for file" << dltFile->getFileName(num);
+        //qDebug() << "Loaded index cache for file" << dltFile->getFileName(num);
         msecsIndexCounter = time.elapsed();
         return true;
     }
@@ -262,7 +262,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         indexerThread.wait();
     }
 
-    qDebug() << "Created filter index for files" << filenames;
+    //qDebug() << "Created filter index for files" << filenames;
 
     // update performance counter
     msecsFilterCounter = time.elapsed();
@@ -275,7 +275,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(!filterCache.isEmpty())
     {
         saveFilterIndexCache(filterList, indexFilterList, filenames);
-        qDebug() << "Saved filter index cache for files" << filenames;
+        //qDebug() << "Saved filter index cache for files" << filenames;
     }
 
     return true;
@@ -461,11 +461,11 @@ void DltFileIndexer::run()
     // print performance counter
     QTime time;
     time = QTime(0,0);time = time.addMSecs(msecsIndexCounter);
-    qDebug() << "Duration Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    //qDebug() << "Duration Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
     time = QTime(0,0);time = time.addMSecs(msecsFilterCounter);
-    qDebug() << "Duration Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    //qDebug() << "Duration Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
     time = QTime(0,0);time = time.addMSecs(msecsDefaultFilterCounter);
-    qDebug() << "Duration Default Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    //qDebug() << "Duration Default Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
 }
 
 void DltFileIndexer::stop()
@@ -543,7 +543,7 @@ QString DltFileIndexer::filenameIndexCache(QString filename)
     // create filename
     filenameCache = QString(md5.toHex())+".dix";
 
-    qDebug() << filename << ">>" << filenameCache;
+    //qDebug() << filename << ">>" << filenameCache;
 
     return filenameCache;
 }
@@ -620,7 +620,7 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     else
         filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+".dix";
 
-    qDebug() << filenames << ">>" << filename;
+    //qDebug() << filenames << ">>" << filename;
 
     return filename;
 }

@@ -73,13 +73,13 @@ void QDltFilterList::clearFilter()
         delete filter;
     }
     filters.clear();
-    qDebug() << "clearFilter: Clear filter";
+    //qDebug() << "clearFilter: Clear filter";
 }
 
 void QDltFilterList::addFilter(QDltFilter *_filter)
 {
     filters.append(_filter);
-    qDebug() << "addFilter: Add Filter" << _filter->apid << _filter->ctid;
+    //qDebug() << "addFilter: Add Filter" << _filter->apid << _filter->ctid;
 }
 
 QString QDltFilterList::checkMarker(QDltMsg &msg)

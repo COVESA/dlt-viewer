@@ -529,7 +529,7 @@ void SettingsDialog::readSettings()
     maxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toInt();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
 
-    /* table */
+    /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
     automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
@@ -538,20 +538,20 @@ void SettingsDialog::readSettings()
     showIndex = settings->value("startup/showIndex",1).toInt();
     showTime = settings->value("startup/showTime",1).toInt();
     showTimestamp = settings->value("startup/showTimestamp",1).toInt();
-    showCount = settings->value("startup/showCount",1).toInt();
+    showCount = settings->value("startup/showCount",0).toInt();
 
     showEcuId = settings->value("startup/showEcuId",1).toInt();
     showApId = settings->value("startup/showApId",1).toInt();
     showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
     showCtId = settings->value("startup/showCtId",1).toInt();
     showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
-    showSessionId = settings->value("startup/showSessionId",1).toInt();
+    showSessionId = settings->value("startup/showSessionId",0).toInt();
     showSessionName = settings->value("startup/showSessionName",0).toInt();
     showType = settings->value("startup/showType",1).toInt();
 
-    showSubtype = settings->value("startup/showSubtype",1).toInt();
-    showMode = settings->value("startup/showMode",1).toInt();
-    showNoar = settings->value("startup/showNoar",1).toInt();
+    showSubtype = settings->value("startup/showSubtype",0).toInt();
+    showMode = settings->value("startup/showMode",0).toInt();
+    showNoar = settings->value("startup/showNoar",0).toInt();
     showPayload = settings->value("startup/showPayload",1).toInt();
     showArguments = settings->value("startup/showArguments",0).toInt();
 

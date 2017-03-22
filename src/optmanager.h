@@ -22,11 +22,21 @@
 
 #include <QStringList>
 
+enum e_convertionmode
+{
+    e_ASCI = 0,
+    e_UTF8 = 1,
+    e_DLT  = 2,
+};
+
+
+
 class OptManager
 {
 public:
     static OptManager* getInstance();
     void printUsage();
+    void printVersion(QString appname);
     void parse(QStringList *opt);
 
     bool isProjectFile();
@@ -36,6 +46,8 @@ public:
     bool isConvertUTF8();
     bool isPlugin();
     bool issilentMode();
+
+    e_convertionmode get_convertionmode();
 
     QString getProjectFile();
     QString getLogFile();
@@ -55,9 +67,10 @@ private:
     bool log;
     bool filter;
     bool convert;
-    bool convertUTF8;
     bool plugin;
     bool silent_mode;
+    e_convertionmode convertionmode;
+
     QString projectFile;
     QString logFile;
     QString filterFile;

@@ -55,8 +55,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     sendGetSoftwareVersion = true;
     updateDataIfOnline = true;
     autoReconnect = true;
-    autoReconnectTimeout = 5;
-
+    autoReconnectTimeout = RECONNECT_TIMEOUT;
     totalBytesRcvd = 0;
     totalBytesRcvdLastTimeout = 0;
 
