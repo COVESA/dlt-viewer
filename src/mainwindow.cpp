@@ -281,6 +281,9 @@ void MainWindow::initView()
     ui->tableView->setColumnWidth(11,40);
     ui->tableView->setColumnWidth(12,400);
 
+    // Payload column expands as needed
+    ui->tableView->horizontalHeader()->setSectionResizeMode(12, QHeaderView::ResizeToContents);
+
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
     ui->configWidget->setSortingEnabled(true);             // should cause sort on add

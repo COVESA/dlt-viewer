@@ -308,13 +308,18 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
 QVariant TableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
-{
-    if (role != Qt::DisplayRole)
-        return QVariant();
-
+{    
     if (orientation == Qt::Horizontal)
     {
-        return FieldNames::getName((FieldNames::Fields)section, project->settings);
+        switch (role)
+        {
+        case Qt::DisplayRole:
+            return FieldNames::getName((FieldNames::Fields)section, project->settings);
+        case Qt::TextAlignmentRole:
+            return (section == FieldNames::Payload) ? Qt::AlignLeft : QVariant();
+         default:
+            break;
+        }
     }
 
     return QVariant();
