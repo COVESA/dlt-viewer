@@ -92,7 +92,7 @@ void OptManager::printUsage()
     qDebug()<<"  dlt_viewer -s -c -u ./trace/trace.dlt ./trace.txt";
     qDebug()<<"  dlt_viewer -s -d -c ./trace/trace.dlt ./trace.dlt";
     qDebug()<<"  dlt_viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
-    qDebug()<<"  dlt_viewer.exe -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
+    qDebug()<<"  dlt_viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
     #endif
 }
 
@@ -215,6 +215,7 @@ void OptManager::parse(QStringList *opt){
                 convertSourceFile = QString("%1").arg(c1);
                 convertDestFile = QString("%1").arg(c2);
                 convert = true;
+                commandline_mode = true;
              }
             else
              {
@@ -234,7 +235,8 @@ void OptManager::parse(QStringList *opt){
         if(str.compare("-e")==0)
          {
             QString c = opt->value(i+1);
-            QStringList args = c.split("|");;
+            QStringList args = c.split("|");
+            commandline_mode = true;
             if(c != 0 && args.size() > 1)
              {
                 pluginName = args.at(0);
@@ -263,6 +265,7 @@ bool OptManager::isFilterFile(){return filter;}
 bool OptManager::isConvert(){return convert;}
 bool OptManager::isPlugin(){return plugin;}
 bool OptManager::issilentMode(){return silent_mode;}
+bool OptManager::isCommandlineMode(){return commandline_mode;}
 
 e_convertionmode OptManager::get_convertionmode()
 {

@@ -51,6 +51,8 @@ public:
     void marker();
     void connectEcu(int index);
     void disconnectEcu(int index);
+    bool silentmode;
+    bool commandlinemode;
 
 signals:
     void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);

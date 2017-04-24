@@ -46,6 +46,7 @@ public:
     bool isConvertUTF8();
     bool isPlugin();
     bool issilentMode();
+    bool isCommandlineMode();
 
     e_convertionmode get_convertionmode();
 
@@ -69,6 +70,7 @@ private:
     bool convert;
     bool plugin;
     bool silent_mode;
+    bool commandline_mode;
     e_convertionmode convertionmode;
 
     QString projectFile;

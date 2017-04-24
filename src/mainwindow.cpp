@@ -4976,6 +4976,8 @@ void MainWindow::loadPlugins()
     }
 
     /* initialise control interface */
+    qcontrol.silentmode = OptManager::getInstance()->issilentMode();
+    qcontrol.commandlinemode = OptManager::getInstance()->isCommandlineMode();
     pluginManager.initControl(&qcontrol);
 }
 
