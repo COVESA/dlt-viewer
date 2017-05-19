@@ -363,7 +363,7 @@ QColor TableModel::searchBackgroundColor() const
 
 void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 optionV4 = option;
+    QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
 
     QStyle *style = optionV4.widget? optionV4.widget->style() : QApplication::style();
@@ -392,7 +392,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
 QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
-    QStyleOptionViewItemV4 optionV4 = option;
+    QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
 
     QTextDocument doc;
