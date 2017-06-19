@@ -5,16 +5,33 @@
 #include <QStandardPaths>
 #include <QDebug>
 
+#if defined(_MSC_VER)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
+
+
+
+
 DltFileUtils::DltFileUtils()
 {
 }
 
 QString DltFileUtils::createTempFile(QDir path,  bool silentmode)
 {
+    #if defined(_MSC_VER)
+    int a = _getpid();
+    #else
+    pid_t a = getpid();
+    #endif
+
     QString fn = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss")
-            .append("_dlt-viewer-tmpfile.dlt");
+               .append("_")
+               .append(QString::number(a))
+               .append("_dlt-viewer-tmpfile.dlt");
     QFile file(path.absolutePath().append("/").append(fn));
-    //qDebug() << "Create " << file.fileName() << silentmode;
+    //qDebug() << "Create " << file.fileName() << a;
     if(file.exists())
     {
 		if ( silentmode == true )
