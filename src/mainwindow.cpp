@@ -282,6 +282,7 @@ void MainWindow::initView()
     ui->tableView->setColumnWidth(12,400);
 
     // Payload column expands as needed
+    // horizontal scrolling
     ui->tableView->horizontalHeader()->setSectionResizeMode(12, QHeaderView::ResizeToContents);
 
     /* Enable column sorting of config widget */
@@ -465,6 +466,7 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTime->setChecked(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
+
     /* Process Project */
     if(OptManager::getInstance()->isProjectFile())
     {
@@ -479,12 +481,19 @@ void MainWindow::initFileHandling()
         {
             if(!openDlpFile(settings->defaultProjectFileName))
             {
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                      QString("Cannot load default project \"%1\"")
-                                      .arg(settings->defaultProjectFileName));
+             if (OptManager::getInstance()->issilentMode())
+              {
+               qDebug() << QString("Cannot load default project %1").arg(settings->defaultProjectFileName);
+              }
+             else
+              {
+               QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load default project \"%1\"").arg(settings->defaultProjectFileName));
+              }
+
             }
         }
     }
+
 
     /* Process Logfile */
     outputfileIsFromCLI = false;
@@ -509,7 +518,7 @@ void MainWindow::initFileHandling()
         else
         {
             /* Create temp file */
-            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings));
+            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings), OptManager::getInstance()->issilentMode());
             outputfile.setFileName(fn);
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
@@ -520,23 +529,36 @@ void MainWindow::initFileHandling()
                 reloadLogFile();
             }
             else
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                      QString("Cannot load temporary log file \"%1\"\n%2")
-                                      .arg(outputfile.fileName())
-                                      .arg(outputfile.errorString()));
+            {
+             if (OptManager::getInstance()->issilentMode())
+              {
+              qDebug() << QString("Cannot load temporary log file %1 %2").arg(outputfile.fileName()).arg(outputfile.errorString());
+              }
+              else
+              {
+               QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load temporary log file \"%1\"\n%2").arg(outputfile.fileName()).arg(outputfile.errorString()));
+              }
+            }
         }
     }
 
-    if(OptManager::getInstance()->isFilterFile()){
+    if(OptManager::getInstance()->isFilterFile())
+    {
         if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),false))
         {
             filterUpdate();
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
-
         }
         else
         {
+           if (OptManager::getInstance()->issilentMode())
+            {
+             qDebug() << "Loading DLT Filter file failed!";
+            }
+           else
+            {
             QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+            }
         }
     }
 
@@ -679,7 +701,8 @@ void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList
 
 }
 
-void MainWindow::deleteactualFile(){
+void MainWindow::deleteactualFile()
+{
     if(outputfileIsTemporary && !outputfileIsFromCLI)
     {
         // Delete created temp file
@@ -687,11 +710,18 @@ void MainWindow::deleteactualFile(){
         outputfile.close();
         if(outputfile.exists() && !outputfile.remove())
         {
+         if ( OptManager::getInstance()->issilentMode() == true )
+          {
+            qDebug() << "Can not delete temporary log file" << outputfile.fileName() << outputfile.errorString();
+          }
+        else
+         {
             QMessageBox::critical(0, QString("DLT Viewer"),
-                                  QString("Cannot delete temporary log file \"%1\"\n%2")
+                                  QString("Can not delete temporary log file \"%1\"\n%2")
                                   .arg(outputfile.fileName())
                                   .arg(outputfile.errorString()));
-        }
+         }
+	   }
     }
 }
 
@@ -732,6 +762,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+
 void MainWindow::on_action_menuFile_New_triggered()
 {
     QString fileName = QFileDialog::getSaveFileName(this,
@@ -748,10 +779,10 @@ void MainWindow::on_action_menuFile_New_triggered()
 void MainWindow::on_New_triggered(QString fileName)
 {
 
-    /* change DLT file working directory */
+    // change DLT file working directory
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
-    /* close existing file */
+    // close existing file
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
@@ -764,7 +795,7 @@ void MainWindow::on_New_triggered(QString fileName)
         }
     }
 
-    /* create new file; truncate if already exist */
+    // create new file; truncate if already exist
     outputfile.setFileName(fileName);
     outputfileIsTemporary = false;
     outputfileIsFromCLI = false;
@@ -782,8 +813,11 @@ void MainWindow::on_New_triggered(QString fileName)
                               .arg(outputfile.errorString()));
 }
 
+
+
 void MainWindow::on_action_menuFile_Open_triggered()
 {
+    qDebug() << "File open selected";
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
         tr("Open one or more DLT Log files"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
 
@@ -792,6 +826,7 @@ void MainWindow::on_action_menuFile_Open_triggered()
 
     on_Open_triggered(fileNames);
 }
+
 
 void MainWindow::on_Open_triggered(QStringList filenames)
 {
@@ -891,19 +926,28 @@ bool MainWindow::openDltFile(QStringList fileNames)
             openFileNames = fileNames;
             isDltFileReadOnly = true;
             if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+             {
                 // if dlt viewer started as converter or with plugin option load file non multithreaded
                 reloadLogFile(false,false);
+             }
             else
+             {
                 // normally load log file mutithreaded
                 reloadLogFile();
+             }
             ret = true;
+            qDebug() << "Loading file" << fileNames.last() << outputfile.errorString();
         }
         else
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                  QString("Cannot open log file \"%1\"\n%2")
-                                  .arg(fileNames.last())
-                                  .arg(outputfile.errorString()));
+            if (OptManager::getInstance()->issilentMode())
+              {
+                qDebug() << "Accessing logfile error" << fileNames.last() << outputfile.errorString();
+              }
+            else
+              {
+                QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot open log file \"%1\"\n%2").arg(fileNames.last()).arg(outputfile.errorString()));
+              }
             ret = false;
         }
     }
@@ -1311,7 +1355,7 @@ void MainWindow::on_SaveAs_triggered(QString fileName)
 
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
-    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings));
+    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings), OptManager::getInstance()->issilentMode());
     if(!fn.length())
     {
         /* Something went horribly wrong with file name creation

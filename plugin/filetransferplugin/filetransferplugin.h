@@ -26,14 +26,15 @@
 #include "globals.h"
 #include "configuration.h"
 
-#define FILETRANSFER_PLUGIN_VERSION "1.1.0"
+#define FILETRANSFER_PLUGIN_VERSION "1.2.0"
 
-class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface
+class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface, QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginCommandInterface)
+    Q_INTERFACES(QDltPluginControlInterface)
 #ifdef QT5
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.FileTransferPlugin")
 #endif
@@ -72,10 +73,21 @@ public:
     bool command(QString command, QList<QString> params);
     bool exportAll(QDir extract_dir);
 
+    /* QDltPluginControlInterface */
+    bool initControl(QDltControl *control);
+    bool initConnections(QStringList list);
+    bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
+    bool autoscrollStateChanged(bool enabled);
+
+
 private:
+    QString plugin_name_displayed = QString("Filetransfer Plugin");
     Form *form;
     QDltFile *dltFile;
+    QDltControl *dltControl;
     QString errorText;
+    bool plugin_is_active = false;
 
     void doFLST(QDltMsg *msg);
     void doFLDA(int index, QDltMsg *msg);

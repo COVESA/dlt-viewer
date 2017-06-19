@@ -3,31 +3,48 @@
 #include <QDateTime>
 #include <QDir>
 #include <QStandardPaths>
+#include <QDebug>
 
 DltFileUtils::DltFileUtils()
 {
 }
 
-QString DltFileUtils::createTempFile(QDir path)
+QString DltFileUtils::createTempFile(QDir path,  bool silentmode)
 {
     QString fn = QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss")
             .append("_dlt-viewer-tmpfile.dlt");
     QFile file(path.absolutePath().append("/").append(fn));
+    //qDebug() << "Create " << file.fileName() << silentmode;
     if(file.exists())
     {
+		if ( silentmode == true )
+		{
+	     qDebug() << "Temporary file " << file.fileName() << "already exists\n";
+	    }
+		else
+		{
         QMessageBox::critical(0, QString("DLT Viewer"),
                           QString("Temporary file already exists\n%1")
                           .arg(file.fileName()));
+        }
         return "";
     }
     if(!file.open(QIODevice::ReadWrite))
     {
+	if ( silentmode == true )
+		{
+	     qDebug() << "Can not open temporary file " << file.fileName();
+	    }
+		else
+		{
         QMessageBox::critical(0, QString("DLT Viewer"),
                           QString("Can not open temporary file!\n%1")
                           .arg(file.fileName()));
+        }
         return "";
     }
     file.close();
+    //qDebug() << "Create " << file.fileName() << "OK";
     return file.fileName();
 }
 

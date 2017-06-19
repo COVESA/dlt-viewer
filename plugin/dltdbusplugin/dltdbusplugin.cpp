@@ -36,13 +36,20 @@
 #include <QXmlStreamReader>
 
 
-int check_logid( QString &tocheck, int index )
+int DltDBusPlugin::check_logid( QString &tocheck, int index )
 {
    if ( tocheck.size() > LOGIDMAXCHAR )
    {
-     QMessageBox::warning(0, QString("XML file - LOGID error"),
-                          QString("%1 with index %2 exceeds maximum of %3 characters !\nExit parsing file ...")
-                          .arg(tocheck).arg(index).arg(LOGIDMAXCHAR));
+       if ( dltControl->silentmode == true )
+        {
+         qDebug() << plugin_name_displayed << QString("XML file - LOGID error %1 with index %2 exceeds maximum of %3 characters !\nExit parsing file ...").arg(tocheck).arg(index).arg(LOGIDMAXCHAR);
+        }
+       else
+        {
+        QMessageBox::warning(0, QString("XML file - LOGID error"),
+                                QString("%1 with index %2 exceeds maximum of %3 characters !\nExit parsing file ...")
+                                .arg(tocheck).arg(index).arg(LOGIDMAXCHAR));
+        }
      return 1;
    }
    else
@@ -52,7 +59,8 @@ int check_logid( QString &tocheck, int index )
 }
 
 
-DltDBusPlugin::DltDBusPlugin() {
+DltDBusPlugin::DltDBusPlugin()
+{
     dltFile = 0;
 }
 
@@ -60,23 +68,28 @@ DltDBusPlugin::~DltDBusPlugin() {
 
 }
 
-QString DltDBusPlugin::name() {
-    return QString("DLT DBus Plugin");
+QString DltDBusPlugin::name()
+{
+    return plugin_name_displayed;
 }
 
-QString DltDBusPlugin::pluginVersion(){
+QString DltDBusPlugin::pluginVersion()
+{
     return DLT_DBUS_PLUGIN_VERSION;
 }
 
-QString DltDBusPlugin::pluginInterfaceVersion(){
+QString DltDBusPlugin::pluginInterfaceVersion()
+{
     return PLUGIN_INTERFACE_VERSION;
 }
 
-QString DltDBusPlugin::description() {
+QString DltDBusPlugin::description()
+{
     return QString();
 }
 
-QString DltDBusPlugin::error() {
+QString DltDBusPlugin::error()
+{
     return errorText;
 }
 
@@ -90,7 +103,6 @@ bool DltDBusPlugin::loadConfig(QString filename)
 
  dbus_mesg_identifiers.clear();
 
- //qDebug()<< "Enter DBus Plugin loadConfig";
 
  if ( filename.length() <= 0 )
  {
@@ -155,18 +167,34 @@ bool DltDBusPlugin::loadConfig(QString filename)
                 }
                }
            }
-           if (xml.hasError()) {
-              QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
+           if (xml.hasError())
+            {
+               if ( dltControl->silentmode == true )
+                {
+                 qDebug() << plugin_name_displayed  << "XML Parser error" << xml.errorString() << "at" << xml.lineNumber();
+                }
+               else
+                {
+                 QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
+                }
+
               xmlcontentinvalid=1;
-           }
+            }
 
        }
        if (i >= MAX_LOGIDS)
        {
         i--;
-        QMessageBox::warning(0,
-                             QString("Warning"),
-                             QString ( "Maximum number of logids exceeded in xml file !\nLimiting logid list to %1 entries").arg(MAX_LOGIDS));
+        if ( dltControl->silentmode == true )
+         {
+          qDebug() << plugin_name_displayed << "Maximum number of logids exceeded in xml file ! Limiting logid list entries:" << MAX_LOGIDS;
+         }
+        else
+         {
+          QMessageBox::warning(0, QString("Warning"),  QString ( "Maximum number of logids exceeded in xml file !\nLimiting logid list to %1 entries").arg(MAX_LOGIDS));
+         }
+
+
         break;        // so we stop loop if maxcount is reached
        }
 
@@ -175,8 +203,15 @@ file.close();
 
  if (xml.hasError())
  {
-    QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
-    xmlcontentinvalid=1;
+    if ( dltControl->silentmode == true )
+     {
+     qDebug() << plugin_name_displayed << QString("XML Parser error %1 at line %2").arg(xml.errorString()).arg(xml.lineNumber());
+     }
+    else
+     {
+      QMessageBox::warning(0, QString("XML Parser error"),  QString("%1 %2").arg(xml.errorString()).arg(xml.lineNumber()));
+     }
+     xmlcontentinvalid=1;
  }
 
 
@@ -190,18 +225,17 @@ if ( xmlcontentinvalid == 0 )
 }
 else
 {
-  //qDebug()<< "DBus Plugin loadConfig FAIL";
   return false;
 }
 
 config_is_loaded = true;
-//qDebug()<< "DBus Plugin loadConfig SUCCESS";
 return true;
 
 }
 
 
-bool DltDBusPlugin::saveConfig(QString /*filename*/) {
+bool DltDBusPlugin::saveConfig(QString /*filename*/)
+{
     return true;
 }
 
@@ -211,16 +245,21 @@ QStringList DltDBusPlugin::infoConfig()
     return dbus_mesg_identifiers;
 }
 
-QWidget* DltDBusPlugin::initViewer() {
+QWidget* DltDBusPlugin::initViewer()
+{
+    // also called when plugin not activated
+
     form = new Form();
     return form;
 }
 
-void DltDBusPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/){
+void DltDBusPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/)
+{
     /* Show Decoded output */
 }
 
-void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg) {
+void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg)
+{
     QString text;
     QDltArgument argument;
 
@@ -308,17 +347,23 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg) {
 }
 
 
-void DltDBusPlugin::initFileStart(QDltFile *file){
+void DltDBusPlugin::initFileStart(QDltFile *file)
+{
+   if (plugin_is_active == false )
+   {
+    plugin_is_active = true;
     dltFile = file;
     methods.clear();
-
+    qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_DBUS_PLUGIN_VERSION;
     // clear old map
     QMapIterator<uint32_t, QDltSegmentedMsg*> i(segmentedMessages);
-    while (i.hasNext()) {
+    while (i.hasNext())
+     {
         i.next();
         delete i.value();
-    }
+     }
     segmentedMessages.clear();
+   }
 }
 
 void DltDBusPlugin::methodsAddMsg(QDltMsg &msg)
@@ -387,7 +432,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
       if(seg->add(msg))
       {
           // something went wrong
-          qDebug() << seg->getError();
+          qDebug() << plugin_name_displayed << seg->getError();
           return;
       }
     } // NWST
@@ -398,7 +443,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
             if(segmentedMessages[handle]->add(msg))
             {
                 // something went wrong
-                qDebug() << segmentedMessages[handle]->getError();
+                qDebug() << plugin_name_displayed << segmentedMessages[handle]->getError();
                 return;
             }
         }
@@ -410,7 +455,7 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
            if(segmentedMessages[handle]->add(msg))
            {
                // something went wrong
-               qDebug() << segmentedMessages[handle]->getError();
+               qDebug() << plugin_name_displayed << segmentedMessages[handle]->getError();
                return;
            }
            if(segmentedMessages[handle]->complete())
@@ -439,13 +484,14 @@ void DltDBusPlugin::segmentedMsg(QDltMsg &msg)
            }
            else
            {
-                qDebug() << "Incomplete segemented message" << handle;
+                qDebug() << plugin_name_displayed <<"Incomplete segemented message" << handle;
            }
        }
     } // NWCN
 }
 
-void DltDBusPlugin::initMsg(int /*index*/, QDltMsg &msg){
+void DltDBusPlugin::initMsg(int /*index*/, QDltMsg &msg)
+{
 
     if(!checkIfDBusMsg(msg))
         return;
@@ -458,18 +504,23 @@ void DltDBusPlugin::initMsg(int /*index*/, QDltMsg &msg){
 
 }
 
-void DltDBusPlugin::initMsgDecoded(int , QDltMsg &){
+void DltDBusPlugin::initMsgDecoded(int , QDltMsg &)
+{
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void DltDBusPlugin::initFileFinish(){
+void DltDBusPlugin::initFileFinish()
+{
 }
 
-void DltDBusPlugin::updateFileStart(){
+void DltDBusPlugin::updateFileStart()
+{
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void DltDBusPlugin::updateMsg(int /*index*/, QDltMsg &msg){
+void DltDBusPlugin::updateMsg(int /*index*/, QDltMsg &msg)
+{
+   //  qDebug () << "Activate plugin" << plugin_name_displayed << "Version" << DLT_DBUS_PLUGIN_VERSION;
     if(!checkIfDBusMsg(msg))
         return;
 
@@ -484,7 +535,9 @@ void DltDBusPlugin::updateMsgDecoded(int , QDltMsg &){
 //empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void DltDBusPlugin::updateFileFinish(){
+void DltDBusPlugin::updateFileFinish()
+{
+
 }
 
 bool DltDBusPlugin::isMsg(QDltMsg & msg, int triggeredByUser)
@@ -720,6 +773,46 @@ QString DltDBusPlugin::decodeMessageToString(DltDBusDecoder &dbusMsg,bool header
 
     return text;
 }
+
+
+
+/* Control Plugin methods */
+
+// these are only needed to get information about silent mode via
+// dltcontrol
+bool DltDBusPlugin::initControl(QDltControl *control)
+{
+    dltControl = control;
+    return true;
+}
+
+
+bool DltDBusPlugin::initConnections(QStringList list)
+{
+	Q_UNUSED(list);
+    return true;
+}
+
+bool DltDBusPlugin::controlMsg(int , QDltMsg &)
+{
+    return true;
+}
+
+bool DltDBusPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname)
+{
+    Q_UNUSED(index);
+    Q_UNUSED(connectionState);
+    Q_UNUSED(hostname);
+    return true;
+}
+
+bool DltDBusPlugin::autoscrollStateChanged(bool enabled)
+{
+    Q_UNUSED(enabled);
+    return true;
+}
+
+
 
 #ifndef QT5
 Q_EXPORT_PLUGIN2(dltdbusplugin, DltDBusPlugin);

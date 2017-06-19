@@ -71,11 +71,12 @@ inline uint qHash(const DltDbusMethodKey &key)
     return qHash(key.getSender()) ^ key.getSerial();
 }
 
-class DltDBusPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDLTPluginDecoderInterface
+class DltDBusPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDLTPluginDecoderInterface,  QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+    Q_INTERFACES(QDltPluginControlInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
 #ifdef QT5
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DltDbusPlugin")
@@ -108,6 +109,14 @@ public:
     void selectedIdxMsg(int index, QDltMsg &msg);
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
 
+    /* QDltPluginControlInterface */
+    bool initControl(QDltControl *control);
+    bool initConnections(QStringList list);
+    bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
+    bool autoscrollStateChanged(bool enabled);
+
+
     /* QDltPluginDecoderInterface */
     bool isMsg(QDltMsg &msg, int triggeredByUser);
     bool decodeMsg(QDltMsg &msg, int triggeredByUser);
@@ -119,12 +128,16 @@ private:
 
     void methodsAddMsg(QDltMsg &msg);
     void segmentedMsg(QDltMsg &msg);
+    int check_logid( QString &tocheck, int index );
+    bool plugin_is_active = false;
+
 
     QString stringToHtml(QString str);
     bool checkIfDBusMsg(QDltMsg &msg);
     QString decodeMessageToString(DltDBusDecoder &dbusMsg, bool headerOnly = false);
 
     QDltFile *dltFile;
+    QDltControl *dltControl;
     QString errorText;
 
     // subsequent stringlist is used to store the APID/CTID combination
@@ -136,6 +149,7 @@ private:
 
     bool config_is_loaded=false;
 
+    QString plugin_name_displayed = QString("DLT DBus Plugin");
     QHash<DltDbusMethodKey,QString> methods;
     QMap<uint32_t,QDltSegmentedMsg*> segmentedMessages;
 

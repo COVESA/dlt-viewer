@@ -37,7 +37,7 @@ FiletransferPlugin::~FiletransferPlugin()
 
 QString FiletransferPlugin::name()
 {
-    return QString("Filetransfer Plugin");
+    return plugin_name_displayed;
 }
 
 QString FiletransferPlugin::pluginVersion()
@@ -116,8 +116,14 @@ bool FiletransferPlugin::loadConfig(QString filename)
     }
     if (xml.hasError())
     {
-        QMessageBox::warning(0, QString("XML Parser error"),
-                             xml.errorString());
+      if ( dltControl->silentmode == true )
+      {
+       qDebug() << plugin_name_displayed << QString("XML Parser error %1 at line %2").arg(xml.errorString()).arg(xml.lineNumber());
+      }
+      else
+      {
+        QMessageBox::warning(0, QString("XML Parser error"), xml.errorString());
+      }
     }
 
     file.close();
@@ -164,10 +170,14 @@ void FiletransferPlugin::selectedIdxMsgDecoded(int , QDltMsg &)
 
 void FiletransferPlugin::initFileStart(QDltFile *file)
 {
+	if (plugin_is_active == false )
+	{
+    qDebug() << "Activate plugin" << plugin_name_displayed <<  FILETRANSFER_PLUGIN_VERSION;
     dltFile = file;
-
+    plugin_is_active = true;
     form->getTreeWidget()->clear();
     form->clearSelectedFiles();
+    }
 }
 
 void FiletransferPlugin::initMsg(int index, QDltMsg &msg)
@@ -430,6 +440,12 @@ void FiletransferPlugin::doFLER(QDltMsg *msg)
 
 bool FiletransferPlugin::command(QString command, QList<QString> params)
 {
+    if(!dltFile)
+     {
+         qDebug()<< "FiletransferPlugin not active !";
+         return false;
+     }
+
     if(command.compare("export", Qt::CaseInsensitive) == 0)
     {
         if(params.length() != 1)
@@ -468,7 +484,7 @@ bool FiletransferPlugin::exportAll(QDir extract_dir)
     bool ret = true;
     if(!*it)
     {
-        errorText = "No filetransfer files in the loaded DLT file.";
+        errorText = " - No filetransfer files in the loaded DLT file.";
         return false;
     }
     while (*it)
@@ -494,6 +510,45 @@ bool FiletransferPlugin::exportAll(QDir extract_dir)
     }
     return ret;
 }
+
+/* Control Plugin methods */
+
+// these are only needed to get information about silent mode via
+// dltcontrol
+bool FiletransferPlugin::initControl(QDltControl *control)
+{
+    dltControl = control;
+    return true;
+}
+
+
+bool FiletransferPlugin::initConnections(QStringList list)
+{
+    Q_UNUSED(list);
+    return true;
+}
+
+bool FiletransferPlugin::controlMsg(int , QDltMsg &)
+{
+    return true;
+}
+
+bool FiletransferPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname)
+{
+    Q_UNUSED(index);
+    Q_UNUSED(connectionState);
+    Q_UNUSED(hostname);
+
+    return true;
+}
+
+bool FiletransferPlugin::autoscrollStateChanged(bool enabled)
+{
+    Q_UNUSED(enabled);
+    return true;
+}
+
+
 
 #ifndef QT5
 Q_EXPORT_PLUGIN2(filetransferplugin, FiletransferPlugin)

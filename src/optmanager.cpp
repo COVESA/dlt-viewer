@@ -123,8 +123,11 @@ void OptManager::parse(QStringList *opt){
           }
         if(str.compare("-s") == 0 || str.compare("--silent") == 0)
          {
+            if ( silent_mode == false)
+            {
             silent_mode = true;
-            qDebug()<<"Enable silent mode";
+            qDebug() << "Enable silent mode";
+            }
          }
         if(str.compare("-v") == 0 || str.compare("--version") == 0)
          {
@@ -157,6 +160,13 @@ void OptManager::parse(QStringList *opt){
           }
         if(str.compare("-l")==0)
          {
+            if (convert == true)
+            {
+              qDebug() << "\nError: Can't use -l and -c at once\n";
+              printUsage();
+              exit(-1);
+            }
+
             QString l1 = opt->value(i+1);
 
             if(l1!=0 && (l1.endsWith(".dlt")||l1.endsWith(".DLT")))
@@ -206,7 +216,12 @@ void OptManager::parse(QStringList *opt){
          }
         if(str.compare("-c")==0)
          {
-
+            if (log == true)
+            {
+              qDebug() << "\nError: Can't use -l and -c at once\n";
+              printUsage();
+              exit(-1);
+            }
             QString c1 = opt->value(i+1);
             QString c2 = opt->value(i+2);
 
@@ -214,8 +229,19 @@ void OptManager::parse(QStringList *opt){
              {
                 convertSourceFile = QString("%1").arg(c1);
                 convertDestFile = QString("%1").arg(c2);
-                convert = true;
-                commandline_mode = true;
+                // check here already if the selected file exists
+
+                if(QFileInfo(convertSourceFile).exists())
+                 {
+                    qDebug() << "Converting " << convertSourceFile << "to" << convertDestFile;
+                    convert = true;
+                    commandline_mode = true;
+                 }
+                else
+                 {
+                    qDebug() << "Convertfile source"  << convertSourceFile << "does not exist";
+                    exit(-1);
+                 }
              }
             else
              {

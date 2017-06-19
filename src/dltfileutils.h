@@ -9,7 +9,7 @@ class DltFileUtils : QObject
     Q_OBJECT
 public:
     DltFileUtils();
-    static QString createTempFile(QDir path);
+    static QString createTempFile(QDir path,  bool silentmode);
     static QDir getTempPath(SettingsDialog *settings);
 };
 
