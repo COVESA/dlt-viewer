@@ -307,7 +307,7 @@ bool FilterDialog::getEnableMarker(){
 
 void FilterDialog::on_buttonSelectColor_clicked()
 {
-    QColor selectedBackgroundColor = QColorDialog::getColor();
+    QColor selectedBackgroundColor = QColorDialog::getColor(this->getFilterColour());
     if(selectedBackgroundColor.isValid())
     {
         this->setFilterColour(selectedBackgroundColor);
