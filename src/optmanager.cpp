@@ -96,7 +96,8 @@ void OptManager::printUsage()
     #endif
 }
 
-void OptManager::parse(QStringList *opt){
+void OptManager::parse(QStringList *opt)
+{
     QString str;
 
      /* On Windows we do not want to open a console in case
@@ -111,7 +112,31 @@ void OptManager::parse(QStringList *opt){
      }
      #endif
 
-    // 0==Binary 1==First Argument
+     /* the default parameter just is the name of a dlt file to open
+      * so this also enables "doubleclicking" on a *.dlt file
+     */
+     if(opt->size()==2)
+       {
+           if(opt->at(1).endsWith(".dlp") || opt->at(1).endsWith(".DLP"))
+           {
+               projectFile = QString("%1").arg(opt->at(1));
+               project = true;
+               qDebug()<< "Loading projectfile " << projectFile;
+               return;
+           }
+           if(opt->at(1).endsWith(".dlt") || opt->at(1).endsWith(".DLT"))
+           {
+               logFile = QString("%1").arg(opt->at(1));
+               log = true;
+               qDebug()<< "Loading logfile " << logFile;
+               return;
+           }
+       }
+
+
+    /* commandline parameter handling
+     * 0==Binary 1==First Argument
+    */
     for (int i = 0; i < opt->size(); ++i)
      {
         str = opt->at(i);
