@@ -284,6 +284,9 @@ void MainWindow::initView()
     // Payload column expands as needed
     // horizontal scrolling
     ui->tableView->horizontalHeader()->setSectionResizeMode(12, QHeaderView::ResizeToContents);
+    // Some decoder-plugins can create very long payloads, which in turn severly impact performance
+    // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
+    ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
