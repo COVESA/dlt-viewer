@@ -25,6 +25,7 @@ Developed with QT 5 (http://qt-project.org/)
 Tested with Windows 7 + Qt 5.5.1 + MinGW 4.9.1
 Tested with Windows 7 + Qt 5.5.1 + MSVC 2013 Express
 Tested with Ubuntu Linux 14.04 + Qt 5.5.1
+Tested with macOS Sierra + Qt 5.7.0
 Dynamically linked open source software
 
 Qt 5.5.1 (LGPLv3 - Qt)

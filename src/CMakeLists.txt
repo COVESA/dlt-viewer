@@ -14,8 +14,8 @@
 #
 
 cmake_minimum_required (VERSION 2.8.12)
-set (CMAKE_VERBOSE_MAKEFILE FALSE)
 
+set (TARGET_NAME dlt-viewer)
 
 set (CMAKE_AUTOUIC ON)
 
@@ -25,7 +25,8 @@ QT5_WRAP_UI( UI_HEADERS ${ALL_UIS} )
 
 QT5_ADD_RESOURCES(UI_RESOURCES_RCC resource.qrc)
 
-add_executable (dlt-viewer main.cpp
+add_executable (${TARGET_NAME}
+    main.cpp
     mainwindow.cpp
     project.cpp
     ecudialog.cpp
@@ -58,15 +59,20 @@ add_executable (dlt-viewer main.cpp
     dltfileindexerdefaultfilterthread.cpp
     resource.qrc
     ${UI_HEADERS}
-    ${UI_RESOURCES_RCC})
-message( STATUS "Qt5Widgets_LIBRARIES ${Qt5Widgets_LIBRARIES}")
-target_link_libraries(dlt-viewer  qdlt
-                                  qextserialport
-                                  ${Qt5Core_LIBRARIES}
-                                  ${Qt5Network_LIBRARIES}
-                                  ${Qt5Widgets_LIBRARIES}
-                                  ${Qt5SerialPort_LIBRARIES})
+    ${UI_RESOURCES_RCC}
+)
 
-install(TARGETS dlt-viewer DESTINATION deploy)
+target_link_libraries (${TARGET_NAME}
+    qdlt
+    qextserialport
+    ${Qt5Core_LIBRARIES}
+    ${Qt5Network_LIBRARIES}
+    ${Qt5Widgets_LIBRARIES}
+    ${Qt5SerialPort_LIBRARIES}
+)
+
+install(TARGETS ${TARGET_NAME} DESTINATION deploy)
 install(DIRECTORY icon png svg DESTINATION deploy
-			PATTERN icon/*.rc EXCLUDE )
+        PATTERN icon/*.rc EXCLUDE )
+
+include (${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)
