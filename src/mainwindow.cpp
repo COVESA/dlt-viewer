@@ -578,6 +578,9 @@ void MainWindow::initFileHandling()
         case e_ASCI:
              commandLineConvertToASCII();
             break;
+        case e_CSV:
+             commandLineConvertToCSV();
+            break;
         default:
              commandLineConvertToASCII();
             break;
@@ -632,6 +635,24 @@ void MainWindow::commandLineConvertToASCII()
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
     qDebug() << "DLT export ASCII done";
 }
+
+void MainWindow::commandLineConvertToCSV()
+{
+
+    qfile.enableFilter(true);
+    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
+
+    QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
+
+    /* start exporter */
+    DltExporter exporter;
+    qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatCsv,DltExporter::SelectionFiltered);
+    qDebug() << "DLT export CSV done";
+}
+
 
 void MainWindow::commandLineConvertToUTF8()
 {

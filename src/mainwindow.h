@@ -302,6 +302,7 @@ private:
     void commandLineConvertToASCII();
     void commandLineConvertToDLT();
     void commandLineConvertToUTF8();
+    void commandLineConvertToCSV();
 
     void commandLineExecutePlugin(QString name, QString cmd, QStringList params);
 

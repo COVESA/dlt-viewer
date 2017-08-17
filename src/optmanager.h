@@ -27,6 +27,7 @@ enum e_convertionmode
     e_ASCI = 0,
     e_UTF8 = 1,
     e_DLT  = 2,
+    e_CSV  = 3,
 };
 
 

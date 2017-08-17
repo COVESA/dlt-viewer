@@ -78,6 +78,7 @@ void OptManager::printUsage()
     qDebug()<<" -v or --version \t Only show version and buildtime information";
     qDebug()<<" -c logfile textfile \t Convert logfile file to textfile (logfile must end with .dlt)";
     qDebug()<<" -u Conversion will be done in UTF8 instead of ASCII";
+    qDebug()<<" -csv Conversion will be done in CSV format";
     qDebug()<<" -d Conversion will NOT be done, save in dlt mode again instead";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.\n";
     qDebug()<<"Examples:";
@@ -112,10 +113,11 @@ void OptManager::parse(QStringList *opt)
      }
      #endif
 
-     /* the default parameter just is the name of a dlt file to open
-      * so this also enables "doubleclicking" on a *.dlt file
-     */
-     if(opt->size()==2)
+     /* the default parameter - exactly one parameter - should either be
+      * a dlt or a dlp file, so this enables the "doubleclick" feature
+      */
+     //str = opt->at(0); && ( str.compare("-h)") != 0 || str.compare("-v") !=0  )
+     if(opt->size()==2  )
        {
            if(opt->at(1).endsWith(".dlp") || opt->at(1).endsWith(".DLP"))
            {
@@ -133,10 +135,7 @@ void OptManager::parse(QStringList *opt)
            }
        }
 
-
-    /* commandline parameter handling
-     * 0==Binary 1==First Argument
-    */
+    // 0==Binary 1==First Argument
     for (int i = 0; i < opt->size(); ++i)
      {
         str = opt->at(i);
@@ -278,6 +277,10 @@ void OptManager::parse(QStringList *opt)
         if(str.compare("-u")==0)
          {
             convertionmode = e_UTF8;
+         }
+        if(str.compare("-csv")==0)
+         {
+            convertionmode = e_CSV;
          }
         if(str.compare("-d")==0)
          {
