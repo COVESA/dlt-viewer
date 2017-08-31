@@ -320,6 +320,11 @@ void MainWindow::initView()
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
 
+    searchComboBox = new QComboBox();
+    searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    searchComboBox->setLineEdit(searchTextbox);
+    searchComboBox->setInsertPolicy(QComboBox::InsertAtTop);
+
     /* Initialize toolbars. Most of the construction and connection is done via the
      * UI file. See mainwindow.ui, ActionEditor and Signal & Slots editor */
     QList<QAction *> mainActions = ui->mainToolBar->actions();
@@ -361,7 +366,7 @@ void MainWindow::initSignalConnections()
 
     /* Insert search text box to search toolbar, before previous button */
     QAction *before = m_searchActions.at(ToolbarPosition::FindPrevious);
-    ui->searchToolbar->insertWidget(before, searchTextbox);
+    ui->searchToolbar->insertWidget(before, searchComboBox);
 
     /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
     m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);

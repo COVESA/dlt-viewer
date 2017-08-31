@@ -26,6 +26,7 @@
 #include <QShortcut>
 #include <QMessageBox>
 #include <QColor>
+#include <QComboBox>
 #include <QProgressBar>
 
 #include "tablemodel.h"
@@ -157,6 +158,7 @@ private:
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settings;
     QLineEdit *searchTextbox;
+    QComboBox *searchComboBox;
 
     /* injections */
     QString injectionAplicationId;
