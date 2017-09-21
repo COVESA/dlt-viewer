@@ -474,7 +474,6 @@ void MainWindow::initFileHandling()
     if(OptManager::getInstance()->isProjectFile())
     {
         openDlpFile(OptManager::getInstance()->getProjectFile());
-
     }
     else
     {
@@ -482,6 +481,7 @@ void MainWindow::initFileHandling()
         this->setWindowTitle(QString("DLT Viewer - unnamed project - Version : %1 %2").arg(PACKAGE_VERSION).arg(PACKAGE_VERSION_STATE));
         if(settings->defaultProjectFile)
         {
+            qDebug() << QString("Loading default project %1").arg(settings->defaultProjectFileName);
             if(!openDlpFile(settings->defaultProjectFileName))
             {
              if (OptManager::getInstance()->issilentMode())
@@ -504,7 +504,7 @@ void MainWindow::initFileHandling()
     if(OptManager::getInstance()->isLogFile())
     {
         openDltFile(QStringList(OptManager::getInstance()->getLogFile()));
-        /* Command line file is treated as temp file */
+       /* Command line file is treated as temp file */
         outputfileIsTemporary = true;
         outputfileIsFromCLI = true;
     }
@@ -515,6 +515,7 @@ void MainWindow::initFileHandling()
         if(settings->defaultLogFile)
         {
             openDltFile(QStringList(settings->defaultLogFileName));
+            qDebug() << QString("Open default log file ") << QStringList(settings->defaultLogFileName);
             outputfileIsFromCLI = false;
             outputfileIsTemporary = false;
         }
@@ -549,6 +550,7 @@ void MainWindow::initFileHandling()
     {
         if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),false))
         {
+       //     qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
             filterUpdate();
             setCurrentFilters(OptManager::getInstance()->getFilterFile());
         }
@@ -841,7 +843,6 @@ void MainWindow::on_New_triggered(QString fileName)
 
 void MainWindow::on_action_menuFile_Open_triggered()
 {
-    qDebug() << "File open selected";
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
         tr("Open one or more DLT Log files"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
 
@@ -854,7 +855,6 @@ void MainWindow::on_action_menuFile_Open_triggered()
 
 void MainWindow::on_Open_triggered(QStringList filenames)
 {
-
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(filenames[0]).absolutePath());
 
@@ -935,11 +935,16 @@ bool MainWindow::openDltFile(QStringList fileNames)
         openFileNames = fileNames;
         isDltFileReadOnly = false;
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+         {
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
+         }
         else
+         {
             // normally load log file mutithreaded
+            //reloadLogFile(false,false);
             reloadLogFile();
+         }
         ret = true;
     }
     else
@@ -1436,6 +1441,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
                                   QString("Cannot delete log file \"%1\"\n%2")
                                   .arg(oldfn)
                                   .arg(dfile.errorString()));
+          qDebug() <<   QString("Cannot delete log file %1").arg(oldfn) << "in line" <<__LINE__<< "of" << __FILE__;
         }
     }
     outputfileIsTemporary = true;
@@ -1485,6 +1491,7 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
 
 void MainWindow::reloadLogFileStop()
 {
+ 
 }
 
 void MainWindow::reloadLogFileProgressMax(quint64 num)
@@ -1686,11 +1693,16 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // start indexing
-    if(multithreaded)
+      if(multithreaded == true)
+     {
         dltIndexer->start();
+        //qDebug() << "Started indexer thread" << __FILE__ << __LINE__;
+     }
     else
+     {
+        //qDebug() << "Run indexer" << __FILE__ << __LINE__;
         dltIndexer->run();
-
+     }
 }
 
 void MainWindow::reloadLogFileDefaultFilter()
@@ -2816,6 +2828,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         ecuitem->ipcon.clear();
         ecuitem->serialcon.clear();
 
+        //qDebug()<< "Connect ECU " <<__LINE__;
         /* start socket connection to host */
         if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
@@ -2844,7 +2857,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
                 connect(ecuitem->m_serialport,SIGNAL(dsrChanged(bool)),this,SLOT(stateChangedSerial(bool)));
             }
-            else{
+            else
+            {
 
                 //to keep things consistent: delete old member, create new one
                 //alternatively we could just close the port, and set the new settings.
@@ -2911,10 +2925,12 @@ void MainWindow::connected()
             ecuitem->totalBytesRcvdLastTimeout = 0;
             ecuitem->ipcon.clear();
             ecuitem->serialcon.clear();
+            qDebug()<<"Connect to" << ecuitem->getHostname();
         }
     }
 checkConnectionState();
 }
+
 void MainWindow::checkConnectionState()
 {
 
@@ -2925,11 +2941,16 @@ void MainWindow::checkConnectionState()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if (ecuitem->connected) oneConnected=true;
+            if (ecuitem->connected)
+             {
+               oneConnected=true;
+               //qDebug()<<"Connect:at least one ECU connected";//<< ecuitem->getHostname;
+             }
             if (ecuitem->tryToConnect) oneTryConnect=true;
 
         }
-        qDebug()<<"Connect:at least one ECU connected"<<oneConnected;
+
+       // qDebug()<<"Connect:at least one ECU connected"<<oneConnected;
     if (oneConnected)
     {
      this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_connected.png"));
@@ -3327,8 +3348,8 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
         activeViewerPlugins = pluginManager.getViewerPlugins();
         activeDecoderPlugins = pluginManager.getDecoderPlugins();
 
-        qDebug() << "Message at row" << index.row() << "at index" << msgIndex << "selected.";
-        qDebug() << "Viewer plugins" << activeViewerPlugins.size() << "decoder plugins" << activeDecoderPlugins.size() ;
+        //qDebug() << "Message at row" << index.row() << "at index" << msgIndex << "selected.";
+        //qDebug() << "Viewer plugins" << activeViewerPlugins.size() << "decoder plugins" << activeDecoderPlugins.size() ;
 
         if(activeViewerPlugins.isEmpty() && activeDecoderPlugins.isEmpty())
         {
@@ -6182,6 +6203,7 @@ void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
 
 void MainWindow::on_applyConfig_clicked()
 {
+    //qDebug() << "Apply configuration requested";
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
     if (ui->checkBoxSortByTime->isChecked())
         {
@@ -6212,7 +6234,7 @@ void MainWindow::on_applyConfig_clicked()
             ui->actionToggle_FiltersEnabled->setText("Enable Filters");
         }
 
-    applyConfigEnabled(false);
+    //applyConfigEnabled(false);
     filterUpdate();
     reloadLogFile(true);
 }
@@ -6233,7 +6255,7 @@ void MainWindow::saveSelection()
     {
         int sr = rows.at(i).row();
         previousSelection.append(qfile.getMsgFilterPos(sr));
-        qDebug() << "Save Selection " << i << " at line " << qfile.getMsgFilterPos(sr);
+        //qDebug() << "Save Selection " << i << " at line " << qfile.getMsgFilterPos(sr);
     }
 }
 
@@ -6255,7 +6277,7 @@ void MainWindow::restoreSelection()
     {
         int nearestIndex = nearest_line(previousSelection.at(j));
 
-        qDebug() << "Restore Selection" << j << "at index" << nearestIndex << "at line" << previousSelection.at(0);
+        //qDebug() << "Restore Selection" << j << "at index" << nearestIndex << "at line" << previousSelection.at(0);
 
         if(j==0)
         {
@@ -6437,7 +6459,7 @@ void MainWindow::applyConfigEnabled(bool enabled)
     if(enabled)
     {
         /* show apply config button */
-        ui->applyConfig->startPulsing(pulseButtonColor);
+       // ui->applyConfig->startPulsing(pulseButtonColor);
         ui->actionApply_Configuration->setCheckable(true);
         ui->actionApply_Configuration->setChecked(true);
         ui->applyConfig->setEnabled(true);
@@ -6448,7 +6470,7 @@ void MainWindow::applyConfigEnabled(bool enabled)
     else
     {
         /* hide apply config button */
-        ui->applyConfig->stopPulsing();
+        //ui->applyConfig->stopPulsing();
         ui->actionApply_Configuration->setCheckable(false);
         ui->applyConfig->setEnabled(false);
     }

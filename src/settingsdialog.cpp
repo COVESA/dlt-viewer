@@ -497,7 +497,6 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 void SettingsDialog::readSettings()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
-
     /* Temp file */
     tempUseSystem               = settings->value("tempdir/tempUseSystem", 1).toInt();
     tempSystemPath              = QDir::tempPath();
@@ -517,7 +516,7 @@ void SettingsDialog::readSettings()
     defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir::homePath()+"/.dlt/filters").toString();
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
-    filterCache = settings->value("startup/filterCache",1).toInt();
+    filterCache = settings->value("startup/filterCache",0).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
     filterCacheName = settings->value("startup/filterCacheName",QDir::tempPath()+"/dltviewer/cache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();

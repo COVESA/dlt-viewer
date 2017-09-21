@@ -91,7 +91,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -374,7 +374,7 @@
          </widget>
         </item>
         <item row="0" column="0" colspan="3">
-         <widget class="PulseButton" name="applyConfig">
+         <widget class="QPushButton" name="applyConfig">
           <property name="enabled">
            <bool>false</bool>
           </property>
@@ -1517,11 +1517,6 @@
    <class>DltTableView</class>
    <extends>QTableView</extends>
    <header>dlttableview.h</header>
-  </customwidget>
-  <customwidget>
-   <class>PulseButton</class>
-   <extends>QPushButton</extends>
-   <header>pulsebutton.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

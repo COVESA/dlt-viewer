@@ -1,3 +1,4 @@
+//#include <QDebug>
 #include "dltfileindexerthread.h"
 #include "dlt_protocol.h"
 #include "dlt_common.h"
@@ -21,10 +22,14 @@ DltFileIndexerThread::DltFileIndexerThread
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
       silentMode(silentMode), msgQueue(1024)
-{}
+{
+
+}
 
 DltFileIndexerThread::~DltFileIndexerThread()
-{}
+{
+
+}
 
 void DltFileIndexerThread::enqueueMessage(const QSharedPointer<QDltMsg> &msg, int index)
 {
@@ -39,7 +44,6 @@ void DltFileIndexerThread::requestStop()
 void DltFileIndexerThread::run()
 {
     QPair<QSharedPointer<QDltMsg>, int> msgPair;
-
     while(msgQueue.dequeue(msgPair))
         processMessage(msgPair.first, msgPair.second);
 }
@@ -49,6 +53,7 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     DltFileIndexer::IndexingMode mode = indexer->getMode();
     bool pluginsEnabled = indexer->getPluginsEnabled();
     QDltPlugin *item;
+    bool bool_result = false;
 
     /* check if it is a version messages and
     version string not already parsed */
@@ -110,15 +115,23 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     }
 
     /* Process all decoderplugins */
-    pluginManager->decodeMsg(*msg, silentMode);
+    if ( pluginsEnabled == true )
+     {
+     (void) pluginManager->decodeMsg(*msg, silentMode);
+     }
 
-    /* Add to filterindex if matching */
-    if(filterList->checkFilter(*msg))
+
+    bool_result = filterList->checkFilter(*msg);
+    if ( bool_result == true)
     {
         if(sortByTimeEnabled)
+         {
             indexFilterListSorted->insert(DltFileIndexerKey(msg->getTime(), msg->getMicroseconds()), index);
+         }
         else
+         {
             indexFilterList->append(index);
+         }
     }
 
     /* Offer messages again to viewer plugins after decode */
