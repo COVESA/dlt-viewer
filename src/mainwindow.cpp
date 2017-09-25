@@ -117,7 +117,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* start timer for autoconnect */
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    timer.start(1000);
+    timer.start(AUTOCONNECT_DEFAULT_TIME);
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -2979,6 +2979,7 @@ void MainWindow::disconnected()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         if( ecuitem && ecuitem->socket == sender())
         {
+            qDebug() << "Disconnect" << ecuitem->getHostname();
             /* update connection state */
             ecuitem->connected = false;
             ecuitem->connectError.clear();
@@ -3019,6 +3020,7 @@ void MainWindow::timeout()
 
             if( ecuitem->tryToConnect && !ecuitem->connected)
             {
+                qDebug() << "Reconnect timeout for" << ecuitem->getHostname();
                 connectECU(ecuitem,true);
             }
         }
@@ -3184,7 +3186,8 @@ void MainWindow::read(EcuItem* ecuitem)
                     outputfile.flush();
 
                     /* in Logging only mode send all message to plugins */
-                    if(settings->loggingOnlyMode)
+                    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
+                    if( ( settings->loggingOnlyMode == 1 ) && ( pluginsEnabled == true ) )
                     {
                         QList<QDltPlugin*> activeViewerPlugins;
                         activeViewerPlugins = pluginManager.getViewerPlugins();
@@ -3243,6 +3246,7 @@ void MainWindow::updateIndex()
 
     activeDecoderPlugins = pluginManager.getDecoderPlugins();
     activeViewerPlugins = pluginManager.getViewerPlugins();
+    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
 
     /* read received messages in DLT file parser and update DLT message list view */
     /* update indexes  and table view */
@@ -3261,7 +3265,8 @@ void MainWindow::updateIndex()
         }
     }
 
-    for(int num=oldsize;num<qfile.size();num++) {
+    for(int num=oldsize;num<qfile.size();num++)
+    {
         qmsg.setMsg(qfile.getMsg(num));
 
         for(int i = 0; i < activeViewerPlugins.size(); i++){
@@ -3269,13 +3274,18 @@ void MainWindow::updateIndex()
             item->updateMsg(num,qmsg);
         }
 
+     if ( pluginsEnabled == true )
+      {
         pluginManager.decodeMsg(qmsg,silentMode);
+      }
 
-        if(qfile.checkFilter(qmsg)) {
+      if(qfile.checkFilter(qmsg))
+       {
             qfile.addFilterIndex(num);
-        }
+       }
 
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
             item = activeViewerPlugins[i];
             item->updateMsgDecoded(num,qmsg);
         }
@@ -3321,7 +3331,6 @@ void MainWindow::drawUpdatedView()
 void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
     Q_UNUSED(deselected);
-
     if(selected.size()>0)
     {
         /* With Autoscroll= false the tableview doesn't jump to the right edge,
@@ -3332,7 +3341,7 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
             scrollButton->setChecked(false);
             ui->tableView->setAutoScroll(false);
         }
-
+        bool pluginsEnabled = dltIndexer->getPluginsEnabled();
         QModelIndex index =  selected[0].topLeft();
         QDltPlugin *item = 0;
         QList<QDltPlugin*> activeViewerPlugins;
@@ -3364,7 +3373,10 @@ void MainWindow::on_tableView_selectionChanged(const QItemSelection & selected, 
 
         }
 
+        if ( pluginsEnabled == true )
+        {
         pluginManager.decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+        }
 
         for(int i = 0; i < activeViewerPlugins.size(); i++){
             item = (QDltPlugin*)activeViewerPlugins.at(i);
@@ -5979,7 +5991,11 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
+    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
+    if ( pluginsEnabled == true )
+    {
     pluginManager.decodeMsg(msg,triggeredByUser);
+    }
 }
 
 void MainWindow::on_action_menuConfig_Collapse_All_ECUs_triggered()

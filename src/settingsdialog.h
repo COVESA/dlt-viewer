@@ -25,6 +25,7 @@
 #include "qdlt.h"
 
 #define DEFAULT_REFRESH_RATE 20
+#define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
 namespace Ui {
     class SettingsDialog;
