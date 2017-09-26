@@ -591,6 +591,29 @@ bool DltFileIndexer::saveFilterIndexCache(QDltFilterList &filterList, QVector<qi
     return true;
 }
 
+QByteArray DltFileIndexer::md5ActiveDecoderPlugins()
+{
+    QByteArray md5;
+    QString hashString = "Plugins";
+    QByteArray hashByteArray;
+
+    // walk through all active decoder plugins and generate String with all plugin names, version and loaded filename
+    for(int num=0;num<activeDecoderPlugins.size();num++)
+    {
+        QDltPlugin *plugin = activeDecoderPlugins[num];
+
+        hashString += plugin->getName();
+        hashString += plugin->getPluginVersion();
+        hashString += plugin->getFilename();
+    }
+    hashByteArray = hashString.toLatin1();
+
+    // calculate hash value
+    md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
+
+    return md5;
+}
+
 QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStringList filenames)
 {
     QString hashString;
@@ -616,9 +639,9 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
 
     // create filename
     if(sortByTimeEnabled)
-        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_S.dix";
+        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_"+QString(md5ActiveDecoderPlugins().toHex())+"_S.dix";
     else
-        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+".dix";
+        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_"+QString(md5ActiveDecoderPlugins().toHex())+".dix";
 
     //qDebug() << filenames << ">>" << filename;
 

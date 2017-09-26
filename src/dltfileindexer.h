@@ -59,6 +59,7 @@ public:
     bool loadFilterIndexCache(QDltFilterList &filterList, QVector<qint64> &index, QStringList filenames);
     bool saveFilterIndexCache(QDltFilterList &filterList, QVector<qint64> index, QStringList filenames);
     QString filenameFilterIndexCache(QDltFilterList &filterList, QStringList filenames);
+    QByteArray md5ActiveDecoderPlugins(); // generate hash value over all active decoder plugins
 
     // load/save index from/to file
     bool loadIndexCache(QString filename);
