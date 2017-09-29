@@ -135,6 +135,7 @@ void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 
         if(plugin->decodeMsg(msg,triggeredByUser))
             break;
+
     }
 }
 

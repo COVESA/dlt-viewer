@@ -561,11 +561,15 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qi
     filenameCache = filenameFilterIndexCache(filterList,filenames);
 
     // load the cache file
-    if(!loadIndex(filterCache + "/" +filenameCache,index))
+    if(loadIndex(filterCache + "/" +filenameCache,index))
     {
-        // loading of cache file failed
-        return false;
+        qDebug() << "loadIndex" << filterCache + "/" +filenameCache << "success";
     }
+    else
+    {
+        qDebug() << "loadIndex" << filterCache + "/" +filenameCache << "failed";
+        return false;
+    }        
 
     return true;
 }
@@ -638,10 +642,16 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     md5 = QCryptographicHash::hash(hashByteArray, QCryptographicHash::Md5);
 
     // create filename
-    if(sortByTimeEnabled)
-        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_"+QString(md5ActiveDecoderPlugins().toHex())+"_S.dix";
-    else
-        filename = QString(md5.toHex())+"_"+QString(md5FilterList.toHex())+"_"+QString(md5ActiveDecoderPlugins().toHex())+".dix";
+    filename = QString(md5.toHex()) + "_" + QString(md5FilterList.toHex());
+    if(this->pluginsEnabled)
+    {
+        filename += "_" + QString(md5ActiveDecoderPlugins().toHex());
+    }
+    if(this->sortByTimeEnabled)
+    {
+        filename += "_S";
+    }
+    filename += ".dix";
 
     //qDebug() << filenames << ">>" << filename;
 
