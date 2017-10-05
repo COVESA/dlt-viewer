@@ -473,7 +473,6 @@ private slots:
     void openRecentProject();
     void openRecentFilters();
     void applyConfigEnabled(bool enabled);
-    void tableViewValueChanged(int value);
     void stateChangedTCP(QAbstractSocket::SocketState socketState);
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
@@ -500,7 +499,6 @@ private slots:
 
     void on_actionMarker_triggered();
 
-    void on_actionApply_Configuration_triggered(bool checked);
     void on_actionToggle_PluginsEnabled_triggered(bool checked);
     void on_actionToggle_FiltersEnabled_triggered(bool checked);
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);

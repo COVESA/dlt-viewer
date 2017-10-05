@@ -373,7 +373,6 @@ void MainWindow::initSignalConnections()
     m_shortcut_searchprev = new QShortcut(QKeySequence("F2"), this);
     connect(m_shortcut_searchprev, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
 
-    connect((QObject*)(ui->tableView->verticalScrollBar()), SIGNAL(valueChanged(int)), this, SLOT(tableViewValueChanged(int)));
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
     //for search result table
@@ -4884,32 +4883,6 @@ void MainWindow::setCurrentPort(const QString &portName)
     DltSettingsManager::getInstance()->setValue("other/recentPortList",recentPorts);
 }
 
-void MainWindow::tableViewValueChanged(int value)
-{
-    int maximum = ((QAbstractSlider *)(ui->tableView->verticalScrollBar()))->maximum();
-
-    if (value==maximum)
-    {
-        /* Only enable, if disabled */
-        if (settings->autoScroll==Qt::Unchecked)
-        {
-            /* do not automatically enable scrolling when scrolling to bottom */
-            //on_actionAutoScroll_triggered(Qt::Checked);
-            //updateScrollButton();
-        }
-    }
-    else
-    {
-        /* Only disable, if enabled */
-        if (settings->autoScroll==Qt::Checked)
-        {
-            /* disable scrolling */
-            on_actionAutoScroll_triggered(Qt::Unchecked);
-            updateScrollButton();
-        }
-    }
-}
-
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
     /* update default log level, trace status and timing packets */
@@ -6145,12 +6118,6 @@ void MainWindow::on_actionJump_To_triggered()
     jump_to_line(dlg.getIndex());
 
 
-}
-
-void MainWindow::on_actionApply_Configuration_triggered(bool checked)
-{
-    Q_UNUSED(checked)
-    this->on_applyConfig_clicked();
 }
 
 void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
