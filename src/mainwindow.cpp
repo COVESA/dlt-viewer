@@ -582,6 +582,9 @@ void MainWindow::initFileHandling()
         case e_CSV:
              commandLineConvertToCSV();
             break;
+        case e_DDLT:
+             commandLineConvertToDLTDecoded();
+            break;
         default:
              commandLineConvertToASCII();
             break;
@@ -616,7 +619,7 @@ void MainWindow::commandLineConvertToDLT()
     qDebug() << "Commandline DLT convert to " << dltFile.fileName();
      //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
     exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDlt,DltExporter::SelectionFiltered);
-    qDebug() << "DLT export DLT done";
+    qDebug() << "DLT export to DLT file format done";
 }
 
 
@@ -670,6 +673,23 @@ void MainWindow::commandLineConvertToUTF8()
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
     qDebug() << "DLT export UTF8 done";
 }
+
+void MainWindow::commandLineConvertToDLTDecoded()
+{
+    qfile.enableFilter(true);
+    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    outputfileIsFromCLI = false;
+    outputfileIsTemporary = false;
+
+    QFile dltFile(OptManager::getInstance()->getConvertDestFile());
+
+    /* start exporter */
+    DltExporter exporter;
+    qDebug() << "Commandline decoding to dlt formated file" << dltFile.fileName();
+    exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDltDecoded,DltExporter::SelectionFiltered);
+    qDebug() << "DLT export DLT decoded done";
+}
+
 
 void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
 
@@ -1695,7 +1715,6 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
       if(multithreaded == true)
      {
         dltIndexer->start();
-        //qDebug() << "Started indexer thread" << __FILE__ << __LINE__;
      }
     else
      {
@@ -4605,22 +4624,28 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
 {
     // Please copy changes to OptManager::getInstance().cpp - printUsage()
 
-    QMessageBox::information(0, QString("DLT Viewer - Command line usage"),
+    QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
                          #if (WIN32)
                              QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #else
                              QString("Usage: dlt_viewer [OPTIONS]\n\n")+
                              QString("Options:\n")+
-                             QString(" -h \t\tPrint usage\n")+
                          #endif
-                             QString(" -s or --silent \t\tEnable silent mode without warning message boxes\n")+
-                             QString(" -p projectfile \t\tLoading project file on startup (must end with .dlp)\n")+
-                             QString(" -l logfile \t\tLoading logfile on startup (must end with .dlt)\n")+
-                             QString(" -u \t\t\tExport file UTF8 encoded\n")+
-                             QString(" -f filterfile \t\tLoading filterfile on startup (must end with .dlf)\n")+
-                             QString(" -c logfile textfile \tConvert logfile file to textfile (logfile must end with .dlt)\n")+
-                             QString(" -e \"plugin|command|param1|..|param<n>\" \tExecute a command plugin with <n> parameters.")
+                             QString(" -h \t\tPrint usage\n")+
+                             QString(" -v \t\tShow version and buildtime information\n")+
+                             QString("\n")+
+                             QString(" -p <projectfile> \tLoading project (*.dlp) file on startup\n")+
+                             QString(" -f <filterfile> \t\tLoading filterfile on startup (must end with \".dlf\")\n")+
+                             QString(" -l <logfile> \t\tLoading (*.dlt) logfile on startup\n")+
+                             QString(" -c <logfile> <textfile> \tConvert (*.dlt) logfile to ASCII textfile\n")+
+                             QString(" -u \t\t\tExport logfile to UTF8 instead\n")+
+                             QString(" -csv \t\t\tExport logfile to csv ( Excel ) instead\n")+
+                             QString(" -d \t\t\tExport logfile to DLT format\n")+
+                             QString(" -dd \t\t\tExport logfile to  decoded DLT format\n")+
+                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
+                             QString("\n")+
+                             QString(" -e <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters")
                              );
 }
 
@@ -5077,7 +5102,8 @@ void MainWindow::updatePlugins() {
 
 }
 
-void MainWindow::updatePlugin(PluginItem *item) {
+void MainWindow::updatePlugin(PluginItem *item)
+{
     item->takeChildren();
 
     bool ret = item->getPlugin()->loadConfig(item->getFilename());
@@ -5116,7 +5142,7 @@ void MainWindow::updatePlugin(PluginItem *item) {
         item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
     }
 
-    item->update();
+    item->update(); //update the table view in plugin tab
 
     if(item->dockWidget) {
         if(item->getMode() == QDltPlugin::ModeShow) {
@@ -5938,7 +5964,8 @@ void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
     PluginItem *plugin = (PluginItem*)item;
     plugin->takeChildren();
     QStringList list = plugin->getPlugin()->infoConfig();
-    for(int num=0;num<list.size();num++) {
+    for(int num=0;num<list.size();num++)
+    {
         plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
     }
 }

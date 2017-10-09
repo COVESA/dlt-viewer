@@ -551,12 +551,12 @@ void PluginItem::update()
             break;
     }
 
-    //setData(0,0,QString("%1 (%2:%3|%4 %5)").arg(this->getName()).arg(types.join("")).arg(*modeString).arg(list.size()).arg(this->getFilename()));
+    //qDebug() << this->getName() << *modeString << this->getFilename();
     setData(0,0,QString("%1").arg(plugin->getName()));
-    setData(1,0,QString("%1").arg(types.join("")));
-    setData(2,0,QString("%1").arg(*modeString));
-    setData(3,0,QString("%1").arg(list.size()));
-    setData(4,0,QString("%1").arg(this->getFilename()));
+    //setData(1,0,QString("%1").arg(types.join("")));
+    setData(1,0,QString("%1").arg(*modeString));
+    //setData(3,0,QString("%1").arg(list.size()));
+    setData(2,0,QString("%1").arg(this->getFilename()));
 
     delete modeString;
 }

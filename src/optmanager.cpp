@@ -79,19 +79,24 @@ void OptManager::printUsage()
     qDebug()<<" -c logfile textfile \t Convert logfile file to textfile (logfile must end with .dlt)";
     qDebug()<<" -u Conversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv Conversion will be done in CSV format";
-    qDebug()<<" -d Conversion will NOT be done, save in dlt mode again instead";
+    qDebug()<<" -d Conversion will NOT be done, save in dlt file format again instead";
+    qDebug()<<" -dd Conversion will NOT be done, save as decoded messages in dlt format";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.\n";
     qDebug()<<"Examples:";
     #if (WIN32)
     qDebug()<<"  dlt_viewer.exe -c c:\\trace\\trace.dlt .\\trace.txt";
     qDebug()<<"  dlt_viewer.exe -s -c -u c:\\trace\\trace.dlt .\\trace.txt";
     qDebug()<<"  dlt_viewer.exe -s -d -c c:\\trace\\trace.dlt .\\trace.dlt";
+    qDebug()<<"  dlt_viewer.exe -s -p \\proj\\decodeded.dlp -dd -c c:\\trace\\trace.dlt .\\trace.dlt";
+    qDebug()<<"  dlt_viewer.exe -s -csv -c c:\\trace\\trace.dlt .\\trace.csv";
     qDebug()<<"  dlt_viewer.exe -s -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
     qDebug()<<"  dlt_viewer.exe -p c:\\proj\\export.dlp -l c:\\trace\\trace.dlt -e \"Filetransfer Plugin|export|ftransferdir\"";
     #else
     qDebug()<<"  dlt_viewer -c ./traces/trace.dlt ./trace.txt";
     qDebug()<<"  dlt_viewer -s -c -u ./trace/trace.dlt ./trace.txt";
     qDebug()<<"  dlt_viewer -s -d -c ./trace/trace.dlt ./trace.dlt";
+    qDebug()<<"  dlt_viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt";
+    qDebug()<<"  dlt_viewer -s -csv -c ./trace/trace.dlt ./trace.csv";
     qDebug()<<"  dlt_viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
     qDebug()<<"  dlt_viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
     #endif
@@ -285,6 +290,10 @@ void OptManager::parse(QStringList *opt)
         if(str.compare("-d")==0)
          {
             convertionmode = e_DLT;
+         }
+        if(str.compare("-dd")==0)
+         {
+            convertionmode = e_DDLT;
          }
         if(str.compare("-e")==0)
          {
