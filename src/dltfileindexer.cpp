@@ -249,7 +249,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         if(stopFlag)
         {
             if(useIndexerThread)
-                indexerThread.terminate();
+            {
+                indexerThread.requestStop();
+                indexerThread.wait();
+            }
 
             return false;
         }
@@ -335,7 +338,10 @@ bool DltFileIndexer::indexDefaultFilter()
         if(stopFlag)
         {
             if(useDefaultFilterThread)
-                defaultFilterThread.terminate();
+            {
+                defaultFilterThread.requestStop();
+                defaultFilterThread.wait();
+            }
 
             return false;
         }
@@ -473,11 +479,7 @@ void DltFileIndexer::stop()
     // stop the thread
     stopFlag = true;
 
-    while(isRunning())
-    {
-        // wait until task is not running anymore
-        usleep(100000);
-    }
+    wait();
 }
 
 // load/safe index from/to file
