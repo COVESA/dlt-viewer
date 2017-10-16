@@ -28,9 +28,36 @@
 #include "optmanager.h"
 #include "dlt_protocol.h"
 
+
+static int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
- TableModel::TableModel(const QString & /*data*/, QObject *parent)
+
+void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
+{
+ if ( indexrow == lastrow)
+ {
+  *msg = *lastmsg;
+ }
+ else
+ {
+  *success = qfile->getMsg(filterposindex, *msg);
+  *lastmsg = *msg;
+  *decodeflag = 1;
+ }
+ if ( indexrow == 0)
+ {
+  lastrow = 0;
+ }
+ else
+ {
+  lastrow = indexrow;
+ }
+
+}
+
+
+TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
      qfile = NULL;
@@ -39,6 +66,7 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
      lastSearchIndex = -1;
      emptyForceFlag = false;
      loggingOnlyMode = false;
+     lastrow = -1;
  }
 
  TableModel::~TableModel()
@@ -53,14 +81,27 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
-     QDltMsg msg;
      QByteArray buf;
+     static QDltMsg msg;
+     static QDltMsg lastmsg;
+     static QDltMsg last_decoded_msg;
+     static unsigned int decodeflag = 0;
+     static bool success = true;
 
-     if (!index.isValid())
+     long int filterposindex = 0;
+
+
+     if (index.isValid() == false)
+     {
          return QVariant();
+     }
 
      if (index.row() >= qfile->sizeFilter() && index.row()<0)
+     {
          return QVariant();
+     }
+
+     filterposindex = qfile->getMsgFilterPos(index.row());
 
      if (role == Qt::DisplayRole)
      {
@@ -69,8 +110,12 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          {
              msg = QDltMsg();
          }
-         else if(!qfile->getMsg(qfile->getMsgFilterPos(index.row()), msg))
+         else
          {
+           getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
+
+           if ( success == false )
+           {
              if(index.column() == FieldNames::Index)
              {
                  return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
@@ -80,11 +125,24 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  return QString("!!CORRUPTED MESSAGE!!");
              }
              return QVariant();
+          }
          }
+
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+             if ( decodeflag == 1 )
+              {
+               decodeflag = 0;
+               last_decoded_msg = msg;
+               pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+               last_decoded_msg = msg;
+              }
+              else
+              {
+                msg = last_decoded_msg;
+              }
          }
+
 
          switch(index.column())
          {
@@ -103,7 +161,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          case FieldNames::EcuId:
              return msg.getEcuid();
          case FieldNames::AppId:
-             switch(project->settings->showApIdDesc){
+             switch(project->settings->showApIdDesc)
+             {
              case 0:
                  return msg.getApid();
                  break;
@@ -126,12 +185,12 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  return msg.getApid();
              }
          case FieldNames::ContextId:
-             switch(project->settings->showCtIdDesc){
+             switch(project->settings->showCtIdDesc)
+             {
              case 0:
                  return msg.getCtid();
                  break;
              case 1:
-
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
@@ -162,9 +221,13 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                  break;
              case 1:
                  if(!msg.getSessionName().isEmpty())
+                 {
                     return msg.getSessionName();
+                 }
                 else
+                 {
                     return QString("%1").arg(msg.getSessionid());
+                 }
                  break;
               default:
                  return QString("%1").arg(msg.getSessionid());
@@ -179,7 +242,9 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
              return QString("%1").arg(msg.getNumberOfArguments());
          case FieldNames::Payload:
              if(loggingOnlyMode)
+             {
                  return QString("Logging only Mode! Disable in Project Settings!");
+             }
              /* display payload */
              return msg.toStringPayload();
          default:
@@ -192,43 +257,55 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                      return arg.toString();
                  }
                  else
+                 {
                   return QString(" - ");
+                 }
 
              }
          }
      }
 
-     if ( role == Qt::ForegroundRole ) {
-         int currentIdx = qfile->getMsgFilterPos(index.row());
-         qfile->getMsg(currentIdx, msg);
+     if ( role == Qt::ForegroundRole )
+     {
+         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
 
          // Color the last search row
-         if(lastSearchIndex != -1 && currentIdx == qfile->getMsgFilterPos(lastSearchIndex))
+         if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
          {
              return QVariant(QBrush(DltUiUtils::optimalTextColor(searchBackgroundColor())));
-
          }
          else if (QColor(qfile->checkMarker(msg)).isValid())
          {
            QColor color = qfile->checkMarker(msg);
-
-              //return QVariant(QBrush(color));
-              return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
+           return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
          }
-         else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  ){
+         else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  )
+         {
             return QVariant(QBrush(QColor(255,255,255)));
-         } else {
+         }
+         else
+         {
             return QVariant(QBrush(QColor(0,0,0)));
          }
      }
 
-     if ( role == Qt::BackgroundRole ) {
-         int currentIdx = qfile->getMsgFilterPos(index.row());
-         qfile->getMsg(currentIdx, msg);
+     if ( role == Qt::BackgroundRole )
+     {
+         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
 
          if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
-             pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+             if ( decodeflag == 1 )
+              {
+               decodeflag = 0;
+               last_decoded_msg = msg;
+               pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+               last_decoded_msg = msg;
+              }
+              else
+              {
+                msg = last_decoded_msg;
+              }
          }
 
          QColor color = qfile->checkMarker(msg);
@@ -238,14 +315,17 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
          else
          {
-             if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") ){
+             if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
+             {
                 return QVariant(QBrush(QColor(255,0,0)));
              }
-             if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn"){
+             if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn")
+             {
                 return QVariant(QBrush(QColor(255,255,0)));
              }
              if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
-                msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER){
+                msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+             {
                 return QVariant(QBrush(QColor(0,255,0)));
              }
 
@@ -253,7 +333,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
          }
      }
 
-     if ( role == Qt::TextAlignmentRole ) {
+     if ( role == Qt::TextAlignmentRole )
+     {
         switch(index.column())
         {
             case FieldNames::Index:
@@ -267,7 +348,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
             case FieldNames::EcuId:
                 return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
             case FieldNames::AppId:
-                switch(project->settings->showApIdDesc){
+                switch(project->settings->showApIdDesc)
+                {
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
                     break;
@@ -279,7 +361,8 @@ char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
                     break;
                 }
             case FieldNames::ContextId:
-                switch(project->settings->showCtIdDesc){
+                switch(project->settings->showCtIdDesc)
+                {
                 case 0:
                     return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
                     break;
@@ -342,12 +425,14 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          index(0, 1);
          index(qfile->sizeFilter()-1, 0);
          index(qfile->sizeFilter()-1, columnCount() - 1);
-     }else
+     }
+     else
      {
          index(0, 1);
          index(0, 0);
          index(0, columnCount() - 1);
      }
+     lastrow = -1;
      emit(layoutChanged());
  }
 
