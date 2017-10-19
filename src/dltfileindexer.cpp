@@ -8,6 +8,8 @@
 #include <QApplication>
 #include <QTime>
 #include <QCryptographicHash>
+#include <QMutexLocker>
+
 
 extern "C" {
     #include "dlt_common.h"
@@ -398,6 +400,9 @@ void DltFileIndexer::appendToGetLogInfoList(int value)
 
 void DltFileIndexer::run()
 {
+    // lock mutex while indexing
+    QMutexLocker scopedLock(&indexLock);
+
     // initialise stop flag
     stopFlag = false;
 
