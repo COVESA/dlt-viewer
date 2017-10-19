@@ -407,7 +407,7 @@ public:
       \param withSH message to be parsed contains storage header, default true.
       \return True if the operation was successful, false if there was an error.
     */
-    bool setMsg(QByteArray buf,bool withStorageHeader = true);
+    bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
 
     //! Get the message written into a byte array containing the DLT message.
     /*!
