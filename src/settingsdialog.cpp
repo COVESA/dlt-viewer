@@ -29,6 +29,19 @@
 #include "version.h"
 #include "dltsettingsmanager.h"
 
+
+
+#if (WIN32)
+ #define TZSET _tzset()
+ #define TIMEZONE _timezone
+ #define DAYLIGHT _daylight
+#else
+ #define TZSET tzset()
+ #define TIMEZONE timezone
+ #define DAYLIGHT daylight
+#endif
+
+
 SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
 
     QDialog(parent), qFile(_qFile),
@@ -39,8 +52,7 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     //See man pages - tzset(3)
     //It is used to access DST and other timezone related information
     //and sets all timezone global variables
-    tzset();
-
+     TZSET;
     //timezone contains the difference in seconds between UTC and the local
     //standard time
     //qDebug()<< "Difference between UTC and the local standard time: "<<timezone<< " seconds."<<endl;
@@ -225,18 +237,22 @@ void SettingsDialog::writeDlg()
 
     /* Time settings */
     ui->groupBoxAutomaticTimeSettings->setChecked(automaticTimeSettings?Qt::Checked:Qt::Unchecked);
-    if(ui->groupBoxAutomaticTimeSettings->isChecked()){
+    if(ui->groupBoxAutomaticTimeSettings->isChecked())
+    {
         ui->checkBoxDST->setEnabled(false);
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
         ui->checkBoxAutomaticTimezone->setEnabled(false);
-    }else{
+    }
+    else
+    {
         ui->checkBoxDST->setEnabled(true);
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);
         ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
     ui->checkBoxAutomaticTimezone->setChecked(automaticTimezoneFromDlt?Qt::Checked:Qt::Unchecked);
+
     ui->checkBoxDST->setCheckState(dst?Qt::Checked:Qt::Unchecked);
     ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(utcOffset)));
 
@@ -248,14 +264,18 @@ void SettingsDialog::writeDlg()
     ui->checkBoxEcuid->setCheckState(showEcuId?Qt::Checked:Qt::Unchecked);
 
     ui->groupBoxAppId->setChecked(showApId?Qt::Checked:Qt::Unchecked);
-    if(ui->groupBoxAppId->isChecked()){
+    if(ui->groupBoxAppId->isChecked())
+    {
         ui->radioButtonAppId->setEnabled(true);
         ui->radioButtonAppIdDesc->setEnabled(true);
-    }else{
+    }
+    else
+    {
         ui->radioButtonAppId->setEnabled(false);
         ui->radioButtonAppIdDesc->setEnabled(false);
     }
-    switch(showApIdDesc){
+    switch(showApIdDesc)
+    {
     case 0:
         ui->radioButtonAppId->setChecked(true);
         ui->radioButtonAppIdDesc->setChecked(false);
@@ -271,14 +291,18 @@ void SettingsDialog::writeDlg()
     }
 
     ui->groupBoxConId->setChecked(showCtId?Qt::Checked:Qt::Unchecked);
-    if(ui->groupBoxConId->isChecked()){
+    if(ui->groupBoxConId->isChecked())
+    {
         ui->radioButtonConId->setEnabled(true);
         ui->radioButtonConIdDesc->setEnabled(true);
-    }else{
+    }
+    else
+    {
         ui->radioButtonConId->setEnabled(false);
         ui->radioButtonConIdDesc->setEnabled(false);
     }
-    switch(showCtIdDesc){
+    switch(showCtIdDesc)
+    {
     case 0:
         ui->radioButtonConId->setChecked(true);
         ui->radioButtonConIdDesc->setChecked(false);
@@ -294,14 +318,18 @@ void SettingsDialog::writeDlg()
     }
 
     ui->groupBoxSessionId->setChecked(showSessionId?Qt::Checked:Qt::Unchecked);
-    if(ui->groupBoxSessionId->isChecked()){
+    if(ui->groupBoxSessionId->isChecked())
+    {
         ui->radioButtonSessionId->setEnabled(true);
         ui->radioButtonSessionName->setEnabled(true);
-    }else{
+    }
+    else
+    {
         ui->radioButtonSessionId->setEnabled(false);
         ui->radioButtonSessionName->setEnabled(false);
     }
-    switch(showSessionName){
+    switch(showSessionName)
+    {
     case 0:
         ui->radioButtonSessionId->setChecked(true);
         ui->radioButtonSessionName->setChecked(false);
@@ -494,6 +522,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
 }
 
+/* read the settings from config.ini */
 void SettingsDialog::readSettings()
 {
     DltSettingsManager *settings = DltSettingsManager::getInstance();
@@ -532,8 +561,10 @@ void SettingsDialog::readSettings()
     fontSize = settings->value("startup/fontSize",8).toInt();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
     automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
-    utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)timezone*-1)).toLongLong();
-    dst = settings->value("startup/dst",daylight == 0 ? 0 : 1).toInt();
+
+    utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)TIMEZONE * (-1) )).toLongLong();
+    dst = settings->value("startup/dst", DAYLIGHT == 0 ? 0 : 1).toInt();
+
     showIndex = settings->value("startup/showIndex",1).toInt();
     showTime = settings->value("startup/showTime",1).toInt();
     showTimestamp = settings->value("startup/showTimestamp",1).toInt();
@@ -549,6 +580,7 @@ void SettingsDialog::readSettings()
     showType = settings->value("startup/showType",1).toInt();
 
     showSubtype = settings->value("startup/showSubtype",0).toInt();
+
     showMode = settings->value("startup/showMode",0).toInt();
     showNoar = settings->value("startup/showNoar",0).toInt();
     showPayload = settings->value("startup/showPayload",1).toInt();
@@ -718,12 +750,15 @@ void SettingsDialog::on_groupBoxAppId_clicked(bool checked)
 
 void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
 {
-    if(checked){
+    if(checked)
+    {
         ui->checkBoxDST->setEnabled(false);
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
         ui->checkBoxAutomaticTimezone->setEnabled(false);
-    }else{
+    }
+    else
+    {
         ui->checkBoxDST->setEnabled(true);
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);

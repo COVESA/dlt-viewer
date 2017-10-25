@@ -679,7 +679,7 @@ bool Project::Load(QString filename)
               {
                   settings->utcOffset = xml.readElementText().toLongLong();
               }
-              if(xml.name() == QString("utcOffset"))
+              if(xml.name() == QString("dst"))
               {
                   settings->dst = xml.readElementText().toInt();
               }
