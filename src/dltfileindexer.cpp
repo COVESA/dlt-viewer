@@ -449,6 +449,7 @@ void DltFileIndexer::run()
             // error
             return;
         }
+        dltFile->enableFilter(filtersEnabled);
         dltFile->setIndexFilter(indexFilterList);
         emit(finishFilter());
     }
