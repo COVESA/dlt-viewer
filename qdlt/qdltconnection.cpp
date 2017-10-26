@@ -64,6 +64,7 @@ bool QDltConnection::getSyncSerialHeader() const
 void QDltConnection::clear()
 {
     data.clear();
+    dataView.align(data);
     bytesReceived = 0;
     bytesError = 0;
     syncFound = 0;
@@ -73,7 +74,9 @@ void QDltConnection::add(const QByteArray &bytes)
 {
     bytesReceived += bytes.size();
 
-    data += bytes;
+    data = dataView + bytes;
+
+    dataView.align(data);
 }
 
 bool QDltConnection::parse(QDltMsg &msg)
@@ -86,8 +89,8 @@ bool QDltConnection::parse(QDltMsg &msg)
     char lastFound = 0;
 
     /* Use primitive buffer for faster access */
-    int cbuf_sz = data.size();
-    const char *cbuf = data.constData();
+    int cbuf_sz = dataView.size();
+    const char *cbuf = dataView.constData();
 
     /* find marker in buffer */
     for(int num=0;num<cbuf_sz;num++) {
@@ -133,8 +136,8 @@ bool QDltConnection::parse(QDltMsg &msg)
         if(!lastFound)
         {
             /* clear buffer if even not start of sync header found */
-            bytesError += data.size();
-            data.clear();
+            bytesError += dataView.size();
+            dataView.clear();
         }
         return false;
     }
@@ -145,10 +148,10 @@ bool QDltConnection::parse(QDltMsg &msg)
     {
         /* two sync headers found */
         /* try to read msg */
-        if(!msg.setMsg(data.mid(firstPos,secondPos-firstPos-4),false))
+        if(!msg.setMsg(dataView.mid(firstPos,secondPos-firstPos-4),false))
         {
             /* no valid msg found, perhaps to short */
-            data.remove(0,secondPos-4);
+            dataView.advance(secondPos-4);
             /* errors found */
             bytesError += secondPos-4;
             return false;
@@ -156,7 +159,7 @@ bool QDltConnection::parse(QDltMsg &msg)
         else
         {
             /* msg read successful */
-            data.remove(0,secondPos-4);
+            dataView.advance(secondPos-4);
             if(firstPos>4)
                 /* errors found */
                 bytesError += firstPos-4;
@@ -170,24 +173,24 @@ bool QDltConnection::parse(QDltMsg &msg)
         bytesError += firstPos-4;
 
     /* try to read msg */
-    if(!msg.setMsg(data.mid(firstPos),false))
+    if(!msg.setMsg(dataView.mid(firstPos),false))
     {
         /* no complete msg found */
         /* perhaps not completely received */
         /* check valid size */
-        if(data.size()>DLT_MAX_MESSAGE_LEN)
+        if(dataView.size()>DLT_MAX_MESSAGE_LEN)
         {
             /* size exceeds max DLT message size */
             /* clear buffer */
             /* errors found */
-            bytesError += data.size();
-            data.clear();
+            bytesError += dataView.size();
+            dataView.clear();
         }
         return false;
     }
 
     /* msg read successful */
-    data.remove(0,firstPos+msg.getHeaderSize()+msg.getPayloadSize());
+    dataView.advance(firstPos+msg.getHeaderSize()+msg.getPayloadSize());
     return true;
 }
 

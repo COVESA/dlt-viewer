@@ -138,7 +138,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
 }
 
 
-bool QDltMsg::setMsg(QByteArray buf, bool withStorageHeader)
+bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
 {
     unsigned int offset;
     QDltArgument argument;

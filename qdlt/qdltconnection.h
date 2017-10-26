@@ -33,6 +33,56 @@
 #include "export_rules.h"
 #include "qdltmsg.h"
 
+class QDLT_EXPORT QDltDataView
+{
+public:
+    QDltDataView(const char* data, int size)
+        : m_data(data)
+        , m_size(size)
+        , m_position()
+    {}
+
+    QDltDataView(const QByteArray& byteArray, int position = 0)
+        : m_data(byteArray.constData())
+        , m_size(byteArray.size())
+        , m_position(position)
+    {}
+
+    void align(const QByteArray& byteArray, int position = 0)
+    {
+        m_data = byteArray.constData();
+        m_size = byteArray.size();
+        m_position = position;
+    }
+
+    operator const QByteArray() { return QByteArray::fromRawData(m_data + m_position, m_size - m_position); }
+
+    const QByteArray mid(int pos, int len = -1)
+    {
+        if (len < 0) len = size() - pos;
+        if (pos > size()) pos = size();
+        if (pos + len > size()) len = size() - pos;
+        return QByteArray::fromRawData(m_data + m_position + pos, len);
+    }
+
+    void advance(int num)
+    {
+        if (num < 0) num = 0;
+        m_position += num;
+        if (m_position > m_size) m_position = m_size;
+    }
+
+    const char* data() { return m_data + m_position; }
+    const char* constData() { return m_data + m_position; }
+    int size() { return m_size - m_position; }
+    void clear() { m_position = m_size; }
+
+private:
+    const char * m_data;
+    int m_size;
+    int m_position;
+};
+
 class QDLT_EXPORT QDltConnection
 {
 
@@ -55,6 +105,7 @@ public:
     void add(const QByteArray &bytes);
 
     QByteArray data;
+    QDltDataView dataView = {data};
 
     unsigned long bytesReceived;
     unsigned long bytesError;
