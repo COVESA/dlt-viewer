@@ -24,7 +24,7 @@
 #include "plugininterface.h"
 #include "form.h"
 
-#define DLT_VIEWER_PLUGIN_VERSION "1.0.0"
+#define DLT_VIEWER_PLUGIN_VERSION "1.0.1"
 
 class DltViewerPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface
 {
@@ -66,7 +66,7 @@ public:
     Form *form;
 
 private:
-
+    QString plugin_name_displayed = QString("DLT Viewer Plugin");
     QString stringToHtml(QString str);
 
     QDltFile *dltFile;

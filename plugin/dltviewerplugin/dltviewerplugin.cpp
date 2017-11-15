@@ -30,8 +30,9 @@ DltViewerPlugin::~DltViewerPlugin() {
 
 }
 
-QString DltViewerPlugin::name() {
-    return QString("DLT Viewer Plugin");
+QString DltViewerPlugin::name()
+{
+    return plugin_name_displayed;
 }
 
 QString DltViewerPlugin::pluginVersion(){
@@ -87,7 +88,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 
     text += QString("<h3>Header</h3>");
     text += QString("<table border=\"1\" cellspacing=\"0\" cellheader=\"0\">");
-    qDebug() << text;
+    //qDebug() << text;
     text += QString("<tr><th>Index</th><th>Time</th><th>Timestamp</th><th>Count</th><th>Ecuid</th><th>Apid</th><th>Ctid</th><th>SessionId</th>");
     text += QString("<th>Type</th><th>Subtype</th><th>Mode</th><th>Endianness</th><th>#Args</th></tr>");
     //text += QString("<tr><td>%1</td>").arg(dltFile->getMsgFilterPos(index));
@@ -163,8 +164,10 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 }
 
 
-void DltViewerPlugin::initFileStart(QDltFile *file){
+void DltViewerPlugin::initFileStart(QDltFile *file)
+{
     dltFile = file;
+    qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_VIEWER_PLUGIN_VERSION;
 }
 
 void DltViewerPlugin::initMsg(int /*index*/, QDltMsg & /*msg*/){
