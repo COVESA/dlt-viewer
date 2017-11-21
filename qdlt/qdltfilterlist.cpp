@@ -216,13 +216,14 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
     bool retVal = true;
 
     QFile file(_filename);
+
     if (!file.open(QFile::ReadOnly | QFile::Text))
     {
 
         return false;
     }
 
-    filename = _filename;
+    filename = _filename; // filename is a private member
 
     QDltFilter filter;
 
@@ -253,14 +254,10 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
 
           }
     }
-    if (xml.hasError()) {
-    // I reluctantly comment this out
-    // DltViewer currently has no exception handling built in
-    // I don't really want to be the first one to introduce it
-
-    //    QMessageBox::warning(0, QString("XML Parser error"),
-    //                         xml.errorString());
-        retVal = false;
+    if (xml.hasError())
+    {
+     qDebug() << "Error in processing filter file" << filename << xml.errorString();
+     retVal = false;
     }
 
     file.close();

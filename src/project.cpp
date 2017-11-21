@@ -27,6 +27,7 @@
 #include "dltsettingsmanager.h"
 #include "dltuiutils.h"
 #include "dlt_user.h"
+#include "optmanager.h"
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *traceinfo[] = {"default","off","on"};
@@ -641,7 +642,9 @@ bool Project::Load(QString filename)
     //plugin->clear();
 
     QXmlStreamReader xml(&file);
-    while (!xml.atEnd()) {
+
+    while (!xml.atEnd())
+    {
           xml.readNext();
 
           if(xml.isStartElement())
@@ -1002,9 +1005,16 @@ bool Project::Load(QString filename)
               }
           }
     }
-    if (xml.hasError()) {
-        QMessageBox::warning(0, QString("XML Parser error"),
-                             xml.errorString());
+    if (xml.hasError())
+    {
+        if ( OptManager::getInstance()->issilentMode() == false )
+        {
+            QString xmlparsererror = QString("Error in project file \n%1:\n%2")
+                                .arg(filename)
+                                .arg(xml.errorString());
+            QMessageBox::warning(0, "XML Parser error in project file !", xmlparsererror);
+        }
+        qDebug() << "XML parser error" << xml.errorString() << "in " << filename;
     }
 
     file.close();
@@ -1177,8 +1187,16 @@ bool Project::LoadFilter(QString filename, bool replace){
 
     if(!filterList.LoadFilter(filename,replace))
     {
+        if ( OptManager::getInstance()->issilentMode() == false )
+        {
         QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+        }
+        else
+        {
+            qDebug() << "Loading" << filterList.getFilename() << " DLT Filter file failed !";
+        }
     }
+
 
     if(replace)
         filter->clear();
