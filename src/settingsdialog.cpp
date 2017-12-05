@@ -19,10 +19,11 @@
 
 #include <QSettings>
 #include <QFileDialog>
-#include <qmessagebox.h>
+#include <QMessageBox>
 #include <QDebug>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QStandardPaths>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
@@ -203,7 +204,7 @@ void SettingsDialog::writeDlg()
     }
     // ^Else, uses default set in .ui
 
-    ui->lineEditSystemTemp->setText(QDir::tempPath());
+    ui->lineEditSystemTemp->setText(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
     ui->lineEditOwnTemp->setText(tempOwnPath);
     ui->checkBoxCloseWithoutAsking->setChecked(tempCloseWithoutAsking == 1 ? true : false);
     ui->checkBoxSaveOnClear->setChecked(tempSaveOnClear == 1 ? true : false);
@@ -528,7 +529,7 @@ void SettingsDialog::readSettings()
     DltSettingsManager *settings = DltSettingsManager::getInstance();
     /* Temp file */
     tempUseSystem               = settings->value("tempdir/tempUseSystem", 1).toInt();
-    tempSystemPath              = QDir::tempPath();
+    tempSystemPath              = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
     tempUseOwn                  = settings->value("tempdir/tempUseOwn", 0).toInt();
     tempOwnPath                 = settings->value("tempdir/tempOwnPath", QString("")).toString();
     tempCloseWithoutAsking      = settings->value("tempdir/tempCloseWithoutAsking", 0).toInt();
@@ -547,7 +548,7 @@ void SettingsDialog::readSettings()
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",0).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-    filterCacheName = settings->value("startup/filterCacheName",QDir::tempPath()+"/dltviewer/cache").toString();
+    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/dltviewer/cache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
