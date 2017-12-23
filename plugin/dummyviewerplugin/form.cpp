@@ -21,6 +21,8 @@
 #include "ui_form.h"
 #include "dummyviewerplugin.h"
 
+using namespace DummyViewer;
+
 Form::Form(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Form)
