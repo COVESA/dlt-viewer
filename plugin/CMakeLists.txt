@@ -17,6 +17,13 @@
 cmake_minimum_required (VERSION 2.8.12)
 set (CMAKE_VERBOSE_MAKEFILE FALSE)
 
+# build plugins in build/bin/plugins directory
+set(PLUGIN_DIR ${BIN_DIR}/plugins)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PLUGIN_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLUGIN_DIR})
+
+
 add_subdirectory(dltviewerplugin)
 add_subdirectory(nonverboseplugin)
 add_subdirectory(filetransferplugin)

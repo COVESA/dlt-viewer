@@ -44,6 +44,10 @@ get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
 get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
 
+# build executables in build/bin directory
+set(BIN_DIR ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
+
 add_definitions(-DQT5)
 
 add_subdirectory(parser)
