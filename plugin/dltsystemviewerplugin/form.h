@@ -24,6 +24,7 @@
 #include <QTreeWidgetItem>
 #include "plugininterface.h"
 
+namespace DltSystemViewer {
 namespace Ui {
     class Form;
 }
@@ -61,5 +62,7 @@ private:
     Ui::Form *ui;
 
 };
+
+} //namespace DltSystemViewer
 
 #endif // FORM_H
