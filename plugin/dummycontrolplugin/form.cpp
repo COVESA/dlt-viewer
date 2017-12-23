@@ -23,6 +23,8 @@
 
 #include <qfiledialog.h>
 
+using namespace DummyControl;
+
 Form::Form(DummyControlPlugin *_plugin,QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Form)

@@ -24,9 +24,10 @@
 
 class DummyControlPlugin;
 
-namespace Ui {
-    class Form;
-}
+namespace DummyControl {
+    namespace Ui {
+        class Form;
+    }
 
 class Form : public QWidget
 {
@@ -57,4 +58,5 @@ private slots:
     void on_pushButtonReopenFile_clicked();
 };
 
+} // namespace DummyControl
 #endif // FORM_H
