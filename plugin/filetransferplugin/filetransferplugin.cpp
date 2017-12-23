@@ -156,7 +156,7 @@ QStringList FiletransferPlugin::infoConfig()
 
 QWidget* FiletransferPlugin::initViewer()
 {
-    form = new Form();
+    form = new FileTransferPlugin::Form();
     return form;
 }
 

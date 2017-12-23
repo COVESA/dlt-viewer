@@ -23,9 +23,12 @@
 #include <QWidget>
 #include <QTreeWidget>
 #include "file.h"
-namespace Ui {
-    class Form;
-}
+
+namespace FileTransferPlugin {
+    namespace Ui {
+        class Form;
+    }
+
 
 class Form : public QWidget
 {
@@ -57,5 +60,7 @@ private slots:
     void on_saveRightButton_clicked();
 
 };
+
+}  //namespace FileTransferPlugin
 
 #endif // FORM_H
