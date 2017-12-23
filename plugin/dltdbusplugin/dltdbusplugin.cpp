@@ -249,7 +249,7 @@ QWidget* DltDBusPlugin::initViewer()
 {
     // also called when plugin not activated
 
-    form = new Form();
+    form = new DltDbus::Form();
     return form;
 }
 

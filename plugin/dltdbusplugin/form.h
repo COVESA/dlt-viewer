@@ -22,6 +22,7 @@
 
 #include <QWidget>
 
+namespace DltDbus {
 namespace Ui {
     class Form;
 }
@@ -42,5 +43,7 @@ public:
 private:
     Ui::Form *ui;
 };
+
+} //namespace DltDbus
 
 #endif // FORM_H

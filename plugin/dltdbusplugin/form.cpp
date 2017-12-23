@@ -20,6 +20,8 @@
 #include "form.h"
 #include "ui_form.h"
 
+using namespace DltDbus;
+
 Form::Form(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Form)
