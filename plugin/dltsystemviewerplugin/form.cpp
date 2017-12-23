@@ -21,6 +21,8 @@
 #include "ui_form.h"
 #include "dltsystemviewerplugin.h"
 
+using namespace DltSystemViewer;
+
 ProcessItem::ProcessItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent)
 {
