@@ -83,7 +83,7 @@ public:
 
 private:
     QString plugin_name_displayed = QString("Filetransfer Plugin");
-    Form *form;
+    FileTransferPlugin::Form *form;
     QDltFile *dltFile;
     QDltControl *dltControl;
     QString errorText;
