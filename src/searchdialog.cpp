@@ -26,6 +26,7 @@
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QProgressDialog>
+#include <QSignalBlocker>
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
@@ -749,14 +750,22 @@ void SearchDialog::findPreviousClicked(){
 
 void SearchDialog::on_lineEditText_textEdited(QString newText)
 {
-        lineEdits->at(1)->setText(newText);
+        {
+            // block signal so that it does not trigger a setText back on lineEdits->at(0)!
+            QSignalBlocker signalBlocker(lineEdits->at(1));
+            lineEdits->at(1)->setText(newText);
+        }
         for(int i=0; i<lineEdits->size();i++){
             if(lineEdits->at(0)->text().isEmpty())
                 setSearchColour(lineEdits->at(i),1);
         }
 }
 void SearchDialog::textEditedFromToolbar(QString newText){
-        lineEdits->at(0)->setText(newText);
+        {
+            // block signal so that it does not trigger a setText back on lineEdits->at(1)!
+            QSignalBlocker signalBlocker(lineEdits->at(0));
+            lineEdits->at(0)->setText(newText);
+        }
         for(int i=0; i<lineEdits->size();i++){
             if(lineEdits->at(0)->text().isEmpty())
                 setSearchColour(lineEdits->at(i),1);
