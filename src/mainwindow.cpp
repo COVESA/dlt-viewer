@@ -2772,7 +2772,7 @@ void MainWindow::disconnectAll()
 
 void MainWindow::disconnectECU(EcuItem *ecuitem)
 {
-    if(ecuitem->tryToConnect != 0)
+    if( true == ecuitem->tryToConnect )
     {
         /* disconnect from host */
         ecuitem->tryToConnect = false;
@@ -2832,7 +2832,7 @@ void MainWindow::on_action_menuConfig_Disconnect_triggered()
 
 void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 {
-    if(ecuitem->tryToConnect == false || force)
+    if(false == ecuitem->tryToConnect || true == force)
     {
         ecuitem->tryToConnect = true;
         ecuitem->connected = false;
@@ -2846,7 +2846,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         ecuitem->ipcon.clear();
         ecuitem->serialcon.clear();
 
-        //qDebug()<< "Connect ECU " <<__LINE__;
+        qDebug()<< "Try to connect to ECU" << ecuitem->getHostname() << QDateTime::currentDateTime().toString("hh:mm:ss");
         /* start socket connection to host */
         if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
@@ -2863,6 +2863,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
                 //disconnect(ecuitem->socket,0,0,0);
                 ecuitem->socket->connectToHost(ecuitem->getHostname(),ecuitem->getIpport());
+             //  qDebug()<< "Connect to ECU line " <<__LINE__ << QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
             }
         }
         else
@@ -2943,7 +2944,7 @@ void MainWindow::connected()
             ecuitem->totalBytesRcvdLastTimeout = 0;
             ecuitem->ipcon.clear();
             ecuitem->serialcon.clear();
-            qDebug()<<"Connect to" << ecuitem->getHostname();
+            qDebug()<<"Connected to" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
         }
     }
 checkConnectionState();
@@ -2997,7 +2998,7 @@ void MainWindow::disconnected()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         if( ecuitem && ecuitem->socket == sender())
         {
-            qDebug() << "Disconnect" << ecuitem->getHostname();
+            qDebug() << "Disconnected" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
             /* update connection state */
             ecuitem->connected = false;
             ecuitem->connectError.clear();
@@ -3095,20 +3096,22 @@ void MainWindow::readyRead()
 
 void MainWindow::read(EcuItem* ecuitem)
 {
+    if (false == ecuitem)
+       return;
+
     int32_t bytesRcvd = 0;
     QDltMsg qmsg;
-
-    if (!ecuitem)
-        return;
-
     QByteArray data;
+    
     if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
     {
         /* TCP or UDP */
-        // bytesRcvd = ecuitem->socket->bytesAvailable();
+
         data = ecuitem->socket->readAll();
         bytesRcvd = data.size();
+
         ecuitem->ipcon.add(data);
+        //qDebug() << "::read" << __LINE__;//ecuitem->socket->errorString();
      }
     else if(ecuitem->m_serialport)
     {
@@ -3122,11 +3125,12 @@ void MainWindow::read(EcuItem* ecuitem)
     /* reading data; new data is added to the current buffer */
     if (bytesRcvd>0)
     {
-
         ecuitem->totalBytesRcvd += bytesRcvd;
 
-        while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) && ecuitem->ipcon.parse(qmsg)) ||
-              (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
+        while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
+                ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
+                ecuitem->ipcon.parse(qmsg)) ||
+               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
         {
 
 
@@ -3138,10 +3142,12 @@ void MainWindow::read(EcuItem* ecuitem)
 
             /* get time of day */
             #if defined(_MSC_VER)
-                time_t today;
-                time(&today);
-                str.seconds = (time_t)today;
-                str.microseconds = 0;
+               SYSTEMTIME systemtime;
+               GetSystemTime(&systemtime);
+               time_t timestamp_sec;
+               time(&timestamp_sec);
+               str.seconds = (time_t)timestamp_sec;
+               str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
             #else
                 struct timeval tv;
                 gettimeofday(&tv, NULL);
@@ -3209,7 +3215,8 @@ void MainWindow::read(EcuItem* ecuitem)
                     {
                         QList<QDltPlugin*> activeViewerPlugins;
                         activeViewerPlugins = pluginManager.getViewerPlugins();
-                        for(int i = 0; i < activeViewerPlugins.size(); i++){
+                        for(int i = 0; i < activeViewerPlugins.size(); i++)
+                        {
                             QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
                             item->updateMsg(-1,qmsg);
                             pluginManager.decodeMsg(qmsg,!OptManager::getInstance()->issilentMode());
@@ -3232,6 +3239,7 @@ void MainWindow::read(EcuItem* ecuitem)
             totalByteErrorsRcvd+=ecuitem->ipcon.bytesError;
             ecuitem->ipcon.bytesError = 0;
             totalBytesRcvd+=ecuitem->ipcon.bytesReceived;
+            //qDebug() << "totalBytesRcvd" << totalBytesRcvd;
             ecuitem->ipcon.bytesReceived = 0;
             totalSyncFoundRcvd+=ecuitem->ipcon.syncFound;
             ecuitem->ipcon.syncFound = 0;
@@ -3252,7 +3260,12 @@ void MainWindow::read(EcuItem* ecuitem)
             if(!dltIndexer->isRunning())
                 updateIndex();
         }
+    } // bytesRcvd>0
+    else
+    {
+      qDebug() << "bytesRcvd <= 0 error in " << __LINE__;
     }
+
 }
 
 void MainWindow::updateIndex()

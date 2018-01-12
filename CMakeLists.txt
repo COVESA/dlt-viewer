@@ -16,14 +16,14 @@
 
 cmake_minimum_required (VERSION 2.8.12)
 
-project (DLT-Viewer)
+project (dlt_viewer)
 
 set(CMAKE_CXX_STANDARD 11)
 
 set(QT_VERSION_REQ "5")
 
 find_package(Qt5Core ${QT_VERSION_REQ} REQUIRED)
-find_package(Qt5Quick ${QT_VERSION_REQ} REQUIRED)
+find_package(Qt5Network ${QT_VERSION_REQ} REQUIRED)
 find_package(Qt5Widgets ${QT_VERSION_REQ} REQUIRED)
 find_package(Qt5SerialPort ${QT_VERSION_REQ} REQUIRED)
 
@@ -43,6 +43,14 @@ set (CMAKE_INCLUDE_CURRENT_DIR ON)
 get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
 get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
+
+SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -std=gnu99")
+add_definitions( "-Wall" )
+add_definitions( "-Wextra" )
+add_definitions( "-pedantic" )
+add_definitions( "-Wno-variadic-macros" )
+add_definitions( "-Wno-strict-aliasing" )
+
 
 add_definitions(-DQT5)
 

@@ -39,6 +39,7 @@ OptManager::OptManager()
     plugin = false;
     silent_mode = false;
     convertionmode = e_ASCI;
+    commandline_mode = false;
 }
 
 OptManager* OptManager::getInstance()

@@ -50,7 +50,7 @@ extern "C"
 
 #define DLT_VIEWER_BUFFER_SIZE 256000
 #define RCVBUFSIZE 128000   /* Size of receive buffer */
-#define RECONNECT_TIMEOUT 5
+#define RECONNECT_TIMEOUT 3
 
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
 
@@ -93,8 +93,9 @@ public:
     QextSerialPort *m_serialport;
 
     /* connection status */
-    int tryToConnect;
-    int connected;
+    bool tryToConnect;
+    bool connected;
+
     QString connectError;
     bool autoReconnect;
     int autoReconnectTimeout;

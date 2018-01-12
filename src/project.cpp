@@ -29,6 +29,7 @@
 #include "dlt_user.h"
 #include "optmanager.h"
 
+
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
 const char *traceinfo[] = {"default","off","on"};
 
@@ -60,8 +61,8 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     totalBytesRcvd = 0;
     totalBytesRcvdLastTimeout = 0;
 
-    tryToConnect = 0;
-    connected = 0;
+    tryToConnect = false;
+    connected = false;
 
     status = EcuItem::unknown;
 
@@ -81,12 +82,12 @@ EcuItem::~EcuItem()
 
 void EcuItem::update()
 {
-    if(tryToConnect & connected)
+    if( ( true == tryToConnect ) && ( true == connected ))
     {
         setData(0,Qt::DisplayRole,id + " online");
         setBackground(0,QBrush(QColor(Qt::green)));
     }
-    else if(tryToConnect & !connected)
+    else if( ( true == tryToConnect )  && ( false == connected ))
     {
         if(connectError.isEmpty())
         {
@@ -180,25 +181,27 @@ bool EcuItem::operator< ( const QTreeWidgetItem & other ) const {
     return currentItem.toLower() < otherItem.toLower();
 }
 
-bool EcuItem::isAutoReconnectTimeoutPassed(){
+bool EcuItem::isAutoReconnectTimeoutPassed()
+{
 
     bool timeoutPassed = false;
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
 
-    //qDebug() << "currentDateTime:" << currentDateTime << " - nextTimeOut:" << autoReconnectTimestamp;
-
-    if(autoReconnectTimestamp <= currentDateTime){
+    if(autoReconnectTimestamp <= currentDateTime)
+    {
         timeoutPassed = true;
         autoReconnectTimestamp = currentDateTime.addSecs(autoReconnectTimeout);
+        //qDebug() << hostname << "currentDateTime:" << QDateTime::currentDateTime().toString("hh:mm:ss") << "next timeout:" << autoReconnectTimestamp.toString("hh:mm:ss") << totalBytesRcvd - totalBytesRcvdLastTimeout;
     }
 
     return timeoutPassed;
 }
 
-void EcuItem::updateAutoReconnectTimestamp(){
-
+void EcuItem::updateAutoReconnectTimestamp()
+{
     autoReconnectTimestamp = QDateTime::currentDateTime().addSecs(autoReconnectTimeout);
+    //qDebug() << "updateAutoReconnectTimestamp" << autoReconnectTimestamp;
 }
 
 ApplicationItem::ApplicationItem(QTreeWidgetItem *parent)
