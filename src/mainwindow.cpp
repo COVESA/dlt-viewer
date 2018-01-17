@@ -521,7 +521,7 @@ void MainWindow::initFileHandling()
         else
         {
             /* Create temp file */
-            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings), OptManager::getInstance()->issilentMode());
+            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
             outputfile.setFileName(fn);
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
@@ -1403,7 +1403,7 @@ void MainWindow::on_SaveAs_triggered(QString fileName)
 
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
-    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings), OptManager::getInstance()->issilentMode());
+    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
     if(!fn.length())
     {
         /* Something went horribly wrong with file name creation

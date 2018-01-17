@@ -64,10 +64,11 @@ QString DltFileUtils::createTempFile(QDir path,  bool silentmode)
     return file.fileName();
 }
 
-QDir DltFileUtils::getTempPath(SettingsDialog *settings)
+QDir DltFileUtils::getTempPath(SettingsDialog *settings, bool silentmode)
 {
     QDir temp_path = QString(".");
     bool dir_ok = true;
+  //  bool silentmode = true;
 
     if(settings->tempUseSystem)
     {
@@ -76,9 +77,17 @@ QDir DltFileUtils::getTempPath(SettingsDialog *settings)
         {  // the path does not yet exist
             if( false == temp_path.mkdir(settings->tempSystemPath) )
             {
-                QMessageBox::critical(0, QString("DLT Viewer"),
-                                  QString("System temporary path\n %1\n not accessible !\nUsing \".\" instead !")
-                                  .arg(temp_path.absolutePath()));
+                if ( silentmode == true )
+                            {
+                             qDebug() << QString("Check write privilges for system temporary path %1 !!").arg(temp_path.absolutePath());
+                             qDebug() << "System temporary path - not accessible - using path . instead !";
+                            }
+                           else
+                            {
+                              QMessageBox::critical(0, QString("DLT Viewer"),
+                                                QString("System temporary path\n %1\n not accessible !\nUsing \".\" instead !")
+                                                .arg(temp_path.absolutePath()));
+                            }
 
                 dir_ok = false;
             }
@@ -91,9 +100,16 @@ QDir DltFileUtils::getTempPath(SettingsDialog *settings)
         {
             if(!temp_path.mkdir("."))
             {
+              if ( silentmode == true )
+               {
+                qDebug() << QString("Could not create temporary path !\n%1\nUsing \".\" instead !").arg(temp_path.absolutePath());
+               }
+              else
+               {
                 QMessageBox::critical(0, QString("DLT Viewer"),
                                   QString("Could not create temporary path !\n%1\nUsing \".\" instead !")
                                   .arg(temp_path.absolutePath()));
+               }
                 dir_ok = false;
             }
         }
