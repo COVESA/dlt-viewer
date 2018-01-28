@@ -82,7 +82,7 @@ QStringList DltSystemViewerPlugin::infoConfig()
 
 QWidget* DltSystemViewerPlugin::initViewer()
 {
-    form = new Form();
+    form = new DltSystemViewer::Form();
     return form;
 }
 

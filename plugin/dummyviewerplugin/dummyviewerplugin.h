@@ -64,7 +64,7 @@ public:
 
 
     /* internal variables */
-    Form *form;
+    DummyViewer::Form *form;
     int counterMessages;
     int counterNonVerboseMessages;
     int counterVerboseMessages;

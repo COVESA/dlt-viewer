@@ -22,9 +22,10 @@
 
 #include <QWidget>
 
-namespace Ui {
-    class Form;
-}
+namespace DummyViewer {
+    namespace Ui {
+        class Form;
+    }
 
 class Form : public QWidget
 {
@@ -41,7 +42,8 @@ public:
 
 private:
     Ui::Form *ui;
-
 };
+
+} //namespace DummyViewer
 
 #endif // FORM_H

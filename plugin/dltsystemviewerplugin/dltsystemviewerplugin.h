@@ -63,7 +63,7 @@ public:
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
 
     /* internal variables */
-    Form *form;
+    DltSystemViewer::Form *form;
     int counterMessages;
     int counterNonVerboseMessages;
     int counterVerboseMessages;

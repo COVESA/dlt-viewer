@@ -75,7 +75,7 @@ QStringList DummyViewerPlugin::infoConfig()
 
 QWidget* DummyViewerPlugin::initViewer()
 {
-    form = new Form();
+    form = new DummyViewer::Form();
     return form;
 }
 

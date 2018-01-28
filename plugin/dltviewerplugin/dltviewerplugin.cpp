@@ -63,7 +63,7 @@ QStringList DltViewerPlugin::infoConfig() {
 }
 
 QWidget* DltViewerPlugin::initViewer() {
-    form = new Form();
+    form = new DltViewer::Form();
     return form;
 }
 

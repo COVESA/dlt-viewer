@@ -71,7 +71,7 @@ public:
     bool autoscrollStateChanged(bool enabled);
 
     /* internal variables */
-    Form *form;
+    DummyControl::Form *form;
     int counterMessages;
     int counterNonVerboseMessages;
     int counterVerboseMessages;

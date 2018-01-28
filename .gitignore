@@ -1,4 +1,5 @@
 .gitconfig
+CMakeLists.txt.user
 *.pro.user
 build/
 .project

@@ -33,6 +33,8 @@
 #include "textviewdialog.h"
 #include <QtDebug>
 
+using namespace FileTransferPlugin;
+
 Form::Form(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::Form)
