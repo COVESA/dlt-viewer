@@ -90,8 +90,13 @@ bool DltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
         {
+            if ( true == OptManager::getInstance()->issilentMode() )
+             {
+             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+             }
+            else
             QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot open the export file."));
+                                  QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
@@ -99,8 +104,13 @@ bool DltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly))
         {
+            if ( true == OptManager::getInstance()->issilentMode() )
+             {
+             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+             }
+            else
             QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot open the export file."));
+                                  QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
@@ -111,8 +121,13 @@ bool DltExporter::start()
         /* Write the first line of CSV file */
         if(!writeCSVHeader(to))
         {
+            if ( true == OptManager::getInstance()->issilentMode() )
+             {
+             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+             }
+            else
             QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot write to export file."));
+                                  QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
@@ -318,10 +333,11 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     }
 
 
-    if (startFinishError>0||readErrors>0||exportErrors>0)
+    if ( startFinishError>0 || readErrors>0 || exportErrors>0 )
     {
        qDebug() << "DLT Export finish() failed";
-       QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
+       if (silentMode == false)
+        QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
        return;
     }
     qDebug() << "DLT export done for" << exportCounter << "messages with result" << startFinishError;
