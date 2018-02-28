@@ -270,7 +270,6 @@ void Form::on_saveRightButton_clicked()
         QString detailedText;
         File *tmpfile;
         unsigned int index_of_selected_entry = index_to_widget.row();
-        bool errorOccured = false;
         msgBox.setWindowTitle("Filetransfer Plugin");
 
         // so we set the pointer to actually highlighted entry below the mouse
@@ -289,7 +288,6 @@ void Form::on_saveRightButton_clicked()
 
                 if(!tmpfile->saveFile(absolutePath) )
                 {
-                    errorOccured = true; // so we want to indicate at least one error anyway
                     text = ("File save incomplete");
                     infoText = FiletoSave;
                     infoText += " was not saved to "+path+".\n";

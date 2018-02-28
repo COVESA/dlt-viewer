@@ -3,12 +3,12 @@
 
 DltMsgQueue::DltMsgQueue(int size)
     : bufferSize(size),
+      buffer(new QPair<QSharedPointer<QDltMsg>, int> [size]),
       readPosition(0),
       writePosition(0),
       stopRequested(false),
       writeSleepTime(0),
-      readSleepTime(0),
-      buffer(new QPair<QSharedPointer<QDltMsg>, int> [size])
+      readSleepTime(0)
 {}
 
 DltMsgQueue::~DltMsgQueue()

@@ -237,7 +237,7 @@ void SettingsDialog::writeDlg()
     ui->spinBoxFontSize->setValue(fontSize);
 
     /* Time settings */
-    ui->groupBoxAutomaticTimeSettings->setChecked(automaticTimeSettings?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxAutomaticTimeSettings->setChecked(automaticTimeSettings);
     if(ui->groupBoxAutomaticTimeSettings->isChecked())
     {
         ui->checkBoxDST->setEnabled(false);
@@ -252,7 +252,7 @@ void SettingsDialog::writeDlg()
         ui->labelTimezone->setEnabled(true);
         ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
-    ui->checkBoxAutomaticTimezone->setChecked(automaticTimezoneFromDlt?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutomaticTimezone->setChecked(automaticTimezoneFromDlt);
 
     ui->checkBoxDST->setCheckState(dst?Qt::Checked:Qt::Unchecked);
     ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(utcOffset)));
@@ -264,7 +264,7 @@ void SettingsDialog::writeDlg()
 
     ui->checkBoxEcuid->setCheckState(showEcuId?Qt::Checked:Qt::Unchecked);
 
-    ui->groupBoxAppId->setChecked(showApId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxAppId->setChecked(showApId);
     if(ui->groupBoxAppId->isChecked())
     {
         ui->radioButtonAppId->setEnabled(true);
@@ -291,7 +291,7 @@ void SettingsDialog::writeDlg()
         break;
     }
 
-    ui->groupBoxConId->setChecked(showCtId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxConId->setChecked(showCtId);
     if(ui->groupBoxConId->isChecked())
     {
         ui->radioButtonConId->setEnabled(true);
@@ -318,7 +318,7 @@ void SettingsDialog::writeDlg()
         break;
     }
 
-    ui->groupBoxSessionId->setChecked(showSessionId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxSessionId->setChecked(showSessionId);
     if(ui->groupBoxSessionId->isChecked())
     {
         ui->radioButtonSessionId->setEnabled(true);

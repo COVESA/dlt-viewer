@@ -3028,7 +3028,9 @@ void MainWindow::timeout()
             if(ecuitem->isAutoReconnectTimeoutPassed() &&
                dltIndexer->tryLock())
             {
-                if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) && ecuitem->autoReconnect && ecuitem->connected != 0 && ecuitem->totalBytesRcvd == ecuitem->totalBytesRcvdLastTimeout)
+                if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+                        && ecuitem->autoReconnect && ecuitem->connected != 0
+                        && ecuitem->totalBytesRcvd == static_cast<unsigned long>(ecuitem->totalBytesRcvdLastTimeout))
                 {
                     disconnectECU(ecuitem);
                     ecuitem->tryToConnect = true;
@@ -3096,7 +3098,7 @@ void MainWindow::readyRead()
 
 void MainWindow::read(EcuItem* ecuitem)
 {
-    if (false == ecuitem)
+    if (nullptr == ecuitem)
        return;
 
     int32_t bytesRcvd = 0;

@@ -75,7 +75,7 @@ QString FilterDialog::getName()
 
 void FilterDialog::setEnableRegexp_Context(bool state)
 {
-    ui->checkBoxRegexp_Context->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxRegexp_Context->setChecked(state);
 }
 
 bool FilterDialog::getEnableRegexp_Context()
@@ -85,7 +85,7 @@ bool FilterDialog::getEnableRegexp_Context()
 
 void FilterDialog::setEnableRegexp_Header(bool state)
 {
-    ui->checkBoxRegexp_Header->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxRegexp_Header->setChecked(state);
 }
 
 bool FilterDialog::getEnableRegexp_Header()
@@ -95,7 +95,7 @@ bool FilterDialog::getEnableRegexp_Header()
 
 void FilterDialog::setEnableRegexp_Payload(bool state)
 {
-    ui->checkBoxRegexp_Payload->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxRegexp_Payload->setChecked(state);
 }
 
 bool FilterDialog::getEnableRegexp_Payload()
@@ -105,7 +105,7 @@ bool FilterDialog::getEnableRegexp_Payload()
 
 void FilterDialog::setIgnoreCase_Header(bool state)
 {
-    ui->checkBox_IgnoreCase_Header->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBox_IgnoreCase_Header->setChecked(state);
 }
 
 bool FilterDialog::getIgnoreCase_Header()
@@ -115,7 +115,7 @@ bool FilterDialog::getIgnoreCase_Header()
 
 void FilterDialog::setIgnoreCase_Payload(bool state)
 {
-    ui->checkBox_IgnoreCase_Payload->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->checkBox_IgnoreCase_Payload->setChecked(state);
 }
 
 bool FilterDialog::getIgnoreCase_Payload()
@@ -297,7 +297,7 @@ bool FilterDialog::getEnableActive(){
 }
 
 void FilterDialog::setEnableMarker(bool state){
-    ui->groupBox_marker->setChecked(state?Qt::Checked:Qt::Unchecked);
+    ui->groupBox_marker->setChecked(state);
     /* update ui */
 }
 

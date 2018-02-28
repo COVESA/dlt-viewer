@@ -112,7 +112,7 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDLTPluginInterface,
-                    "org.genivi.DLT.Plugin.DLTPluginInterface/1.0");
+                    "org.genivi.DLT.Plugin.DLTPluginInterface/1.0")
 
 //! Extended DLT Viewer Plugin Interface used by decoder plugins.
 /*!
@@ -148,7 +148,7 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDLTPluginDecoderInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginDecoderInterface/1.0");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginDecoderInterface/1.0")
 
 //! Extended DLT Viewer Plugin Interface used by viewer plugins.
 /*!
@@ -265,7 +265,7 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDltPluginViewerInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginViewerInterface/1.2");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginViewerInterface/1.2")
 
 //! Extended DLT Control Plugin Interface used by control plugins.
 /*!
@@ -331,7 +331,7 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDltPluginControlInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.1");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.1")
 
 //! DLT Command Plugin Interface
 /*!
@@ -356,6 +356,6 @@ public:
 };
 
 Q_DECLARE_INTERFACE(QDltPluginCommandInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginCommandInterface/1.1");
+                    "org.genivi.DLT.Plugin.DLTViewerPluginCommandInterface/1.1")
 
 #endif // PLUGININTERFACE_H
