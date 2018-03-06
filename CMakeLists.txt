@@ -20,6 +20,8 @@ project (dlt_viewer)
 
 set(CMAKE_CXX_STANDARD 11)
 
+set(CMAKE_PREFIX_PATH $ENV{QTDIR})
+
 set(QT_VERSION_REQ "5")
 
 find_package(Qt5Core ${QT_VERSION_REQ} REQUIRED)

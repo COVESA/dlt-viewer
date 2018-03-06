@@ -4645,7 +4645,7 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
     // Please copy changes to OptManager::getInstance().cpp - printUsage()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
-                         #if (WIN32)
+                         #ifdef WIN32
                              QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #else

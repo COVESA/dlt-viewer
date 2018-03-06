@@ -12,7 +12,15 @@
 # List of changes:
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
-add_library (qdlt dlt_common.c
+
+set(QDLT_LIBRARY_TYPE STATIC)
+
+if(WIN32)
+add_definitions(-DQDLT_LIBRARY)
+set(QDLT_LIBRARY_TYPE SHARED)
+endif()
+
+add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
                   qdltipconnection.cpp
                   qdlttcpconnection.cpp
                   qdltudpconnection.cpp
@@ -35,6 +43,12 @@ target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../qextserialport/src
                                           ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-target_link_libraries(qdlt Qt5::Core Qt5::Network)
+set(QDLT_LINK_LIBS Qt5::Core Qt5::Network)
+
+if(WIN32)
+set(QDLT_LINK_LIBS ${QDLT_LINK_LIBS} ws2_32)
+endif()
+
+target_link_libraries(qdlt ${QDLT_LINK_LIBS})
 
 install(TARGETS qdlt DESTINATION deploy)
