@@ -101,14 +101,14 @@ void File::setFileCreationDate(QString f){
     this->setText(COLUMN_FILEDATE, fileCreationDate);
 }
 
-void File::setFileSerialNumber(QString s){
-    fileSerialNumber = s.toInt();
+void File::setFileSerialNumber(QString s)
+{
+    fileSerialNumber = s.toUInt();
     this->setText(COLUMN_FILEID, s);
-
 }
 
 void File::setPackages(QString p){
-    packages = p.toInt();
+    packages = p.toUInt();
     dltFileIndex = new QList<int>[packages];
     this->setText(COLUMN_PACKAGES, p);
 }
@@ -121,12 +121,12 @@ void File::increaseReceivedPackages(){
 }
 
 void File::setSizeInBytes(QString s){
-    sizeInBytes = s.toInt();
+    sizeInBytes = s.toUInt();
     this->setText(COLUMN_SIZE, s);
 }
 
 void File::setBuffersize(QString b){
-    buffer = b.toInt();
+    buffer = b.toUInt();
     this->setText(COLUMN_BUFFERSIZE, b);
 }
 

@@ -20,9 +20,11 @@
 #include <QtGui>
 #include <QMessageBox>
 #include <QApplication>
+#include <QDir>
+
 #include "filetransferplugin.h"
 #include "file.h"
-#include <QDir>
+
 
 FiletransferPlugin::FiletransferPlugin()
 {
@@ -173,11 +175,11 @@ void FiletransferPlugin::initFileStart(QDltFile *file)
 	if (plugin_is_active == false )
 	{
     qDebug() << "Activate plugin" << plugin_name_displayed <<  FILETRANSFER_PLUGIN_VERSION;
-    dltFile = file;
     plugin_is_active = true;
+    }
+    dltFile = file;
     form->getTreeWidget()->clear();
     form->clearSelectedFiles();
-    }
 }
 
 void FiletransferPlugin::initMsg(int index, QDltMsg &msg)
