@@ -52,6 +52,10 @@ add_definitions( "-Wno-variadic-macros" )
 add_definitions( "-Wno-strict-aliasing" )
 
 
+# build executables in build/bin directory
+set(BIN_DIR ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
+
 add_definitions(-DQT5)
 
 add_subdirectory(parser)
