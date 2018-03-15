@@ -1174,7 +1174,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false)
 
 void MainWindow::exportSelection_searchTable()
 {
-    QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selection().indexes();
+    const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
 
     // Clear the selection from main table.
     ui->tableView->selectionModel()->clear();
