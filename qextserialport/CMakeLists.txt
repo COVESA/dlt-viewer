@@ -38,8 +38,14 @@ add_library (qextserialport ${QEXT_SERIALPORT_SOURCES})
 if(${CMAKE_SYSTEM_NAME} STREQUAL Darwin)
     target_link_libraries(qextserialport
         ${IOKIT_LIBRARY}
-        ${FOUNDATION_LIBRARY})
+        ${FOUNDATION_LIBRARY}
+		)
 endif()
+
+if(WIN32)
+target_link_libraries(qextserialport Setupapi)
+endif()
+
 # Make sure the compiler can find include files for our qextserialport library
 # when other libraries or executables link to qextserialport
 target_include_directories (qextserialport PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
