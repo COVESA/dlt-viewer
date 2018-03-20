@@ -122,7 +122,7 @@ public:
     bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
     /* internal variables */
-    Form *form;
+    DltDbus::Form *form;
 
 private:
 
