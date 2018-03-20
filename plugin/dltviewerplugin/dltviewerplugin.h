@@ -63,7 +63,7 @@ public:
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
 
     /* internal variables */
-    Form *form;
+    DltViewer::Form *form;
 
 private:
     QString plugin_name_displayed = QString("DLT Viewer Plugin");

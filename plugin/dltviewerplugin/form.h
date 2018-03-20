@@ -22,8 +22,10 @@
 
 #include <QWidget>
 
-namespace Ui {
-    class Form;
+
+namespace DltViewer {
+    namespace Ui {
+        class Form;
 }
 
 class Form : public QWidget
@@ -44,5 +46,7 @@ public:
 private:
     Ui::Form *ui;
 };
+
+} //namespace DltViewer
 
 #endif // FORM_H
