@@ -39,7 +39,6 @@ Dynamically linked open source software
 
 Qt 5.5.1 (LGPLv3 - Qt)
 GCC (GPL)
-qextserialport (MIT License - Version 1.2 BETA)
 (Optional) Mingw (GPL + BSD Variante + Public Domain)
 Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple LIcenses)
 License

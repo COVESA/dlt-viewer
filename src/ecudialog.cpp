@@ -19,7 +19,9 @@
 
 #include "ecudialog.h"
 #include "ui_ecudialog.h"
-#include "qextserialenumerator.h"
+
+#include <QSerialPort>
+
 EcuDialog::EcuDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::EcuDialog)
@@ -29,46 +31,47 @@ EcuDialog::EcuDialog(QWidget *parent) :
     ui->comboBoxPort->setEditable(true);
 
 #if defined(Q_OS_UNIX) || defined(qdoc)
-    ui->comboBoxBaudrate->addItem(QLatin1String("50"), BAUD50 );                //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("75"), BAUD75 );                //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("134"), BAUD134 );              //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("150"), BAUD150 );              //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("200"), BAUD200 );              //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("1800"), BAUD1800 );            //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("50"), 50 );                //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("75"), 75 );                //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("134"), 134 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("150"), 150 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("200"), 200 );              //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("1800"), 1800 );            //POSIX ONLY
 #  if (defined(B230400) && defined(B4000000)) || defined(qdoc)
-    ui->comboBoxBaudrate->addItem(QLatin1String("230400"), BAUD230400 );        //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("460800"), BAUD460800 );        //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("500000"), BAUD500000 );        //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("576000"), BAUD576000 );       //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("921600"), BAUD921600 );        //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("100000"), BAUD1000000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), BAUD1152000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("150000"), BAUD1500000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("200000"), BAUD2000000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("250000"), BAUD2500000 );     //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("300000"), BAUD3000000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("350000"), BAUD3500000 );      //POSIX ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("400000"), BAUD4000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("230400"), 230400 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("460800"), 460800 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("500000"), 500000 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("576000"), 576000 );       //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("921600"), 921600 );        //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("100000"), 1000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), 1152000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("150000"), 1500000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("200000"), 2000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("250000"), 2500000 );     //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("300000"), 3000000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("350000"), 3500000 );      //POSIX ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("400000"), 4000000 );      //POSIX ONLY
 #  endif
 #endif //Q_OS_UNIX
 
 #if defined(Q_OS_WIN) || defined(qdoc)
-    ui->comboBoxBaudrate->addItem(QLatin1String("14400"), BAUD14400 );          //WINDOWS ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("56000"), BAUD56000 );          //WINDOWS ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("28000"), BAUD128000 );        //WINDOWS ONLY
-    ui->comboBoxBaudrate->addItem(QLatin1String("256000"), BAUD256000 );       //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("14400"), 14400 );          //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("56000"), 56000 );          //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("28000"), 128000 );        //WINDOWS ONLY
+    ui->comboBoxBaudrate->addItem(QLatin1String("256000"), 256000 );       //WINDOWS ONLY
 #endif  //Q_OS_WIN
-    ui->comboBoxBaudrate->addItem(QLatin1String("110"), BAUD110 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("300"), BAUD300 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("600"), BAUD600 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("1200"), BAUD1200 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("2400"), BAUD2400 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("4800"), BAUD4800 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("9600"), BAUD9600 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("19200"), BAUD19200 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("38400"),  BAUD38400 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("57600"), BAUD57600 );
-    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), BAUD115200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("110"), 110 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("300"), 300 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("600"), 600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("1200"), QSerialPort::Baud1200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("2400"), QSerialPort::Baud2400 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("4800"), QSerialPort::Baud4800 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("9600"), QSerialPort::Baud9600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("19200"), QSerialPort::Baud19200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("57600"), QSerialPort::Baud57600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("115200"), QSerialPort::Baud115200 );
+
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
 
 }
@@ -89,7 +92,7 @@ void EcuDialog::setData(EcuItem &item)
 
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
     for(int i=0; i<ui->comboBoxBaudrate->count(); i++){
-        if(item.getBaudrate() == (BaudRateType)ui->comboBoxBaudrate->itemData(i).toInt())
+        if(item.getBaudrate() == (QSerialPort::BaudRate)ui->comboBoxBaudrate->itemData(i).toInt())
             ui->comboBoxBaudrate->setCurrentIndex(i);
     }
 
@@ -165,9 +168,9 @@ QString EcuDialog::port()
     }
 }
 
-BaudRateType EcuDialog::baudrate()
+QSerialPort::BaudRate EcuDialog::baudrate()
 {
-    return (BaudRateType)ui->comboBoxBaudrate->itemData(ui->comboBoxBaudrate->currentIndex()).toInt();
+    return (QSerialPort::BaudRate)ui->comboBoxBaudrate->itemData(ui->comboBoxBaudrate->currentIndex()).toInt();
 }
 
 int EcuDialog::loglevel()

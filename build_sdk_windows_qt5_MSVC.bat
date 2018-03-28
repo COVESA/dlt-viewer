@@ -197,13 +197,13 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\bin\Qt5OpenGL.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
+copy %QTDIR%\bin\Qt5SerialPort.dll %DLT_VIEWER_SDK_DIR%
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\qextserialport.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %BUILD_DIR%\qdlt.dll %DLT_VIEWER_SDK_DIR%
@@ -249,12 +249,6 @@ copy %BUILD_DIR%\qdlt.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %BUILD_DIR%\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\qextserialport.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\qextserialport.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\plugin\dummyviewerplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin

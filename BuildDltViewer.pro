@@ -1,5 +1,5 @@
 #
 TEMPLATE = subdirs
 CONFIG   += ordered
-SUBDIRS  += qextserialport qdlt src plugin
+SUBDIRS  += qdlt src plugin
 CONFIG += c++11

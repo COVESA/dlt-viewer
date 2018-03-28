@@ -309,7 +309,7 @@ private:
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
-    QStringList getSerialPortsWithQextEnumerator();
+    QStringList getAvailableSerialPorts();
 
     void deleteactualFile();
 

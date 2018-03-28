@@ -28,7 +28,7 @@
 #include <QUdpSocket>
 #include <QObject>
 #include <QDateTime>
-#include <qextserialport.h>
+#include <QSerialPort>
 #include <QPluginLoader>
 
 #if defined(_MSC_VER)
@@ -90,7 +90,7 @@ public:
     QUdpSocket udpsocket;
     QAbstractSocket * socket;
 
-    QextSerialPort *m_serialport;
+    QSerialPort *m_serialport;
 
     /* connection status */
     int tryToConnect;
@@ -135,7 +135,7 @@ public:
 private:
      /* Configuration serial */
      QString port;
-     BaudRateType baudrate;
+     QSerialPort::BaudRate baudrate;
      bool sendSerialHeaderSerial;
      bool syncSerialHeaderSerial;
 
@@ -144,12 +144,12 @@ public:
 
      /* Accsesors to config */
      QString getPort() {return port;}
-     BaudRateType getBaudrate() {return baudrate;}
+     QSerialPort::BaudRate getBaudrate() {return baudrate;}
      bool getSendSerialHeaderSerial() {return sendSerialHeaderSerial;}
      bool getSyncSerialHeaderSerial() {return syncSerialHeaderSerial;}
 
      void setPort(QString tp) {port = tp; serialcon.setPort(port);}
-     void setBaudrate(BaudRateType brt) {baudrate = brt;serialcon.setBaudrate(baudrate);}
+     void setBaudrate(QSerialPort::BaudRate brt) {baudrate = brt;serialcon.setBaudrate(baudrate);}
      void setSendSerialHeaderSerial(bool b) {sendSerialHeaderSerial = b;serialcon.setSendSerialHeader(sendSerialHeaderSerial);}
      void setSyncSerialHeaderSerial(bool b) {syncSerialHeaderSerial = b;serialcon.setSyncSerialHeader(syncSerialHeaderSerial);}
 

@@ -26,7 +26,6 @@ copy %QT_DIR%\QtGui4.dll %TARGET_DIR%
 copy %QT_DIR%\QtNetwork4.dll %TARGET_DIR%
 
 copy %BUILD_DIR%\dlt_viewer.exe %TARGET_DIR%
-copy %BUILD_DIR%\qextserialport.dll %TARGET_DIR%
 copy %BUILD_DIR%\qdlt.dll %TARGET_DIR%
 
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %TARGET_DIR%\plugins
@@ -46,7 +45,6 @@ copy %SOURCE_DIR%\qdlt\qdlt.h %TARGET_DIR%\sdk\include
 copy %SOURCE_DIR%\src\plugininterface.h %TARGET_DIR%\sdk\include
 
 copy %BUILD_DIR%\libqdlt.a %TARGET_DIR%\sdk\lib
-copy %BUILD_DIR%\libqextserialport.a %TARGET_DIR%\sdk\lib
 
 copy %SOURCE_DIR%\plugin\dummyviewerplugin %TARGET_DIR%\sdk\src\dummyviewerplugin
 copy %SOURCE_DIR%\plugin\dummydecoderplugin %TARGET_DIR%\sdk\src\dummydecoderplugin

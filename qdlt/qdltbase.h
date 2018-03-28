@@ -50,7 +50,7 @@ extern "C" {
 struct sDltFile;
 struct sDltMessage;
 
-class QextSerialPort;
+class QSerialPort;
 class QTcpSocket;
 class QUdpSocket;
 
