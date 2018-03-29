@@ -57,7 +57,7 @@ private slots:
     void on_selectButton_clicked();
     void on_deselectButton_clicked();
     void savetofile();
-    void on_saveRightButton_clicked();
+    void onSaveRightButtonClicked();
 
 };
 
