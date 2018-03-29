@@ -256,7 +256,7 @@ void Form::savetofile()
 }
 
 
-void Form::onSaveRightButtonClicked()
+void Form::on_saveRightButtonClicked()
 {
     QString FiletoSave;
     QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"), QDir::currentPath(), QFileDialog::DontResolveSymlinks);
@@ -358,7 +358,7 @@ void Form::on_treeWidget_customContextMenuRequested(QPoint pos)
     if(list.count() == 1)
     {
         action = new QAction("&Save this file", this);
-        connect(action, &QAction::triggered, this, &Form::onSaveRightButtonClicked);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_saveRightButtonClicked()));
         menu.addAction(action);
 
         /* show popup menu */
