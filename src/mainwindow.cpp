@@ -1353,10 +1353,10 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
         return;
     }
 
-    on_SaveAs_triggered(fileName);
+    onSaveAsTriggered(fileName);
 }
 
-void MainWindow::on_SaveAs_triggered(QString fileName)
+void MainWindow::onSaveAsTriggered(QString fileName)
 {
 
     /* check if filename is the same as already open */

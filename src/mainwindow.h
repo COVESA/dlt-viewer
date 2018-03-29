@@ -389,7 +389,7 @@ public slots:
 
     void onNewTriggered(QString fileName);
     void on_Open_triggered(QStringList filenames);
-    void on_SaveAs_triggered(QString fileName);
+    void onSaveAsTriggered(QString fileName);
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Quit_triggered();
     void on_action_FindNext();
