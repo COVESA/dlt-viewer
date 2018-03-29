@@ -427,7 +427,7 @@ private slots:
     void on_action_menuConfig_Connect_triggered();
     void on_action_menuConfig_Delete_All_Contexts_triggered();
     void on_action_menuConfig_Copy_to_clipboard_triggered();
-    void on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered();
+    void onActionMenuConfigSearchTableCopyToClipboardTriggered();
 
     // DLT methods
     void on_action_menuDLT_Send_Injection_triggered();

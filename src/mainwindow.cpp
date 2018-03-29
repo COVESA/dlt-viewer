@@ -5835,7 +5835,7 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     QAction *action;
 
     action = new QAction("&Copy Selection to Clipboard", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered()));
+    connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered);
     menu.addAction(action);
 
     menu.addSeparator();
@@ -5844,7 +5844,7 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     menu.exec(globalPos);
 }
 
-void MainWindow::on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered()
+void MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered()
 {
     exportSelection_searchTable();
 }
