@@ -356,7 +356,7 @@ private slots:
     void reloadLogFileFinishFilter();
     void reloadLogFileFinishDefaultFilter();
 
-    void on_tableView_selectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
+    void onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
 
     void on_tableView_customContextMenuRequested(QPoint pos);
     void on_tableView_SearchIndex_customContextMenuRequested(QPoint pos);
