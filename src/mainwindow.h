@@ -387,7 +387,7 @@ private slots:
 
 public slots:
 
-    void on_New_triggered(QString fileName);
+    void onNewTriggered(QString fileName);
     void on_Open_triggered(QStringList filenames);
     void on_SaveAs_triggered(QString fileName);
     void on_action_menuFile_Clear_triggered();

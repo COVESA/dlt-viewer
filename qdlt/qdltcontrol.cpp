@@ -45,7 +45,7 @@ QDltControl::QDltControl(QObject *_server)
     connect(this, SIGNAL(openFileSignal(QStringList)),
             server, SLOT(on_Open_triggered(QStringList)));
     connect(this, SIGNAL(newFileSignal(QString)),
-            server, SLOT(on_New_triggered(QString)));
+            server, SLOT(onNewTriggered(QString)));
     connect(this, SIGNAL(saveAsFileSignal(QString)),
             server, SLOT(on_SaveAs_triggered(QString)));
     connect(this, SIGNAL(clearFileSignal()),

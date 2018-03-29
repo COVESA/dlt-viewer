@@ -838,10 +838,10 @@ void MainWindow::on_action_menuFile_New_triggered()
         return;
     }
 
-    on_New_triggered(fileName);
+    onNewTriggered(fileName);
 }
 
-void MainWindow::on_New_triggered(QString fileName)
+void MainWindow::onNewTriggered(QString fileName)
 {
 
     // change DLT file working directory
@@ -3240,7 +3240,7 @@ void MainWindow::read(EcuItem* ecuitem)
                         startLoggingDateTime = QDateTime::currentDateTime();
 
                         // create new file
-                        on_New_triggered(info.absoluteFilePath());
+                        onNewTriggered(info.absoluteFilePath());
                     }
 
                     // write datat into file
