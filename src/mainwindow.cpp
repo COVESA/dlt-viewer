@@ -887,11 +887,11 @@ void MainWindow::on_action_menuFile_Open_triggered()
     if(fileNames.isEmpty())
         return;
 
-    on_Open_triggered(fileNames);
+    onOpenTriggered(fileNames);
 }
 
 
-void MainWindow::on_Open_triggered(QStringList filenames)
+void MainWindow::onOpenTriggered(QStringList filenames)
 {
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(filenames[0]).absolutePath());
