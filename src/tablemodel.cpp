@@ -148,7 +148,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          {
          case FieldNames::Index:
              /* display index */
-             return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
+             return QString("%L1").arg(qfile->getMsgFilterPos(index.row()));
          case FieldNames::Time:
              if( project->settings->automaticTimeSettings == 0 )
                 return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));

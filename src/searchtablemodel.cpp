@@ -73,7 +73,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         {
         case FieldNames::Index:
             /* display index */            
-            return QString("%1").arg((m_searchResultList.at(index.row())));
+            return QString("%L1").arg((m_searchResultList.at(index.row())));
         case FieldNames::Time:
             if( project->settings->automaticTimeSettings == 0 )
                return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
