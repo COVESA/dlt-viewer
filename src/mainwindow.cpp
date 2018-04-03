@@ -338,7 +338,7 @@ void MainWindow::initView()
     searchDlg->appendLineEdit(searchTextbox);
 
     connect(searchTextbox, SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
-    connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_action_FindNext()));
+    connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
 
@@ -377,7 +377,7 @@ void MainWindow::initSignalConnections()
     /* Connect previous and next buttons to search dialog slots */
     connect(m_searchActions.at(ToolbarPosition::FindPrevious), SIGNAL(triggered()), searchDlg, SLOT(findPreviousClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
-    connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_action_FindNext()));
+    connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_actionFindNext()));
 
     connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
     connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
@@ -1857,7 +1857,7 @@ void MainWindow::on_action_menuFile_Quit_triggered()
 
 }
 
-void MainWindow::on_action_FindNext()
+void MainWindow::on_actionFindNext()
 {
     if(!searchTextbox->text().isEmpty() && !list.contains(searchTextbox->text()))
        {

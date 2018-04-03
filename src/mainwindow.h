@@ -392,7 +392,7 @@ public slots:
     void onSaveAsTriggered(QString fileName);
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Quit_triggered();
-    void on_action_FindNext();
+    void on_actionFindNext();
 private slots:
 
     // Search methods
