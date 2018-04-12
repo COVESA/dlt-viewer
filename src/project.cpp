@@ -1012,12 +1012,14 @@ bool Project::Load(QString filename)
     {
         if ( OptManager::getInstance()->issilentMode() == false )
         {
-            QString xmlparsererror = QString("Error in project file \n%1:\n%2")
+            QString xmlparsererror = QString("%1 in file\n%2\nLine: %3")
+                                .arg(xml.errorString())
                                 .arg(filename)
-                                .arg(xml.errorString());
+                                .arg(xml.lineNumber());
+
             QMessageBox::warning(0, "XML Parser error in project file !", xmlparsererror);
         }
-        qDebug() << "XML parser error" << xml.errorString() << "in " << filename;
+        qDebug() << "XML parser error" << xml.errorString() << "in\n " << filename << "\nLine" << xml.lineNumber();
     }
 
     file.close();

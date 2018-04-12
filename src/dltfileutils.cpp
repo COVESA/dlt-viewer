@@ -75,7 +75,8 @@ QDir DltFileUtils::getTempPath(SettingsDialog *settings, bool silentmode)
         temp_path = QDir(settings->tempSystemPath);
         if (false == temp_path.exists())
         {  // the path does not yet exist
-            if( false == temp_path.mkdir(settings->tempSystemPath) )
+            qDebug() << "System temporary path does not exist, try to create it !";
+            if( false == temp_path.mkpath(settings->tempSystemPath) )
             {
                 if ( silentmode == true )
                             {
