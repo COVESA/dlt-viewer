@@ -38,7 +38,7 @@
 #include <QSysInfo>
 #include <QSerialPort>
 #include <QSerialPortInfo>
-
+#include <QNetworkProxyFactory>
 
 /**
  * From QDlt.
@@ -253,6 +253,10 @@ void MainWindow::initState()
 
 void MainWindow::initView()
 {
+    // With QT5.8 we have a bug with the system proxy configuration
+    // which we want to avoid, so we disable it
+    QNetworkProxyFactory::setUseSystemConfiguration(false);
+
     /* make focus on elements visible */
     project.ecu->setStyleSheet("QTreeWidget:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
     ui->tableView->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
@@ -341,6 +345,7 @@ void MainWindow::initView()
     connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
+    connect(settings, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
 
     searchComboBox = new QComboBox();
     searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -1679,6 +1684,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     ui->tableView->selectionModel()->clear();
     m_searchtableModel->clear_SearchResults();
 
+    ui->dockWidgetSearchIndex->show();
+    QString title = "Search Results";
+    ui->dockWidgetSearchIndex->setWindowTitle(title);
+
     // force empty table
     tableModel->setForceEmpty(true);
     tableModel->modelChanged();
@@ -1754,8 +1763,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 
 void MainWindow::reloadLogFileDefaultFilter()
 {
-
     // stop last indexing process, if any
+    on_actionDefault_Filter_Reload_triggered();
     dltIndexer->stop();
 
     // set indexing mode
@@ -1807,26 +1816,27 @@ void MainWindow::applySettings()
         draw_interval = 1000 / DEFAULT_REFRESH_RATE;
 }
 
+
 void MainWindow::on_action_menuFile_Settings_triggered()
 {
-    /* show settings dialog */
+    // show settings dialog
     settings->writeDlg();
 
-    /* store old values */
+    // store old values
     int defaultFilterPath = settings->defaultFilterPath;
     QString defaultFilterPathName = settings->defaultFilterPathName;
     int loggingOnlyMode=settings->loggingOnlyMode;
 
     if(settings->exec()==1)
     {
-        /* change settings and store settings persistently */
+        // change settings and store settings persistently
         settings->readDlg();
         settings->writeSettings(this);
 
-        /* Apply settings to table */
+        // Apply settings to table
         applySettings();
 
-        /* reload multifilter list if changed */
+        // reload multifilter list if changed
         if((defaultFilterPath != settings->defaultFilterPath)||(settings->defaultFilterPath && defaultFilterPathName != settings->defaultFilterPathName))
         {
             on_actionDefault_Filter_Reload_triggered();
@@ -1859,10 +1869,13 @@ void MainWindow::on_action_menuFile_Quit_triggered()
 
 void MainWindow::on_actionFindNext()
 {
+    //qDebug() << "on_actionFindNext" << __LINE__;
     if(!searchTextbox->text().isEmpty() && !list.contains(searchTextbox->text()))
        {
            list.append(searchTextbox->text());
        }
+    QString title = "Search Results";
+    ui->dockWidgetSearchIndex->setWindowTitle(title);
     m_CompleterModel.setStringList(list);
     searchTextbox->setCompleter(newCompleter);
     newCompleter->setCaseSensitivity(Qt::CaseInsensitive);
@@ -2030,8 +2043,6 @@ void MainWindow::on_action_menuProject_Save_triggered()
 
 QStringList MainWindow::getAvailableSerialPorts()
 {
-
-
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     QStringList portList;
 
@@ -2046,6 +2057,8 @@ QStringList MainWindow::getAvailableSerialPorts()
 void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 {
     QStringList hostnameListPreset;
+    int okorcancel = 1;
+    static int autoconnect = 1;
     hostnameListPreset << "localhost";
 
     QStringList portListPreset = getAvailableSerialPorts();
@@ -2062,27 +2075,42 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setHostnameList(recentHostnames);
     dlg.setPortList(recentPorts);
 
-    if(dlg.exec()==1)
+    if ( ( 1 == settings->autoConnect ) &&
+         ( true == OptManager::getInstance()->issilentMode() &&
+         ( 1 == autoconnect ) ) )
     {
-        /* add new ECU to configuration */
-        EcuItem* ecuitem = new EcuItem(0);
-        dlg.setDialogToEcuItem(ecuitem);
-
-        /* update ECU item */
-        ecuitem->update();
-
-        /* add ECU to configuration */
-        project.ecu->addTopLevelItem(ecuitem);
-
-        /* Update settings for recent hostnames and ports */
-        setCurrentHostname(ecuitem->getHostname());
-        setCurrentPort(ecuitem->getPort());
-
-        /* Update the ECU list in control plugins */
-        updatePluginsECUList();
-
-        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
+      qDebug() << "Autoconnect at start: in slient mode just connect to default or project defined ECU ...";
+      autoconnect = 0; // we use this tmp flag because we don not want to alter the setings file !
+      // and we need the ECU dialog of course we initiated in the GUI after start !
     }
+    else
+    {
+        okorcancel = dlg.exec();// in non silent mode we want to see a dialog box
+    }
+
+    if( okorcancel == 1 )
+    {
+       /* add new ECU to configuration */
+       EcuItem* ecuitem = new EcuItem(0);
+       dlg.setDialogToEcuItem(ecuitem);
+
+       /* update ECU item */
+       ecuitem->update();
+
+       /* add ECU to configuration */
+       project.ecu->addTopLevelItem(ecuitem);
+
+       /* Update settings for recent hostnames and ports */
+       setCurrentHostname(ecuitem->getHostname());
+       setCurrentPort(ecuitem->getPort());
+
+       /* Update the ECU list in control plugins */
+       updatePluginsECUList();
+
+       pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
+    }
+
+    return;
 }
 
 void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
@@ -3385,9 +3413,9 @@ void MainWindow::draw_timeout()
 void MainWindow::drawUpdatedView()
 {
 
-    statusByteErrorsReceived->setText(QString("Recv Errors: %1").arg(totalByteErrorsRcvd));
-    statusBytesReceived->setText(QString("Recv: %1").arg(totalBytesRcvd));
-    statusSyncFoundReceived->setText(QString("Sync found: %1").arg(totalSyncFoundRcvd));
+    statusByteErrorsReceived->setText(QString("Recv Errors: %L1").arg(totalByteErrorsRcvd));
+    statusBytesReceived->setText(QString("Recv: %L1").arg(totalBytesRcvd));
+    statusSyncFoundReceived->setText(QString("Sync found: %L1").arg(totalSyncFoundRcvd));
 
     tableModel->modelChanged();
 
@@ -5069,7 +5097,7 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
 
 void MainWindow::on_action_menuSearch_Find_triggered()
 {
-
+    //qDebug() << "on_action_menuSearch_Find_triggered" << __LINE__;
     searchDlg->open();
     searchDlg->selectText();
 }
@@ -6384,8 +6412,11 @@ void MainWindow::filterOrderChanged()
 void MainWindow::searchTableRenewed()
 {
     if ( 0 < m_searchtableModel->get_SearchResultListSize())
+    {
+        QString hits = QString("Search Results: %L1").arg(m_searchtableModel->get_SearchResultListSize());
         ui->dockWidgetSearchIndex->show();
-
+        ui->dockWidgetSearchIndex->setWindowTitle(hits);
+    }
     m_searchtableModel->modelChanged();
 }
 
@@ -6394,7 +6425,6 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 {
 
     int position = index.row();
-    printf("POSITION:%i\n", position);
     unsigned long entry;
 
     if (! m_searchtableModel->get_SearchResultEntry(position, entry) )
@@ -6467,7 +6497,7 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
 {
     QDir dir;
-
+    //qDebug() << "MainWindow::on_actionDefault_Filter_Reload_triggered" << __LINE__;
     /* clear combobox default filter */
     ui->comboBoxFilterSelection->clear();
 
@@ -6522,8 +6552,9 @@ void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
 
 void MainWindow::applyConfigEnabled(bool enabled)
 {
-    if(enabled)
+    if(true == enabled)
     {
+        //qDebug() << "applyConfigEnabled" << enabled << __LINE__;
         /* show apply config button */
        // ui->applyConfig->startPulsing(pulseButtonColor);
         ui->actionApply_Configuration->setCheckable(true);

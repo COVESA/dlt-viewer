@@ -117,6 +117,9 @@ public:
     // This function should be called during initialisation of dlt viewer
     void clearIndexCacheAfterDays();
 
+Q_SIGNALS:
+    void FilterPathChanged();
+
 protected:
     void changeEvent(QEvent *e);
 

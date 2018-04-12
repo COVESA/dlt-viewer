@@ -668,9 +668,8 @@ void SettingsDialog::on_toolButtonDefaultFilterPath_clicked()
     workingDirectory = QFileInfo(fileName).absolutePath();
 
     ui->lineEditDefaultFilterPath->setText(fileName);
-
-    QMessageBox::warning(0, QString("DLT Viewer"),
-                         QString("Default filters will only be reloaded when triggered in the menu!"));
+    emit(FilterPathChanged());
+    //QMessageBox::warning(0, QString("DLT Viewer"), QString("Default filters will be reloaded at next program start !"));
 }
 
 void SettingsDialog::on_toolButtonTempPath_clicked()
