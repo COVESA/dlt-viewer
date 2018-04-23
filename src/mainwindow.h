@@ -216,6 +216,9 @@ private:
     /* DLT File opened only Read only */
     bool isDltFileReadOnly;
 
+    /* flag for enabled / disabled status of plugins */
+    bool pluginsEnabled;
+
     /* functions called in constructor */
     void initState();
     void initView();
@@ -277,6 +280,8 @@ private:
     void updateIndex();
     void drawUpdatedView();
 
+     void syncCheckBoxesAndMenu();
+
     void updateRecentFileActions();
     void setCurrentFile(const QString &fileName);
     void removeCurrentFile(const QString &fileName);
@@ -294,7 +299,6 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
-    bool anyPluginsEnabled();
     bool anyFiltersEnabled();
 
     bool openDltFile(QStringList fileName);

@@ -131,6 +131,17 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
 
     newCompleter = new QCompleter(&m_CompleterModel,this);
+
+    /* what for do we need the next 2 lines ? */
+    draw_timer.setSingleShot (true);
+    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
+
+    if ( true == DltSettingsManager::getInstance()->value("StartUpMinimized",false).toBool() )
+    {
+        qDebug() << "Start minimzed as defined in the settings";
+        this->setWindowState(Qt::WindowMinimized);
+    }
+
 }
 
 MainWindow::~MainWindow()
@@ -187,6 +198,7 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchprev;
     delete newCompleter;
 }
+
 
 void MainWindow::initState()
 {
@@ -488,7 +500,10 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
 
     /* Plugins/Filters enabled checkboxes */
-    ui->pluginsEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    dltIndexer->setPluginsEnabled(pluginsEnabled);
+    ui->pluginsEnabled->setChecked(pluginsEnabled);
+
     ui->filtersEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTime->setChecked(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
@@ -614,16 +629,6 @@ void MainWindow::initFileHandling()
             break;
         }
     }
-
-
-    draw_timer.setSingleShot (true);
-    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
-
-
-    DltSettingsManager *settingsmanager = DltSettingsManager::getInstance();
-    bool startup_minimized = settingsmanager->value("StartUpMinimized",false).toBool();
-    if (startup_minimized)
-        this->setWindowState(Qt::WindowMinimized);
 
 }
 
@@ -1425,6 +1430,7 @@ void MainWindow::onSaveAsTriggered(QString fileName)
                               .arg(outputfile.errorString()));
 }
 
+/* this one is called when clicking at the broom sign */
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
@@ -1432,6 +1438,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     {
         /* Something went horribly wrong with file name creation
          * There's nothing we can do at this point */
+        qDebug() << "Error creating new tmp file !" << __LINE__ << __FILE__;
         return;
     }
 
@@ -1589,7 +1596,8 @@ void MainWindow::reloadLogFileFinishFilter()
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
-    if((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+   // if((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+    if((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && ( pluginsEnabled == true ))
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
@@ -1650,13 +1658,14 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
-    if(settings->loggingOnlyMode)
+
+    if( 0 != settings->loggingOnlyMode )
     {
         return;
     }
 
     /* clear autoload plugins ecu list */
-    if(!update)
+    if( false == update )
     {
         autoloadPluginsVersionEcus.clear();
         autoloadPluginsVersionStrings.clear();
@@ -1664,7 +1673,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // update indexFilter only if index already generated
-    if(update)
+    if( true == update )
     {   if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
             dltIndexer->setMode(DltFileIndexer::modeFilter);
         else
@@ -1728,7 +1737,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusFilename->setToolTip(name);
 
     // enable plugins
-    dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
@@ -1739,7 +1749,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
-    if( (dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && dltIndexer->getPluginsEnabled())
+    if( (dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && (pluginsEnabled == true) )
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
@@ -1775,7 +1785,8 @@ void MainWindow::reloadLogFileDefaultFilter()
     statusProgressBar->show();
 
     // enable plugins
-    dltIndexer->setPluginsEnabled(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool());
+    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
@@ -1807,13 +1818,15 @@ void MainWindow::applySettings()
     settings->showNoar?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
     settings->showPayload?ui->tableView->showColumn(12):ui->tableView->hideColumn(12);
 
-    DltSettingsManager *settingsmanager = DltSettingsManager::getInstance();
-
-    int refreshRate = settingsmanager->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
-    if ( refreshRate )
+    int refreshRate = DltSettingsManager::getInstance()->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
+    if ( refreshRate > 0 )
+    {
         draw_interval = 1000 / refreshRate;
+    }
     else
+    {
         draw_interval = 1000 / DEFAULT_REFRESH_RATE;
+    }
 }
 
 
@@ -1913,16 +1926,6 @@ void MainWindow::on_action_menuProject_Open_triggered()
 
 }
 
-bool MainWindow::anyPluginsEnabled()
-{
-    if(!(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-    {
-        return false;
-    }
-
-    return (pluginManager.sizeEnabled()>0);
-}
-
 bool MainWindow::anyFiltersEnabled()
 {
     if(!(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
@@ -1984,7 +1987,7 @@ bool MainWindow::openDlpFile(QString fileName)
         filterUpdate();
 
         /* Finally, enable the 'Apply' button, if needed */
-        if(anyPluginsEnabled() || anyFiltersEnabled())
+        if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) || anyFiltersEnabled())
         {
             applyConfigEnabled(true);
         }
@@ -3278,7 +3281,8 @@ void MainWindow::read(EcuItem* ecuitem)
                     outputfile.flush();
 
                     /* in Logging only mode send all message to plugins */
-                    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
+                    //pluginsEnabled = dltIndexer->getPluginsEnabled();
+
                     if( ( settings->loggingOnlyMode == 1 ) && ( pluginsEnabled == true ) )
                     {
                         QList<QDltPlugin*> activeViewerPlugins;
@@ -3331,7 +3335,7 @@ void MainWindow::read(EcuItem* ecuitem)
     } // bytesRcvd>0
     else
     {
-      qDebug() << "bytesRcvd <= 0 error in " << __LINE__;
+      qDebug() << "bytesRcvd <= 0 error in " << __LINE__ << __FILE__;
     }
 
 }
@@ -3345,7 +3349,7 @@ void MainWindow::updateIndex()
 
     activeDecoderPlugins = pluginManager.getDecoderPlugins();
     activeViewerPlugins = pluginManager.getViewerPlugins();
-    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
+    pluginsEnabled = dltIndexer->getPluginsEnabled();
 
     /* read received messages in DLT file parser and update DLT message list view */
     /* update indexes  and table view */
@@ -3440,7 +3444,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
             scrollButton->setChecked(false);
             ui->tableView->setAutoScroll(false);
         }
-        bool pluginsEnabled = dltIndexer->getPluginsEnabled();
+        pluginsEnabled = dltIndexer->getPluginsEnabled();
         QModelIndex index =  selected[0].topLeft();
         QDltPlugin *item = 0;
         QList<QDltPlugin*> activeViewerPlugins;
@@ -5770,7 +5774,8 @@ void MainWindow::on_action_menuFilter_Clear_all_triggered() {
     applyConfigEnabled(true);
 }
 
-void MainWindow::filterUpdate() {
+void MainWindow::filterUpdate()
+{
     QDltFilter *filter;
 
     /* update all filters from filter configuration to DLT filter list */
@@ -6075,7 +6080,6 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 
 void MainWindow::iterateDecodersForMsg(QDltMsg &msg, int triggeredByUser)
 {
-    bool pluginsEnabled = dltIndexer->getPluginsEnabled();
     if ( pluginsEnabled == true )
     {
     pluginManager.decodeMsg(msg,triggeredByUser);
@@ -6231,12 +6235,6 @@ void MainWindow::on_actionJump_To_triggered()
 
 }
 
-void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
-{
-    ui->pluginsEnabled->setChecked(checked);
-    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
-    on_applyConfig_clicked();
-}
 
 void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
 {
@@ -6276,14 +6274,32 @@ void MainWindow::on_actionDisconnectAll_triggered()
     disconnectAll();
 }
 
+/* This one is called when plugins are enabled / disabled in  menu !*/
+void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
+{
+    pluginsEnabled = checked;
+    ui->pluginsEnabled->setChecked(pluginsEnabled); // set checkbox in UI
+    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled);
+    dltIndexer->setPluginsEnabled(pluginsEnabled);
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    syncCheckBoxesAndMenu();
+    applyConfigEnabled(true);
+}
+
+/* This one is called when the checkbox "Plugins Enabled" is checked/unchecked */
 void MainWindow::on_pluginsEnabled_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", checked);
+    pluginsEnabled = checked;
+    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled); // set settings
+    dltIndexer->setPluginsEnabled(pluginsEnabled); // inform indexer
+    // now we should correlate the "plugin menu entry to disable / enable"
+    syncCheckBoxesAndMenu();
     applyConfigEnabled(true);
 }
 
 void MainWindow::on_filtersEnabled_toggled(bool checked)
 {
+    //DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
     applyConfigEnabled(true);
@@ -6295,9 +6311,9 @@ void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
     applyConfigEnabled(true);
 }
 
-void MainWindow::on_applyConfig_clicked()
+
+void MainWindow::syncCheckBoxesAndMenu()
 {
-    //qDebug() << "Apply configuration requested";
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
     if (ui->checkBoxSortByTime->isChecked())
         {
@@ -6328,7 +6344,13 @@ void MainWindow::on_applyConfig_clicked()
             ui->actionToggle_FiltersEnabled->setText("Enable Filters");
         }
 
-    //applyConfigEnabled(false);
+
+}
+
+void MainWindow::on_applyConfig_clicked()
+{
+    syncCheckBoxesAndMenu();
+    applyConfigEnabled(false);
     filterUpdate();
     reloadLogFile(true);
 }
@@ -6552,9 +6574,9 @@ void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
 
 void MainWindow::applyConfigEnabled(bool enabled)
 {
+    //qDebug() << "applyConfigEnabled" << enabled << __LINE__;
     if(true == enabled)
     {
-        //qDebug() << "applyConfigEnabled" << enabled << __LINE__;
         /* show apply config button */
        // ui->applyConfig->startPulsing(pulseButtonColor);
         ui->actionApply_Configuration->setCheckable(true);
