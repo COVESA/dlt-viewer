@@ -219,6 +219,9 @@ private:
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
 
+    /* keep the target version string submited by the target for internal use */
+    QString target_version_string;
+
     /* functions called in constructor */
     void initState();
     void initView();
