@@ -171,19 +171,15 @@ FORMS += mainwindow.ui \
     exporterdialog.ui
 
 # Related files
-OTHER_FILES += ../ReleaseNotes_Viewer.txt \
-    ../README.txt \
-    ../MPL.txt \
-    ../LICENSE.txt \
-    ../INSTALL.txt \
-    ../build_windows_installer.bat \
-    ../build_sdk_windows.bat \
-    ../build_sdk_msvc_windows64.bat \
-    ../build_sdk_msvc_windows.bat \
-    ../installer/UninstallLog.nsh \
-    ../installer/dlt_installer.nsi \
+OTHER_FILES += \
+    ../AUTHORS \
     ../build_sdk_windows_qt5.bat \
-    ../AUTHORS
+    ../build_sdk_windows_qt5_MSVC.bat \
+    ../INSTALL.txt \
+    ../LICENSE.txt \
+    ../MPL.txt \
+    ../README.md \
+    ../ReleaseNotes_Viewer.txt \
 
 # This contains all the button graphics for toolbar
 RESOURCES += resource.qrc
