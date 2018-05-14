@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* auto connect */
-    if( settings->autoConnect != 0 )
+    if( (settings->autoConnect != 0) && ( false ==  OptManager::getInstance()->isConvert()) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
     }
@@ -148,6 +148,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    //qDebug() << "Clean up";
+    dltIndexer->stop(); // in case a thread is running we want to stop it
     DltSettingsManager::close();
     /**
      * All plugin dockwidgets must be removed from the layout manually and
@@ -288,8 +290,12 @@ void MainWindow::initView()
     //ui->tableView->setItemDelegate(delegate);
     //ui->tableView->setItemDelegateForColumn(FieldNames::Payload,delegate);
 
-    ui->tableView->setColumnWidth(0,50);
-    ui->tableView->setColumnWidth(1,150);
+
+
+
+    /* preset the witdth of the columns somwhow */
+    ui->tableView->setColumnWidth(0,50);  // the first column is the index if there is one ...
+    ui->tableView->setColumnWidth(1,150); // the second column is the receiving time stamp
     ui->tableView->setColumnWidth(2,70);
     ui->tableView->setColumnWidth(3,40);
     ui->tableView->setColumnWidth(4,40);
@@ -298,13 +304,10 @@ void MainWindow::initView()
     ui->tableView->setColumnWidth(7,50);
     ui->tableView->setColumnWidth(8,50);
     ui->tableView->setColumnWidth(9,50);
-    ui->tableView->setColumnWidth(10,40);
-    ui->tableView->setColumnWidth(11,40);
-    ui->tableView->setColumnWidth(12,400);
+    ui->tableView->setColumnWidth(10,50);
+    ui->tableView->setColumnWidth(11,50);
+    ui->tableView->setColumnWidth(12,1000); // 12 is the index of the paayload column !
 
-    // Payload column expands as needed
-    // horizontal scrolling
-    ui->tableView->horizontalHeader()->setSectionResizeMode(12, QHeaderView::ResizeToContents);
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
     // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
     ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
@@ -360,6 +363,7 @@ void MainWindow::initView()
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
     connect(settings, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
+    connect(settings, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
 
     searchComboBox = new QComboBox();
     searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -607,7 +611,7 @@ void MainWindow::initFileHandling()
         }
     }
 
-    if(OptManager::getInstance()->isConvert())
+    if(true == OptManager::getInstance()->isConvert())
     {
         switch ( OptManager::getInstance()->get_convertionmode() )
         {
@@ -954,8 +958,9 @@ bool MainWindow::openDltFile(QStringList fileNames)
     if(fileNames.size()==0)
         return false;
 
+    //qDebug() << "Open" << fileNames;
     //clear search history list
-    searchHistory.clear();
+    //searchHistory.clear();
     //clear all the action buttons from history
     for (int i = 0; i < MaxSearchHistory; i++)
     {
@@ -1015,7 +1020,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
                 reloadLogFile();
              }
             ret = true;
-            qDebug() << "Loading file" << fileNames.last() << outputfile.errorString();
+            //qDebug() << "Loading file" << fileNames.last() << outputfile.errorString();
         }
         else
         {
@@ -1030,7 +1035,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
             ret = false;
         }
     }
-
+    //qDebug() << "Open files done" << __FILE__ << __LINE__;
     return ret;
 }
 
@@ -1435,6 +1440,8 @@ void MainWindow::onSaveAsTriggered(QString fileName)
 /* this one is called when clicking at the broom sign */
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
+    dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
+
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
     if(!fn.length())
     {
@@ -1445,7 +1452,9 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     }
 
     //clear search history list
+    //qDebug() << "Search history" << searchHistory;
     searchHistory.clear();
+
     //clear all the action buttons from history
     for (int i = 0; i < MaxSearchHistory; i++)
     {
@@ -1469,11 +1478,15 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     }
 
     outputfile.setFileName(fn);
+    //qDebug() << "New filename is" << fn << settings->tempSaveOnClear;
 
-    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    totalBytesRcvd = 0; // reset receive counter too
+    totalSyncFoundRcvd = 0; // reset sync counter too
+    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         openFileNames = QStringList(fn);
         isDltFileReadOnly = false;
+        //qDebug() << "reloadlogfile" << __LINE__;
         reloadLogFile();
     }
     else
@@ -1484,7 +1497,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
                               .arg(outputfile.errorString()));
     }
 
-    if(outputfileIsTemporary && !settings->tempSaveOnClear && !outputfileIsFromCLI)
+    if(( true == outputfileIsTemporary ) && !settings->tempSaveOnClear && (false == outputfileIsFromCLI))
     {
         QFile dfile(oldfn);
         if(!dfile.remove())
@@ -1551,8 +1564,13 @@ void MainWindow::reloadLogFileProgressMax(quint64 num)
     statusProgressBar->setRange(0,num);
 }
 
+/* triggered by signal "progress" */
 void MainWindow::reloadLogFileProgress(quint64 num)
 {
+    if( (num % 100000 == 0 && num != 0 ) && ( true == OptManager::getInstance()->isCommandlineMode()) ) // show some progres even during commandline processing
+    {
+      qDebug() << "."; // showing some kind of "prgogress dots"
+    }
     statusProgressBar->setValue(num);
 }
 
@@ -1663,7 +1681,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 
     if( 0 != settings->loggingOnlyMode )
     {
-        return;
+        qDebug() << "Logging only mode !";
+       // return;
     }
 
     /* clear autoload plugins ecu list */
@@ -1676,13 +1695,21 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 
     // update indexFilter only if index already generated
     if( true == update )
-    {   if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+    {
+        if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+        {
+            //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeFilter);
+        }
         else
+        {
+            //qDebug() << "indexer without filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeNone);
+        }
+
         saveSelection();
     }
-    else
+    else // no update
     {
         dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
         clearSelection();
@@ -1711,8 +1738,11 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         for(int num=0;num<openFileNames.size();num++)
         {
-            //qDebug() << "Open file" << openFileNames[num];
-            qfile.open(openFileNames[num],num!=0);
+            bool back = qfile.open(openFileNames[num],num!=0);
+            if ( false == back )
+            {
+              qDebug() << "ERROR opening file" << openFileNames[num] << __FILE__ << __LINE__;
+            }
         }
     }
     //qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
@@ -1762,13 +1792,14 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // start indexing
-      if(multithreaded == true)
+    if(multithreaded == true)
      {
+        //qDebug() << "Run indexer multi thread" << __FILE__ << __LINE__;
         dltIndexer->start();
      }
     else
      {
-        //qDebug() << "Run indexer" << __FILE__ << __LINE__;
+        //qDebug() << "Run indexer single thread" << __FILE__ << __LINE__;
         dltIndexer->run();
      }
 }
@@ -1863,11 +1894,15 @@ void MainWindow::on_action_menuFile_Settings_triggered()
         {
             tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
             tableModel->modelChanged();
-            if(!settings->loggingOnlyMode)
-                QMessageBox::information(0, QString("DLT Viewer"),
-                                         QString("Logging only mode disabled! Please reload DLT file to view file!"));
-
-
+            /* to remove ?? - in case logging only is disbaled the file is reloaded anyway
+            if(false == settings->loggingOnlyMode)
+            {
+                if ( true == OptManager::getInstance()->issilentMode() ) // inverse logic !!
+                  qDebug() << "Logging only mode disabled! Please reload DLT file to view file!)";
+                else
+                  QMessageBox::information(0, QString("DLT Viewer"), QString("Logging only mode disabled! Please reload DLT file to view file!"));
+            }
+           */
         }
 
         // update table, perhaps settings changed table, e.g. number of columns
@@ -2080,6 +2115,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setHostnameList(recentHostnames);
     dlg.setPortList(recentPorts);
 
+
     if ( ( 1 == settings->autoConnect ) &&
          ( true == OptManager::getInstance()->issilentMode() &&
          ( 1 == autoconnect ) ) )
@@ -2114,7 +2150,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 
        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
     }
-
+    //qDebug() << __FILE__ << __LINE__;
     return;
 }
 
@@ -3170,7 +3206,10 @@ void MainWindow::readyRead()
 void MainWindow::read(EcuItem* ecuitem)
 {
     if (nullptr == ecuitem)
+    {
+       qDebug() << "Invalid ECU given in" << __FILE__ << "Line:" << __LINE__;
        return;
+    }
 
     int32_t bytesRcvd = 0;
     QDltMsg qmsg;
@@ -3179,11 +3218,11 @@ void MainWindow::read(EcuItem* ecuitem)
     if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
     {
         /* TCP or UDP */
-
         data = ecuitem->socket->readAll();
         bytesRcvd = data.size();
 
         ecuitem->ipcon.add(data);
+
         //qDebug() << "::read" << __LINE__;//ecuitem->socket->errorString();
      }
     else if(ecuitem->m_serialport)
@@ -3228,11 +3267,11 @@ void MainWindow::read(EcuItem* ecuitem)
                 str.microseconds = (int32_t)tv.tv_usec; /* value is long */
             #endif
 
-            QDateTime time = QDateTime::currentDateTime();
             str.ecu[0]=0;
             str.ecu[1]=0;
             str.ecu[2]=0;
             str.ecu[3]=0;
+
             /* prepare storage header */
             if (!qmsg.getEcuid().isEmpty())
                dlt_set_id(str.ecu,qmsg.getEcuid().toLatin1());
@@ -3275,16 +3314,14 @@ void MainWindow::read(EcuItem* ecuitem)
                         onNewTriggered(info.absoluteFilePath());
                     }
 
-                    // write datat into file
+                    // write data into file
                     outputfile.write((char*)&str,sizeof(DltStorageHeader));
                     outputfile.write(bufferHeader);
                     outputfile.write(bufferPayload);
-
                     outputfile.flush();
 
-                    /* in Logging only mode send all message to plugins */
-                    //pluginsEnabled = dltIndexer->getPluginsEnabled();
-
+                    /* in Logging only mode send all messages to the plugins */
+                    /* GW, 8.5.18 indeed: in logging only mode we explicitely do not want to run through any plugins !!!
                     if( ( settings->loggingOnlyMode == 1 ) && ( pluginsEnabled == true ) )
                     {
                         QList<QDltPlugin*> activeViewerPlugins;
@@ -3297,6 +3334,8 @@ void MainWindow::read(EcuItem* ecuitem)
                             item->updateMsgDecoded(-1,qmsg);
                         }
                     }
+                    */
+
                 }
             }
 
@@ -3329,15 +3368,17 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->serialcon.syncFound = 0;
         }
 
-        if (outputfile.isOpen() )
+        if ( ( true == outputfile.isOpen() ) ) //&& ( settings->loggingOnlyMode == 0 )  )
         {
-            if(!dltIndexer->isRunning())
+            if(false == dltIndexer->isRunning())
+            {
                 updateIndex();
+            }
         }
     } // bytesRcvd>0
     else
     {
-      qDebug() << "bytesRcvd <= 0 error in " << __LINE__ << __FILE__;
+      qDebug() << "bytesRcvd <= 0 error in " << __LINE__;
     }
 
 }
@@ -5295,6 +5336,12 @@ void MainWindow::versionString(QDltMsg &msg)
     {
         pluginsAutoload(target_version_string);
     }
+}
+
+
+void MainWindow::triggerPluginsAutoload()
+{
+  pluginsAutoload(target_version_string);
 }
 
 void MainWindow::pluginsAutoload(QString version)

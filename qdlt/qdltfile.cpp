@@ -57,7 +57,8 @@ int QDltFile::getNumberOfFiles() const
     return files.size();
 }
 
-void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num){
+void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num)
+{
     if(num<0 || num>=files.size())
         return;
 
@@ -145,7 +146,7 @@ bool QDltFile::createIndex()
 
     ret = updateIndex();
 
-    qDebug() << "Create index finished - "<< size() << "messages found";
+    qDebug() << "Create index finished - " << size() << "messages found";
 
     return ret;
 }
@@ -160,15 +161,17 @@ bool QDltFile::updateIndex()
     for(int numFile=0;numFile<files.size();numFile++)
     {
         /* check if file is already opened */
-        if(!files[numFile]->infile.isOpen()) {
-            qDebug() << "updateIndex: Infile is not open";
+        if(false == files[numFile]->infile.isOpen())
+        {
+            qDebug() << "updateMsg: Infile is not open" << files[numFile]->infile.fileName() << __FILE__ << "line" << __LINE__;
             mutexQDlt.unlock();
             return false;
         }
 
 
         /* start at last found position */
-        if(files[numFile]->indexAll.size()) {
+        if(files[numFile]->indexAll.size())
+        {
             /* move behind last found position */
             const QVector<qint64>* const_indexAll = &(files[numFile]->indexAll);
             pos = (*const_indexAll)[files[numFile]->indexAll.size()-1] + 4;
@@ -333,8 +336,9 @@ QByteArray QDltFile::getMsg(int index) const
 
 
     /* check if index is in range */
-    if(index<0 ) {
-        qDebug() << "getMsg: Index is out of range";
+    if( index<0 )
+    {
+        qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
 
         /* return empty data buffer */
         return QByteArray();
@@ -350,16 +354,16 @@ QByteArray QDltFile::getMsg(int index) const
 
     if(num>=files.size())
     {
-        qDebug() << "getMsg: Index is out of range";
-
-        /* return empty data buffer */
-        return QByteArray();
+     qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+     /* return empty data buffer */
+     return QByteArray();
     }
 
     /* check if file is already opened */
-    if(!files[num]->infile.isOpen()) {
+    if(false == files[num]->infile.isOpen())
+    {
         /* return empty buffer */
-        qDebug() << "getMsg: Infile is not open";
+        qDebug() << "getMsg: Infile is not open" << files[num]->infile.fileName() << __FILE__ << "line" << __LINE__;
 
         /* return empty data buffer */
         return QByteArray();
@@ -402,21 +406,21 @@ QByteArray QDltFile::getMsgFilter(int index) const
 {
     if(filterFlag) {
         /* check if index is in range */
-        if(index<0 || index>=indexFilter.size()) {
-            qDebug() << "getMsgFilter: Index is out of range";
-
-            /* return empty data buffer */
-            return QByteArray();
+        if(index<0 || index>=indexFilter.size())
+        {
+          qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+          /* return empty data buffer */
+           return QByteArray();
         }
         return getMsg(indexFilter[index]);
     }
     else {
         /* check if index is in range */
-        if(index<0 || index>=size()) {
-            qDebug() << "getMsgFilter: Index is out of range";
-
-            /* return empty data buffer */
-            return QByteArray();
+        if(index<0 || index>=size())
+        {
+         qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+         /* return empty data buffer */
+         return QByteArray();
         }
         return getMsg(index);
     }
@@ -426,21 +430,21 @@ int QDltFile::getMsgFilterPos(int index) const
 {
     if(filterFlag) {
         /* check if index is in range */
-        if(index<0 || index>=indexFilter.size()) {
-            qDebug() << "getMsgFilter: Index is out of range";
-
-            /* return invalid */
-            return -1;
+        if(index<0 || index>=indexFilter.size())
+        {
+        qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+        /* return invalid */
+        return -1;
         }
         return indexFilter[index];
     }
     else {
         /* check if index is in range */
-        if(index<0 || index>=size()) {
-            qDebug() << "getMsgFilter: Index is out of range";
-
-            /* return invalid */
-            return -1;
+        if(index<0 || index>=size())
+        {
+         qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+        /* return invalid */
+        return -1;
         }
         return index;
     }

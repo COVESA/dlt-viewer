@@ -40,6 +40,9 @@
       <layout class="QGridLayout" name="gridLayout">
        <item row="4" column="0">
         <widget class="QCheckBox" name="checkBoxPluginsAutoload">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable plugins autoload mechanism:  every activated plugin tries to load its optional config file from the path containing &amp;lt;plugin name&amp;gt;&amp;lt;SW version&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Plugins Autoload</string>
          </property>
@@ -140,6 +143,9 @@
        </item>
        <item row="5" column="0">
         <widget class="QCheckBox" name="checkBoxDefaultFilterPath">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quick select you filters in filter tab ( &amp;lt;No filter selected &amp;gt;  ) when placed in the given directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Default Filter Path</string>
          </property>
@@ -189,6 +195,9 @@
        </item>
        <item row="3" column="0">
         <widget class="QCheckBox" name="checkBoxPluginsPath">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use a custom path where the used plugins are placed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Plugins Path</string>
          </property>
@@ -203,6 +212,9 @@
        </item>
        <item row="2" column="0">
         <widget class="QCheckBox" name="checkBoxDefaultProjectFile">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the given project at start up&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
           <string>Default Project</string>
          </property>

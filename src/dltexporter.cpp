@@ -172,15 +172,28 @@ bool DltExporter::getMsg(int num,QDltMsg &msg,QByteArray &buf)
 {
     buf.clear();
     if(exportSelection == DltExporter::SelectionAll)
+    {
         buf = from->getMsg(num);
+    }
     else if(exportSelection == DltExporter::SelectionFiltered)
+    {
         buf = from->getMsgFilter(num);
+    }
     else if(exportSelection == DltExporter::SelectionSelected)
+    {
         buf = from->getMsgFilter(selectedRows[num]);
+    }
     else
+    {
+        qDebug() << "Unhandled error in" << __FILE__ << __LINE__;
         return false;
-    if(buf.isEmpty())
+    }
+
+    if( true == buf.isEmpty())
+    {
+        qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
         return false;
+    }
     return msg.setMsg(buf);
 }
 
@@ -292,10 +305,10 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         }
 
         // get message
-        if(!getMsg(num,msg,buf))
+        if(false == getMsg(num,msg,buf))
         {
 	    //  finish();
-	    qDebug() << "DLT Export getMsg() failed on msg " << num;
+        qDebug() << "DLT Export getMsg failed on msg index" << num;
 	    readErrors++;
 	    continue;
 	    //  return;
@@ -336,8 +349,10 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     if ( startFinishError>0 || readErrors>0 || exportErrors>0 )
     {
        qDebug() << "DLT Export finish() failed";
-       if (silentMode == false)
+       if (silentMode == true ) // reversed login in this case !
+       {
         QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
+       }
        return;
     }
     qDebug() << "DLT export done for" << exportCounter << "messages with result" << startFinishError;
