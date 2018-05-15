@@ -88,6 +88,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
 
+    target_version_string = "";
+
     initState();
 
     /* Apply loaded settings */
@@ -113,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* auto connect */
-    if(settings->autoConnect)
+    if( settings->autoConnect != 0 )
     {
         connectAll();
     }
@@ -5136,7 +5138,7 @@ void MainWindow::loadPlugins()
       PluginItem* item = new PluginItem(0,plugin);
 
       plugin->setMode((QDltPlugin::Mode) DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
-
+      qDebug() << "Loading plugin" << plugin->getName() << plugin->getPluginVersion();
       if(plugin->isViewer())
       {
         item->widget = plugin->initViewer();
@@ -5187,16 +5189,47 @@ void MainWindow::updatePlugins() {
 
 }
 
+/* is called when the status of a plugin was changed ( disabled/enabled/show )  */
 void MainWindow::updatePlugin(PluginItem *item)
 {
     item->takeChildren();
+    bool ret = true;
 
-    bool ret = item->getPlugin()->loadConfig(item->getFilename());
     QString err_text = item->getPlugin()->error();
-    //We should not need error handling when disabling the plugins. But why is loadConfig called then anyway?
-    if (item->getMode() != QDltPlugin::ModeDisable)
-    {
+    QString conffilename = item->getFilename();
 
+    if ( item->getMode() == QDltPlugin::ModeEnable ) // this is just for user information: what is going on ...
+    {
+        qDebug() << "Enable" << item->getPlugin()->getName() << "with" << conffilename << "configuration file";
+    }
+    else if ( item->getMode() == QDltPlugin::ModeShow )
+    {
+        qDebug() << "Show" << item->getPlugin()->getName() << "with" << conffilename << "configuration file";
+    }
+    else if ( item->getMode() == QDltPlugin::ModeDisable )
+    {
+        qDebug() << "Disable" << item->getPlugin()->getName();
+    }
+    else
+    {
+        qDebug() << "Unknown mode" << item->getMode() << "in" << item->getPlugin()->getName();
+    }
+
+    //We should not need error handling when disabling the plugins, so we only call loadConfig when enabling the plugin !
+    if (item->getMode() != QDltPlugin::ModeDisable) // that means any kind of enabling
+    {
+        // in case there is an explicitely given file or directpory name we want to use this of course
+     //qDebug() << "Versionstring" << target_version_string << target_version_string.isEmpty();
+     if(settings->pluginsAutoloadPath != 0 && ( conffilename.isEmpty() == true ) && ( target_version_string.isEmpty() != true )  )
+         {
+            qDebug() << "Trigger autoload with version" << target_version_string;
+            pluginsAutoload(target_version_string);
+         }
+     else // we eventually provoke an error message, but sometimes even a decoder plugin works with default settings
+       {
+       ret = item->getPlugin()->loadConfig(conffilename);
+       }
+        //qDebug() << "Enable or show" << item->getPlugin()->getName() << __LINE__ << __FILE__;
         if ( false == ret )
         {
             QString err_header = "Plugin Error: ";
@@ -5206,7 +5239,6 @@ void MainWindow::updatePlugin(PluginItem *item)
             err_body.append(err_text);
             err_body.append("\nin loadConfig!");
             ErrorMessage(QMessageBox::Critical,err_header,err_body);
-            //item->setMode(QDltPlugin::ModeDisable);
         }
         else if ( 0 < err_text.length() )
         {
@@ -5223,17 +5255,21 @@ void MainWindow::updatePlugin(PluginItem *item)
 
 
     QStringList list = item->getPlugin()->infoConfig();
-    for(int num=0;num<list.size();num++) {
+    for(int num=0;num<list.size();num++)
+    {
         item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
     }
 
     item->update(); //update the table view in plugin tab
 
-    if(item->dockWidget) {
-        if(item->getMode() == QDltPlugin::ModeShow) {
+    if(item->dockWidget)
+    {
+        if(item->getMode() == QDltPlugin::ModeShow)
+        {
             item->dockWidget->show();
         }
-        else {
+        else
+        {
             item->dockWidget->hide();
         }
     }
@@ -5245,10 +5281,11 @@ void MainWindow::versionString(QDltMsg &msg)
     // Skip the ServiceID, Status and Length bytes and start from the String containing the ECU Software Version
     QByteArray payload = msg.getPayload();
     QByteArray data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
-    QString version = msg.toAscii(data,true);
-    version = version.trimmed(); // remove all white spaces at beginning and end
-    qDebug() << "AutoloadPlugins Version:" << version;
-    autoloadPluginsVersionStrings.append(version);
+
+    target_version_string = msg.toAscii(data,true);
+    target_version_string = target_version_string.trimmed(); // remove all white spaces at beginning and end
+
+    autoloadPluginsVersionStrings.append(target_version_string);
     QFontMetrics fm = QFontMetrics(statusFileVersion->font());
     QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
     statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
@@ -5256,21 +5293,22 @@ void MainWindow::versionString(QDltMsg &msg)
 
     if(settings->pluginsAutoloadPath)
     {
-        pluginsAutoload(version);
+        pluginsAutoload(target_version_string);
     }
 }
 
 void MainWindow::pluginsAutoload(QString version)
 {
     // Iterate through all enabled decoder plugins
-    for(int num = 0; num < project.plugin->topLevelItemCount(); num++) {
+    for(int num = 0; num < project.plugin->topLevelItemCount(); num++)
+    {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
-
+        //qDebug() << "pluginsAutoload" << __LINE__ << __FILE__<< item->getMode();
         if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
         {
             QString searchPath = settings->pluginsAutoloadPathName+ "/" + item->getName();
 
-            qDebug() << "AutoloadPlugins Search:" << searchPath;
+            qDebug() << "AutoloadPlugins search path:" << searchPath;
 
             // search for files in plugin directory which contains version string
             QStringList nameFilter("*"+version+"*");
@@ -5287,7 +5325,7 @@ void MainWindow::pluginsAutoload(QString version)
                 // check if filename already loaded
                 if(item->getFilename()!=filename)
                 {
-                    qDebug() << "AutoloadPlugins Load:" << filename;
+                    qDebug() << "AutoloadPlugins load " << filename  <<"found";
 
                     // load new configuration
                     item->setFilename(filename);
@@ -5990,9 +6028,6 @@ void MainWindow::dropEvent(QDropEvent *event)
                 bool ok;
                 if(list.size()!=1)
                 {
-
-
-
 
                 item = QInputDialog::getItem(this, tr("DLT Viewer"),
                                                          tr("Select Plugin to load configuration:"), items, 0, false, &ok);
