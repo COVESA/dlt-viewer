@@ -119,6 +119,7 @@ public:
 
 Q_SIGNALS:
     void FilterPathChanged();
+    void PluginsAutoloadChanged();
 
 protected:
     void changeEvent(QEvent *e);
@@ -145,6 +146,7 @@ private slots:
     void on_groupBoxArguments_clicked(bool checked);
     void on_spinBox_showArguments_valueChanged(int i);
 
+    void on_checkBoxPluginsAutoload_stateChanged(int arg1);
 };
 
 #endif // SETTINGSDIALOG_H

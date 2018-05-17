@@ -104,7 +104,7 @@ bool DltFileIndexer::index(int num)
     }
 
     // Initialise progress bar
-    emit(progressText(QString("%1/%2").arg(currentRun).arg(maxRun)));
+    emit(progressText(QString("Indexer %1/%2").arg(currentRun).arg(maxRun)));
     emit(progressMax(f.size()));
 
     // clear old index
@@ -168,10 +168,10 @@ bool DltFileIndexer::index(int num)
     msecsIndexCounter = time.elapsed();
 
     // write index if enabled
-    if(!filterCache.isEmpty())
+    if(false == filterCache.isEmpty())
     {
         saveIndexCache(dltFile->getFileName(num));
-        qDebug() << "Saved index cache for file" << dltFile->getFileName(num);
+        qDebug() << "Saved index cache for file" << dltFile->getFileName(num) << filterCache;
     }
 
     return true;
@@ -182,7 +182,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     QTime time;
-
+    //qDebug() << "DltFileIndexer::indexFilter" << __FILE__ << __LINE__;
     // start performance counter
     time.start();
 
@@ -245,7 +245,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
         // Update progress
         if(ix % 1000 == 0)
+        {
             emit(progress(ix));
+        }
 
         // stop if requested
         if(stopFlag)
@@ -334,7 +336,9 @@ bool DltFileIndexer::indexDefaultFilter()
 
         /* Update progress */
         if(ix % 1000 == 0)
+        {
             emit(progress(ix));
+        }
 
         /* stop if requested */
         if(stopFlag)
@@ -400,6 +404,7 @@ void DltFileIndexer::appendToGetLogInfoList(int value)
 
 void DltFileIndexer::run()
 {
+    //qDebug() << "DltFileIndexer::run" << __FILE__ << __LINE__;
     // lock mutex while indexing
     QMutexLocker scopedLock(&indexLock);
 
@@ -420,21 +425,24 @@ void DltFileIndexer::run()
         maxRun = dltFile->getNumberOfFiles()+1;
     else
         maxRun = 1;
+
     currentRun = 1;
 
     // index
     if(mode == modeIndexAndFilter)
     {
-        for(int num=0;num<dltFile->getNumberOfFiles();num++)
+        for(int num=0;num < dltFile->getNumberOfFiles();num++)
         {
             if(!index(num))
             {
-                // error
+                qDebug() << "Error in indexer" << __FILE__ << __LINE__;
                 return;
             }
+           // qDebug() << "setDLTIndex" << num << __FILE__ << __LINE__;
             dltFile->setDltIndex(indexAllList,num);
             currentRun++;
         }
+        //qDebug() << "emit(finishIndex());" << __FILE__ << __LINE__;
         emit(finishIndex());
     }
     else if(mode == modeNone)
@@ -462,7 +470,7 @@ void DltFileIndexer::run()
     // indexDefaultFilter
     if(mode == modeDefaultFilter)
     {
-        if(!indexDefaultFilter())
+        if(false == indexDefaultFilter())
         {
             // error
             return;
@@ -470,21 +478,23 @@ void DltFileIndexer::run()
         emit(finishDefaultFilter());
     }
 
+    //qDebug() << "Indexing done" << __FILE__ <<  __LINE__;
     // print performance counter
+    /*
     QTime time;
     time = QTime(0,0);time = time.addMSecs(msecsIndexCounter);
-    //qDebug() << "Duration Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    qDebug() << "Duration Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
     time = QTime(0,0);time = time.addMSecs(msecsFilterCounter);
-    //qDebug() << "Duration Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    qDebug() << "Duration Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
     time = QTime(0,0);time = time.addMSecs(msecsDefaultFilterCounter);
-    //qDebug() << "Duration Default Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    qDebug() << "Duration Default Filter Indexing:" << time.toString("hh:mm:ss.zzz") << "msecs";
+    */
 }
 
 void DltFileIndexer::stop()
 {
     // stop the thread
     stopFlag = true;
-
     wait();
 }
 

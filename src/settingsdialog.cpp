@@ -152,7 +152,7 @@ void SettingsDialog::assertSettingsVersion()
        minor < QString(PACKAGE_MINOR_VERSION).toInt())
     {
         QString msg;
-        msg.append("Application version has changed. Settings might be incompatible.\n");
+        msg.append("The application version has changed ! The settings file config.ini might be incompatible.\n");
         msg.append("Would you like to remove all old settings and initialize new ones?\n");
         msg.append("Yes    - Reset settings to factory defaults.\n");
         msg.append("No     - Continue loading settings and risk crashing the application.\n");
@@ -548,7 +548,7 @@ void SettingsDialog::readSettings()
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",0).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/dltviewer/cache").toString();
+    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/indexcache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
@@ -844,3 +844,12 @@ void SettingsDialog::clearIndexCacheAfterDays()
          if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
      }
     }
+
+void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
+{
+   if ( activated != 0)
+    {
+       emit(PluginsAutoloadChanged());
+    }
+
+}

@@ -106,7 +106,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         if(loggingOnlyMode)
+         if(true == loggingOnlyMode)
          {
              msg = QDltMsg();
          }
@@ -241,7 +241,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          case FieldNames::ArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
          case FieldNames::Payload:
-             if(loggingOnlyMode)
+             if( true == loggingOnlyMode)
              {
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
@@ -410,9 +410,9 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
  int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {
-     if(emptyForceFlag)
+     if(true == emptyForceFlag)
          return 0;
-     else if(loggingOnlyMode)
+     else if(true == loggingOnlyMode)
          return 1;
      else
          return qfile->sizeFilter();
@@ -420,7 +420,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
  void TableModel::modelChanged()
  {
-     if(emptyForceFlag)
+     if(true == emptyForceFlag)
      {
          index(0, 1);
          index(qfile->sizeFilter()-1, 0);
@@ -435,8 +435,6 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      lastrow = -1;
      emit(layoutChanged());
  }
-
-
 
 
 QColor TableModel::searchBackgroundColor() const
