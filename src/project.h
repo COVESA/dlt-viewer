@@ -70,6 +70,7 @@ public:
 
     /* configuration all */
     QString id;
+    QString default_id = "ECU";
     QString description;
     int interfacetype;
     int loglevel;

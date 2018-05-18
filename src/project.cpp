@@ -38,7 +38,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
 , socket(0)
 {
     /* initialise receive buffer and message*/
-    id = "ECU";
+    id = default_id;
     description = "A new ECU";
     interfacetype = INTERFACETYPE_TCP; /* default TCP */
     hostname = "localhost";

@@ -306,7 +306,7 @@ void MainWindow::initView()
     ui->tableView->setColumnWidth(9,50);
     ui->tableView->setColumnWidth(10,50);
     ui->tableView->setColumnWidth(11,50);
-    ui->tableView->setColumnWidth(12,1000); // 12 is the index of the paayload column !
+    ui->tableView->setColumnWidth(12,1200); // 12 is the index of the paayload column !
 
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
     // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
@@ -570,8 +570,10 @@ void MainWindow::initFileHandling()
             outputfile.setFileName(fn);
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
-            if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+
+            if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
             {
+                //qDebug() << "Opening file(s)" << outputfile.fileName() << __FILE__ << __LINE__;
                 openFileNames = QStringList(fn);
                 isDltFileReadOnly = false;
                 reloadLogFile();
@@ -587,6 +589,7 @@ void MainWindow::initFileHandling()
                QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load temporary log file \"%1\"\n%2").arg(outputfile.fileName()).arg(outputfile.errorString()));
               }
             }
+
         }
     }
 
@@ -858,7 +861,7 @@ void MainWindow::on_action_menuFile_New_triggered()
 
 void MainWindow::onNewTriggered(QString fileName)
 {
-
+    //qDebug() << "MainWindow::onNewTriggered" << fileName << __FILE__ << __LINE__;
     // change DLT file working directory
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
@@ -880,11 +883,12 @@ void MainWindow::onNewTriggered(QString fileName)
     outputfileIsTemporary = false;
     outputfileIsFromCLI = false;
     setCurrentFile(fileName);
-    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
+        //qDebug() << "Opening file(s)" << outputfile.fileName() << __FILE__ << __LINE__;
         openFileNames = QStringList(fileName);
         isDltFileReadOnly = false;
-        reloadLogFile();
+        reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
     }
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
@@ -985,10 +989,11 @@ bool MainWindow::openDltFile(QStringList fileNames)
     /* open existing file and append new data */
     outputfile.setFileName(fileNames.last());
     setCurrentFile(fileNames.last());
-    if(outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         openFileNames = fileNames;
         isDltFileReadOnly = false;
+        //qDebug() << "Opening file(s) wo" << outputfile.fileName() << __FILE__ << __LINE__;
         if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
          {
             // if dlt viewer started as converter or with plugin option load file non multithreaded
@@ -1374,7 +1379,7 @@ void MainWindow::on_action_menuFile_SaveAs_triggered()
 
 void MainWindow::onSaveAsTriggered(QString fileName)
 {
-
+    //qDebug() << "MainWindow::onSaveAsTriggered" << fileName << __FILE__ << __LINE__;
     /* check if filename is the same as already open */
     if(outputfile.fileName()==fileName)
     {
@@ -1440,6 +1445,7 @@ void MainWindow::onSaveAsTriggered(QString fileName)
 /* this one is called when clicking at the broom sign */
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
+    //qDebug() << "MainWindow::on_action_menuFile_Clear_triggered()" << outputfile.fileName() << __FILE__ <<  __LINE__;
     dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
 
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
@@ -1453,7 +1459,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 
     //clear search history list
     //qDebug() << "Search history" << searchHistory;
-    searchHistory.clear();
+    //searchHistory.clear();
 
     //clear all the action buttons from history
     for (int i = 0; i < MaxSearchHistory; i++)
@@ -1482,11 +1488,12 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 
     totalBytesRcvd = 0; // reset receive counter too
     totalSyncFoundRcvd = 0; // reset sync counter too
+
     if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
         openFileNames = QStringList(fn);
         isDltFileReadOnly = false;
-        //qDebug() << "reloadlogfile" << __LINE__;
+        //qDebug() << "reloadlogfile" << outputfile.fileName() << __FILE__ <<  __LINE__;
         reloadLogFile();
     }
     else
@@ -1602,6 +1609,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
 void MainWindow::reloadLogFileFinishIndex()
 {
     // show already unfiltered messages
+    //qDebug() << "MainWindow::reloadLogFileFinishIndex" << __FILE__ << __LINE__;
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     this->update(); // force update
@@ -1741,7 +1749,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
             bool back = qfile.open(openFileNames[num],num!=0);
             if ( false == back )
             {
-              qDebug() << "ERROR opening file" << openFileNames[num] << __FILE__ << __LINE__;
+              qDebug() << "ERROR opening file (s)" << openFileNames[num] << __FILE__ << __LINE__;
             }
         }
     }
@@ -3273,10 +3281,20 @@ void MainWindow::read(EcuItem* ecuitem)
             str.ecu[3]=0;
 
             /* prepare storage header */
-            if (!qmsg.getEcuid().isEmpty())
+            if (false == qmsg.getEcuid().isEmpty()) // means the ECU ID field is NOT empty
+            {
                dlt_set_id(str.ecu,qmsg.getEcuid().toLatin1());
+               if ( ecuitem->id == ecuitem->default_id ) // in this case we take the ECUid from the dlt message
+                {
+                qDebug() << "Received ECU ID " << qmsg.getEcuid().toLatin1();
+                ecuitem->id = qmsg.getEcuid().toLatin1();
+                ecuitem->update();
+               }
+            }
             else
+            {
                 dlt_set_id(str.ecu,ecuitem->id.toLatin1());
+            }
 
             /* check if message is matching the filter */
             if (outputfile.isOpen())
