@@ -39,6 +39,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QNetworkProxyFactory>
+#include <QtAlgorithms>
 
 /**
  * From QDlt.
@@ -6230,29 +6231,29 @@ int MainWindow::nearest_line(int line){
          * matching index. If it cannot be found, just settle
          * for the last one that we saw before going over */
         int lastFound = 0;
-        for(int i=0;i<qfile.sizeFilter();i++)
+
+        QVector<qint64> filterIndices = qfile.getIndexFilter();
+
+        if(!filterIndices.isEmpty())
         {
-            if(qfile.getMsgFilterPos(i) == line)
+            lastFound = filterIndices.indexOf(line);
+            if(lastFound < 0)
             {
-                // The correct line is visible.
-                // We can terminate the search
-                lastFound = i;
-                break;
+                QVector<qint64> sortedIndices = filterIndices;
+                qSort(sortedIndices);
+
+                int lastIndex = sortedIndices[0];
+
+                for(auto index: sortedIndices)
+                {
+                    if(index > line)
+                    {
+                        break;
+                    }
+                    lastIndex = index;
+                }
+                lastFound = filterIndices.indexOf(lastIndex);
             }
-            else if(qfile.getMsgFilterPos(i) < line)
-            {
-                // Not found found yet, but line is below current searched line.
-                // Update last found
-                lastFound = i;
-            }
-            else /* qfile.getMsgFilterPos(i) > line */
-            {
-                // Calculate, if we are nearer to the line from last found.
-                // If yes, use current line in search
-                if((qfile.getMsgFilterPos(i)-line)<(line-qfile.getMsgFilterPos(lastFound)))
-                    lastFound = i;
-                break;
-           }
         }
         row = lastFound;
     }
