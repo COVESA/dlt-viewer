@@ -458,7 +458,7 @@ void MainWindow::on_action_New_triggered()
     filenameWidget->setText("");
 }
 
-void MainWindow::on_action_Open_triggered()
+void MainWindow::on_action_OpenTriggered()
 {
     QString fileName;
 
