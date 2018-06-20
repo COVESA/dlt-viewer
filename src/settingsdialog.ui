@@ -751,7 +751,7 @@
           <item row="9" column="0">
            <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
             <property name="title">
-             <string>Maximum File Size (in MBytes)</string>
+             <string>Maximum file size (in MBytes)</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -769,7 +769,7 @@
           <item row="5" column="0">
            <widget class="QCheckBox" name="checkBoxWriteControl">
             <property name="text">
-             <string>Write Control Messages to Log File</string>
+             <string>Write Control Messages to log file</string>
             </property>
            </widget>
           </item>

@@ -4724,6 +4724,8 @@ void MainWindow::on_action_menuHelp_Support_triggered()
   text.append("?Subject=DLT Question: [please add subject] ");//subject
   text.append("&body=Please keep version information in mail:%0D%0ADLT Version: ").append(PACKAGE_VERSION).append("-");//body start
   text.append(PACKAGE_VERSION_STATE);
+  text.append("-");
+  text.append(PACKAGE_REVISION);
   text.append("%0D%0ABuild Date: ");
   text.append(__DATE__);
   text.append("-");
