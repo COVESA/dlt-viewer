@@ -5958,6 +5958,12 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Load_triggered()));
     menu.addAction(action);
 
+    menu.addSeparator();
+
+    action = new QAction("Resize columns to fit", this);
+    connect(action, SIGNAL(triggered()), ui->tableView, SLOT(resizeColumnsToContents()));
+    menu.addAction(action);
+
     /* show popup menu */
     menu.exec(globalPos);
 }
