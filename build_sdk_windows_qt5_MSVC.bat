@@ -8,7 +8,7 @@ echo ************************************
 echo ***         Configuration        ***
 echo ************************************
 
-setlocal EnableDelayedExpansion
+rem setlocal EnableDelayedExpansion
 
 rem parameter of this batch script can be either x86 or x86_amd64
 if "%ARCHITECTURE%"=="" (
@@ -43,14 +43,14 @@ set QTSDK=%QTDIR%
 
 if '%WORKSPACE%'=='' (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=%USERPROFILE%\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
     )
 
     set SOURCE_DIR=%CD%
     set BUILD_DIR=%CD%\build\release
 ) else (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\..\GENIUS2_dlt_viewer_windows\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\DltViewerSDK
     )
 
     set SOURCE_DIR=%WORKSPACE%
@@ -72,7 +72,7 @@ echo ************************************
 echo ***  Delete old build Directory  ***
 echo ************************************
 
-    rmdir /s/q build
+    rmdir /s /q build
     if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
     rmdir build
@@ -92,7 +92,7 @@ echo ************************************
 echo ***   Delete old SDK Directory   ***
 echo ************************************
 
-    rmdir /s/q %DLT_VIEWER_SDK_DIR%
+    rmdir /s /q %DLT_VIEWER_SDK_DIR%
     if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 )
 
@@ -116,7 +116,7 @@ echo ************************************
 echo ***         Create SDK           ***
 echo ************************************
 
-echo *** Create directories ***
+echo *** Create directories %DLT_VIEWER_SDK_DIR% ***
 mkdir %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
@@ -169,6 +169,10 @@ rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 rem copy %QTDIR%\bin\icudt54.dll %DLT_VIEWER_SDK_DIR%
 rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+rem echo "copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%"
+rem copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%
+rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %QTDIR%\bin\Qt5Core.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
@@ -290,6 +294,7 @@ GOTO QUIT
 echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
+cd ..
 if '%WORKSPACE%'=='' (
 pause
 )
@@ -299,6 +304,7 @@ exit 1
 echo ************************************
 echo ***       SUCCESS finish         ***
 echo ************************************
+cd ..
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
 if '%WORKSPACE%'=='' (
 pause
