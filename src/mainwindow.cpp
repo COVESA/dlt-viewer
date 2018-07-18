@@ -5981,6 +5981,12 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
+    action = new QAction("Resize columns to fit", this);
+    connect(action, SIGNAL(triggered()), ui->tableView_SearchIndex, SLOT(resizeColumnsToContents()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
     /* show popup menu */
     menu.exec(globalPos);
 }
