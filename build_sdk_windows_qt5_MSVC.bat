@@ -1,14 +1,10 @@
 @echo off
-
 echo ************************************
 echo ***      DLT Viewer SDK          ***
 echo ************************************
-
 echo ************************************
 echo ***         Configuration        ***
 echo ************************************
-
-rem setlocal EnableDelayedExpansion
 
 rem parameter of this batch script can be either x86 or x86_amd64
 if "%ARCHITECTURE%"=="" (
@@ -26,7 +22,7 @@ if "%ARCHITECTURE%"=="" (
     if "!USE_ARCH_PARAM!"=="true" set ARCHITECTURE=%1
 )
 
-echo Target architecture is !ARCHITECTURE!
+echo Target architecture is %ARCHITECTURE%
 
 echo *** Setting up environment ***
 
@@ -37,6 +33,7 @@ if "%QTDIR%"=="" (
 )
 
 if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC
+
 
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
 set QTSDK=%QTDIR%
@@ -60,6 +57,7 @@ if '%WORKSPACE%'=='' (
 echo ************************************
 echo * QTDIR     = %QTDIR%
 echo * QTSDK     = %QTSDK%
+echo * QWT_DIR   = %QWT_DIR%
 echo * MSVC_DIR  = %MSVC_DIR%
 echo * PATH      = %PATH%
 echo * DLT_VIEWER_SDK_DIR = %DLT_VIEWER_SDK_DIR%
@@ -75,8 +73,6 @@ echo ************************************
     rmdir /s /q build
     if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-    rmdir build
-    if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 )
 
 echo ************************************
@@ -116,8 +112,9 @@ echo ************************************
 echo ***         Create SDK           ***
 echo ************************************
 
+if not exist %DLT_VIEWER_SDK_DIR% mkdir %DLT_VIEWER_SDK_DIR%
 echo *** Create directories %DLT_VIEWER_SDK_DIR% ***
-mkdir %DLT_VIEWER_SDK_DIR%
+rem mkdir %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 mkdir %DLT_VIEWER_SDK_DIR%\plugins
@@ -160,20 +157,6 @@ mkdir %DLT_VIEWER_SDK_DIR%\cache
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo *** Copy files ***
-rem icu dll not longer needed with QT5
-rem copy %QTDIR%\bin\icuin54.dll %DLT_VIEWER_SDK_DIR%
-rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem copy %QTDIR%\bin\icuuc54.dll %DLT_VIEWER_SDK_DIR%
-rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem copy %QTDIR%\bin\icudt54.dll %DLT_VIEWER_SDK_DIR%
-rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem echo "copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%"
-rem copy %BUILD_DIR%\dlt_viewer.exe %DLT_VIEWER_SDK_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
 copy %QTDIR%\bin\Qt5Core.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
@@ -213,6 +196,13 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %BUILD_DIR%\qdlt.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
+rem echo "copy %QWT_DIR%\lib\qwt.dll %DLT_VIEWER_SDK_DIR%"
+rem copy %QWT_DIR%\lib\qwt.dll %DLT_VIEWER_SDK_DIR%
+rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+rem copy %BUILD_DIR%\plugins\speedplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
@@ -232,10 +222,10 @@ copy %BUILD_DIR%\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\README.md %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
@@ -256,19 +246,19 @@ copy %BUILD_DIR%\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\plugin\dummyviewerplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\plugin\dummydecoderplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\plugin\dummycontrolplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\sdk\BuildPlugins.pro %DLT_VIEWER_SDK_DIR%\sdk\src
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
@@ -285,8 +275,6 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %SOURCE_DIR%\filters\* %DLT_VIEWER_SDK_DIR%\filters
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %SOURCE_DIR%\cache\* %DLT_VIEWER_SDK_DIR%\cache
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 GOTO QUIT
 
@@ -298,7 +286,7 @@ cd ..
 if '%WORKSPACE%'=='' (
 pause
 )
-exit 1
+rem exit 1
 
 :QUIT
 echo ************************************
@@ -309,4 +297,4 @@ echo SDK installed in: %DLT_VIEWER_SDK_DIR%
 if '%WORKSPACE%'=='' (
 pause
 )
-exit 0
+rem exit 0

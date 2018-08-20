@@ -6,6 +6,7 @@ QT_VERSION = $$split(QT_VERSION, ".")
 QT_VER_MAJ = $$member(QT_VERSION, 0)
 QT_VER_MIN = $$member(QT_VERSION, 1)
 
+
 *-gcc* {
     QMAKE_CFLAGS += -std=gnu99
     QMAKE_CFLAGS += -Wall
@@ -40,6 +41,17 @@ TEMPLATE  = lib
 # ...of type plugin
 CONFIG   += plugin
 
+# QWT
+# CONFIG  += qwt
+
+# QWT_DIR = $$(QWT_DIR)
+# !isEmpty(QWT_DIR) {
+#     QWT_INSTALL_PREFIX = $$QWT_DIR
+# } else {
+#     QWT_INSTALL_PREFIX = C:\\Qwt-6.1.3
+# }
+
+
 # Used QT features
 QT += core gui
 
@@ -51,9 +63,12 @@ greaterThan(QT_VER_MAJ, 4) {
 }
 
 
+
 # Include path
 INCLUDEPATH += ../../src \
             ../../qdlt
+# QWT
+# win32:INCLUDEPATH += $$QWT_INSTALL_PREFIX\\include
 
 # Library path
 CONFIG(debug, debug|release) {
@@ -64,6 +79,9 @@ else {
 }
 
 # Libraries
+# Qwt Library
+# win32:QMAKE_LIBDIR += $$QWT_INSTALL_PREFIX\\lib
+
 CONFIG(debug, debug|release) {
     LIBS += -lqdltd
 }
