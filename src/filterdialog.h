@@ -123,7 +123,7 @@ private slots:
     void on_lineEditPayloadText_textEdited(const QString &arg1);
     void on_comboBoxLogLevelMax_currentIndexChanged(int index);
     void on_comboBoxLogLevelMin_currentIndexChanged(int index);
-    void on_checkBoxMarker_clicked();
+    void on_checkBoxMarkerClicked();
     void on_pushButton_c0_clicked();
     void on_pushButton_c1_clicked();
     void on_pushButton_c2_clicked();

@@ -1794,8 +1794,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
             QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+            //qDebug() << __LINE__ << __FILE__ << item;
             item->initFileStart(&qfile);
         }
     }
@@ -3432,28 +3434,35 @@ void MainWindow::updateIndex()
 
     for(int num=oldsize;num<qfile.size();num++)
     {
-        qmsg.setMsg(qfile.getMsg(num));
+     qmsg.setMsg(qfile.getMsg(num));
 
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+     {
+     for(int i = 0; i < activeViewerPlugins.size(); i++)
+      {
             item = activeViewerPlugins.at(i);
             item->updateMsg(num,qmsg);
-        }
+      }
+     } 
 
-     if ( pluginsEnabled == true )
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
       {
         pluginManager.decodeMsg(qmsg,silentMode);
       }
 
-      if(qfile.checkFilter(qmsg))
-       {
+     if(qfile.checkFilter(qmsg))
+      {
             qfile.addFilterIndex(num);
-       }
+      }
 
-        for(int i = 0; i < activeViewerPlugins.size(); i++)
-        {
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+     {
+     for(int i = 0; i < activeViewerPlugins.size(); i++)
+      {
             item = activeViewerPlugins[i];
             item->updateMsgDecoded(num,qmsg);
-        }
+      }
+     } 
     }
 
     if (!draw_timer.isActive())
@@ -3462,7 +3471,8 @@ void MainWindow::updateIndex()
     if(oldsize!=qfile.size())
     {
         // only run through viewer plugins, if new messages are added
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
             item = activeViewerPlugins.at(i);
             item->updateFileFinish();
         }
