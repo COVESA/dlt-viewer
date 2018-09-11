@@ -100,7 +100,7 @@ Create SDK Documentation (Linux)
 Create manuals documentation
 ----------------------------
 
-The manuals are generated with asciidoc.
+The plugins programming manual is generated with asciidoc.
 Call 
     asciidoc dlt_viewer_user_manual.txt
     asciidoc dlt_viewer_plugins_programming_guide.txt
@@ -108,6 +108,14 @@ to generate html output.
 To generate pdfs, call
     sh convert.sh
 from within the doc directory
+
+The user manual is of Latex input format since June 2018
+Build verified on an Ubuntu 18.04 installation with
+sudo apt-get install texlive texlive-latex-extra
+
+To create a pdf format output use:
+pdflatex dlt-viewer_user_manual.tex
+
 
 
 Instructions for building DLT Viewer with CMake (Linux commandline)
