@@ -172,7 +172,7 @@ MainWindow::~MainWindow()
     }
 
     // rename output filename if flag set in settings
-    if(settings->appendDateTime)
+    if(settings->appendDateTime != 0)
     {
         // get new filename
         QFileInfo info(outputfile.fileName());
@@ -183,7 +183,12 @@ MainWindow::~MainWindow()
         QFileInfo infoNew(info.absolutePath(),newFilename);
 
         // rename old file
+        qfile.close();
+        outputfile.flush();
+        outputfile.close();
         outputfile.rename(infoNew.absoluteFilePath());
+        bool result = outputfile.rename(info.absoluteFilePath(), infoNew.absoluteFilePath());
+        qDebug() << "Renamed " <<  info.absoluteFilePath() << "to" << infoNew.absoluteFilePath() << result;
     }
 
     // deleting search history
