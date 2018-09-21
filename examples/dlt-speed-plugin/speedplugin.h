@@ -26,11 +26,15 @@
 
 #define SPEEDPLUGINVERSION "1.0.0"
 
-class SpeedPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface
+class SpeedPlugin : public QObject,
+                           QDLTPluginInterface,
+                           QDltPluginViewerInterface,
+                           QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+    Q_INTERFACES(QDltPluginControlInterface)
 #ifdef QT5
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DummyViewerPlugin")
 #endif
@@ -69,7 +73,15 @@ public:
 
     void show(bool value);
 
+    /* QDltPluginControlInterface */
+    bool initControl(QDltControl *control);
+    bool initConnections(QStringList list);
+    bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
+    bool autoscrollStateChanged(bool enabled);
+
 private:
+    QDltControl *dltControl;
     QDltFile *dltFile;
     QString errorText;
     int msgIndex;

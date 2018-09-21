@@ -53,14 +53,14 @@ Form::~Form()
 }
 
 
-void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
+void Form::setSpeedGraph(QDltArgument currentSpeed,unsigned int time)
 {
     // Push data for speed and time to container
     speedX.push_back(currentSpeed.toString().toDouble());
     timeY.push_back((double)time);
 
     // Set currentSpeed to lcdNumber
-    ui->lcdNumber->display(currentSpeed.toString());
+    //ui->lcdNumber->display(currentSpeed.toString());
 
     // Copy the data into the curves
     dataArray = new QwtPointArrayData(timeY,speedX);
@@ -77,9 +77,18 @@ void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
     }
 
 
-    ui->thermo->setValue(currentSpeed.toString().toDouble());
+    //ui->thermo->setValue(currentSpeed.toString().toDouble());
 
     // Replot curve
     ui->qwtPlot->replot();
 
 }
+
+void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
+{
+    // Set currentSpeed to lcdNumber
+    ui->lcdNumber->display(currentSpeed.toString());
+
+    ui->thermo->setValue(currentSpeed.toString().toDouble());
+}
+

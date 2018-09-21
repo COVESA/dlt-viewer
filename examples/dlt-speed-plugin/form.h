@@ -42,6 +42,7 @@ public:
     ~Form();
 
     void setSpeedLCD(QDltArgument currentSpeed,unsigned int time);
+    void setSpeedGraph(QDltArgument currentSpeed,unsigned int time);
 
 private:
     Ui::Form *ui;

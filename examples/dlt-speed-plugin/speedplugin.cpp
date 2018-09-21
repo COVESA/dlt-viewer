@@ -29,8 +29,9 @@
 
 SpeedPlugin::SpeedPlugin()
 {
+    //qDebug() << "SpeedPlugin::SpeedPlugin" << __LINE__ << __FILE__;
     form = NULL;
-    dltFile = 0;
+    dltFile = NULL;
     msgIndex = 0;
 }
 
@@ -50,13 +51,16 @@ The plugin has to return a version number in the format X.Y.Z.
 • Z should count up whenever a bug is fixed
 Recommendation: #define <plugin name>_PLUGIN_VERSION "X.Y.Z" in your plugin header
 file.*/
-QString SpeedPlugin::pluginVersion(){
+QString SpeedPlugin::pluginVersion()
+{
+    //qDebug() << "SpeedPlugin::pluginVersion" << __LINE__ << __FILE__;
     return SPEEDPLUGINVERSION;
 }
 
 /* The plugin has to return a version number of the used plugin interface. The plugin interface provides
 the PLUGIN_INTERFACE_VERSION definition for this purpose.*/
-QString SpeedPlugin::pluginInterfaceVersion(){
+QString SpeedPlugin::pluginInterfaceVersion()
+{
     return PLUGIN_INTERFACE_VERSION;
 }
 
@@ -76,10 +80,13 @@ QString SpeedPlugin::error()
 
 /* The plugin can use configuration stored in files. This can be a single file or a directory containing several
 files. This function is called whenever a new file gets loaded.*/
-bool SpeedPlugin::loadConfig(QString /* filename */)
+bool SpeedPlugin::loadConfig(QString filename)
 {
+    Q_UNUSED(filename);
+    //qDebug() << "SpeedPlugin::loadConfig" << __LINE__ << __FILE__;
     return true;
 }
+
 
 
 /* Currently not used by DLT Viewer.*/
@@ -97,6 +104,7 @@ QStringList SpeedPlugin::infoConfig()
 /* Called when loading the plugin. The created widget must be returned.*/
 QWidget* SpeedPlugin::initViewer()
 {
+    //qDebug() << "SpeedPlugin::initViewer" << __LINE__ << __FILE__;
     form = new Form();
     return form;
 }
@@ -109,10 +117,7 @@ information about this message.
 void SpeedPlugin::selectedIdxMsg(int index, QDltMsg &msg)
 {
   Q_UNUSED(index);
-  if(!dltFile)
-       return;
-  //qDebug() << "selectedIdxMsg" << __LINE__ << __FILE__;
-
+  //qDebug() << "SpeedPlugin::selectedIdxMsg" << __LINE__ << __FILE__;
   QDltArgument argument;
   if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
       {
@@ -130,7 +135,7 @@ information about this message.
 */
 void SpeedPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/)
 {
-    //qDebug() << "decoded: " << msg.toStringPayload();
+
 }
 
 
@@ -140,7 +145,7 @@ before any messages are processed with initMsg() and initMsgDecoded().
 */
 void SpeedPlugin::initFileStart(QDltFile *file)
 {
-
+    //qDebug() << "SpeedPlugin::initFileStart with " << file->getFileName() << __LINE__ << __FILE__;
     dltFile = file;
 }
 
@@ -148,10 +153,11 @@ void SpeedPlugin::initFileStart(QDltFile *file)
 This function is called every time a new undecoded message is being processed when loading or creating
 a new log file.
 */
-void SpeedPlugin::initMsg(int /*index*/, QDltMsg &msg)
+void SpeedPlugin::initMsg(int index, QDltMsg &msg)
 {
  Q_UNUSED(msg);
- //  qDebug() << "initMsg" << __LINE__ << __FILE__;
+ Q_UNUSED(index);
+ //qDebug() << "SpeedPlugin::initMsg" << __LINE__ << __FILE__;
 }
 
 
@@ -169,9 +175,12 @@ all messages were processed with initMsg() and initMsgDecoded().
 */
 void SpeedPlugin::initFileFinish()
 {
-qDebug() << "initFileFinish";
-if(!dltFile)
-    return;
+  //qDebug() << "SpeedPlugin::initFileFinish" << __LINE__ << __FILE__;
+    if(NULL == dltFile)
+    {
+        qDebug() << "no dltFile in" << __LINE__ << __FILE__;
+        return;
+    }
 
 QByteArray buffer;
 QDltMsg msg;
@@ -190,7 +199,8 @@ for(;msgIndex<dltFile->size();msgIndex++)
     {
         if(msg.getArgument(1,argument))
         {
-                        form->setSpeedLCD(argument,msg.getTimestamp());
+          form->setSpeedLCD(argument,msg.getTimestamp());
+          form->setSpeedGraph(argument,msg.getTimestamp());
         }
 
     }
@@ -199,22 +209,32 @@ for(;msgIndex<dltFile->size();msgIndex++)
 
 
 /* This function is called every time a new undecoded message was received by the Viewer. */
-void SpeedPlugin::updateMsg(int /*index*/, QDltMsg &msg)
+void SpeedPlugin::updateMsg(int index, QDltMsg &msg)
 {
-        //qDebug() << "updateMsg" << __LINE__ << __FILE__;
-        QDltArgument argument;
+    Q_UNUSED(index);
+    //qDebug() << "SpeedPlugin::updateMsg" << __LINE__ << __FILE__<< index;
+    
+    QDltArgument argument;
 
-        if(!dltFile)
-            return;
-        if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
+    if( (msg.getApid().compare("SPEE") == 0) && (msg.getCtid().compare("SIG") == 0))
         {
-            if(msg.getArgument(1,argument))
+            if(true == msg.getArgument(1,argument))
             {
-                //qDebug() << "Send to speed form";
+                //qDebug() << msg.getArgument(1,argument) << argument.toString();
                 form->setSpeedLCD(argument,msg.getTimestamp());
-            }
+                form->setSpeedGraph(argument,msg.getTimestamp());
+                /*
+                // just some example for seinding a message injection
+                QString value = argument.toString();
+                if (value.toInt() == 20)
+                {
+                    QString data = QString("%1").arg(index);
+                    qDebug() << "Send injection with" << data << "at" << value;
+                    dltControl->sendInjection(0,"SPEE","SIG",4098,data.toLatin1());
+                }
+                */
+           }
         }
-
 }
 
 
@@ -236,7 +256,39 @@ void SpeedPlugin::updateMsgDecoded(int , QDltMsg &)
 processed with updateMsg() and updateMsgDecoded().*/
 void SpeedPlugin::updateFileFinish()
 {
-  //qDebug() << "updateFileFinish" <<__LINE__ << __FILE__;
+  //qDebug() << "SpeedPlugin::updateFileFinish" <<__LINE__ << __FILE__;
+}
+
+/* QDltPluginControlInterface */
+bool SpeedPlugin::initControl(QDltControl *control)
+{
+   dltControl = control;
+return true;
+}
+
+bool SpeedPlugin::initConnections(QStringList list)
+{
+return true;
+}
+
+bool SpeedPlugin::controlMsg(int index, QDltMsg &msg)
+{
+Q_UNUSED(index);
+Q_UNUSED(msg);
+return true;
+}
+
+bool SpeedPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname)
+{
+Q_UNUSED(index);
+Q_UNUSED(connectionState);
+return true;
+}
+
+bool SpeedPlugin::autoscrollStateChanged(bool enabled)
+{
+Q_UNUSED(enabled);
+return true;
 }
 
 #ifndef QT5
