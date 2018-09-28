@@ -69,7 +69,8 @@ public:
     int updateContextLoadingFile;
     int updateContextsUnregister;
     int loggingOnlyMode;
-    int maxFileSizeMB;
+    int splitlogfile;
+    float fmaxFileSizeMB;
     int appendDateTime;
 
     int fontSize;

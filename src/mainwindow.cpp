@@ -172,7 +172,7 @@ MainWindow::~MainWindow()
     }
 
     // rename output filename if flag set in settings
-    if(settings->appendDateTime != 0)
+    if(( settings->appendDateTime != 0) && (outputfile.size() != 0))
     {
         // get new filename
         QFileInfo info(outputfile.fileName());
@@ -897,10 +897,19 @@ void MainWindow::onNewTriggered(QString fileName)
         reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
     }
     else
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("Cannot create new log file \"%1\"\n%2")
-                              .arg(fileName)
-                              .arg(outputfile.errorString()));
+     {
+        if (OptManager::getInstance()->issilentMode())
+         {
+         qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
+         }
+         else
+         {
+          QMessageBox::critical(0, QString("DLT Viewer"),
+                               QString("Cannot create new log file \"%1\"\n%2")
+                               .arg(fileName)
+                               .arg(outputfile.errorString()));
+         }
+    }
 }
 
 
@@ -3317,27 +3326,17 @@ void MainWindow::read(EcuItem* ecuitem)
 
                     // set start time when writing first data
                     if(startLoggingDateTime.isNull())
+                        {
                         startLoggingDateTime = QDateTime::currentDateTime();
+                        }
 
-                    // check if files size limit reached
-                    if(settings->maxFileSizeMB && ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())>(((size_t)settings->maxFileSizeMB)*1000*1000)))
-                    {
-                        // get new filename
-                        QFileInfo info(outputfile.fileName());
-                        QString newFilename = info.baseName()+
-                                (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
-                                (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
-                                QString(".dlt");
-                        QFileInfo infoNew(info.absolutePath(),newFilename);
-
-                        // rename old file
-                       outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
-
-                        // set new start time
-                        startLoggingDateTime = QDateTime::currentDateTime();
-
-                        // create new file
-                        onNewTriggered(info.absoluteFilePath());
+                    if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
+                     {
+                     // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
+                     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())) > settings->fmaxFileSizeMB *1000*1000) )
+                      {
+                        createsplitfile();
+                      }
                     }
 
                     // write data into file
@@ -3408,6 +3407,80 @@ void MainWindow::read(EcuItem* ecuitem)
     }
 
 }
+
+
+void MainWindow::createsplitfile()
+{
+    // get new filename
+    dltIndexer->stop();
+    QFileInfo info(outputfile.fileName());
+
+    QString newFilename = info.baseName()+
+            (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
+            (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
+            QString(".dlt");
+    QFileInfo infoNew(info.absolutePath(),newFilename);
+    qDebug() << "Split to" <<  outputfile.fileName() << "to" << infoNew.absoluteFilePath();
+
+    // rename old file
+    outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
+
+    // set new start time
+    startLoggingDateTime = QDateTime::currentDateTime();
+
+    SplitTriggered(info.absoluteFilePath());
+
+}
+
+
+void MainWindow::SplitTriggered(QString fileName)
+{
+    // change DLT file working directory
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+
+    // close existing file
+    if(outputfile.isOpen())
+    {
+        //qDebug() << "isOpen" << fileName << __FILE__ << __LINE__;
+        if (outputfile.size() == 0)
+        {
+            deleteactualFile();
+        }
+        else
+        {
+            outputfile.close();
+        }
+    }
+
+    // create new file; truncate if already exist
+    outputfile.setFileName(fileName);
+    setCurrentFile(fileName);
+
+    outputfileIsTemporary = false;
+    outputfileIsFromCLI = false;
+
+    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+     {
+        openFileNames = QStringList(fileName);
+        isDltFileReadOnly = false;
+        reloadLogFile(false,true);
+     }
+    else
+     {
+        if (OptManager::getInstance()->issilentMode())
+         {
+         qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
+         }
+         else
+         {
+         QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot create new log file \"%1\"\n%2")
+                                  .arg(fileName)
+                                  .arg(outputfile.errorString()));
+         }
+     }
+ }
+
 
 void MainWindow::updateIndex()
 {
