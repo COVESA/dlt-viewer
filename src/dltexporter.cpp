@@ -158,7 +158,8 @@ bool DltExporter::finish()
         /* close output file */
         to->close();
     }
-    else if (exportFormat == DltExporter::FormatClipboard)
+    else if (exportFormat == DltExporter::FormatClipboard ||
+             exportFormat == DltExporter::FormatClipboardPayloadOnly)
     {
         /* export to clipboard */
         QClipboard *clipboard = QApplication::clipboard();
@@ -203,21 +204,27 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
     {
         to->write(buf);
     }
-    else if(exportFormat == DltExporter::FormatAscii || exportFormat == DltExporter::FormatUTF8 || exportFormat == DltExporter::FormatClipboard)
+    else if(exportFormat == DltExporter::FormatAscii ||
+            exportFormat == DltExporter::FormatUTF8  ||
+            exportFormat == DltExporter::FormatClipboard ||
+            exportFormat == DltExporter::FormatClipboardPayloadOnly)
     {
         QString text;
 
         /* get message ASCII text */
-        if(exportSelection == DltExporter::SelectionAll)
-            text += QString("%1 ").arg(num);
-        else if(exportSelection == DltExporter::SelectionFiltered)
-            text += QString("%1 ").arg(from->getMsgFilterPos(num));
-        else if(exportSelection == DltExporter::SelectionSelected)
-            text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
-        else
-            return false;
-        text += msg.toStringHeader();
-        text += " ";
+        if(exportFormat != DltExporter::FormatClipboardPayloadOnly)
+        {
+            if(exportSelection == DltExporter::SelectionAll)
+                text += QString("%1 ").arg(num);
+            else if(exportSelection == DltExporter::SelectionFiltered)
+                text += QString("%1 ").arg(from->getMsgFilterPos(num));
+            else if(exportSelection == DltExporter::SelectionSelected)
+                text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
+            else
+                return false;
+            text += msg.toStringHeader();
+            text += " ";
+        }
         text += msg.toStringPayload().simplified();
         text += "\n";
         try
@@ -227,7 +234,8 @@ bool DltExporter::exportMsg(int num, QDltMsg &msg, QByteArray &buf)
                 to->write(text.toLatin1().constData());
             else if (exportFormat == DltExporter::FormatUTF8)
                 to->write(text.toUtf8().constData());
-            else if(exportFormat == DltExporter::FormatClipboard)
+            else if(exportFormat == DltExporter::FormatClipboard ||
+                    exportFormat == DltExporter::FormatClipboardPayloadOnly)
                 clipboardString += text;
          }
         catch (...)
