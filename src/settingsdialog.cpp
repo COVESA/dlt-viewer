@@ -351,7 +351,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(showPayload?Qt::Checked:Qt::Unchecked);
-    ui->spinBox_showArguments->setValue(showArguments);
+   // ui->spinBox_showArguments->setValue(showArguments);
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
@@ -439,7 +439,7 @@ void SettingsDialog::readDlg()
     showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
-    showArguments = (ui->spinBox_showArguments->value());
+   // showArguments = (ui->spinBox_showArguments->value());
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -831,6 +831,7 @@ void SettingsDialog::clearIndexCacheAfterDays()
     }
 }
 
+/*
     void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
     {
         if (checked)
@@ -854,6 +855,7 @@ void SettingsDialog::clearIndexCacheAfterDays()
          if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
      }
     }
+*/
 
 void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 {
