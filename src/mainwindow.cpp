@@ -408,9 +408,9 @@ void MainWindow::initSignalConnections()
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_actionFindNext()));
 
-    connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
-    connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
-    ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
+   // connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
+   // connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
+   // ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
 
     /* Connect Search dialog find to action History */
     connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
