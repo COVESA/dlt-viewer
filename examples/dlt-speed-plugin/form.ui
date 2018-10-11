@@ -45,7 +45,7 @@
      <property name="smallDecimalPoint">
       <bool>false</bool>
      </property>
-     <property name="numDigits">
+     <property name="digitCount">
       <number>3</number>
      </property>
      <property name="value" stdset="0">

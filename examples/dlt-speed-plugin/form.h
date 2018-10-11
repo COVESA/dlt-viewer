@@ -12,9 +12,6 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- *
- * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> BMW 2011,2012
- *
  * \file form.h
  * For further information see http://www.genivi.org/.
  * @licence end@
@@ -24,13 +21,17 @@
 #define FORM_H
 
 #include <QWidget>
+#include "qwt_plot.h"
 #include <qwt_plot_curve.h>
 #include <qwt_series_data.h>
 #include <qwt_color_map.h>
+#include <qwt_point_data.h>
 #include "plugininterface.h"
-namespace Ui {
-    class Form;
-}
+
+//namespace DltSpeedPlugin {
+    namespace Ui {
+        class Form;
+    }
 
 class Form : public QWidget
 {
@@ -41,15 +42,17 @@ public:
     ~Form();
 
     void setSpeedLCD(QDltArgument currentSpeed,unsigned int time);
+    void setSpeedGraph(QDltArgument currentSpeed,unsigned int time);
 
 private:
     Ui::Form *ui;
-
     QwtPlotCurve *curve1;
     QwtPointArrayData *dataArray;
 
     QVector< double > speedX;
     QVector< double > timeY;
 };
+
+//} //namespace DummyViewer
 
 #endif // FORM_H

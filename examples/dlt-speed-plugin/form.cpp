@@ -12,9 +12,6 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- *
- * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> BMW 2011,2012
- *
  * \file form.cpp
  * For further information see http://www.genivi.org/.
  * @licence end@
@@ -22,6 +19,9 @@
 
 #include "form.h"
 #include "ui_form.h"
+
+
+//using namespace DltSpeedPlugin;
 
 Form::Form(QWidget *parent) :
     QWidget(parent),
@@ -31,11 +31,12 @@ Form::Form(QWidget *parent) :
 
     dataArray = new QwtPointArrayData(timeY,speedX);
 
-    //ui->qwtPlot->setTitle("MySpeedPlugin");
+    ui->qwtPlot->setTitle("MySpeedPlugin");
+
     ui->qwtPlot->setAxisScale(0,0,100);
 
-    ui->thermo->setMaxValue(100);
-    ui->thermo->setMinValue(0);
+    //ui->thermo->setMaximumHeight(100);
+    //ui->thermo->setMinimumHeight(0);
 
     curve1 = new QwtPlotCurve("Curve 1");
     curve1->attach(ui->qwtPlot);
@@ -51,14 +52,15 @@ Form::~Form()
     delete ui;
 }
 
-void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
+
+void Form::setSpeedGraph(QDltArgument currentSpeed,unsigned int time)
 {
     // Push data for speed and time to container
     speedX.push_back(currentSpeed.toString().toDouble());
     timeY.push_back((double)time);
 
     // Set currentSpeed to lcdNumber
-    ui->lcdNumber->display(currentSpeed.toString());
+    //ui->lcdNumber->display(currentSpeed.toString());
 
     // Copy the data into the curves
     dataArray = new QwtPointArrayData(timeY,speedX);
@@ -68,15 +70,25 @@ void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
     if(currentSpeed.toString().toDouble()<80)
     {
         curve1->setPen(QPen(Qt::green, 1));
-    }else
+    }
+    else
     {
         curve1->setPen(QPen(Qt::red, 1));
     }
 
 
-    ui->thermo->setValue(currentSpeed.toString().toDouble());
+    //ui->thermo->setValue(currentSpeed.toString().toDouble());
 
     // Replot curve
     ui->qwtPlot->replot();
 
 }
+
+void Form::setSpeedLCD(QDltArgument currentSpeed,unsigned int time)
+{
+    // Set currentSpeed to lcdNumber
+    ui->lcdNumber->display(currentSpeed.toString());
+
+    ui->thermo->setValue(currentSpeed.toString().toDouble());
+}
+

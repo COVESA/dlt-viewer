@@ -12,10 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- *
- * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> BMW 2011,2012
- *
- * \file speedplugin.h
+ * \file dummyviewerplugin.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -27,11 +24,20 @@
 #include "plugininterface.h"
 #include "form.h"
 
-class SpeedPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface
+#define SPEEDPLUGINVERSION "1.0.0"
+
+class SpeedPlugin : public QObject,
+                           QDLTPluginInterface,
+                           QDltPluginViewerInterface,
+                           QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
+    Q_INTERFACES(QDltPluginControlInterface)
+#ifdef QT5
+    Q_PLUGIN_METADATA(IID "org.genivi.DLT.DummyViewerPlugin")
+#endif
 
 public:
     SpeedPlugin();
@@ -39,6 +45,8 @@ public:
 
     /* QDLTPluginInterface interface */
     QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
     QString description();
     QString error();
     bool loadConfig(QString filename);
@@ -47,20 +55,36 @@ public:
 
     /* QDltPluginViewerInterface */
     QWidget* initViewer();
-    bool initFile(QDltFile *file);
-    void updateFile();
-    void selectedIdxMsg(int index);
+    void initFileStart(QDltFile *file);
+    void initFileFinish();
+    void initMsg(int index, QDltMsg &);
+    void initMsgDecoded(int index, QDltMsg &msg);
+    void updateFileStart();
+    void updateMsg(int index, QDltMsg &msg);
+    void updateMsgDecoded(int index, QDltMsg &msg);
+    void updateFileFinish();
+    void selectedIdxMsg(int index, QDltMsg &msg);
+    void selectedIdxMsgDecoded(int index, QDltMsg &msg);
+
 
     /* internal variables */
-    Form *form;
+    //Speed::Form *form; // no
+    Form *form; // yes
 
     void show(bool value);
 
+    /* QDltPluginControlInterface */
+    bool initControl(QDltControl *control);
+    bool initConnections(QStringList list);
+    bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
+    bool autoscrollStateChanged(bool enabled);
+
 private:
+    QDltControl *dltControl;
     QDltFile *dltFile;
     QString errorText;
-
     int msgIndex;
 };
 
-#endif // SPEEDRPLUGIN_H
+#endif // SPEED_H

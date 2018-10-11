@@ -55,7 +55,7 @@ void FilterDialog::setType(int value)
     ui->comboBoxType->setCurrentIndex(value);
 
     /* update ui */
-    on_checkBoxMarker_clicked();
+    on_checkBoxMarkerClicked();
 }
 
 int FilterDialog::getType()
@@ -317,11 +317,11 @@ void FilterDialog::on_buttonSelectColor_clicked()
 void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
     Q_UNUSED(index);
 
-    on_checkBoxMarker_clicked();
+    on_checkBoxMarkerClicked();
 }
 
 
-void FilterDialog::on_checkBoxMarker_clicked()
+void FilterDialog::on_checkBoxMarkerClicked()
 {
     int index = ui->comboBoxType->currentIndex();
     switch (index)

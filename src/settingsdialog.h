@@ -69,7 +69,8 @@ public:
     int updateContextLoadingFile;
     int updateContextsUnregister;
     int loggingOnlyMode;
-    int maxFileSizeMB;
+    int splitlogfile;
+    float fmaxFileSizeMB;
     int appendDateTime;
 
     int fontSize;
@@ -143,8 +144,8 @@ private slots:
     void on_toolButtonFilterCache_clicked();
     void on_pushButtonClearIndexCache_clicked();
     void on_groupBoxSessionId_clicked(bool checked);
-    void on_groupBoxArguments_clicked(bool checked);
-    void on_spinBox_showArguments_valueChanged(int i);
+    //void on_groupBoxArguments_clicked(bool checked);
+    //void on_spinBox_showArguments_valueChanged(int i);
 
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
 };

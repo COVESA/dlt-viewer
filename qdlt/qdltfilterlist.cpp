@@ -20,7 +20,6 @@
  */
 
 #include <QtDebug>
-//#include <QMessageBox>
 #include <QCryptographicHash>
 
 #include "qdlt.h"
@@ -82,6 +81,26 @@ void QDltFilterList::addFilter(QDltFilter *_filter)
     //qDebug() << "addFilter: Add Filter" << _filter->apid << _filter->ctid;
 }
 
+
+#ifdef USECOLOR
+QColor QDltFilterList::checkMarker(QDltMsg &msg)
+{
+    QDltFilter *filter;
+    QColor color;
+
+    for(int numfilter=0;numfilter<mfilters.size();numfilter++)
+    {
+        filter = mfilters[numfilter];
+
+        if(filter->match(msg))
+        {
+            color = filter->filterColour;
+            break;
+        }
+    }
+    return color;
+}
+#else
 QString QDltFilterList::checkMarker(QDltMsg &msg)
 {
     QDltFilter *filter;
@@ -94,12 +113,13 @@ QString QDltFilterList::checkMarker(QDltMsg &msg)
         if(filter->match(msg))
         {
             color = filter->filterColour;
-            //qDebug() << "Filter color " << filter->filterColour;
             break;
         }
     }
     return color;
 }
+
+#endif
 
 bool QDltFilterList::checkFilter(QDltMsg &msg)
 {

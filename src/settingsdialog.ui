@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>487</width>
-    <height>598</height>
+    <height>671</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,7 +31,7 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tab_1">
       <attribute name="title">
@@ -377,108 +377,6 @@
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
           <item row="5" column="0">
-           <widget class="QGroupBox" name="groupBoxConId">
-            <property name="title">
-             <string>Show Context</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_3">
-             <item>
-              <widget class="QRadioButton" name="radioButtonConId">
-               <property name="text">
-                <string>Con Id</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="radioButtonConIdDesc">
-               <property name="text">
-                <string>Con Id Description</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QGroupBox" name="groupBoxSessionId">
-            <property name="title">
-             <string>Show Session/Process Id</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
-             <item>
-              <widget class="QRadioButton" name="radioButtonSessionId">
-               <property name="text">
-                <string>Session Id</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="radioButtonSessionName">
-               <property name="text">
-                <string>Session Name</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QGroupBox" name="groupBoxAppId">
-            <property name="autoFillBackground">
-             <bool>false</bool>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
-            <property name="title">
-             <string>Show Application</string>
-            </property>
-            <property name="flat">
-             <bool>false</bool>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QRadioButton" name="radioButtonAppId">
-               <property name="text">
-                <string>App Id</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QRadioButton" name="radioButtonAppIdDesc">
-               <property name="text">
-                <string>App Id Description</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="7" column="0">
            <widget class="QGroupBox" name="groupBoxAutomaticTimeSettings">
             <property name="title">
              <string>Set time column automatic to local recording time</string>
@@ -527,56 +425,104 @@
             </layout>
            </widget>
           </item>
-          <item row="3" column="0">
-           <widget class="QGroupBox" name="groupBoxArguments">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>53</height>
-             </size>
-            </property>
+          <item row="4" column="0">
+           <widget class="QGroupBox" name="groupBoxSessionId">
             <property name="title">
-             <string>Show Argument Columns</string>
+             <string>Show Session/Process Id</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
             </property>
-            <layout class="QGridLayout" name="gridLayout_11">
-             <property name="topMargin">
-              <number>4</number>
-             </property>
-             <property name="bottomMargin">
-              <number>4</number>
-             </property>
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_3">
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QRadioButton" name="radioButtonSessionId">
                <property name="text">
-                <string>Columns</string>
+                <string>Session Id</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
-             <item row="0" column="1">
-              <widget class="QSpinBox" name="spinBox_showArguments">
-               <property name="maximum">
-                <number>15</number>
-               </property>
-               <property name="value">
-                <number>5</number>
+             <item>
+              <widget class="QRadioButton" name="radioButtonSessionName">
+               <property name="text">
+                <string>Session Name</string>
                </property>
               </widget>
              </item>
-             <item row="0" column="2">
-              <spacer name="horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
+            </layout>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QGroupBox" name="groupBoxConId">
+            <property name="title">
+             <string>Show Context</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <item>
+              <widget class="QRadioButton" name="radioButtonConId">
+               <property name="text">
+                <string>Con Id</string>
                </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
+               <property name="checked">
+                <bool>true</bool>
                </property>
-              </spacer>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="radioButtonConIdDesc">
+               <property name="text">
+                <string>Con Id Description</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="groupBoxAppId">
+            <property name="autoFillBackground">
+             <bool>false</bool>
+            </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
+            <property name="title">
+             <string>Show Application</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <item>
+              <widget class="QRadioButton" name="radioButtonAppId">
+               <property name="text">
+                <string>App Id</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="radioButtonAppIdDesc">
+               <property name="text">
+                <string>App Id Description</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -719,19 +665,6 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0">
-           <spacer name="verticalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Vertical</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>20</width>
-              <height>40</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
          </layout>
         </widget>
        </item>
@@ -750,8 +683,14 @@
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="9" column="0">
            <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the logfile is split to files of selected size ( limit &amp;lt; 0.01 Mb )&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="title">
-             <string>Maximum File Size (in MBytes)</string>
+             <string>Maximum file size (in MBytes)</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -761,7 +700,14 @@
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <widget class="QLineEdit" name="lineEditMaxFileSizeMB"/>
+              <widget class="QLineEdit" name="lineEditMaxFileSizeMB">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -769,7 +715,7 @@
           <item row="5" column="0">
            <widget class="QCheckBox" name="checkBoxWriteControl">
             <property name="text">
-             <string>Write Control Messages to Log File</string>
+             <string>Write Control Messages to log file</string>
             </property>
            </widget>
           </item>
@@ -795,6 +741,9 @@
           </item>
           <item row="2" column="0">
            <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically mark all messages of subtype ( loglevel ) &amp;quot;fatal&amp;quot; and &amp;quot;error&amp;quot; with red color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Auto mark fatal/error messages</string>
             </property>
@@ -802,6 +751,9 @@
           </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkBoxAutoConnect">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this chechbox is enabled the last ECU connected is tried to be connected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Auto connect to ECUs at start</string>
             </property>
@@ -900,8 +852,6 @@
   <tabstop>checkBoxType</tabstop>
   <tabstop>checkBoxPayload</tabstop>
   <tabstop>checkBoxNoar</tabstop>
-  <tabstop>groupBoxArguments</tabstop>
-  <tabstop>spinBox_showArguments</tabstop>
   <tabstop>groupBoxAppId</tabstop>
   <tabstop>radioButtonAppId</tabstop>
   <tabstop>radioButtonAppIdDesc</tabstop>

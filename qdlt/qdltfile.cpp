@@ -305,15 +305,29 @@ void QDltFile::addFilterIndex (int index)
 
 }
 
-QString QDltFile::checkMarker(QDltMsg &msg)
-{
-    if(!filterFlag)
+#ifdef USECOLOR
+    QColor QDltFile::checkMarker(QDltMsg &msg)
     {
-        return QString(DEFAULT_COLOR);
+        if(!filterFlag)
+        {
+            return QColor();
+        }
+
+        return filterList.checkMarker(msg);
     }
 
-    return filterList.checkMarker(msg);
-}
+#else
+ QString QDltFile::checkMarker(QDltMsg &msg)
+ {
+     if(!filterFlag)
+     {
+         return QString(DEFAULT_COLOR);
+     }
+
+     return filterList.checkMarker(msg);
+ }
+#endif
+
 
 QString QDltFile::getFileName(int num)
 {

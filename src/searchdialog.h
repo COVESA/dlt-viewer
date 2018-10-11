@@ -118,7 +118,7 @@ public:
     QDltPluginManager *pluginManager;
     QList<QLineEdit*> *lineEdits;
     QCheckBox *regexpCheckBox;
-    QCheckBox *CheckBoxSearchtoList;
+   // QCheckBox *CheckBoxSearchtoList;
 
     QString getPayLoadStampStart();
     QString getPayLoadStampEnd();

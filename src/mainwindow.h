@@ -288,6 +288,7 @@ private:
     void updateRecentFileActions();
     void setCurrentFile(const QString &fileName);
     void removeCurrentFile(const QString &fileName);
+    void createsplitfile();
 
     void updateRecentProjectActions();
     void setCurrentProject(const QString &projectName);
@@ -396,6 +397,7 @@ private slots:
 public slots:
 
     void onNewTriggered(QString fileName);
+    void SplitTriggered(QString fileName);
     void onOpenTriggered(QStringList filenames);
     void onSaveAsTriggered(QString fileName);
     void on_action_menuFile_Clear_triggered();

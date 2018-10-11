@@ -19,4 +19,6 @@
 # endif
 #endif
 
+#define USECOLOR yes // use QColor class in qdlt, without the automarking of messages does not work
+
 #endif // EXPORT_RULES_H

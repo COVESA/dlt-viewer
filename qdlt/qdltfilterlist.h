@@ -22,18 +22,18 @@
 #ifndef QDLT_FILTER_LIST_H
 #define QDLT_FILTER_LIST_H
 
+#include "export_rules.h"
 #include <QObject>
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
+#ifdef USECOLOR
+#include <QColor>
+#endif
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
-
-#include "export_rules.h"
-
 
 class QDLT_EXPORT QDltFilterList
 {
@@ -81,7 +81,13 @@ public:
       \param msg The messages to be marked
       \return 0 if message will not be marked, colour if message will be marked
     */
+#ifdef USECOLOR
+    QColor checkMarker(QDltMsg &msg);
+#else
     QString checkMarker(QDltMsg &msg);
+#endif
+
+
 
     //! Check if message matches the filter.
     /*!

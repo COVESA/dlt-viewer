@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>390</width>
+    <width>392</width>
     <height>477</height>
    </rect>
   </property>
@@ -77,7 +77,7 @@
        <item row="14" column="0">
         <widget class="QCheckBox" name="checkBoxTiming">
          <property name="text">
-          <string>Timing pakets from ECU</string>
+          <string>Timing packets from ECU</string>
          </property>
         </widget>
        </item>

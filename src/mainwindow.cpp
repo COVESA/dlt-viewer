@@ -39,6 +39,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QNetworkProxyFactory>
+#include <QtAlgorithms>
 
 /**
  * From QDlt.
@@ -171,7 +172,7 @@ MainWindow::~MainWindow()
     }
 
     // rename output filename if flag set in settings
-    if(settings->appendDateTime)
+    if(( settings->appendDateTime != 0) && (outputfile.size() != 0))
     {
         // get new filename
         QFileInfo info(outputfile.fileName());
@@ -182,7 +183,12 @@ MainWindow::~MainWindow()
         QFileInfo infoNew(info.absolutePath(),newFilename);
 
         // rename old file
+        qfile.close();
+        outputfile.flush();
+        outputfile.close();
         outputfile.rename(infoNew.absoluteFilePath());
+        bool result = outputfile.rename(info.absoluteFilePath(), infoNew.absoluteFilePath());
+        qDebug() << "Renamed " <<  info.absoluteFilePath() << "to" << infoNew.absoluteFilePath() << result;
     }
 
     // deleting search history
@@ -402,9 +408,9 @@ void MainWindow::initSignalConnections()
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_actionFindNext()));
 
-    connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
-    connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
-    ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
+   // connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
+   // connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
+   // ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
 
     /* Connect Search dialog find to action History */
     connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
@@ -891,10 +897,19 @@ void MainWindow::onNewTriggered(QString fileName)
         reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
     }
     else
-        QMessageBox::critical(0, QString("DLT Viewer"),
-                              QString("Cannot create new log file \"%1\"\n%2")
-                              .arg(fileName)
-                              .arg(outputfile.errorString()));
+     {
+        if (OptManager::getInstance()->issilentMode())
+         {
+         qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
+         }
+         else
+         {
+          QMessageBox::critical(0, QString("DLT Viewer"),
+                               QString("Cannot create new log file \"%1\"\n%2")
+                               .arg(fileName)
+                               .arg(outputfile.errorString()));
+         }
+    }
 }
 
 
@@ -1797,8 +1812,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         QList<QDltPlugin*> activeViewerPlugins;
         activeViewerPlugins = pluginManager.getViewerPlugins();
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
             QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+            //qDebug() << __LINE__ << __FILE__ << item;
             item->initFileStart(&qfile);
         }
     }
@@ -3313,27 +3330,17 @@ void MainWindow::read(EcuItem* ecuitem)
 
                     // set start time when writing first data
                     if(startLoggingDateTime.isNull())
+                        {
                         startLoggingDateTime = QDateTime::currentDateTime();
+                        }
 
-                    // check if files size limit reached
-                    if(settings->maxFileSizeMB && ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())>(((size_t)settings->maxFileSizeMB)*1000*1000)))
-                    {
-                        // get new filename
-                        QFileInfo info(outputfile.fileName());
-                        QString newFilename = info.baseName()+
-                                (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
-                                (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
-                                QString(".dlt");
-                        QFileInfo infoNew(info.absolutePath(),newFilename);
-
-                        // rename old file
-                       outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
-
-                        // set new start time
-                        startLoggingDateTime = QDateTime::currentDateTime();
-
-                        // create new file
-                        onNewTriggered(info.absoluteFilePath());
+                    if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
+                     {
+                     // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
+                     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())) > settings->fmaxFileSizeMB *1000*1000) )
+                      {
+                        createsplitfile();
+                      }
                     }
 
                     // write data into file
@@ -3405,6 +3412,80 @@ void MainWindow::read(EcuItem* ecuitem)
 
 }
 
+
+void MainWindow::createsplitfile()
+{
+    // get new filename
+    dltIndexer->stop();
+    QFileInfo info(outputfile.fileName());
+
+    QString newFilename = info.baseName()+
+            (startLoggingDateTime.toString("__yyyyMMdd_hhmmss"))+
+            (QDateTime::currentDateTime().toString("__yyyyMMdd_hhmmss"))+
+            QString(".dlt");
+    QFileInfo infoNew(info.absolutePath(),newFilename);
+    qDebug() << "Split to" <<  outputfile.fileName() << "to" << infoNew.absoluteFilePath();
+
+    // rename old file
+    outputfile.copy(outputfile.fileName(),infoNew.absoluteFilePath());
+
+    // set new start time
+    startLoggingDateTime = QDateTime::currentDateTime();
+
+    SplitTriggered(info.absoluteFilePath());
+
+}
+
+
+void MainWindow::SplitTriggered(QString fileName)
+{
+    // change DLT file working directory
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+
+    // close existing file
+    if(outputfile.isOpen())
+    {
+        //qDebug() << "isOpen" << fileName << __FILE__ << __LINE__;
+        if (outputfile.size() == 0)
+        {
+            deleteactualFile();
+        }
+        else
+        {
+            outputfile.close();
+        }
+    }
+
+    // create new file; truncate if already exist
+    outputfile.setFileName(fileName);
+    setCurrentFile(fileName);
+
+    outputfileIsTemporary = false;
+    outputfileIsFromCLI = false;
+
+    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+     {
+        openFileNames = QStringList(fileName);
+        isDltFileReadOnly = false;
+        reloadLogFile(false,true);
+     }
+    else
+     {
+        if (OptManager::getInstance()->issilentMode())
+         {
+         qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
+         }
+         else
+         {
+         QMessageBox::critical(0, QString("DLT Viewer"),
+                                  QString("Cannot create new log file \"%1\"\n%2")
+                                  .arg(fileName)
+                                  .arg(outputfile.errorString()));
+         }
+     }
+ }
+
+
 void MainWindow::updateIndex()
 {
     QList<QDltPlugin*> activeViewerPlugins;
@@ -3435,28 +3516,35 @@ void MainWindow::updateIndex()
 
     for(int num=oldsize;num<qfile.size();num++)
     {
-        qmsg.setMsg(qfile.getMsg(num));
+     qmsg.setMsg(qfile.getMsg(num));
 
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+     {
+     for(int i = 0; i < activeViewerPlugins.size(); i++)
+      {
             item = activeViewerPlugins.at(i);
             item->updateMsg(num,qmsg);
-        }
+      }
+     } 
 
-     if ( pluginsEnabled == true )
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
       {
         pluginManager.decodeMsg(qmsg,silentMode);
       }
 
-      if(qfile.checkFilter(qmsg))
-       {
+     if(qfile.checkFilter(qmsg))
+      {
             qfile.addFilterIndex(num);
-       }
+      }
 
-        for(int i = 0; i < activeViewerPlugins.size(); i++)
-        {
+     if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+     {
+     for(int i = 0; i < activeViewerPlugins.size(); i++)
+      {
             item = activeViewerPlugins[i];
             item->updateMsgDecoded(num,qmsg);
-        }
+      }
+     } 
     }
 
     if (!draw_timer.isActive())
@@ -3465,7 +3553,8 @@ void MainWindow::updateIndex()
     if(oldsize!=qfile.size())
     {
         // only run through viewer plugins, if new messages are added
-        for(int i = 0; i < activeViewerPlugins.size(); i++){
+        for(int i = 0; i < activeViewerPlugins.size(); i++)
+        {
             item = activeViewerPlugins.at(i);
             item->updateFileFinish();
         }
@@ -4728,6 +4817,8 @@ void MainWindow::on_action_menuHelp_Support_triggered()
   text.append("?Subject=DLT Question: [please add subject] ");//subject
   text.append("&body=Please keep version information in mail:%0D%0ADLT Version: ").append(PACKAGE_VERSION).append("-");//body start
   text.append(PACKAGE_VERSION_STATE);
+  text.append("-");
+  text.append(PACKAGE_REVISION);
   text.append("%0D%0ABuild Date: ");
   text.append(__DATE__);
   text.append("-");
@@ -6262,29 +6353,29 @@ int MainWindow::nearest_line(int line){
          * matching index. If it cannot be found, just settle
          * for the last one that we saw before going over */
         int lastFound = 0;
-        for(int i=0;i<qfile.sizeFilter();i++)
+
+        QVector<qint64> filterIndices = qfile.getIndexFilter();
+
+        if(!filterIndices.isEmpty())
         {
-            if(qfile.getMsgFilterPos(i) == line)
+            lastFound = filterIndices.indexOf(line);
+            if(lastFound < 0)
             {
-                // The correct line is visible.
-                // We can terminate the search
-                lastFound = i;
-                break;
+                QVector<qint64> sortedIndices = filterIndices;
+                qSort(sortedIndices);
+
+                int lastIndex = sortedIndices[0];
+
+                for(auto index: sortedIndices)
+                {
+                    if(index > line)
+                    {
+                        break;
+                    }
+                    lastIndex = index;
+                }
+                lastFound = filterIndices.indexOf(lastIndex);
             }
-            else if(qfile.getMsgFilterPos(i) < line)
-            {
-                // Not found found yet, but line is below current searched line.
-                // Update last found
-                lastFound = i;
-            }
-            else /* qfile.getMsgFilterPos(i) > line */
-            {
-                // Calculate, if we are nearer to the line from last found.
-                // If yes, use current line in search
-                if((qfile.getMsgFilterPos(i)-line)<(line-qfile.getMsgFilterPos(lastFound)))
-                    lastFound = i;
-                break;
-           }
         }
         row = lastFound;
     }

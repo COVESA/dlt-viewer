@@ -1,0 +1,10 @@
+usr/bin/dlt_viewer
+usr/lib/*/libqdlt.so.*
+usr/share/applications/dlt_viewer.desktop
+usr/share/pixmaps/face-glasses.ico
+usr/share/dlt-viewer/plugins/libfile*.so
+usr/share/dlt-viewer/plugins/libdltdbus*.so
+usr/share/dlt-viewer/plugins/libdltview*.so
+usr/share/dlt-viewer/plugins/libnonv*.so
+#usr/share/dlt-viewer/plugins/*.xml
+#usr/share/doc/genivi-dlt-viewer/filters

@@ -1,0 +1,6 @@
+doc/dlt_viewer_user_manual.pdf
+doc/dlt_viewer_plugins_programming_guide.pdf
+doc/search *.pdf
+ReleaseNotes_Viewer.txt
+plugin/examples/*.xml
+filters

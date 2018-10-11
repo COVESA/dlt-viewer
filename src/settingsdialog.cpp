@@ -110,7 +110,7 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
     ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
 
-    maxFileSizeMB = 0;
+    fmaxFileSizeMB = 0.0;
     appendDateTime = 0;
 }
 
@@ -229,8 +229,8 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkWarn->setCheckState(autoMarkWarn?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkMarker->setCheckState(autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(loggingOnlyMode?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMaxFileSizeMB->setChecked(maxFileSizeMB);
-    ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(maxFileSizeMB));
+    ui->groupBoxMaxFileSizeMB->setChecked(splitlogfile?Qt::Checked:Qt::Unchecked);
+    ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(fmaxFileSizeMB));
     ui->checkBoxAppendDateTime->setCheckState(appendDateTime?Qt::Checked:Qt::Unchecked);
 
     /* table */
@@ -351,7 +351,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(showPayload?Qt::Checked:Qt::Unchecked);
-    ui->spinBox_showArguments->setValue(showArguments);
+   // ui->spinBox_showArguments->setValue(showArguments);
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
@@ -398,10 +398,18 @@ void SettingsDialog::readDlg()
     autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
     autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
     loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
-    if(ui->groupBoxMaxFileSizeMB->isChecked())
-        maxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toInt();
-    else
-        maxFileSizeMB = 0;
+    splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
+    if(splitlogfile != 0)
+     {
+        fmaxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toFloat();
+        if (fmaxFileSizeMB < 0.01)
+        {
+          fmaxFileSizeMB = 0.01;
+          qDebug() <<  "Caution: minimum split file size limited to 0.01 Mb !";
+          //QMessageBox::warning(0, QString("DLT Viewer"), QString("Minimum value limited to 0.01 Mb !"));
+        }
+     }
+
     appendDateTime = (ui->checkBoxAppendDateTime->checkState() == Qt::Checked);
 
     /* table */
@@ -431,7 +439,7 @@ void SettingsDialog::readDlg()
     showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
-    showArguments = (ui->spinBox_showArguments->value());
+   // showArguments = (ui->spinBox_showArguments->value());
 
     /* other */
     writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -483,7 +491,8 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/autoMarkMarker",autoMarkMarker);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
-    settings->setValue("startup/maxFileSizeMB",maxFileSizeMB);
+    settings->setValue("startup/splitfileyesno",splitlogfile);
+    settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
 
     /* table */
@@ -555,7 +564,8 @@ void SettingsDialog::readSettings()
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
     autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
-    maxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toInt();
+    splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
+    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
 
     /* project table */
@@ -821,6 +831,7 @@ void SettingsDialog::clearIndexCacheAfterDays()
     }
 }
 
+/*
     void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
     {
         if (checked)
@@ -844,6 +855,7 @@ void SettingsDialog::clearIndexCacheAfterDays()
          if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
      }
     }
+*/
 
 void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 {

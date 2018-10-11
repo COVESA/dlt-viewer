@@ -62,6 +62,7 @@
  Initials    Date         Comment
  aw          13.01.2010   initial
  cm          27.04.2011   fixing
+ gw          20.09.2018   add injection example
  */
  
  
@@ -78,8 +79,8 @@
  */
 #include <dlt.h>
 
-#define DEFAULT_DELAY 500
-#define DEFAULT_MESSAGES 1000
+#define DEFAULT_DELAY 1000
+#define DEFAULT_MESSAGES 10000000
 
 /**
  * 
@@ -93,18 +94,23 @@ char *dvalue = 0;
 char *fvalue = 0;
 char *nvalue = 0;
 
+// Current speed info
+int speed = 0;
+// Increase or decrease speed
+int direction = 1;
+
 //For injection callback - delete if interface does not provide injection
-/*
+
 char *message = 0;
 char *text = 0;
+
 int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length);
-*/
+
 
 /**
  * Create logging context 
  */
 DLT_DECLARE_CONTEXT(mycontext);
-
 
 /**
  * Print usage information of tool.
@@ -278,18 +284,46 @@ int parseArguments(int argc, char* argv[]){
     return EXIT_SUCCESS;
 }
 
+int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length)
+{
+    char text[1024];
+    printf("Injection received: %d, Length=%d \n",service_id,length);
+
+    if (length>0)
+    {
+	int par = atoi ( (char *) data);
+	 switch (service_id)
+       {
+	    case 4096:
+		     direction = direction * -1;
+		     printf("ServiceID: %i - Change direction to %i,  par is %i\n",service_id, direction, par);
+             //dlt_print_mixed_string(text,1024,data,length,0);
+             //printf("%s\n", text);
+             break;
+
+	    case 4097:
+	         speed = par;
+	         printf("ServiceID: %i - Set speed to %i \n",service_id, par);
+	         break;
+
+	   case 4098:
+	        delay = par*10000;
+	        printf("ServiceID: %i - Delay set to %i \n",service_id, delay);
+	        break;
+
+	   default:
+	       break;
+     }
+
+    }
+
+    return 0;
+}
 /**
  * Main function
  */
 int main(int argc, char* argv[])
 {
-
-	// Current speed info
-	int speed = 0;
-	
-	// Increase or decrease speed
-	int direction = 1;
-	
 	// Generated messages
 	int generatedMessageCount;
 	
@@ -303,20 +337,20 @@ int main(int argc, char* argv[])
 		return EXIT_SUCCESS;
 	}
 	
-	
-	
+
 	//Register the application to dlt
     DLT_REGISTER_APP("SPEED","Speed Application");
     
     //Register the context to dlt
     DLT_REGISTER_CONTEXT(mycontext,"SIG","Speed signal");
 	
-	//Register injection callback to dlt
-    //DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0xFFF, dlt_user_injection_callback);
-
+    //Register injection callback to dlt
+    DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0x1000, dlt_user_injection_callback);
+    DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0x1001, dlt_user_injection_callback);
+    DLT_REGISTER_INJECTION_CALLBACK(mycontext, 0x1002, dlt_user_injection_callback);
 
 	//For injection callback - delete if interface does not provide injection
-    //text = message;
+    text = message;
 
    
 	//Loop for generate speed messages and log to dlt
@@ -328,16 +362,19 @@ int main(int argc, char* argv[])
         
         // Log to dlt
         DLT_LOG(mycontext,DLT_LOG_INFO,DLT_STRING("Speed"),DLT_INT(speed));
-        
         // Increase or decrease speed depending on direction value
 	    speed += direction;
 	    
 	    // Limitation: 0 < speed < 100
-	    if(speed>=100) {
+	    if(speed>=100)
+	    {
 			direction = -1;
+			//printf("up\n");
 		}
-		else if(speed<=0) {
+		else if(speed<=0) 
+		{
 			direction = 1;
+			//printf("down\n");
 		}
 
         if (gflag)
@@ -366,17 +403,5 @@ int main(int argc, char* argv[])
     return EXIT_SUCCESS;
 }
 
-/*int dlt_user_injection_callback(uint32_t service_id, void *data, uint32_t length)
-{
-    char text[1024];
 
-    printf("Injection %d, Length=%d \n",service_id,length);
-    if (length>0)
-    {
-        dlt_print_mixed_string(text,1024,data,length,0);
-        printf("%s \n", text);
-    }
-
-    return 0;
-}*/
 

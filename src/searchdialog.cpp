@@ -35,7 +35,7 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
     ui->setupUi(this);
     regexpCheckBox = ui->checkBoxRegExp;
-    CheckBoxSearchtoList = ui->checkBoxSearchIndex;
+    //CheckBoxSearchtoList = ui->checkBoxSearchIndex;
     match = false;
     onceClicked = false;
     startLine = -1;
