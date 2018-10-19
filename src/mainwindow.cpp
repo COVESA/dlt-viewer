@@ -1217,18 +1217,20 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
 }
 
-void MainWindow::exportSelection(bool ascii = true,bool file = false)
+void MainWindow::exportSelection(bool ascii = true,bool file = false,bool payload_only = false)
 {
     Q_UNUSED(ascii);
     Q_UNUSED(file);
 
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
+    DltExporter::DltExportFormat exportFormat = (payload_only ? DltExporter::FormatClipboardPayloadOnly : DltExporter::FormatClipboard);
+
     DltExporter exporter;
-    exporter.exportMessages(&qfile,0,&pluginManager,DltExporter::FormatClipboard,DltExporter::SelectionSelected,&list);
+    exporter.exportMessages(&qfile,0,&pluginManager,exportFormat,DltExporter::SelectionSelected,&list);
 }
 
-void MainWindow::exportSelection_searchTable()
+void MainWindow::exportSelection_searchTable(bool payload_only = false)
 {
     const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
 
@@ -1258,8 +1260,10 @@ void MainWindow::exportSelection_searchTable()
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
 
+    DltExporter::DltExportFormat exportFormat = (payload_only ? DltExporter::FormatClipboardPayloadOnly : DltExporter::FormatClipboard);
+
     DltExporter exporter;
-    exporter.exportMessages(&qfile,0,&pluginManager,DltExporter::FormatClipboard,DltExporter::SelectionSelected,&finallist);
+    exporter.exportMessages(&qfile,0,&pluginManager,exportFormat,DltExporter::SelectionSelected,&finallist);
 }
 
 void MainWindow::on_actionExport_triggered()
@@ -5253,7 +5257,7 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
 
 void MainWindow::on_action_menuSearch_Find_triggered()
 {
-    //qDebug() << "on_action_menuSearch_Find_triggered" << __LINE__;
+    //qDebug() << "on_action_menuSearch_Find_triggered" << __LINE__ << __FILE__;
     searchDlg->open();
     searchDlg->selectText();
 }
@@ -5954,15 +5958,16 @@ void MainWindow::on_action_menuFilter_Delete_triggered() {
         }
         delete widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
     }
-    else {
-        QMessageBox::warning(0, QString("DLT Viewer"),
-                             QString("No Filter selected!"));
+    else
+    {
+        QMessageBox::warning(0, QString("DLT Viewer"), QString("No Filter selected!"));
     }
 
     on_filterWidget_itemSelectionChanged();
 }
 
-void MainWindow::on_action_menuFilter_Clear_all_triggered() {
+void MainWindow::on_action_menuFilter_Clear_all_triggered()
+{
     /* delete complete filter list */
     project.filter->clear();
     applyConfigEnabled(true);
@@ -6028,6 +6033,10 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_to_clipboard_triggered()));
     menu.addAction(action);
 
+    action = new QAction("C&opy Selection Payload to Clipboard", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_Payload_to_clipboard_triggered()));
+    menu.addAction(action);
+
     menu.addSeparator();
 
     action = new QAction("&Export...", this);
@@ -6070,6 +6079,14 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered);
     menu.addAction(action);
 
+    action = new QAction("C&opy Selection Payload to Clipboard", this);
+    connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered);
+    menu.addAction(action);
+    menu.addSeparator();
+    action = new QAction("Resize columns to fit", this);
+    connect(action, SIGNAL(triggered()), ui->tableView_SearchIndex, SLOT(resizeColumnsToContents()));
+    menu.addAction(action);
+
     menu.addSeparator();
 
     /* show popup menu */
@@ -6079,6 +6096,11 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 void MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered()
 {
     exportSelection_searchTable();
+}
+
+void MainWindow::onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered()
+{
+    exportSelection_searchTable(true);
 }
 
 void MainWindow::keyPressEvent ( QKeyEvent * event )
@@ -6296,6 +6318,11 @@ void MainWindow::on_action_menuConfig_Expand_All_ECUs_triggered()
 void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 {
     exportSelection(true,false);
+}
+
+void MainWindow::on_action_menuConfig_Copy_Payload_to_clipboard_triggered()
+{
+    exportSelection(true,false,true);
 }
 
 void MainWindow::on_action_menuFilter_Append_Filters_triggered()
