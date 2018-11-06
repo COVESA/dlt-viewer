@@ -296,9 +296,6 @@ void MainWindow::initView()
     //ui->tableView->setItemDelegate(delegate);
     //ui->tableView->setItemDelegateForColumn(FieldNames::Payload,delegate);
 
-
-
-
     /* preset the witdth of the columns somwhow */
     ui->tableView->setColumnWidth(0,50);  // the first column is the index if there is one ...
     ui->tableView->setColumnWidth(1,150); // the second column is the receiving time stamp
@@ -488,10 +485,9 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setColumnWidth(FieldNames::SessionId,50);
     m_searchresultsTable->setColumnWidth(FieldNames::Type,50);
     m_searchresultsTable->setColumnWidth(FieldNames::Subtype,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Mode,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::ArgCount,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::Payload,1000);
-
+    m_searchresultsTable->setColumnWidth(FieldNames::Mode,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::ArgCount,50);
+    m_searchresultsTable->setColumnWidth(FieldNames::Payload,1400);
 
 }
 
@@ -937,6 +933,7 @@ void MainWindow::onOpenTriggered(QStringList filenames)
 
     searchDlg->setMatch(false);
     searchDlg->setOnceClicked(false);
+    searchDlg->focusRow(-1);
     searchDlg->setStartLine(-1);
 }
 
@@ -1216,6 +1213,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     reloadLogFile();
 
 }
+
 
 void MainWindow::exportSelection(bool ascii = true,bool file = false,bool payload_only = false)
 {
@@ -6333,7 +6331,8 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
     openDlfFile(fileName,false);
 }
 
-int MainWindow::nearest_line(int line){
+int MainWindow::nearest_line(int line)
+{
 
     if (line < 0 || line > qfile.size()-1){
         return -1;

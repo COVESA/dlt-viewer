@@ -55,17 +55,19 @@ public:
     Project *project;
     QDltPluginManager *pluginManager;
     void modelChanged();
-
+    int setMarker(long int lineindex, QColor hlcolor); //used in search functionality
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
     void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
-
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
+
 private:
-    int lastSearchIndex;
+    long int lastSearchIndex;
     bool emptyForceFlag;
     bool loggingOnlyMode;
 
+    long int searchhit;
     QColor searchBackgroundColor() const;
+    QColor searchhit_higlightColor;
 };
 
 class HtmlDelegate : public QStyledItemDelegate

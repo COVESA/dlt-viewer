@@ -28,6 +28,8 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QCompleter>
+#include <QStringListModel>
 
 #include "tablemodel.h"
 #include "project.h"
@@ -40,10 +42,9 @@
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
 #include "exporterdialog.h"
-#include <QCompleter>
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
-#include <QStringListModel>
+
 
 /**
  * When ecu items buffer size exceeds this while using
@@ -115,11 +116,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    QCompleter *newCompleter;
-
 private:
     Ui::MainWindow *ui;
-
+    QCompleter *newCompleter;
     /* Timer for connecting to ECUs */
     QTimer timer;
 

@@ -29,7 +29,7 @@
 #include "dlt_protocol.h"
 
 
-static int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
+static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
 
@@ -53,7 +53,6 @@ void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag
  {
   lastrow = indexrow;
  }
-
 }
 
 
@@ -66,6 +65,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      lastSearchIndex = -1;
      emptyForceFlag = false;
      loggingOnlyMode = false;
+     searchhit = -1;
      lastrow = -1;
  }
 
@@ -73,6 +73,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
  {
 
  }
+
 
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
@@ -309,12 +310,18 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          }
 
          QColor color = qfile->checkMarker(msg);
+
          if(color.isValid())
          {
             return QVariant(QBrush(color));
          }
          else
          {
+             if ( searchhit > -1 && searchhit == index.row() )
+             {
+
+               return QVariant(QBrush(searchhit_higlightColor));
+             }
              if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
              {
                 return QVariant(QBrush(QColor(255,0,0)));
@@ -328,8 +335,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              {
                 return QVariant(QBrush(QColor(0,255,0)));
              }
-
-             return QVariant(QBrush(QColor(255,255,255)));
+             return QVariant(QBrush(QColor(255,255,255))); // this is the default background clor
          }
      }
 
@@ -436,6 +442,12 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      emit(layoutChanged());
  }
 
+int TableModel::setMarker(long int lineindex, QColor hlcolor)
+{
+  searchhit_higlightColor = hlcolor;
+  searchhit = lineindex;
+  return 0;
+}
 
 QColor TableModel::searchBackgroundColor() const
 {
