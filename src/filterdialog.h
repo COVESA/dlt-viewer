@@ -47,6 +47,9 @@ public:
     void setActive(bool state);
     bool getEnableActive();
 
+    void setEnableRegexp_Appid(bool state);
+    bool getEnableRegexp_Appid();
+
     void setEnableRegexp_Context(bool state);
     bool getEnableRegexp_Context();
 

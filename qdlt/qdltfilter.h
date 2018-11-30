@@ -50,6 +50,7 @@ public:
     QString header;
     QString payload;
 
+    bool enableRegexp_Appid;
     bool enableRegexp_Context;
     bool enableRegexp_Header;
     bool enableRegexp_Payload;
@@ -76,6 +77,7 @@ public:
     QRegExp headerRegexp;
     QRegExp payloadRegexp;
     QRegExp contextRegexp;
+    QRegExp appidRegexp;
 
     //! Constructor.
     /*!

@@ -73,6 +73,16 @@ QString FilterDialog::getName()
     return ui->lineEditName->text();
 }
 
+void FilterDialog::setEnableRegexp_Appid(bool state)
+{
+    ui->checkBoxRegexp_Appid->setChecked(state);
+}
+
+bool FilterDialog::getEnableRegexp_Appid()
+{
+    return (ui->checkBoxRegexp_Appid->checkState() == Qt::Checked);
+}
+
 void FilterDialog::setEnableRegexp_Context(bool state)
 {
     ui->checkBoxRegexp_Context->setChecked(state);
@@ -392,6 +402,13 @@ void FilterDialog::validate()
     error += "Expression: '%2' \n";
     error += "Error: %3 ";
 
+    if (!getEnableRegexp_Appid() && 4 < ui->lineEditApplicationId->text().length())
+    {
+      ui->lineEditApplicationId->selectAll();
+      QMessageBox::warning(this, "Warning", "Application Id is more than four characters in length (and not in RegExp mode).");
+      ui->lineEditApplicationId->setFocus();
+      return;
+    }
 
     if(!(getEnableRegexp_Context()||getEnableRegexp_Header()||getEnableRegexp_Payload()))
     {
