@@ -49,6 +49,7 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     header = _filter.header;
     payload = _filter.payload;
 
+    enableRegexp_Appid   = _filter.enableRegexp_Appid;
     enableRegexp_Context = _filter.enableRegexp_Context;
     enableRegexp_Header  = _filter.enableRegexp_Header;
     enableRegexp_Payload = _filter.enableRegexp_Payload;
@@ -74,6 +75,7 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     headerRegexp = _filter.headerRegexp;
     payloadRegexp = _filter.payloadRegexp;
     contextRegexp = _filter.contextRegexp;
+    appidRegexp = _filter.appidRegexp;
 
     return *this;
 }
@@ -89,6 +91,7 @@ void QDltFilter::clear()
     header.clear();
     payload.clear();
 
+    enableRegexp_Appid = false;
     enableRegexp_Context = false;
     enableRegexp_Header = false;
     enableRegexp_Payload = false;
@@ -130,9 +133,10 @@ bool QDltFilter::compileRegexps()
     headerRegexp.setPattern(header);
     payloadRegexp.setPattern(payload);
     contextRegexp.setPattern(ctid);
+    appidRegexp.setPattern(apid);
     headerRegexp.setCaseSensitivity(ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive);
     payloadRegexp.setCaseSensitivity(ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive);
-    return (headerRegexp.isValid() && payloadRegexp.isValid() && contextRegexp.isValid());
+    return (headerRegexp.isValid() && payloadRegexp.isValid() && contextRegexp.isValid() && appidRegexp.isValid());
 }
 
 bool QDltFilter::match(QDltMsg &msg) const
@@ -140,8 +144,18 @@ bool QDltFilter::match(QDltMsg &msg) const
     if(enableEcuid && (msg.getEcuid() != ecuid)) {
         return false;
     }
-    if(enableApid && (msg.getApid() != apid)) {
-        return false;
+
+    if(enableRegexp_Appid)
+    {
+        if(enableApid && appidRegexp.indexIn(msg.getApid()) < 0) {
+            return false;
+        }
+    }
+    else
+    {
+        if(enableApid && (msg.getApid() != apid)) {
+            return false;
+        }
     }
 
     if(enableRegexp_Context)
@@ -232,8 +246,13 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     }
     if(xml.name() == QString("enableregexp"))    //legacy
     {
+        enableRegexp_Appid   = xml.readElementText().toInt();
         enableRegexp_Context = xml.readElementText().toInt();
         enableRegexp_Header  = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("enableregexp_Appid"))
+    {
+          enableRegexp_Appid = xml.readElementText().toInt();
     }
     if(xml.name() == QString("enableregexp_Context"))
     {
@@ -320,6 +339,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("headertext",header);
     xml.writeTextElement("payloadtext",payload);
 
+    xml.writeTextElement("enableregexp_Appid",QString("%1").arg(enableRegexp_Appid));
     xml.writeTextElement("enableregexp_Context",QString("%1").arg(enableRegexp_Context));
     xml.writeTextElement("enableregexp_Header",QString("%1").arg(enableRegexp_Header));
     xml.writeTextElement("enableregexp_Payload",QString("%1").arg(enableRegexp_Payload));

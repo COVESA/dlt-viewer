@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>507</height>
+    <height>548</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -215,6 +215,16 @@
      <item row="4" column="1" colspan="2">
       <widget class="QLineEdit" name="lineEditPayloadText"/>
      </item>
+     <item row="1" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Appid">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for AppId  text.</string>
+       </property>
+       <property name="text">
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="3">
       <widget class="QCheckBox" name="checkBoxRegexp_Context">
        <property name="toolTip">
@@ -377,11 +387,7 @@
       </widget>
      </item>
      <item row="1" column="1" colspan="2">
-      <widget class="QLineEdit" name="lineEditApplicationId">
-       <property name="maxLength">
-        <number>4</number>
-       </property>
-      </widget>
+      <widget class="QLineEdit" name="lineEditApplicationId"/>
      </item>
      <item row="5" column="1">
       <widget class="QComboBox" name="comboBoxLogLevelMin">
@@ -877,6 +883,7 @@
   <tabstop>lineEditEcuId</tabstop>
   <tabstop>checkBoxApplicationId</tabstop>
   <tabstop>lineEditApplicationId</tabstop>
+  <tabstop>checkBoxRegexp_Appid</tabstop>
   <tabstop>checkBoxContextId</tabstop>
   <tabstop>lineEditContextId</tabstop>
   <tabstop>checkBoxRegexp_Context</tabstop>
