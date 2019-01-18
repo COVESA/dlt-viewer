@@ -663,6 +663,8 @@ Some choosen settings:
 If this chechbox is enabled the last ECU connected is tried to be connected automatically.
 In case you are using a project file this setting may be overruled !
 
+\item{Auto scroll}
+
 \item{Auto mark fatal/error messages}
 
 Automatically mark all messages of subtype ( loglevel ) "fatal" and "error" with red color.
@@ -686,7 +688,7 @@ Example:
 \includegraphics[width=0.8\textwidth]{images/markermessage.png}
 
 \item{Write Control Messages to Log File}
-
+\label{controlmessagestolog}
 When this checkbox is enabled, control messages like register or unregister of applications or contexts, SW version and get\_log\_info from the daemon are displayed
 in the message table and stored in the logfile.
 
@@ -716,6 +718,7 @@ E.g.:
 cat *.dlt >> combine.dlt
 \end{verbatim}
 
+\caution{Depending on the message traffic and the choosen split file size there may occur a message loss in case the split file size is to small ( < 10 kb )}
 
 \item{Append Date/Time to filename when closing DLT Viewer}
 
@@ -935,6 +938,8 @@ Description:
 
 
 By double clicking the file name, you can see the file contents as preview and a text or image viewer is opened.
+
+After enabling the filetransfer plugin when a dlt file already was loaded you will have to reload the logfile !
 
 You can also use the Filetransfer Plugin command line mode to extract files out of a stored dlt file e.g. in an automated test setup.
 On more information about the command line mode see \autoref{commandlinemode}.
@@ -1336,7 +1341,13 @@ Select the menu option "File"\ensuremath{\rightarrow}"Export... ".
 There are several options for exporting messages:
 \vspace{0.3cm}
 
-\includegraphics[width=0.6\textwidth]{images/DLTExporter.png}
+\begin{figure}[H]
+ \centering
+   \includegraphics[width=0.5\textwidth]{images/DLTExporter.png}
+ \caption{Exporter dialog}
+ \label{fig:exportdialog}
+\end{figure}
+
 
 \begin{enumerate}
 \item Format: file format of the exported messages
@@ -1405,7 +1416,8 @@ RAUSFINDEN  wie das funnktioniert: creation time stamp und access time stamp
 Select Menu "Search"\ensuremath{\rightarrow}"Jump to" or keypress combination "STRG + G" to directly navigate to the desired line / index number in the table view.
 
 \paragraph{Quicksearch}
-Using the input field in the menu bar you can perform a quicksearch, the string entered is used a search pattern to find matches in the payload of all messages.
+Using the input field in the menu bar you can perform a quicksearch, the string entered is used a search pattern to find matches in the payload of all messages as configured in the Search Dialog. Use the 
+green arrows \includegraphics[width=0.06\textwidth]{images/green_arrows.png} in the menu bar to navigate in single step mode or fill the search results window.
 
 \paragraph{Advanced search}
 If you want to specify more details and other search parameters you can use the Menu "Search"\ensuremath{\rightarrow}"Find" or
@@ -1413,10 +1425,29 @@ search icon \includegraphics[width=0.03\textwidth]{images/searchicon.png} in the
 
 \begin{figure}[H]
  \centering
-  \includegraphics[width=0.6\textwidth]{images/Search_dialog.png}
+  \includegraphics[width=0.5\textwidth]{images/Search.png}
  \caption{Search dialog}
  \label{fig:searchdialog}
 \end{figure}
+
+
+\begin{itemize}
+ \item Text to search\linebreak The search string you are looking for in the trace.
+ \item Search from:\linebreak Search whole log or starting from the current selected line.
+ \item Highlight color:\linebreak Select the color to highlight the hit line in single step mode.
+ \item Find all:\linebreak If enabled then all search hits are listed in the search results window, else the search runs in single step mode:
+ jump to the results with Previous ( F2 ) or Next ( F3 ) or  using the green arrows \includegraphics[width=0.06\textwidth]{images/green_arrows.png} in the menu bar.
+ \item Search in Header\linebreak Search hits in the message header will be shown too. E.g. search for a certain receive or target time stamp.
+ \item Search in Payload\linebreak Search hits in the message payload will be displayed. This is most probably the standard option.
+ \item Search Options: Case Sensitive\linebreak \caution{If enabled the search time may increase significantly !}
+ \item Search Options: Regular Expression\linebreak Use regular expression search.
+ \item ApId\linebreak Only take care of messages with this ApId.
+ \item CtId\linebreak Only take care of messages with this CtId.
+ \item Timestamp start / end\linebreak All search hits will have target time stamps within the given time range will be shown.
+ \item Payload start / end\linebreak All search hits will be in the range of a payload which contains the given start
+     string and a payload which contains the given stop string will be shown.
+\end{itemize}
+
 
 \paragraph{Search history}
 You can use the menu "Search"\ensuremath{\rightarrow}"History" to select the last used search strings.
@@ -1435,8 +1466,12 @@ The marker line looks like this:\linebreak
 % \begin{verbatim} 1 2018/06/26 14:51:05.000000 24878.2430 0 DLTV DLTV DLTV 0 control response non-verbose 0 MARKER \end{verbatim}
 \includegraphics[width=1.0\textwidth]{images/markermessage.png}
 
-These marker messages can be automatically highlighted in green color, see the settings in \autoref{automarkmarker}.
+These marker messages can be automatically highlighted in green color, see in \autoref{automarkmarker} in Settings / Project Other.
 
+But keep in mind: Marker messages are "control messages". So they are not displayed in case "Write Control Messages to log file" is not enabled.
+See \autoref{controlmessagestolog} in Settings / Project Other.
+
+%\caution{You will NOT see the marker messages in case "Write Control Messages to log file" is not enabled}
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Logging only mode}
@@ -1446,6 +1481,17 @@ it is recommended to enable the "Logging only mode". All plugins and the main ta
 So you reduce performance impact and the probability of a viewer crash e.g. due to a faulty plugin.
 
 See \autoref{enableloggingonlymode}, "Viewer Configuration Settings/Project Other", how to enable it.
+
+Basically you also can use the commandline tool dlt-receive to receive dlt messages and write them to a file.
+It is part of the dlt-daemon and so only is available on Linux systems.
+
+Example:
+
+\begin{verbatim}
+dlt-receive -o ./logit.dlt 160.48.199.99
+\end{verbatim}
+
+
 
 \pagebreak
 
@@ -1834,6 +1880,8 @@ You find the artefacts in the folder c:\\DltParser
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Linux}
 
+The example was build on Ubuntu 16.04 with QT 5.5.1 and 18.04 with QT 5.9.5
+
 \subsubsection{Ubuntu 18.04 build example command line}
 \paragraph{Preconditions}
 Get these packages:
@@ -1897,7 +1945,7 @@ sudo apt-get install texlive texlive-latex-extra
 To create a pdf format output use:
 \begin{verbatim}
 pdflatex dlt-viewer_user_manual.tex
-\end{verbatim}
+\end{verbatim}fLogg
 
 \subsection{DLT Viewer Plugins Programming Guide}
 
@@ -2030,7 +2078,13 @@ win32:QMAKE_LIBDIR += $$QWT_INSTALL_PREFIX\\lib
 
 \end{verbatim}
 
-Now call the build bat file
+You also have to remove the comment from the line
+\begin{verbatim}
+rem copy %BUILD_DIR%\plugins\speedplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+\end{verbatim}
+in build\_sdk\_windows\_qt5\_MSVC.bat
+
+Now call the build bat file:
 
 \begin{verbatim}
 set ARCHITECTURE=x86_amd64
