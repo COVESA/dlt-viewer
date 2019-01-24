@@ -39,16 +39,15 @@ public:
     QString description();
     int interfacetype();
     QString hostname();
+    QString mcastaddress();
     unsigned int tcpport();
-    QString port();
+    unsigned int udpport();
+    QString Serialport();
+    QString EthInterface();
     QSerialPort::BaudRate baudrate();
     int loglevel();
     int tracestatus();
     int verbosemode();
-    int sendSerialHeaderTcp();
-    int sendSerialHeaderSerial();
-    int syncSerialHeaderTcp();
-    int syncSerialHeaderSerial();
     int timingPackets();
     int sendGetLogInfo();
     int sendDefaultLogLevel();
@@ -56,12 +55,16 @@ public:
     int update();
     int autoReconnect();
     int autoReconnectTimeout();
+    bool getMulticast();
+    int interfacetypecurrentindex();
 
-    QStringList getHostnameList();
     void setHostnameList(QStringList hostnames);
-
-    QStringList getPortList();
-    void setPortList(QStringList ports);
+    void setSerialPortList(QStringList ports);
+    void setIPPortList(QStringList ports);
+    void setNetworkIFList(QStringList ifnames,QString lastsetting);
+    void setMulticastAddresses(QStringList mcaddresses);
+    void setMulticast(bool mcast);
+    void setIFpresetindex(int preset);
 
     void setDialogToEcuItem(EcuItem *item);
 protected:
@@ -71,6 +74,8 @@ private slots:
     void on_checkBoxAutoReconnect_toggled(bool checked);
 
     void on_comboBoxInterface_currentIndexChanged(int index);
+
+    void on_checkBoxMulticast_toggled(bool checked);
 
 private:
     Ui::EcuDialog *ui;

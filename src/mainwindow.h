@@ -202,7 +202,14 @@ private:
     enum { MaxRecentHostnames = 10 };
     QStringList recentHostnames;
     enum { MaxRecentPorts = 10 };
-    QStringList recentPorts;
+    QStringList recentSerialPorts;
+    QStringList recentIPPorts;
+    QString recentEthIF;
+    QStringList recent_multicastAddresses;
+
+    /* for UDP live receive functions */
+    QHostAddress UDPsender; // in readdatagramm
+    quint16 senderPort; // in readdatagramm
 
     /* dlt-file Indexer with cancel cabability */
     DltFileIndexer *dltIndexer;
@@ -298,7 +305,12 @@ private:
     void removeCurrentFilters(const QString &filtersName);
 
     void setCurrentHostname(const QString &hostName);
-    void setCurrentPort(const QString &portName);
+    void setCurrentMCAddress(const QString &mcastaddress);
+    void setCurrentSerialPort(const QString &portName);
+    void setCurrentIPPort(const QString &portName);
+    void setCurrentEthIF(const QString &EthIfName);
+    void setMcast(bool mcast);
+    void setInterfaceTypeSelection(int selectindex);
 
     void sendUpdates(EcuItem* ecuitem);
 
@@ -318,7 +330,12 @@ private:
 
     void iterateDecodersForMsg(QDltMsg &, int triggeredByUser);
 
+    /* return IP connection type as QString */
+    QString GetConnectionType(int iTypeNumber);
+
     QStringList getAvailableSerialPorts();
+    QStringList getAvailableIPPorts() {return { "3490"};} // DLT standard port
+    QStringList getAvailableNetworkInterfaces();
 
     void deleteactualFile();
 
@@ -435,7 +452,7 @@ private slots:
     void on_action_menuConfig_Disconnect_triggered();
     void on_action_menuConfig_Connect_triggered();
     void on_action_menuConfig_Delete_All_Contexts_triggered();
-    void on_action_menuConfig_Copy_Payload_to_clipboard_triggered();
+    void onActionAenuConfigCopyPayloadToClipboardTriggered();
     void on_action_menuConfig_Copy_to_clipboard_triggered();
     void onActionMenuConfigSearchTableCopyToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered();
@@ -487,7 +504,7 @@ private slots:
     void openRecentProject();
     void openRecentFilters();
     void applyConfigEnabled(bool enabled);
-    void stateChangedTCP(QAbstractSocket::SocketState socketState);
+    void stateChangedIP(QAbstractSocket::SocketState socketState);
     void stateChangedSerial(bool dsrChanged);
     void sectionInTableDoubleClicked(int logicalIndex);
     void on_actionJump_To_triggered();

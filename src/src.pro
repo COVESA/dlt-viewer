@@ -121,7 +121,8 @@ SOURCES += main.cpp \
     exporterdialog.cpp \
     dltmsgqueue.cpp \
     dltfileindexerthread.cpp \
-    dltfileindexerdefaultfilterthread.cpp
+    dltfileindexerdefaultfilterthread.cpp \
+    mcudpsocket.cpp
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -154,7 +155,8 @@ HEADERS += mainwindow.h \
     exporterdialog.h \
     dltmsgqueue.h \
     dltfileindexerthread.h \
-    dltfileindexerdefaultfilterthread.h
+    dltfileindexerdefaultfilterthread.h \
+    mcudpsocket.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \

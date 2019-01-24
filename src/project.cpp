@@ -42,6 +42,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     description = "A new ECU";
     interfacetype = INTERFACETYPE_TCP; /* default TCP */
     hostname = "localhost";
+    mcastIP = "<none>";
     ipport = DLT_DAEMON_TCP_PORT;
     baudrate = QSerialPort::Baud115200; /* default 115200 */
     loglevel = DLT_LOG_INFO;
@@ -60,6 +61,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     autoReconnectTimeout = RECONNECT_TIMEOUT;
     totalBytesRcvd = 0;
     totalBytesRcvdLastTimeout = 0;
+    is_multicast = false;
 
     tryToConnect = false;
     connected = false;
@@ -86,18 +88,21 @@ void EcuItem::update()
     {
         setData(0,Qt::DisplayRole,id + " online");
         setBackground(0,QBrush(QColor(Qt::green)));
+        //qDebug() << "green";
     }
     else if( ( true == tryToConnect )  && ( false == connected ))
     {
-        if(connectError.isEmpty())
+        if(true == connectError.isEmpty())
         {
             setData(0,Qt::DisplayRole,id + " connect");
             setBackground(0,QBrush(QColor(Qt::yellow)));
+            //qDebug() << "turn to yellow" << __LINE__ << __FILE__;
         }
         else
         {
             setData(0,Qt::DisplayRole,id + " connect ["+connectError+"]");
             setBackground(0,QBrush(QColor(Qt::red)));
+            //qDebug() << "red" << __LINE__ << __FILE__ <<  tryToConnect << connected;
         }
 
     }
@@ -110,11 +115,18 @@ void EcuItem::update()
     switch(interfacetype)
     {
         case EcuItem::INTERFACETYPE_TCP:
-            setData(1,Qt::DisplayRole,QString("%1 [%2:%3]").arg(description).arg(hostname).arg(ipport));
+            setData(1,Qt::DisplayRole,QString("%1 [TCP %2:%3]").arg(description).arg(hostname).arg(ipport));
             socket = & tcpsocket;
             break;
         case EcuItem::INTERFACETYPE_UDP:
-            setData(1,Qt::DisplayRole,QString("%1 [%2:%3]").arg(description).arg(hostname).arg(ipport));
+            if ( true == is_multicast)
+            {
+            setData(1,Qt::DisplayRole,QString("%1 [UDP (MC:%2) %3:%4]").arg(description).arg(mcastIP).arg(ethIF).arg(ipport));
+            }
+            else
+            {
+            setData(1,Qt::DisplayRole,QString("%1 [UDP %2:%3]").arg(description).arg(ethIF).arg(ipport));
+            }
             socket = & udpsocket;
             break;
         case EcuItem::INTERFACETYPE_SERIAL:
@@ -188,11 +200,11 @@ bool EcuItem::isAutoReconnectTimeoutPassed()
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
 
-    if(autoReconnectTimestamp <= currentDateTime)
+    if( autoReconnectTimestamp <= currentDateTime)
     {
         timeoutPassed = true;
         autoReconnectTimestamp = currentDateTime.addSecs(autoReconnectTimeout);
-        //qDebug() << hostname << "currentDateTime:" << QDateTime::currentDateTime().toString("hh:mm:ss") << "next timeout:" << autoReconnectTimestamp.toString("hh:mm:ss") << totalBytesRcvd - totalBytesRcvdLastTimeout;
+        //qDebug() << hostname << "currentDateTime:" << QDateTime::currentDateTime().toString("hh:mm:ss") << "next timeout:" << autoReconnectTimestamp.toString("hh:mm:ss") << autoReconnectTimestamp;// totalBytesRcvd - totalBytesRcvdLastTimeout;
     }
 
     return timeoutPassed;
@@ -365,7 +377,8 @@ void FilterItem::update()
         break;
     }
 
-    if(filter.enableRegexp_Appid || filter.enableRegexp_Context || filter.enableRegexp_Header || filter.enableRegexp_Payload){
+    if(filter.enableRegexp_Appid || filter.enableRegexp_Context || filter.enableRegexp_Header || filter.enableRegexp_Payload)
+    {
         text += "RegExp";
     }
 
@@ -860,6 +873,17 @@ bool Project::Load(QString filename)
                     ecuitem->setHostname(xml.readElementText());
 
               }
+              if(xml.name() == QString("mcinterface"))
+              {
+                  if(ecuitem)
+                    ecuitem->setEthIF(xml.readElementText());
+
+              }
+              if(xml.name() == QString("mcIP"))
+              {
+                  if(ecuitem)
+                    ecuitem->setmcastIP(xml.readElementText());
+              }
               if(xml.name() == QString("ipport"))
               {
                   if(ecuitem)
@@ -901,6 +925,12 @@ bool Project::Load(QString filename)
               {
                   if(ecuitem)
                       ecuitem->setSyncSerialHeaderSerial(xml.readElementText().toInt());
+
+              }
+              if(xml.name() == QString("multicast"))
+              {
+                  if(ecuitem)
+                      ecuitem->is_multicast = xml.readElementText().toInt();
 
               }
               if(xml.name() == QString("autoReconnect"))
@@ -1093,6 +1123,8 @@ bool Project::Save(QString filename)
         xml.writeTextElement("description",ecuitem->description);
         xml.writeTextElement("interface",QString("%1").arg(ecuitem->interfacetype));
         xml.writeTextElement("hostname",ecuitem->getHostname());
+        xml.writeTextElement("mcinterface",ecuitem->getEthIF());
+        xml.writeTextElement("mcIP",ecuitem->getmcastIP());
         xml.writeTextElement("ipport",QString("%1").arg(ecuitem->getIpport()));
         xml.writeTextElement("port",ecuitem->getPort());
         xml.writeTextElement("baudrate",QString("%1").arg(ecuitem->getBaudrate()));
@@ -1108,6 +1140,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("sendDefaultLogLevel",QString("%1").arg(ecuitem->sendDefaultLogLevel));
         xml.writeTextElement("sendGetSoftwareVersion",QString("%1").arg(ecuitem->sendGetSoftwareVersion));
         xml.writeTextElement("updatedata",QString("%1").arg(ecuitem->updateDataIfOnline));
+        xml.writeTextElement("multicast",QString("%1").arg(ecuitem->is_multicast));
         xml.writeTextElement("autoReconnect",QString("%1").arg(ecuitem->autoReconnect));
         xml.writeTextElement("autoReconnectTimeout",QString("%1").arg(ecuitem->autoReconnectTimeout));
 

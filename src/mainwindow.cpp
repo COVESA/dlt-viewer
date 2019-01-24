@@ -39,6 +39,7 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QNetworkProxyFactory>
+#include <QNetworkInterface>
 #include <QtAlgorithms>
 
 /**
@@ -51,6 +52,7 @@ extern "C" {
 
     #include "dlt_user.h"
 }
+
 #if defined(_MSC_VER)
 #include <io.h>
 #include <time.h>
@@ -61,7 +63,6 @@ extern "C" {
 #endif
 
 #include "mainwindow.h"
-
 #include "ecudialog.h"
 #include "applicationdialog.h"
 #include "contextdialog.h"
@@ -76,6 +77,7 @@ extern "C" {
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -122,8 +124,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* start timer for autoconnect */
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout()));
-    timer.start(AUTOCONNECT_DEFAULT_TIME);
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout())); // we want to start the timer only when an ECU connection is active
 
     restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
     restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
@@ -150,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     //qDebug() << "Clean up";
+    timer.stop(); // stop the receive timeout timer in case it is running
     dltIndexer->stop(); // in case a thread is running we want to stop it
     DltSettingsManager::close();
     /**
@@ -757,9 +759,8 @@ void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList
 
     if(!plugin)
     {
-        qDebug() << "Plugin not found " << plugin;
-        return;
-
+        qDebug() << "Plugin not found or out of memory" << name << "in" << __LINE__ << __FILE__;
+        exit(-1);
     }
 
     /* Check that this is a command plugin */
@@ -926,7 +927,6 @@ void MainWindow::onOpenTriggered(QStringList filenames)
 {
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(filenames[0]).absolutePath());
-
     openDltFile(filenames);
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
@@ -2086,11 +2086,7 @@ void MainWindow::on_action_menuProject_Save_triggered()
         return;
     }
 
-
-
-
     QString fileName = dialog.selectedFiles()[0];
-
 
     /* save project */
     if(fileName.isEmpty() || dialog.result() == QDialog::Rejected)
@@ -2121,14 +2117,49 @@ QStringList MainWindow::getAvailableSerialPorts()
     return portList;
 }
 
+
+QStringList MainWindow::getAvailableNetworkInterfaces()
+{
+    // the network interfaces are identified by the assigned IP addresse
+    // this is e.g. used to select interface for UDP reception
+    QList<QNetworkInterface> mListIfaces = QNetworkInterface::allInterfaces();
+    QStringList network_interface_namelist;
+
+    for (int i = 0; i < mListIfaces.length(); i++)
+    {
+      unsigned int flags = mListIfaces[i].flags();
+      bool isRunning = (bool)(flags & QNetworkInterface::IsRunning);
+      if (true == isRunning)
+       {
+        QList< QNetworkAddressEntry > iflistings =  mListIfaces[i].addressEntries();
+        foreach (const QNetworkAddressEntry &address, iflistings)
+         {
+          if ( address.ip().protocol() ==  QAbstractSocket::IPv4Protocol  )
+           {
+             //qDebug() << mListIfaces.at(i).name() << address.ip();
+             network_interface_namelist << address.ip().toString();
+           }
+         } // foreach
+       } // isRunning
+    }
+
+    network_interface_namelist << QString("AnyIP"); // at the end assign
+    return network_interface_namelist;
+}
+
+
 void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 {
-    QStringList hostnameListPreset;
-    int okorcancel = 1;
     static int autoconnect = 1;
+    int okorcancel = 1;
+    QStringList hostnameListPreset;
     hostnameListPreset << "localhost";
+    QStringList multicastAddressesListPreset;
+    multicastAddressesListPreset << "<None>";
 
-    QStringList portListPreset = getAvailableSerialPorts();
+    QStringList SerialportListPreset = getAvailableSerialPorts();
+    QStringList IPportListPreset = getAvailableIPPorts();
+    QStringList NetworkIFListPreset = getAvailableNetworkInterfaces();
 
     /* show ECU configuration dialog */
     EcuDialog dlg;
@@ -2137,11 +2168,21 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-    recentPorts = DltSettingsManager::getInstance()->value("other/recentPortList",portListPreset).toStringList();
+    recentSerialPorts = DltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
+    recentIPPorts = DltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+    recentEthIF = DltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
+    recent_multicastAddresses = DltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
+    bool b_mcastpreset = DltSettingsManager::getInstance()->value("other/multicast").toBool();
+    int i_iftypeindex = DltSettingsManager::getInstance()->value("other/iftypeindex").toInt();
+
+    dlg.setIFpresetindex(i_iftypeindex);
+    dlg.setMulticast(b_mcastpreset);
     dlg.setHostnameList(recentHostnames);
-    dlg.setPortList(recentPorts);
-
+    dlg.setSerialPortList(recentSerialPorts);
+    dlg.setIPPortList(recentIPPorts);
+    dlg.setNetworkIFList(NetworkIFListPreset,recentEthIF);
+    dlg.setMulticastAddresses(recent_multicastAddresses);
 
     if ( ( 1 == settings->autoConnect ) &&
          ( true == OptManager::getInstance()->issilentMode() &&
@@ -2169,28 +2210,34 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
        project.ecu->addTopLevelItem(ecuitem);
 
        /* Update settings for recent hostnames and ports */
+       setCurrentMCAddress(ecuitem->getmcastIP()); // store it in the settings file
        setCurrentHostname(ecuitem->getHostname());
-       setCurrentPort(ecuitem->getPort());
+       setCurrentEthIF(ecuitem->getEthIF());
+       setCurrentSerialPort(ecuitem->getPort());
+       setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
+       setMcast(ecuitem->is_multicast);
+       setInterfaceTypeSelection(dlg.interfacetypecurrentindex());
 
        /* Update the ECU list in control plugins */
        updatePluginsECUList();
 
        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitem), QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
     }
-    //qDebug() << __FILE__ << __LINE__;
     return;
 }
 
 void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 {
     /* find selected ECU in configuration */
+    //qDebug() << "on_action_menuConfig_ECU_Edit_triggered" << __LINE__ << __FILE__;
     QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
     if((list.count() == 1) && (list.at(0)->type() == ecu_type))
     {
         QStringList hostnameListPreset;
-        hostnameListPreset << "localhost";
-
-        QStringList portListPreset = getAvailableSerialPorts();
+        QStringList multicastAddressesListPreset;
+        QStringList SerialportListPreset = getAvailableSerialPorts();
+        QStringList IPportListPreset = getAvailableIPPorts();
+        QStringList NetworkIFListPreset =  getAvailableNetworkInterfaces();
 
         EcuItem* ecuitem = (EcuItem*) list.at(0);
 
@@ -2200,15 +2247,28 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-        recentPorts = DltSettingsManager::getInstance()->value("other/recentPortList",portListPreset).toStringList();
+        recentSerialPorts = DltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
+        recentIPPorts= DltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+        recentEthIF = DltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
+        recent_multicastAddresses = DltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
+        // Ethernet IF
         setCurrentHostname(ecuitem->getHostname());
 
         //serial Port
-        setCurrentPort(ecuitem->getPort());
+        setCurrentSerialPort(ecuitem->getPort());
+
+        // IP port
+        setCurrentIPPort(QString("%1").arg(ecuitem->getIpport() ));
+
+        // MC Ethernet IF
+        setCurrentEthIF(ecuitem->getEthIF());
 
         dlg.setHostnameList(recentHostnames);
-        dlg.setPortList(recentPorts);
+        dlg.setSerialPortList(recentSerialPorts);
+        dlg.setIPPortList(recentIPPorts);
+        dlg.setNetworkIFList(NetworkIFListPreset,ecuitem->getEthIF());
+        dlg.setMulticastAddresses(recent_multicastAddresses);
 
         if(dlg.exec())
         {
@@ -2216,15 +2276,21 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             if((ecuitem->interfacetype != dlg.interfacetype() ||
                 ecuitem->getHostname() != dlg.hostname() ||
                 ecuitem->getIpport() != dlg.tcpport() ||
-                ecuitem->getPort() != dlg.port() ||
+                ecuitem->getEthIF() != dlg.EthInterface() ||
+                ecuitem->getmcastIP() != dlg.mcastaddress() ||
+                ecuitem->getPort() != dlg.Serialport() ||
+                ecuitem->is_multicast != dlg.getMulticast() ||
                 ecuitem->getBaudrate() != dlg.baudrate()) &&
-                    ecuitem->tryToConnect)
+                ecuitem->tryToConnect)
             {
                 interfaceChanged = true;
                 disconnectECU(ecuitem);
             }
 
             dlg.setDialogToEcuItem(ecuitem);
+
+
+            qDebug() << ecuitem->getmcastIP();
 
             /* update ECU item */
             ecuitem->update();
@@ -2243,7 +2309,11 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 
             /* Update settings for recent hostnames and ports */
             setCurrentHostname(ecuitem->getHostname());
-            setCurrentPort(ecuitem->getPort());
+            setCurrentMCAddress(ecuitem->getmcastIP()); // store it in the settings file
+//tbd save is muticast
+            setCurrentSerialPort(ecuitem->getPort());
+            setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
+            setCurrentEthIF(ecuitem->getEthIF());
 
             /* Update the ECU list in control plugins */
             updatePluginsECUList();
@@ -2255,6 +2325,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 void MainWindow::on_action_menuConfig_ECU_Delete_triggered()
 {
     /* find selected ECU in configuration */
+    //qDebug() << "Delete ECU item" << __LINE__ << __FILE__;
     QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
     if((list.count() == 1) && (list.at(0)->type() == ecu_type))
     {
@@ -2451,7 +2522,6 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
                 applicationItem->setSelected(false);
             }
         }
-
 
         if(list.at(0)->type() == ecu_type){
             //qDebug()<<"ECU selected";
@@ -2651,10 +2721,6 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         action = new QAction("&Filter Add", this);
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
-
-
-
-
     }
     else if((list.count() > 1) && (list.at(0)->type() == application_type))
     {
@@ -2689,8 +2755,6 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         action = new QAction("&Filter Add", this);
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
-
-
     }
     else if((list.count() == 1) && (list.at(0)->type() == context_type))
     {
@@ -2961,7 +3025,6 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
     {
         ecuitem->tryToConnect = true;
         ecuitem->connected = false;
-        //ecuitem->connectError.clear();
         ecuitem->update();
         on_configWidget_itemSelectionChanged();
 
@@ -2972,10 +3035,10 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         ecuitem->serialcon.clear();
 
         /* start socket connection to host */
-        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)
         {
-            /* TCP or UDP */
-            qDebug()<< "Try to connect to ECU" << ecuitem->getHostname() << QDateTime::currentDateTime().toString("hh:mm:ss");
+            /* TCP */
+            qDebug()<< "Try to connect to ECU" << GetConnectionType(ecuitem->interfacetype) << ecuitem->getHostname() << QDateTime::currentDateTime().toString("hh:mm:ss");
             /* connect socket signals with window slots */
             if (ecuitem->socket->state()==QAbstractSocket::UnconnectedState)
             {
@@ -2984,11 +3047,77 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
                 connect(ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
                 connect(ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
-                connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedTCP(QAbstractSocket::SocketState)));
-
-                //disconnect(ecuitem->socket,0,0,0);
+                connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedIP(QAbstractSocket::SocketState)));
                 ecuitem->socket->connectToHost(ecuitem->getHostname(),ecuitem->getIpport());
-             //  qDebug()<< "Connect to ECU line " <<__LINE__ << QDateTime::currentDateTime().toString("yyyy-MM-dd_hh-mm-ss");
+            }
+        }
+        /* start socket connection to host */
+       else if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+        {
+            /* UDP */
+            bool bindstate = false;
+            QString connectIPaddress = ecuitem->getEthIF();
+
+            if ( ecuitem->getEthIF() == "AnyIP")
+            {
+                connectIPaddress = "0.0.0.0"; // we need to translate AnyIP to 0.0.0.0 on Linux ...
+            }
+
+            //qDebug()<< "Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+            /* connect socket signals with window slots */
+            if (ecuitem->socket->state() == QAbstractSocket::UnconnectedState)
+            {
+               qDebug() << disconnect(ecuitem->socket,0,0,0);
+               //qDebug() << ecuitem->getEthIF();
+
+               if (  ecuitem->is_multicast == true )
+               {
+                 qDebug()<< "MC UDP Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+                 bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress );
+               }
+               else
+               {
+                qDebug()<< "UDP Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+                //bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getEthIF()), ecuitem->getIpport(),QUdpSocket::ShareAddress ) ;
+                bindstate = ecuitem->socket->bind(QHostAddress(connectIPaddress), ecuitem->getIpport(),QUdpSocket::ShareAddress ) ;
+               }
+
+               if ( true == bindstate )//ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress ))
+               //if ( true == ecuitem->socket->bind(QHostAddress(ecuitem->getEthIF()), ecuitem->getIpport(),QUdpSocket::ShareAddress ))
+                { // green - success
+                 qDebug() << "Bound to " << ecuitem->getEthIF() << "on port" << ecuitem->getIpport();
+                 ecuitem->tryToConnect = true;
+                 if (  ecuitem->is_multicast == true )
+                    {
+                     if ( true == ecuitem->udpsocket.joinMulticastGroup(ecuitem->getmcastIP(), ecuitem->getEthIF()) )
+                       {
+                        qDebug() << "Successfully joined multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF();
+                       }
+                     else // setting up multicast failed
+                     {
+                      ecuitem->connected = false; // unicast socket setup was ok
+                      ecuitem->connectError.append("Error joining multicast group");
+                      qDebug() << "Error joining multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                     }
+                    } // multicast
+                  else // unicast case
+                   {
+                     qDebug() <<  "UDP unicast configured to" << ecuitem->getEthIF();
+                   }
+
+                 connect(ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
+                 connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
+                 connect(ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+                 connect(ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
+                 connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedIP(QAbstractSocket::SocketState)));
+                 ecuitem->update();
+                }
+                else
+                {
+                  qDebug() << "Error - binding failed with" << ecuitem->socket->errorString();
+                  ecuitem->connected = false;
+                  ecuitem->update();
+                }
             }
         }
         else
@@ -3007,7 +3136,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 ecuitem->m_serialport->setFlowControl(QSerialPort::NoFlowControl);
                 //ecuitem->m_serialport->waitForReadyRead(0); // this lead to immediate crash on Windows and Ubuntu
                 QThread::msleep(10);
-                connect(ecuitem->m_serialport, SIGNAL(readyRead()), this, SLOT(readyRead()));
+                connect(ecuitem->m_serialport,SIGNAL(readyRead()), this, SLOT(readyRead()));
                 connect(ecuitem->m_serialport,SIGNAL(dataTerminalReadyChanged(bool)),this,SLOT(stateChangedSerial(bool)));
                 //ecuitem->m_serialport->waitForReadyRead(10);
                 }
@@ -3044,7 +3173,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             }
         }
 
-        if(  (settings->showCtId && settings->showCtIdDesc) || (settings->showApId && settings->showApIdDesc) ){
+        if(  (settings->showCtId && settings->showCtIdDesc) || (settings->showApId && settings->showApIdDesc) )
+        {
             controlMessage_GetLogInfo(ecuitem);
         }
     }
@@ -3054,8 +3184,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 void MainWindow::connected()
 {
     /* signal emited when connected to host */
-
     /* find socket which emited signal */
+    //qDebug() << "Connected" << __LINE__ << __FILE__;
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
@@ -3072,7 +3202,7 @@ void MainWindow::connected()
             ecuitem->totalBytesRcvdLastTimeout = 0;
             ecuitem->ipcon.clear();
             ecuitem->serialcon.clear();
-            qDebug()<<"Connected to" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+            qDebug()<<"Connected to" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss") << GetConnectionType(ecuitem->interfacetype);
         }
     }
 checkConnectionState();
@@ -3080,56 +3210,81 @@ checkConnectionState();
 
 void MainWindow::checkConnectionState()
 {
+  bool oneConnected=false;
+  bool oneTryConnect=false;
 
-
-        bool oneConnected=false;
-        bool oneTryConnect=false;
-        /* find socket which emited signal */
-        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+  /* find socket which emited signal */
+  for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+     {
+       EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+       if (true == ecuitem->connected)
         {
-            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if (true== ecuitem->connected)
-             {
-               oneConnected=true;
-               //qDebug()<<"Connect:at least one ECU connected";//<< ecuitem->getHostname;
-             }
-            if (true == ecuitem->tryToConnect)
-            {
-                oneTryConnect=true;
-            }
-
+          oneConnected=true;
         }
+       if (true == ecuitem->tryToConnect)
+        {
+          oneTryConnect=true;
+        }
+      }
 
-       // qDebug()<<"Connect:at least one ECU connected"<<oneConnected;
-    if (true == oneConnected)
+   if (true == oneTryConnect)
+   {
+      if ( false ==  timer.isActive() )
+        {
+        //qDebug() << "Start Timer";
+        timer.start(AUTOCONNECT_DEFAULT_TIME);
+        }
+   }
+   else
+   {
+    if ( true ==  timer.isActive() )
+       {
+         //qDebug() << "Stop Timer";
+         timer.stop();
+       }
+   }
+   //qDebug() << "oneConnected" <<oneConnected << "oneTryConnect" <<  oneTryConnect;
+   if (true == oneConnected)
     {
+     // green
      this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_connected.png"));
     }
-    else
+   else
     {
         if (true == oneTryConnect)
         {
+            // red
             this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_disconnected.png"));
         }
         else
         {
+            // yellow
             this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive.png"));
         }
     }
-
 }
 
 void MainWindow::disconnected()
 {
     /* signal emited when disconnected to host */
-
     /* find socket which emited signal */
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         if( ecuitem && ecuitem->socket == sender())
         {
-            qDebug() << "Disconnected" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+            switch (ecuitem->interfacetype)
+            {
+               case EcuItem::INTERFACETYPE_TCP:
+                    qDebug() << "Disconnected" << ecuitem->getHostname() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss") << GetConnectionType(ecuitem->interfacetype);
+                    break;
+               case EcuItem::INTERFACETYPE_UDP:
+                    qDebug() << "UDP socket closed on" << ecuitem->getEthIF() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss") << GetConnectionType(ecuitem->interfacetype);
+                    break;
+               default:
+                    break;
+            }
+
             /* update connection state */
             ecuitem->connected = false;
             ecuitem->connectError.clear();
@@ -3141,7 +3296,7 @@ void MainWindow::disconnected()
             disconnect(ecuitem->socket,0,0,0);
         }
     }
-      checkConnectionState();
+    checkConnectionState();
 }
 
 
@@ -3150,41 +3305,54 @@ void MainWindow::timeout()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-
             /* Try to reconnect if the ecuitem has not received
              * new data for long enough time.
              * If the indexer is busy indexing,
              * do not disconnect yet. Wait for future timeouts until
              * indexer is free. */
-            if( true == ecuitem->isAutoReconnectTimeoutPassed() &&  dltIndexer->tryLock())
+            if( true == ecuitem->isAutoReconnectTimeoutPassed() && ( true ==  dltIndexer->tryLock()) )
             {
-                if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+                if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)
                         && ecuitem->autoReconnect && ecuitem->connected != 0
                         && ecuitem->totalBytesRcvd == static_cast<unsigned long>(ecuitem->totalBytesRcvdLastTimeout))
                 {
                     disconnectECU(ecuitem);
                     ecuitem->tryToConnect = true;
                 }
+                else if((ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+                        && ecuitem->autoReconnect && ecuitem->connected != 0
+                        && ecuitem->totalBytesRcvd == static_cast<unsigned long>(ecuitem->totalBytesRcvdLastTimeout))
+                {
+                    qDebug() << "UDP timeout passed for" << ecuitem->getHostname();
+                    ecuitem->tryToConnect = true;
+                    ecuitem->connected = false;
+                }
+
                 ecuitem->totalBytesRcvdLastTimeout = ecuitem->totalBytesRcvd;
                 dltIndexer->unlock();
             }
 
             if( true == ecuitem->tryToConnect && false == ecuitem->connected )
             {
-                if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP )
-                {
-                qDebug() << "Reconnect timeout for" << ecuitem->getHostname();
-                }
-                connectECU(ecuitem,true);
 
+                if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP )
+                {
+                qDebug() << "TCP reconnect timeout for" << ecuitem->getHostname();
+                connectECU(ecuitem,true);
+                }
+                else if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP )
+                {
+                ecuitem->update();
+                }
             }
-        }
+        } // for ecuItem
+        checkConnectionState();
 }
 
 void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
 {
     /* signal emited when connection to host is not possible */
-
+    //qDebug() << "Socket error" << __LINE__ << __FILE__;
     /* find socket which emited signal */
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
@@ -3193,7 +3361,7 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
         {
             /* save error */
             ecuitem->connectError = ecuitem->socket->errorString();
-
+            qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
             if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
             {
                 /* disconnect socket */
@@ -3213,9 +3381,9 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
 void MainWindow::readyRead()
 {
     /* signal emited when socket received data */
-
+    //qDebug() << "readyRead" << __LINE__ << __FILE__;
     /* Delay reading, if indexer is working on the dlt file */
-    if(dltIndexer->tryLock())
+    if(true == dltIndexer->tryLock())
     {
         /* find socket which emited signal */
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
@@ -3228,6 +3396,11 @@ void MainWindow::readyRead()
         }
         dltIndexer->unlock();
     }
+    else
+    {
+      qDebug() << "Fail locking indexer in readyRead" << __LINE__ << __FILE__;
+    }
+
 }
 
 void MainWindow::read(EcuItem* ecuitem)
@@ -3241,16 +3414,28 @@ void MainWindow::read(EcuItem* ecuitem)
     int32_t bytesRcvd = 0;
     QDltMsg qmsg;
     QByteArray data;
+    data.clear();
     
-    if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+    if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)
     {
-        /* TCP or UDP */
+        /* TCP */
         data = ecuitem->socket->readAll();
         bytesRcvd = data.size();
+        ecuitem->ipcon.add(data);
+     }
+    else if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+    {
+        /* UDP */
+        data.resize(ecuitem->udpsocket.pendingDatagramSize());
 
+        ecuitem->udpsocket.readDatagram(data.data(), data.size(), &UDPsender, &senderPort);
+        bytesRcvd = data.size();
+        //if ( bytesRcvd != bytesRcvd )  qDebug() << "Dig into this !" << __LINE__ << __FILE__;
         ecuitem->ipcon.add(data);
 
-        //qDebug() << "::read" << __LINE__;//ecuitem->socket->errorString();
+        ecuitem->connected= true;
+        ecuitem->tryToConnect = true;
+        ecuitem->update();
      }
     else if(ecuitem->m_serialport)
     {
@@ -3261,9 +3446,13 @@ void MainWindow::read(EcuItem* ecuitem)
         ecuitem->serialcon.add(data);
     }
 
-    /* reading data; new data is added to the current buffer */
-    if (bytesRcvd>0)
+    if (bytesRcvd<=0)
     {
+      qDebug() << "ERROR bytesRcvd <= 0 in " << __LINE__ << __FILE__;
+      return;
+    }
+
+    /* reading data; new data is added to the current buffer */
         ecuitem->totalBytesRcvd += bytesRcvd;
 
         while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
@@ -3402,12 +3591,6 @@ void MainWindow::read(EcuItem* ecuitem)
                 updateIndex();
             }
         }
-    } // bytesRcvd>0
-    else
-    {
-      qDebug() << "bytesRcvd <= 0 error in " << __LINE__;
-    }
-
 }
 
 
@@ -5124,6 +5307,16 @@ void MainWindow::removeCurrentFilters(const QString &filtersName)
     DltSettingsManager::getInstance()->setValue("other/recentFiltersList",filtersName);
 }
 
+void MainWindow::setMcast(bool b_mcast)
+{
+    DltSettingsManager::getInstance()->setValue("other/multicast",b_mcast);
+}
+
+
+void MainWindow::setInterfaceTypeSelection(int selectindex)
+{
+    DltSettingsManager::getInstance()->setValue("other/iftypeindex",selectindex);
+}
 
 void MainWindow::setCurrentHostname(const QString &hostName)
 {
@@ -5136,16 +5329,47 @@ void MainWindow::setCurrentHostname(const QString &hostName)
     DltSettingsManager::getInstance()->setValue("other/recentHostnameList",recentHostnames);
 }
 
-void MainWindow::setCurrentPort(const QString &portName)
+
+void MainWindow::setCurrentMCAddress(const QString &mcastaddress)
 {
-    recentPorts.removeAll(portName);
-    recentPorts.prepend(portName);
-    while (recentPorts.size() > MaxRecentPorts)
-        recentPorts.removeLast();
+    recent_multicastAddresses.removeAll(mcastaddress);
+    recent_multicastAddresses.prepend(mcastaddress);
+    while (recent_multicastAddresses.size() > MaxRecentHostnames)
+      {
+        recent_multicastAddresses.removeLast();
+      }
+    DltSettingsManager::getInstance()->setValue("other/recentHostMulticastAddresses",recent_multicastAddresses);
+}
+
+
+void MainWindow::setCurrentEthIF(const QString &EthIfName)
+{
+    DltSettingsManager::getInstance()->setValue("other/recentEthernetInterface",EthIfName);
+}
+
+
+void MainWindow::setCurrentSerialPort(const QString &portName)
+{
+    recentSerialPorts.removeAll(portName);
+    recentSerialPorts.prepend(portName);
+    while (recentSerialPorts.size() > MaxRecentPorts)
+        recentSerialPorts.removeLast();
 
     /* Write settings for recent ports */
-    DltSettingsManager::getInstance()->setValue("other/recentPortList",recentPorts);
+    DltSettingsManager::getInstance()->setValue("other/recentSerialPortList",recentSerialPorts);
 }
+
+void MainWindow::setCurrentIPPort(const QString &portName)
+{
+    recentIPPorts.removeAll(portName);
+    recentIPPorts.prepend(portName);
+    while (recentIPPorts.size() > MaxRecentPorts)
+        recentIPPorts.removeLast();
+
+    /* Write settings for recent ports */
+    DltSettingsManager::getInstance()->setValue("other/recentIPPortList",recentIPPorts);
+}
+
 
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
@@ -5206,10 +5430,10 @@ void MainWindow::stateChangedSerial(bool dsrChanged){
     }
 }
 
-void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
+void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
 {
     /* signal emited when connection state changed */
-
+    //qDebug() << "stateChangedIP" << socketState << __LINE__ << __FILE__;
     /* find socket which emited signal */
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
@@ -5248,7 +5472,51 @@ void MainWindow::stateChangedTCP(QAbstractSocket::SocketState socketState)
         }
     }
 }
+/*
+void MainWindow::stateChangedUDP(QAbstractSocket::SocketState socketState)
+{
+    // signal emited when connection state changed
+    qDebug() << "stateChangedUDP" << socketState << __LINE__ << __FILE__;
+    // find socket which emited signal
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if( ecuitem && ecuitem->socket == sender())
+        {
+            // update ECU item
+            ecuitem->update();
 
+            if (socketState==QAbstractSocket::ConnectedState)
+            {
+                // send new default log level to ECU, if selected in dlg
+                if (ecuitem->updateDataIfOnline)
+                {
+                    sendUpdates(ecuitem);
+                }
+            }
+
+            switch(socketState)
+            {
+            case QAbstractSocket::UnconnectedState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
+                break;
+            case QAbstractSocket::ConnectingState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting,ecuitem->getHostname());
+                break;
+            case QAbstractSocket::ConnectedState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
+                break;
+            case QAbstractSocket::ClosingState:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
+                break;
+            default:
+                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
+                break;
+            }
+        }
+    }
+}
+*/
 //----------------------------------------------------------------------------
 // Search functionalities
 //----------------------------------------------------------------------------
@@ -5903,7 +6171,8 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
     }
 }
 
-void MainWindow::on_action_menuFilter_Edit_triggered() {
+void MainWindow::on_action_menuFilter_Edit_triggered()
+{
     QTreeWidget *widget;
 
     /* get currently visible filter list in user interface */
@@ -6007,10 +6276,10 @@ void MainWindow::filterUpdate()
 
         if(filter->enableRegexp_Appid || filter->enableRegexp_Context || filter->enableRegexp_Header || filter->enableRegexp_Payload)
         {
-            if(!filter->compileRegexps())
+            if(false == filter->compileRegexps())
             {
                 // This is also validated in the UI part
-                qDebug() << "Error compiling a regexp" << endl;
+                qDebug() << "Error compiling a regexp" << endl << "in" << __FILE__ << __LINE__;
             }
         }
 
@@ -6034,7 +6303,7 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     action = new QAction("C&opy Selection Payload to Clipboard", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_Payload_to_clipboard_triggered()));
+    connect(action, SIGNAL(triggered()), this, SLOT(onActionAenuConfigCopyPayloadToClipboardTriggered()));
     menu.addAction(action);
 
     menu.addSeparator();
@@ -6320,7 +6589,7 @@ void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
     exportSelection(true,false);
 }
 
-void MainWindow::on_action_menuConfig_Copy_Payload_to_clipboard_triggered()
+void MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered()
 {
     exportSelection(true,false,true);
 }
@@ -6864,3 +7133,27 @@ void MainWindow::onSearchProgressChanged(bool isInProgress)
     ui->searchToolbar->setEnabled(!isInProgress);
     ui->dockWidgetProject->setEnabled(!isInProgress);
 }
+
+QString MainWindow::GetConnectionType(int iTypeNumber)
+{
+   QString port;
+   switch (iTypeNumber)
+   {
+   case EcuItem::INTERFACETYPE_TCP:
+       port=QString("TCP");
+       break;
+   case EcuItem::INTERFACETYPE_UDP:
+       port=QString("UDP");
+       break;
+   case EcuItem::INTERFACETYPE_SERIAL:
+       port=QString("Serial");
+       break;
+   default:
+       port=QString("UNDEFINED");
+       break;
+   }
+
+  return port;
+
+}
+
