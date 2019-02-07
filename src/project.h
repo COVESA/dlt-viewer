@@ -22,6 +22,7 @@
 
 #include "qdlt.h"
 
+
 #include <QTreeWidget>
 #include <QDockWidget>
 #include <QTcpSocket>
@@ -38,8 +39,7 @@
 #endif
 
 #include "settingsdialog.h"
-
-
+#include "mcudpsocket.h"
 
 extern "C"
 {
@@ -51,6 +51,9 @@ extern "C"
 #define DLT_VIEWER_BUFFER_SIZE 256000
 #define RCVBUFSIZE 128000   /* Size of receive buffer */
 #define RECONNECT_TIMEOUT 3
+
+
+
 
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
 
@@ -88,7 +91,8 @@ public:
 
     /* connection */
     QTcpSocket tcpsocket;
-    QUdpSocket udpsocket;
+    //QUdpSocket udpsocket;
+    MCUdpSocket udpsocket;
     QAbstractSocket * socket;
 
     QSerialPort *m_serialport;
@@ -100,7 +104,7 @@ public:
     QString connectError;
     bool autoReconnect;
     int autoReconnectTimeout;
-
+    bool is_multicast;
 
     /* current received message and buffer for receivig from the socket */
     unsigned long totalBytesRcvd;
@@ -116,7 +120,10 @@ private:
 
     /* configuration TCP / UDP */
      QString hostname;
+     QString mcastIP;
+     QString ethIF; /* needed for UDP multicast, identify interface via IP address */
      unsigned int ipport;
+     unsigned int udpport; /*basically the same*/
      bool sendSerialHeaderIp;
      bool syncSerialHeaderIp;
 
@@ -125,12 +132,16 @@ public:
 
      /* Accsesors to config */
      QString getHostname() {return hostname;}
+     QString getmcastIP() {return mcastIP;}
+     QString getEthIF() {return ethIF;}
      unsigned int getIpport() {return ipport;}
      bool getSendSerialHeaderIp() {return sendSerialHeaderIp;}
      bool getSyncSerialHeaderIp() {return syncSerialHeaderIp;}
 
      void setHostname(QString hname) {hostname = hname; ipcon.setHostname(hostname);}
      void setIpport(unsigned int tp) {ipport = tp; ipcon.setPort(ipport);}
+     void setEthIF(QString ethif) {ethIF = ethif;}
+     void setmcastIP(QString mcastip) {mcastIP = mcastip;}
      void setSendSerialHeaderIp(bool b) {sendSerialHeaderIp = b; ipcon.setSendSerialHeader(sendSerialHeaderIp);}
      void setSyncSerialHeaderIp(bool b) {syncSerialHeaderIp = b; ipcon.setSyncSerialHeader(syncSerialHeaderIp);}
 

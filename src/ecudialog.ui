@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>392</width>
-    <height>477</height>
+    <width>398</width>
+    <height>511</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_4">
-   <item row="1" column="0">
+   <item row="2" column="0">
     <widget class="QCheckBox" name="checkBoxUpdate">
      <property name="text">
       <string>Update data in DLT if online</string>
@@ -28,7 +28,7 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
+   <item row="4" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
@@ -230,30 +230,13 @@
       </layout>
      </widget>
      <widget class="QWidget" name="tab_3">
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
+      </property>
       <attribute name="title">
-       <string>IP</string>
+       <string>TCP</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Hostname:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="8" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
        <item row="1" column="0" colspan="2">
         <widget class="QComboBox" name="comboBoxHostname">
          <property name="editable">
@@ -261,39 +244,9 @@
          </property>
         </widget>
        </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="QCheckBox" name="checkBoxSendSerialHeaderTcp">
-         <property name="text">
-          <string>Send Serial Header</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLineEdit" name="lineEditTcpPort"/>
-       </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QLabel" name="label_9">
-         <property name="text">
-          <string>IP Port:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QCheckBox" name="checkBoxSyncToSerialHeaderTcp">
-         <property name="text">
-          <string>Sync to Serial Header when receiving </string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="0">
-        <widget class="QCheckBox" name="checkBoxAutoReconnect">
-         <property name="toolTip">
-          <string>Automatic reconnect after specified timeout  if no data from ECU was received.</string>
-         </property>
-         <property name="text">
-          <string>Auto reconnect timeout in seconds</string>
-         </property>
-         <property name="checked">
+       <item row="4" column="0">
+        <widget class="QComboBox" name="comboBoxPortIP">
+         <property name="editable">
           <bool>true</bool>
          </property>
         </widget>
@@ -317,9 +270,157 @@
          </property>
         </widget>
        </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>IP Port:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>Hostname:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="7" column="0" colspan="2">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="6" column="0">
+        <widget class="QCheckBox" name="checkBoxAutoReconnect">
+         <property name="toolTip">
+          <string>Automatic reconnect after specified timeout  if no data from ECU was received.</string>
+         </property>
+         <property name="text">
+          <string>Auto reconnect timeout in seconds</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab_UDP">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <attribute name="title">
+       <string>UDP</string>
+      </attribute>
+      <widget class="QLabel" name="label_UDP_receiver">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>10</y>
+         <width>194</width>
+         <height>14</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Receiving interface:</string>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_UDP_mcastadress">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>160</y>
+         <width>194</width>
+         <height>14</height>
+        </rect>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Multicast address:</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBoxUDP_mcastaddress">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>180</y>
+         <width>291</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBoxNetworkIF">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>30</y>
+         <width>291</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="checkBoxMulticast">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>130</y>
+         <width>194</width>
+         <height>20</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Multicast on network interface</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="comboBoxPortIP_UDP">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>80</y>
+         <width>194</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="editable">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QLabel" name="label_11">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>60</y>
+         <width>194</width>
+         <height>14</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>IP Port:</string>
+       </property>
+      </widget>
+     </widget>
      <widget class="QWidget" name="tab_2">
+      <property name="toolTipDuration">
+       <number>-1</number>
+      </property>
       <attribute name="title">
        <string>Serial</string>
       </attribute>
@@ -359,7 +460,7 @@
         </widget>
        </item>
        <item row="1" column="0">
-        <widget class="QComboBox" name="comboBoxPort">
+        <widget class="QComboBox" name="comboBoxPortSerial">
          <property name="editable">
           <bool>true</bool>
          </property>
@@ -435,8 +536,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>254</x>
+     <y>504</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -451,8 +552,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>322</x>
+     <y>504</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>

@@ -57,6 +57,7 @@ add_executable (${TARGET_NAME}
     dltmsgqueue.cpp
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.cpp
+    mcudpsocket.cpp
     resource.qrc
     ${UI_HEADERS}
     ${UI_RESOURCES_RCC}

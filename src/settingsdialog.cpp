@@ -404,7 +404,7 @@ void SettingsDialog::readDlg()
         fmaxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toFloat();
         if (fmaxFileSizeMB < 0.01)
         {
-          fmaxFileSizeMB = 0.01;
+          fmaxFileSizeMB = (float) 0.01;
           qDebug() <<  "Caution: minimum split file size limited to 0.01 Mb !";
           //QMessageBox::warning(0, QString("DLT Viewer"), QString("Minimum value limited to 0.01 Mb !"));
         }
