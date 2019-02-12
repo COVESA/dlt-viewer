@@ -43,6 +43,7 @@
 \end{center}
 
 Changelog:\linebreak
+v0.0.7, February 2019: added UDP reception\linebreak
 v0.0.6, Septemnber 2018: added logelevels, complete missing descriptions, bugfixing \linebreak
 v0.0.5, June 2018: converted to \LaTeX, extended documentation, based on version 2.19.0 Release \linebreak
 v0.0.4, February 2016: Updates and improvements for current DLT Viewer state \linebreak
@@ -1041,13 +1042,14 @@ settings to some other path, e.g. somewhere in your home directory.
 Press the connect button \includegraphics[width=0.03\textwidth]{images/connect_button.png} to connect to the target:\linebreak
 
 If no ECU is configured, the ECU configuration dialog appears.
-Select the "Interface Type" you want to use (TCP or serial).
+Select the "Interface Type" you want to use (TCP, UDP or serial).
 The ECU configuration dialog also can be envoked by selecting right mouse button "ECU add"
 in the Project Config Panel.
 
 \begin{figure}[H]
  \centering
- \includegraphics[width=0.6\textwidth]{images/ecu_dialog_2_19_0.png}
+ %\includegraphics[width=0.6\textwidth]{images/ecu_dialog_2_19_0.png}
+ \includegraphics[width=0.6\textwidth]{images/ECU_dialog.png}
  \caption{ECU dialog}
  \label{fig:ecudialog}
 \end{figure}
@@ -1083,12 +1085,35 @@ IPv4 example:
 
 \begin{figure}[h]
  \centering
- \includegraphics[width=0.6\textwidth]{images/tcp_applet.png}
+ \includegraphics[width=0.6\textwidth]{images/tcp_applet01.png}
  \caption{IP configuration tab}
  \label{fig:ipconfigurationtab}
 \end{figure}
 
 
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+\subsubsection{UDP}
+
+In case of UDP reception you are able to specify the interface and the IP port where you expect the 
+UDP datagrams to be received. The selection box "Receiving interface" will offer you all available 
+ethernet interfaces of your machine. In case of AnyIP the oprating system will choose an interface for you.
+To receive multicast messages you can activate "Multicast on network interface" and specify the UDP multicast address
+to join the multicast group accordingly.
+
+\caution{On Windows machines it was observed that the selection of the specific IF instead of AnyIP is essential}
+
+IPv4 example:
+
+\begin{figure}[h]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/ECU_dialogUDP.png}
+ \caption{UDP configuration tab}
+ \label{fig:udpconfigurationtab}
+\end{figure}
+
+
+
+%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Serial}
 
 
@@ -1098,7 +1123,7 @@ list provides a list of examples for the port configuration.
 
 \begin{figure}[H]
  \centering
-  \includegraphics[width=0.6\textwidth]{images/ecu_dialog_serial.png}
+  \includegraphics[width=0.6\textwidth]{images/ecu_dialog_serial01.png}
  \caption{Serial configuration tab}
  \label{fig:serialconfigurationtab}
 \end{figure}
@@ -1335,6 +1360,8 @@ Select the menu option "File"\ensuremath{\rightarrow}"Save as" or \includegraphi
 Saving a file just renames the current tmp file and stores it to the selected destination, the received messages are still
 added to this file and the file is processed / accessed by the DLT Viewer. A saved file also contains information about ECU configuration, Apids, Ctids
 and log levels.
+
+\caution{In case you did open multiple files to concatenate them, e.g. by Drag\&Drop then only the last opened file will be saved. If you want to save all files in one please use "Export ..."}
 
 \subsubsection{Export}
 Select the menu option "File"\ensuremath{\rightarrow}"Export... ". 
