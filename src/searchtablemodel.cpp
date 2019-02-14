@@ -162,7 +162,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(msg.getNumberOfArguments());
         case FieldNames::Payload:
             /* display payload */
-            return msg.toStringPayload();
+            return msg.toStringPayload().trimmed();
         default:
             if (index.column()>=FieldNames::Arg0)
             {
