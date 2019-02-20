@@ -1464,6 +1464,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 {
     //qDebug() << "MainWindow::on_action_menuFile_Clear_triggered()" << outputfile.fileName() << __FILE__ <<  __LINE__;
     dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
+    //qDebug() << "Stop Indexer" << indstop << __LINE__ << __FILE__;
 
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
     if(!fn.length())
@@ -1505,6 +1506,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 
     totalBytesRcvd = 0; // reset receive counter too
     totalSyncFoundRcvd = 0; // reset sync counter too
+    totalByteErrorsRcvd = 0; // reset receive byte error too
 
     if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
@@ -1608,18 +1610,18 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
     // version message found in loading file
     if(!autoloadPluginsVersionEcus.contains(ecuId))
     {
-        autoloadPluginsVersionStrings.append(version);
-        autoloadPluginsVersionEcus.append(ecuId);
+      autoloadPluginsVersionStrings.append(version);
+      autoloadPluginsVersionEcus.append(ecuId);
 
-	QFontMetrics fm = QFontMetrics(statusFileVersion->font());
-	QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
-        statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
-        statusFileVersion->setToolTip(versionString);
-
-        if(settings->pluginsAutoloadPath)
-        {
-            pluginsAutoload(version);
-        }
+      QFontMetrics fm = QFontMetrics(statusFileVersion->font());
+      QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
+      target_version_string = version;
+      statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
+      statusFileVersion->setToolTip(versionString);
+      if(settings->pluginsAutoloadPath)
+       {
+          pluginsAutoload(version);
+       }
     }
 }
 
@@ -2288,9 +2290,6 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             }
 
             dlg.setDialogToEcuItem(ecuitem);
-
-
-            qDebug() << ecuitem->getmcastIP();
 
             /* update ECU item */
             ecuitem->update();
@@ -3063,29 +3062,26 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 connectIPaddress = "0.0.0.0"; // we need to translate AnyIP to 0.0.0.0 on Linux ...
             }
 
-            //qDebug()<< "Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
-            /* connect socket signals with window slots */
+           /* connect socket signals with window slots */
             if (ecuitem->socket->state() == QAbstractSocket::UnconnectedState)
             {
-               qDebug() << disconnect(ecuitem->socket,0,0,0);
-               //qDebug() << ecuitem->getEthIF();
+               disconnect(ecuitem->socket,0,0,0);
 
                if (  ecuitem->is_multicast == true )
                {
-                 qDebug()<< "MC UDP Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+                 qDebug()<< "Try to connect (UDP/MC) on" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
                  bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress );
                }
                else
                {
-                qDebug()<< "UDP Try to connect to ECU" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
-                //bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getEthIF()), ecuitem->getIpport(),QUdpSocket::ShareAddress ) ;
+                qDebug()<< "Try to connect (UDP) to" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
                 bindstate = ecuitem->socket->bind(QHostAddress(connectIPaddress), ecuitem->getIpport(),QUdpSocket::ShareAddress ) ;
                }
 
                if ( true == bindstate )//ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress ))
-               //if ( true == ecuitem->socket->bind(QHostAddress(ecuitem->getEthIF()), ecuitem->getIpport(),QUdpSocket::ShareAddress ))
                 { // green - success
                  qDebug() << "Bound to " << ecuitem->getEthIF() << "on port" << ecuitem->getIpport();
+                 ecuitem->udpsocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption,26214400);
                  ecuitem->tryToConnect = true;
                  if (  ecuitem->is_multicast == true )
                     {
@@ -3115,6 +3111,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 else
                 {
                   qDebug() << "Error - binding failed with" << ecuitem->socket->errorString();
+                  ecuitem->connectError.append("Binding failed");
                   ecuitem->connected = false;
                   ecuitem->update();
                 }
@@ -3396,10 +3393,13 @@ void MainWindow::readyRead()
         }
         dltIndexer->unlock();
     }
+    /*
     else
     {
       qDebug() << "Fail locking indexer in readyRead" << __LINE__ << __FILE__;
+      //tbd: have a look why this one is called in commandline / mode File open
     }
+    */
 
 }
 
@@ -3411,62 +3411,64 @@ void MainWindow::read(EcuItem* ecuitem)
        return;
     }
 
-    int32_t bytesRcvd = 0;
-    QDltMsg qmsg;
-    QByteArray data;
+    long int bytesRcvd = 0;
+    DltStorageHeader str;
+    bufferHeader.clear();
+    bufferPayload.clear();
+    qmsg.clear();
     data.clear();
-    
-    if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)
-    {
-        /* TCP */
-        data = ecuitem->socket->readAll();
-        bytesRcvd = data.size();
-        ecuitem->ipcon.add(data);
+
+    switch (ecuitem->interfacetype)
+     {
+      case EcuItem::INTERFACETYPE_TCP:
+          /* TCP */
+          data = ecuitem->socket->readAll();
+          bytesRcvd = data.size();
+          //qDebug() << "bytes received" << bytesRcvd;
+          ecuitem->ipcon.add(data);
+          break;
+      case EcuItem::INTERFACETYPE_UDP:
+          data.resize(ecuitem->udpsocket.pendingDatagramSize());
+          bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
+          //qDebug() << "bytes received" << bytesRcvd;
+          ecuitem->ipcon.add(data);
+          ecuitem->connected= true;
+          ecuitem->tryToConnect = true;
+          ecuitem->update();
+          break;
+      case EcuItem::INTERFACETYPE_SERIAL:
+          data = ecuitem->m_serialport->readAll();
+          bytesRcvd = data.size();
+          ecuitem->serialcon.add(data);
+          break;
+      default:
+         break;
      }
-    else if( ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
-    {
-        /* UDP */
-        data.resize(ecuitem->udpsocket.pendingDatagramSize());
 
-        ecuitem->udpsocket.readDatagram(data.data(), data.size(), &UDPsender, &senderPort);
-        bytesRcvd = data.size();
-        //if ( bytesRcvd != bytesRcvd )  qDebug() << "Dig into this !" << __LINE__ << __FILE__;
-        ecuitem->ipcon.add(data);
 
-        ecuitem->connected= true;
-        ecuitem->tryToConnect = true;
-        ecuitem->update();
-     }
-    else if(ecuitem->m_serialport)
-    {
-        /* serial */
-        // bytesRcvd = ecuitem->m_serialport->bytesAvailable();
-        data = ecuitem->m_serialport->readAll();
-        bytesRcvd = data.size();
-        ecuitem->serialcon.add(data);
-    }
-
-    if (bytesRcvd<=0)
+    if (bytesRcvd <= 0)
     {
       qDebug() << "ERROR bytesRcvd <= 0 in " << __LINE__ << __FILE__;
       return;
     }
 
     /* reading data; new data is added to the current buffer */
-        ecuitem->totalBytesRcvd += bytesRcvd;
+     ecuitem->totalBytesRcvd += bytesRcvd;
 
-        while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
+     while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
                 ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
                 ecuitem->ipcon.parse(qmsg)) ||
                (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
         {
-
-
-            DltStorageHeader str;
+            //DltStorageHeader str;
             str.pattern[0]='D';
             str.pattern[1]='L';
             str.pattern[2]='T';
             str.pattern[3]=0x01;
+            str.ecu[0]=0;
+            str.ecu[1]=0;
+            str.ecu[2]=0;
+            str.ecu[3]=0;
 
             /* get time of day */
             #if defined(_MSC_VER)
@@ -3482,11 +3484,6 @@ void MainWindow::read(EcuItem* ecuitem)
                 str.seconds = (time_t)tv.tv_sec; /* value is long */
                 str.microseconds = (int32_t)tv.tv_usec; /* value is long */
             #endif
-
-            str.ecu[0]=0;
-            str.ecu[1]=0;
-            str.ecu[2]=0;
-            str.ecu[3]=0;
 
             /* prepare storage header */
             if (false == qmsg.getEcuid().isEmpty()) // means the ECU ID field is NOT empty
@@ -3512,9 +3509,8 @@ void MainWindow::read(EcuItem* ecuitem)
                 {
                     // https://bugreports.qt-project.org/browse/QTBUG-26069
                     outputfile.seek(outputfile.size());
-                    QByteArray bufferHeader = qmsg.getHeader();
-                    QByteArray bufferPayload = qmsg.getPayload();
-
+                    bufferHeader = qmsg.getHeader();
+                    bufferPayload = qmsg.getPayload();
                     // set start time when writing first data
                     if(startLoggingDateTime.isNull())
                         {
@@ -3535,24 +3531,7 @@ void MainWindow::read(EcuItem* ecuitem)
                     outputfile.write(bufferHeader);
                     outputfile.write(bufferPayload);
                     outputfile.flush();
-
-                    /* in Logging only mode send all messages to the plugins */
-                    /* GW, 8.5.18 indeed: in logging only mode we explicitely do not want to run through any plugins !!!
-                    if( ( settings->loggingOnlyMode == 1 ) && ( pluginsEnabled == true ) )
-                    {
-                        QList<QDltPlugin*> activeViewerPlugins;
-                        activeViewerPlugins = pluginManager.getViewerPlugins();
-                        for(int i = 0; i < activeViewerPlugins.size(); i++)
-                        {
-                            QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
-                            item->updateMsg(-1,qmsg);
-                            pluginManager.decodeMsg(qmsg,!OptManager::getInstance()->issilentMode());
-                            item->updateMsgDecoded(-1,qmsg);
-                        }
-                    }
-                    */
-
-                }
+                 }
             }
 
             /* analyse received message, check if DLT control message response */
@@ -3560,9 +3539,9 @@ void MainWindow::read(EcuItem* ecuitem)
             {
                 controlMessage_ReceiveControlMessage(ecuitem,qmsg);
             }
-        }
+        } //end while
 
-        if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+     if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
         {
             /* TCP or UDP */
             totalByteErrorsRcvd+=ecuitem->ipcon.bytesError;
@@ -3573,8 +3552,8 @@ void MainWindow::read(EcuItem* ecuitem)
             totalSyncFoundRcvd+=ecuitem->ipcon.syncFound;
             ecuitem->ipcon.syncFound = 0;
          }
-        else if(ecuitem->m_serialport)
-        {
+       else if(ecuitem->m_serialport)
+         {
             /* serial */
             totalByteErrorsRcvd+=ecuitem->serialcon.bytesError;
             ecuitem->serialcon.bytesError = 0;
@@ -3582,9 +3561,9 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->serialcon.bytesReceived = 0;
             totalSyncFoundRcvd+=ecuitem->serialcon.syncFound;
             ecuitem->serialcon.syncFound = 0;
-        }
+         }
 
-        if ( ( true == outputfile.isOpen() ) ) //&& ( settings->loggingOnlyMode == 0 )  )
+     if ( ( true == outputfile.isOpen() ) ) //&& ( settings->loggingOnlyMode == 0 )  )
         {
             if(false == dltIndexer->isRunning())
             {
@@ -5640,7 +5619,7 @@ void MainWindow::updatePlugin(PluginItem *item)
     {
         // in case there is an explicitely given file or directpory name we want to use this of course
      //qDebug() << "Versionstring" << target_version_string << target_version_string.isEmpty();
-     if(settings->pluginsAutoloadPath != 0 && ( conffilename.isEmpty() == true ) && ( target_version_string.isEmpty() != true )  )
+     if(settings->pluginsAutoloadPath != 0 && ( conffilename.isEmpty() == true ) && ( target_version_string.isEmpty() == false )  )
          {
             qDebug() << "Trigger autoload with version" << target_version_string;
             pluginsAutoload(target_version_string);

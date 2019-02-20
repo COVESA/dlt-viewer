@@ -211,6 +211,12 @@ private:
     QHostAddress UDPsender; // in readdatagramm
     quint16 senderPort; // in readdatagramm
 
+    /* used in ::read() */
+    QByteArray bufferHeader;
+    QByteArray bufferPayload;
+    QByteArray data;
+    QDltMsg qmsg;
+
     /* dlt-file Indexer with cancel cabability */
     DltFileIndexer *dltIndexer;
 
