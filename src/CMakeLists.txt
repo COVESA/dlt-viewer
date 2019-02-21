@@ -17,8 +17,6 @@ cmake_minimum_required (VERSION 2.8.12)
 
 set (TARGET_NAME dlt-viewer)
 
-set (CMAKE_AUTOUIC ON)
-
 # cmake 2.8.12 doesn't have AUTOUIC ??
 FILE(GLOB ALL_UIS ${CMAKE_CURRENT_SOURCE_DIR}/*.ui)
 QT5_WRAP_UI( UI_HEADERS ${ALL_UIS} )
@@ -65,10 +63,10 @@ add_executable (${TARGET_NAME}
 
 target_link_libraries (${TARGET_NAME}
     qdlt
-    ${Qt5Core_LIBRARIES}
-    ${Qt5Network_LIBRARIES}
-    ${Qt5Widgets_LIBRARIES}
-    ${Qt5SerialPort_LIBRARIES}
+    Qt5::Core
+    Qt5::Network
+    Qt5::Widgets
+    Qt5::SerialPort
 )
 
 install(TARGETS ${TARGET_NAME} DESTINATION deploy)

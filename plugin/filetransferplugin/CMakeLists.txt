@@ -13,10 +13,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-find_package(Qt5PrintSupport ${QT_VERSION_REQ} REQUIRED)
-
-set (CMAKE_AUTOUIC ON)
-
 # cmake 2.8.12 doesn't have AUTOUIC ??
 QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/form.ui
 			${CMAKE_CURRENT_SOURCE_DIR}/imagepreviewdialog.ui
