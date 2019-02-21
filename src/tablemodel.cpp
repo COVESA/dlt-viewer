@@ -247,7 +247,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
              /* display payload */
-             return msg.toStringPayload().trimmed();
+             return msg.toStringPayload().trimmed().replace('\n', ' ');
          default:
              if (index.column()>=FieldNames::Arg0)
              {
