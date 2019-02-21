@@ -13,7 +13,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-set (CMAKE_AUTOUIC ON)
 set (CMAKE_AUTOMOC ON)
 
 # cmake 2.8.12 doesn't have AUTOUIC ??

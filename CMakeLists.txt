@@ -14,18 +14,16 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-cmake_minimum_required (VERSION 2.8.12)
+cmake_minimum_required (VERSION 3.1)
 
 project (dlt_viewer)
 
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(QT_VERSION_REQ "5")
 
-find_package(Qt5Core ${QT_VERSION_REQ} REQUIRED)
-find_package(Qt5Network ${QT_VERSION_REQ} REQUIRED)
-find_package(Qt5Widgets ${QT_VERSION_REQ} REQUIRED)
-find_package(Qt5SerialPort ${QT_VERSION_REQ} REQUIRED)
+find_package(Qt5 ${QT_VERSION_REQ} REQUIRED COMPONENTS Core Network Widgets SerialPort PrintSupport)
 
 if(Qt5Core_VERSION VERSION_LESS "5.5.1")
     # Presumably Qt5Core implies all dependent libs too

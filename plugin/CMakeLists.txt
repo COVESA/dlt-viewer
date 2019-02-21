@@ -13,10 +13,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-
-cmake_minimum_required (VERSION 2.8.12)
-set (CMAKE_VERBOSE_MAKEFILE FALSE)
-
 # build plugins in build/bin/plugins directory
 set(PLUGIN_DIR ${BIN_DIR}/plugins)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PLUGIN_DIR})

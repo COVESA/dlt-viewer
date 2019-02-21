@@ -14,8 +14,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-#set (CMAKE_AUTOUIC ON)
-
 # cmake 2.8.12 doesn't have AUTOUIC ??
 
 add_library(nonverboseplugin MODULE nonverboseplugin.cpp
