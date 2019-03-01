@@ -60,7 +60,9 @@ int QDltFile::getNumberOfFiles() const
 void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num)
 {
     if(num<0 || num>=files.size())
+    {
         return;
+    }
 
     files[num]->indexAll = _indexAll;
 }
@@ -68,7 +70,6 @@ void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num)
 int QDltFile::size() const
 {
     int size=0;
-
     for(int num=0;num<files.size();num++)
     {
         size += files[num]->indexAll.size();
@@ -97,9 +98,9 @@ int QDltFile::sizeFilter() const
         return size();
 }
 
-bool QDltFile::open(QString _filename, bool append) {
-
-    //qDebug() << "Open file" << _filename << "started";
+bool QDltFile::open(QString _filename, bool append)
+{
+    //qDebug() << "Open file" << _filename << "started" << __FILE__ << __LINE__;
 
     /* check if file is already opened */
     if(!append)
@@ -113,13 +114,12 @@ bool QDltFile::open(QString _filename, bool append) {
     item->infile.setFileName(_filename);
 
     /* open the log file read only */
-    if(item->infile.open(QIODevice::ReadOnly)==false) {
+    if(item->infile.open(QIODevice::ReadOnly)==false)
+    {
         /* open file failed */
         qWarning() << "open of file" << _filename << "failed";
         return false;
     }
-
-    //qDebug() << "Open file" << _filename << "finished";
 
     return true;
 }
@@ -136,7 +136,6 @@ bool QDltFile::createIndex()
 {
     bool ret = false;
 
-    //qDebug() << "Create index started";
 
     clearIndex();
 
@@ -146,7 +145,7 @@ bool QDltFile::createIndex()
 
     ret = updateIndex();
 
-    qDebug() << "Create index finished - " << size() << "messages found";
+    //qDebug() << "Create index finished - " << size() << "messages found";
 
     return ret;
 }
@@ -189,7 +188,8 @@ bool QDltFile::updateIndex()
         /* store the found positions in the indexAll */
         char lastFound = 0;
 
-        while(true) {
+        while(true)
+        {
 
             /* read buffer from file */
             buf = files[numFile]->infile.read(READ_BUF_SZ);
@@ -346,11 +346,11 @@ void QDltFile::close()
 QByteArray QDltFile::getMsg(int index) const
 {
     QByteArray buf;
-    int num;
+    int num = 0;
 
 
     /* check if index is in range */
-    if( index<0 )
+    if( index < 0 )
     {
         qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
 
@@ -358,17 +358,17 @@ QByteArray QDltFile::getMsg(int index) const
         return QByteArray();
     }
 
-    for(num=0;num<files.size();num++)
+    for( num=0; num < files.size(); num++ )
     {
-        if(index<files[num]->indexAll.size())
+        if(index < files[num]->indexAll.size())
             break;
         else
             index -= files[num]->indexAll.size();
     }
 
-    if(num>=files.size())
+    if(num >= files.size())
     {
-     qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+     qDebug() << "getMsg: Index is out of range in" << __FILE__ << "line" << __LINE__;
      /* return empty data buffer */
      return QByteArray();
     }
@@ -390,15 +390,34 @@ QByteArray QDltFile::getMsg(int index) const
     qint64 positionForIndex = const_file->indexAll[index];
 
     /* move to file position selected by index */
-    file->infile.seek(positionForIndex);
+    if ( false == file->infile.seek(positionForIndex) )
+    {
+        qDebug() << "Seek error on " << positionForIndex << file->infile.fileName() << __FILE__ << __LINE__;
+        mutexQDlt.unlock();
+        buf.clear();
+        return buf;
+    }
 
     /* read DLT message from file */
     if(index == (file->indexAll.size()-1))
+    {
         /* last message in file */
-        buf = file->infile.read(file->infile.size() - positionForIndex);
+        long int cal_index = file->infile.size() - positionForIndex;
+
+        if ( cal_index < 0 )
+            qDebug() << "Negativ index " << cal_index << index << "in" << file->infile.fileName() << __LINE__ << "of" << __FILE__;
+        else
+         buf = file->infile.read(file->infile.size() - positionForIndex);
+    }
     else
+    {
         /* any other file position */
-        buf = file->infile.read(const_file->indexAll[index+1] - positionForIndex);
+        long int cal_index = const_file->indexAll[index+1] - positionForIndex;
+        if ( cal_index < 0 )
+            qDebug() << "Negativ index " << cal_index << index << "in" << __LINE__ << "of" << __FILE__;
+        else
+         buf = file->infile.read(cal_index);
+    }
 
     mutexQDlt.unlock();
 
@@ -418,7 +437,8 @@ bool QDltFile::getMsg(int index,QDltMsg &msg) const
 
 QByteArray QDltFile::getMsgFilter(int index) const
 {
-    if(filterFlag) {
+    if(filterFlag)
+    {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size())
         {
@@ -428,11 +448,12 @@ QByteArray QDltFile::getMsgFilter(int index) const
         }
         return getMsg(indexFilter[index]);
     }
-    else {
+    else
+    {
         /* check if index is in range */
         if(index<0 || index>=size())
         {
-         qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+         qDebug() << "getMsg: Index" << index << "is out of range" << size() << __FILE__ << "line" << __LINE__;
          /* return empty data buffer */
          return QByteArray();
         }
@@ -442,11 +463,13 @@ QByteArray QDltFile::getMsgFilter(int index) const
 
 int QDltFile::getMsgFilterPos(int index) const
 {
-    if(filterFlag) {
+    if(filterFlag)
+    {
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size())
         {
-        qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+        //qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+        qDebug() << "getMsg: Index" << index << "is out of range" << indexFilter.size() << __FILE__ << "line" << __LINE__;
         /* return invalid */
         return -1;
         }

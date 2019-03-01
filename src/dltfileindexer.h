@@ -107,6 +107,9 @@ public:
     // let worker thread append to getLogInfoList
     void appendToGetLogInfoList(int value);
 
+    // reset / clear file indexes
+    void clearindex() { indexAllList.clear(); }
+
     // main thread routine
     void run();
 

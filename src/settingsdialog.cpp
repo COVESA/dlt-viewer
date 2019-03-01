@@ -555,7 +555,7 @@ void SettingsDialog::readSettings()
     defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir::homePath()+"/.dlt/filters").toString();
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
-    filterCache = settings->value("startup/filterCache",0).toInt();
+    filterCache = settings->value("startup/filterCache",1).toInt();
     filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
     filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/indexcache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
@@ -796,8 +796,10 @@ void SettingsDialog::clearIndexCacheAfterDays()
     comparisonDate = comparisonDate.addSecs((quint64)filterCacheDays*-1*60*60*24);
 
     // check if index cache is enabled
-    if(!filterCache)
+    if(0 == filterCache)
+    {
         return;
+    }
 
     /* check if directory for configuration exists */
     QString path = filterCacheName;

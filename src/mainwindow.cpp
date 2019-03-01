@@ -891,7 +891,8 @@ void MainWindow::onNewTriggered(QString fileName)
         //qDebug() << "Opening file(s)" << outputfile.fileName() << __FILE__ << __LINE__;
         openFileNames = QStringList(fileName);
         isDltFileReadOnly = false;
-        reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
+        //reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
+        reloadLogFile(); // avoid "CORRUPT MESSAGE" - non threading !
     }
     else
      {
@@ -1475,9 +1476,8 @@ void MainWindow::on_action_menuFile_Clear_triggered()
         return;
     }
 
-    //clear search history list
-    //qDebug() << "Search history" << searchHistory;
-    //searchHistory.clear();
+    // reset / clear file indexes
+    dltIndexer->clearindex();
 
     //clear all the action buttons from history
     for (int i = 0; i < MaxSearchHistory; i++)
