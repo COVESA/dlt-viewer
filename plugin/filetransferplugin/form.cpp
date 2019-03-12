@@ -50,6 +50,11 @@ Form::Form(QWidget *parent) :
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*,int)),this, SLOT(itemChanged(QTreeWidgetItem*,int)));
     connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)),this, SLOT(itemDoubleClicked(QTreeWidgetItem*,int)));
     connect(ui->treeWidget->header(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
+
+    connect(this, SIGNAL( additem_signal(File *)), this, SLOT(additem_slot(File *) ) );
+    connect(this, SIGNAL( handleupdate_signal(QString, QString, int)), this, SLOT(updatefile_slot(QString,QString,int) ) );
+    connect(this, SIGNAL( export_signal(QDir, QString *, bool * )), this, SLOT(export_slot(QDir, QString *, bool * ) ) );
+    connect(this, SIGNAL( handle_errorsignal(QString,QString,QString,QString)), this, SLOT(error_slot(QString,QString,QString,QString) ) );
 }
 
 Form::~Form()
@@ -140,6 +145,8 @@ void Form::clearSelectedFiles()
 {
     selectedFiles = 0;
 }
+
+
 
 void Form::on_saveButton_clicked()
 {
@@ -380,4 +387,107 @@ void Form::on_actionSave_triggered()
     }
     return;
 }
+
+void Form::updatefile_slot(QString filestring, QString packetnumber, int index)
+{
+    QList<QTreeWidgetItem *> result = getTreeWidget()->findItems(filestring,Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
+
+    if(result.isEmpty())
+    {
+        //Transfer for this file started before sending FLST
+      return;
+    }
+    else
+    {
+        File *file = (File*)result.at(0);
+        if(false == file->isComplete())
+        {
+           file->setQFileIndexForPackage(packetnumber,index);
+        }
+        else
+        {
+          qDebug() << "Received file" << file->getFilename();
+          file->setComplete();
+        }
+    }
+}
+
+
+void Form::additem_slot(File *f)
+{
+
+    QList<QTreeWidgetItem *> result = getTreeWidget()->findItems(f->getFileSerialNumber(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
+    if(true == result.isEmpty())
+     {
+      getTreeWidget()->addTopLevelItem(f);
+     }
+    else
+    {
+    int index = getTreeWidget()->indexOfTopLevelItem(result.at(0));
+    getTreeWidget()->takeTopLevelItem(index);
+    getTreeWidget()->addTopLevelItem(f);
+    }
+}
+
+
+void Form::error_slot(QString filename, QString errorCode1, QString errorCode2, QString time)
+{
+    File *file= new File(0);
+    QList<QTreeWidgetItem *> result = getTreeWidget()->findItems(filename,Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILENAME);
+
+    if(result.isEmpty())
+    {
+       getTreeWidget()->addTopLevelItem(file);
+    }
+    else
+    {
+       file = (File*)result.at(0);
+       if ( NULL != file )
+       {
+       int index = getTreeWidget()->indexOfTopLevelItem(result.at(0));
+       getTreeWidget()->takeTopLevelItem(index);
+       getTreeWidget()->addTopLevelItem(file);
+       }
+    }
+
+    file->errorHappens(filename,errorCode1,errorCode2,time);
+    file->setFlags(Qt::NoItemFlags );
+}
+
+void Form::export_slot(QDir dir, QString *errorText, bool *success)
+{
+    QTreeWidgetItemIterator it(getTreeWidget(),QTreeWidgetItemIterator::NoChildren );
+    unsigned int countit = 0;
+
+    if(NULL == *it)
+    {
+        *errorText = " - No filetransfer files in the loaded DLT file.";
+        *success = false;
+        return;
+    }
+    while (*it)
+    {
+        File *tmp = dynamic_cast<File*>(*it);
+        if (tmp != NULL && tmp->isComplete())
+        {
+            QString absolutePath = dir.filePath(tmp->getFilename());
+
+            if(false == tmp->saveFile(absolutePath) )
+            {
+                *success  = false;
+                qDebug() << "Error: " << absolutePath;
+                *errorText += ", " + tmp->getFilenameOnTarget();
+            }
+            else
+            {
+                qDebug() << "Exported: " << absolutePath;
+            }
+        }
+        ++it;
+        countit++;
+    }
+    *success  = true;
+    qDebug() << "Amount of exported files:" << countit;
+}
+
 
