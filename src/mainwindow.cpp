@@ -1507,6 +1507,9 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     totalBytesRcvd = 0; // reset receive counter too
     totalSyncFoundRcvd = 0; // reset sync counter too
     totalByteErrorsRcvd = 0; // reset receive byte error too
+    target_version_string.clear();
+    autoloadPluginsVersionEcus.clear();
+    autoloadPluginsVersionStrings.clear();
 
     if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
     {
@@ -1607,8 +1610,9 @@ void MainWindow::reloadLogFileProgressText(QString text)
 
 void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
 {
-    // version message found in loading file
-    if(!autoloadPluginsVersionEcus.contains(ecuId))
+    // version message found in loading file, only called when loading a logfile !
+
+    if(false == autoloadPluginsVersionEcus.contains(ecuId))
     {
       autoloadPluginsVersionStrings.append(version);
       autoloadPluginsVersionEcus.append(ecuId);
@@ -1620,6 +1624,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       statusFileVersion->setToolTip(versionString);
       if(settings->pluginsAutoloadPath)
        {
+          qDebug() << "Trigger plugin autoload for " << ecuId;
           pluginsAutoload(version);
        }
     }
@@ -3819,8 +3824,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
     /* check if plugin autoload enabled and
      * it is a version message and
        version string not already parsed */
-    if(service_id == 0x13 &&
-       !autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+    if(service_id == DLT_SERVICE_ID_GET_SOFTWARE_VERSION && (false == autoloadPluginsVersionEcus.contains(msg.getEcuid())))
     {
         versionString(msg);
         autoloadPluginsVersionEcus.append(msg.getEcuid());
@@ -5353,7 +5357,7 @@ void MainWindow::setCurrentIPPort(const QString &portName)
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
     /* update default log level, trace status and timing packets */
-    if (ecuitem->sendGetSoftwareVersion)
+    if (true == ecuitem->sendGetSoftwareVersion)
     {
         controlMessage_GetSoftwareVersion(ecuitem);
     }
@@ -5708,40 +5712,42 @@ void MainWindow::pluginsAutoload(QString version)
     for(int num = 0; num < project.plugin->topLevelItemCount(); num++)
     {
         PluginItem *item = (PluginItem*)project.plugin->topLevelItem(num);
-        //qDebug() << "pluginsAutoload" << __LINE__ << __FILE__<< item->getMode();
-        if(item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder())
+
+        if( item->getMode() != QDltPlugin::ModeDisable && item->getPlugin()->isDecoder() )
         {
             QString searchPath = settings->pluginsAutoloadPathName+ "/" + item->getName();
 
-            qDebug() << "AutoloadPlugins search path:" << searchPath;
+            qDebug() << "AutoloadPlugins search path for" << item->getName()  << "is" << searchPath;
 
             // search for files in plugin directory which contains version string
             QStringList nameFilter("*"+version+"*");
             QDir directory(searchPath);
             QStringList txtFilesAndDirectories = directory.entryList(nameFilter);
-            if(txtFilesAndDirectories.size()>1)
-                txtFilesAndDirectories.sort(); // sort if several files are found
 
-            if(!txtFilesAndDirectories.isEmpty() )
-            {
+            if(false == txtFilesAndDirectories.isEmpty() )
+             {
+                if(txtFilesAndDirectories.size()>1)
+                    txtFilesAndDirectories.sort(); // sort if several files are found
+
                 // file with version string found
                 QString filename = searchPath + "/" + txtFilesAndDirectories[0];
-
                 // check if filename already loaded
                 if(item->getFilename()!=filename)
-                {
-                    qDebug() << "AutoloadPlugins load " << filename  <<"found";
-
+                 {
                     // load new configuration
                     item->setFilename(filename);
                     item->getPlugin()->loadConfig(filename);
                     item->update();
-                }
+                 }
                 else
-                {
+                 {
                     qDebug() << "AutoloadPlugins already loaded:" << filename;
-                }
-            }
+                 }
+             }
+            else
+             {
+              qDebug() << "No content found for pattern " << version << "in" << searchPath;
+             }
         }
     }
 
@@ -5947,7 +5953,8 @@ void MainWindow::filterAddTable() {
     }
 }
 
-void MainWindow::filterAdd() {
+void MainWindow::filterAdd()
+{
     EcuItem* ecuitem = 0;
     ContextItem* conitem = 0;
     ApplicationItem* appitem = 0;
