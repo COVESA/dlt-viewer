@@ -51,4 +51,4 @@ endif()
 
 target_link_libraries(qdlt ${QDLT_LINK_LIBS})
 
-install(TARGETS qdlt DESTINATION deploy)
+install(TARGETS qdlt DESTINATION ${LIBRARY_INSTALLATION_PATH})

@@ -22,4 +22,4 @@ add_library(dummydecoderplugin MODULE dummydecoderplugin.cpp
                         ${UI_HEADERS})
 
 target_link_libraries(dummydecoderplugin qdlt Qt5::Widgets )
-install(TARGETS dummydecoderplugin DESTINATION deploy/plugins)
+add_plugin(dummydecoderplugin)

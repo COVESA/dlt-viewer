@@ -32,9 +32,19 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
     QDir pluginsDir;
     QStringList errorStrings;
+
+    QString defaultPluginPath = PLUGIN_INSTALLATION_PATH;
+
     /* The viewer looks in the relativ to the executable in the ./plugins directory */
     pluginsDir.setPath(QCoreApplication::applicationDirPath());
     if(pluginsDir.cd("plugins"))
+    {
+        errorStrings << loadPluginsPath(pluginsDir);
+    }
+
+    /* Check system plugins path */
+    pluginsDir.setPath(defaultPluginPath);
+    if(pluginsDir.exists())
     {
         errorStrings << loadPluginsPath(pluginsDir);
     }
@@ -47,13 +57,6 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
         {
             errorStrings << loadPluginsPath(pluginsDir);
         }
-    }
-
-    /* Load plugins from system directory in linux */
-    pluginsDir.setPath("/usr/share/dlt-viewer/plugins");
-    if(pluginsDir.exists() && pluginsDir.isReadable())
-    {
-        errorStrings << loadPluginsPath(pluginsDir);
     }
 
     return errorStrings;
