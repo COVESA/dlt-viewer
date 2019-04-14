@@ -23,4 +23,4 @@ add_library(dltdbusplugin MODULE dltdbusplugin.cpp
 
 target_link_libraries(dltdbusplugin qdlt Qt5::Widgets )
 
-install(TARGETS dltdbusplugin DESTINATION deploy/plugins)
+add_plugin(dltdbusplugin)

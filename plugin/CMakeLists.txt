@@ -20,6 +20,21 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLUGIN_DIR})
 
 
+function(add_plugin NAME)
+
+    target_link_libraries(${NAME} qdlt Qt5::Widgets)
+    install(TARGETS ${NAME} DESTINATION ${PLUGIN_INSTALLATION_PATH})
+
+    # set the location of the plugins in such a way that they can be located by the dlt-viewer executable when running in
+    # directly from the build folder (without "make install")
+    set_target_properties(${NAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+
+endfunction()
+
+
 add_subdirectory(dltviewerplugin)
 add_subdirectory(nonverboseplugin)
 add_subdirectory(filetransferplugin)

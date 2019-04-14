@@ -15,6 +15,7 @@ DEFINES += QDLT_LIBRARY
     QMAKE_CXXFLAGS += -std=gnu++0x
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
+    QMAKE_CXXFLAGS += -DPLUGIN_INSTALLATION_PATH=\\\"$$PREFIX/usr/share/dlt-viewer/plugins\\\"
     #QMAKE_CXXFLAGS += -pedantic
 }
 
