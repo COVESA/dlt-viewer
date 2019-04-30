@@ -123,6 +123,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              }
              else if(index.column() == FieldNames::Payload)
              {
+                 qDebug() << "Corrupted message at index" << index.row();
                  return QString("!!CORRUPTED MESSAGE!!");
              }
              return QVariant();
@@ -319,8 +320,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          {
              if ( searchhit > -1 && searchhit == index.row() )
              {
-
                return QVariant(QBrush(searchhit_higlightColor));
+             }
+             if ( selectedMarkerRows.contains(index.row()) )
+             {
+               return QVariant(QBrush(manualMarkerColor));
              }
              if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
              {
@@ -441,6 +445,13 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      lastrow = -1;
      emit(layoutChanged());
  }
+
+int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
+{
+manualMarkerColor = hlcolor;
+this->selectedMarkerRows = selectedRows;
+return 0;
+}
 
 int TableModel::setMarker(long int lineindex, QColor hlcolor)
 {

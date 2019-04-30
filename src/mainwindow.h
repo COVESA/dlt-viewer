@@ -234,6 +234,8 @@ private:
     /* keep the target version string submited by the target for internal use */
     QString target_version_string;
 
+    QList<unsigned long int> selectedMarkerRows;
+
     /* functions called in constructor */
     void initState();
     void initView();
@@ -425,6 +427,10 @@ public slots:
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Quit_triggered();
     void on_actionFindNext();
+    void mark_unmark_lines();
+    void unmark_all_lines();
+
+
 private slots:
 
     // Search methods

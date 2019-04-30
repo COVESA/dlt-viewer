@@ -29,7 +29,7 @@
 #include "ui_settingsdialog.h"
 #include "version.h"
 #include "dltsettingsmanager.h"
-
+#include "dltuiutils.h"
 
 
 #if (WIN32)
@@ -494,6 +494,7 @@ void SettingsDialog::writeSettings(QMainWindow *mainwindow)
     settings->setValue("startup/splitfileyesno",splitlogfile);
     settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
+    settings->setValue("startup/markercolor",markercolor.name());
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -568,6 +569,12 @@ void SettingsDialog::readSettings()
     fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
 
+    markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
+    QPalette palette = ui->labelSelectedMarkerColor->palette();
+    palette.setColor(QPalette::Active,this->backgroundRole(),markercolor);
+    ui->labelSelectedMarkerColor->setPalette(palette);
+
+
     /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
@@ -605,16 +612,19 @@ void SettingsDialog::readSettings()
 
 
 
-QStringList SettingsDialog::getRecentFiles(){
+QStringList SettingsDialog::getRecentFiles()
+{
     return DltSettingsManager::getInstance()->value("other/recentFileList").toStringList();
 }
-QStringList SettingsDialog::getRecentProjects(){
+QStringList SettingsDialog::getRecentProjects()
+{
     return DltSettingsManager::getInstance()->value("other/recentProjectList").toStringList();
 }
 QStringList SettingsDialog::getRecentFilters(){
     return DltSettingsManager::getInstance()->value("other/recentFiltersList").toStringList();
 }
-QString SettingsDialog::getWorkingDirectory(){
+QString SettingsDialog::getWorkingDirectory()
+{
     return DltSettingsManager::getInstance()->value("work/workingDirectory",QDir::currentPath()).toString();
 }
 
@@ -833,31 +843,6 @@ void SettingsDialog::clearIndexCacheAfterDays()
     }
 }
 
-/*
-    void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
-    {
-        if (checked)
-        {
-          if (ui->spinBox_showArguments->value()<=0) ui->spinBox_showArguments->setValue(5); //set to default
-        }
-        else
-        {
-          ui->spinBox_showArguments->setValue(0);
-        }
-    }
-
-    void SettingsDialog::on_spinBox_showArguments_valueChanged(int i)
-    {
-     if (i<=0)
-     {
-      ui->groupBoxArguments->setChecked(false);
-     }
-     else
-     {
-         if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
-     }
-    }
-*/
 
 void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 {
@@ -866,4 +851,19 @@ void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
        emit(PluginsAutoloadChanged());
     }
 
+}
+
+void SettingsDialog::on_pushButtonMarkerColor_clicked()
+{
+    QColor selectedcolor = QColorDialog::getColor( ui->labelSelectedMarkerColor->palette().background().color().name() );
+    QPalette palette = ui->labelSelectedMarkerColor->palette();
+    palette.setColor(QPalette::Active,this->backgroundRole(),selectedcolor);
+    palette.setColor(QPalette::Inactive,this->backgroundRole(),QColor(255,255,255,255));
+    palette.setColor(QPalette::Foreground,DltUiUtils::optimalTextColor(selectedcolor));
+    ui->labelSelectedMarkerColor->setPalette(palette);
+
+    if(selectedcolor.isValid())
+    {
+        this->markercolor =  selectedcolor;
+    }
 }

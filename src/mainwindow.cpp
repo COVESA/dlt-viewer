@@ -1216,6 +1216,40 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 }
 
 
+void MainWindow::mark_unmark_lines()
+{
+    TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+    unsigned long int amount = ui->tableView->selectionModel()->selectedRows().count();
+    unsigned long int line;
+
+    for ( unsigned long int i = 0; i < amount; i++ )
+    {
+
+     line = ui->tableView->selectionModel()->selectedRows().at(i).row();
+     if ( true == selectedMarkerRows.contains(line) )// so we remove it
+      {
+       //qDebug() << "Remove selected line" << line;
+       selectedMarkerRows.removeAt(selectedMarkerRows.indexOf(line));
+      }
+     else // we add it
+      {
+       //qDebug() << "Add selected line" << line;
+       selectedMarkerRows.append(line);
+      }
+    }
+    //qDebug() << selectedMarkerRows;
+    model->setManualMarker(selectedMarkerRows, settings->markercolor); //used in mainwindow
+}
+
+void MainWindow::unmark_all_lines()
+{
+    TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
+    selectedMarkerRows.clear();
+    model->setManualMarker(selectedMarkerRows, settings->markercolor); //used in mainwindow
+}
+
+
 void MainWindow::exportSelection(bool ascii = true,bool file = false,bool payload_only = false)
 {
     Q_UNUSED(ascii);
@@ -1622,7 +1656,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       target_version_string = version;
       statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
       statusFileVersion->setToolTip(versionString);
-      if(settings->pluginsAutoloadPath)
+      if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ))
        {
           qDebug() << "Trigger plugin autoload for " << ecuId;
           pluginsAutoload(version);
@@ -5623,7 +5657,7 @@ void MainWindow::updatePlugin(PluginItem *item)
     {
         // in case there is an explicitely given file or directpory name we want to use this of course
      //qDebug() << "Versionstring" << target_version_string << target_version_string.isEmpty();
-     if(settings->pluginsAutoloadPath != 0 && ( conffilename.isEmpty() == true ) && ( target_version_string.isEmpty() == false )  )
+     if(settings->pluginsAutoloadPath != 0 && ( conffilename.isEmpty() == true ) && ( target_version_string.isEmpty() == false ) && ( pluginsEnabled == true )  )
          {
             qDebug() << "Trigger autoload with version" << target_version_string;
             pluginsAutoload(target_version_string);
@@ -5694,7 +5728,7 @@ void MainWindow::versionString(QDltMsg &msg)
     statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
     statusFileVersion->setToolTip(versionString);
 
-    if(settings->pluginsAutoloadPath)
+    if((settings->pluginsAutoloadPath) != 0 && ( pluginsEnabled == true ))
     {
         pluginsAutoload(target_version_string);
     }
@@ -5703,7 +5737,10 @@ void MainWindow::versionString(QDltMsg &msg)
 
 void MainWindow::triggerPluginsAutoload()
 {
-  pluginsAutoload(target_version_string);
+  if((settings->pluginsAutoloadPath) != 0 && ( pluginsEnabled == true ))
+  {
+   pluginsAutoload(target_version_string);
+  }
 }
 
 void MainWindow::pluginsAutoload(QString version)
@@ -6187,7 +6224,8 @@ void MainWindow::on_action_menuFilter_Edit_triggered()
     }
 }
 
-void MainWindow::on_action_menuFilter_Delete_triggered() {
+void MainWindow::on_action_menuFilter_Delete_triggered()
+{
     QTreeWidget *widget;
 
     /* get currently visible filter list in user interface */
@@ -6282,7 +6320,6 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     QPoint globalPos = ui->tableView->mapToGlobal(pos);
     QMenu menu(ui->tableView);
     QAction *action;
-    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
     action = new QAction("&Copy Selection to Clipboard", this);
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_to_clipboard_triggered()));
@@ -6296,9 +6333,14 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("&Export...", this);
     if(qfile.sizeFilter() <= 0)
+    {
         action->setEnabled(false);
+    }
     else
+    {
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionExport_triggered()));
+    }
+
     menu.addAction(action);
 
     menu.addSeparator();
@@ -6317,6 +6359,16 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Resize columns to fit", this);
     connect(action, SIGNAL(triggered()), ui->tableView, SLOT(resizeColumnsToContents()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Mark/Unmark line(s)", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(mark_unmark_lines()));
+    menu.addAction(action);
+
+    action = new QAction("Unmark all lines", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(unmark_all_lines()));
     menu.addAction(action);
 
     /* show popup menu */
@@ -6833,6 +6885,7 @@ void MainWindow::on_applyConfig_clicked()
     applyConfigEnabled(false);
     filterUpdate();
     reloadLogFile(true);
+    triggerPluginsAutoload();
 }
 
 void MainWindow::clearSelection()

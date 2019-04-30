@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include <QMainWindow>
+#include <QColorDialog>
 #include "qdlt.h"
 
 #define DEFAULT_REFRESH_RATE 20
@@ -59,6 +60,7 @@ public:
     int filterCache;
     int filterCacheDays;
     QString filterCacheName;
+    QColor markercolor;
 
     int autoConnect;
     int autoScroll;
@@ -148,6 +150,7 @@ private slots:
     //void on_spinBox_showArguments_valueChanged(int i);
 
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
+    void on_pushButtonMarkerColor_clicked();
 };
 
 #endif // SETTINGSDIALOG_H
