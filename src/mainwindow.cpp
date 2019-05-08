@@ -3386,7 +3386,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender()))
+            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ))
             {
                 read(ecuitem);
             }
@@ -3428,13 +3428,16 @@ void MainWindow::read(EcuItem* ecuitem)
           ecuitem->ipcon.add(data);
           break;
       case EcuItem::INTERFACETYPE_UDP:
-          data.resize(ecuitem->udpsocket.pendingDatagramSize());
-          bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
-          //qDebug() << "bytes received" << bytesRcvd;
-          ecuitem->ipcon.add(data);
-          ecuitem->connected= true;
-          ecuitem->tryToConnect = true;
-          ecuitem->update();
+          if(ecuitem->udpsocket.hasPendingDatagrams())
+          {
+            data.resize(ecuitem->udpsocket.pendingDatagramSize());
+            bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
+            //qDebug() << "bytes received" << bytesRcvd;
+            ecuitem->ipcon.add(data);
+            ecuitem->connected= true;
+            ecuitem->tryToConnect = true;
+            ecuitem->update();
+          }
           break;
       case EcuItem::INTERFACETYPE_SERIAL:
           data = ecuitem->m_serialport->readAll();
