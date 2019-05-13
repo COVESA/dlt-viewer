@@ -540,7 +540,7 @@ In "Temporary File Behaviour" you can set some parameters concerning the tempora
 which is always created during live tracing.
 You can just use the system default location or define a custom folder of your choice.
 
-\caution{Keep in mind that in case "Save temporary file on clear" is slected the amount of files in your tmp path increases
+\caution{Keep in mind that in case "Save temporary file on clear" is selected the amount of files in your tmp path increases
 and your hard disk will easily run out of space. So take care about this temp path !}
 
 \item{Default log File}
@@ -586,7 +586,8 @@ Also see \autoref{filterquickselect}{ Filter Quickselect }.
 When the index cache is enabled, reloading of previous loaded files is much faster because the index is cached in additional files.
 To reduce disk space consumption these files can be automatically deleted after the specified amount of days of last access.
 The deleting takes place the next time the viewer is started. The index files have the extension "*.dix" and are located in the specified folder.
-\caution{If this option is enabled additional disk space is used. Take care to observe the size of the inde file directory !}
+\caution{If this option is enabled, additional disk space is used. Take care to observe the size of the index file directory, especially in case you perform 
+         frequent comandline conversions e.g. in an automated setup. So it is recommended to disable index caching for commandline usage. }
 
 \item{Performance Settings}
 
@@ -707,6 +708,14 @@ The list of contexts is updated automatically when a context is deleted.
 \label{enableloggingonlymode}
 When enabling this check box you activate the "logging only" mode, see \autoref{Loggingonlymode}:
 
+\item{Append Date/Time to filename when closing DLT Viewer}
+
+The time when the DLT Viewer is closed is appended to the current logfile name.
+Of course this implies that you did save the temprorary log file to a custom file before as the tmp file
+usually is not saved ...
+Here also the log file files gets a name appendix of type \begin{verbatim} __YYYYMMDD_hhmmss____YYYYMMDD_hhmmss \end{verbatim} specifying the start receive time stamp and the end receive time stamp of the log.
+
+
 \item{Maximum File Size}
 
 The logfile is split up in several files of given maximum size in [MB].
@@ -721,12 +730,18 @@ cat *.dlt >> combine.dlt
 
 \caution{Depending on the message traffic and the choosen split file size there may occur a message loss in case the split file size is to small ( < 10 kb )}
 
-\item{Append Date/Time to filename when closing DLT Viewer}
+\item{Manual marker color}
 
-The time when the DLT Viewer is closed is appended to the current logfile name.
-Of course this implies that you did save the temprorary log file to a custom file before as the tmp file
-usually is not saved ...
-Here also the log file files gets a name appendix of type \begin{verbatim} __YYYYMMDD_hhmmss____YYYYMMDD_hhmmss \end{verbatim} specifying the start receive time stamp and the end receive time stamp of the log.
+Select your favourite color for marking selected lines in the table view.
+Right mouse click on the table view to highlight the selected lines. Marking only has a visual effect, 
+there will be no additional information stored in a file. The coloring refers to the line index, not to the message index. In case you
+change the order of the messages e.g. by filtering or loading another logfile, the highlighting will remain on this line index anyway.
+To completely remove the highlighting again also use "File clear".
+
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.3\textwidth]{images/rightmouse_tableview.png}
+\end{figure}
 
 \end{enumerate}
 
@@ -1395,27 +1410,23 @@ There are several options for exporting messages:
   \end{enumerate}
 \end{enumerate}
 
-
-
 \subsubsection{New file or open file}
 Select the menu option "File"\ensuremath{\rightarrow}"New/Open" to create a new or open an existing log file.
 
 \subsubsection{Import DLT Stream}
-Select the menu option "File"\ensuremath{\rightarrow}"Import DLT Stream" to import a an existing log file.
-Just the logfile messages are imported without an ECU configuration or Apid / Ctid informations.
-
+Select the menu option "File"\ensuremath{\rightarrow}"Import DLT Stream" to import a an existing log file
+which does not contain DLT file storage headers.
+The logfile messages are imported into the currently opened dlt file.
 
 \subsubsection{Import DLT Stream Serial}
 Select the menu option "File"\ensuremath{\rightarrow}"Import DLT Stream" to import an exiting serial log file.
 Just the logfile messages are imported without an ECU configuration or Apid / Ctid informations.
-
 
 \subsubsection{Append DLT File}
 Select the menu option "File"\ensuremath{\rightarrow}"Append DLT File" to append the message content of the
 selected file to a current file.
 The message index is automatically increased but the messages may not be in the correct order regarding reception time stamp.
 This can be achieved by "Filters Enabled" with "Sorted by Time". See \autoref{sortbytime}.
-
 
 \subsubsection{File clear}
 Select "File"\ensuremath{\rightarrow}"Clear" or \includegraphics[width=0.02\textwidth]{images/clean_icon.png}
