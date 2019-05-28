@@ -5966,8 +5966,20 @@ void MainWindow::action_menuPlugin_Enable_triggered()
         }
     }
     else
+    {
         QMessageBox::warning(0, QString("DLT Viewer"),
                              QString("No Plugin selected!"));
+    }
+
+    if(pluginsEnabled == true){
+       QList<QDltPlugin*> activeViewerPlugins;
+       activeViewerPlugins = pluginManager.getViewerPlugins();
+       for(int i = 0; i < activeViewerPlugins.size(); i++)
+       {
+          QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+          item->initFileStart(&qfile);
+       }
+    }
 }
 
 void MainWindow::on_action_menuPlugin_Disable_triggered()

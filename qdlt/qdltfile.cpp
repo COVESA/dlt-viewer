@@ -72,7 +72,8 @@ int QDltFile::size() const
     int size=0;
     for(int num=0;num<files.size();num++)
     {
-        size += files[num]->indexAll.size();
+      if (nullptr!=files[num])
+         size += files[num]->indexAll.size();
     }
 
     return size;
@@ -84,7 +85,8 @@ qint64 QDltFile::fileSize() const
 
     for(int num=0;num<files.size();num++)
     {
-        size += files[num]->infile.size();
+      if (nullptr!=files[num])
+         size += files[num]->infile.size();
     }
 
     return size;
