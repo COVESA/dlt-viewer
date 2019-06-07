@@ -388,7 +388,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
             case FieldNames::ArgCount:
                 return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
             case FieldNames::Payload:
-                return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
+                return QVariant(Qt::AlignLeft);
         }
     }
 
