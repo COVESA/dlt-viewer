@@ -4592,7 +4592,7 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         }
         else
         {
-            size = (injectionData.length() + 1);
+            size = (injectionData.length());
         }
 
         msg.datasize = 4 + 4 + size;
