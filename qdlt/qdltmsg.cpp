@@ -340,7 +340,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     }
 
     /* set return type if message of type control response */
-    if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=6) {
+    if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=5) {
         ctrlReturnType = *((unsigned char*) &(payload.constData()[4]));
     }
 
