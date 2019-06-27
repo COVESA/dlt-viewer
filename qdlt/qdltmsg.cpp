@@ -552,7 +552,7 @@ QString QDltMsg::toStringPayload() const
         if(getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
         {
             // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU Software Version
-            data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
+            data = payload.mid(9,(payload.size()>265)?256:(payload.size()-9));
             text += toAscii(data,true);
         }
         else if(getCtrlServiceId() == DLT_SERVICE_ID_CONNECTION_INFO)
@@ -576,7 +576,7 @@ QString QDltMsg::toStringPayload() const
             }
             else
             {
-                data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
+                data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
                 text += toAscii(data);
             }
         }
@@ -595,13 +595,13 @@ QString QDltMsg::toStringPayload() const
             }
             else
             {
-                data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
+                data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
                 text += toAscii(data);
             }
         }
         else
         {
-            data = payload.mid(5,(payload.size()>262)?256:(payload.size()-6));
+            data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
             text += toAscii(data);
         }
 
