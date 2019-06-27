@@ -12,7 +12,7 @@ Instructions for installing DLT Viewer (GUI)
 * Build Release in Qt Creator or via CMake (see last).
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
 
-Instructions for installing DLT Viewer (Linux commandline)
+Instructions for installing DLT Viewer (Linux command line)
 ----------------------------------------------------------
 
 * mkdir build
@@ -118,7 +118,7 @@ pdflatex dlt-viewer_user_manual.tex
 
 
 
-Instructions for building DLT Viewer with CMake (Linux commandline)
+Instructions for building DLT Viewer with CMake (Linux and MacOS command line)
 ----------------------------------------------------------
 CMake is a "meta" make system.  This means CMake creates a make system 
 for various make solutions including command line build tools like
@@ -145,3 +145,13 @@ In the case of "Unix Makefiles" building is now as simple as
 Various solutions exist for cmake configuration to be informed about 
 non-standard installation paths for required components.  See CMake
 documentation for details. (hint: QTDIR)
+
+For MacOS, you can install Qt with Homebrew:
+brew install qt
+
+Then give the Qt directory to CMake and build:
+* Qt5_DIR="/usr/local/opt/qt" cmake path/src
+* make
+
+The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
+open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app
