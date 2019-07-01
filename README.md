@@ -57,11 +57,11 @@ https://github.com/GENIVI/dlt-viewer
 
 ## Homepage
 
-https://at.projects.genivi.org/wiki/display/PROJ/Diagnostic+Log+and+Trace
+[Diagnostic Log and Trace](https://at.projects.genivi.org/wiki/display/PROJ/Diagnostic+Log+and+Trace) on GENIVI Projects Wiki
 
 ## Mailinglist
 
-https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace
+[genivi-diagnostic-log-and-trace](https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace_lists.genivi.org)
 
 ## Contact
 
