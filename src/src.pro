@@ -188,3 +188,6 @@ RESOURCES += resource.qrc
 
 # Instructions to compile the icon.
 RC_FILE = icon/dlt_viewer.rc
+
+DISTFILES += \
+    ../build_qwt_windows_qt5_MSVC.bat
