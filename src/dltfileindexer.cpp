@@ -114,6 +114,10 @@ bool DltFileIndexer::index(int num)
     char lastFound = 0;
     qint64 length;
     qint64 pos;
+    qint64 current_message_pos = 0;
+    qint64 next_message_pos = 0;
+    int counter_header = 0;
+    quint16 message_length = 0;
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
     do
     {
@@ -122,7 +126,23 @@ bool DltFileIndexer::index(int num)
         length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
         for(int num=0;num < length;num++)
         {
-            if(data[num] == 'D')
+            if(counter_header>0)
+            {
+                counter_header++;
+                if (counter_header==16)
+                {
+                    // Read low byte of message length
+                    message_length = (unsigned char)data[num];
+                }
+                else if (counter_header==17)
+                {
+                    // Read high byte of message length
+                    counter_header = 0;
+                    message_length = (message_length<<8 | ((unsigned char)data[num])) +16;
+                    next_message_pos = current_message_pos + message_length;
+                }
+            }
+            else if(data[num] == 'D')
             {
                 lastFound = 'D';
             }
@@ -136,7 +156,13 @@ bool DltFileIndexer::index(int num)
             }
             else if(lastFound == 'T' && data[num] == 0x01)
             {
-                indexAllList.append(pos+num-3);
+                if(next_message_pos == (pos+num-3))
+                {
+                    // Add message only when it is in the correct position in relationship to the last message
+                    indexAllList.append(pos+num-3);
+                    current_message_pos = pos+num-3;
+                    counter_header = 1;
+                }
                 lastFound = 0;
             }
             else

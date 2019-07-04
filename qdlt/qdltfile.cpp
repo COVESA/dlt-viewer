@@ -159,6 +159,11 @@ bool QDltFile::updateIndex()
 
     for(int numFile=0;numFile<files.size();numFile++)
     {
+        qint64 current_message_pos = 0;
+        qint64 next_message_pos = 0;
+        int counter_header = 0;
+        quint16 message_length = 0;
+
         /* check if file is already opened */
         if(false == files[numFile]->infile.isOpen())
         {
@@ -167,7 +172,6 @@ bool QDltFile::updateIndex()
             return false;
         }
 
-
         /* start at last found position */
         if(files[numFile]->indexAll.size())
         {
@@ -175,6 +179,8 @@ bool QDltFile::updateIndex()
             const QVector<qint64>* const_indexAll = &(files[numFile]->indexAll);
             pos = (*const_indexAll)[files[numFile]->indexAll.size()-1] + 4;
             files[numFile]->infile.seek(pos);
+            current_message_pos = pos-4;
+            counter_header = 1;
         }
         else {
             /* the file was empty the last call */
@@ -202,7 +208,23 @@ bool QDltFile::updateIndex()
 
             /* find marker in buffer */
             for(int num=0;num<cbuf_sz;num++) {
-                if(cbuf[num] == 'D')
+                if(counter_header>0)
+                {
+                    counter_header++;
+                    if (counter_header==16)
+                    {
+                        // Read low byte of message length
+                        message_length = (unsigned char)cbuf[num];
+                    }
+                    else if (counter_header==17)
+                    {
+                        // Read high byte of message length
+                        counter_header = 0;
+                        message_length = (message_length<<8 | ((unsigned char)cbuf[num])) +16;
+                        next_message_pos = current_message_pos + message_length;
+                    }
+                }
+                else if(cbuf[num] == 'D')
                 {
                     lastFound = 'D';
                 }
@@ -216,7 +238,13 @@ bool QDltFile::updateIndex()
                 }
                 else if(lastFound == 'T' && cbuf[num] == 0x01)
                 {
-                    files[numFile]->indexAll.append(pos+num-3);
+                    if(next_message_pos == (pos+num-3))
+                    {
+                        // Add message only when it is in the correct position in relationship to the last message
+                        files[numFile]->indexAll.append(pos+num-3);
+                        current_message_pos = pos+num-3;
+                        counter_header = 1;
+                    }
                     lastFound = 0;
                 }
                 else
