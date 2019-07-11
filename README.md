@@ -36,14 +36,12 @@ See INSTALL.txt regarding doxygen API documentation generation.
 ## Software/Hardware
 
 Developed with QT 5 (http://qt-project.org/)
-Tested with Windows 7 + Qt 5.5.1 + MSVC 2013 Express
-Tested with Windows 7 + Qt 5.6.1 + MSVC 2015 Express
-Tested with Windows 7 + Qt 5.8.0 + MSVC 2015 Express
-Tested with Ubuntu Linux 16.04 + Qt 5.5.1
+Tested with Windows 10 + Qt 5.12.4 + Microsoft Visual Studio 2015 Community Edition
+Tested with Ubuntu Linux 18.04 + Qt 5.9.5
 Tested with macOS Sierra + Qt 5.7.0
 Dynamically linked open source software
 
-Qt 5.8.1 (LGPLv3 - Qt)
+Qt 5.x.x (LGPLv3 - Qt)
 GCC (GPL)
 (Optional) Mingw (GPL + BSD Variante + Public Domain)
 Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple LIcenses)
