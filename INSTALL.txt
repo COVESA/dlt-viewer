@@ -109,11 +109,11 @@ for various make solutions including command line build tools like
 See:  https://cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html
 
 CMake encourages the "out of source" build paradigm. Assuming DLT Viewer 
-code has been unpacked in path/src, we encourage not building in that directory
+code has been unpacked in src_path/, we encourage not building in that directory
 
 * mkdir build
 * cd build
-* cmake "GENERATOR OF CHOICE" path/src
+* cmake "GENERATOR OF CHOICE" src_path/
 
 At this stage, CMake will have produced a set of filesthat can be used by the
 selected make system, be it "Unix Makefiles", "Visual Studio 6" or  other.
@@ -133,7 +133,7 @@ For MacOS, you can install Qt with Homebrew:
 brew install qt
 
 Then give the Qt directory to CMake and build:
-* Qt5_DIR="/usr/local/opt/qt" cmake path/src
+* Qt5_DIR="/usr/local/opt/qt" cmake src_path/
 * make
 
 The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
