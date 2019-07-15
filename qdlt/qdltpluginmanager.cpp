@@ -63,6 +63,7 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 {
     /* set filter for plugin files */
     QStringList filters, errorStrings;
+    QString errorString;
     filters << "*.dll" << "*.so" << "*.dylib";
     dir.setNameFilters(filters);
 
@@ -88,8 +89,8 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 
                     // This is an abomination - it's unreadable 425+ chars long
                     // QMessageBox::warning(0, QString("DLT Viewer"),QString("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5").arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
-
-                    QTextStream errStr;
+                    QString s;
+                    QTextStream errStr(&s);
                     errStr << "-------------"
                            << "Error: Plugin could not be loaded!\n"
                            << "Mismatch with plugin interface version of DLT Viewer.\n\n"
@@ -98,18 +99,18 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
                            << "Plugin interface version: " << plugininterface->pluginInterfaceVersion() << "\n"
                            << "Plugin path: " << dir.absolutePath() << "\n\n"
                            << "DLT Viewer - Plugin interface version: " << PLUGIN_INTERFACE_VERSION  << "\n";
-                    errorStrings.append(*(errStr.string()));
+                    errorStrings.append(s);
                 }
             }
         }
         else {
             //QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
-
-             QTextStream  errStr;
-             errStr << "-------------"
+            QString s;
+            QTextStream  errStr(&s);
+            errStr << "-------------"
                     << "The plugin " << dir.absoluteFilePath(fileName) << "cannot be loaded.\n\n"
                     << "Error: " << pluginLoader.errorString() << "\n";
-             errorStrings.append(*(errStr.string()));
+            errorStrings.append(s);
 
         }
     }
