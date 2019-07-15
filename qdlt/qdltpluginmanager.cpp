@@ -7,6 +7,10 @@
 #include <QTextStream>
 #include <QString>
 
+#ifndef PLUGIN_INSTALLATION_PATH
+#define PLUGIN_INSTALLATION_PATH ""
+#endif
+
 QDltPluginManager::QDltPluginManager()
 {
 }
@@ -43,10 +47,13 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
     }
 
     /* Check system plugins path */
-    pluginsDir.setPath(defaultPluginPath);
-    if(pluginsDir.exists())
+    if(!defaultPluginPath.isEmpty())
     {
-        errorStrings << loadPluginsPath(pluginsDir);
+        pluginsDir.setPath(defaultPluginPath);
+        if(pluginsDir.exists())
+        {
+            errorStrings << loadPluginsPath(pluginsDir);
+        }
     }
 
     /* load plugins form settings path if set */
