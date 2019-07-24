@@ -156,9 +156,9 @@ bool DltFileIndexer::index(int num)
             }
             else if(lastFound == 'T' && data[num] == 0x01)
             {
-                if(next_message_pos == (pos+num-3))
+                if( (next_message_pos == (pos+num-3)) || (next_message_pos == 0) )
                 {
-                    // Add message only when it is in the correct position in relationship to the last message
+                    // Add message only when it is in the correct position in relationship to the last message or first message in file
                     indexAllList.append(pos+num-3);
                     current_message_pos = pos+num-3;
                     counter_header = 1;

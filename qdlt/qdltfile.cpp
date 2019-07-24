@@ -238,7 +238,7 @@ bool QDltFile::updateIndex()
                 }
                 else if(lastFound == 'T' && cbuf[num] == 0x01)
                 {
-                    if(next_message_pos == (pos+num-3))
+                    if((next_message_pos == (pos+num-3)) || (next_message_pos == 0))
                     {
                         // Add message only when it is in the correct position in relationship to the last message
                         files[numFile]->indexAll.append(pos+num-3);
