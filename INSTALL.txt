@@ -15,6 +15,10 @@ Instructions for installing DLT Viewer (GUI)
 Instructions for installing DLT Viewer (Linux command line)
 ----------------------------------------------------------
 
+* sudo apt install build-essential
+* sudo apt install qtcreator
+* sudo apt install qt5-default
+* sudo apt install libqt5serialport5-dev
 * mkdir build
 * cd build
 * qmake-qt5 ../BuildDltViewer.pro
