@@ -56,7 +56,7 @@ UI_DIR      = build/ui
 INCLUDEPATH = . ../src
 
 SOURCES +=  \
-            dlt_common.c \
+    dlt_common.c \
     qdltipconnection.cpp \
     qdlttcpconnection.cpp \
     qdltudpconnection.cpp \
@@ -73,8 +73,9 @@ SOURCES +=  \
     qdltdefaultfilter.cpp \
     qdltpluginmanager.cpp \
     qdltplugin.cpp \
-    qdltsegmentedmsg.cpp
-
+    qdltoptmanager.cpp \
+    qdltsegmentedmsg.cpp \
+    qdltsettingsmanager.cpp \
 
 HEADERS += qdlt.h \
     export_rules.h \
@@ -99,7 +100,9 @@ HEADERS += qdlt.h \
     qdltplugin.h \
     dlt_types.h \
     dlt_protocol.h \
-    qdltsegmentedmsg.h
+    qdltoptmanager.h \
+    qdltsegmentedmsg.h \
+    qdltsettingsmanager.h \
 
 unix:VERSION            = 1.0.0
 

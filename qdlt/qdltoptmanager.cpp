@@ -21,16 +21,16 @@
 #include <windows.h>
 #endif
 
-#include "optmanager.h"
+#include "qdltoptmanager.h"
 #include "version.h"
 #include <QDebug>
 #include <QFileInfo>
 #include <iostream>
 
 // Global static pointer used to ensure a single instance of the class.
-OptManager* OptManager::instance;
+QDltOptManager* QDltOptManager::instance;
 
-OptManager::OptManager()
+QDltOptManager::QDltOptManager()
 {
     project = false;
     log = false;
@@ -42,27 +42,27 @@ OptManager::OptManager()
     commandline_mode = false;
 }
 
-OptManager* OptManager::getInstance()
+QDltOptManager* QDltOptManager::getInstance()
 {
     if (!instance)
-        instance = new OptManager;
+        instance = new QDltOptManager;
 
     return instance;
 }
 
-OptManager::OptManager(OptManager const&)
+QDltOptManager::QDltOptManager(QDltOptManager const&)
 {
 
 }
 
-void OptManager::printVersion(QString appname)
+void QDltOptManager::printVersion(QString appname)
 {
   qDebug() << "Start" << appname << "\nBuild time" << __DATE__ << __TIME__;
   qDebug() << "Version" << PACKAGE_VERSION << PACKAGE_VERSION_STATE;
   qDebug() << "**********************************************************";
 }
 
-void OptManager::printUsage()
+void QDltOptManager::printUsage()
 {
 #if (WIN32)
     qDebug()<<"Usage: dlt_viewer.exe [OPTIONS]";
@@ -103,7 +103,7 @@ void OptManager::printUsage()
     #endif
 }
 
-void OptManager::parse(QStringList *opt)
+void QDltOptManager::parse(QStringList *opt)
 {
     QString str;
 
@@ -323,24 +323,24 @@ void OptManager::parse(QStringList *opt)
     printVersion(opt->at(0));
 }
 
-bool OptManager::isProjectFile(){ return project;}
-bool OptManager::isLogFile(){return log;}
-bool OptManager::isFilterFile(){return filter;}
-bool OptManager::isConvert(){return convert;}
-bool OptManager::isPlugin(){return plugin;}
-bool OptManager::issilentMode(){return silent_mode;}
-bool OptManager::isCommandlineMode(){return commandline_mode;}
+bool QDltOptManager::isProjectFile(){ return project;}
+bool QDltOptManager::isLogFile(){return log;}
+bool QDltOptManager::isFilterFile(){return filter;}
+bool QDltOptManager::isConvert(){return convert;}
+bool QDltOptManager::isPlugin(){return plugin;}
+bool QDltOptManager::issilentMode(){return silent_mode;}
+bool QDltOptManager::isCommandlineMode(){return commandline_mode;}
 
-e_convertionmode OptManager::get_convertionmode()
+e_convertionmode QDltOptManager::get_convertionmode()
 {
     return convertionmode;
 }
 
-QString OptManager::getProjectFile(){return projectFile;}
-QString OptManager::getLogFile(){return logFile;}
-QString OptManager::getFilterFile(){return filterFile;}
-QString OptManager::getConvertSourceFile(){return convertSourceFile;}
-QString OptManager::getConvertDestFile(){return convertDestFile;}
-QString OptManager::getPluginName(){return pluginName;}
-QString OptManager::getCommandName(){return commandName;}
-QStringList OptManager::getCommandParams(){return commandParams;}
+QString QDltOptManager::getProjectFile(){return projectFile;}
+QString QDltOptManager::getLogFile(){return logFile;}
+QString QDltOptManager::getFilterFile(){return filterFile;}
+QString QDltOptManager::getConvertSourceFile(){return convertSourceFile;}
+QString QDltOptManager::getConvertDestFile(){return convertDestFile;}
+QString QDltOptManager::getPluginName(){return pluginName;}
+QString QDltOptManager::getCommandName(){return commandName;}
+QStringList QDltOptManager::getCommandParams(){return commandParams;}

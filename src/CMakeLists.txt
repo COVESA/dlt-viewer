@@ -36,8 +36,6 @@ add_executable (${TARGET_NAME}
     injectiondialog.cpp
     searchdialog.cpp
     multiplecontextdialog.cpp
-    optmanager.cpp
-    dltsettingsmanager.cpp
     tablemodel.cpp
     filtertreewidget.cpp
     dltfileutils.cpp

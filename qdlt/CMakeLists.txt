@@ -37,7 +37,9 @@ add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
                   qdltdefaultfilter.cpp
                   qdltpluginmanager.cpp
                   qdltplugin.cpp
-                  qdltsegmentedmsg.cpp)
+                  qdltsegmentedmsg.cpp
+                  qdltoptmanager.cpp
+                  qdltsettingsmanager.cpp)
 
 target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                          ${CMAKE_CURRENT_SOURCE_DIR}/../src)

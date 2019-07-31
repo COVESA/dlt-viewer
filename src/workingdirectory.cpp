@@ -1,5 +1,6 @@
 #include "workingdirectory.h"
-#include "dltsettingsmanager.h"
+
+#include "qdltsettingsmanager.h"
 
 // See workingdirectory.h for documentation.
 
@@ -45,11 +46,11 @@ QString WorkingDirectory::getDirectory(WorkingDirectoryType type, QString extra)
 
     if(type == WorkingDirectory::PluginConfig)
     {
-        ret = DltSettingsManager::getInstance()->value(key, "plugins/").toString();
+        ret = QDltSettingsManager::getInstance()->value(key, "plugins/").toString();
     }
     else
     {
-        ret = DltSettingsManager::getInstance()->value(key, "./").toString();
+        ret = QDltSettingsManager::getInstance()->value(key, "./").toString();
     }
     return ret;
 }
@@ -58,7 +59,7 @@ QString WorkingDirectory::getDirectory(WorkingDirectoryType type, QString extra)
 void WorkingDirectory::setDirectory(WorkingDirectoryType type, QString dir, QString extra)
 {
     QString key = createKeyFor(type, extra);
-    DltSettingsManager::getInstance()->setValue(key, dir);
+    QDltSettingsManager::getInstance()->setValue(key, dir);
 }
 
 // Getters

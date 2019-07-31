@@ -1,5 +1,4 @@
 #include "dltfileindexer.h"
-#include "optmanager.h"
 #include "dltfileindexerthread.h"
 #include "dltfileindexerdefaultfilterthread.h"
 
@@ -234,7 +233,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     getLogInfoList.clear();
 
     // get silent mode
-    bool silentMode = !OptManager::getInstance()->issilentMode();
+    bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
     bool hasPlugins = (activeDecoderPlugins.size() + activeViewerPlugins.size()) > 0;
     bool hasFilters = filterList.filters.size() > 0;
@@ -330,7 +329,7 @@ bool DltFileIndexer::indexDefaultFilter()
     defaultFilter->clearFilterIndex();
 
     // get silent mode
-    bool silentMode = !OptManager::getInstance()->issilentMode();
+    bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
     bool useDefaultFilterThread = defaultFilter->defaultFilterList.size() > 0;
 

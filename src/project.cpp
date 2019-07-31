@@ -24,10 +24,8 @@
 #include <QHeaderView>
 
 #include "project.h"
-#include "dltsettingsmanager.h"
 #include "dltuiutils.h"
 #include "dlt_user.h"
-#include "optmanager.h"
 
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
@@ -615,11 +613,11 @@ void PluginItem::setMode(int t)
 }
 
 void PluginItem::savePluginModeToSettings(){
-    DltSettingsManager::getInstance()->setValue("plugin/pluginmodefor"+this->getName(),QVariant(plugin->getMode()));
+    QDltSettingsManager::getInstance()->setValue("plugin/pluginmodefor"+this->getName(),QVariant(plugin->getMode()));
 }
 
 void PluginItem::loadPluginModeFromSettings(){
-    plugin->setMode((QDltPlugin::Mode)DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+this->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
+    plugin->setMode((QDltPlugin::Mode)QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+this->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
 }
 
 Project::Project()
@@ -666,112 +664,8 @@ bool Project::Load(QString filename)
 
           if(xml.isStartElement())
           {
-              /* Project settings */
-              if(xml.name() == QString("autoConnect"))
-              {
-                  settings->autoConnect = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("autoScroll"))
-              {
-                  settings->autoScroll = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("autoMarkFatalError"))
-              {
-                  settings->autoMarkFatalError = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("autoMarkWarn"))
-              {
-                  settings->autoMarkWarn = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("autoMarkMarker"))
-              {
-                  settings->autoMarkMarker = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("fontSize"))
-              {
-                  settings->fontSize = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("automaticTimeSettings"))
-              {
-                  settings->automaticTimeSettings = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("utcOffset"))
-              {
-                  settings->utcOffset = xml.readElementText().toLongLong();
-              }
-              if(xml.name() == QString("dst"))
-              {
-                  settings->dst = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showIndex"))
-              {
-                  settings->showIndex = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showTime"))
-              {
-                  settings->showTime = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showTimestamp"))
-              {
-                  settings->showTimestamp = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showCount"))
-              {
-                  settings->showCount = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showEcuId"))
-              {
-                  settings->showEcuId = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showApId"))
-              {
-                  settings->showApId = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showApIdDesc"))
-              {
-                  settings->showApIdDesc = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showCtId"))
-              {
-                  settings->showCtId = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showCtIdDesc"))
-              {
-                  settings->showCtIdDesc = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showSessionId"))
-              {
-                  settings->showSessionId = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showSessionName"))
-              {
-                  settings->showSessionName = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showType"))
-              {
-                  settings->showType = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showSubtype"))
-              {
-                  settings->showSubtype = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showMode"))
-              {
-                  settings->showMode = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showNoar"))
-              {
-                  settings->showNoar = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("showPayload"))
-              {
-                  settings->showPayload = xml.readElementText().toInt();
-              }
-              if(xml.name() == QString("loggingOnlyMode"))
-              {
-                  settings->loggingOnlyMode = xml.readElementText().toInt();
-              }
 
+              settings->readSettingsLocal(xml);
 
               /* Connection, plugin and filter */
               if(xml.name() == QString("ecu"))
@@ -1041,7 +935,7 @@ bool Project::Load(QString filename)
     }
     if (xml.hasError())
     {
-        if ( OptManager::getInstance()->issilentMode() == false )
+        if ( QDltOptManager::getInstance()->issilentMode() == false )
         {
             QString xmlparsererror = QString("%1 in file\n%2\nLine: %3")
                                 .arg(xml.errorString())
@@ -1077,41 +971,7 @@ bool Project::Save(QString filename)
     xml.writeStartDocument();
     xml.writeStartElement("dltproject");
 
-    /* Write project settings */
-    xml.writeStartElement("settings");
-        xml.writeStartElement("table");
-            xml.writeTextElement("fontSize",QString("%1").arg(settings->fontSize));
-            xml.writeTextElement("automaticTimeSettings",QString("%1").arg(settings->automaticTimeSettings));
-            xml.writeTextElement("utcOffset",QString("%1").arg(settings->utcOffset));
-            xml.writeTextElement("dst",QString("%1").arg(settings->dst));
-            xml.writeTextElement("showIndex",QString("%1").arg(settings->showIndex));
-            xml.writeTextElement("showTime",QString("%1").arg(settings->showTime));
-            xml.writeTextElement("showTimestamp",QString("%1").arg(settings->showTimestamp));
-            xml.writeTextElement("showCount",QString("%1").arg(settings->showCount));
-            xml.writeTextElement("showEcuId",QString("%1").arg(settings->showEcuId));
-            xml.writeTextElement("showApId",QString("%1").arg(settings->showApId));
-            xml.writeTextElement("showApIdDesc",QString("%1").arg(settings->showApIdDesc));
-            xml.writeTextElement("showCtId",QString("%1").arg(settings->showCtId));
-            xml.writeTextElement("showCtIdDesc",QString("%1").arg(settings->showCtIdDesc));
-            xml.writeTextElement("showType",QString("%1").arg(settings->showType));
-            xml.writeTextElement("showSubtype",QString("%1").arg(settings->showSubtype));
-            xml.writeTextElement("showMode",QString("%1").arg(settings->showMode));
-            xml.writeTextElement("showNoar",QString("%1").arg(settings->showNoar));
-            xml.writeTextElement("showPayload",QString("%1").arg(settings->showPayload));
-        xml.writeEndElement(); // table
-
-        xml.writeStartElement("other");
-            xml.writeTextElement("autoConnect",QString("%1").arg(settings->autoConnect));
-            xml.writeTextElement("autoScroll",QString("%1").arg(settings->autoScroll));
-            xml.writeTextElement("autoMarkFatalError",QString("%1").arg(settings->autoMarkFatalError));
-            xml.writeTextElement("autoMarkWarn",QString("%1").arg(settings->autoMarkWarn));
-            xml.writeTextElement("autoMarkMarker",QString("%1").arg(settings->autoMarkMarker));
-            xml.writeTextElement("writeControl",QString("%1").arg(settings->writeControl));
-            xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(settings->updateContextLoadingFile));
-            xml.writeTextElement("loggingOnlyMode",QString("%1").arg(settings->loggingOnlyMode));
-        xml.writeEndElement(); // other
-    xml.writeEndElement(); // settings
-
+    settings->writeSettingsLocal(xml);
 
     /* Write Configuration */
     for(int num = 0; num < ecu->topLevelItemCount (); num++)
@@ -1226,7 +1086,7 @@ bool Project::LoadFilter(QString filename, bool replace){
 
     if(!filterList.LoadFilter(filename,replace))
     {
-        if ( OptManager::getInstance()->issilentMode() == false )
+        if ( QDltOptManager::getInstance()->issilentMode() == false )
         {
         QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
         }

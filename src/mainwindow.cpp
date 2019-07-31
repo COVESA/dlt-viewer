@@ -87,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
+    settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
@@ -107,18 +108,18 @@ MainWindow::MainWindow(QWidget *parent) :
     initFileHandling();
 
     // check and clear index cache if needed
-    settings->clearIndexCacheAfterDays();
+    settingsDlg->clearIndexCacheAfterDays();
 
     /* Command plugin */
-    if(OptManager::getInstance()->isPlugin())
+    if(QDltOptManager::getInstance()->isPlugin())
     {
-        commandLineExecutePlugin(OptManager::getInstance()->getPluginName(),
-                                 OptManager::getInstance()->getCommandName(),
-                                 OptManager::getInstance()->getCommandParams());
+        commandLineExecutePlugin(QDltOptManager::getInstance()->getPluginName(),
+                                 QDltOptManager::getInstance()->getCommandName(),
+                                 QDltOptManager::getInstance()->getCommandParams());
     }
 
     /* auto connect */
-    if( (settings->autoConnect != 0) && ( false ==  OptManager::getInstance()->isConvert()) ) // in convertion mode we do not need any connection ...)
+    if( (settings->autoConnect != 0) && ( false ==  QDltOptManager::getInstance()->isConvert()) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
     }
@@ -126,8 +127,8 @@ MainWindow::MainWindow(QWidget *parent) :
     /* start timer for autoconnect */
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeout())); // we want to start the timer only when an ECU connection is active
 
-    restoreGeometry(DltSettingsManager::getInstance()->value("geometry").toByteArray());
-    restoreState(DltSettingsManager::getInstance()->value("windowState").toByteArray());
+    restoreGeometry(settings->geometry);
+    restoreState(settings->windowState);
 
     /*sync checkboxes with action toolbar*/
     ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
@@ -140,7 +141,7 @@ MainWindow::MainWindow(QWidget *parent) :
     draw_timer.setSingleShot (true);
     connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
 
-    if ( true == DltSettingsManager::getInstance()->value("StartUpMinimized",false).toBool() )
+    if ( true == settings->StartupMinimized )
     {
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
@@ -153,7 +154,7 @@ MainWindow::~MainWindow()
     //qDebug() << "Clean up";
     timer.stop(); // stop the receive timeout timer in case it is running
     dltIndexer->stop(); // in case a thread is running we want to stop it
-    DltSettingsManager::close();
+    QDltSettingsManager::close();
     /**
      * All plugin dockwidgets must be removed from the layout manually and
      * then deleted. This has to be done here, because they contain
@@ -215,12 +216,12 @@ MainWindow::~MainWindow()
 void MainWindow::initState()
 {
     /* Settings */
-    settings = new SettingsDialog(&qfile,this);
-    settings->assertSettingsVersion();
-    settings->readSettings();
-    recentFiles = settings->getRecentFiles();
-    recentProjects = settings->getRecentProjects();
-    recentFilters = settings->getRecentFilters();
+    settingsDlg = new SettingsDialog(&qfile,this);
+    settingsDlg->assertSettingsVersion();
+    settingsDlg->readSettings();
+    recentFiles = settingsDlg->getRecentFiles();
+    recentProjects = settingsDlg->getRecentProjects();
+    recentFilters = settingsDlg->getRecentFilters();
 
     /* Initialize recent files */
     for (int i = 0; i < MaxRecentFiles; ++i) {
@@ -261,7 +262,8 @@ void MainWindow::initState()
     project.ecu = ui->configWidget;
     project.filter = ui->filterWidget;
     project.plugin = ui->pluginWidget;
-    project.settings = settings;
+    //project.settings = settings;
+    project.settings = QDltSettingsManager::getInstance();
 
     /* Load Plugins before loading default project */
     loadPlugins();
@@ -367,8 +369,8 @@ void MainWindow::initView()
     connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
     connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
-    connect(settings, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
-    connect(settings, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
+    connect(settingsDlg, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
+    connect(settingsDlg, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
 
     searchComboBox = new QComboBox();
     searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -510,19 +512,19 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
 
     /* Plugins/Filters enabled checkboxes */
-    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     ui->pluginsEnabled->setChecked(pluginsEnabled);
 
-    ui->filtersEnabled->setChecked(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    ui->filtersEnabled->setChecked(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
-    ui->checkBoxSortByTime->setChecked(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    ui->checkBoxSortByTime->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
 
     /* Process Project */
-    if(OptManager::getInstance()->isProjectFile())
+    if(QDltOptManager::getInstance()->isProjectFile())
     {
-        openDlpFile(OptManager::getInstance()->getProjectFile());
+        openDlpFile(QDltOptManager::getInstance()->getProjectFile());
     }
     else
     {
@@ -533,7 +535,7 @@ void MainWindow::initFileHandling()
             qDebug() << QString("Loading default project %1").arg(settings->defaultProjectFileName);
             if(!openDlpFile(settings->defaultProjectFileName))
             {
-             if (OptManager::getInstance()->issilentMode())
+             if (QDltOptManager::getInstance()->issilentMode())
               {
                qDebug() << QString("Cannot load default project %1").arg(settings->defaultProjectFileName);
               }
@@ -550,9 +552,9 @@ void MainWindow::initFileHandling()
     /* Process Logfile */
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
-    if(OptManager::getInstance()->isLogFile())
+    if(QDltOptManager::getInstance()->isLogFile())
     {
-        openDltFile(QStringList(OptManager::getInstance()->getLogFile()));
+        openDltFile(QStringList(QDltOptManager::getInstance()->getLogFile()));
        /* Command line file is treated as temp file */
         outputfileIsTemporary = true;
         outputfileIsFromCLI = true;
@@ -570,12 +572,12 @@ void MainWindow::initFileHandling()
         else
         {
             /* Create temp file */
-            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
+            QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(QDltOptManager::getInstance()->issilentMode()), QDltOptManager::getInstance()->issilentMode());
             outputfile.setFileName(fn);
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
 
-          if (false == OptManager::getInstance()->isConvert()) // not needed in commandline convertion mode, avoid indexer thread run
+          if (false == QDltOptManager::getInstance()->isConvert()) // not needed in commandline convertion mode, avoid indexer thread run
             {
 
              if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
@@ -586,7 +588,7 @@ void MainWindow::initFileHandling()
               }
              else
               {
-               if (OptManager::getInstance()->issilentMode())
+               if (QDltOptManager::getInstance()->issilentMode())
                 {
                 qDebug() << QString("Cannot load temporary log file %1 %2").arg(outputfile.fileName()).arg(outputfile.errorString());
                 }
@@ -600,17 +602,17 @@ void MainWindow::initFileHandling()
        }
     }
 
-    if(OptManager::getInstance()->isFilterFile())
+    if(QDltOptManager::getInstance()->isFilterFile())
     {
-        if(project.LoadFilter(OptManager::getInstance()->getFilterFile(),false))
+        if(project.LoadFilter(QDltOptManager::getInstance()->getFilterFile(),false))
         {
        //     qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
             filterUpdate();
-            setCurrentFilters(OptManager::getInstance()->getFilterFile());
+            setCurrentFilters(QDltOptManager::getInstance()->getFilterFile());
         }
         else
         {
-           if (OptManager::getInstance()->issilentMode())
+           if (QDltOptManager::getInstance()->issilentMode())
             {
              qDebug() << "Loading DLT Filter file failed!";
             }
@@ -621,9 +623,9 @@ void MainWindow::initFileHandling()
         }
     }
 
-    if(true == OptManager::getInstance()->isConvert())
+    if(true == QDltOptManager::getInstance()->isConvert())
     {
-        switch ( OptManager::getInstance()->get_convertionmode() )
+        switch ( QDltOptManager::getInstance()->get_convertionmode() )
         {
         case e_UTF8:
              commandLineConvertToUTF8();
@@ -653,11 +655,11 @@ void MainWindow::commandLineConvertToDLT()
 {
 
     qfile.enableFilter(true);
-    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
-    QFile dltFile(OptManager::getInstance()->getConvertDestFile());
+    QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
     DltExporter exporter;
@@ -672,11 +674,11 @@ void MainWindow::commandLineConvertToASCII()
 {
 
     qfile.enableFilter(true);
-    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
-    QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
+    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
     DltExporter exporter;
@@ -689,11 +691,11 @@ void MainWindow::commandLineConvertToCSV()
 {
 
     qfile.enableFilter(true);
-    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
-    QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
+    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
     DltExporter exporter;
@@ -706,11 +708,11 @@ void MainWindow::commandLineConvertToCSV()
 void MainWindow::commandLineConvertToUTF8()
 {
     qfile.enableFilter(true);
-    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
-    QFile asciiFile(OptManager::getInstance()->getConvertDestFile());
+    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
     DltExporter exporter;
@@ -722,11 +724,11 @@ void MainWindow::commandLineConvertToUTF8()
 void MainWindow::commandLineConvertToDLTDecoded()
 {
     qfile.enableFilter(true);
-    openDltFile(QStringList(OptManager::getInstance()->getConvertSourceFile()));
+    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
 
-    QFile dltFile(OptManager::getInstance()->getConvertDestFile());
+    QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
     DltExporter exporter;
@@ -738,7 +740,7 @@ void MainWindow::commandLineConvertToDLTDecoded()
 
 void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString message){
 
-  if (OptManager::getInstance()->issilentMode())
+  if (QDltOptManager::getInstance()->issilentMode())
     {
       qDebug()<<message;
     }
@@ -799,7 +801,7 @@ void MainWindow::deleteactualFile()
         outputfile.close();
         if(outputfile.exists() && !outputfile.remove())
         {
-         if ( OptManager::getInstance()->issilentMode() == true )
+         if ( QDltOptManager::getInstance()->issilentMode() == true )
           {
             qDebug() << "Can not delete temporary log file" << outputfile.fileName() << outputfile.errorString();
           }
@@ -818,7 +820,7 @@ void MainWindow::deleteactualFile()
 void MainWindow::closeEvent(QCloseEvent *event)
 {
 
-    settings->writeSettings(this);
+    settingsDlg->writeSettings(this);
     if(true == isSearchOngoing)
     {
         event->ignore();
@@ -899,7 +901,7 @@ void MainWindow::onNewTriggered(QString fileName)
     }
     else
      {
-        if (OptManager::getInstance()->issilentMode())
+        if (QDltOptManager::getInstance()->issilentMode())
          {
          qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
          }
@@ -1012,7 +1014,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
         openFileNames = fileNames;
         isDltFileReadOnly = false;
         //qDebug() << "Opening file(s) wo" << outputfile.fileName() << __FILE__ << __LINE__;
-        if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+        if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
          {
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
@@ -1032,7 +1034,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
         {
             openFileNames = fileNames;
             isDltFileReadOnly = true;
-            if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+            if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
              {
                 // if dlt viewer started as converter or with plugin option load file non multithreaded
                 reloadLogFile(false,false);
@@ -1047,7 +1049,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
         }
         else
         {
-            if (OptManager::getInstance()->issilentMode())
+            if (QDltOptManager::getInstance()->issilentMode())
               {
                 qDebug() << "Accessing logfile error" << fileNames.last() << outputfile.errorString();
               }
@@ -1506,7 +1508,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
     //qDebug() << "Stop Indexer" << indstop << __LINE__ << __FILE__;
 
-    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(settings, OptManager::getInstance()->issilentMode()), OptManager::getInstance()->issilentMode());
+    QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(QDltOptManager::getInstance()->issilentMode()), QDltOptManager::getInstance()->issilentMode());
     if(!fn.length())
     {
         /* Something went horribly wrong with file name creation
@@ -1635,7 +1637,7 @@ void MainWindow::reloadLogFileProgressMax(quint64 num)
 /* triggered by signal "progress" */
 void MainWindow::reloadLogFileProgress(quint64 num)
 {
-    if( (num % 100000 == 0 && num != 0 ) && ( true == OptManager::getInstance()->isCommandlineMode()) ) // show some progres even during commandline processing
+    if( (num % 100000 == 0 && num != 0 ) && ( true == QDltOptManager::getInstance()->isCommandlineMode()) ) // show some progres even during commandline processing
     {
       qDebug() << "."; // showing some kind of "prgogress dots"
     }
@@ -1699,8 +1701,8 @@ void MainWindow::reloadLogFileFinishFilter()
     }
 
     // enable filter if requested
-    qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    qfile.enableSortByTime(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -1767,7 +1769,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // update indexFilter only if index already generated
     if( true == update )
     {
-        if(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeFilter);
@@ -1816,7 +1818,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
             }
         }
     }
-    //qfile.enableFilter(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    //qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableFilter(false);
 
     // lock table view
@@ -1840,10 +1842,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusFilename->setToolTip(name);
 
     // enable plugins
-    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
     if(settings->filterCache)
         dltIndexer->setFilterCache(settings->filterCacheName);
@@ -1891,10 +1893,10 @@ void MainWindow::reloadLogFileDefaultFilter()
     statusProgressBar->show();
 
     // enable plugins
-    pluginsEnabled = DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(DltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
 
     // start indexing
     dltIndexer->start();
@@ -1924,10 +1926,9 @@ void MainWindow::applySettings()
     settings->showNoar?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
     settings->showPayload?ui->tableView->showColumn(12):ui->tableView->hideColumn(12);
 
-    int refreshRate = DltSettingsManager::getInstance()->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
-    if ( refreshRate > 0 )
+    if ( settings->RefreshRate > 0 )
     {
-        draw_interval = 1000 / refreshRate;
+        draw_interval = 1000 / settings->RefreshRate;
     }
     else
     {
@@ -1939,18 +1940,18 @@ void MainWindow::applySettings()
 void MainWindow::on_action_menuFile_Settings_triggered()
 {
     // show settings dialog
-    settings->writeDlg();
+    settingsDlg->writeDlg();
 
     // store old values
     int defaultFilterPath = settings->defaultFilterPath;
     QString defaultFilterPathName = settings->defaultFilterPathName;
     int loggingOnlyMode=settings->loggingOnlyMode;
 
-    if(settings->exec()==1)
+    if(settingsDlg->exec()==1)
     {
         // change settings and store settings persistently
-        settings->readDlg();
-        settings->writeSettings(this);
+        settingsDlg->readDlg();
+        settingsDlg->writeSettings(this);
 
         // Apply settings to table
         applySettings();
@@ -1970,7 +1971,7 @@ void MainWindow::on_action_menuFile_Settings_triggered()
             /* to remove ?? - in case logging only is disbaled the file is reloaded anyway
             if(false == settings->loggingOnlyMode)
             {
-                if ( true == OptManager::getInstance()->issilentMode() ) // inverse logic !!
+                if ( true == QDltOptManager::getInstance()->issilentMode() ) // inverse logic !!
                   qDebug() << "Logging only mode disabled! Please reload DLT file to view file!)";
                 else
                   QMessageBox::information(0, QString("DLT Viewer"), QString("Logging only mode disabled! Please reload DLT file to view file!"));
@@ -2038,7 +2039,7 @@ void MainWindow::on_action_menuProject_Open_triggered()
 
 bool MainWindow::anyFiltersEnabled()
 {
-    if(!(DltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+    if(!(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
     {
         return false;
     }
@@ -2097,12 +2098,12 @@ bool MainWindow::openDlpFile(QString fileName)
         filterUpdate();
 
         /* Finally, enable the 'Apply' button, if needed */
-        if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) || anyFiltersEnabled())
+        if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) || anyFiltersEnabled())
         {
             applyConfigEnabled(true);
         }
         // Reload logile to enable filters from project file
-        if(OptManager::getInstance()->isConvert() || OptManager::getInstance()->isPlugin())
+        if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
         else
@@ -2213,14 +2214,14 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setData(initItem);
 
     /* Read settings for recent hostnames and ports */
-    recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-    recentSerialPorts = DltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
-    recentIPPorts = DltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
-    recentEthIF = DltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
-    recent_multicastAddresses = DltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
+    recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
+    recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
+    recentIPPorts = QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+    recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
+    recent_multicastAddresses = QDltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
-    bool b_mcastpreset = DltSettingsManager::getInstance()->value("other/multicast").toBool();
-    int i_iftypeindex = DltSettingsManager::getInstance()->value("other/iftypeindex").toInt();
+    bool b_mcastpreset = QDltSettingsManager::getInstance()->value("other/multicast").toBool();
+    int i_iftypeindex = QDltSettingsManager::getInstance()->value("other/iftypeindex").toInt();
 
     dlg.setIFpresetindex(i_iftypeindex);
     dlg.setMulticast(b_mcastpreset);
@@ -2231,7 +2232,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setMulticastAddresses(recent_multicastAddresses);
 
     if ( ( 1 == settings->autoConnect ) &&
-         ( true == OptManager::getInstance()->issilentMode() &&
+         ( true == QDltOptManager::getInstance()->issilentMode() &&
          ( 1 == autoconnect ) ) )
     {
       qDebug() << "Autoconnect at start: in slient mode just connect to default or project defined ECU ...";
@@ -2292,11 +2293,11 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         dlg.setData(*ecuitem);
 
         /* Read settings for recent hostnames and ports */
-        recentHostnames = DltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-        recentSerialPorts = DltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
-        recentIPPorts= DltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
-        recentEthIF = DltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
-        recent_multicastAddresses = DltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
+        recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
+        recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
+        recentIPPorts= QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+        recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
+        recent_multicastAddresses = QDltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
         // Ethernet IF
         setCurrentHostname(ecuitem->getHostname());
@@ -3678,7 +3679,7 @@ void MainWindow::SplitTriggered(QString fileName)
      }
     else
      {
-        if (OptManager::getInstance()->issilentMode())
+        if (QDltOptManager::getInstance()->issilentMode())
          {
          qDebug() <<  QString("Cannot create new log file ") << outputfile.fileName() << fileName << outputfile.errorString();
          }
@@ -3709,7 +3710,7 @@ void MainWindow::updateIndex()
     int oldsize = qfile.size();
     qfile.updateIndex();
 
-    bool silentMode = !OptManager::getInstance()->issilentMode();
+    bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
     if(oldsize!=qfile.size())
     {
@@ -3839,7 +3840,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
 
         if ( pluginsEnabled == true )
         {
-        pluginManager.decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+        pluginManager.decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
         }
 
         for(int i = 0; i < activeViewerPlugins.size(); i++){
@@ -5069,7 +5070,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
 
 void MainWindow::on_action_menuHelp_Command_Line_triggered()
 {
-    // Please copy changes to OptManager::getInstance().cpp - printUsage()
+    // Please copy changes to QDltOptManager::getInstance().cpp - printUsage()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
                          #ifdef WIN32
@@ -5205,7 +5206,7 @@ void MainWindow::setCurrentFile(const QString &fileName)
     updateRecentFileActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentFileList",recentFiles);
+    QDltSettingsManager::getInstance()->setValue("other/recentFileList",recentFiles);
 }
 
 void MainWindow::removeCurrentFile(const QString &fileName)
@@ -5214,7 +5215,7 @@ void MainWindow::removeCurrentFile(const QString &fileName)
     updateRecentFileActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentFileList",recentFiles);
+    QDltSettingsManager::getInstance()->setValue("other/recentFileList",recentFiles);
 }
 
 void MainWindow::openRecentProject()
@@ -5265,7 +5266,7 @@ void MainWindow::setCurrentProject(const QString &projectName)
     updateRecentProjectActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentProjectList",recentProjects);
+    QDltSettingsManager::getInstance()->setValue("other/recentProjectList",recentProjects);
 }
 
 void MainWindow::removeCurrentProject(const QString &projectName)
@@ -5274,7 +5275,7 @@ void MainWindow::removeCurrentProject(const QString &projectName)
     updateRecentProjectActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentProjectList",recentProjects);
+    QDltSettingsManager::getInstance()->setValue("other/recentProjectList",recentProjects);
 }
 
 
@@ -5321,7 +5322,7 @@ void MainWindow::setCurrentFilters(const QString &filtersName)
     updateRecentFiltersActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentFiltersList",recentFilters);
+    QDltSettingsManager::getInstance()->setValue("other/recentFiltersList",recentFilters);
 }
 
 void MainWindow::removeCurrentFilters(const QString &filtersName)
@@ -5330,18 +5331,18 @@ void MainWindow::removeCurrentFilters(const QString &filtersName)
     updateRecentFiltersActions();
 
     // write settings
-    DltSettingsManager::getInstance()->setValue("other/recentFiltersList",filtersName);
+    QDltSettingsManager::getInstance()->setValue("other/recentFiltersList",filtersName);
 }
 
 void MainWindow::setMcast(bool b_mcast)
 {
-    DltSettingsManager::getInstance()->setValue("other/multicast",b_mcast);
+    QDltSettingsManager::getInstance()->setValue("other/multicast",b_mcast);
 }
 
 
 void MainWindow::setInterfaceTypeSelection(int selectindex)
 {
-    DltSettingsManager::getInstance()->setValue("other/iftypeindex",selectindex);
+    QDltSettingsManager::getInstance()->setValue("other/iftypeindex",selectindex);
 }
 
 void MainWindow::setCurrentHostname(const QString &hostName)
@@ -5352,7 +5353,7 @@ void MainWindow::setCurrentHostname(const QString &hostName)
         recentHostnames.removeLast();
 
     /* Write settings for recent hostnames*/
-    DltSettingsManager::getInstance()->setValue("other/recentHostnameList",recentHostnames);
+    QDltSettingsManager::getInstance()->setValue("other/recentHostnameList",recentHostnames);
 }
 
 
@@ -5364,13 +5365,13 @@ void MainWindow::setCurrentMCAddress(const QString &mcastaddress)
       {
         recent_multicastAddresses.removeLast();
       }
-    DltSettingsManager::getInstance()->setValue("other/recentHostMulticastAddresses",recent_multicastAddresses);
+    QDltSettingsManager::getInstance()->setValue("other/recentHostMulticastAddresses",recent_multicastAddresses);
 }
 
 
 void MainWindow::setCurrentEthIF(const QString &EthIfName)
 {
-    DltSettingsManager::getInstance()->setValue("other/recentEthernetInterface",EthIfName);
+    QDltSettingsManager::getInstance()->setValue("other/recentEthernetInterface",EthIfName);
 }
 
 
@@ -5382,7 +5383,7 @@ void MainWindow::setCurrentSerialPort(const QString &portName)
         recentSerialPorts.removeLast();
 
     /* Write settings for recent ports */
-    DltSettingsManager::getInstance()->setValue("other/recentSerialPortList",recentSerialPorts);
+    QDltSettingsManager::getInstance()->setValue("other/recentSerialPortList",recentSerialPorts);
 }
 
 void MainWindow::setCurrentIPPort(const QString &portName)
@@ -5393,7 +5394,7 @@ void MainWindow::setCurrentIPPort(const QString &portName)
         recentIPPorts.removeLast();
 
     /* Write settings for recent ports */
-    DltSettingsManager::getInstance()->setValue("other/recentIPPortList",recentIPPorts);
+    QDltSettingsManager::getInstance()->setValue("other/recentIPPortList",recentIPPorts);
 }
 
 
@@ -5583,7 +5584,7 @@ void MainWindow::loadPlugins()
 
       PluginItem* item = new PluginItem(0,plugin);
 
-      plugin->setMode((QDltPlugin::Mode) DltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
+      plugin->setMode((QDltPlugin::Mode) QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
       qDebug() << "Loading plugin" << plugin->getName() << plugin->getPluginVersion();
       if(plugin->isViewer())
       {
@@ -5608,8 +5609,8 @@ void MainWindow::loadPlugins()
     }
 
     /* initialise control interface */
-    qcontrol.silentmode = OptManager::getInstance()->issilentMode();
-    qcontrol.commandlinemode = OptManager::getInstance()->isCommandlineMode();
+    qcontrol.silentmode = QDltOptManager::getInstance()->issilentMode();
+    qcontrol.commandlinemode = QDltOptManager::getInstance()->isCommandlineMode();
     pluginManager.initControl(&qcontrol);
 }
 
@@ -5979,7 +5980,7 @@ void MainWindow::filterAddTable() {
     msg.setMsg(data);
 
     /* decode message if necessary */
-    iterateDecodersForMsg(msg,!OptManager::getInstance()->issilentMode());
+    iterateDecodersForMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
     /* show filter dialog */
     FilterDialog dlg;
@@ -6799,7 +6800,7 @@ void MainWindow::on_actionAutoScroll_triggered(bool checked)
     settings->autoScroll = (checked?Qt::Checked:Qt::Unchecked);
 
     if (autoScrollOld!=settings->autoScroll)
-        settings->writeSettings(this);
+        settingsDlg->writeSettings(this);
 
     // inform plugins about changed autoscroll status
     pluginManager.autoscrollStateChanged(settings->autoScroll);
@@ -6820,7 +6821,7 @@ void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
 {
     pluginsEnabled = checked;
     ui->pluginsEnabled->setChecked(pluginsEnabled); // set checkbox in UI
-    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled);
+    QDltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled);
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     syncCheckBoxesAndMenu();
@@ -6831,7 +6832,7 @@ void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
 void MainWindow::on_pluginsEnabled_toggled(bool checked)
 {
     pluginsEnabled = checked;
-    DltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled); // set settings
+    QDltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled); // set settings
     dltIndexer->setPluginsEnabled(pluginsEnabled); // inform indexer
     // now we should correlate the "plugin menu entry to disable / enable"
     syncCheckBoxesAndMenu();
@@ -6840,15 +6841,15 @@ void MainWindow::on_pluginsEnabled_toggled(bool checked)
 
 void MainWindow::on_filtersEnabled_toggled(bool checked)
 {
-    //DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
-    DltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
+    //QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
+    QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
     applyConfigEnabled(true);
 }
 
 void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
+    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
     applyConfigEnabled(true);
 }
 

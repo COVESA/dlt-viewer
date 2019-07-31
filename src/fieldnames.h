@@ -34,7 +34,7 @@ public:
      * Settings needed for App and Context Description change.
      * Pass null for settings to get ID only always.
      * Use case: Exports */
-    static QString getName(Fields cn, SettingsDialog *settings = NULL);
+    static QString getName(Fields cn, QDltSettingsManager *settings = NULL);
 signals:
     
 public slots:

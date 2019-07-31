@@ -19,9 +19,7 @@
 #include "searchtablemodel.h"
 
 #include "fieldnames.h"
-#include "dltsettingsmanager.h"
 #include "dltuiutils.h"
-#include "optmanager.h"
 
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -66,8 +64,8 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
 
-        if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
-            pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+            pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
         switch(index.column())
         {

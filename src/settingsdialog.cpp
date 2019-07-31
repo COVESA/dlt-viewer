@@ -28,7 +28,6 @@
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
 #include "version.h"
-#include "dltsettingsmanager.h"
 #include "dltuiutils.h"
 
 
@@ -110,8 +109,9 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
     ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
 
-    fmaxFileSizeMB = 0.0;
-    appendDateTime = 0;
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+    settings->fmaxFileSizeMB = 0.0;
+    settings->appendDateTime = 0;
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -140,7 +140,7 @@ void SettingsDialog::changeEvent(QEvent *e)
 
 void SettingsDialog::assertSettingsVersion()
 {
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
 
     int major = settings->value("startup/versionMajor").toInt();
     int minor = settings->value("startup/versionMinor").toInt();
@@ -173,10 +173,10 @@ void SettingsDialog::assertSettingsVersion()
 
 void SettingsDialog::resetSettings()
 {
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->clear();
     QString fn(settings->fileName());
-    DltSettingsManager::close();
+    QDltSettingsManager::close();
     QFile fh(fn);
     if(fh.exists())
     {
@@ -193,51 +193,53 @@ void SettingsDialog::resetSettings()
 
 void SettingsDialog::writeDlg()
 {
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+
     /* Temp file */
-    if(tempUseOwn == 1)
+    if(settings->tempUseOwn == 1)
     {
         ui->radioButtonSelectTemp->setChecked(true);
     }
-    else if(tempUseSystem == 1)
+    else if(settings->tempUseSystem == 1)
     {
         ui->radioButtonUseTemp->setChecked(true);
     }
     // ^Else, uses default set in .ui
 
     ui->lineEditSystemTemp->setText(QStandardPaths::writableLocation(QStandardPaths::CacheLocation));
-    ui->lineEditOwnTemp->setText(tempOwnPath);
-    ui->checkBoxCloseWithoutAsking->setChecked(tempCloseWithoutAsking == 1 ? true : false);
-    ui->checkBoxSaveOnClear->setChecked(tempSaveOnClear == 1 ? true : false);
+    ui->lineEditOwnTemp->setText(settings->tempOwnPath);
+    ui->checkBoxCloseWithoutAsking->setChecked(settings->tempCloseWithoutAsking == 1 ? true : false);
+    ui->checkBoxSaveOnClear->setChecked(settings->tempSaveOnClear == 1 ? true : false);
 
     /* startup */
-    ui->checkBoxDefaultProjectFile->setCheckState(defaultProjectFile?Qt::Checked:Qt::Unchecked);
-    ui->lineEditDefaultProjectFile->setText(defaultProjectFileName);
-    ui->checkBoxDefaultLogFile->setCheckState(defaultLogFile?Qt::Checked:Qt::Unchecked);
-    ui->lineEditDefaultLogFile->setText(defaultLogFileName);
-    ui->checkBoxPluginsPath->setCheckState(pluginsPath?Qt::Checked:Qt::Unchecked);
-    ui->lineEditPluginsPath->setText(pluginsPathName);
-    ui->checkBoxDefaultFilterPath->setCheckState(defaultFilterPath?Qt::Checked:Qt::Unchecked);
-    ui->lineEditDefaultFilterPath->setText(defaultFilterPathName);
-    ui->checkBoxPluginsAutoload->setCheckState(pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
-    ui->lineEditPluginsAutoload->setText(pluginsAutoloadPathName);
-    ui->checkBoxFilterCache->setCheckState(filterCache?Qt::Checked:Qt::Unchecked);
-    ui->spinBoxIndexCacheDays->setValue(filterCacheDays);
-    ui->lineEditFilterCache->setText(filterCacheName);
-    ui->checkBoxAutoConnect->setCheckState(autoConnect?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAutoScroll->setCheckState(autoScroll?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAutoMarkFatalError->setCheckState(autoMarkFatalError?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAutoMarkWarn->setCheckState(autoMarkWarn?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAutoMarkMarker->setCheckState(autoMarkMarker?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxLoggingOnlyMode->setCheckState(loggingOnlyMode?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMaxFileSizeMB->setChecked(splitlogfile?Qt::Checked:Qt::Unchecked);
-    ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(fmaxFileSizeMB));
-    ui->checkBoxAppendDateTime->setCheckState(appendDateTime?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxDefaultProjectFile->setCheckState(settings->defaultProjectFile?Qt::Checked:Qt::Unchecked);
+    ui->lineEditDefaultProjectFile->setText(settings->defaultProjectFileName);
+    ui->checkBoxDefaultLogFile->setCheckState(settings->defaultLogFile?Qt::Checked:Qt::Unchecked);
+    ui->lineEditDefaultLogFile->setText(settings->defaultLogFileName);
+    ui->checkBoxPluginsPath->setCheckState(settings->pluginsPath?Qt::Checked:Qt::Unchecked);
+    ui->lineEditPluginsPath->setText(settings->pluginsPathName);
+    ui->checkBoxDefaultFilterPath->setCheckState(settings->defaultFilterPath?Qt::Checked:Qt::Unchecked);
+    ui->lineEditDefaultFilterPath->setText(settings->defaultFilterPathName);
+    ui->checkBoxPluginsAutoload->setCheckState(settings->pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
+    ui->lineEditPluginsAutoload->setText(settings->pluginsAutoloadPathName);
+    ui->checkBoxFilterCache->setCheckState(settings->filterCache?Qt::Checked:Qt::Unchecked);
+    ui->spinBoxIndexCacheDays->setValue(settings->filterCacheDays);
+    ui->lineEditFilterCache->setText(settings->filterCacheName);
+    ui->checkBoxAutoConnect->setCheckState(settings->autoConnect?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutoScroll->setCheckState(settings->autoScroll?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutoMarkFatalError->setCheckState(settings->autoMarkFatalError?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutoMarkWarn->setCheckState(settings->autoMarkWarn?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
+    ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
+    ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
 
     /* table */
-    ui->spinBoxFontSize->setValue(fontSize);
+    ui->spinBoxFontSize->setValue(settings->fontSize);
 
     /* Time settings */
-    ui->groupBoxAutomaticTimeSettings->setChecked(automaticTimeSettings);
+    ui->groupBoxAutomaticTimeSettings->setChecked(settings->automaticTimeSettings);
     if(ui->groupBoxAutomaticTimeSettings->isChecked())
     {
         ui->checkBoxDST->setEnabled(false);
@@ -252,19 +254,19 @@ void SettingsDialog::writeDlg()
         ui->labelTimezone->setEnabled(true);
         ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
-    ui->checkBoxAutomaticTimezone->setChecked(automaticTimezoneFromDlt);
+    ui->checkBoxAutomaticTimezone->setChecked(settings->automaticTimezoneFromDlt);
 
-    ui->checkBoxDST->setCheckState(dst?Qt::Checked:Qt::Unchecked);
-    ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(utcOffset)));
+    ui->checkBoxDST->setCheckState(settings->dst?Qt::Checked:Qt::Unchecked);
+    ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(settings->utcOffset)));
 
-    ui->checkBoxIndex->setCheckState(showIndex?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxTime->setCheckState(showTime?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxTimestamp->setCheckState(showTimestamp?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxCount->setCheckState(showCount?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxIndex->setCheckState(settings->showIndex?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxTime->setCheckState(settings->showTime?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxTimestamp->setCheckState(settings->showTimestamp?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxCount->setCheckState(settings->showCount?Qt::Checked:Qt::Unchecked);
 
-    ui->checkBoxEcuid->setCheckState(showEcuId?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxEcuid->setCheckState(settings->showEcuId?Qt::Checked:Qt::Unchecked);
 
-    ui->groupBoxAppId->setChecked(showApId);
+    ui->groupBoxAppId->setChecked(settings->showApId);
     if(ui->groupBoxAppId->isChecked())
     {
         ui->radioButtonAppId->setEnabled(true);
@@ -275,7 +277,7 @@ void SettingsDialog::writeDlg()
         ui->radioButtonAppId->setEnabled(false);
         ui->radioButtonAppIdDesc->setEnabled(false);
     }
-    switch(showApIdDesc)
+    switch(settings->showApIdDesc)
     {
     case 0:
         ui->radioButtonAppId->setChecked(true);
@@ -291,7 +293,7 @@ void SettingsDialog::writeDlg()
         break;
     }
 
-    ui->groupBoxConId->setChecked(showCtId);
+    ui->groupBoxConId->setChecked(settings->showCtId);
     if(ui->groupBoxConId->isChecked())
     {
         ui->radioButtonConId->setEnabled(true);
@@ -302,7 +304,7 @@ void SettingsDialog::writeDlg()
         ui->radioButtonConId->setEnabled(false);
         ui->radioButtonConIdDesc->setEnabled(false);
     }
-    switch(showCtIdDesc)
+    switch(settings->showCtIdDesc)
     {
     case 0:
         ui->radioButtonConId->setChecked(true);
@@ -318,7 +320,7 @@ void SettingsDialog::writeDlg()
         break;
     }
 
-    ui->groupBoxSessionId->setChecked(showSessionId);
+    ui->groupBoxSessionId->setChecked(settings->showSessionId);
     if(ui->groupBoxSessionId->isChecked())
     {
         ui->radioButtonSessionId->setEnabled(true);
@@ -329,7 +331,7 @@ void SettingsDialog::writeDlg()
         ui->radioButtonSessionId->setEnabled(false);
         ui->radioButtonSessionName->setEnabled(false);
     }
-    switch(showSessionName)
+    switch(settings->showSessionName)
     {
     case 0:
         ui->radioButtonSessionId->setChecked(true);
@@ -345,287 +347,146 @@ void SettingsDialog::writeDlg()
         break;
     }
 
-    ui->checkBoxType->setCheckState(showType?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxType->setCheckState(settings->showType?Qt::Checked:Qt::Unchecked);
 
-    ui->checkBoxSubtype->setCheckState(showSubtype?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxMode->setCheckState(showMode?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxNoar->setCheckState(showNoar?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxPayload->setCheckState(showPayload?Qt::Checked:Qt::Unchecked);
-   // ui->spinBox_showArguments->setValue(showArguments);
+    ui->checkBoxSubtype->setCheckState(settings->showSubtype?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
+   // ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
-    ui->checkBoxWriteControl->setCheckState(writeControl?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxUpdateContextLoadingFile->setCheckState(updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxUpdateContextUnregister->setCheckState(updateContextsUnregister?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxWriteControl->setCheckState(settings->writeControl?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxUpdateContextLoadingFile->setCheckState(settings->updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxUpdateContextUnregister->setCheckState(settings->updateContextsUnregister?Qt::Checked:Qt::Unchecked);
 
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
-    int refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
-    ui->spinBoxFrequency->setValue(refreshrate);
-
-    bool startup_minimized = settings->value("StartUpMinimized",false).toBool();
-    ui->checkBoxStartUpMinimized->setChecked(startup_minimized);
-
-
+    ui->spinBoxFrequency->setValue(settings->RefreshRate);
+    ui->checkBoxStartUpMinimized->setChecked(settings->StartupMinimized);
 }
 
 void SettingsDialog::readDlg()
 {
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+
     /* Temp file */
-    tempUseSystem               = (ui->radioButtonUseTemp->isChecked() == true ? 1 : 0);
-    tempSystemPath              = ui->lineEditSystemTemp->text();
-    tempUseOwn                  = (ui->radioButtonSelectTemp->isChecked() == true ? 1 : 0);
-    tempOwnPath                 = ui->lineEditOwnTemp->text();
-    tempCloseWithoutAsking      = (ui->checkBoxCloseWithoutAsking->isChecked() == true ? 1 : 0);
-    tempSaveOnClear             = (ui->checkBoxSaveOnClear->isChecked() == true ? 1 : 0);
+    settings->tempUseSystem               = (ui->radioButtonUseTemp->isChecked() == true ? 1 : 0);
+    settings->tempSystemPath              = ui->lineEditSystemTemp->text();
+    settings->tempUseOwn                  = (ui->radioButtonSelectTemp->isChecked() == true ? 1 : 0);
+    settings->tempOwnPath                 = ui->lineEditOwnTemp->text();
+    settings->tempCloseWithoutAsking      = (ui->checkBoxCloseWithoutAsking->isChecked() == true ? 1 : 0);
+    settings->tempSaveOnClear             = (ui->checkBoxSaveOnClear->isChecked() == true ? 1 : 0);
 
     /* startup */
-    defaultProjectFile = (ui->checkBoxDefaultProjectFile->checkState() == Qt::Checked);
-    defaultProjectFileName = ui->lineEditDefaultProjectFile->text();
-    defaultLogFile = (ui->checkBoxDefaultLogFile->checkState() == Qt::Checked);
-    defaultLogFileName = ui->lineEditDefaultLogFile->text();
-    pluginsPath = (ui->checkBoxPluginsPath->checkState() == Qt::Checked);
-    pluginsPathName = ui->lineEditPluginsPath->text();
-    defaultFilterPath = (ui->checkBoxDefaultFilterPath->checkState() == Qt::Checked);
-    defaultFilterPathName = ui->lineEditDefaultFilterPath->text();
-    pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
-    pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
-    filterCache = (ui->checkBoxFilterCache->checkState() == Qt::Checked);
-    filterCacheDays = ui->spinBoxIndexCacheDays->value();
-    filterCacheName = ui->lineEditFilterCache->text();
-    autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
-    autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
-    autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
-    autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
-    autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
-    loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
-    splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
-    if(splitlogfile != 0)
+    settings->defaultProjectFile = (ui->checkBoxDefaultProjectFile->checkState() == Qt::Checked);
+    settings->defaultProjectFileName = ui->lineEditDefaultProjectFile->text();
+    settings->defaultLogFile = (ui->checkBoxDefaultLogFile->checkState() == Qt::Checked);
+    settings->defaultLogFileName = ui->lineEditDefaultLogFile->text();
+    settings->pluginsPath = (ui->checkBoxPluginsPath->checkState() == Qt::Checked);
+    settings->pluginsPathName = ui->lineEditPluginsPath->text();
+    settings->defaultFilterPath = (ui->checkBoxDefaultFilterPath->checkState() == Qt::Checked);
+    settings->defaultFilterPathName = ui->lineEditDefaultFilterPath->text();
+    settings->pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
+    settings->pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
+    settings->filterCache = (ui->checkBoxFilterCache->checkState() == Qt::Checked);
+    settings->filterCacheDays = ui->spinBoxIndexCacheDays->value();
+    settings->filterCacheName = ui->lineEditFilterCache->text();
+    settings->autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
+    settings->autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
+    settings->autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
+    settings->autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
+    settings->autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
+    settings->loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
+    settings->splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
+    if(settings->splitlogfile != 0)
      {
-        fmaxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toFloat();
-        if (fmaxFileSizeMB < 0.01)
+        settings->fmaxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toFloat();
+        if (settings->fmaxFileSizeMB < 0.01)
         {
-          fmaxFileSizeMB = (float) 0.01;
+          settings->fmaxFileSizeMB = (float) 0.01;
           qDebug() <<  "Caution: minimum split file size limited to 0.01 Mb !";
           //QMessageBox::warning(0, QString("DLT Viewer"), QString("Minimum value limited to 0.01 Mb !"));
         }
      }
 
-    appendDateTime = (ui->checkBoxAppendDateTime->checkState() == Qt::Checked);
+    settings->appendDateTime = (ui->checkBoxAppendDateTime->checkState() == Qt::Checked);
 
     /* table */
-    fontSize = ui->spinBoxFontSize->value();
+    settings->fontSize = ui->spinBoxFontSize->value();
 
     /* Time settings */
-    automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
-    automaticTimezoneFromDlt = ( ui->checkBoxAutomaticTimezone->isChecked() == true ? 1:0);
-    utcOffset = ui->comboBoxUTCOffset->itemData(ui->comboBoxUTCOffset->currentIndex()).toLongLong();
-    dst =           ( ui->checkBoxDST->isChecked()== true ? 1:0);
+    settings->automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
+    settings->automaticTimezoneFromDlt = ( ui->checkBoxAutomaticTimezone->isChecked() == true ? 1:0);
+    settings->utcOffset = ui->comboBoxUTCOffset->itemData(ui->comboBoxUTCOffset->currentIndex()).toLongLong();
+    settings->dst =           ( ui->checkBoxDST->isChecked()== true ? 1:0);
 
-    showIndex =     ( ui->checkBoxIndex->checkState() == Qt::Checked);
-    showTime =      ( ui->checkBoxTime->checkState() == Qt::Checked);
-    showTimestamp = ( ui->checkBoxTimestamp->checkState() == Qt::Checked);
-    showCount =     ( ui->checkBoxCount->checkState() == Qt::Checked);
+    settings->showIndex =     ( ui->checkBoxIndex->checkState() == Qt::Checked);
+    settings->showTime =      ( ui->checkBoxTime->checkState() == Qt::Checked);
+    settings->showTimestamp = ( ui->checkBoxTimestamp->checkState() == Qt::Checked);
+    settings->showCount =     ( ui->checkBoxCount->checkState() == Qt::Checked);
 
-    showEcuId =     ( ui->checkBoxEcuid->checkState() == Qt::Checked);
-    showApId =      ( ui->groupBoxAppId->isChecked() == true ? 1:0);
-    showApIdDesc =  ( ui->radioButtonAppIdDesc->isChecked()== true ? 1:0);
-    showCtId =      ( ui->groupBoxConId->isChecked() == true ? 1:0);
-    showCtIdDesc =  ( ui->radioButtonConIdDesc->isChecked()== true ? 1:0);
-    showSessionId =   ( ui->groupBoxSessionId->isChecked() == true ? 1:0);
-    showSessionName = ( ui->radioButtonSessionName->isChecked()== true ? 1:0);
-    showType =      ( ui->checkBoxType->checkState() == Qt::Checked);
+    settings->showEcuId =     ( ui->checkBoxEcuid->checkState() == Qt::Checked);
+    settings->showApId =      ( ui->groupBoxAppId->isChecked() == true ? 1:0);
+    settings->showApIdDesc =  ( ui->radioButtonAppIdDesc->isChecked()== true ? 1:0);
+    settings->showCtId =      ( ui->groupBoxConId->isChecked() == true ? 1:0);
+    settings->showCtIdDesc =  ( ui->radioButtonConIdDesc->isChecked()== true ? 1:0);
+    settings->showSessionId =   ( ui->groupBoxSessionId->isChecked() == true ? 1:0);
+    settings->showSessionName = ( ui->radioButtonSessionName->isChecked()== true ? 1:0);
+    settings->showType =      ( ui->checkBoxType->checkState() == Qt::Checked);
 
-    showSubtype = ( ui->checkBoxSubtype->checkState() == Qt::Checked);
-    showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
-    showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
-    showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
+    settings->showSubtype = ( ui->checkBoxSubtype->checkState() == Qt::Checked);
+    settings->showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
+    settings->showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
+    settings->showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
    // showArguments = (ui->spinBox_showArguments->value());
 
     /* other */
-    writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
-    updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
-    updateContextsUnregister = (ui->checkBoxUpdateContextUnregister->checkState() == Qt::Checked);
+    settings->writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
+    settings->updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
+    settings->updateContextsUnregister = (ui->checkBoxUpdateContextUnregister->checkState() == Qt::Checked);
 
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
-    int refreshrate = ui->spinBoxFrequency->value();
-    int old_refreshrate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
-    if ( refreshrate != old_refreshrate && 0 != refreshrate )
-        settings->setValue("RefreshRate",refreshrate);
-
-    bool startup_minimized = ui->checkBoxStartUpMinimized->isChecked();
-    settings->setValue("StartUpMinimized",startup_minimized);
+    settings->RefreshRate = ui->spinBoxFrequency->value();
+    settings->StartupMinimized = ui->checkBoxStartUpMinimized->isChecked();
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
 {
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
 
-    settings->setValue("geometry", mainwindow->saveGeometry());
-    settings->setValue("windowState", mainwindow->saveState());
+    settings->geometry =  mainwindow->saveGeometry();
+    settings->windowState = mainwindow->saveState();
 
-    /* Temporary directory */
-    settings->setValue("tempdir/tempUseSystem", tempUseSystem);
-    settings->setValue("tempdir/tempSystemPath", tempSystemPath);
-    settings->setValue("tempdir/tempUseOwn", tempUseOwn);
-    settings->setValue("tempdir/tempOwnPath", tempOwnPath);
-    settings->setValue("tempdir/tempCloseWithoutAsking", tempCloseWithoutAsking);
-    settings->setValue("tempdir/tempSaveOnClear", tempSaveOnClear);
-
-    /* startup */
-    settings->setValue("startup/defaultProjectFile",defaultProjectFile);
-    settings->setValue("startup/defaultProjectFileName",defaultProjectFileName);
-    settings->setValue("startup/defaultLogFile",defaultLogFile);
-    settings->setValue("startup/defaultLogFileName",defaultLogFileName);
-    settings->setValue("startup/pluginsPath",pluginsPath);
-    settings->setValue("startup/pluginsPathName",pluginsPathName);
-    settings->setValue("startup/defaultFilterPath",defaultFilterPath);
-    settings->setValue("startup/defaultFilterPathName",defaultFilterPathName);
-    settings->setValue("startup/pluginsAutoloadPath",pluginsAutoloadPath);
-    settings->setValue("startup/pluginsAutoloadPathName",pluginsAutoloadPathName);
-    settings->setValue("startup/filterCache",filterCache);
-    settings->setValue("startup/filterCacheDays",filterCacheDays);
-    settings->setValue("startup/filterCacheName",filterCacheName);
-    settings->setValue("startup/autoConnect",autoConnect);
-    settings->setValue("startup/autoScroll",autoScroll);
-    settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
-    settings->setValue("startup/autoMarkWarn",autoMarkWarn);
-    settings->setValue("startup/autoMarkMarker",autoMarkMarker);
-    settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
-    settings->setValue("startup/splitfileyesno",splitlogfile);
-    settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
-    settings->setValue("startup/appendDateTime",appendDateTime);
-    settings->setValue("startup/markercolor",markercolor.name());
-
-    /* table */
-    settings->setValue("startup/fontSize",fontSize);
-    settings->setValue("startup/automaticTimeSettings",automaticTimeSettings);
-    settings->setValue("startup/automaticTimezoneFromDlt",automaticTimezoneFromDlt);
-    settings->setValue("startup/utcOffset",utcOffset);
-    settings->setValue("startup/dst",dst);
-    settings->setValue("startup/showIndex",showIndex);
-    settings->setValue("startup/showTime",showTime);
-    settings->setValue("startup/showTimestamp",showTimestamp);
-    settings->setValue("startup/showCount",showCount);
-
-    settings->setValue("startup/showEcuId",showEcuId);
-    settings->setValue("startup/showApId",showApId);
-    settings->setValue("startup/showApIdDesc",showApIdDesc);
-    settings->setValue("startup/showCtId",showCtId);
-    settings->setValue("startup/showCtIdDesc",showCtIdDesc);
-    settings->setValue("startup/showSessionId",showSessionId);
-    settings->setValue("startup/showSessionName",showSessionName);
-    settings->setValue("startup/showType",showType);
-
-    settings->setValue("startup/showSubtype",showSubtype);
-    settings->setValue("startup/showMode",showMode);
-    settings->setValue("startup/showNoar",showNoar);
-    settings->setValue("startup/showPayload",showPayload);
-    settings->setValue("startup/showArguments",showArguments);
-
-    /* other */
-    settings->setValue("startup/writeControl",writeControl);
-    settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
-    settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
-
-    /* For settings integrity validation */
-    settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
-    settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
-    settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
+    settings->writeSettings();
 }
 
 /* read the settings from config.ini */
 void SettingsDialog::readSettings()
 {
-    DltSettingsManager *settings = DltSettingsManager::getInstance();
-    /* Temp file */
-    tempUseSystem               = settings->value("tempdir/tempUseSystem", 1).toInt();
-    tempSystemPath              = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
-    tempUseOwn                  = settings->value("tempdir/tempUseOwn", 0).toInt();
-    tempOwnPath                 = settings->value("tempdir/tempOwnPath", QString("")).toString();
-    tempCloseWithoutAsking      = settings->value("tempdir/tempCloseWithoutAsking", 0).toInt();
-    tempSaveOnClear             = settings->value("tempdir/tempSaveOnClear", 1).toInt();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
 
-    /* startup */
-    defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
-    defaultProjectFileName = settings->value("startup/defaultProjectFileName",QString("")).toString();
-    defaultLogFile = settings->value("startup/defaultLogFile",0).toInt();
-    defaultLogFileName = settings->value("startup/defaultLogFileName",QString("")).toString();
-    pluginsPath = settings->value("startup/pluginsPath",0).toInt();
-    pluginsPathName = settings->value("startup/pluginsPathName",QString("")).toString();
-    defaultFilterPath = settings->value("startup/defaultFilterPath",1).toInt();
-    defaultFilterPathName = settings->value("startup/defaultFilterPathName",QDir::homePath()+"/.dlt/filters").toString();
-    pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
-    pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
-    filterCache = settings->value("startup/filterCache",1).toInt();
-    filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/indexcache").toString();
-    autoConnect = settings->value("startup/autoConnect",0).toInt();
-    autoScroll = settings->value("startup/autoScroll",1).toInt();
-    autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
-    autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
-    autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
-    loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
-    splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
-    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
-    appendDateTime = settings->value("startup/appendDateTime",0).toInt();
+    settings->readSettings();
 
-    markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
     QPalette palette = ui->labelSelectedMarkerColor->palette();
-    palette.setColor(QPalette::Active,this->backgroundRole(),markercolor);
+    palette.setColor(QPalette::Active,this->backgroundRole(),settings->markercolor);
     ui->labelSelectedMarkerColor->setPalette(palette);
 
-
-    /* project table */
-    fontSize = settings->value("startup/fontSize",8).toInt();
-    automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
-    automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
-
-    utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)TIMEZONE * (-1) )).toLongLong();
-    dst = settings->value("startup/dst", DAYLIGHT == 0 ? 0 : 1).toInt();
-
-    showIndex = settings->value("startup/showIndex",1).toInt();
-    showTime = settings->value("startup/showTime",1).toInt();
-    showTimestamp = settings->value("startup/showTimestamp",1).toInt();
-    showCount = settings->value("startup/showCount",0).toInt();
-
-    showEcuId = settings->value("startup/showEcuId",1).toInt();
-    showApId = settings->value("startup/showApId",1).toInt();
-    showApIdDesc = settings->value("startup/showApIdDesc",0).toInt();
-    showCtId = settings->value("startup/showCtId",1).toInt();
-    showCtIdDesc = settings->value("startup/showCtIdDesc",0).toInt();
-    showSessionId = settings->value("startup/showSessionId",0).toInt();
-    showSessionName = settings->value("startup/showSessionName",0).toInt();
-    showType = settings->value("startup/showType",1).toInt();
-
-    showSubtype = settings->value("startup/showSubtype",0).toInt();
-
-    showMode = settings->value("startup/showMode",0).toInt();
-    showNoar = settings->value("startup/showNoar",0).toInt();
-    showPayload = settings->value("startup/showPayload",1).toInt();
-    showArguments = settings->value("startup/showArguments",0).toInt();
-
-    /* other */
-    writeControl = settings->value("startup/writeControl",1).toInt();
-    updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
-    updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
 }
 
 
 
 QStringList SettingsDialog::getRecentFiles()
 {
-    return DltSettingsManager::getInstance()->value("other/recentFileList").toStringList();
+    return QDltSettingsManager::getInstance()->value("other/recentFileList").toStringList();
 }
 QStringList SettingsDialog::getRecentProjects()
 {
-    return DltSettingsManager::getInstance()->value("other/recentProjectList").toStringList();
+    return QDltSettingsManager::getInstance()->value("other/recentProjectList").toStringList();
 }
 QStringList SettingsDialog::getRecentFilters(){
-    return DltSettingsManager::getInstance()->value("other/recentFiltersList").toStringList();
+    return QDltSettingsManager::getInstance()->value("other/recentFiltersList").toStringList();
 }
 QString SettingsDialog::getWorkingDirectory()
 {
-    return DltSettingsManager::getInstance()->value("work/workingDirectory",QDir::currentPath()).toString();
+    return QDltSettingsManager::getInstance()->value("work/workingDirectory",QDir::currentPath()).toString();
 }
 
 void SettingsDialog::on_toolButtonDefaultLogFile_clicked()
@@ -701,7 +562,8 @@ void SettingsDialog::on_toolButtonTempPath_clicked()
         return;
 
     /* change current working directory */
-    tempOwnPath = QFileInfo(fileName).absolutePath();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+    settings->tempOwnPath = QFileInfo(fileName).absolutePath();
 
     ui->lineEditOwnTemp->setText(fileName);
 }
@@ -715,7 +577,8 @@ void SettingsDialog::on_toolButtonPluginsAutoload_clicked()
         return;
 
     /* change current working directory */
-    pluginsAutoloadPathName = QFileInfo(fileName).absolutePath();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+    settings->pluginsAutoloadPathName = QFileInfo(fileName).absolutePath();
 
     ui->lineEditPluginsAutoload->setText(fileName);
 }
@@ -730,7 +593,8 @@ void SettingsDialog::on_toolButtonFilterCache_clicked()
         return;
 
     /* change current working directory */
-    filterCacheName = QFileInfo(fileName).absolutePath();
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+    settings->filterCacheName = QFileInfo(fileName).absolutePath();
 
     ui->lineEditFilterCache->setText(fileName);
 }
@@ -801,18 +665,20 @@ void SettingsDialog::on_pushButtonClearIndexCache_clicked()
 
 void SettingsDialog::clearIndexCacheAfterDays()
 {
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+
     // calculate comparison date
     QDateTime comparisonDate(QDateTime::currentDateTime());
-    comparisonDate = comparisonDate.addSecs((quint64)filterCacheDays*-1*60*60*24);
+    comparisonDate = comparisonDate.addSecs((quint64)settings->filterCacheDays*-1*60*60*24);
 
     // check if index cache is enabled
-    if(0 == filterCache)
+    if(0 == settings->filterCache)
     {
         return;
     }
 
     /* check if directory for configuration exists */
-    QString path = filterCacheName;
+    QString path = settings->filterCacheName;
     QDir dir(path);
     if(!dir.exists())
     {
@@ -864,6 +730,7 @@ void SettingsDialog::on_pushButtonMarkerColor_clicked()
 
     if(selectedcolor.isValid())
     {
-        this->markercolor =  selectedcolor;
+        QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+        settings->markercolor =  selectedcolor;
     }
 }

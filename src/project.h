@@ -302,7 +302,8 @@ public:
     QTreeWidget *ecu;
     QTreeWidget *filter;
     QTreeWidget *plugin;
-    SettingsDialog *settings;
+    //SettingsDialog *settings;
+    QDltSettingsManager *settings;
 
 private:
 

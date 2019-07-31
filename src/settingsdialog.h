@@ -25,7 +25,6 @@
 #include <QColorDialog>
 #include "qdlt.h"
 
-#define DEFAULT_REFRESH_RATE 20
 #define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
 namespace Ui {
@@ -38,66 +37,6 @@ public:
     SettingsDialog(QDltFile *_qFile, QWidget *parent = 0);
     SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
-
-    int     tempUseSystem;
-    QString tempSystemPath;
-    int     tempUseOwn;
-    QString tempOwnPath;
-    int     tempCloseWithoutAsking;
-    int     tempSaveOnClear;
-
-
-    int defaultLogFile;
-    QString defaultLogFileName;
-    int defaultProjectFile;
-    QString defaultProjectFileName;
-    int pluginsPath;
-    QString pluginsPathName;
-    int defaultFilterPath;
-    QString defaultFilterPathName;
-    int pluginsAutoloadPath;
-    QString pluginsAutoloadPathName;
-    int filterCache;
-    int filterCacheDays;
-    QString filterCacheName;
-    QColor markercolor;
-
-    int autoConnect;
-    int autoScroll;
-    int autoMarkFatalError;
-    int autoMarkWarn;
-    int autoMarkMarker;
-    int writeControl;
-    int updateContextLoadingFile;
-    int updateContextsUnregister;
-    int loggingOnlyMode;
-    int splitlogfile;
-    float fmaxFileSizeMB;
-    int appendDateTime;
-
-    int fontSize;
-    int showIndex;
-    int showTime;
-    int showTimestamp;
-    int showCount;
-    int showEcuId;
-    int showApId;
-    int showApIdDesc;
-    int showCtId;
-    int showCtIdDesc;
-    int showSessionId;
-    int showSessionName;
-    int showType;
-    int showSubtype;
-    int showMode;
-    int showNoar;
-    int showPayload;
-    int showArguments;
-
-    int automaticTimeSettings;
-    int automaticTimezoneFromDlt;
-    qlonglong utcOffset;
-    int dst;
 
     QString workingDirectory;
 

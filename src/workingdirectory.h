@@ -8,8 +8,8 @@
 * \brief The WorkingDirerctory class
 * This is a convenience class to access the different working directories
 * stored in the config.ini of the viewer. The config.ini is accessed through
-* DltSettingsManager.
-*\sa DltSettingsManager
+* QDltSettingsManager.
+*\sa QDltSettingsManager
 */
 class WorkingDirectory : public QObject
 {

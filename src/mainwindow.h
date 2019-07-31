@@ -31,13 +31,11 @@
 #include <QCompleter>
 #include <QStringListModel>
 
+#include "qdlt.h"
 #include "tablemodel.h"
 #include "project.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
-#include "optmanager.h"
-#include "qdlt.h"
-#include "dltsettingsmanager.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
@@ -155,7 +153,8 @@ private:
     ExporterDialog exporterDialog;
 
     /* Settings dialog containing also the settings parameter itself */
-    SettingsDialog *settings;
+    SettingsDialog *settingsDlg;
+    QDltSettingsManager *settings;
     QLineEdit *searchTextbox;
     QComboBox *searchComboBox;
 

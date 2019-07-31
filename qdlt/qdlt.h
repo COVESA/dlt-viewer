@@ -39,5 +39,7 @@
 #include <qdltserialconnection.h>
 #include <qdltplugin.h>
 #include <qdltpluginmanager.h>
+#include <qdltoptmanager.h>
+#include <qdltsettingsmanager.h>
 
 #endif // QDLT_H

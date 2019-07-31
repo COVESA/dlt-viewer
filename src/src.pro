@@ -103,8 +103,6 @@ SOURCES += main.cpp \
     injectiondialog.cpp \
     searchdialog.cpp \
     multiplecontextdialog.cpp \
-    optmanager.cpp \
-    dltsettingsmanager.cpp \
     tablemodel.cpp \
     filtertreewidget.cpp \
     dltfileutils.cpp \
@@ -122,7 +120,7 @@ SOURCES += main.cpp \
     dltmsgqueue.cpp \
     dltfileindexerthread.cpp \
     dltfileindexerdefaultfilterthread.cpp \
-    mcudpsocket.cpp
+    mcudpsocket.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -137,8 +135,6 @@ HEADERS += mainwindow.h \
     searchdialog.h \
     version.h \
     multiplecontextdialog.h \
-    optmanager.h \
-    dltsettingsmanager.h \
     tablemodel.h \
     filtertreewidget.h \
     dltfileutils.h \
@@ -156,7 +152,7 @@ HEADERS += mainwindow.h \
     dltmsgqueue.h \
     dltfileindexerthread.h \
     dltfileindexerdefaultfilterthread.h \
-    mcudpsocket.h
+    mcudpsocket.h \
 
 # Compile these UI files
 FORMS += mainwindow.ui \
@@ -170,7 +166,7 @@ FORMS += mainwindow.ui \
     searchdialog.ui \
     multiplecontextdialog.ui \
     jumptodialog.ui \
-    exporterdialog.ui
+    exporterdialog.ui \
 
 # Related files
 OTHER_FILES += \

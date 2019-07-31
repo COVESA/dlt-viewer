@@ -23,9 +23,7 @@
 
 #include "tablemodel.h"
 #include "fieldnames.h"
-#include "dltsettingsmanager.h"
 #include "dltuiutils.h"
-#include "optmanager.h"
 #include "dlt_protocol.h"
 
 
@@ -130,13 +128,13 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
           }
          }
 
-         if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
+         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
              if ( decodeflag == 1 )
               {
                decodeflag = 0;
                last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
                last_decoded_msg = msg;
               }
               else
@@ -295,13 +293,13 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      {
          getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
 
-         if((DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
+         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
              if ( decodeflag == 1 )
               {
                decodeflag = 0;
                last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!OptManager::getInstance()->issilentMode());
+               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
                last_decoded_msg = msg;
               }
               else
@@ -462,7 +460,7 @@ int TableModel::setMarker(long int lineindex, QColor hlcolor)
 
 QColor TableModel::searchBackgroundColor() const
 {
-    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor hlColor(color);
     return hlColor;
 }
