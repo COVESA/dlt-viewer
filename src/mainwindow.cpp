@@ -575,26 +575,29 @@ void MainWindow::initFileHandling()
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
 
-            if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+          if (false == OptManager::getInstance()->isConvert()) // not needed in commandline convertion mode, avoid indexer thread run
             {
-                //qDebug() << "Opening file(s)" << outputfile.fileName() << __FILE__ << __LINE__;
+
+             if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+              {
                 openFileNames = QStringList(fn);
                 isDltFileReadOnly = false;
-                reloadLogFile();
-            }
-            else
-            {
-             if (OptManager::getInstance()->issilentMode())
-              {
-              qDebug() << QString("Cannot load temporary log file %1 %2").arg(outputfile.fileName()).arg(outputfile.errorString());
+                reloadLogFile(); // because we have a dedicated file in this case -> no index run for default file necessary
               }
-              else
+             else
               {
-               QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load temporary log file \"%1\"\n%2").arg(outputfile.fileName()).arg(outputfile.errorString()));
-              }
-            }
+               if (OptManager::getInstance()->issilentMode())
+                {
+                qDebug() << QString("Cannot load temporary log file %1 %2").arg(outputfile.fileName()).arg(outputfile.errorString());
+                }
+               else
+                {
+                 QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load temporary log file \"%1\"\n%2").arg(outputfile.fileName()).arg(outputfile.errorString()));
+                }
+             } // isConvert false
+         }
 
-        }
+       }
     }
 
     if(OptManager::getInstance()->isFilterFile())
@@ -973,9 +976,10 @@ bool MainWindow::openDltFile(QStringList fileNames)
     bool ret = false;
 
     if(fileNames.size()==0)
+    {
+        qDebug() << "Open filename error in " << __FILE__ << __LINE__;
         return false;
-
-    //qDebug() << "Open" << fileNames;
+    }
     //clear search history list
     //searchHistory.clear();
     //clear all the action buttons from history
@@ -1002,7 +1006,8 @@ bool MainWindow::openDltFile(QStringList fileNames)
     /* open existing file and append new data */
     outputfile.setFileName(fileNames.last());
     setCurrentFile(fileNames.last());
-    if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+
+    if( true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append) )
     {
         openFileNames = fileNames;
         isDltFileReadOnly = false;
@@ -5177,7 +5182,8 @@ void MainWindow::updateRecentFileActions()
 {
     int numRecentFiles = qMin(recentFiles.size(), (int)MaxRecentFiles);
 
-    for (int i = 0; i < numRecentFiles; ++i) {
+    for (int i = 0; i < numRecentFiles; ++i)
+    {
         QString text = tr("&%1 %2").arg(i + 1).arg(recentFiles[i]);
         recentFileActs[i]->setText(text);
         recentFileActs[i]->setData(recentFiles[i]);
