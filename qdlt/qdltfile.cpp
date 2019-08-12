@@ -159,11 +159,6 @@ bool QDltFile::updateIndex()
 
     for(int numFile=0;numFile<files.size();numFile++)
     {
-        qint64 current_message_pos = 0;
-        qint64 next_message_pos = 0;
-        int counter_header = 0;
-        quint16 message_length = 0;
-
         /* check if file is already opened */
         if(false == files[numFile]->infile.isOpen())
         {
@@ -172,6 +167,7 @@ bool QDltFile::updateIndex()
             return false;
         }
 
+
         /* start at last found position */
         if(files[numFile]->indexAll.size())
         {
@@ -179,8 +175,6 @@ bool QDltFile::updateIndex()
             const QVector<qint64>* const_indexAll = &(files[numFile]->indexAll);
             pos = (*const_indexAll)[files[numFile]->indexAll.size()-1] + 4;
             files[numFile]->infile.seek(pos);
-            current_message_pos = pos-4;
-            counter_header = 1;
         }
         else {
             /* the file was empty the last call */
@@ -193,6 +187,12 @@ bool QDltFile::updateIndex()
         /* walk through the whole file and find all DLT0x01 markers */
         /* store the found positions in the indexAll */
         char lastFound = 0;
+        qint64 current_message_pos = 0;
+        qint64 next_message_pos = 0;
+        int counter_header = 0;
+        quint16 message_length = 0;
+        qint64 file_size = files[numFile]->infile.size();
+        qint64 errors_in_file  = 0;
 
         while(true)
         {
@@ -208,6 +208,7 @@ bool QDltFile::updateIndex()
 
             /* find marker in buffer */
             for(int num=0;num<cbuf_sz;num++) {
+                // search length of DLT message
                 if(counter_header>0)
                 {
                     counter_header++;
@@ -222,6 +223,20 @@ bool QDltFile::updateIndex()
                         counter_header = 0;
                         message_length = (message_length<<8 | ((unsigned char)cbuf[num])) +16;
                         next_message_pos = current_message_pos + message_length;
+                        if(next_message_pos==file_size)
+                        {
+                            // last message found in file
+                            files[numFile]->indexAll.append(current_message_pos);
+                            break;
+                        }
+                        // speed up move directly to next message, if inside current buffer
+                        if((message_length > 20))
+                        {
+                            if((num+message_length-20<cbuf_sz))
+                            {
+                                num+=message_length-20;
+                            }
+                        }
                     }
                 }
                 else if(cbuf[num] == 'D')
@@ -238,12 +253,50 @@ bool QDltFile::updateIndex()
                 }
                 else if(lastFound == 'T' && cbuf[num] == 0x01)
                 {
-                    if((next_message_pos == (pos+num-3)) || (next_message_pos == 0))
+                    if(next_message_pos == 0)
                     {
-                        // Add message only when it is in the correct position in relationship to the last message
-                        files[numFile]->indexAll.append(pos+num-3);
+                        // first message detected or first message after error
                         current_message_pos = pos+num-3;
                         counter_header = 1;
+                        if(current_message_pos!=0)
+                        {
+                            // first messages not at beginning or error occured before
+                            errors_in_file++;
+                        }
+                        // speed up move directly to message length, if inside current buffer
+                        if(num+14<cbuf_sz)
+                        {
+                            num+=14;
+                            counter_header+=14;
+                        }
+                    }
+                    else if( next_message_pos == (pos+num-3) )
+                    {
+                        // Add message only when it is in the correct position in relationship to the last message
+                        files[numFile]->indexAll.append(current_message_pos);
+                        current_message_pos = pos+num-3;
+                        counter_header = 1;
+                        // speed up move directly to message length, if inside current buffer
+                        if(num+14<cbuf_sz)
+                        {
+                            num+=14;
+                            counter_header+=14;
+                        }
+                    }
+                    else if(next_message_pos > (pos+num-3))
+                    {
+                        // Header detected before end of message
+                    }
+                    else
+                    {
+                        // Header detected after end of message
+                        // start search for new message back after last header found
+                        files[numFile]->infile.seek(current_message_pos+4);
+                        pos = current_message_pos+4;
+                        buf = files[numFile]->infile.read(READ_BUF_SZ);
+                        cbuf_sz = buf.size();
+                        num=0;
+                        next_message_pos = 0;
                     }
                     lastFound = 0;
                 }
@@ -261,6 +314,7 @@ bool QDltFile::updateIndex()
     /* success */
     return true;
 }
+
 
 bool QDltFile::createIndexFilter()
 {

@@ -117,6 +117,8 @@ bool DltFileIndexer::index(int num)
     qint64 next_message_pos = 0;
     int counter_header = 0;
     quint16 message_length = 0;
+    qint64 file_size = f.size();
+    qint64 errors_in_file  = 0;
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
     do
     {
@@ -125,6 +127,7 @@ bool DltFileIndexer::index(int num)
         length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
         for(int num=0;num < length;num++)
         {
+            // search length of DLT message
             if(counter_header>0)
             {
                 counter_header++;
@@ -139,8 +142,23 @@ bool DltFileIndexer::index(int num)
                     counter_header = 0;
                     message_length = (message_length<<8 | ((unsigned char)data[num])) +16;
                     next_message_pos = current_message_pos + message_length;
+                    if(next_message_pos==file_size)
+                    {
+                        // last message found in file
+                        indexAllList.append(current_message_pos);
+                        break;
+                    }
+                    // speed up move directly to next message, if inside current buffer
+                    if((message_length > 20))
+                    {
+                        if((num+message_length-20<length))
+                        {
+                            num+=message_length-20;
+                        }
+                    }
                 }
             }
+            // find DLT Header
             else if(data[num] == 'D')
             {
                 lastFound = 'D';
@@ -155,12 +173,49 @@ bool DltFileIndexer::index(int num)
             }
             else if(lastFound == 'T' && data[num] == 0x01)
             {
-                if( (next_message_pos == (pos+num-3)) || (next_message_pos == 0) )
+                if(next_message_pos == 0)
                 {
-                    // Add message only when it is in the correct position in relationship to the last message or first message in file
-                    indexAllList.append(pos+num-3);
+                    // first message detected or first message after error
                     current_message_pos = pos+num-3;
                     counter_header = 1;
+                    if(current_message_pos!=0)
+                    {
+                        // first messages not at beginning or error occured before
+                        errors_in_file++;
+                    }
+                    // speed up move directly to message length, if inside current buffer
+                    if(num+14<length)
+                    {
+                        num+=14;
+                        counter_header+=14;
+                    }
+                }
+                else if( next_message_pos == (pos+num-3) )
+                {
+                    // Add message only when it is in the correct position in relationship to the last message
+                    indexAllList.append(current_message_pos);
+                    current_message_pos = pos+num-3;
+                    counter_header = 1;
+                    // speed up move directly to message length, if inside current buffer
+                    if(num+14<length)
+                    {
+                        num+=14;
+                        counter_header+=14;
+                    }
+                }
+                else if(next_message_pos > (pos+num-3))
+                {
+                    // Header detected before end of message
+                }
+                else
+                {
+                    // Header detected after end of message
+                    // start search for new message back after last header found
+                    f.seek(current_message_pos+4);
+                    pos = current_message_pos+4;
+                    length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
+                    num=0;
+                    next_message_pos = 0;
                 }
                 lastFound = 0;
             }
@@ -186,6 +241,8 @@ bool DltFileIndexer::index(int num)
 
     // close file
     f.close();
+
+    qDebug() << "ERROR found" << errors_in_file << "wrong DLT message headers in file during indexing";
 
     qDebug() << "Created index for file" << dltFile->getFileName(num);
 
