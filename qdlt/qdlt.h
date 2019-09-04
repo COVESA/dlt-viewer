@@ -37,6 +37,7 @@
 #include <qdlttcpconnection.h>
 #include <qdltudpconnection.h>
 #include <qdltserialconnection.h>
+#include <qdltmessagedecoder.h>
 #include <qdltplugin.h>
 #include <qdltpluginmanager.h>
 #include <qdltoptmanager.h>

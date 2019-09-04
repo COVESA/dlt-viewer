@@ -14,7 +14,7 @@
 
 class QDltPlugin;
 
-class QDLT_EXPORT QDltPluginManager
+class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
 
@@ -50,11 +50,13 @@ public:
     */
     void loadConfig(QString pluginName,QString filename);
 
-    //! Decode message by decoding through all loaded an activated decoder plugins
+    //! Implementation of QDltMessageDecoder's pure virtual method.
+    //! Decode message by decoding through all loaded an activated decoder plugins.
     /*!
       \param msg The message to be decoded.
+      \param triggeredByUser Whether decode operation was triggered by the user or not
     */
-    void decodeMsg(QDltMsg &msg,int triggeredByUser);
+    void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
 
     //! Get the list of pointers to all loaded plugins
     QList<QDltPlugin*> getPlugins() { return plugins; }

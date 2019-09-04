@@ -5582,6 +5582,8 @@ void MainWindow::loadPlugins()
     {
       QDltPlugin* plugin = plugins[idx];
 
+      plugin->initMainTableView( ui->tableView );
+
       PluginItem* item = new PluginItem(0,plugin);
 
       plugin->setMode((QDltPlugin::Mode) QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
@@ -6856,6 +6858,11 @@ void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
 
 void MainWindow::syncCheckBoxesAndMenu()
 {
+    auto pluginList = pluginManager.getPlugins();
+
+    for(auto& plugin : pluginList)
+        plugin->configurationChanged();
+
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
     if (ui->checkBoxSortByTime->isChecked())
         {

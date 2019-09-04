@@ -58,6 +58,7 @@ INCLUDEPATH = . ../src
 SOURCES +=  \
     dlt_common.c \
     qdltipconnection.cpp \
+    qdltmessagedecoder.cpp \
     qdlttcpconnection.cpp \
     qdltudpconnection.cpp \
     qdltserialconnection.cpp \
@@ -82,6 +83,7 @@ HEADERS += qdlt.h \
     dlt_common.h \
     dlt_user.h \
     qdltipconnection.h \
+    qdltmessagedecoder.h \
     qdlttcpconnection.h \
     qdltudpconnection.h \
     qdltserialconnection.h \
