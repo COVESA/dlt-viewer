@@ -21,9 +21,10 @@
 #define PLUGININTERFACE_H
 
 #include <QString>
+#include <QTableView>
 #include "qdlt.h"
 
-#define PLUGIN_INTERFACE_VERSION "1.0.0"
+#define PLUGIN_INTERFACE_VERSION "1.0.1"
 
 //! Standard DLT Viewer Plugin Interface.
 /*!
@@ -179,10 +180,14 @@ public:
     */
     virtual void initFileStart(QDltFile *file) = 0;
 
-
     //! A new undecoded DLT message is processed after a new log file is opened by the DLT Viewer
     /*! After a new log file is opened this function is called by the viewer every time
         a new undecoded message is processed.
+
+      Important note! Be aware, that basic functionality may call this function from a separate worker-thread.
+      It is a responsibility of plugin's developer to add synchronization of his internal state within this call.
+      Best practice is to send a queued signal to the parent thread of the plugin, or to use QMetsObject::invokeMethod.
+
       \sa QDLTPluginInterface::error()
       \param index The current DLT message index
       \param msg The current undecoded DLT message
@@ -192,6 +197,11 @@ public:
     //! A new decoded DLT message is processed after a new log file is opened by the DLT Viewer
     /*! After a new log file is opened this function is called by the viewer every time
         a new decoded message is processed.
+
+      Important note! Be aware, that basic functionality may call this function from a separate worker-thread.
+      It is a responsibility of plugin's developer to add synchronization of his internal state within this call.
+      Best practice is to send a queued signal to the parent thread of the plugin, or to use QMetsObject::invokeMethod.
+
       \sa QDLTPluginInterface::error()
       \param index The current DLT message index
       \param msg The current decoded DLT message
@@ -328,10 +338,39 @@ public:
       \return True if everything went ok. False if there was an error.
     */
     virtual bool autoscrollStateChanged(bool enabled) = 0;
+
+    //! A message decoder is injected into the plugin
+    /*!
+      This function is called by the the viewer once on creation of the plugin
+      Motivation - plugin might need to be able to decode a messages, if it directly uses the QDltFile.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param messageDecoder - pointer to a message decoder, which allows a plugin to decode instances of QDltMsg.
+    */
+    virtual void initMessageDecoder(QDltMessageDecoder* /*messageDecoder*/) = 0;
+
+    //! A main message's table is injected via this call
+    /*!
+      This function is called by the the viewer once on creation of the plugin
+      Motivation - plugin might need to be able to scroll a main table view to a certain selected message.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+      \param pTableView - pointer to a table view, which contains all loaded messages.
+    */
+    virtual void initMainTableView(QTableView* pTableView) = 0;
+
+    //! Notifies the plugin, that used configuration has changed.
+    /*!
+      Motivation - plugin might need to discard previous results, or to restart the analysis in case of a change in configuration.
+      E.g. another set of filters was applied, a sort by time was applied, or filtering was turned off completely.
+      Errors should be reported by providing an error message.
+      \sa QDLTPluginInterface::error()
+    */
+    virtual void configurationChanged() = 0;
 };
 
 Q_DECLARE_INTERFACE(QDltPluginControlInterface,
-                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.1")
+                    "org.genivi.DLT.Plugin.DLTViewerPluginControlInterface/1.2")
 
 //! DLT Command Plugin Interface
 /*!

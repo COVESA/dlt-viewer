@@ -91,6 +91,7 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 
                     QDltPlugin* item = new QDltPlugin();
                     item->loadPlugin(plugin);
+                    item->initMessageDecoder(this);
                     plugins.append(item);
 
                     //project.plugin->addTopLevelItem(item);

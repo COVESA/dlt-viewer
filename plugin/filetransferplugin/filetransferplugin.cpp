@@ -453,6 +453,18 @@ bool FiletransferPlugin::autoscrollStateChanged(bool enabled)
     return true;
 }
 
+void FiletransferPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
+
+void FiletransferPlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void FiletransferPlugin::configurationChanged()
+{}
 
 
 #ifndef QT5
