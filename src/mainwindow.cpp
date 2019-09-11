@@ -42,6 +42,7 @@
 #include <QNetworkInterface>
 #include <QtAlgorithms>
 
+
 /**
  * From QDlt.
  * Must be a "C" include to interpret the imports correctly
@@ -279,6 +280,7 @@ void MainWindow::initState()
 
 void MainWindow::initView()
 {
+    int maxWidth = 0;
     // With QT5.8 we have a bug with the system proxy configuration
     // which we want to avoid, so we disable it
     QNetworkProxyFactory::setUseSystemConfiguration(false);
@@ -336,18 +338,21 @@ void MainWindow::initView()
 
     /* filename string */
     statusFilename = new QLabel("No log file loaded");
-    //qDebug() << "Initial label width" << statusFilename->width() <<  __LINE__;
-
-    statusFilename->setMinimumWidth(480); // 640 is the initial width of the label
-                                          // for some reason we need this for the very
+    statusFilename->setMinimumWidth(statusFilename->width());
+    statusFilename->setMaximumWidth(statusFilename->width());
+                                         // 640 is the initial width of the label
+                                          // but for some reason we need this for the very
                                           // first call when setting the tempfile string
                                           // unless this there are is displayed "..."
                                           // more propper solution appreciated ...
 
+    statusFilename->setWordWrap(true);
+
     /* version string */
-    statusFileVersion = new QLabel("Version: <unknown>");
-    int maxWidth = QFontMetrics(statusFileVersion->font()).averageCharWidth() * 70;
+    statusFileVersion = new QLabel("Version: <n.a.>");
+    maxWidth = QFontMetrics(statusFileVersion->font()).averageCharWidth() * 70;
     statusFileVersion->setMaximumWidth(maxWidth);
+    statusFileVersion->setMinimumWidth(1);
 
 
     statusBytesReceived = new QLabel("Recv: 0");
@@ -1556,7 +1561,8 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     {
         openFileNames = QStringList(fn);
         isDltFileReadOnly = false;
-        //qDebug() << "reloadlogfile" << outputfile.fileName() << __FILE__ <<  __LINE__;
+        //qDebug() << "reloadlogfile" << outputfile.fileName() << outputfile.fileName().size() << __FILE__ <<  __LINE__;
+        statusFilename->setMinimumWidth(statusFilename->width()); // just works to show default tmp file + location in status line
         reloadLogFile();
     }
     else
@@ -1659,7 +1665,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       autoloadPluginsVersionEcus.append(ecuId);
 
       QFontMetrics fm = QFontMetrics(statusFileVersion->font());
-      QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
+      QString versionString = "Version: " + autoloadPluginsVersionStrings.join("\r\n");
       target_version_string = version;
       statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
       statusFileVersion->setToolTip(versionString);
@@ -1763,7 +1769,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         autoloadPluginsVersionEcus.clear();
         autoloadPluginsVersionStrings.clear();
-        statusFileVersion->setText("Version: <unknown>");
+        statusFileVersion->setText("Version: <n.a.>");
     }
 
     // update indexFilter only if index already generated
@@ -1837,8 +1843,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 	name += " (ReadOnly)";
     }
 
+    statusFilename->setMinimumWidth(1); // this is the rollback of the workaround for first call
+                                        // with value "1" the window can be reduced in width
     statusFilename->setText(fm.elidedText(name, Qt::ElideLeft, statusFilename->width()));
-    statusFilename->setMinimumWidth(0); // this is the rollback of the workaround for first call
     statusFilename->setToolTip(name);
 
     // enable plugins
@@ -5734,7 +5741,7 @@ void MainWindow::versionString(QDltMsg &msg)
 
     autoloadPluginsVersionStrings.append(target_version_string);
     QFontMetrics fm = QFontMetrics(statusFileVersion->font());
-    QString versionString = "Version:" + autoloadPluginsVersionStrings.join("\r\n");
+    QString versionString = "Version: " + autoloadPluginsVersionStrings.join("\r\n");
     statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
     statusFileVersion->setToolTip(versionString);
 
