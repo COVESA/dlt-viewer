@@ -339,8 +339,9 @@ void MainWindow::initView()
     /* filename string */
     statusFilename = new QLabel("No log file loaded");
     statusFilename->setMinimumWidth(statusFilename->width());
-    statusFilename->setMaximumWidth(statusFilename->width());
-                                         // 640 is the initial width of the label
+    //statusFilename->setMaximumWidth(statusFilename->width());
+    statusFilename->setMaximumWidth(1240);
+                                          // 640 is the initial width of the label
                                           // but for some reason we need this for the very
                                           // first call when setting the tempfile string
                                           // unless this there are is displayed "..."
@@ -351,17 +352,22 @@ void MainWindow::initView()
     /* version string */
     statusFileVersion = new QLabel("Version: <n.a.>");
     maxWidth = QFontMetrics(statusFileVersion->font()).averageCharWidth() * 70;
+
     statusFileVersion->setMaximumWidth(maxWidth);
     statusFileVersion->setMinimumWidth(1);
 
+    statusFileError = new QLabel("FileErr: 0");
+    statusFileError->setText(QString("FileErr: %L1").arg(0));
 
     statusBytesReceived = new QLabel("Recv: 0");
     statusByteErrorsReceived = new QLabel("Recv Errors: 0");
     statusSyncFoundReceived = new QLabel("Sync found: 0");
     statusProgressBar = new QProgressBar();
-    statusBar()->addWidget(statusFilename, 1);
+
+    statusBar()->addWidget(statusFilename,1);
     statusBar()->addWidget(statusFileVersion, 1);
-    statusBar()->addWidget(statusBytesReceived);
+    statusBar()->addWidget(statusFileError, 0);
+    statusBar()->addWidget(statusBytesReceived, 0);
     statusBar()->addWidget(statusByteErrorsReceived);
     statusBar()->addWidget(statusSyncFoundReceived);
     statusBar()->addWidget(statusProgressBar);
@@ -515,6 +521,8 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
     connect(dltIndexer, SIGNAL(timezone(int,unsigned char)), this, SLOT(controlMessage_Timezone(int,unsigned char)));
     connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
+    connect(dltIndexer, SIGNAL(finished()), this, SLOT(indexDone()));
+    connect(dltIndexer, SIGNAL(started()), this, SLOT(indexStart()));
 
     /* Plugins/Filters enabled checkboxes */
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
@@ -1671,7 +1679,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       statusFileVersion->setToolTip(versionString);
       if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ))
        {
-          qDebug() << "Trigger plugin autoload for " << ecuId;
+          qDebug() << "Trigger plugin autoload for ECU" << ecuId << "with version" << version;
           pluginsAutoload(version);
        }
     }
@@ -1754,6 +1762,7 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
 
 void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
+    qint64 fileerrors = 0;
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
@@ -1883,6 +1892,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
      {
         //qDebug() << "Run indexer single thread" << __FILE__ << __LINE__;
         dltIndexer->run();
+        fileerrors = dltIndexer->getfileerrors();
+        statusFileError->setText(QString("FileErr: %L1").arg(fileerrors));
      }
 }
 
@@ -5739,6 +5750,8 @@ void MainWindow::versionString(QDltMsg &msg)
     target_version_string = msg.toAscii(data,true);
     target_version_string = target_version_string.trimmed(); // remove all white spaces at beginning and end
 
+    //qDebug() << "Versionstring"<< target_version_string << __LINE__ ;
+
     autoloadPluginsVersionStrings.append(target_version_string);
     QFontMetrics fm = QFontMetrics(statusFileVersion->font());
     QString versionString = "Version: " + autoloadPluginsVersionStrings.join("\r\n");
@@ -7213,3 +7226,13 @@ QString MainWindow::GetConnectionType(int iTypeNumber)
 
 }
 
+void MainWindow::indexDone()
+{
+qint64 fileerrors = dltIndexer->getfileerrors();
+statusFileError->setText(QString("FileErr: %L1").arg(fileerrors));
+}
+
+void MainWindow::indexStart()
+{
+statusFileError->setText(QString("FileErr: %L1").arg("-"));
+}

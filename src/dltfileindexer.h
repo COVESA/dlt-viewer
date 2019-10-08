@@ -51,6 +51,8 @@ public:
     // create main index
     bool index(int num);
 
+    qint64 getfileerrors(void);
+
     // create index based on filters and apply plugins
     bool indexFilter(QStringList filenames);
     bool indexDefaultFilter();
@@ -158,6 +160,9 @@ private:
 
     // filter cache path
     QString filterCache;
+
+    // file errors
+    qint64 errors_in_file;
 
     // run counter
     int maxRun, currentRun;

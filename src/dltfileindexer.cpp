@@ -55,6 +55,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     filtersEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = 0;
+    errors_in_file  = 0;
 
     maxRun = 0;
     currentRun = 0;
@@ -112,13 +113,14 @@ bool DltFileIndexer::index(int num)
     // Go through the segments and create new index
     char lastFound = 0;
     qint64 length;
+    qint64 msgindex=0;
     qint64 pos;
     qint64 current_message_pos = 0;
     qint64 next_message_pos = 0;
     int counter_header = 0;
     quint16 message_length = 0;
     qint64 file_size = f.size();
-    qint64 errors_in_file  = 0;
+    errors_in_file  = 0;
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
     do
     {
@@ -182,6 +184,7 @@ bool DltFileIndexer::index(int num)
                     {
                         // first messages not at beginning or error occured before
                         errors_in_file++;
+                        qDebug() << "ERROR in file at index "<< msgindex;
                     }
                     // speed up move directly to message length, if inside current buffer
                     if(num+14<length)
@@ -194,6 +197,7 @@ bool DltFileIndexer::index(int num)
                 {
                     // Add message only when it is in the correct position in relationship to the last message
                     indexAllList.append(current_message_pos);
+                    msgindex++;
                     current_message_pos = pos+num-3;
                     counter_header = 1;
                     // speed up move directly to message length, if inside current buffer
@@ -242,9 +246,14 @@ bool DltFileIndexer::index(int num)
     // close file
     f.close();
 
-    qDebug() << "ERROR found" << errors_in_file << "wrong DLT message headers in file during indexing";
-
+    if ( errors_in_file != 0 )
+    {
+    qDebug() << "Indexing error:" << errors_in_file << "wrong DLT message headers found during indexing" << msgindex << "messages";
+    }
+    else
+    {
     qDebug() << "Created index for file" << dltFile->getFileName(num);
+    }
 
     // update performance counter
     msecsIndexCounter = time.elapsed();
@@ -578,6 +587,7 @@ void DltFileIndexer::stop()
     // stop the thread
     stopFlag = true;
     wait();
+    //qDebug() << "Indexer stopped";
 }
 
 // load/safe index from/to file
@@ -831,4 +841,10 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
     file.close();
 
     return true;
+}
+
+
+qint64 DltFileIndexer::getfileerrors(void)
+{
+    return errors_in_file;
 }

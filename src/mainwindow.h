@@ -134,6 +134,7 @@ private:
 
     /* Status line items */
     QLabel *statusFilename;
+    QLabel *statusFileError;
     QLabel *statusFileVersion;
     QLabel *statusBytesReceived;
     QLabel *statusByteErrorsReceived;
@@ -499,6 +500,8 @@ private slots:
     void on_action_menuPlugin_Disable_triggered();
 
     //Rename
+    void indexDone();
+    void indexStart();
     void filterAdd();
     void filterAddTable();
     void connected();
