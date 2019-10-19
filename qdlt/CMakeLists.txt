@@ -35,6 +35,7 @@ add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
                   qdltfilterlist.cpp
                   qdltfilterindex.cpp
                   qdltdefaultfilter.cpp
+                  qdltmessagedecoder.cpp
                   qdltpluginmanager.cpp
                   qdltplugin.cpp
                   qdltsegmentedmsg.cpp
