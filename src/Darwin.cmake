@@ -7,7 +7,7 @@ set (MACOSX_BUNDLE_ICON_FILE icon)
 # configure the bundle icon file
 set (ICON icon/icon.icns)
 set_property (SOURCE ${ICON} PROPERTY MACOSX_PACKAGE_LOCATION Resources)
-target_sources (${TARGET_NAME} PUBLIC ${ICON})
+target_sources (${TARGET_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/${ICON})
 
 # set the executable target to be built as macOS app bundle
 set_target_properties (${TARGET_NAME} PROPERTIES
