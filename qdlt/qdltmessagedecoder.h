@@ -20,6 +20,7 @@
  */
 
 #ifndef QDLTMESSAGEDECODER_HPP
+#define QDLTMESSAGEDECODER_HPP
 
 #include "export_rules.h"
 
