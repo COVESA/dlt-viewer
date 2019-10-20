@@ -72,7 +72,7 @@ LogstorageConfigCreatorForm::~LogstorageConfigCreatorForm()
 
 void LogstorageConfigCreatorForm::set_button_text_Add_to_Update(int idx)
 {
-    idx = idx; /* not used */
+    (void) idx; /* not used */
     ui->pushButton_Add->setText(QString("Update"));
 }
 
