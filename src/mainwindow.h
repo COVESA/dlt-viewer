@@ -204,6 +204,7 @@ private:
     enum { MaxRecentPorts = 10 };
     QStringList recentSerialPorts;
     QStringList recentIPPorts;
+    QStringList recentUDPPorts;
     QString recentEthIF;
     QStringList recent_multicastAddresses;
 
@@ -316,6 +317,7 @@ private:
     void setCurrentMCAddress(const QString &mcastaddress);
     void setCurrentSerialPort(const QString &portName);
     void setCurrentIPPort(const QString &portName);
+    void setCurrentUDPPort(const QString &portName);
     void setCurrentEthIF(const QString &EthIfName);
     void setMcast(bool mcast);
     void setInterfaceTypeSelection(int selectindex);
@@ -343,6 +345,7 @@ private:
 
     QStringList getAvailableSerialPorts();
     QStringList getAvailableIPPorts() {return { "3490"};} // DLT standard port
+    QStringList getAvailableUDPPorts() {return { "3490"};} // DLT standard port
     QStringList getAvailableNetworkInterfaces();
 
     void deleteactualFile();

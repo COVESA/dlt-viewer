@@ -2224,6 +2224,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 
     QStringList SerialportListPreset = getAvailableSerialPorts();
     QStringList IPportListPreset = getAvailableIPPorts();
+    QStringList UDPportListPreset = getAvailableUDPPorts();
     QStringList NetworkIFListPreset = getAvailableNetworkInterfaces();
 
     /* show ECU configuration dialog */
@@ -2235,6 +2236,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
     recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
     recentIPPorts = QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+    recentUDPPorts = QDltSettingsManager::getInstance()->value("other/recentUDPPortList",UDPportListPreset).toStringList();
     recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
     recent_multicastAddresses = QDltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
@@ -2246,6 +2248,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setHostnameList(recentHostnames);
     dlg.setSerialPortList(recentSerialPorts);
     dlg.setIPPortList(recentIPPorts);
+    dlg.setUDPPortList(recentUDPPorts);
     dlg.setNetworkIFList(NetworkIFListPreset,recentEthIF);
     dlg.setMulticastAddresses(recent_multicastAddresses);
 
@@ -2280,6 +2283,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
        setCurrentEthIF(ecuitem->getEthIF());
        setCurrentSerialPort(ecuitem->getPort());
        setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
+       setCurrentUDPPort(QString("%1").arg(ecuitem->getUdpport()));
        setMcast(ecuitem->is_multicast);
        setInterfaceTypeSelection(dlg.interfacetypecurrentindex());
 
@@ -2302,6 +2306,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         QStringList multicastAddressesListPreset;
         QStringList SerialportListPreset = getAvailableSerialPorts();
         QStringList IPportListPreset = getAvailableIPPorts();
+        QStringList UDPportListPreset = getAvailableUDPPorts();
         QStringList NetworkIFListPreset =  getAvailableNetworkInterfaces();
 
         EcuItem* ecuitem = (EcuItem*) list.at(0);
@@ -2314,6 +2319,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
         recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
         recentIPPorts= QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
+        recentUDPPorts= QDltSettingsManager::getInstance()->value("other/recentUDPPortList",UDPportListPreset).toStringList();
         recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
         recent_multicastAddresses = QDltSettingsManager::getInstance()->value("other/recentHostMulticastAddresses",multicastAddressesListPreset).toStringList();
 
@@ -2324,7 +2330,8 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         setCurrentSerialPort(ecuitem->getPort());
 
         // IP port
-        setCurrentIPPort(QString("%1").arg(ecuitem->getIpport() ));
+        setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
+        setCurrentUDPPort(QString("%1").arg(ecuitem->getUdpport()));
 
         // MC Ethernet IF
         setCurrentEthIF(ecuitem->getEthIF());
@@ -2332,6 +2339,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         dlg.setHostnameList(recentHostnames);
         dlg.setSerialPortList(recentSerialPorts);
         dlg.setIPPortList(recentIPPorts);
+        dlg.setUDPPortList(recentUDPPorts);
         dlg.setNetworkIFList(NetworkIFListPreset,ecuitem->getEthIF());
         dlg.setMulticastAddresses(recent_multicastAddresses);
 
@@ -2341,6 +2349,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             if((ecuitem->interfacetype != dlg.interfacetype() ||
                 ecuitem->getHostname() != dlg.hostname() ||
                 ecuitem->getIpport() != dlg.tcpport() ||
+                ecuitem->getUdpport() != dlg.udpport() ||
                 ecuitem->getEthIF() != dlg.EthInterface() ||
                 ecuitem->getmcastIP() != dlg.mcastaddress() ||
                 ecuitem->getPort() != dlg.Serialport() ||
@@ -2375,6 +2384,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 //tbd save is muticast
             setCurrentSerialPort(ecuitem->getPort());
             setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
+            setCurrentUDPPort(QString("%1").arg(ecuitem->getUdpport()));
             setCurrentEthIF(ecuitem->getEthIF());
 
             /* Update the ECU list in control plugins */
@@ -3132,18 +3142,18 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
                if (  ecuitem->is_multicast == true )
                {
-                 qDebug()<< "Try to connect (UDP/MC) on" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
-                 bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress );
+                 qDebug()<< "Try to connect (UDP/MC) on" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getUdpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+                 bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getUdpport(),QUdpSocket::ShareAddress );
                }
                else
                {
-                qDebug()<< "Try to connect (UDP) to" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getIpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
-                bindstate = ecuitem->socket->bind(QHostAddress(connectIPaddress), ecuitem->getIpport(),QUdpSocket::ShareAddress ) ;
+                qDebug()<< "Try to connect (UDP) to" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getUdpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
+                bindstate = ecuitem->socket->bind(QHostAddress(connectIPaddress), ecuitem->getUdpport(),QUdpSocket::ShareAddress ) ;
                }
 
-               if ( true == bindstate )//ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getIpport(),QUdpSocket::ShareAddress ))
+               if ( true == bindstate )//ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getUdpport(),QUdpSocket::ShareAddress ))
                 { // green - success
-                 qDebug() << "Bound to " << ecuitem->getEthIF() << "on port" << ecuitem->getIpport();
+                 qDebug() << "Bound to " << ecuitem->getEthIF() << "on port" << ecuitem->getUdpport();
                  ecuitem->udpsocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption,26214400);
                  ecuitem->tryToConnect = true;
                  if (  ecuitem->is_multicast == true )
@@ -5415,6 +5425,16 @@ void MainWindow::setCurrentIPPort(const QString &portName)
     QDltSettingsManager::getInstance()->setValue("other/recentIPPortList",recentIPPorts);
 }
 
+void MainWindow::setCurrentUDPPort(const QString &portName)
+{
+    recentUDPPorts.removeAll(portName);
+    recentUDPPorts.prepend(portName);
+    while (recentUDPPorts.size() > MaxRecentPorts)
+        recentUDPPorts.removeLast();
+
+    /* Write settings for recent ports */
+    QDltSettingsManager::getInstance()->setValue("other/recentUDPPortList",recentUDPPorts);
+}
 
 void MainWindow::sendUpdates(EcuItem* ecuitem)
 {
