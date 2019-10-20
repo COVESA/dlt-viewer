@@ -135,11 +135,13 @@ public:
      QString getmcastIP() {return mcastIP;}
      QString getEthIF() {return ethIF;}
      unsigned int getIpport() {return ipport;}
+     unsigned int getUdpport() {return udpport;}
      bool getSendSerialHeaderIp() {return sendSerialHeaderIp;}
      bool getSyncSerialHeaderIp() {return syncSerialHeaderIp;}
 
      void setHostname(QString hname) {hostname = hname; ipcon.setHostname(hostname);}
      void setIpport(unsigned int tp) {ipport = tp; ipcon.setPort(ipport);}
+     void setUdpport(unsigned int tp) {udpport = tp; ipcon.setPort(udpport);}
      void setEthIF(QString ethif) {ethIF = ethif;}
      void setmcastIP(QString mcastip) {mcastIP = mcastip;}
      void setSendSerialHeaderIp(bool b) {sendSerialHeaderIp = b; ipcon.setSendSerialHeader(sendSerialHeaderIp);}

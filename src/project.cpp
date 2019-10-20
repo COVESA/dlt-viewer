@@ -42,6 +42,7 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     hostname = "localhost";
     mcastIP = "<none>";
     ipport = DLT_DAEMON_TCP_PORT;
+    udpport = DLT_DAEMON_UDP_PORT;
     baudrate = QSerialPort::Baud115200; /* default 115200 */
     loglevel = DLT_LOG_INFO;
     tracestatus = DLT_TRACE_STATUS_OFF;
@@ -113,17 +114,18 @@ void EcuItem::update()
     switch(interfacetype)
     {
         case EcuItem::INTERFACETYPE_TCP:
+
             setData(1,Qt::DisplayRole,QString("%1 [TCP %2:%3]").arg(description).arg(hostname).arg(ipport));
             socket = & tcpsocket;
             break;
         case EcuItem::INTERFACETYPE_UDP:
             if ( true == is_multicast)
             {
-            setData(1,Qt::DisplayRole,QString("%1 [UDP (MC:%2) %3:%4]").arg(description).arg(mcastIP).arg(ethIF).arg(ipport));
+            setData(1,Qt::DisplayRole,QString("%1 [UDP (MC:%2) %3:%4]").arg(description).arg(mcastIP).arg(ethIF).arg(udpport));
             }
             else
             {
-            setData(1,Qt::DisplayRole,QString("%1 [UDP %2:%3]").arg(description).arg(ethIF).arg(ipport));
+            setData(1,Qt::DisplayRole,QString("%1 [UDP %2:%3]").arg(description).arg(ethIF).arg(udpport));
             }
             socket = & udpsocket;
             break;
@@ -771,7 +773,6 @@ bool Project::Load(QString filename)
               {
                   if(ecuitem)
                     ecuitem->setEthIF(xml.readElementText());
-
               }
               if(xml.name() == QString("mcIP"))
               {
@@ -782,6 +783,12 @@ bool Project::Load(QString filename)
               {
                   if(ecuitem)
                     ecuitem->setIpport(xml.readElementText().toInt());
+
+              }
+              if(xml.name() == QString("udpport"))
+              {
+                  if(ecuitem)
+                    ecuitem->setUdpport(xml.readElementText().toInt());
 
               }
               if(xml.name() == QString("port"))
@@ -986,6 +993,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("mcinterface",ecuitem->getEthIF());
         xml.writeTextElement("mcIP",ecuitem->getmcastIP());
         xml.writeTextElement("ipport",QString("%1").arg(ecuitem->getIpport()));
+        xml.writeTextElement("udpport",QString("%1").arg(ecuitem->getUdpport()));
         xml.writeTextElement("port",ecuitem->getPort());
         xml.writeTextElement("baudrate",QString("%1").arg(ecuitem->getBaudrate()));
         xml.writeTextElement("sendserialheadertcp",QString("%1").arg(ecuitem->getSendSerialHeaderIp()));

@@ -40,6 +40,7 @@ public:
     int interfacetype();
     QString hostname();
     QString mcastaddress();
+    unsigned int port();
     unsigned int tcpport();
     unsigned int udpport();
     QString Serialport();
@@ -61,6 +62,7 @@ public:
     void setHostnameList(QStringList hostnames);
     void setSerialPortList(QStringList ports);
     void setIPPortList(QStringList ports);
+    void setUDPPortList(QStringList ports);
     void setNetworkIFList(QStringList ifnames,QString lastsetting);
     void setMulticastAddresses(QStringList mcaddresses);
     void setMulticast(bool mcast);
