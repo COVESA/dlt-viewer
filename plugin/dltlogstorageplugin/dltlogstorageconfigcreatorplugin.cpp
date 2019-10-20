@@ -72,7 +72,7 @@ QWidget* DltLogstorageConfigCreatorPlugin::initViewer() {
 }
 
 void DltLogstorageConfigCreatorPlugin::initFileStart(QDltFile *file) {
-    file = file;
+    (void) file;
 }
 
 void DltLogstorageConfigCreatorPlugin::initFileFinish() {
@@ -80,13 +80,13 @@ void DltLogstorageConfigCreatorPlugin::initFileFinish() {
 }
 
 void DltLogstorageConfigCreatorPlugin::initMsg(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 void DltLogstorageConfigCreatorPlugin::initMsgDecoded(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 void DltLogstorageConfigCreatorPlugin::updateFileStart() {
@@ -94,13 +94,13 @@ void DltLogstorageConfigCreatorPlugin::updateFileStart() {
 }
 
 void DltLogstorageConfigCreatorPlugin::updateMsg(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 void DltLogstorageConfigCreatorPlugin::updateMsgDecoded(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 void DltLogstorageConfigCreatorPlugin::updateFileFinish() {
@@ -108,13 +108,13 @@ void DltLogstorageConfigCreatorPlugin::updateFileFinish() {
 }
 
 void DltLogstorageConfigCreatorPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 void DltLogstorageConfigCreatorPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg) {
-    index = index; /* not used */
-    msg = msg; /* not used */
+    (void) index; /* not used */
+    (void) msg; /* not used */
 }
 
 #ifndef QT5
