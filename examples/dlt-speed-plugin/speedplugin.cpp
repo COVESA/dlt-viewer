@@ -291,6 +291,21 @@ Q_UNUSED(enabled);
 return true;
 }
 
+void SpeedPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+Q_UNUSED(pMessageDecoder);
+}
+
+void SpeedPlugin::initMainTableView(QTableView* pTableView)
+{
+ Q_UNUSED(pTableView);
+}
+
+void SpeedPlugin::configurationChanged()
+{
+
+}
+
 #ifndef QT5
 Q_EXPORT_PLUGIN2(speedplugin, SpeedPlugin);
 #endif
