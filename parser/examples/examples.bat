@@ -22,7 +22,7 @@ IF "%MINGW_DIR%"=="" (
 set PATH=%QTDIR%\bin;%MINGW_DIR%\bin;%PATH%
 
 IF "%DLT_PARSER_EXE%"=="" (
-        set DLT_PARSER_EXE=..\dlt_parser.exe
+        set DLT_PARSER_EXE=..\dlt-parser.exe
 )
 
 echo ************************************
