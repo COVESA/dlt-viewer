@@ -1,6 +1,6 @@
 usr/bin/dlt-viewer
 usr/lib/*/libqdlt.so.*
-usr/share/applications/dlt_viewer.desktop
+usr/share/applications/org.genivi.DLTViewer.desktop
 usr/share/pixmaps/face-glasses.ico
 usr/share/dlt-viewer/plugins/libfile*.so
 usr/share/dlt-viewer/plugins/libdltdbus*.so
