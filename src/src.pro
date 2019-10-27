@@ -33,9 +33,25 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
-icons.path = $$PREFIX/usr/share/pixmaps
 icons.files = icon/face-glasses.ico
-INSTALLS += icons
+icons_16x16.files = icon/16x16/org.genivi.DLTViewer.png
+icons_22x22.files = icon/22x22/org.genivi.DLTViewer.png
+icons_24x24.files = icon/24x24/org.genivi.DLTViewer.png
+icons_32x32.files = icon/32x32/org.genivi.DLTViewer.png
+icons_48x48.files = icon/48x48/org.genivi.DLTViewer.png
+icons_256x256.files = icon/256x256/org.genivi.DLTViewer.png
+icons_symbolic.files = icon/symbolic/org.genivi.DLTViewer-symbolic.svg
+
+icons.path = $$PREFIX/usr/share/pixmaps
+icons_16x16.path = $$PREFIX/usr/share/icons/hicolor/16x16/apps
+icons_22x22.path = $$PREFIX/usr/share/icons/hicolor/22x22/apps
+icons_24x24.path = $$PREFIX/usr/share/icons/hicolor/24x24/apps
+icons_32x32.path = $$PREFIX/usr/share/icons/hicolor/32x32/apps
+icons_48x48.path = $$PREFIX/usr/share/icons/hicolor/48x48/apps
+icons_256x256.path = $$PREFIX/usr/share/icons/hicolor/256x256/apps
+icons_symbolic.path = $$PREFIX/usr/share/icons/hicolor/symbolic/apps
+
+INSTALLS += icons icons_16x16 icons_22x22 icons_24x24 icons_32x32 icons_48x48 icons_256x256 icons_symbolic
 
 # desktop file to show the application in start menu on Linux
 # This should work on both KDE and Gnome
