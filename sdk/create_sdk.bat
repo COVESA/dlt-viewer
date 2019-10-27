@@ -25,7 +25,7 @@ copy %QT_DIR%\QtCore4.dll %TARGET_DIR%
 copy %QT_DIR%\QtGui4.dll %TARGET_DIR%
 copy %QT_DIR%\QtNetwork4.dll %TARGET_DIR%
 
-copy %BUILD_DIR%\dlt_viewer.exe %TARGET_DIR%
+copy %BUILD_DIR%\dlt-viewer.exe %TARGET_DIR%
 copy %BUILD_DIR%\qdlt.dll %TARGET_DIR%
 
 copy %BUILD_DIR%\plugins\dltviewerplugin.dll %TARGET_DIR%\plugins

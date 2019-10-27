@@ -85,7 +85,7 @@ RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
 # Executable name
-TARGET = dlt_viewer
+TARGET = dlt-viewer
 
 # This is an application
 TEMPLATE = app

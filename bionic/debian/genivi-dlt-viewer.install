@@ -1,4 +1,4 @@
-usr/bin/dlt_viewer
+usr/bin/dlt-viewer
 usr/lib/*/libqdlt.so.*
 usr/share/applications/dlt_viewer.desktop
 usr/share/pixmaps/face-glasses.ico

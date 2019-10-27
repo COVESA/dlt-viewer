@@ -5102,10 +5102,10 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
                          #ifdef WIN32
-                             QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer.exe [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #else
-                             QString("Usage: dlt_viewer [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #endif
                              QString(" -h \t\tPrint usage\n")+
