@@ -13,7 +13,7 @@ Documentation
 
 Command line usage
 ------------------
-Usage windows: dlt_parser.exe [OPTIONS] 
+Usage windows: dlt-parser.exe [OPTIONS] 
 Options: 
  see --help
 
