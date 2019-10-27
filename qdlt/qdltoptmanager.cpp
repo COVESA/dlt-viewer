@@ -65,9 +65,9 @@ void QDltOptManager::printVersion(QString appname)
 void QDltOptManager::printUsage()
 {
 #if (WIN32)
-    qDebug()<<"Usage: dlt_viewer.exe [OPTIONS]";
+    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS]";
 #else
-    qDebug()<<"Usage: dlt_viewer [OPTIONS]";
+    qDebug()<<"Usage: dlt-viewer [OPTIONS]";
 #endif
 
     qDebug()<<"Options:";
@@ -85,21 +85,21 @@ void QDltOptManager::printUsage()
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.\n";
     qDebug()<<"Examples:";
     #if (WIN32)
-    qDebug()<<"  dlt_viewer.exe -c c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt_viewer.exe -s -c -u c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt_viewer.exe -s -d -c c:\\trace\\trace.dlt .\\trace.dlt";
-    qDebug()<<"  dlt_viewer.exe -s -p \\proj\\decodeded.dlp -dd -c c:\\trace\\trace.dlt .\\trace.dlt";
-    qDebug()<<"  dlt_viewer.exe -s -csv -c c:\\trace\\trace.dlt .\\trace.csv";
-    qDebug()<<"  dlt_viewer.exe -s -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
-    qDebug()<<"  dlt_viewer.exe -p c:\\proj\\export.dlp -l c:\\trace\\trace.dlt -e \"Filetransfer Plugin|export|ftransferdir\"";
+    qDebug()<<"  dlt-viewer.exe -c c:\\trace\\trace.dlt .\\trace.txt";
+    qDebug()<<"  dlt-viewer.exe -s -c -u c:\\trace\\trace.dlt .\\trace.txt";
+    qDebug()<<"  dlt-viewer.exe -s -d -c c:\\trace\\trace.dlt .\\trace.dlt";
+    qDebug()<<"  dlt-viewer.exe -s -p \\proj\\decodeded.dlp -dd -c c:\\trace\\trace.dlt .\\trace.dlt";
+    qDebug()<<"  dlt-viewer.exe -s -csv -c c:\\trace\\trace.dlt .\\trace.csv";
+    qDebug()<<"  dlt-viewer.exe -s -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
+    qDebug()<<"  dlt-viewer.exe -p c:\\proj\\export.dlp -l c:\\trace\\trace.dlt -e \"Filetransfer Plugin|export|ftransferdir\"";
     #else
-    qDebug()<<"  dlt_viewer -c ./traces/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt_viewer -s -c -u ./trace/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt_viewer -s -d -c ./trace/trace.dlt ./trace.dlt";
-    qDebug()<<"  dlt_viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt";
-    qDebug()<<"  dlt_viewer -s -csv -c ./trace/trace.dlt ./trace.csv";
-    qDebug()<<"  dlt_viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
-    qDebug()<<"  dlt_viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
+    qDebug()<<"  dlt-viewer -c ./traces/trace.dlt ./trace.txt";
+    qDebug()<<"  dlt-viewer -s -c -u ./trace/trace.dlt ./trace.txt";
+    qDebug()<<"  dlt-viewer -s -d -c ./trace/trace.dlt ./trace.dlt";
+    qDebug()<<"  dlt-viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt";
+    qDebug()<<"  dlt-viewer -s -csv -c ./trace/trace.dlt ./trace.csv";
+    qDebug()<<"  dlt-viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
+    qDebug()<<"  dlt-viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
     #endif
 }
 

@@ -11,8 +11,8 @@ The Diagnostic Log and Trace Viewer is an application that can send and receive 
 
 ### Command line usage;
 
-+ Windows: `dlt_viewer.exe [OPTIONS]`
-+ Linux: `dlt_viewer [OPTIONS]`
++ Windows: `dlt-viewer.exe [OPTIONS]`
++ Linux: `dlt-viewer [OPTIONS]`
 + MacOS: `open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app --args [OPTIONS]`
 
 Options: 
