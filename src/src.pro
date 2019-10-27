@@ -33,7 +33,7 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
-icons.files = icon/face-glasses.ico
+icons.files = icon/org.genivi.DLTViewer.ico
 icons_16x16.files = icon/16x16/org.genivi.DLTViewer.png
 icons_22x22.files = icon/22x22/org.genivi.DLTViewer.png
 icons_24x24.files = icon/24x24/org.genivi.DLTViewer.png

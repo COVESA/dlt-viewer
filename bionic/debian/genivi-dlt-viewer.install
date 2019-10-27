@@ -1,7 +1,7 @@
 usr/bin/dlt-viewer
 usr/lib/*/libqdlt.so.*
 usr/share/applications/org.genivi.DLTViewer.desktop
-usr/share/pixmaps/face-glasses.ico
+usr/share/pixmaps/org.genivi.DLTViewer.ico
 usr/share/icons/hicolor/*/apps/org.genivi.DLTViewer.png
 usr/share/icons/hicolor/symbolic/apps/org.genivi.DLTViewer-symbolic.svg
 usr/share/dlt-viewer/plugins/libfile*.so
