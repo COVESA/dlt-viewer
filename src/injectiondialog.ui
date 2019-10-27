@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resource.qrc">
-    <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
+    <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="3" column="0">

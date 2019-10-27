@@ -30,7 +30,7 @@
         <file>png/network-transmit-receive_disconnected.png</file>
     </qresource>
     <qresource prefix="/icons">
-        <file>png/face-glasses.png</file>
+        <file alias="png/org.genivi.DLTViewer.png">icon/32x32/org.genivi.DLTViewer.png</file>
         <file>png/bookmark-new.png</file>
         <file>png/colorize-2.png</file>
         <file>png/colorize-2_g.png</file>
