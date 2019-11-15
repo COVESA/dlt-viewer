@@ -64,3 +64,5 @@ https://github.com/GENIVI/dlt-viewer
 ## Contact
 
 Alexander Wenzel Alexander.AW.Wenzel@bmw.de and Gernot Wirschal Gernot.Wirschal@bmw.de
+
+Test Appveyor Build
