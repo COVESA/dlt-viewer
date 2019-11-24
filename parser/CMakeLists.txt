@@ -26,6 +26,6 @@ add_executable(dlt_parser main.cpp
                           qdltparser.cpp
                           ${UI_HEADERS})
 
-target_link_libraries(dlt_parser Qt5::Widgets )
+target_link_libraries(dlt_parser Qt5::Widgets -lstdc++)
 
 install(TARGETS dlt_parser DESTINATION deploy)
