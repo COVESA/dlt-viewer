@@ -55,7 +55,10 @@
 #include <stdarg.h>
 #include <stdint.h>
 
+#ifndef __GNUC__
 typedef int pid_t;
+#endif
+
 #ifdef TARGET_OS_MAC
 typedef unsigned long speed_t;
 #else
