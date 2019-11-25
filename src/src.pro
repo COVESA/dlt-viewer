@@ -18,7 +18,9 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     #QMAKE_CXXFLAGS += -pedantic
 }
 
-CONFIG += console
+CONFIG -= console
+
+QMAKE_LFLAGS += -Wl,-rpath=.
 
 # Uncomment to add debug symbols to Release build
 #QMAKE_CXXFLAGS_RELEASE += -g
@@ -59,6 +61,8 @@ macx:CONFIG -= app_bundle
 # Library definitions for debug and release builds
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
+    QMAKE_CXXFLAGS += -g
+    QMAKE_CFLAGS += -g
     QMAKE_LIBDIR += ../debug
     LIBS += -lqdltd
 } else {
@@ -66,6 +70,10 @@ CONFIG(debug, debug|release) {
     QMAKE_LIBDIR += ../release
     LIBS += -lqdlt
     QMAKE_RPATHDIR += ../build/release
+}
+
+win32-g++ {
+    LIBS += -lws2_32
 }
 
 # QT Features to be linked in
