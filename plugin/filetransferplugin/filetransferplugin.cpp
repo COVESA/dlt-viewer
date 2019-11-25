@@ -34,7 +34,6 @@ FiletransferPlugin::FiletransferPlugin()
 
 FiletransferPlugin::~FiletransferPlugin()
 {
-
 }
 
 QString FiletransferPlugin::name()
@@ -214,19 +213,16 @@ void FiletransferPlugin::updateMsgDecoded(int , QDltMsg &)
 {//empty. Implemented because derived plugin interface functions are virtual.
 }
 
-void FiletransferPlugin::updateFileFinish(){
-
+void FiletransferPlugin::updateFileFinish()
+{
 }
 
 void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
 {
-
-
     QDltArgument msgFirstArgument;
     QDltArgument msgLastArgument;
 
-
-    if(!dltFile)
+    if(NULL == dltFile)
     {
         //qDebug()<< "dltfile object does not exist";
         return;
@@ -251,7 +247,7 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
 
     // so we have a valid file transfer packet and now we look for the tag contained in the message
 
-    if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 )
+    if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 ) // Filetransfer Update
     {
             msg.getArgument(PROTOCOL_FLDA_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFldaTag()) == 0)
@@ -261,8 +257,7 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
             return;
      }
 
-
-    if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 )
+    if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 ) // Filetransfer Start
     {
             msg.getArgument(PROTOCOL_FLST_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlstTag()) == 0)
@@ -272,26 +267,14 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
             return;
     }
 
-
-    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 )
+    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) // Filetransfer Stop
     {
             msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
-                doFLFI(&msg);
+                doFLDA(index,&msg);
             }
             return;
-    }
-
-    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 )
-    {
-            msg.getArgument(PROTOCOL_FLIF_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
-            {
-                doFLIF(&msg);
-            }
-            return;
-
     }
 
     if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 )
@@ -315,6 +298,13 @@ void FiletransferPlugin::doFLST(QDltMsg *msg)
     msg->getArgument(PROTOCOL_FLST_FILEID,argument);
 
     File *file = new File(dltFile,0);
+
+    if ( file == NULL )
+    {
+      qDebug() << "Unable to create file object in "  << __LINE__ << __FILE__;
+      return;
+    }
+
     // set the attributes of the dynamic widget
     file->setFlags( Qt::ItemIsUserCheckable | Qt::ItemIsSelectable | Qt::ItemIsEnabled );
     file->setCheckState(COLUMN_CHECK, Qt::Unchecked);
@@ -338,18 +328,7 @@ void FiletransferPlugin::doFLST(QDltMsg *msg)
     msg->getArgument(PROTOCOL_FLST_BUFFERSIZE,argument);
     file->setBuffersize(argument.toString());
 
-    // We create the dynamic widget for this file transfer
-    QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(file->getFileSerialNumber(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
-    if(result.isEmpty())
-    {
-        form->getTreeWidget()->addTopLevelItem(file);
-    }
-    else
-    {
-      int index = form->getTreeWidget()->indexOfTopLevelItem(result.at(0));
-      form->getTreeWidget()->takeTopLevelItem(index);
-      form->getTreeWidget()->addTopLevelItem(file);
-    }
+    emit(form->additem_signal(file));
 
   return;
 }
@@ -357,49 +336,11 @@ void FiletransferPlugin::doFLST(QDltMsg *msg)
 void FiletransferPlugin::doFLDA(int index,QDltMsg *msg)
 {
     QDltArgument argument;
+    QDltArgument packageNumber;
     msg->getArgument(PROTOCOL_FLDA_FILEID,argument);
+    msg->getArgument(PROTOCOL_FLDA_PACKAGENR,packageNumber);
 
-    QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(argument.toString(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
-
-    if(result.isEmpty())
-    {
-        //Transfer for this file started before sending FLST
-      return;
-    }
-    else
-    {
-        File *file = (File*)result.at(0);
-        if(!file->isComplete())
-        {
-            QDltArgument packageNumber;
-            msg->getArgument(PROTOCOL_FLDA_PACKAGENR,packageNumber);
-
-            file->setQFileIndexForPackage(packageNumber.toString(),index);
-        }
-    }
-  return;
-}
-
-void FiletransferPlugin::doFLFI(QDltMsg *msg)
-{
-    QDltArgument argument;
-    msg->getArgument(PROTOCOL_FLFI_FILEID,argument);
-
-    QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(argument.toString(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILEID);
-
-    if(result.isEmpty())
-    {
-        //Transfer for this file started before sending FLST
-      return;
-    }
-    else
-    {
-        File *file = (File*)result.at(0);
-        if(file->isComplete())
-        {
-            file->setComplete();
-        }
-    }
+    emit(form->handleupdate_signal(argument.toString(),packageNumber.toString(), index ));
   return;
 }
 
@@ -420,24 +361,7 @@ void FiletransferPlugin::doFLER(QDltMsg *msg)
     QDltArgument errorCode2;
     msg->getArgument(PROTOCOL_FLER_ERRCODE2,errorCode2);
 
-    File *file= new File(0);
-
-    QList<QTreeWidgetItem *> result = form->getTreeWidget()->findItems(filename.toString(),Qt::MatchExactly | Qt::MatchRecursive,COLUMN_FILENAME);
-
-    if(result.isEmpty())
-    {
-       form->getTreeWidget()->addTopLevelItem(file);
-    }
-    else
-    {
-       file = (File*)result.at(0);
-       int index = form->getTreeWidget()->indexOfTopLevelItem(result.at(0));
-       form->getTreeWidget()->takeTopLevelItem(index);
-       form->getTreeWidget()->addTopLevelItem(file);
-    }
-
-    file->errorHappens(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTimeString());
-    file->setFlags(Qt::NoItemFlags );
+    emit(form->handle_errorsignal(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTimeString()));
 }
 
 bool FiletransferPlugin::command(QString command, QList<QString> params)
@@ -465,14 +389,19 @@ bool FiletransferPlugin::command(QString command, QList<QString> params)
 
         QDir extract_dir(QDir::fromNativeSeparators ( exp_path ));
 
-        if(!extract_dir.exists())
+        if(false == extract_dir.exists())
         {
-            if (!extract_dir.mkpath("."))
+          if (!extract_dir.mkpath("."))
             {
               errorText = "Failed to create directory " + params.at(0);
               return false;
-              }
+            }
         }
+        else
+        {
+            qDebug() << "Created" << params.at(0);
+        }
+
         return exportAll(extract_dir);
     }
     errorText = "Unknown command " + command;
@@ -481,36 +410,10 @@ bool FiletransferPlugin::command(QString command, QList<QString> params)
 
 bool FiletransferPlugin::exportAll(QDir extract_dir)
 {
-    QTreeWidgetItemIterator it(form->getTreeWidget(),QTreeWidgetItemIterator::NoChildren );
-    errorText = "Failed to save files";
-    bool ret = true;
-    if(!*it)
-    {
-        errorText = " - No filetransfer files in the loaded DLT file.";
-        return false;
-    }
-    while (*it)
-    {
-        File *tmp = dynamic_cast<File*>(*it);
-        if (tmp != NULL && tmp->isComplete())
-        {
-
-            QString absolutePath = extract_dir.filePath(tmp->getFilename());
-
-            if(!tmp->saveFile(absolutePath) )
-            {
-                ret = false;
-                errorText += ", " + tmp->getFilenameOnTarget();
-            }
-            else
-            {
-                qDebug() << "Exported: " << absolutePath;
-            }
-        }
-        ++it;
-        QApplication::processEvents();
-    }
-    return ret;
+   bool ret = true;
+   QApplication::processEvents();
+   emit(form->export_signal(extract_dir,&errorText, &ret));
+   return ret;
 }
 
 /* Control Plugin methods */
@@ -550,6 +453,18 @@ bool FiletransferPlugin::autoscrollStateChanged(bool enabled)
     return true;
 }
 
+void FiletransferPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
+
+void FiletransferPlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void FiletransferPlugin::configurationChanged()
+{}
 
 
 #ifndef QT5

@@ -19,8 +19,10 @@
 
 #include <QModelIndex>
 #include <QApplication>
+
+#include <qdlt.h>
+
 #include "mainwindow.h"
-#include "optmanager.h"
 
 int main(int argc, char *argv[])
 {
@@ -32,7 +34,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
     QStringList arguments = a.arguments();
-    OptManager *opt = OptManager::getInstance();
+    QDltOptManager *opt = QDltOptManager::getInstance();
     opt->parse(&arguments);
 
     MainWindow w;

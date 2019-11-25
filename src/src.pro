@@ -33,14 +33,30 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
+icons.files = icon/org.genivi.DLTViewer.ico
+icons_16x16.files = icon/16x16/org.genivi.DLTViewer.png
+icons_22x22.files = icon/22x22/org.genivi.DLTViewer.png
+icons_24x24.files = icon/24x24/org.genivi.DLTViewer.png
+icons_32x32.files = icon/32x32/org.genivi.DLTViewer.png
+icons_48x48.files = icon/48x48/org.genivi.DLTViewer.png
+icons_256x256.files = icon/256x256/org.genivi.DLTViewer.png
+icons_symbolic.files = icon/symbolic/org.genivi.DLTViewer-symbolic.svg
+
 icons.path = $$PREFIX/usr/share/pixmaps
-icons.files = icon/face-glasses.ico
-INSTALLS += icons
+icons_16x16.path = $$PREFIX/usr/share/icons/hicolor/16x16/apps
+icons_22x22.path = $$PREFIX/usr/share/icons/hicolor/22x22/apps
+icons_24x24.path = $$PREFIX/usr/share/icons/hicolor/24x24/apps
+icons_32x32.path = $$PREFIX/usr/share/icons/hicolor/32x32/apps
+icons_48x48.path = $$PREFIX/usr/share/icons/hicolor/48x48/apps
+icons_256x256.path = $$PREFIX/usr/share/icons/hicolor/256x256/apps
+icons_symbolic.path = $$PREFIX/usr/share/icons/hicolor/symbolic/apps
+
+INSTALLS += icons icons_16x16 icons_22x22 icons_24x24 icons_32x32 icons_48x48 icons_256x256 icons_symbolic
 
 # desktop file to show the application in start menu on Linux
 # This should work on both KDE and Gnome
 desktop.path = $$PREFIX/usr/share/applications
-desktop.files = dlt_viewer.desktop
+desktop.files = org.genivi.DLTViewer.desktop
 INSTALLS += desktop
 
 # Unix header exports
@@ -85,7 +101,7 @@ RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
 # Executable name
-TARGET = dlt_viewer
+TARGET = dlt-viewer
 
 # This is an application
 TEMPLATE = app
@@ -103,8 +119,6 @@ SOURCES += main.cpp \
     injectiondialog.cpp \
     searchdialog.cpp \
     multiplecontextdialog.cpp \
-    optmanager.cpp \
-    dltsettingsmanager.cpp \
     tablemodel.cpp \
     filtertreewidget.cpp \
     dltfileutils.cpp \
@@ -122,7 +136,7 @@ SOURCES += main.cpp \
     dltmsgqueue.cpp \
     dltfileindexerthread.cpp \
     dltfileindexerdefaultfilterthread.cpp \
-    mcudpsocket.cpp
+    mcudpsocket.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -137,8 +151,6 @@ HEADERS += mainwindow.h \
     searchdialog.h \
     version.h \
     multiplecontextdialog.h \
-    optmanager.h \
-    dltsettingsmanager.h \
     tablemodel.h \
     filtertreewidget.h \
     dltfileutils.h \
@@ -156,7 +168,7 @@ HEADERS += mainwindow.h \
     dltmsgqueue.h \
     dltfileindexerthread.h \
     dltfileindexerdefaultfilterthread.h \
-    mcudpsocket.h
+    mcudpsocket.h \
 
 # Compile these UI files
 FORMS += mainwindow.ui \
@@ -170,7 +182,7 @@ FORMS += mainwindow.ui \
     searchdialog.ui \
     multiplecontextdialog.ui \
     jumptodialog.ui \
-    exporterdialog.ui
+    exporterdialog.ui \
 
 # Related files
 OTHER_FILES += \
@@ -188,3 +200,6 @@ RESOURCES += resource.qrc
 
 # Instructions to compile the icon.
 RC_FILE = icon/dlt_viewer.rc
+
+DISTFILES += \
+    ../build_qwt_windows_qt5_MSVC.bat

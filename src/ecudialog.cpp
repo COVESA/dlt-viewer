@@ -88,6 +88,7 @@ void EcuDialog::setData(EcuItem &item)
     ui->comboBoxInterface->setCurrentIndex(item.interfacetype);
     ui->comboBoxHostname->setEditText(item.getHostname());
     ui->comboBoxPortIP->setEditText(QString("%1").arg(item.getIpport()));
+    ui->comboBoxPortIP_UDP->setEditText(QString("%1").arg(item.getUdpport()));
     ui->comboBoxNetworkIF->setEditText(QString("%1").arg(item.getEthIF()));
     ui->comboBoxPortSerial->setEditText(item.getPort());
 
@@ -154,7 +155,7 @@ QString EcuDialog::mcastaddress()
 }
 
 
-unsigned int EcuDialog::tcpport()
+unsigned int EcuDialog::port()
 {
     switch (ui->comboBoxInterface->currentIndex())
     {
@@ -168,6 +169,11 @@ unsigned int EcuDialog::tcpport()
         break;
     }
    return -1;
+}
+
+unsigned int EcuDialog::tcpport()
+{
+    return  ui->comboBoxPortIP->currentText().toUInt();
 }
 
 unsigned int EcuDialog::udpport()
@@ -281,8 +287,12 @@ void EcuDialog::setSerialPortList(QStringList ports)
 void EcuDialog::setIPPortList(QStringList ports)
 {
     ui->comboBoxPortIP->clear();
-    ui->comboBoxPortIP_UDP->clear();
     ui->comboBoxPortIP->addItems(ports);
+}
+
+void EcuDialog::setUDPPortList(QStringList ports)
+{
+    ui->comboBoxPortIP_UDP->clear();
     ui->comboBoxPortIP_UDP->addItems(ports);
 }
 
@@ -307,6 +317,7 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item)
     item->interfacetype = this->interfacetype();
     item->setHostname(this->hostname());
     item->setIpport(this->tcpport());
+    item->setUdpport(this->udpport());
     item->setEthIF(this->EthInterface());
     item->setmcastIP(this->mcastaddress());
     item->setPort(this->Serialport());
@@ -325,7 +336,7 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item)
     item->updateAutoReconnectTimestamp();
 
     /* new qdlt library */
-    item->ipcon.setPort(this->tcpport());
+    item->ipcon.setPort(this->port());
     item->ipcon.setHostname(this->hostname());
     item->serialcon.setBaudrate(this->baudrate());
     item->serialcon.setPort(this->Serialport());

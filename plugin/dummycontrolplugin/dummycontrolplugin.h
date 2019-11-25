@@ -69,6 +69,9 @@ public:
     bool controlMsg(int index, QDltMsg &msg);
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname);
     bool autoscrollStateChanged(bool enabled);
+    void initMessageDecoder(QDltMessageDecoder* pMessageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
 
     /* internal variables */
     DummyControl::Form *form;

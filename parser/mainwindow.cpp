@@ -38,7 +38,7 @@
 #include "version.h"
 
 const char* commandLineOptions = "" \
-"Call: dlt_parser [options]\n" \
+"Call: dlt-parser [options]\n" \
 "DLT parser is used to generate Fibex XML files for non verbose DLT messages.\n" \
 "Each option can only be used once. For more complex configurations use a configuration file.\n" \
 "\n" \

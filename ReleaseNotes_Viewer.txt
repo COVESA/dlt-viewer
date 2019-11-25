@@ -1,10 +1,16 @@
 DLT Viewer  - Release Notes
 ===========================
 Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
+Gernot Wirschal <Gernot.Wirschal@bmw.de>
+
+Changes
+-------
+02.05.2019 GW: 2.19.0 Release
 
 Version
 -------
-Version 2.18.0 RELEASE
+Version 2.19.0 RELEASE
+
 
 Known issues
 ------------
@@ -15,6 +21,149 @@ Known issues
 Changes
 -------
 
+2.19.0
+    * Adjust to cmake changes
+    * QTextStream wants an IO target. Fixes a crash when a plugin failes to load
+    * Changed ambiguous wording in documentation for CMake builds (#44)
+    * Upgrade version of qt, qwt and visual studio for windows build.
+    * Fixed corrupt message received when the DLT frame starting sequence is detected in the payload.
+    * Fix the manual trigger for all ECUs
+    * README: Fix links to mailing list and wiki page (#42)
+    * Added infos on how to build on MacOS (#40)
+    * Remove null termination from injection message (#39)
+    * getloginfo payload content is missing the last byte (#37)
+    * Control response message always report ok (#38)
+    * WIP on master: e43ab83 Update documentation
+    * index on master: e43ab83 Update documentation
+    * Update documentation
+    * Fix binary name.
+    * Fix required CMake version and remove unnecessary duplicates
+    * Enable marking/color highlighting of lines in the table view
+    * Get target software version again after clear
+    * Fix error messages in file transfer plugin:
+    * Bugfix "corrupted message" when using "no index cache mode"
+    * Prevent table view from displaying multiline rows
+    * deleted obsolete image from documentation
+    * optimize ::read()
+    
+    * DLT Payload with \n\r breaks the output in the search results
+    * Add documentation for UDP reception
+    * Add UDP Unicast / Multicast reception:
+    * DLT Payload with \n\r breaks the output in the TableView
+    * Change QRegExp to QRegularExpression in qdlt/filters
+    * Add regular expression option to Application Id field in filters
+    * Add "search" to documentation
+    * Rework search functionality:
+    * Add 'Copy Selection Payload to Clipboard' menuitems to tables
+    * remove non functional "Sow argument columns"
+    * remove obsolete and confusing icon
+    * fix broken file split functionality
+    * Add message injection example in speed plugin
+    * Update documentation
+    * Bugfix in mainwindow destructor
+    * Extend user manual and change to Latex input format
+    * disable call of plugin decode if plugins switched off
+    * rework and fix speed plugin to build and run
+    * Add "Resize columns to fit" context menu item to main table
+    * fix compiler complaint
+    * fix windows parser build bat file
+    * Fixing unstable behaviour in MainWindow::nearest_line
+    * fix broken cmake build of qdlt
+    * Revert "fix broken build in the parser"
+    * Timing packets typo in ECU configuration ecudialog.ui
+    * re-activate automarking of messages warn/error/marker
+    * add packet version to support email
+    * fix broken build in the parser
+    * add debian packet build example for Ubuntu 18.04
+    * Fix file copy error in SDK generation batch file
+    * Fix "CORRUPT MESSAGE" bug after Save as + Clean in livetracing mode
+    * Cleaning up, bugfixing, enhanced error output
+    * No calling of loadConfig when deactivationg plugin anymore
+    * Revert Append QTDIR to CMAKE_PREFIX_PATH
+    * Correlate menu + checkbox for "enable plugin"
+    * Rework README.md
+    * project.cpp: Error mesage with line number in case of corrupt project file
+    * Bugfix: System proxy settings not correct handled in QT5.8
+    * Index column with 1000 separator
+    * avoid nasty commandline message on start
+    * Rename slot on_Open_triggered
+    * avoid nasty commandline message on start: filetransferplugin
+    * Rename slot on_saveRightButton_clicked
+    * Rename slot on_tableView_selectionChange
+    * Rename on_SaveAs_triggered
+    * Rename slot on_action_menuConfig_SearchTable_Copy_to_clipboard_triggered
+    * Rename slot on_New_triggered
+    * Remove obslete qextserialport
+    * Port from qextserialport to QSerialPort
+    * Fix huge window problem whith long filenames
+    * Append QTDIR to CMAKE_PREFIX_PATH
+    * Add CMake build support under windows
+    * Improved the performance of the copy selection to clipboard from the search table.
+    * Filetransferplugin: put Form in a namespace
+    * dltviewerplugin: put Form in a namespace
+    * Dummyviewerplugin: put Form in a namespace
+    * Dltsystemviewerplugin: put Form in a namespace
+    * Dummycontrolplugin: put Form in a namespace
+    * Dltbusplugin: put Form in a namespace
+    * Use a combo widget for the search toolbar
+    * Build plugins in bin/plugins
+    * filetransfer plugin bugfix
+    * fix warnings of gcc 7.2
+    * add silent mode to dltexporter
+    * Add silent mode in dltfileutils
+    * propper type assignment for bool variables in project.h/cpp
+    * [searchdialog] keep the cursor position when search-text is edited in the middle
+    * bugfix of temp file path settings
+    * add debug output in case of corrupt filter file
+    * fix debug output for dltviewer plugin
+    * Avoid multiple reallocations of QByteArray at parsing
+    * Enable mutex for read-lock in file indexer thread
+    * Enable message filtering in QDltFile after index creation
+    * Bugfix in project.cpp for daylight time
+    * Reduce call frequency of decodeMsg and getMsg
+    * Avoid random crash for file reload
+    * Add icon source to README.txt
+    * Add decoded dlt commandline export
+    * Remove unused function on_actionApply_Configuration_triggered
+    * Fixed condsidering plugins enabled flag in index cache.
+    * Replace magic number for autoconnect default timer by a proper define Also consider plugin enabled checkbox when live tracing More meaningfull commandline output
+    * Fixed not considering plugin configuration when loading index from cache.
+    * Check if plugins are enabled during file indexing Enable "Apply Configuration" button by default Change "Aplly configuration" button from PluseButton to Pushbutton Default setting of index cache set to inactive
+    * Start ColorDialog with current color instead of white
+    * tablemodel: fix deprecated Qt class
+    * Add dlt file conversion format csv to commandline mode
+    * Updated support for macOS by creating a self contained DLT Viewer app bundle
+    * Removed executable flag from source files
+    * Set soms limit on what is displayed in the tableview
+    * Re-apply default commandline behaviour
+    * Fix bug when starting several parallel commandline
+    * Extend / enable silentmode for plugins
+    * Remove ringbuffer when deconstructing a dltmsgqueue.
+    * Implement message queue using condition variables instead of atomics/sleeps.
+    * mainwindow: Don't scroll to line end on click
+    * add flags to qdltcontrol to let the plugins know about silentmode
+    * mainwindow: Enable horizontal scrolling
+    * Bugfix and clean up commandline option
+    * qextserialport: Link IOKit & Foundation on macOS
+    * CMakeLists.txt: Require C++11
+    * Enable support for High DPI screens
+    * Fix crashes when converting dlt to text using commandline option
+    * Revert "Enable use of standard GNU installation locations"
+    * Enable use of standard GNU installation locations
+    * Add Qt to the RPATH
+    * Typo fix (#3)
+    * Open ReadOnly DLT Files
+    * Fix for filetransfer plugin: Saving file transfers by "Save all selected" did not work when selecting/deselecting entries Also right mouse click save reported "no file selected" Signed-off-by: Gernot Wirschal <Gernot.Wirschal@bmw.de>
+    * Temporary fix color scheme issue for qdlt: on Ubuntu and Windows the message windows showed white text on black background when toggling the filter active/inactive checkbox. Also fix build error for Qt 5.2.1 on Ubuntu 14.04 Signed-off-by: Gernot Wirschal <Gernot.Wirschal@bmw.de>
+    * fix typing error for PACKAGE_VERSION_STATE Signed-off-by: Gernot Wirschal <Gernot.Wirschal@bmw.de>
+    * Updating README.md based on feedback
+    * Created README.md for GitHub (#1)
+    * 1.) Add test for minimum Qt version 2.) Prepare qdlt for use as a library (fix header includes) 3.) Clean some cruft
+    * DltViewerPlugin: Break payload by '\n' in 'Message' Tab
+    * Add CMake instructions to INSTALL.txt
+    * Remove Widgets dependency from qdlt and qextserialport
+    * Switch to 2.19.0 unstable to support QT >= 5.5.1 only
+    
 2.18.0
    * Bugfixes:
       Fixed: SaveAs showing corrupted messages or crash of dlt-viewer.

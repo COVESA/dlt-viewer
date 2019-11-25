@@ -35,9 +35,12 @@ add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
                   qdltfilterlist.cpp
                   qdltfilterindex.cpp
                   qdltdefaultfilter.cpp
+                  qdltmessagedecoder.cpp
                   qdltpluginmanager.cpp
                   qdltplugin.cpp
-                  qdltsegmentedmsg.cpp)
+                  qdltsegmentedmsg.cpp
+                  qdltoptmanager.cpp
+                  qdltsettingsmanager.cpp)
 
 target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
                                          ${CMAKE_CURRENT_SOURCE_DIR}/../src)
@@ -51,4 +54,4 @@ endif()
 
 target_link_libraries(qdlt ${QDLT_LINK_LIBS})
 
-install(TARGETS qdlt DESTINATION deploy)
+install(TARGETS qdlt DESTINATION ${LIBRARY_INSTALLATION_PATH})

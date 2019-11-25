@@ -1,4 +1,3 @@
-#include "dltsettingsmanager.h"
 #include "fieldnames.h"
 
 FieldNames::FieldNames(QObject *parent) :
@@ -6,7 +5,7 @@ FieldNames::FieldNames(QObject *parent) :
 {
 }
 
-QString FieldNames::getName(Fields cn, SettingsDialog *settings)
+QString FieldNames::getName(Fields cn, QDltSettingsManager *settings)
 {
     switch(cn)
     {

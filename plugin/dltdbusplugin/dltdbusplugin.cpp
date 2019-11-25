@@ -812,7 +812,18 @@ bool DltDBusPlugin::autoscrollStateChanged(bool enabled)
     return true;
 }
 
+void DltDBusPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
 
+void DltDBusPlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void DltDBusPlugin::configurationChanged()
+{}
 
 #ifndef QT5
 Q_EXPORT_PLUGIN2(dltdbusplugin, DltDBusPlugin);

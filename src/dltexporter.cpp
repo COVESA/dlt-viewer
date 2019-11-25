@@ -6,7 +6,6 @@
 #include "dltexporter.h"
 #include "fieldnames.h"
 #include "project.h"
-#include "optmanager.h"
 
 DltExporter::DltExporter(QObject *parent) :
     QObject(parent)
@@ -90,7 +89,7 @@ bool DltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            if ( true == OptManager::getInstance()->issilentMode() )
+            if ( true == QDltOptManager::getInstance()->issilentMode() )
              {
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
@@ -104,7 +103,7 @@ bool DltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly))
         {
-            if ( true == OptManager::getInstance()->issilentMode() )
+            if ( true == QDltOptManager::getInstance()->issilentMode() )
              {
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
@@ -121,7 +120,7 @@ bool DltExporter::start()
         /* Write the first line of CSV file */
         if(!writeCSVHeader(to))
         {
-            if ( true == OptManager::getInstance()->issilentMode() )
+            if ( true == QDltOptManager::getInstance()->issilentMode() )
              {
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
@@ -287,7 +286,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     }
 
 
-    bool silentMode = !OptManager::getInstance()->issilentMode();
+    bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
     qDebug() << "Start DLT export of" << size << "messages" << "silent mode" << !silentMode;
 

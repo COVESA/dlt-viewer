@@ -17,10 +17,12 @@
  * @licence end@
  */
 
-#ifndef OPTMANAGER_H
-#define OPTMANAGER_H
+#ifndef QDLTOPTMANAGER_H
+#define QDLTOPTMANAGER_H
 
 #include <QStringList>
+
+#include "export_rules.h"
 
 enum e_convertionmode
 {
@@ -33,10 +35,10 @@ enum e_convertionmode
 
 
 
-class OptManager
+class QDLT_EXPORT QDltOptManager
 {
 public:
-    static OptManager* getInstance();
+    static QDltOptManager* getInstance();
     void printUsage();
     void printVersion(QString appname);
     void parse(QStringList *opt);
@@ -62,9 +64,9 @@ public:
     QStringList getCommandParams();
 
 private:
-    OptManager();
-    OptManager(OptManager const&);
-    static OptManager *instance;
+    QDltOptManager();
+    QDltOptManager(QDltOptManager const&);
+    static QDltOptManager *instance;
 
     bool project;
     bool log;
@@ -85,4 +87,4 @@ private:
     QStringList commandParams;
 };
 
-#endif // OPTMANAGER_H
+#endif //QDLTOPTMANAGER_H

@@ -2,6 +2,7 @@
 cls
 
 REM Date     Version   Author                Changes
+REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4, Qwt 6.1.4 and Visual Studio 2015
 REM 30.1.18  1.0       Gernot Wirschal       First versioned file
 
 echo ************************************
@@ -22,6 +23,13 @@ set MSVC_VER=msvc%MSVC_VERSION%
 
 rem parameter of this batch script can be either x86 or x86_amd64
 
+if "%ARCHITECTURE%"=="" (
+    if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
+        set ARCHITECTURE=x86_amd64
+    ) else (
+        set ARCHITECTURE=x86
+    )
+
     set USE_ARCH_PARAM=false
     if "%1" NEQ "" (
         if "%1"=="x86" set USE_ARCH_PARAM=true
@@ -34,39 +42,21 @@ echo Target architecture is %ARCHITECTURE%
 
 echo *** Setting up environment  ***
 
-if "%MSVC_VER%"=="msvc2015" (
-   set MSVC_PATH=Microsoft Visual Studio 14.0\VC
-) else ( 
-   set MSVC_PATH=Microsoft Visual Studio 12.0\VC
-   )
-
 echo Set QT path for %QTVER%
 
-if "%QTVER%" EQU "5.6" (
-   echo set QT_VER=Qt5.6.1\5.6
-   set QT_VER=Qt5.6.1\5.6
-) else ( 
-   if "%QTVER%" EQU "5.5" (
-   echo set QT_VER=Qt5.5.1\5.5
-   set QT_VER=Qt5.5.1\5.5
-   ) else ( echo set QT_VER=Qt5.8.0\5.8
-            set QT_VER=Qt5.8.0\5.8
-     )
- )   
-   
+IF "%QTVER%"=="" (
+    set QTVER=5.12.4
+)
+
 echo Set QT diretory for %ARCHITECTURE%
 
-  if "%ARCHITECTURE%" EQU "x86_amd64" (
-    echo "Set QTDIR=C:\Qt\%QT_VER%\%MSVC_VER%_64"
-    set QTDIR=C:\Qt\%QT_VER%\%MSVC_VER%_64
-    )	else (
-	echo "Set QTDIR=C:\Qt\%QT_VER%\%MSVC_VER%"
-	set QTDIR=C:\Qt\%QT_VER%\%MSVC_VER%)
-	)
-  ) 
+if "%QTDIR%"=="" (
+    if "%ARCHITECTURE%"=="x86_amd64" (
+        set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015_64
+    ) else (set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015)
+)
 
-
-set MSVC_DIR=C:\Program Files (x86)\%MSVC_PATH%
+if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
 
 echo Set suffix for %ARCHITECTURE%
 set DIR_POSTFIX=_32bit
@@ -75,11 +65,13 @@ echo DIR_POSTFIX %DIR_POSTFIX%
 
 set WORKINGDIR=%CD%
 
+IF "%QWT%"=="" (
+    set QWT=6.1.4
+)
+
 set QWT_DIR=C:\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
 
-
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
-
 
 IF "%WORKSPACE%" == "" (
     set SOURCE_DIR=%CD%\qwt-%QWT%

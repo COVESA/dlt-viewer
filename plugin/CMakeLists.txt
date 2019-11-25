@@ -13,15 +13,26 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-
-cmake_minimum_required (VERSION 2.8.12)
-set (CMAKE_VERBOSE_MAKEFILE FALSE)
-
 # build plugins in build/bin/plugins directory
 set(PLUGIN_DIR ${BIN_DIR}/plugins)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PLUGIN_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PLUGIN_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PLUGIN_DIR})
+
+
+function(add_plugin NAME)
+
+    target_link_libraries(${NAME} qdlt Qt5::Widgets)
+    install(TARGETS ${NAME} DESTINATION ${PLUGIN_INSTALLATION_PATH})
+
+    # set the location of the plugins in such a way that they can be located by the dlt-viewer executable when running in
+    # directly from the build folder (without "make install")
+    set_target_properties(${NAME} PROPERTIES
+        LIBRARY_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+    )
+
+endfunction()
 
 
 add_subdirectory(dltviewerplugin)

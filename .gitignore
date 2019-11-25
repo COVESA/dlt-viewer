@@ -9,3 +9,6 @@ release/
 .cproject
 *.pro.user*
 .settings
+*.orig
+*~
+

@@ -15,8 +15,6 @@
 #
 #
 
-# set (CMAKE_AUTOUIC ON)
-
 # cmake 2.8.12 doesn't have AUTOUIC ??
 # QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/form.ui )
 
@@ -26,4 +24,4 @@ add_library(dummycommandplugin MODULE dummycommandplugin.cpp
 	                        ${UI_HEADERS})
 
 target_link_libraries(dummycommandplugin qdlt Qt5::Widgets )
-install(TARGETS dummycommandplugin DESTINATION deploy/plugins)
+add_plugin(dummycommandplugin)

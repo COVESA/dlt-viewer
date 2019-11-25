@@ -12,6 +12,7 @@ class QDLTPluginDecoderInterface;
 class QDltPluginViewerInterface;
 class QDltPluginControlInterface;
 class QDltPluginCommandInterface;
+class QTableView;
 
 //! Access class to a DLT Plugin to decode, view and control DLT messages
 /*!
@@ -107,6 +108,9 @@ public:
     void updateFileFinish();
     void selectedIdxMsg(int index, QDltMsg &msg);
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
+    void initMessageDecoder(QDltMessageDecoder* messageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
 
     // control plugin interfaces
     bool initControl(QDltControl *control);

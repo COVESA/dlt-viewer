@@ -35,7 +35,7 @@ RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
 # Executable name
-TARGET = dlt_parser
+TARGET = dlt-parser
 
 # This is an application
 TEMPLATE = app

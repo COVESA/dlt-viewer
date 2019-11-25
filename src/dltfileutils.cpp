@@ -64,8 +64,10 @@ QString DltFileUtils::createTempFile(QDir path,  bool silentmode)
     return file.fileName();
 }
 
-QDir DltFileUtils::getTempPath(SettingsDialog *settings, bool silentmode)
+QDir DltFileUtils::getTempPath(bool silentmode)
 {
+    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+
     QDir temp_path = QString(".");
     bool dir_ok = true;
   //  bool silentmode = true;
