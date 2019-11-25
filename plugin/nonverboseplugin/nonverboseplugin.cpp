@@ -245,6 +245,7 @@ bool NonverbosePlugin::parseFile(QString filename)
                   {
                     frame = new DltFibexFrame();
                     frame->id = xml.attributes().value(QString("ID")).toString();
+                    frame->filename = filename;
                   }
               }
               if(xml.name() == QString("MANUFACTURER-EXTENSION"))
@@ -436,20 +437,25 @@ bool NonverbosePlugin::parseFile(QString filename)
     }
 
     /* create PDU Ref links */
-    foreach(DltFibexFrame *frame, framemap)
+    foreach(DltFibexFrame *frame, framemapwithkey)
     {
-        foreach(DltFibexPduRef *ref, frame->pdureflist)
+        if(!frame->filename.compare(filename))
         {
-            foreach(DltFibexPdu *pdu, pdumap)
+            foreach(DltFibexPduRef *ref, frame->pdureflist)
             {
-                if(pdu->id == ref->id)
+                foreach(DltFibexPdu *pdu, pdumap)
                 {
-                    ref->ref = pdu;
-                    break;
+                    if((pdu->id == ref->id))
+                    {
+                        ref->ref = pdu;
+                        break;
+                    }
                 }
             }
         }
     }
+
+    pdumap.clear();
 
     return ret;
 }
@@ -463,7 +469,7 @@ QStringList NonverbosePlugin::infoConfig()
 {
     QStringList list;
 
-    foreach(DltFibexFrame *frame, framemap)
+    foreach(DltFibexFrame *frame, framemapwithkey)
     {
         QString text;
         text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
