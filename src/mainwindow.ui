@@ -18,7 +18,7 @@
   </property>
   <property name="windowIcon">
    <iconset resource="resource.qrc">
-    <normaloff>:/icons/png/face-glasses.png</normaloff>:/icons/png/face-glasses.png</iconset>
+    <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
@@ -68,6 +68,9 @@
       </property>
       <property name="horizontalScrollMode">
        <enum>QAbstractItemView::ScrollPerPixel</enum>
+      </property>
+      <property name="wordWrap">
+       <bool>false</bool>
       </property>
       <attribute name="horizontalHeaderDefaultSectionSize">
        <number>200</number>

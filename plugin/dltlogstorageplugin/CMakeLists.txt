@@ -13,8 +13,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-set (CMAKE_AUTOUIC ON)
-
 # cmake 2.8.12 doesn't have AUTOUIC ??
 QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/logstorageconfigcreatorform.ui )
 
@@ -24,4 +22,5 @@ add_library(dltlogstorageplugin MODULE dltlogstorageconfigcreatorplugin.cpp
     ${UI_HEADERS})
 
 target_link_libraries(dltlogstorageplugin qdlt Qt5::Widgets )
-install(TARGETS dltlogstorageplugin DESTINATION deploy/plugins)
+
+add_plugin(dltlogstorageplugin)

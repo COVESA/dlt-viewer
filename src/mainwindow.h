@@ -31,13 +31,11 @@
 #include <QCompleter>
 #include <QStringListModel>
 
+#include "qdlt.h"
 #include "tablemodel.h"
 #include "project.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
-#include "optmanager.h"
-#include "qdlt.h"
-#include "dltsettingsmanager.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
@@ -136,6 +134,7 @@ private:
 
     /* Status line items */
     QLabel *statusFilename;
+    QLabel *statusFileError;
     QLabel *statusFileVersion;
     QLabel *statusBytesReceived;
     QLabel *statusByteErrorsReceived;
@@ -155,7 +154,8 @@ private:
     ExporterDialog exporterDialog;
 
     /* Settings dialog containing also the settings parameter itself */
-    SettingsDialog *settings;
+    SettingsDialog *settingsDlg;
+    QDltSettingsManager *settings;
     QLineEdit *searchTextbox;
     QComboBox *searchComboBox;
 
@@ -204,6 +204,7 @@ private:
     enum { MaxRecentPorts = 10 };
     QStringList recentSerialPorts;
     QStringList recentIPPorts;
+    QStringList recentUDPPorts;
     QString recentEthIF;
     QStringList recent_multicastAddresses;
 
@@ -233,6 +234,8 @@ private:
 
     /* keep the target version string submited by the target for internal use */
     QString target_version_string;
+
+    QList<unsigned long int> selectedMarkerRows;
 
     /* functions called in constructor */
     void initState();
@@ -314,6 +317,7 @@ private:
     void setCurrentMCAddress(const QString &mcastaddress);
     void setCurrentSerialPort(const QString &portName);
     void setCurrentIPPort(const QString &portName);
+    void setCurrentUDPPort(const QString &portName);
     void setCurrentEthIF(const QString &EthIfName);
     void setMcast(bool mcast);
     void setInterfaceTypeSelection(int selectindex);
@@ -341,6 +345,7 @@ private:
 
     QStringList getAvailableSerialPorts();
     QStringList getAvailableIPPorts() {return { "3490"};} // DLT standard port
+    QStringList getAvailableUDPPorts() {return { "3490"};} // DLT standard port
     QStringList getAvailableNetworkInterfaces();
 
     void deleteactualFile();
@@ -425,6 +430,10 @@ public slots:
     void on_action_menuFile_Clear_triggered();
     void on_action_menuFile_Quit_triggered();
     void on_actionFindNext();
+    void mark_unmark_lines();
+    void unmark_all_lines();
+
+
 private slots:
 
     // Search methods
@@ -494,6 +503,8 @@ private slots:
     void on_action_menuPlugin_Disable_triggered();
 
     //Rename
+    void indexDone();
+    void indexStart();
     void filterAdd();
     void filterAddTable();
     void connected();

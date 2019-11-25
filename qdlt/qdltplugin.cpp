@@ -2,6 +2,8 @@
 
 #include <QDir>
 #include <QCoreApplication>
+#include <QTableView>
+
 #include <QPluginLoader>
 
 QDltPlugin::QDltPlugin()
@@ -216,6 +218,24 @@ void QDltPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg)
 {
 if(pluginviewerinterface)
     pluginviewerinterface->selectedIdxMsgDecoded(index,msg);
+}
+
+void QDltPlugin::initMessageDecoder(QDltMessageDecoder* messageDecoder)
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->initMessageDecoder(messageDecoder);
+}
+
+void QDltPlugin::initMainTableView(QTableView* pTableView)
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->initMainTableView(pTableView);
+}
+
+void QDltPlugin::configurationChanged()
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->configurationChanged();
 }
 
 // control plugin interface

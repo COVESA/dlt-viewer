@@ -15,6 +15,7 @@ DEFINES += QDLT_LIBRARY
     QMAKE_CXXFLAGS += -std=gnu++0x
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
+    QMAKE_CXXFLAGS += -DPLUGIN_INSTALLATION_PATH=\\\"$$PREFIX/usr/share/dlt-viewer/plugins\\\"
     #QMAKE_CXXFLAGS += -pedantic
 }
 
@@ -55,8 +56,9 @@ UI_DIR      = build/ui
 INCLUDEPATH = . ../src
 
 SOURCES +=  \
-            dlt_common.c \
+    dlt_common.c \
     qdltipconnection.cpp \
+    qdltmessagedecoder.cpp \
     qdlttcpconnection.cpp \
     qdltudpconnection.cpp \
     qdltserialconnection.cpp \
@@ -72,14 +74,16 @@ SOURCES +=  \
     qdltdefaultfilter.cpp \
     qdltpluginmanager.cpp \
     qdltplugin.cpp \
-    qdltsegmentedmsg.cpp
-
+    qdltoptmanager.cpp \
+    qdltsegmentedmsg.cpp \
+    qdltsettingsmanager.cpp \
 
 HEADERS += qdlt.h \
     export_rules.h \
     dlt_common.h \
     dlt_user.h \
     qdltipconnection.h \
+    qdltmessagedecoder.h \
     qdlttcpconnection.h \
     qdltudpconnection.h \
     qdltserialconnection.h \
@@ -98,7 +102,9 @@ HEADERS += qdlt.h \
     qdltplugin.h \
     dlt_types.h \
     dlt_protocol.h \
-    qdltsegmentedmsg.h
+    qdltoptmanager.h \
+    qdltsegmentedmsg.h \
+    qdltsettingsmanager.h \
 
 unix:VERSION            = 1.0.0
 

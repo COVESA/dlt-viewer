@@ -39,15 +39,22 @@ public:
     ~Form();
     QTreeWidget* getTreeWidget();
     void clearSelectedFiles();
+
+signals:
+    void additem_signal(File *f);
+    void export_signal(QDir dir, QString *errorText, bool *success);
+    void handleupdate_signal(QString filestring, QString packetnumber, int index);
+    void err_signal(QDltMsg *msg);
+    void handle_errorsignal(QString filesname, QString errorCode1, QString errorCode2, QString time);
+
+
 private:
     Ui::Form *ui;
     int selectedFiles=0;
 
-
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);
     void itemDoubleClicked ( QTreeWidgetItem * item, int column );
-
 
 private slots:
     void sectionInTableDoubleClicked(int logicalIndex);
@@ -58,7 +65,10 @@ private slots:
     void on_deselectButton_clicked();
     void savetofile();
     void on_saveRightButtonClicked();
-
+    void additem_slot(File *f);
+    void updatefile_slot(QString filestring, QString packetnumber, int index);
+    void export_slot(QDir dir, QString *errorText, bool *success);
+    void error_slot(QString filesname, QString errorCode1, QString errorCode2, QString time);
 };
 
 }  //namespace FileTransferPlugin

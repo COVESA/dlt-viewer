@@ -24,7 +24,7 @@
 #include "plugininterface.h"
 #include "form.h"
 
-#define SPEEDPLUGINVERSION "1.0.0"
+#define SPEEDPLUGINVERSION "1.0.1"
 
 class SpeedPlugin : public QObject,
                            QDLTPluginInterface,
@@ -65,6 +65,11 @@ public:
     void updateFileFinish();
     void selectedIdxMsg(int index, QDltMsg &msg);
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
+
+
+    void initMessageDecoder(QDltMessageDecoder* pMessageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
 
 
     /* internal variables */

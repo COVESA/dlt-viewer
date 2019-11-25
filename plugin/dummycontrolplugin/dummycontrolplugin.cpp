@@ -120,6 +120,19 @@ bool DummyControlPlugin::autoscrollStateChanged(bool enabled)
     return true;
 }
 
+void DummyControlPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
+
+void DummyControlPlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void DummyControlPlugin::configurationChanged()
+{}
+
 void DummyControlPlugin::selectedIdxMsg(int , QDltMsg &) {
 
 }

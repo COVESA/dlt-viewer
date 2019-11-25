@@ -11,8 +11,9 @@ The Diagnostic Log and Trace Viewer is an application that can send and receive 
 
 ### Command line usage;
 
-+ Windows: `dlt_viewer.exe [OPTIONS]`
-+ Linux: `dlt_viewer [OPTIONS]`
++ Windows: `dlt-viewer.exe [OPTIONS]`
++ Linux: `dlt-viewer [OPTIONS]`
++ MacOS: `open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app --args [OPTIONS]`
 
 Options: 
 + `-h` Print usage
@@ -35,14 +36,12 @@ See INSTALL.txt regarding doxygen API documentation generation.
 ## Software/Hardware
 
 Developed with QT 5 (http://qt-project.org/)
-Tested with Windows 7 + Qt 5.5.1 + MSVC 2013 Express
-Tested with Windows 7 + Qt 5.6.1 + MSVC 2015 Express
-Tested with Windows 7 + Qt 5.8.0 + MSVC 2015 Express
-Tested with Ubuntu Linux 16.04 + Qt 5.5.1
+Tested with Windows 10 + Qt 5.12.4 + Microsoft Visual Studio 2015 Community Edition
+Tested with Ubuntu Linux 18.04 + Qt 5.9.5
 Tested with macOS Sierra + Qt 5.7.0
 Dynamically linked open source software
 
-Qt 5.8.1 (LGPLv3 - Qt)
+Qt 5.x.x (LGPLv3 - Qt)
 GCC (GPL)
 (Optional) Mingw (GPL + BSD Variante + Public Domain)
 Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple LIcenses)
@@ -56,11 +55,11 @@ https://github.com/GENIVI/dlt-viewer
 
 ## Homepage
 
-https://at.projects.genivi.org/wiki/display/PROJ/Diagnostic+Log+and+Trace
+[Diagnostic Log and Trace](https://at.projects.genivi.org/wiki/display/PROJ/Diagnostic+Log+and+Trace) on GENIVI Projects Wiki
 
 ## Mailinglist
 
-https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace
+[genivi-diagnostic-log-and-trace](https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace_lists.genivi.org)
 
 ## Contact
 

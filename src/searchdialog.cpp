@@ -20,8 +20,6 @@
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "mainwindow.h"
-#include "dltsettingsmanager.h"
-#include "optmanager.h"
 
 #include <QMessageBox>
 #include <QProgressBar>
@@ -49,19 +47,19 @@ SearchDialog::SearchDialog(QWidget *parent) :
     table = nullptr;
 
     // at start we want to know if single step search or "fill search table mode" is active !
-    bool checked = DltSettingsManager::getInstance()->value("other/search/checkBoxSearchIndex", bool(true)).toBool();
+    bool checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxSearchIndex", bool(true)).toBool();
     ui->checkBoxSearchIndex->setChecked(checked);
 
-    checked = DltSettingsManager::getInstance()->value("other/search/checkBoxHeader", bool(true)).toBool();
+    checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxHeader", bool(true)).toBool();
     ui->checkBoxHeader->setChecked(checked);
 
-    checked = DltSettingsManager::getInstance()->value("other/search/checkBoxCasesensitive", bool(true)).toBool();
+    checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxCasesensitive", bool(true)).toBool();
     ui->checkBoxCaseSensitive->setChecked(checked);
 
-    checked = DltSettingsManager::getInstance()->value("other/search/checkBoxRegEx", bool(true)).toBool();
+    checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxRegEx", bool(true)).toBool();
     ui->checkBoxRegExp->setChecked(checked);
 
-    fSilentMode = !OptManager::getInstance()->issilentMode();
+    fSilentMode = !QDltOptManager::getInstance()->issilentMode();
 
     updateColorbutton();
 }
@@ -454,7 +452,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         msg.setMsg(buf);
 
         /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
-        if(DltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
         {
             //qDebug() << "Decode" << __LINE__;
             pluginManager->decodeMsg(msg, fSilentMode);
@@ -820,7 +818,7 @@ void SearchDialog::textEditedFromToolbar(QString newText)
 
 void SearchDialog::on_pushButtonColor_clicked()
 {
-    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor oldColor(color);
     QColor newColor = QColorDialog::getColor(oldColor, this, "Pick color for Search Highlight");
     if(false == newColor.isValid())
@@ -829,13 +827,13 @@ void SearchDialog::on_pushButtonColor_clicked()
         return;
     }
 
-    DltSettingsManager::getInstance()->setValue("other/searchResultColor", newColor.name());
+    QDltSettingsManager::getInstance()->setValue("other/searchResultColor", newColor.name());
     updateColorbutton();
 }
 
 void SearchDialog::updateColorbutton()
 {
-    QString color = DltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
+    QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor lhlColor(color);
     highlightColor = lhlColor;
     QPixmap px(12, 12);
@@ -898,24 +896,24 @@ void SearchDialog::clearCacheHistory()
 
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
-   DltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
+   QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
 
 void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
+    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
     setStartLine(-1);
 }
 
 void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("other/search/checkBoxCasesensitive", checked);
+    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxCasesensitive", checked);
 }
 
 void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
-    DltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
+    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
 }
 
 

@@ -5,19 +5,23 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Instructions for installing DLT Viewer (GUI)
 --------------------------------------------
 
-* Install Qt5 SDK including Qt Creator and MinGW (or MSVC 2013 for 32bit and 64bit Windows builds)
-* Tested with QT 5.5.1, QT 5.5.0
+* Install Qt5 SDK including Qt Creator and MSVC 2015 for 64bit Windows builds
+* Tested with QT 5.12.4 (Windows) and Qt 5.9.5 (Ubuntu Linux)
 * Open project BuildDltViewer.pro in Qt Creator.
-* Ensure that build options point to correct QT and MinGW / MSVC.
+* Ensure that build options point to correct QT and MSVC.
 * Build Release in Qt Creator or via CMake (see last).
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
 
-Instructions for installing DLT Viewer (Linux commandline)
+Instructions for installing DLT Viewer (Linux command line)
 ----------------------------------------------------------
 
+* sudo apt install build-essential
+* sudo apt install qtcreator
+* sudo apt install qt5-default
+* sudo apt install libqt5serialport5-dev
 * mkdir build
 * cd build
-* qmake-qt5 ../BuildDltViewer.pro
+* qmake ../BuildDltViewer.pro
 * make
 * sudo make install
 * sudo ldconfig
@@ -26,17 +30,11 @@ Instructions for installing DLT Viewer (Linux commandline)
 Create SDK (Windows)
 --------------------
 
-MinGW (32bit only):
-* Install Qt5 SDK inclduing MinGW for Windows.
-* If your Qt installation does not match "C:\Qt\Qt5.5.1\5.5\mingw492_32",
+Microsoft Visual C++ 2015 (64bit):
+* Install Qt5 SDK and MSVC 2015 (you can use the free "Community" version).
+* If your Qt installation does not match "C:\Qt\Qt5.12.4\5.12.4\msvc2015_64" (for 64 bit),
     you can set the correct path as environment variable "QTDIR" in your system properties.
-* Adjust and run build_sdk_windows_qt5.bat batch file
-
-Microsoft Visual C++ 2013 (32bit and 64bit):
-* Install Qt5 SDK and MSVC 2013 (you can use the free "express" version).
-* If your Qt installation does not match "C:\Qt\Qt5.5.1\5.5\msvc2013" (for 32 bit) or "C:\Qt\Qt5.5.1\5.5\msvc2013_64" (for 64 bit),
-    you can set the correct path as environment variable "QTDIR" in your system properties.
-* Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter x86 or x86_amd64 (the current system's architecture is used by default).
+* Adjust and run build_sdk_windows_qt5_MSVC.bat with optional parameter (the current system's architecture is used by default).
 
 The SDK will be installed to C:\Users\%USERNAME%\DltViewerSDK\
 
@@ -46,36 +44,25 @@ Optional: Prepare Installation Qwt (Windows)
 Some DLT Viewer plugins will use the Qwt library for displaying graphs.
 The Qwt library must be compiled and installed before it can be used.
 
-(Tested with Qwt 6.1.2)
+(Tested with Qwt 6.1.4)
 
-MinGW (32bit only):
-* Install Qt5 SDK inclduing MinGW for Windows.
-* Extract Qwt Zip package
-* Start Qt commandline from Start->Qt_5.x.x
-* Change into Qwt directory
-* Execute qmake qwt.pro
-* Execute mingw32-make
-* Execute mingw32-make install
-
-Microsoft Visual C++ 2013 (32bit and 64bit):
-* Install Qt5 SDK for Visual C++ 2013 (you can use the free "express" version)
+Microsoft Visual C++ 2015 (64bit):
+* Install Qt5 SDK for Visual C++ 2015 (you can use the free "Community" version)
 * Extract Qwt Zip package
 * If you like, you can adjust the installation path by changing the variable "QWT_INSTALL_PREFIX" in qwtconfig.pri
 * Start Qt commandline from Start->Qt_5.x.x
 * Change into Qwt directory
-* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86
-    for 32bit, or
-          "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat" x86_amd64
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
     for 64bit.
 * Execute qmake qwt.pro
-* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\nmake.exe"
-* Execute "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\nmake.exe" install
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\nmake.exe"
+* Execute "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\nmake.exe" install
 
 Create SDK (Linux)
 ------------------
 
 * Compile DLT Viewer as described in "Build DLT-viewer Linux"
-* Call "sudo make install" to install dlt_viewer including libraries and headers for SDK
+* Call "sudo make install" to install dlt-viewer including libraries and headers for SDK
 
 Create SDK Documentation (Windows)
 ----------------------------------
@@ -118,7 +105,7 @@ pdflatex dlt-viewer_user_manual.tex
 
 
 
-Instructions for building DLT Viewer with CMake (Linux commandline)
+Instructions for building DLT Viewer with CMake (Linux and MacOS command line)
 ----------------------------------------------------------
 CMake is a "meta" make system.  This means CMake creates a make system 
 for various make solutions including command line build tools like
@@ -126,11 +113,11 @@ for various make solutions including command line build tools like
 See:  https://cmake.org/cmake/help/v3.0/manual/cmake-generators.7.html
 
 CMake encourages the "out of source" build paradigm. Assuming DLT Viewer 
-code has been unpacked in path/src, we encourage not building in that directory
+code has been unpacked in src_path/, we encourage not building in that directory
 
 * mkdir build
 * cd build
-* cmake "GENERATOR OF CHOICE" path/src
+* cmake "GENERATOR OF CHOICE" src_path/
 
 At this stage, CMake will have produced a set of filesthat can be used by the
 selected make system, be it "Unix Makefiles", "Visual Studio 6" or  other.
@@ -145,3 +132,13 @@ In the case of "Unix Makefiles" building is now as simple as
 Various solutions exist for cmake configuration to be informed about 
 non-standard installation paths for required components.  See CMake
 documentation for details. (hint: QTDIR)
+
+For MacOS, you can install Qt with Homebrew:
+brew install qt
+
+Then give the Qt directory to CMake and build:
+* Qt5_DIR="/usr/local/opt/qt" cmake src_path/
+* make
+
+The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
+open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app

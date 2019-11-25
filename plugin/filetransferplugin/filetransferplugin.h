@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "configuration.h"
 
-#define FILETRANSFER_PLUGIN_VERSION "1.2.1"
+#define FILETRANSFER_PLUGIN_VERSION "1.3.0"
 
 class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface, QDltPluginControlInterface
 {
@@ -79,6 +79,9 @@ public:
     bool controlMsg(int index, QDltMsg &msg);
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
     bool autoscrollStateChanged(bool enabled);
+    void initMessageDecoder(QDltMessageDecoder* pMessageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
 
 
 private:
@@ -89,13 +92,14 @@ private:
     QString errorText;
     bool plugin_is_active = false;
 
-    void doFLST(QDltMsg *msg);
-    void doFLDA(int index, QDltMsg *msg);
-    void doFLFI(QDltMsg *msg);
+    void doFLST(QDltMsg *msg); // file transfer start
+    void doFLDA(int index, QDltMsg *msg); // file transfer update
     void doFLIF(QDltMsg *msg);
-    void doFLER(QDltMsg *msg);
+    void doFLER(QDltMsg *msg); // file transfer error handling
 
     Configuration config;
+
+
 };
 
 #endif // DLTVIEWERPLUGIN_H

@@ -13,7 +13,6 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-set (CMAKE_AUTOUIC ON)
 set (CMAKE_AUTOMOC ON)
 
 # cmake 2.8.12 doesn't have AUTOUIC ??
@@ -26,4 +25,5 @@ add_library(dltviewerplugin MODULE dltviewerplugin.cpp
 	                        ${UI_HEADERS})
 
 target_link_libraries(dltviewerplugin qdlt Qt5::Widgets )
-install(TARGETS dltviewerplugin DESTINATION deploy/plugins)
+
+add_plugin(dltviewerplugin)

@@ -1,5 +1,8 @@
 @echo off
 
+REM Date     Version   Author                Changes
+REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
+
 echo ************************************
 echo ***      DLT Parser              ***
 echo ************************************
@@ -33,11 +36,11 @@ echo *** Setting up environment ***
 
 if "%QTDIR%"=="" (
     if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.5.1\5.5\msvc2013_64
-    ) else (set QTDIR=C:\Qt\Qt5.5.1\5.5\msvc2013)
+        set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015_64
+    ) else (set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015)
 )
 
-IF "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC
+if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
 
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
 set QTSDK=%QTDIR%
@@ -159,7 +162,7 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\bin\Qt5OpenGL.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\dlt_parser.exe %DLT_PARSER_DIR%
+copy %BUILD_DIR%\dlt-parser.exe %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\ReleaseNotes_Parser.txt %DLT_PARSER_DIR%
