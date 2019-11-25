@@ -178,14 +178,39 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    if ( role == Qt::ForegroundRole ) {        
-        //always white
-        return QVariant(QBrush(QColor(0,0,0)));
+    if ( role == Qt::ForegroundRole ) {
+        qfile->getMsg(m_searchResultList.at(index.row()), msg);
+
+        // Color the last search row
+        if (QColor(qfile->checkMarker(msg)).isValid())
+        {
+            QColor color = qfile->checkMarker(msg);
+            return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
+        }
+        else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  )
+        {
+            return QVariant(QBrush(QColor(255,255,255)));
+        }
+        else
+        {
+            return QVariant(QBrush(QColor(0,0,0)));
+        }
     }
 
     if ( role == Qt::BackgroundRole ) {
-        //always black
-        return QVariant(QBrush(QColor(255,255,255)));
+        if(!qfile->getMsg(m_searchResultList.at(index.row()), msg)) {
+            //always white
+            return QVariant(QBrush(QColor(255,255,255)));
+        } else {
+            QColor color = qfile->checkMarker(msg);
+
+            if(color.isValid())
+            {
+                return QVariant(QBrush(color));
+            }
+
+            return QVariant(QBrush(QColor(255,255,255)));
+        }
     }
 
 
