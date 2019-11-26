@@ -18,7 +18,7 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     #QMAKE_CXXFLAGS += -pedantic
 }
 
-CONFIG -= console
+CONFIG += console
 
 QMAKE_LFLAGS += -Wl,-rpath=.
 
