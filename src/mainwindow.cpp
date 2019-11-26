@@ -2020,10 +2020,7 @@ void MainWindow::on_actionFindNext()
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     m_CompleterModel.setStringList(list);
     searchTextbox->setCompleter(newCompleter);
-    newCompleter->setCaseSensitivity(Qt::CaseInsensitive);
 }
-
-
 
 void MainWindow::on_action_menuProject_New_triggered()
 {
