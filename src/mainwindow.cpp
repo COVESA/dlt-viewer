@@ -6351,16 +6351,24 @@ void MainWindow::on_action_menuFilter_SetAllActive_triggered()
     {
         for(int i = 0; i < widget->selectedItems().size(); i++)
         {
-            widget->selectedItems().at(i)->setCheckState(0, Qt::Checked);
+            FilterItem *tmp = (FilterItem*)widget->selectedItems().at(i);
+            tmp->filter.enableFilter = true;
+            tmp->setCheckState(0, Qt::Checked);
         }
     }
     else
     {
         for(int i = 0; i < widget->topLevelItemCount(); i++)
         {
-            widget->topLevelItem(i)->setCheckState(0, Qt::Checked);
+            FilterItem *tmp = (FilterItem*)widget->topLevelItem(i);
+            tmp->filter.enableFilter = true;
+            tmp->setCheckState(0, Qt::Checked);
         }
     }
+
+    applyConfigEnabled(true);
+
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_SetAllInactive_triggered()
@@ -6378,16 +6386,24 @@ void MainWindow::on_action_menuFilter_SetAllInactive_triggered()
     {
         for(int i = 0; i < widget->selectedItems().size(); i++)
         {
-            widget->selectedItems().at(i)->setCheckState(0, Qt::Unchecked);
+            FilterItem *tmp = (FilterItem*)widget->selectedItems().at(i);
+            tmp->filter.enableFilter = false;
+            tmp->setCheckState(0, Qt::Unchecked);
         }
     }
     else
     {
         for(int i = 0; i < widget->topLevelItemCount(); i++)
         {
-            widget->topLevelItem(i)->setCheckState(0, Qt::Unchecked);
+            FilterItem *tmp = (FilterItem*)widget->topLevelItem(i);
+            tmp->filter.enableFilter = false;
+            tmp->setCheckState(0, Qt::Unchecked);
         }
     }
+
+    applyConfigEnabled(true);
+
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::on_action_menuFilter_Clear_all_triggered()
