@@ -2020,10 +2020,7 @@ void MainWindow::on_actionFindNext()
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     m_CompleterModel.setStringList(list);
     searchTextbox->setCompleter(newCompleter);
-    newCompleter->setCaseSensitivity(Qt::CaseInsensitive);
 }
-
-
 
 void MainWindow::on_action_menuProject_New_triggered()
 {
@@ -2923,6 +2920,22 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Delete_triggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Set All Active", this);
+    if(!project.filter->topLevelItemCount())
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_SetAllActive_triggered()));
+    menu.addAction(action);
+
+    action = new QAction("Set All Inactive", this);
+    if(!project.filter->topLevelItemCount())
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_SetAllInactive_triggered()));
     menu.addAction(action);
 
     /* show popup menu */
@@ -5102,10 +5115,10 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
                          #ifdef WIN32
-                             QString("Usage: dlt_viewer.exe [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer.exe [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #else
-                             QString("Usage: dlt_viewer [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer [OPTIONS]\n\n")+
                              QString("Options:\n")+
                          #endif
                              QString(" -h \t\tPrint usage\n")+
@@ -5966,8 +5979,20 @@ void MainWindow::action_menuPlugin_Enable_triggered()
         }
     }
     else
+    {
         QMessageBox::warning(0, QString("DLT Viewer"),
                              QString("No Plugin selected!"));
+    }
+
+    if(pluginsEnabled == true){
+       QList<QDltPlugin*> activeViewerPlugins;
+       activeViewerPlugins = pluginManager.getViewerPlugins();
+       for(int i = 0; i < activeViewerPlugins.size(); i++)
+       {
+          QDltPlugin *item = (QDltPlugin*)activeViewerPlugins.at(i);
+          item->initFileStart(&qfile);
+       }
+    }
 }
 
 void MainWindow::on_action_menuPlugin_Disable_triggered()
@@ -6309,6 +6334,60 @@ void MainWindow::on_action_menuFilter_Delete_triggered()
     }
 
     on_filterWidget_itemSelectionChanged();
+}
+
+void MainWindow::on_action_menuFilter_SetAllActive_triggered()
+{
+    QTreeWidget *widget;
+
+    /* get currently visible filter list in user interface */
+    if(ui->tabPFilter->isVisible()) {
+        widget = project.filter;
+    }
+    else
+        return;
+
+    if(widget->selectedItems().size())
+    {
+        for(int i = 0; i < widget->selectedItems().size(); i++)
+        {
+            widget->selectedItems().at(i)->setCheckState(0, Qt::Checked);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < widget->topLevelItemCount(); i++)
+        {
+            widget->topLevelItem(i)->setCheckState(0, Qt::Checked);
+        }
+    }
+}
+
+void MainWindow::on_action_menuFilter_SetAllInactive_triggered()
+{
+    QTreeWidget *widget;
+
+    /* get currently visible filter list in user interface */
+    if(ui->tabPFilter->isVisible()) {
+        widget = project.filter;
+    }
+    else
+        return;
+
+    if(widget->selectedItems().size())
+    {
+        for(int i = 0; i < widget->selectedItems().size(); i++)
+        {
+            widget->selectedItems().at(i)->setCheckState(0, Qt::Unchecked);
+        }
+    }
+    else
+    {
+        for(int i = 0; i < widget->topLevelItemCount(); i++)
+        {
+            widget->topLevelItem(i)->setCheckState(0, Qt::Unchecked);
+        }
+    }
 }
 
 void MainWindow::on_action_menuFilter_Clear_all_triggered()
@@ -7255,11 +7334,11 @@ QString MainWindow::GetConnectionType(int iTypeNumber)
 
 void MainWindow::indexDone()
 {
-qint64 fileerrors = dltIndexer->getfileerrors();
-statusFileError->setText(QString("FileErr: %L1").arg(fileerrors));
+    qint64 fileerrors = dltIndexer->getfileerrors();
+    statusFileError->setText(QString("FileErr: %L1").arg(fileerrors));
 }
 
 void MainWindow::indexStart()
 {
-statusFileError->setText(QString("FileErr: %L1").arg("-"));
+    statusFileError->setText(QString("FileErr: %L1").arg("-"));
 }

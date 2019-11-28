@@ -114,10 +114,15 @@ void DummyViewerPlugin::selectedIdxMsgDecoded(int , QDltMsg &/*msg*/){
 }
 
 void DummyViewerPlugin::initFileStart(QDltFile *file){
+if(nullptr == file)
+        return;
 
     dltFile = file;
 
+   if (form)
+   {
     form->setMessages(dltFile->size());
+   }
 
     counterMessages = dltFile->size();
 
@@ -135,9 +140,14 @@ void DummyViewerPlugin::initMsgDecoded(int , QDltMsg &){
 }
 
 void DummyViewerPlugin::initFileFinish(){
+   if(nullptr == dltFile)
+        return;
+   if (form)
+   {
     form->setMessages(dltFile->size());
     form->setVerboseMessages(counterVerboseMessages);
     form->setNonVerboseMessages(counterNonVerboseMessages);
+   }
 }
 
 void DummyViewerPlugin::updateFileStart(){
@@ -158,9 +168,14 @@ void DummyViewerPlugin::updateMsgDecoded(int , QDltMsg &){
 }
 
 void DummyViewerPlugin::updateFileFinish(){
+   if(nullptr == dltFile)
+        return;
+    if (form)
+   {
     form->setMessages(dltFile->size());
     form->setVerboseMessages(counterVerboseMessages);
     form->setNonVerboseMessages(counterNonVerboseMessages);
+   }
 }
 
 #ifndef QT5

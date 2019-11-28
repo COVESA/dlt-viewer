@@ -93,6 +93,7 @@ public:
     DltFibexFrame() { byteLength=0;messageType=0;messageInfo=0;pduRefCounter=0; }
 
         QString id;
+        QString filename;
         int32_t byteLength;
         uint8_t messageType;
         int8_t  messageInfo;

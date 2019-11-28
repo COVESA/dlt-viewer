@@ -20,6 +20,8 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
 
 CONFIG += console
 
+QMAKE_LFLAGS += -Wl,-rpath=.
+
 # Uncomment to add debug symbols to Release build
 #QMAKE_CXXFLAGS_RELEASE += -g
 #QMAKE_CFLAGS_RELEASE += -g
@@ -33,14 +35,30 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
+icons.files = icon/org.genivi.DLTViewer.ico
+icons_16x16.files = icon/16x16/org.genivi.DLTViewer.png
+icons_22x22.files = icon/22x22/org.genivi.DLTViewer.png
+icons_24x24.files = icon/24x24/org.genivi.DLTViewer.png
+icons_32x32.files = icon/32x32/org.genivi.DLTViewer.png
+icons_48x48.files = icon/48x48/org.genivi.DLTViewer.png
+icons_256x256.files = icon/256x256/org.genivi.DLTViewer.png
+icons_symbolic.files = icon/symbolic/org.genivi.DLTViewer-symbolic.svg
+
 icons.path = $$PREFIX/usr/share/pixmaps
-icons.files = icon/face-glasses.ico
-INSTALLS += icons
+icons_16x16.path = $$PREFIX/usr/share/icons/hicolor/16x16/apps
+icons_22x22.path = $$PREFIX/usr/share/icons/hicolor/22x22/apps
+icons_24x24.path = $$PREFIX/usr/share/icons/hicolor/24x24/apps
+icons_32x32.path = $$PREFIX/usr/share/icons/hicolor/32x32/apps
+icons_48x48.path = $$PREFIX/usr/share/icons/hicolor/48x48/apps
+icons_256x256.path = $$PREFIX/usr/share/icons/hicolor/256x256/apps
+icons_symbolic.path = $$PREFIX/usr/share/icons/hicolor/symbolic/apps
+
+INSTALLS += icons icons_16x16 icons_22x22 icons_24x24 icons_32x32 icons_48x48 icons_256x256 icons_symbolic
 
 # desktop file to show the application in start menu on Linux
 # This should work on both KDE and Gnome
 desktop.path = $$PREFIX/usr/share/applications
-desktop.files = dlt_viewer.desktop
+desktop.files = org.genivi.DLTViewer.desktop
 INSTALLS += desktop
 
 # Unix header exports
@@ -59,6 +77,8 @@ macx:CONFIG -= app_bundle
 # Library definitions for debug and release builds
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
+    QMAKE_CXXFLAGS += -g
+    QMAKE_CFLAGS += -g
     QMAKE_LIBDIR += ../debug
     LIBS += -lqdltd
 } else {
@@ -66,6 +86,10 @@ CONFIG(debug, debug|release) {
     QMAKE_LIBDIR += ../release
     LIBS += -lqdlt
     QMAKE_RPATHDIR += ../build/release
+}
+
+win32-g++ {
+    LIBS += -lws2_32
 }
 
 # QT Features to be linked in
@@ -85,7 +109,7 @@ RCC_DIR     = build/rcc
 UI_DIR      = build/ui
 
 # Executable name
-TARGET = dlt_viewer
+TARGET = dlt-viewer
 
 # This is an application
 TEMPLATE = app

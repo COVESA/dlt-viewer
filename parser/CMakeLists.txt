@@ -18,12 +18,12 @@ QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/mainwindow.ui )
 
 #message( STATUS "UI_HEADERS=[${UI_HEADERS}]")
 
-add_executable(dlt_parser main.cpp
+add_executable(dlt-parser main.cpp
                           mainwindow.cpp
                           mainwindow.ui
                           qdltparser.cpp
                           ${UI_HEADERS})
 
-target_link_libraries(dlt_parser Qt5::Widgets )
+target_link_libraries(dlt-parser Qt5::Widgets -lstdc++)
 
-install(TARGETS dlt_parser DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
+install(TARGETS dlt-parser DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
