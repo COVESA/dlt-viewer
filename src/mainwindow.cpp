@@ -5732,13 +5732,26 @@ void MainWindow::updatePlugin(PluginItem *item)
         //qDebug() << "Enable or show" << item->getPlugin()->getName() << __LINE__ << __FILE__;
         if ( false == ret )
         {
-            QString err_header = "Plugin Error: ";
-            err_header.append(item->getName());
-            QString err_body = err_header;
-            err_body.append(" returned error:\n");
-            err_body.append(err_text);
-            err_body.append("\nin loadConfig!");
-            ErrorMessage(QMessageBox::Critical,err_header,err_body);
+            if ( true == QDltOptManager::getInstance()->issilentMode() )
+             {
+              QString err_header = "Plugin ";
+              err_header.append(item->getName());
+              QString err_body = err_header;
+              err_body.append(" returned error: ");
+              err_body.append(item->getPlugin()->error());
+              err_body.append(" in loadConfig!");
+              ErrorMessage(QMessageBox::Critical,err_header,err_body);
+             }
+             else
+             {
+              QString err_header = "Plugin Error: ";
+              err_header.append(item->getName());
+              QString err_body = err_header;
+              err_body.append(" returned error:\n");
+              err_body.append(item->getPlugin()->error());
+              err_body.append("\nin loadConfig!");
+              ErrorMessage(QMessageBox::Critical,err_header,err_body);
+             }
         }
         else if ( 0 < err_text.length() )
         {
