@@ -124,7 +124,6 @@ bool DltFileIndexer::index(int num)
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
     do
     {
-
         pos = f.pos();
         length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
         for(int num=0;num < length;num++)
@@ -184,7 +183,8 @@ bool DltFileIndexer::index(int num)
                     {
                         // first messages not at beginning or error occured before
                         errors_in_file++;
-                        qDebug() << "ERROR in file at index "<< msgindex;
+                        qDebug() << "ERROR in file detected at index"<< msgindex << "msg length" << message_length << "file position" << current_message_pos;
+                        qDebug() << "------------";
                     }
                     // speed up move directly to message length, if inside current buffer
                     if(num+14<length)
@@ -210,11 +210,14 @@ bool DltFileIndexer::index(int num)
                 else if(next_message_pos > (pos+num-3))
                 {
                     // Header detected before end of message
+                     qDebug() << "ERROR: Header detected before end of message at index "<< msgindex << "msg length" << message_length << "file position" << current_message_pos;
+                     errors_in_file++;
                 }
                 else
                 {
                     // Header detected after end of message
                     // start search for new message back after last header found
+                    qDebug() << "Header detected after end of message, offset:" << (pos+num-3) - next_message_pos;
                     f.seek(current_message_pos+4);
                     pos = current_message_pos+4;
                     length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
@@ -225,7 +228,7 @@ bool DltFileIndexer::index(int num)
             }
             else
             {
-                lastFound = 0;
+                lastFound = 0; // go on with search for the startsequence
             }
 
             /* stop if requested */
@@ -235,7 +238,8 @@ bool DltFileIndexer::index(int num)
                 f.close();
                 return false;
             }
-        }
+        } // end of for loop to read within one segment
+
         emit(progress(pos));
     }
     while(length>0);
@@ -679,7 +683,7 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qi
     {
         qDebug() << "loadIndex" << filterCache + "/" +filenameCache << "failed";
         return false;
-    }        
+    }
 
     return true;
 }

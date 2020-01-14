@@ -2928,14 +2928,14 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_SetAllActive_triggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(onactionmenuFilter_SetAllActiveTriggered()));
     menu.addAction(action);
 
     action = new QAction("Set All Inactive", this);
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_SetAllInactive_triggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(onactionmenuFilter_SetAllInactiveTriggered()));
     menu.addAction(action);
 
     /* show popup menu */
@@ -6349,7 +6349,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered()
     on_filterWidget_itemSelectionChanged();
 }
 
-void MainWindow::on_action_menuFilter_SetAllActive_triggered()
+void MainWindow::onactionmenuFilter_SetAllActiveTriggered()
 {
     QTreeWidget *widget;
 
@@ -6384,7 +6384,7 @@ void MainWindow::on_action_menuFilter_SetAllActive_triggered()
     on_filterWidget_itemSelectionChanged();
 }
 
-void MainWindow::on_action_menuFilter_SetAllInactive_triggered()
+void MainWindow::onactionmenuFilter_SetAllInactiveTriggered()
 {
     QTreeWidget *widget;
 
