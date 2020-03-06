@@ -82,7 +82,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
-       <number>15</number>
+       <number>21</number>
       </attribute>
      </widget>
     </item>
@@ -94,7 +94,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>17</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -190,6 +190,7 @@
     <addaction name="separator"/>
     <addaction name="actionToggle_FiltersEnabled"/>
     <addaction name="actionToggle_SortByTimeEnabled"/>
+    <addaction name="actionSort_By_Timestamp"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
@@ -366,17 +367,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="2">
-         <widget class="QCheckBox" name="checkBoxSortByTime">
-          <property name="text">
-           <string>Sorted by Time</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="0" colspan="3">
+        <item row="0" column="0" colspan="4">
          <widget class="QPushButton" name="applyConfig">
           <property name="enabled">
            <bool>false</bool>
@@ -388,6 +379,26 @@
            <iconset resource="resource.qrc">
             <normaloff>:/toolbar/png/weather-storm.png</normaloff>
             <disabledoff>:/toolbar/png/weather-clear.png</disabledoff>:/toolbar/png/weather-storm.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="checkBoxSortByTime">
+          <property name="text">
+           <string>Sorted by Time</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Sorted by Timestamp</string>
           </property>
          </widget>
         </item>
@@ -654,10 +665,10 @@
            <attribute name="headerCascadingSectionResizes">
             <bool>false</bool>
            </attribute>
-           <attribute name="headerDefaultSectionSize">
+           <attribute name="headerMinimumSectionSize">
             <number>26</number>
            </attribute>
-           <attribute name="headerMinimumSectionSize">
+           <attribute name="headerDefaultSectionSize">
             <number>26</number>
            </attribute>
            <column>
@@ -1490,16 +1501,19 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="resource.qrc">
-     <normaloff>:/toolbar/png/document-open-recent-2_gray.png</normaloff>
-     <normalon>:/toolbar/png/document-open-recent-2.png</normalon>:/toolbar/png/document-open-recent-2_gray.png</iconset>
-   </property>
    <property name="text">
     <string>Sort By Time</string>
    </property>
    <property name="toolTip">
     <string>Toggle Sorted By Time</string>
+   </property>
+  </action>
+  <action name="actionSort_By_Timestamp">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sort By Timestamp</string>
    </property>
   </action>
  </widget>
@@ -1526,7 +1540,6 @@
   <tabstop>applyConfig</tabstop>
   <tabstop>pluginsEnabled</tabstop>
   <tabstop>filtersEnabled</tabstop>
-  <tabstop>checkBoxSortByTime</tabstop>
   <tabstop>pluginWidget</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>configWidget</tabstop>

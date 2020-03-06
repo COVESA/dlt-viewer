@@ -135,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
+    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
 
     newCompleter = new QCompleter(&m_CompleterModel,this);
 
@@ -532,6 +533,8 @@ void MainWindow::initFileHandling()
     ui->filtersEnabled->setChecked(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTime->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
+    ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
 
     /* Process Project */
@@ -1717,6 +1720,7 @@ void MainWindow::reloadLogFileFinishFilter()
     // enable filter if requested
     qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -1862,6 +1866,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
     if(settings->filterCache)
         dltIndexer->setFilterCache(settings->filterCacheName);
@@ -1915,6 +1920,7 @@ void MainWindow::reloadLogFileDefaultFilter()
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
+    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
     // start indexing
     dltIndexer->start();
@@ -6942,6 +6948,13 @@ void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
     on_applyConfig_clicked();
 }
 
+void MainWindow::on_actionSort_By_Timestamp_triggered(bool checked)
+{
+    ui->checkBoxSortByTimestamp->setChecked(checked);
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    on_applyConfig_clicked();
+}
+
 void MainWindow::on_actionAutoScroll_triggered(bool checked)
 {
     int autoScrollOld = settings->autoScroll;
@@ -6994,15 +7007,35 @@ void MainWindow::on_filtersEnabled_toggled(bool checked)
     //QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
+    ui->checkBoxSortByTimestamp->setEnabled(checked);
     applyConfigEnabled(true);
 }
 
 void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
+    if(checked)
+    {
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", false);
+        ui->checkBoxSortByTimestamp->setChecked(false);
+    }
+    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
+    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
     applyConfigEnabled(true);
 }
 
+void MainWindow::on_checkBoxSortByTimestamp_toggled(bool checked)
+{
+    if(checked)
+    {
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
+        ui->checkBoxSortByTime->setChecked(false);
+    }
+    QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", checked);
+    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
+    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
+    applyConfigEnabled(true);
+}
 
 void MainWindow::syncCheckBoxesAndMenu()
 {
@@ -7012,14 +7045,7 @@ void MainWindow::syncCheckBoxesAndMenu()
         plugin->configurationChanged();
 
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
-    if (ui->checkBoxSortByTime->isChecked())
-        {
-            ui->actionToggle_SortByTimeEnabled->setText("Stop sorting by Time");
-        }
-        else
-        {
-            ui->actionToggle_SortByTimeEnabled->setText("Sort by Time");
-        }
+    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
 
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
     if (ui->pluginsEnabled->isChecked())

@@ -546,13 +546,15 @@ private slots:
     void on_pushButtonDefaultFilterUpdateCache_clicked();
 
     void on_checkBoxSortByTime_toggled(bool checked);
+    void on_checkBoxSortByTimestamp_toggled(bool checked);
 
     void on_actionMarker_triggered();
 
     void on_actionToggle_PluginsEnabled_triggered(bool checked);
     void on_actionToggle_FiltersEnabled_triggered(bool checked);
-    void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
 
+    void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
+    void on_actionSort_By_Timestamp_triggered(bool checked);
 
 public slots:
 

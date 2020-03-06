@@ -33,6 +33,7 @@ QDltFile::QDltFile()
 {
     filterFlag = false;
     sortByTimeFlag = false;
+    sortByTimestampFlag = false;
 }
 
 QDltFile::~QDltFile()
@@ -599,6 +600,11 @@ void QDltFile::enableFilter(bool state)
 void QDltFile::enableSortByTime(bool state)
 {
     sortByTimeFlag = state;
+}
+
+void QDltFile::enableSortByTimestamp(bool state)
+{
+    sortByTimestampFlag = state;
 }
 
 QVector<qint64> QDltFile::getIndexFilter() const

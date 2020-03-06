@@ -8,6 +8,7 @@ DltFileIndexerThread::DltFileIndexerThread
         DltFileIndexer *indexer,
         QDltFilterList *filterList,
         bool sortByTimeEnabled,
+        bool sortByTimestampEnabled,
         QVector<qint64> *indexFilterList,
         QMultiMap<DltFileIndexerKey,qint64> *indexFilterListSorted,
         QDltPluginManager *pluginManager,
@@ -17,6 +18,7 @@ DltFileIndexerThread::DltFileIndexerThread
     :indexer(indexer),
       filterList(filterList),
       sortByTimeEnabled(sortByTimeEnabled),
+      sortByTimestampEnabled(sortByTimestampEnabled),
       indexFilterList(indexFilterList),
       indexFilterListSorted(indexFilterListSorted),
       pluginManager(pluginManager),
@@ -126,7 +128,11 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     {
         if(sortByTimeEnabled)
          {
-            indexFilterListSorted->insert(DltFileIndexerKey(msg->getTime(), msg->getMicroseconds()), index);
+            indexFilterListSorted->insert(DltFileIndexerKey(msg->getTime(), msg->getMicroseconds(),0), index);
+         }
+        else if(sortByTimestampEnabled)
+         {
+            indexFilterListSorted->insert(DltFileIndexerKey(0, 0,msg->getTimestamp()), index);
          }
         else
          {

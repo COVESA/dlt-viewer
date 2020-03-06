@@ -15,10 +15,11 @@ extern "C" {
     #include "dlt_user.h"
 }
 
-DltFileIndexerKey::DltFileIndexerKey(time_t time,unsigned int microseconds)
+DltFileIndexerKey::DltFileIndexerKey(time_t time,unsigned int microseconds,unsigned int timestamp)
 {
     this->time = time;
     this->microseconds = microseconds;
+    this->timestamp = timestamp;
 }
 
 DltFileIndexer::DltFileIndexer(QObject *parent) :
@@ -34,6 +35,7 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     filtersEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = false;
+    sortByTimestampEnabled = false;
 
     maxRun = 0;
     currentRun = 0;
@@ -55,6 +57,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     filtersEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = 0;
+    sortByTimestampEnabled = 0;
     errors_in_file  = 0;
 
     maxRun = 0;
@@ -315,6 +318,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 this,
                 &filterList,
                 sortByTimeEnabled,
+                sortByTimestampEnabled,
                 &indexFilterList,
                 &indexFilterListSorted,
                 pluginManager,
@@ -370,7 +374,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     msecsFilterCounter = time.elapsed();
 
     // use sorted values if sort by time enabled
-    if(sortByTimeEnabled)
+    if(sortByTimeEnabled || sortByTimestampEnabled)
         indexFilterList = QVector<qint64>::fromList(indexFilterListSorted.values());
 
     // write filter index if enabled
@@ -744,7 +748,7 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     md5FilterList = filterList.createMD5();
 
     // create string to be hashed
-    if(sortByTimeEnabled)
+    if(sortByTimeEnabled || sortByTimestampEnabled)
         filenames.sort();
     hashString = filenames.join(QString("_"));
     hashString += "_" + QString("%1").arg(dltFile->fileSize());
@@ -764,6 +768,10 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     if(this->sortByTimeEnabled)
     {
         filename += "_S";
+    }
+    if(this->sortByTimestampEnabled)
+    {
+        filename += "_STS";
     }
     filename += ".dix";
 

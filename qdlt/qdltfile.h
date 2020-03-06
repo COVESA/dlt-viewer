@@ -213,6 +213,12 @@ public:
     */
     void enableSortByTime(bool state);
 
+    //! Enable or disable sort by time.
+    /*!
+      \return state true if sort by time, false if sort by time is disabled
+    */
+    void enableSortByTimestamp(bool state);
+
     //! Check if message matches the filter.
     /*!
       \param msg The message to be checked
@@ -298,6 +304,13 @@ private:
       false sorting is disabled.
     */
     bool sortByTimeFlag;
+
+    //! Enabling sortByTimestamp.
+    /*!
+      true sorting is enabled.
+      false sorting is disabled.
+    */
+    bool sortByTimestampFlag;
 };
 
 

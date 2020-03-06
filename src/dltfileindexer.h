@@ -16,22 +16,27 @@
 class DltFileIndexerKey
 {
 public:
-    DltFileIndexerKey(time_t time,unsigned int microseconds);
+    DltFileIndexerKey(time_t time,unsigned int microseconds,unsigned int timestamp);
 
     friend bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2);
 
 private:
     time_t time;
     unsigned int microseconds;
+    unsigned int timestamp;
 };
 
 inline bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2)
 {
-    if(key1.time<key2.time)
-        return true;
-    if(key1.time>key2.time)
-        return false;
-    return (key1.microseconds<key2.microseconds);
+    if(key1.timestamp==0 && key2.timestamp==0)
+    {
+        if(key1.time<key2.time)
+            return true;
+        if(key1.time>key2.time)
+            return false;
+        return (key1.microseconds<key2.microseconds);
+    }
+    return (key1.timestamp<key2.timestamp);
 }
 
 class DltFileIndexer : public QThread
@@ -92,6 +97,10 @@ public:
     // enable/disable sort by time
     void setSortByTimeEnabled(bool enable) { sortByTimeEnabled = enable; }
     bool setSortByTimeEnabled() { return sortByTimeEnabled; }
+
+    // enable/disable sort by timestamp
+    void setSortByTimestampEnabled(bool enable) { sortByTimestampEnabled = enable; }
+    bool setSortByTimestampEnabled() { return sortByTimestampEnabled; }
 
     // enable/disable multithreaded
     void setMultithreaded(bool enable) { multithreaded = enable; }
@@ -157,6 +166,7 @@ private:
     bool filtersEnabled;
     bool multithreaded;
     bool sortByTimeEnabled;
+    bool sortByTimestampEnabled;
 
     // filter cache path
     QString filterCache;
