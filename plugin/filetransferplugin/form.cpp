@@ -62,6 +62,14 @@ Form::~Form()
     delete ui;
 }
 
+void Form::setAutoSave(QString path, bool save)
+{
+    autosave=save;
+    savepath=path;
+    return;
+}
+
+
 
 QTreeWidget* Form::getTreeWidget()
 {
@@ -408,6 +416,18 @@ void Form::updatefile_slot(QString filestring, QString packetnumber, int index)
         {
           qDebug() << "Received file" << file->getFilename();
           file->setComplete();
+          if ( true == autosave )
+          {
+           QString path = savepath +"//"+ file->getFilename();
+           if ( false == file->saveFile(path) )
+            {
+               qDebug() << "ERROR saving" << path << __LINE__ << __FILE__;
+            }
+           else
+            {
+               qDebug() << "Auto - saved" << path;
+            }
+          }
         }
     }
 }

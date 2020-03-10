@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QDir>
+#include <QtDebug>
 
 #include "filetransferplugin.h"
 #include "file.h"
@@ -65,7 +66,6 @@ QString FiletransferPlugin::error()
 
 bool FiletransferPlugin::loadConfig(QString filename)
 {
-
     if ( filename.length() <= 0 )
     {
         // no configuration file provided, return to default configuration
@@ -82,6 +82,10 @@ bool FiletransferPlugin::loadConfig(QString filename)
         errorText.append(filename);
         return false;
     }
+
+    config.setDefault();
+    ft_autosave = false;
+    form->setAutoSave(config.getAutoSavePath(), ft_autosave);
 
     QXmlStreamReader xml(&file);
     while (!xml.atEnd()) {
@@ -113,6 +117,27 @@ bool FiletransferPlugin::loadConfig(QString filename)
               {
                   config.setFlCtIdTag( xml.readElementText() );
               }
+              if(xml.name() == QString("AUTOSAVE"))
+              {
+                  config.setAutoSavePath( xml.readElementText() );
+                  ft_autosave = true;
+                  if (!QDir(config.getAutoSavePath()).exists())
+                  {
+                    if ( false == QDir().mkpath(config.getAutoSavePath()) )
+                    {
+                     if ( dltControl->silentmode == true )
+                      {
+                      qDebug() << "ERROR creating autosave folder" << config.getAutoSavePath();
+                      }
+                     else
+                      {
+                       QMessageBox::warning(0, QString("ERROR creating autosave folder"), config.getAutoSavePath());
+                      }
+                    }
+                  }
+                form->setAutoSave(config.getAutoSavePath(), true);
+              }
+
           }
     }
     if (xml.hasError())
@@ -140,7 +165,6 @@ bool FiletransferPlugin::saveConfig(QString /*filename*/)
 
 QStringList FiletransferPlugin::infoConfig()
 {
-
     QStringList list;
 
     list.append("TAG_FLAPPID: "+ config.getFlAppIdTag());
@@ -149,6 +173,10 @@ QStringList FiletransferPlugin::infoConfig()
     list.append("TAG_FLDA: "+ config.getFldaTag());
     list.append("TAG_FLFI: "+ config.getFlfiTag());
     list.append("TAG_FLER: "+ config.getFlerTag());
+    if ( true == ft_autosave )
+     {
+      list.append("Autosave: "+ config.getAutoSavePath());
+     }
 
     return list;
 }

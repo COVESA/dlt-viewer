@@ -19,6 +19,7 @@ QString Configuration::getFlerTag() {return tagFLER;}
 QString Configuration::getFlifTag() {return tagFLIF;}
 QString Configuration::getFlAppIdTag() {return tagFLAppId;}
 QString Configuration::getFlCtIdTag() {return tagFLCtId;}
+QString Configuration::getAutoSavePath() {return AutoSavePath;}
 
 void Configuration::setFlstTag(QString newTag) { tagFLST = newTag; }
 void Configuration::setFldaTag(QString newTag) { tagFLDA = newTag; }
@@ -27,6 +28,7 @@ void Configuration::setFlerTag(QString newTag) { tagFLER = newTag; }
 void Configuration::setFlifTag(QString newTag) { tagFLIF = newTag; }
 void Configuration::setFlAppIdTag(QString newTag) { tagFLAppId = newTag; }
 void Configuration::setFlCtIdTag(QString newTag) { tagFLCtId = newTag; }
+void Configuration::setAutoSavePath(QString newTag) { AutoSavePath = newTag; }
 
 void Configuration::setDefault()
 {
@@ -37,4 +39,5 @@ void Configuration::setDefault()
     tagFLIF = "FLIF";
     tagFLAppId = "SYS";
     tagFLCtId = "FILE";
+    AutoSavePath = "";
 }

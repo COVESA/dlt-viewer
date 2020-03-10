@@ -39,6 +39,7 @@ public:
     ~Form();
     QTreeWidget* getTreeWidget();
     void clearSelectedFiles();
+    void setAutoSave(QString path, bool autosave);
 
 signals:
     void additem_signal(File *f);
@@ -51,6 +52,8 @@ signals:
 private:
     Ui::Form *ui;
     int selectedFiles=0;
+    bool autosave=false;
+    QString savepath="";
 
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);

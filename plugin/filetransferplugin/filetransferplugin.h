@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "configuration.h"
 
-#define FILETRANSFER_PLUGIN_VERSION "1.3.0"
+#define FILETRANSFER_PLUGIN_VERSION "1.4.0"
 
 class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface, QDltPluginControlInterface
 {
@@ -91,6 +91,7 @@ private:
     QDltControl *dltControl;
     QString errorText;
     bool plugin_is_active = false;
+    bool ft_autosave = false;
 
     void doFLST(QDltMsg *msg); // file transfer start
     void doFLDA(int index, QDltMsg *msg); // file transfer update
