@@ -102,6 +102,7 @@ void EcuDialog::setData(EcuItem &item)
     ui->loglevelComboBox->setCurrentIndex(item.loglevel);
     ui->tracestatusComboBox->setCurrentIndex(item.tracestatus);
     ui->comboBoxVerboseMode->setCurrentIndex(item.verbosemode);
+    ui->checkBoxSendSerialHeaderSerial->setCheckState(item.getSendSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
     ui->checkBoxSyncToSerialHeaderSerial->setCheckState(item.getSyncSerialHeaderSerial()?Qt::Checked:Qt::Unchecked);
     ui->checkBoxTiming->setCheckState(item.timingPackets?Qt::Checked:Qt::Unchecked);
 
@@ -340,6 +341,8 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item)
     item->ipcon.setHostname(this->hostname());
     item->serialcon.setBaudrate(this->baudrate());
     item->serialcon.setPort(this->Serialport());
+    item->setSendSerialHeaderSerial(this->ui->checkBoxSendSerialHeaderSerial->checkState()==Qt::Checked);
+    item->setSyncSerialHeaderSerial(this->ui->checkBoxSyncToSerialHeaderSerial->checkState()==Qt::Checked);
 }
 
 void EcuDialog::on_checkBoxAutoReconnect_toggled(bool checked)
