@@ -298,6 +298,7 @@ bool QDltFile::updateIndex()
                         pos = current_message_pos+4;
                         buf = files[numFile]->infile.read(READ_BUF_SZ);
                         cbuf_sz = buf.size();
+                        cbuf = buf.constData();
                         num=0;
                         next_message_pos = 0;
                     }
