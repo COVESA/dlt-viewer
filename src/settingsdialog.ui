@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
+    <width>566</width>
     <height>671</height>
    </rect>
   </property>
@@ -529,6 +529,16 @@
           </item>
           <item row="1" column="0">
            <layout class="QGridLayout" name="gridLayout_3">
+            <item row="6" column="2">
+             <widget class="QCheckBox" name="checkBoxMode">
+              <property name="text">
+               <string>Show Mode</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
             <item row="5" column="0">
              <widget class="QCheckBox" name="checkBoxIndex">
               <property name="text">
@@ -539,40 +549,17 @@
               </property>
              </widget>
             </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="labelFont">
+              <property name="text">
+               <string>Font</string>
+              </property>
+             </widget>
+            </item>
             <item row="5" column="1">
              <widget class="QCheckBox" name="checkBoxEcuid">
               <property name="text">
                <string>Show Ecu Id</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="2">
-             <widget class="QCheckBox" name="checkBoxSubtype">
-              <property name="text">
-               <string>Show Subtype</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QCheckBox" name="checkBoxTime">
-              <property name="text">
-               <string>Show Time</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="2">
-             <widget class="QCheckBox" name="checkBoxMode">
-              <property name="text">
-               <string>Show Mode</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -589,13 +576,46 @@
               </property>
              </widget>
             </item>
-            <item row="7" column="0">
-             <widget class="QCheckBox" name="checkBoxCount">
+            <item row="4" column="0">
+             <widget class="QLabel" name="labelShowColumn">
               <property name="text">
-               <string>Show Count</string>
+               <string>Select the columns to show in the viewer:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Table font (default Segoe UI,8):</string>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="0">
+             <widget class="QCheckBox" name="checkBoxTime">
+              <property name="text">
+               <string>Show Time</string>
               </property>
               <property name="checked">
                <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QSpinBox" name="spinBoxSectionSize">
+              <property name="toolTip">
+               <string>Range between 1 and 40</string>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>40</number>
+              </property>
+              <property name="singleStep">
+               <number>1</number>
+              </property>
+              <property name="value">
+               <number>16</number>
               </property>
              </widget>
             </item>
@@ -609,37 +629,47 @@
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
+            <item row="8" column="0">
+             <widget class="QCheckBox" name="checkBoxNoar">
+              <property name="text">
+               <string>Show #Arguments</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QPushButton" name="pushButtonSelectFont">
+              <property name="text">
+               <string>Select</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
              <widget class="QLabel" name="labelSpacer">
               <property name="text">
-               <string/>
+               <string>Table section height (default 16):</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0" colspan="2">
-             <widget class="QLabel" name="labelShowColumn">
+            <item row="5" column="2">
+             <widget class="QCheckBox" name="checkBoxSubtype">
               <property name="text">
-               <string>Select the columns to show in the viewer:</string>
+               <string>Show Subtype</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item row="2" column="0" colspan="2">
-             <widget class="QLabel" name="labelFontSize">
+            <item row="7" column="0">
+             <widget class="QCheckBox" name="checkBoxCount">
               <property name="text">
-               <string>Table font size (default is 8):</string>
+               <string>Show Count</string>
               </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QSpinBox" name="spinBoxFontSize">
-              <property name="toolTip">
-               <string>Range between 1 and 20</string>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
-              <property name="maximum">
-               <number>20</number>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -647,16 +677,6 @@
              <widget class="QCheckBox" name="checkBoxPayload">
               <property name="text">
                <string>Show Payload</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QCheckBox" name="checkBoxNoar">
-              <property name="text">
-               <string>Show #Arguments</string>
               </property>
               <property name="checked">
                <bool>true</bool>
@@ -1015,7 +1035,6 @@
   <tabstop>spinBoxIndexCacheDays</tabstop>
   <tabstop>checkBoxStartUpMinimized</tabstop>
   <tabstop>spinBoxFrequency</tabstop>
-  <tabstop>spinBoxFontSize</tabstop>
   <tabstop>checkBoxIndex</tabstop>
   <tabstop>checkBoxEcuid</tabstop>
   <tabstop>checkBoxSubtype</tabstop>

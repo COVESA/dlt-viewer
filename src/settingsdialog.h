@@ -39,6 +39,7 @@ public:
     ~SettingsDialog();
 
     QString workingDirectory;
+    QFont font;
 
     void assertSettingsVersion();
 
@@ -90,6 +91,7 @@ private slots:
 
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
     void on_pushButtonMarkerColor_clicked();
+    void on_pushButtonSelectFont_clicked();
 };
 
 #endif // SETTINGSDIALOG_H

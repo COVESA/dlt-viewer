@@ -483,13 +483,6 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setColumnHidden(FieldNames::ArgCount, true);
     m_searchresultsTable->setColumnHidden(FieldNames::SessionId, true);
 
-    QFont searchtableViewFont = m_searchresultsTable->font();
-    searchtableViewFont.setPointSize(settings->fontSize);
-    m_searchresultsTable->setFont(searchtableViewFont);
-
-    // Rescale the height of a row to choosen font size + 8 pixels
-    m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->fontSize+8);
-
     /* set table size and en */
     m_searchresultsTable->setColumnWidth(FieldNames::Index,50);
     m_searchresultsTable->setColumnWidth(FieldNames::Time,150);
@@ -1928,11 +1921,12 @@ void MainWindow::reloadLogFileDefaultFilter()
 
 void MainWindow::applySettings()
 {
-    QFont tableViewFont = ui->tableView->font();
-    tableViewFont.setPointSize(settings->fontSize);
-    ui->tableView->setFont(tableViewFont);
-    // Rescale the height of a row to choosen font size + 8 pixels
-    ui->tableView->verticalHeader()->setDefaultSectionSize(settings->fontSize+8);
+    QFont font;// = ui->tableView->font();
+    font.fromString(settings->fontName);
+    ui->tableView->setFont(font);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
+    m_searchresultsTable->setFont(font);
+    m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
 
     settings->showIndex?ui->tableView->showColumn(0):ui->tableView->hideColumn(0);
     settings->showTime?ui->tableView->showColumn(1):ui->tableView->hideColumn(1);

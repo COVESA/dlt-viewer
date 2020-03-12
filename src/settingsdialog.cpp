@@ -24,6 +24,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QStandardPaths>
+#include <QFontDialog>
 
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
@@ -236,7 +237,9 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
 
     /* table */
-    ui->spinBoxFontSize->setValue(settings->fontSize);
+    ui->spinBoxSectionSize->setValue(settings->sectionSize);
+    font.fromString(settings->fontName);
+    ui->labelFont->setText(font.toString());
 
     /* Time settings */
     ui->groupBoxAutomaticTimeSettings->setChecked(settings->automaticTimeSettings);
@@ -411,7 +414,8 @@ void SettingsDialog::readDlg()
     settings->appendDateTime = (ui->checkBoxAppendDateTime->checkState() == Qt::Checked);
 
     /* table */
-    settings->fontSize = ui->spinBoxFontSize->value();
+    settings->sectionSize = ui->spinBoxSectionSize->value();
+    settings->fontName = font.toString();
 
     /* Time settings */
     settings->automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
@@ -732,5 +736,19 @@ void SettingsDialog::on_pushButtonMarkerColor_clicked()
     {
         QDltSettingsManager *settings = QDltSettingsManager::getInstance();
         settings->markercolor =  selectedcolor;
+    }
+}
+
+void SettingsDialog::on_pushButtonSelectFont_clicked()
+{
+    bool ok;
+    QFont font = QFontDialog::getFont(
+                    &ok, this->font, this);
+    if (ok) {
+        // the user clicked OK and font is set to the font the user selected
+        this->font = font;
+        ui->labelFont->setText(font.toString());
+    } else {
+        // the user canceled the dialog; font is set to the initial
     }
 }

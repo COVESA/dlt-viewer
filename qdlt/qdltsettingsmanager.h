@@ -97,6 +97,8 @@ public:
     int appendDateTime; // local and project setting
 
     int fontSize; // project and local setting
+    int sectionSize; // project and local setting
+    QString fontName; // project and local setting
     int showIndex; // project and local setting
     int showTime; // project and local setting
     int showTimestamp; // project and local setting
