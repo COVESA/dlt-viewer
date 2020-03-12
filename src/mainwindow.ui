@@ -41,7 +41,7 @@
      <widget class="DltTableView" name="tableView">
       <property name="font">
        <font>
-        <family>Courier 10 Pitch</family>
+        <family>Segoe UI</family>
         <pointsize>8</pointsize>
        </font>
       </property>
@@ -716,6 +716,11 @@
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <widget class="QTableView" name="tableView_SearchIndex">
+       <property name="font">
+        <font>
+         <pointsize>8</pointsize>
+        </font>
+       </property>
        <property name="contextMenuPolicy">
         <enum>Qt::CustomContextMenu</enum>
        </property>

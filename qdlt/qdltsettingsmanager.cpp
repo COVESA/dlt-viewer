@@ -106,6 +106,8 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
     xml.writeStartElement("settings");
         xml.writeStartElement("table");
             xml.writeTextElement("fontSize",QString("%1").arg(fontSize));
+            xml.writeTextElement("sectionSize",QString("%1").arg(sectionSize));
+            xml.writeTextElement("fontName",fontName);
             xml.writeTextElement("automaticTimeSettings",QString("%1").arg(automaticTimeSettings));
             xml.writeTextElement("automaticTimezoneFromDlt",QString("%1").arg(automaticTimezoneFromDlt));
             xml.writeTextElement("utcOffset",QString("%1").arg(utcOffset));
@@ -188,6 +190,8 @@ void QDltSettingsManager::writeSettings()
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
+    settings->setValue("startup/sectionSize",sectionSize);
+    settings->setValue("startup/fontName",fontName);
     settings->setValue("startup/automaticTimeSettings",automaticTimeSettings);
     settings->setValue("startup/automaticTimezoneFromDlt",automaticTimezoneFromDlt);
     settings->setValue("startup/utcOffset",utcOffset);
@@ -249,6 +253,14 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     if(xml.name() == QString("fontSize"))
     {
         fontSize = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("sectionSize"))
+    {
+        sectionSize = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("fontName"))
+    {
+        fontName = xml.readElementText();
     }
     if(xml.name() == QString("automaticTimeSettings"))
     {
@@ -413,6 +425,8 @@ void QDltSettingsManager::readSettings()
 
     /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();
+    sectionSize = settings->value("startup/sectionSize",16).toInt();
+    fontName = settings->value("startup/fontName","Segoe UI,8").toString();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
     automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
 
