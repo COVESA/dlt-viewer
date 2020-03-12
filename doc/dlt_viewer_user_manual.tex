@@ -43,6 +43,7 @@
 \end{center}
 
 Changelog:\linebreak
+v1.0.1, March 2020: add sort by timestamp and filetransfer autosave documentation\linebreak
 v1.0.0, July 2019: adjust for 2.19.0 Release\linebreak
 v0.0.7, February 2019: added UDP reception\linebreak
 v0.0.6, Septemnber 2018: added logelevels, complete missing descriptions, bugfixing \linebreak
@@ -103,7 +104,7 @@ devices or the pure size of a logfile limits performance.
     \item Project widget
     \item DLT Message Table
     \item Search results widget
-    \item Footer with information about the current file etc.
+    \item Status line with information about the current file etc.
   \end{itemize}
 \item View DLT files
  \begin{itemize}
@@ -231,10 +232,16 @@ below marks the relevant areas followed by a description.
  \centering
   %\includegraphics[width=1.1\textwidth]{images/main_window_annotated.png}
   \includegraphics[width=1.1\textwidth]{images/dltviewermain_sections_annotated.png}
- \caption{Main DLT Window sections}
+  \caption{Main DLT Window sections}
  \label{fig:mainwindowsections}
 \end{figure}
 
+
+%\begin{figure}[h]
+% \centering
+%  \includegraphics[width=1.1\textwidth]{images/dltviewermain_sections_annotated.png}
+% \caption{Main DLT Window sections}
+%\end{figure}
 
 
 \pagebreak
@@ -353,8 +360,8 @@ DLT log files can be loaded and saved in the file menu.
    See section \autoref{plugintab} and chapter \autoref{plugins} for more information.   \\
    \hline
    \includegraphics[width=0.05\textwidth]{images/Mark5.png}
-   & Footer
-   & \label{footer}The footer shows information about the current log file,
+   & Status line
+   & \label{footer}The status line shows information about the current log file,
      the version string ( see \autoref{versionstring} ) and other options of the DLT Viewer. \\
    \hline
    \includegraphics[width=0.05\textwidth]{images/Mark6.png}
@@ -906,9 +913,11 @@ And a more structured depiction in the Header tab.
  \label{fig:dbuspluginwidgetheader}
 \end{figure}
 
+\subsubsection{Configuration file}
 
+DBUS messages are identified by a special combination of Apid/Ctid: the default is DBUS/ALL so in this case you do not load a special configuration file.\linebreak
+But if you need other combinations of Apid/Ctid you need to specify this in the confuigration file.
 
-DBUS messages are identified by a special combination of Apid/Ctid: the default is DBUS/ALL in case you do not load a special configuration file.\linebreak
 Example: in case you need to use the two combinations of Apid/Ctid:
 
 DBSY/DBSY
@@ -916,7 +925,7 @@ DBSY/DBSY
 DBCN/DBCN
 
 
-To enable these two combinations use the delivered example file \begin{verbatim}"dbusplugin_configuration.xml" \end{verbatim}
+you have to enable these two combinations use the delivered example file \begin{verbatim}"dbusplugin_configuration.xml" \end{verbatim}
 which is located in the plugins/examples folder (Windows) or /usr/share/doc/genivi-dlt-viewer (Ubuntu) of your viewer installation.
 If the Apid/Ctids changes you can edit the file and change or add items for your need. The total amount of Apid/Ctid combinations
 is limited to 10 due to performance reasons.\linebreak
@@ -961,6 +970,26 @@ After enabling the filetransfer plugin when a dlt file already was loaded you wi
 You can also use the Filetransfer Plugin command line mode to extract files out of a stored dlt file e.g. in an automated test setup.
 On more information about the command line mode see \autoref{commandlinemode}.
 
+\subsubsection{Configuration file}
+In the subdirectory plugins/examples you find an example configuration file called \begin{verbatim}"filetransferplugin_configuration.xml"\end{verbatim}.
+In case the target uses the default values to indicate file transfers you do not need to change anything here.
+The default file transfer will work without additional configuration.
+
+\subsubsection{Autosave feature}
+In case you want to save transfered files automatically to a dedicated directory you can use the configuration file to
+enable this feature by adding e.g.:
+
+\begin{verbatim}
+<?xml version="1.0" encoding="UTF-8"?>
+<filetransferplugin_configuration>
+<AUTOSAVE>c:/filetransfer/autosave</AUTOSAVE>   
+</filetransferplugin_configuration>
+\end{verbatim}
+
+Every successfully completed file transfer will be stored to the given directory eg.g during live tracing but also when loading 
+a dlt logfile.
+
+The feature is enabled in filetransfer plugin starting from version 1.4.0.
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Plugin SDK}
 
@@ -1327,11 +1356,21 @@ Right click on a ECU item in the "Project/Config" tab and press the menu item "S
 
 \pagebreak
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-\subsection{The version string}
+\subsection{Status line information}
+
+In the GIU status line you find sveral additional information
+
+\subsubsection{Logfile location}
+
+
+\subsubsection{The version string}
 \label{versionstring}
 Depending on the setting "ECU Software version info" in dlt.conf configuration of the DLT Daemon
 the daemon sends either the daemon version or the content of a given file on the target periodically.
 The version is transmitted by a special control message, for example:
+
+Header detected after end of message, offset: 14
+ERROR in file detected at index 0 msg length 71 file position 42
 
 \includegraphics[width=1.0\textwidth]{images/versionstring_message.png}
 
@@ -1340,7 +1379,7 @@ You also can request the version string manually:
 Right click on a ECU item in the "Project/Config" tab and press the menu item "Get software version".
 
 
-The version string is shown in the footer (see \autoref{footer}) of the dlt viewer.
+The version string is shown in the status line (see \autoref{footer}) of the dlt viewer.
 %when configured in "PathToECUSoftwareVersion".
 Assumend this method is used to identify target and software version you can also use it for plugins
 autoload feature, see also \autoref{usingautoload}.\linebreak
@@ -1355,11 +1394,27 @@ Version string example 1 ( daemon version )\linebreak
 
 Version string example 2 ( daemon version with tooltip )\linebreak
 
-In case the version string is too long to be displayed in the footer you can see the full name in the tooltip by hoovering above the version string.\\
+In case the version string is too long to be displayed in the status line you can see the full name in the tooltip by hoovering above the version string.\\
 
 \vspace{0.2cm}
 
 \includegraphics[width=1.0\textwidth]{images/versionstringwithtooltip.png}
+
+\subsubsection{File errors}
+Shows the amount of detected errors when loading a dlt logfile. In commandline mode
+you get more detailed information in case file error was detected. E.g.:
+
+ 
+
+\subsubsection{Receive counter}
+In live tracing mode the tab "Recv:" shows the amount of currently received data in messages
+
+\subsubsection{Receive error counter}
+In live tracing mode the tab "Recv Errors:" shows the number of envcountered receive errors
+
+\subsubsection{Sync found}
+In serial connection mode this counter shows ...
+
 
 \pagebreak
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1537,6 +1592,31 @@ dlt-receive -o ./logit.dlt 160.48.199.99
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Working with Filters}
 \label{workingwithfilters}
+
+
+\subsubsection{Sort by Time}
+\label{sortbytime}
+If the filters are enabled, even if there is no active filter applied, you can select "Sorted by Time" in the
+Filter tab of the Project Panel. In this case all messages will be sorted by received time.
+
+E.g. in case you load several logfiles which contain messages from different ECUs you will get the messages sorted by the recveive time instead by the message index.
+
+\caution{Take care of the (target) Timestamp - it may happen that messages are not received in the order
+like they are emitted by the specific application on the target but like they are sent out by the target system}
+
+\subsubsection{Sort by Timestamp}
+\label{sortbytimestamp}
+You can select either "Sorted by Time" or "Sorted by Timestamp" in the
+Filter tab of the Project Panel. In this case all messages will be sorted by the timestamp the messages get when issued
+by the sending application on the target. 
+
+\caution{When sorting by (target) timestamp be sure that the trace contains messages of one lifecycle only, otherwise you will mix them up with
+several timestamps from different lifecycles which might be confusing}
+
+
+
+\subsubsection{How to create a filter}
+
 You can find some example filters in your viewer installation directories and in the source code in directory "filters":
 \begin{verbatim}
  * control_messages.dlf
@@ -1548,12 +1628,7 @@ You can find some example filters in your viewer installation directories and in
 In case you define filters please take into account that message filtering has performance impact. It is recommended to combine sevaral search parameters in one filter definition instead of cascading multiple filters.
 When searching for payload content you can improve performance if you also limit the filter using a certain Ctid or Apid where you expect your message in.
 
-
-
 \caution{More and complex filters slow down the viewer !}
-
-
-\subsubsection{How to create a filter}
 
 There are several ways to add a filter:
 \begin{enumerate}
@@ -1590,18 +1665,6 @@ The avaiable Ecuid, Apid, Ctid will be filled in already.
 \item Log Level Max
 \item Control Messages
 \end{enumerate}
-
-
-
-\subsubsection{Sort by Time}
-\label{sortbytime}
-If the filters are enabled, even if there is no active filter applied, you can select "Sorted by Time" in the
-Filter tab of the Project Panel. In this case all messages will be sorted by received time.
-
-E.g. in case you load several logfiles which contain messages from different ECUs you will get the messages sorted by the recveive time, not by the message index.
-
-\caution{Take care of the (target) Timestamp - it may happen that messages are not received in the order
-like they are emitted by the specific application on the target but like they are sent out by the target system}
 
 
 \subsubsection{Using regular expressions}
@@ -1652,7 +1715,7 @@ If you call the DLT Viewer on command line you get the following output:
 dlt\_viewer -h ( Linux ) or dlt\_viewer.exe -h ( Windows )
 
 \footnotesize\begin{verbatim}
-Usage: dlt-viewer [OPTIONS]
+Usage: dlt_viewer [OPTIONS]
 Options:
  -h Print usage
  -p projectfile          Loading project file on startup (must end with .dlp)
@@ -1668,13 +1731,13 @@ Options:
  -e "plugin|command|param1|..|param<n>"         Execute a plugin command with <n> parameters.
 
 Examples:
-  dlt-viewer -c ./traces/trace.dlt ./trace.txt
-  dlt-viewer -s -c -u ./trace/trace.dlt ./trace.txt
-  dlt-viewer -s -d -c ./trace/trace.dlt ./trace.dlt
-  dlt-viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt
-  dlt-viewer -s -csv -c ./trace/trace.dlt ./trace.csv
-  dlt-viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt
-  dlt-viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e "Filetransfer Plugin|export|./ftransferdir"
+  dlt_viewer -c ./traces/trace.dlt ./trace.txt
+  dlt_viewer -s -c -u ./trace/trace.dlt ./trace.txt
+  dlt_viewer -s -d -c ./trace/trace.dlt ./trace.dlt
+  dlt_viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt
+  dlt_viewer -s -csv -c ./trace/trace.dlt ./trace.csv
+  dlt_viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt
+  dlt_viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e "Filetransfer Plugin|export|./ftransferdir"
 \end{verbatim}
 \normalsize
 
@@ -1687,9 +1750,9 @@ Also you get some debug output on what the viewer actual is doing.
 Example output:
 
 \begin{verbatim}
-C:\01-viewer\r690>dlt-viewer.exe -s
+C:\01-viewer\r690>dlt_viewer.exe -s
 Enable silent mode
-Start "dlt-viewer.exe"
+Start "dlt_viewer.exe"
 Build time Jun 15 2018 09:24:40
 Version 2.19.0 WORKING
 **********************************************************
@@ -1740,55 +1803,55 @@ dlt\_viewer.exe -p x.dlp -l y.dlt -e "Filetransfer Plugin{\textbar}export{\textb
 
 \paragraph{Command line start of GUI with dedicated logfile}
 \begin{verbatim}
-dlt-viewer -l ./example.dlt
+dlt_viewer -l ./example.dlt
 \end{verbatim}
 
 \paragraph{Command line start of GUI with dedicated logfile and filterfile}
 \begin{verbatim}
-dlt-viewer -l ./example.dlt -f ./filter.dlf
+dlt_viewer -l ./example.dlt -f ./filter.dlf
 \end{verbatim}
 
 
 \paragraph{Convert to ASCII file}
 \begin{verbatim}
-dlt-viewer -c ./example.dlt ./example.txt
+dlt_viewer -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Convert to UTF8 file}
 \begin{verbatim}
-dlt-viewer -u -c ./example.dlt ./example.txt
+dlt_viewer -u -c ./example.dlt ./example.txt
 \end{verbatim}
 
 
 \paragraph{Convert to ASCII file in silent mode}
 \begin{verbatim}
-dlt-viewer -s -c ./example.dlt ./example.txt
+dlt_viewer -s -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Filter and convert to ASCII file}
 \begin{verbatim}
-dlt-viewer -f /viewertests/filterfiles/export.dlf -c ./example.dlt ./example.txt
+dlt_viewer -f /viewertests/filterfiles/export.dlf -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Filter, decode and convert to ASCII file}
 \begin{verbatim}
-dlt-viewer -p /viewertests/filterfiles/example.dlp -c ./example.dlt ./example.txt
+dlt_viewer -p /viewertests/filterfiles/example.dlp -c ./example.dlt ./example.txt
 \end{verbatim}
 
 
 \paragraph{Filter and save as DLT file}
 \begin{verbatim}
-dlt-viewer -s -d -f /filterfiles/filter.dlf -c ./example.dlt ./example_filtered.dlt
+dlt_viewer -s -d -f /filterfiles/filter.dlf -c ./example.dlt ./example_filtered.dlt
 \end{verbatim}
 
 \paragraph{Filter, decode and save as DLT file}
 \begin{verbatim}
-dlt-viewer -s -dd -f /project/example.dlp -c ./example.dlt ./example_decoded.dlt
+dlt_viewer -s -dd -f /project/example.dlp -c ./example.dlt ./example_decoded.dlt
 \end{verbatim}
 
 \paragraph{Decode and save as DLT file}
 \begin{verbatim}
-dlt-viewer -p ./export.dlp -l ./filetransfer.dlt -e "Filetransfer Plugin|export|./ft_dir"
+dlt_viewer -p ./export.dlp -l ./filetransfer.dlt -e "Filetransfer Plugin|export|./ft_dir"
 \end{verbatim}
 
 \subsubsection{Shell script examples of command line calls}
@@ -1802,7 +1865,7 @@ Example:
 #!/bin/bash
 for files in `ls *.dlt`
   do
-    dlt-viewer -s -f ./dltfilters/Filter_v5.dlf -c $files ${files}_filtered.txt
+    dlt_viewer -s -f ./dltfilters/Filter_v5.dlf -c $files ${files}_filtered.txt
 done
 \end{verbatim}
 
