@@ -42,8 +42,8 @@ private:
 
     bool start();
     bool finish();
-    bool getMsg(int num, QDltMsg &msg, QByteArray &buf);
-    bool exportMsg(int num, QDltMsg &msg,QByteArray &buf);
+    bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
+    bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf);
 
 public:
 
@@ -61,15 +61,19 @@ public:
      * \param selection Limit export to these messages. Leave to NULL to export everything,
      */
     void exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
-                             DltExporter::DltExportFormat exportFormat, DltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
+                        DltExporter::DltExportFormat exportFormat,
+                        DltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
 
+    void exportMessageRange(unsigned long start, unsigned long stop);
 
 signals:
 
 public slots:
 
 private:
-    int size;
+    unsigned long int size;
+    unsigned long int starting_index;
+    unsigned long int stoping_index;
     QDltFile *from;
     QFile *to;
     QString clipboardString;

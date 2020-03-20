@@ -1,5 +1,6 @@
 #include "exporterdialog.h"
 #include "ui_exporterdialog.h"
+#include <QDebug>
 
 ExporterDialog::ExporterDialog(QWidget *parent) :
     QDialog(parent),
@@ -61,4 +62,16 @@ DltExporter::DltExportSelection ExporterDialog::getSelection()
     if(ui->radioButtonSelection->isChecked())
         return DltExporter::SelectionSelected;
     return DltExporter::SelectionAll;
+}
+
+void ExporterDialog::getRange(unsigned long *start, unsigned long *stop)
+{
+    *start=ui->startindex->text().toLongLong();
+    *stop=ui->stopindex->text().toLongLong();
+}
+
+void ExporterDialog::setRange(unsigned long start, unsigned long stop)
+{
+    ui->startindex->setText(QString::number(start));
+    ui->stopindex->setText(QString::number(stop));
 }

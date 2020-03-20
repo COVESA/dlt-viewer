@@ -23,6 +23,8 @@ public:
     void setSelection(DltExporter::DltExportSelection exportSelection);
     DltExporter::DltExportSelection getSelection();
 
+    void getRange(unsigned long *start, unsigned long *stop);
+    void setRange(unsigned long start, unsigned long stop);
     
 private:
     Ui::ExporterDialog *ui;

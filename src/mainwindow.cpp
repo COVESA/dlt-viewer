@@ -143,7 +143,7 @@ MainWindow::MainWindow(QWidget *parent) :
     draw_timer.setSingleShot (true);
     connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
 
-    if ( true == settings->StartupMinimized )
+    if ( true == (bool) settings->StartupMinimized )
     {
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
@@ -153,10 +153,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
-    //qDebug() << "Clean up";
     timer.stop(); // stop the receive timeout timer in case it is running
     dltIndexer->stop(); // in case a thread is running we want to stop it
-    QDltSettingsManager::close();
     /**
      * All plugin dockwidgets must be removed from the layout manually and
      * then deleted. This has to be done here, because they contain
@@ -176,8 +174,8 @@ MainWindow::~MainWindow()
         }
     }
 
-    // rename output filename if flag set in settings
-    if(( settings->appendDateTime != 0) && (outputfile.size() != 0))
+
+    if(( settings->appendDateTime == 1) && (outputfile.size() != 0))
     {
         // get new filename
         QFileInfo info(outputfile.fileName());
@@ -191,9 +189,15 @@ MainWindow::~MainWindow()
         qfile.close();
         outputfile.flush();
         outputfile.close();
-        outputfile.rename(infoNew.absoluteFilePath());
         bool result = outputfile.rename(info.absoluteFilePath(), infoNew.absoluteFilePath());
-        qDebug() << "Renamed " <<  info.absoluteFilePath() << "to" << infoNew.absoluteFilePath() << result;
+        if ( false == result )
+        {
+        qDebug() << "ERROR renaming" <<  info.absoluteFilePath() << "to" << infoNew.absoluteFilePath();
+        }
+        else
+        {
+        qDebug() << "Renaming " <<  info.absoluteFilePath() << "to" << infoNew.absoluteFilePath();
+        }
     }
 
     // deleting search history
@@ -205,6 +209,7 @@ MainWindow::~MainWindow()
         }
     }
 
+    QDltSettingsManager::close();
     delete ui;
     delete tableModel;
     delete searchDlg;
@@ -1318,7 +1323,9 @@ void MainWindow::exportSelection_searchTable(bool payload_only = false)
 void MainWindow::on_actionExport_triggered()
 {
     /* export dialog */
+    exporterDialog.setRange(0,qfile.size());
     exporterDialog.exec();
+
     if(exporterDialog.result() != QDialog::Accepted)
         return;
 
@@ -1410,10 +1417,21 @@ void MainWindow::on_actionExport_triggered()
     DltExporter exporter(this);
     QFile outfile(fileName);
 
+    unsigned long int startix, stopix;
+    exporterDialog.getRange(&startix,&stopix);
+
     if(exportSelection == DltExporter::SelectionSelected)
+    {
+        qDebug() << "Selection" << __LINE__;
         exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection,&list);
+    }
     else
+    {
+        qDebug() << "No selection" << __LINE__;
+        exporter.exportMessageRange(startix,stopix);
         exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection);
+    }
+
 
 }
 
@@ -1552,8 +1570,6 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     }
 
     outputfile.setFileName(fn);
-    //qDebug() << "New filename is" << fn << settings->tempSaveOnClear;
-
     totalBytesRcvd = 0; // reset receive counter too
     totalSyncFoundRcvd = 0; // reset sync counter too
     totalByteErrorsRcvd = 0; // reset receive byte error too
@@ -1565,7 +1581,6 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     {
         openFileNames = QStringList(fn);
         isDltFileReadOnly = false;
-        //qDebug() << "reloadlogfile" << outputfile.fileName() << outputfile.fileName().size() << __FILE__ <<  __LINE__;
         statusFilename->setMinimumWidth(statusFilename->width()); // just works to show default tmp file + location in status line
         reloadLogFile();
     }
@@ -3106,6 +3121,7 @@ void MainWindow::on_action_menuConfig_Disconnect_triggered()
 
 void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 {
+    qDebug() << "try to connect" << __LINE__;
     if(false == ecuitem->tryToConnect || true == force)
     {
         ecuitem->tryToConnect = true;
@@ -3472,7 +3488,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ))
+            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) )
             {
                 read(ecuitem);
             }
@@ -3535,7 +3551,7 @@ void MainWindow::read(EcuItem* ecuitem)
      }
 
 
-    if (bytesRcvd <= 0)
+    if (bytesRcvd <= 0 && ecuitem->connected == false)
     {
       qDebug() << "ERROR bytesRcvd <= 0 in " << __LINE__ << __FILE__;
       return;
