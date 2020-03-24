@@ -23,3 +23,9 @@ get_filename_component(MAC_DEPLOY_TOOL ${MOC_LOCATION}/../macdeployqt ABSOLUTE)
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
   COMMAND ${MAC_DEPLOY_TOOL} $<TARGET_FILE_DIR:${TARGET_NAME}>/../.. -always-overwrite
 )
+
+# enable high-DPI displays support
+add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+  COMMAND plutil -replace NSPrincipalClass -string NSApplication $<TARGET_FILE_DIR:${TARGET_NAME}>/../Info.plist
+  COMMAND plutil -replace NSHighResolutionCapable -bool true $<TARGET_FILE_DIR:${TARGET_NAME}>/../Info.plist
+)
