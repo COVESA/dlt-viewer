@@ -1,0 +1,31 @@
+language: cpp
+
+linux: &linux
+  os: linux
+  services:
+    - docker
+
+macos_high_sierra: &macos_high_sierra
+  os: osx
+  osx_image: xcode10.1
+
+macos_mojave: &macos_mojave
+  os: osx
+  osx_image: xcode11.3.1
+
+jobs:
+  include:
+    - <<: *linux
+      dist: xenial
+    - <<: *linux
+      dist: bionic
+    - <<: *macos_high_sierra
+    - <<: *macos_mojave
+
+install:
+  - chmod +x .ci/travis/install.sh
+  - ./.ci/travis/install.sh
+
+script:
+  - chmod +x .ci/travis/build.sh
+  - ./.ci/travis/build.sh
