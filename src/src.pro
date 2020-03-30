@@ -20,7 +20,11 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
 
 CONFIG += console
 
-QMAKE_LFLAGS += -Wl,-rpath=.
+macx {
+    QMAKE_LFLAGS += -Wl,-rpath .
+} else {
+    QMAKE_LFLAGS += -Wl,-rpath=.
+}
 
 # Uncomment to add debug symbols to Release build
 #QMAKE_CXXFLAGS_RELEASE += -g
