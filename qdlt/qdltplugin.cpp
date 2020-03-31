@@ -103,8 +103,7 @@ bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
     if(mode != ModeDisable && plugindecoderinterface && plugindecoderinterface->isMsg(msg,triggeredByUser))
     {
-        plugindecoderinterface->decodeMsg(msg,triggeredByUser);
-        return true;
+        return plugindecoderinterface->decodeMsg(msg,triggeredByUser);
     }
     return false;
 }
