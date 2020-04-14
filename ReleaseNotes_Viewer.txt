@@ -6,6 +6,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 Changes
 -------
 02.05.2019 GW: 2.19.0 Release
+14.04.2020 GW: 2.20.0 Release
 
 Version
 -------
@@ -20,6 +21,77 @@ Known issues
 
 Changes
 -------
+
+2.20.0
+
+    Features:
+    * Added Travis CI support
+        Build Matrix includes the following systems:
+        - Ubuntu 16.04 (Xenial)
+        - Ubuntu 18.04 (Bionic)
+        - macOS 10.13 (High Sierra)
+        - macOS 10.14 (Mojave)
+    * High DPI Displays Support [macOS]
+    * Add export of dedicated index range in GUI mode
+    * Selection of all font settings for table view and search table view.
+    * Added also setting of section height of table view.
+    * Filetransfer Plugin: add autosave option. When an autosave directory
+       is given in the configuration file, completed filetransfers
+       are automatically stored to the given directory
+    * Sort by target time stamp
+    * MultiSelectionMode for the Filter-Configuration-Dialog
+    * Use the same application icon for ui files and desktop file
+    * follow Freedesktop convention for application icon
+    * follow Freedesktop convention for .desktop file
+    * Ignoring *.orig backup files from KDiff3
+    * added marker colors to searchtablemodel
+    * Extension of QDltPluginControlInterface with new notification events
+        - Add possibility to inject message decoder facade into the plugin
+        - Add possibility to inject main table view into the plugin
+        - Add possibility to notify the plugin about the changed configuration
+        - Extend comments of QDltPluginViewerInterface
+    * Add file error counter to statusline
+    * Wrap filename in statusline to be able to more decrease the width of main window
+    * Add pdf version of manual to repo
+    * Further improvement and speed up indexing algorithm.
+    * Move OptManager to qdlt.
+    * Renamed OptManager into QDltOptManager.
+    * Moved QDltSettingsManager to qdlt library.
+    * Renamed DltSettingsManager into QDltSettingsManager.
+    * Seperated settings from UI.
+    * Moved local read/write routine to QDltSettingsManager.
+    * Updated cmake files.
+
+
+    Fixes:
+    * fix and cleanup settings parameters.
+    * fix ignoring of plugin return codes in qdltplugin
+    * fix: macOS qmake build: Corrected the `rpath` option for macOS
+    * bugfix: access to deleted object when closing down viewer
+    * fix crash DLT Viewer with defect DLT file
+    * fixed problem Serial connection with "Sync to Serial Header when receiving"
+    * bugfix: errortext returned by plugin was not displayed
+    * fix filter item is checked but not enabled Signed-off-by: Olaf Dreyer <olaf.dreyer@partner.magna.com>
+    * fixed console mode
+    * fix Search Completer not working case insensitive
+    * fixing misbehavior of the Non-Verbose-Plugin on using multiple FiBEX files in one directory
+    * fixing link problem on mingw64_64
+    * fixing compile problem on mingw64_64
+    * fix:Linker error with stdc++ library in linux version
+    * rename dlt_parser to dlt-parser
+    * rename dlt_viewer to dlt-viewer
+    * gitignore: Ignore gedit backup files
+    * fix: Dlt Viewer Segmentation fault when dummy viewer is enabled manually
+    * fix Appveyor build
+    * fix udp port saving & loading
+    * fix self assigned variable warning
+    * fix cmake warning for Mac OS.
+    * fix speedplugin example, needed due to plugin interface extension
+    * add qdltmessagedecoder to cmake to fix build issue
+    * fix exec name in dlt_viewer.desktop file
+    * Bugfix: sporadic segfault in commandline convertion mode
+
+
 
 2.19.0
     * Adjust to cmake changes
