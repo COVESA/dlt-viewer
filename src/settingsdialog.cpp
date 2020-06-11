@@ -361,7 +361,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
-   // ui->spinBox_showArguments->setValue(settings->showArguments);
+    ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
     ui->checkBoxWriteControl->setCheckState(settings->writeControl?Qt::Checked:Qt::Unchecked);
@@ -446,7 +446,7 @@ void SettingsDialog::readDlg()
     settings->showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     settings->showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     settings->showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
-   // showArguments = (ui->spinBox_showArguments->value());
+    settings->showArguments = (ui->spinBox_showArguments->value());
 
     /* other */
     settings->writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -756,4 +756,28 @@ void SettingsDialog::on_pushButtonSelectFont_clicked()
     } else {
         // the user canceled the dialog; font is set to the initial
     }
+}
+
+void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
+{
+    if (checked)
+    {
+      if (ui->spinBox_showArguments->value()<=0) ui->spinBox_showArguments->setValue(5); //set to default
+    }
+    else
+    {
+      ui->spinBox_showArguments->setValue(0);
+    }
+}
+
+void SettingsDialog::on_spinBox_showArguments_valueChanged(int i)
+{
+ if (i<=0)
+ {
+  ui->groupBoxArguments->setChecked(false);
+ }
+ else
+ {
+     if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
+ }
 }
