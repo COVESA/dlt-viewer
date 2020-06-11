@@ -43,6 +43,7 @@
 \end{center}
 
 Changelog:\linebreak
+v1.0.2, June 2020: updated Show Argument Columns section
 v1.0.1, March 2020: add sort by timestamp and filetransfer autosave documentation\linebreak
 v1.0.0, July 2019: adjust for 2.19.0 Release\linebreak
 v0.0.7, February 2019: added UDP reception\linebreak
@@ -629,9 +630,20 @@ See also \autoref{messagetablecolumns} on information about the columns.
 
 \item{Show Arguments}
 
-This setting may be only interesting for dlt application developers. The column "Args" shows the number of payload arguments contained in the DLT message.
+This setting may be only interesting for dlt application/plugin developers. The column "Args" shows the number of payload arguments contained in the DLT message.
 
-The check box "Show Argument Columns" is not functional.
+\item{Show Argument Columns}
+Show the payload arguments split each to a seperate column instead of squashed into one single payload text column.
+This is convinient for fast reading of logs with variable text messages but same arguments, as every n-th argument is aligned in the n-th argument column.
+Choose the maximum number of shown columns in the main table. 
+Good to combine with "Show Payload" = Off
+The "ArgX" columns are found always at the right end of the table. 
+\begin{figure}[H]
+ \centering
+ \includegraphics[width=0.6\textwidth]{images/tableview_arguments.png}
+ \caption{Argument Columns }
+ \label{fig:agrumentcolumns}
+\end{figure}
 
 \item{Show Application}
 
