@@ -1,7 +1,7 @@
 version: 2.19.0.{build}
 image: Visual Studio 2017
 install:
-  - set QTDIR=C:\Qt\5.12.5\msvc2017_64
+  - set QTDIR=C:\Qt\5.12\msvc2017_64
   - set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build
   - set PATH=%PATH%;%QTDIR%\bin;%MSVC_DIR%
   - set ARCHITECTURE=x86_amd64
