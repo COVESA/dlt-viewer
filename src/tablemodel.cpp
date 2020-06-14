@@ -247,6 +247,8 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              }
              /* display payload */
              return msg.toStringPayload().trimmed().replace('\n', ' ');
+         case FieldNames::MessageId:
+             return QString().sprintf(project->settings->msgIdFormat.toLatin1() ,msg.getMessageId());
          default:
              if (index.column()>=FieldNames::Arg0)
              {
@@ -343,54 +345,12 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::TextAlignmentRole )
      {
-        switch(index.column())
+         switch(index.column())
         {
-            case FieldNames::Index:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Time:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::TimeStamp:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Counter:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::EcuId:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::AppId:
-                switch(project->settings->showApIdDesc)
-                {
-                case 0:
-                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                    break;
-                case 1:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                default:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                }
-            case FieldNames::ContextId:
-                switch(project->settings->showCtIdDesc)
-                {
-                case 0:
-                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                    break;
-                case 1:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                default:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                }
-            case FieldNames::Type:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::Subtype:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::Mode:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::ArgCount:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Payload:
-                return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
+            //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+            default:
+                  return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
+
         }
     }
 
@@ -407,7 +367,14 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
         case Qt::DisplayRole:
             return FieldNames::getName((FieldNames::Fields)section, project->settings);
         case Qt::TextAlignmentRole:
-            return (section == FieldNames::Payload) ? Qt::AlignLeft : QVariant();
+            {
+            switch(section)
+                {
+                 //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+                  default:return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
+                }
+
+            }
          default:
             break;
         }

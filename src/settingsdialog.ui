@@ -376,7 +376,7 @@
           <string>Table</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="6" column="0">
+          <item row="7" column="0">
            <widget class="QGroupBox" name="groupBoxAutomaticTimeSettings">
             <property name="title">
              <string>Set time column automatic to local recording time</string>
@@ -738,6 +738,60 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item row="6" column="0">
+           <widget class="QGroupBox" name="groupBoxMessageId">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Show Message Id (Non-Verbose)</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <widget class="QComboBox" name="comboBox_MessageIdFormat">
+             <property name="geometry">
+              <rect>
+               <x>220</x>
+               <y>20</y>
+               <width>261</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+             <property name="currentText">
+              <string>%08u</string>
+             </property>
+             <property name="maxCount">
+              <number>30</number>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_MessageIdFormat">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>20</y>
+               <width>91</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Message Id Format</string>
+             </property>
+            </widget>
+           </widget>
           </item>
          </layout>
         </widget>

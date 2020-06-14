@@ -25,6 +25,7 @@ public:
         Type,
         Subtype,
         Mode,
+        MessageId,
         ArgCount,
         Payload,
         Arg0  //Arg0 must always be last field or tablemodels have to be changed as well
@@ -35,6 +36,10 @@ public:
      * Pass null for settings to get ID only always.
      * Use case: Exports */
     static QString getName(Fields cn, QDltSettingsManager *settings = NULL);
+    static int getColumnWidth(Fields cn, QDltSettingsManager *settings = NULL);
+    static QVariant getColumnAlignment(Fields cn, QDltSettingsManager *settings = NULL);
+    static bool getColumnShown(Fields cn,QDltSettingsManager *settings = NULL);
+
 signals:
     
 public slots:

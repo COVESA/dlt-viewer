@@ -68,10 +68,13 @@ public:
     bool enableLogLevelMax;
     bool enableLogLevelMin;
     bool enableMarker;
+    bool enableMessageId;
 
     QString filterColour;
     int logLevelMax;
     int logLevelMin;
+    unsigned int messageIdMax;
+    unsigned int messageIdMin;
 
     // generated from header and payload string
     QRegularExpression headerRegularExpression;

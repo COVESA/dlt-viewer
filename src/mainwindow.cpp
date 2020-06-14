@@ -311,19 +311,10 @@ void MainWindow::initView()
     //ui->tableView->setItemDelegateForColumn(FieldNames::Payload,delegate);
 
     /* preset the witdth of the columns somwhow */
-    ui->tableView->setColumnWidth(0,50);  // the first column is the index if there is one ...
-    ui->tableView->setColumnWidth(1,150); // the second column is the receiving time stamp
-    ui->tableView->setColumnWidth(2,70);
-    ui->tableView->setColumnWidth(3,40);
-    ui->tableView->setColumnWidth(4,40);
-    ui->tableView->setColumnWidth(5,40);
-    ui->tableView->setColumnWidth(6,40);
-    ui->tableView->setColumnWidth(7,50);
-    ui->tableView->setColumnWidth(8,50);
-    ui->tableView->setColumnWidth(9,50);
-    ui->tableView->setColumnWidth(10,50);
-    ui->tableView->setColumnWidth(11,50);
-    ui->tableView->setColumnWidth(12,1200); // 12 is the index of the paayload column !
+    for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
+    {
+      ui->tableView->setColumnWidth(col,FieldNames::getColumnWidth((FieldNames::Fields)col,settings));
+    }
 
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
     // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
@@ -481,29 +472,12 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->verticalHeader()->setVisible(false);
     m_searchresultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-    //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
-    //Ideally possible with right-click
-    m_searchresultsTable->setColumnHidden(FieldNames::Counter, true);
-    m_searchresultsTable->setColumnHidden(FieldNames::Type, true);
-    m_searchresultsTable->setColumnHidden(FieldNames::Subtype, true);
-    m_searchresultsTable->setColumnHidden(FieldNames::Mode, true);
-    m_searchresultsTable->setColumnHidden(FieldNames::ArgCount, true);
-    m_searchresultsTable->setColumnHidden(FieldNames::SessionId, true);
 
     /* set table size and en */
-    m_searchresultsTable->setColumnWidth(FieldNames::Index,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Time,150);
-    m_searchresultsTable->setColumnWidth(FieldNames::TimeStamp,70);
-    m_searchresultsTable->setColumnWidth(FieldNames::Counter,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::EcuId,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::AppId,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::ContextId,40);
-    m_searchresultsTable->setColumnWidth(FieldNames::SessionId,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Type,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Subtype,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Mode,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::ArgCount,50);
-    m_searchresultsTable->setColumnWidth(FieldNames::Payload,1400);
+   for  (int col=0;col <= m_searchresultsTable->model()->columnCount();col++)
+   {
+     m_searchresultsTable->setColumnWidth(col,FieldNames::getColumnWidth((FieldNames::Fields)col,settings));
+   }
 
 }
 
@@ -1938,22 +1912,31 @@ void MainWindow::applySettings()
     m_searchresultsTable->setFont(font);
     m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
 
-    settings->showIndex?ui->tableView->showColumn(0):ui->tableView->hideColumn(0);
-    settings->showTime?ui->tableView->showColumn(1):ui->tableView->hideColumn(1);
-    settings->showTimestamp?ui->tableView->showColumn(2):ui->tableView->hideColumn(2);
-    settings->showCount?ui->tableView->showColumn(3):ui->tableView->hideColumn(3);
-
-    settings->showEcuId?ui->tableView->showColumn(4):ui->tableView->hideColumn(4);
-    settings->showApId?ui->tableView->showColumn(5):ui->tableView->hideColumn(5);
-    settings->showCtId?ui->tableView->showColumn(6):ui->tableView->hideColumn(6);
-    settings->showSessionId?ui->tableView->showColumn(7):ui->tableView->hideColumn(7);
-    settings->showType?ui->tableView->showColumn(8):ui->tableView->hideColumn(8);
-
-    settings->showSubtype?ui->tableView->showColumn(9):ui->tableView->hideColumn(9);
-    settings->showMode?ui->tableView->showColumn(10):ui->tableView->hideColumn(10);
-    settings->showNoar?ui->tableView->showColumn(11):ui->tableView->hideColumn(11);
-    settings->showPayload?ui->tableView->showColumn(12):ui->tableView->hideColumn(12);
-
+    for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
+    {
+        switch(col)
+        {
+        //override column visibility here
+        //FieldNames::SessionId: ui->tableView->setColumnHidden(col,true);
+        default:ui->tableView->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));
+        }
+    }
+    //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
+    //Ideally possible with right-click
+    for  (int col=0;col <= m_searchresultsTable->model()->columnCount();col++)
+    {
+        switch(col)
+        {
+        //override column visibility here
+        case(FieldNames::SessionId): m_searchresultsTable->setColumnHidden(col, true);break;
+        case(FieldNames::Counter):   m_searchresultsTable->setColumnHidden(col, true);break;
+        case(FieldNames::Type):      m_searchresultsTable->setColumnHidden(col, true);break;
+        case(FieldNames::Subtype):   m_searchresultsTable->setColumnHidden(col, true);break;
+        case(FieldNames::Mode):      m_searchresultsTable->setColumnHidden(col, true);break;
+        case(FieldNames::ArgCount):  m_searchresultsTable->setColumnHidden(col, true);break;
+        default:m_searchresultsTable->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));break;
+        }
+    }
     if ( settings->RefreshRate > 0 )
     {
         draw_interval = 1000 / settings->RefreshRate;
@@ -6105,7 +6088,8 @@ void MainWindow::filterAddTable() {
     dlg.setContextId(msg.getCtid());
     dlg.setHeaderText(msg.toStringHeader());
     dlg.setPayloadText(msg.toStringPayload());
-
+    dlg.setMessageId_min(msg.getMessageId());
+    dlg.setMessageId_max(0);
     if(dlg.exec()==1) {
         FilterItem* item = new FilterItem(0);
         project.filter->addTopLevelItem(item);
@@ -6228,11 +6212,15 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setEnableLogLevelMax(item->filter.enableLogLevelMax);
     dlg.setEnableLogLevelMin(item->filter.enableLogLevelMin);
     dlg.setEnableMarker(item->filter.enableMarker);
+    dlg.setEnableMessageId(item->filter.enableMessageId);
 
     dlg.setFilterColour(item->filter.filterColour);
 
     dlg.setLogLevelMax(item->filter.logLevelMax);
     dlg.setLogLevelMin(item->filter.logLevelMin);
+    dlg.setMessageId_max(item->filter.messageIdMax);
+    dlg.setMessageId_min(item->filter.messageIdMin);
+
 }
 
 void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
@@ -6263,10 +6251,13 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.enableLogLevelMax = dlg.getEnableLogLevelMax();
     item->filter.enableLogLevelMin = dlg.getEnableLogLevelMin();
     item->filter.enableMarker = dlg.getEnableMarker();
+    item->filter.enableMessageId=dlg.getEnableMessageId();
 
     item->filter.filterColour = dlg.getFilterColour();
     item->filter.logLevelMax = dlg.getLogLevelMax();
     item->filter.logLevelMin = dlg.getLogLevelMin();
+    item->filter.messageIdMax=dlg.getMessageId_max();
+    item->filter.messageIdMin=dlg.getMessageId_min();
 
     /* update filter item */
     item->update();

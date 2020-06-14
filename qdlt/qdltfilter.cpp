@@ -66,7 +66,10 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     enableLogLevelMax = _filter.enableLogLevelMax;
     enableLogLevelMin = _filter.enableLogLevelMin;
     enableMarker = _filter.enableMarker;
+    enableMessageId=_filter.enableMessageId;
 
+    messageIdMax=_filter.messageIdMax;
+    messageIdMin=_filter.messageIdMin;
     filterColour = _filter.filterColour;
     logLevelMax = _filter.logLevelMax;
     logLevelMin = _filter.logLevelMin;
@@ -111,6 +114,8 @@ void QDltFilter::clear()
     filterColour = "#000000"; // QColor() default contructor initializes to an invalid color RGB 0,0,0
     logLevelMax = 6;
     logLevelMin = 0;
+    messageIdMax=0;
+    messageIdMin=0;
 }
 
 bool QDltFilter::isMarker() const
@@ -215,6 +220,24 @@ bool QDltFilter::match(QDltMsg &msg) const
         if( (true == enablePayload) && ( false == msg.toStringPayload().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
+        }
+    }
+
+    if (true == enableMessageId)
+    {
+        if (messageIdMax==0)
+        {
+            if(  false == ((msg.getMessageId()==messageIdMin)) )
+                {
+                    return false;
+                }
+        }
+        else 
+        {
+            if( false == ((msg.getMessageId()>=messageIdMin)&&(msg.getMessageId()<messageIdMax)) )
+                {
+                    return false;
+                }
         }
     }
 
@@ -339,6 +362,10 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           enableMarker = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("enableMessageId"))
+    {
+          enableMessageId = xml.readElementText().toInt();;
+    }
     if(xml.name() == QString("filterColour"))
     {
           filterColour = xml.readElementText();
@@ -351,6 +378,15 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           logLevelMin = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("messageIdMax"))
+    {
+          messageIdMax = xml.readElementText().toUInt();
+    }
+    if(xml.name() == QString("messageIdMin"))
+    {
+          messageIdMin = xml.readElementText().toUInt();
+    }
+
 }
 
 void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
@@ -363,6 +399,8 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("contextid",ctid);
     xml.writeTextElement("headertext",header);
     xml.writeTextElement("payloadtext",payload);
+    xml.writeTextElement("messageIdMin",QString("%1").arg(messageIdMin));
+    xml.writeTextElement("messageIdMax",QString("%1").arg(messageIdMax));
 
     xml.writeTextElement("enableregexp_Appid",QString("%1").arg(enableRegexp_Appid));
     xml.writeTextElement("enableregexp_Context",QString("%1").arg(enableRegexp_Context));
@@ -380,6 +418,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enableLogLevelMin",QString("%1").arg(enableLogLevelMin));
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
     xml.writeTextElement("enableMarker",QString("%1").arg(enableMarker));
+    xml.writeTextElement("enablemMessageId",QString("%1").arg(enableMessageId));
 
     xml.writeTextElement("filterColour",filterColour);
 
