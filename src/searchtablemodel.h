@@ -25,7 +25,7 @@
 #include "project.h"
 #include "qdlt.h"
 
-#define DLT_VIEWER_SEARCHCOLUMN_COUNT 13
+#define DLT_VIEWER_SEARCHCOLUMN_COUNT FieldNames::Arg0
 
 class SearchTableModel : public QAbstractTableModel
 {

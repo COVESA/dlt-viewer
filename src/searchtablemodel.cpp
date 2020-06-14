@@ -161,6 +161,8 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         case FieldNames::Payload:
             /* display payload */
             return msg.toStringPayload().trimmed();
+        case FieldNames::MessageId:
+            return QString().sprintf(project->settings->msgIdFormat.toLatin1(),msg.getMessageId());
         default:
             if (index.column()>=FieldNames::Arg0)
             {
@@ -215,53 +217,13 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
 
     if ( role == Qt::TextAlignmentRole ) {
-       switch(index.column())
+        switch(index.column())
        {
-           case FieldNames::Index:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Time:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::TimeStamp:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Counter:               
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);//don't show that in the search field
-           case FieldNames::EcuId:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::AppId:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-               switch(project->settings->showApIdDesc){
-               case 0:
-                   return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                   break;
-               case 1:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               default:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               }
-           case FieldNames::ContextId:
-               switch(project->settings->showCtIdDesc){
-               case 0:
-                   return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                   break;
-               case 1:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               default:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               }
-           case FieldNames::Type:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::Subtype:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::Mode:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::ArgCount:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Payload:
-               return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
+           //override default alignment here if needed
+           //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+           default:
+                 return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
+
        }
    }
 
@@ -271,12 +233,24 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 QVariant SearchTableModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
-   if (role != Qt::DisplayRole)
-       return QVariant();
-
    if (orientation == Qt::Horizontal)
    {
-       return FieldNames::getName((FieldNames::Fields)section, project->settings);
+       switch (role)
+       {
+       case Qt::DisplayRole:
+           return FieldNames::getName((FieldNames::Fields)section, project->settings);
+       case Qt::TextAlignmentRole:
+           {
+           switch(section)
+               {
+                 //override default alignment here if needed
+                 //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+                 default:return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
+               }
+           }
+        default:
+           break;
+       }
    }
 
    return QVariant();

@@ -127,6 +127,7 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("showNoar",QString("%1").arg(showNoar));
             xml.writeTextElement("showPayload",QString("%1").arg(showPayload));
             xml.writeTextElement("showArguments",QString("%1").arg(showArguments));
+            xml.writeTextElement("showMsgId",QString("%1").arg(showMsgId));
             xml.writeTextElement("markercolor",QString("%1").arg(markercolor.name()));
         xml.writeEndElement(); // table
 
@@ -143,6 +144,7 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("splitlogfile",QString("%1").arg(splitlogfile));
             xml.writeTextElement("fmaxFileSizeMB",QString("%1").arg(fmaxFileSizeMB));
             xml.writeTextElement("appendDateTime",QString("%1").arg(appendDateTime));
+            xml.writeTextElement("msgIdFormat",QString("%1").arg(msgIdFormat));
         xml.writeEndElement(); // other
     xml.writeEndElement(); // settings
 
@@ -215,11 +217,13 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/showNoar",showNoar);
     settings->setValue("startup/showPayload",showPayload);
     settings->setValue("startup/showArguments",showArguments);
+    settings->setValue("startup/showMsgId",showMsgId);
 
     /* other */
     settings->setValue("startup/writeControl",writeControl);
     settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
     settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
+    settings->setValue("startup/msgIdFormat",msgIdFormat);
 
     /* For settings integrity validation */
     settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
@@ -378,6 +382,14 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         appendDateTime = xml.readElementText().toInt();
     }
+    if(xml.name() == QString("showMsgId"))
+    {
+        showMsgId = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("msgIdFormat"))
+    {
+        msgIdFormat = xml.readElementText();
+    }
 
 }
 
@@ -453,10 +465,11 @@ void QDltSettingsManager::readSettings()
     showNoar = settings->value("startup/showNoar",0).toInt();
     showPayload = settings->value("startup/showPayload",1).toInt();
     showArguments = settings->value("startup/showArguments",0).toInt();
-
+    showMsgId = settings->value("startup/showMsgId",0).toInt();
     /* other */
     writeControl = settings->value("startup/writeControl",1).toInt();
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
+    msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();
 }
 

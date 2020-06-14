@@ -116,7 +116,9 @@ public:
     int showNoar; // project and local setting
     int showPayload; // project and local setting
     int showArguments; // project and local setting
+    int showMsgId; // project and local setting
 
+    QString msgIdFormat; // project and local setting
     int automaticTimeSettings; // project and local setting
     int automaticTimezoneFromDlt; // project and local setting
     qlonglong utcOffset; // project and local setting

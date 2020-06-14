@@ -91,6 +91,13 @@ public:
     void setEnablePayloadText(bool state);
     bool getEnablePayloadText();
 
+    void setEnableMessageId(bool state);
+    bool getEnableMessageId();
+    unsigned int getMessageId_min();
+    unsigned int getMessageId_max();
+    void setMessageId_min(unsigned int min);
+    void setMessageId_max(unsigned int max);
+
     void setFilterColour(QColor color);
     QString getFilterColour();
 
@@ -113,10 +120,13 @@ public:
 
 private:
     Ui::FilterDialog *ui;
-
+    unsigned int msgIdMin=0;
+    unsigned int msgIdMax=0;
 public slots:
     void on_buttonSelectColor_clicked();
     void on_comboBoxType_currentIndexChanged(int index);
+    void checkMsgIdValid(const QString&);
+    void on_checkboxMessageId_stateChanged(int state);
     void validate();
 private slots:
     void on_lineEditApplicationId_textEdited(const QString &arg1);

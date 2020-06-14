@@ -110,6 +110,12 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
     ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
 
+    ui->comboBox_MessageIdFormat->addItem("%010u");
+    ui->comboBox_MessageIdFormat->addItem("%u");
+    ui->comboBox_MessageIdFormat->addItem("0x%08X");
+    ui->comboBox_MessageIdFormat->addItem("0x%08x");
+    ui->comboBox_MessageIdFormat->addItem("%08xh");
+
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->fmaxFileSizeMB = 0.0;
     settings->appendDateTime = 0;
@@ -356,6 +362,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMessageId->setChecked(settings->showMsgId?Qt::Checked:Qt::Unchecked);
     ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
@@ -365,6 +372,7 @@ void SettingsDialog::writeDlg()
 
     ui->spinBoxFrequency->setValue(settings->RefreshRate);
     ui->checkBoxStartUpMinimized->setChecked(settings->StartupMinimized);
+    ui->comboBox_MessageIdFormat->setCurrentText(settings->msgIdFormat);
 }
 
 void SettingsDialog::readDlg()
@@ -442,6 +450,7 @@ void SettingsDialog::readDlg()
     settings->showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     settings->showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
     settings->showArguments = (ui->spinBox_showArguments->value());
+    settings->showMsgId     = (ui->groupBoxMessageId->isChecked()==true?1:0);
 
     /* other */
     settings->writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
@@ -450,6 +459,7 @@ void SettingsDialog::readDlg()
 
     settings->RefreshRate = ui->spinBoxFrequency->value();
     settings->StartupMinimized = ui->checkBoxStartUpMinimized->isChecked();
+    settings->msgIdFormat=ui->comboBox_MessageIdFormat->currentText();
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)

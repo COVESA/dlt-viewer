@@ -332,6 +332,7 @@ FilterItem::FilterItem(QTreeWidgetItem *parent)
     filter.enableLogLevelMin = false;
     filter.enableCtrlMsgs = false;
     filter.enableMarker = false;
+    filter.enableMessageId = false;
 
     filter.filterColour = "#000000";  // default constructor for QColor initialized at RGB 0,0,0
 
@@ -402,6 +403,11 @@ void FilterItem::update()
     }
     if(filter.enablePayload ) {
         text += QString("%1 ").arg(filter.payload);
+    }
+    if(filter.enableMessageId ) {
+            text += QString("%1 ").arg(filter.messageIdMin);
+            if (filter.messageIdMax>0)
+                text += QString(".. %1 ").arg(filter.messageIdMax);
     }
     if(filter.enableCtrlMsgs ) {
         text += QString("CtrlMsgs ");

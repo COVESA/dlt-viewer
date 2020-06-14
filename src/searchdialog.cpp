@@ -413,6 +413,9 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     fileprogress.setWindowModality(Qt::NonModal);
     fileprogress.show();
 
+    bool msgIdEnabled=QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
+    QString msgIdFormat=QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
+
     do
     {
         ctr++; // for file progress indication
@@ -464,6 +467,10 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         if( text.isEmpty() )
         {
             text += msg.toStringHeader();
+            if ( msgIdEnabled==true )
+            {
+                text += " "+QString().sprintf(msgIdFormat.toLatin1(),msg.getMessageId());
+            }
             tempPayLoad = msg.toStringPayload();
 
         } // get the header text in case not empty
