@@ -383,8 +383,8 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
-    void reloadLogFileProgressMax(quint64 num);
-    void reloadLogFileProgress(quint64 num);
+    void reloadLogFileProgressMax(int num);
+    void reloadLogFileProgress(int num);
     void reloadLogFileProgressText(QString text);
     void reloadLogFileVersionString(QString ecuId, QString version);
     void reloadLogFileFinishIndex();

@@ -185,10 +185,10 @@ private:
 signals:
 
     // the maximum progress value
-    void progressMax(quint64 index);
+    void progressMax(int index);
 
     // the current progress value
-    void progress(quint64 index);
+    void progress(int index);
 
     // progress text change fro different parts
     void progressText(QString text);

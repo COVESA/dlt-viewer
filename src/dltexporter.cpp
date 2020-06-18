@@ -269,7 +269,8 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 {
     QDltMsg msg;
     QByteArray buf;
-
+    float percent=0;
+    QString qszPercent;
     /* initialise values */
     int readErrors=0;
     int exportErrors=0;
@@ -318,32 +319,39 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
       fileprogress.show();
      }
 
-    //qDebug() << "DLT Export " << size << "line" << __LINE__;
-    for(starting;starting<stoping;starting++)
+    for(starting=0;starting<stoping;starting++)
     {
         // Update progress dialog every 1000 lines
-        if (silentMode == true)
-        {
+
         if( 0 == (starting%1000))
         {
+          percent=(( starting * 100.0 ) /stoping );
           if (silentMode == true)
              {
               fileprogress.setValue(starting);
              }
+          if( 0 == (starting%1000000))
+          {
+           qszPercent = QString("Exported: %1 %").arg(percent, 0, 'f',2);
+           qDebug().noquote() << qszPercent;
+          }
         }
-        } // fileprogress in non - silent mode
 
+        if (fileprogress.wasCanceled() == true)
+        {
+            qDebug().noquote() << "Export canceled !";
+            return;
+        }
 
         // get message
         if(false == getMsg(starting,msg,buf))
         {
         //  finish();
-        qDebug() << "DLT Export getMsg failed on msg index" << starting;
+        //qDebug() << "DLT Export getMsg failed on msg index" << starting;
         readErrors++;
         continue;
         //  return;
         }
-
         // decode message if needed
         if(exportFormat != DltExporter::FormatDlt)
         {
@@ -359,7 +367,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         if(!exportMsg(starting,msg,buf))
         {
             // finish();
-          qDebug() << "DLT Export exportMsg() failed";
+          //qDebug() << "DLT Export exportMsg() failed";
           exportErrors++;
           continue;
         }
@@ -382,12 +390,21 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 
     if ( startFinishError>0 || readErrors>0 || exportErrors>0 )
     {
-       qDebug() << "DLT Export finish() failed";
+       //qDebug() << "DLT Export finish() failed";
        if (silentMode == true ) // reversed login in this case !
        {
         QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
        }
        return;
     }
-    qDebug() << "DLT export done for" << exportCounter << "messages with result" << startFinishError;
+    if ( stoping != 0 )
+    {
+     percent=(( starting * 100.0 ) / stoping );
+    }
+    else
+    {
+     percent = 0;
+    }
+
+    qDebug() << percent << "%" << "DLT export done for" << exportCounter << "messages with result" << startFinishError;// << __FILE__ << __LINE__;
 }

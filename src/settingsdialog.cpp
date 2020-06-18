@@ -141,16 +141,17 @@ void SettingsDialog::changeEvent(QEvent *e)
 
 void SettingsDialog::assertSettingsVersion()
 {
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+   QDltSettingsManager *settings = QDltSettingsManager::getInstance();
 
-    int major = settings->value("startup/versionMajor").toInt();
-    int minor = settings->value("startup/versionMinor").toInt();
+   int major = settings->value("startup/versionMajor").toInt();
+   int minor = settings->value("startup/versionMinor").toInt();
 
-    if(major == 0 && minor == 0)
+   if(major == 0 && minor == 0)
+    {
         return; // The settings were empty already
+    }
 
-    if(major < QString(PACKAGE_MAJOR_VERSION).toInt() ||
-       minor < QString(PACKAGE_MINOR_VERSION).toInt())
+   if(major > QString(PACKAGE_MAJOR_VERSION).toInt() || minor > QString(PACKAGE_MINOR_VERSION).toInt())
     {
         QString msg;
         msg.append("The application version has changed ! The settings file config.ini might be incompatible.\n");
@@ -158,8 +159,7 @@ void SettingsDialog::assertSettingsVersion()
         msg.append("Yes    - Reset settings to factory defaults.\n");
         msg.append("No     - Continue loading settings and risk crashing the application.\n");
         msg.append("Cancel - Exit the viewer now.\n");
-        QMessageBox dlg("Warning", msg, QMessageBox::Warning,
-                        QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+        QMessageBox dlg("Warning", msg, QMessageBox::Warning, QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
         int btn = dlg.exec();
         if(btn == QMessageBox::Yes)
         {
@@ -169,6 +169,7 @@ void SettingsDialog::assertSettingsVersion()
         {
             exit(-1);
         }
+
     }
 }
 
@@ -177,17 +178,21 @@ void SettingsDialog::resetSettings()
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->clear();
     QString fn(settings->fileName());
-    QDltSettingsManager::close();
     QFile fh(fn);
-    if(fh.exists())
+    if(true == fh.exists())
     {
-        if(!fh.open(QIODevice::ReadWrite))
+        if(false == fh.open(QIODevice::ReadWrite))
             return; // Could be a registry key on windows
         fh.close();
-        if(!fh.remove())
+        if(false == fh.remove())
         {
             QMessageBox err("Error", "Could not remove the settings file", QMessageBox::Critical, QMessageBox::Ok, 0, 0);
             err.exec();
+        }
+        else
+        {
+          qDebug() << "Deleted settings file" << fn << fh.exists();
+          readSettings();
         }
     }
 }

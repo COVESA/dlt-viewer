@@ -148,7 +148,6 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
     }
-
 }
 
 MainWindow::~MainWindow()
@@ -226,6 +225,7 @@ void MainWindow::initState()
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
     settingsDlg->readSettings();
+
     recentFiles = settingsDlg->getRecentFiles();
     recentProjects = settingsDlg->getRecentProjects();
     recentFilters = settingsDlg->getRecentFilters();
@@ -511,8 +511,8 @@ void MainWindow::initFileHandling()
     dltIndexer = new DltFileIndexer(&qfile,&pluginManager,&defaultFilter, this);
 
     /* connect signals */
-    connect(dltIndexer, SIGNAL(progressMax(quint64)), this, SLOT(reloadLogFileProgressMax(quint64)));
-    connect(dltIndexer, SIGNAL(progress(quint64)), this, SLOT(reloadLogFileProgress(quint64)));
+    connect(dltIndexer, SIGNAL(progressMax(int)), this, SLOT(reloadLogFileProgressMax(int)));
+    connect(dltIndexer, SIGNAL(progress(int)), this, SLOT(reloadLogFileProgress(int)));
     connect(dltIndexer, SIGNAL(progressText(QString)), this, SLOT(reloadLogFileProgressText(QString)));
     connect(dltIndexer, SIGNAL(versionString(QString,QString)), this, SLOT(reloadLogFileVersionString(QString,QString)));
     connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
@@ -1420,14 +1420,14 @@ void MainWindow::on_actionExport_triggered()
     unsigned long int startix, stopix;
     exporterDialog.getRange(&startix,&stopix);
 
-    if(exportSelection == DltExporter::SelectionSelected)
+    if(exportSelection == DltExporter::SelectionSelected) // marked messages
     {
-        qDebug() << "Selection" << __LINE__;
+        //qDebug() << "Selection" << __LINE__;
         exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection,&list);
     }
     else
     {
-        qDebug() << "No selection" << __LINE__;
+        //qDebug() << "No selection" << __LINE__;
         exporter.exportMessageRange(startix,stopix);
         exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection);
     }
@@ -1654,18 +1654,14 @@ void MainWindow::reloadLogFileStop()
  
 }
 
-void MainWindow::reloadLogFileProgressMax(quint64 num)
+void MainWindow::reloadLogFileProgressMax(int num)
 {
     statusProgressBar->setRange(0,num);
 }
 
 /* triggered by signal "progress" */
-void MainWindow::reloadLogFileProgress(quint64 num)
+void MainWindow::reloadLogFileProgress(int num)
 {
-    if( (num % 100000 == 0 && num != 0 ) && ( true == QDltOptManager::getInstance()->isCommandlineMode()) ) // show some progres even during commandline processing
-    {
-      qDebug() << "."; // showing some kind of "prgogress dots"
-    }
     statusProgressBar->setValue(num);
 }
 
@@ -1699,7 +1695,6 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
 void MainWindow::reloadLogFileFinishIndex()
 {
     // show already unfiltered messages
-    //qDebug() << "MainWindow::reloadLogFileFinishIndex" << __FILE__ << __LINE__;
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     this->update(); // force update
@@ -3488,7 +3483,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) )
+            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) && ( true == ecuitem->connected ) )
             {
                 read(ecuitem);
             }
@@ -3553,7 +3548,7 @@ void MainWindow::read(EcuItem* ecuitem)
 
     if (bytesRcvd <= 0 && ecuitem->connected == false)
     {
-      qDebug() << "ERROR bytesRcvd <= 0 in " << __LINE__ << __FILE__;
+      qDebug() << "ERROR: bytesRcvd <= 0 in " << __LINE__ << __FILE__;
       return;
     }
 
@@ -4189,6 +4184,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     else
     {
         /* ECU is not connected */
+        qDebug() << "ECU is not connected !!";
         return;
     }
 
@@ -4667,16 +4663,27 @@ void MainWindow::controlMessage_Marker()
 
 void MainWindow::SendInjection(EcuItem* ecuitem)
 {
-    unsigned int serviceID;
-    unsigned int size;
-    bool ok;
+    unsigned int serviceID = 0;
+    unsigned int size = 0;
+    bool ok = true;
+
+    qDebug() << "DLT SendInjection" << injectionAplicationId << injectionContextId << injectionServiceId << __LINE__;
 
     if (injectionAplicationId.isEmpty() || injectionContextId.isEmpty() || injectionServiceId.isEmpty() )
+    {
+        qDebug() << "Error: either APID =" << injectionAplicationId << ", CTID = "<< injectionContextId <<  "or service ID=" << injectionServiceId << "is missing";
         return;
+    }
 
     serviceID = (unsigned int)injectionServiceId.toInt(&ok, 0);
 
-    if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
+    if ( (serviceID < DLT_SERVICE_ID_CALLSW_CINJECTION) || (serviceID==0) )
+    {
+        qDebug() << "Wrong range of service id: " << serviceID << ", it has to be > " << DLT_SERVICE_ID_CALLSW_CINJECTION;
+        return;
+    }
+
+    //if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
     {
         DltMessage msg;
         QByteArray hexData;
@@ -4684,29 +4691,31 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         /* initialise new message */
         dlt_message_init(&msg,0);
 
-        // Request parameter:
-        // data_length uint32
-        // data        uint8[]
-
         /* prepare payload of data */
-        if(injectionDataBinary)
+        if(true == injectionDataBinary)
         {
             hexData = QByteArray::fromHex(injectionData.toLatin1());
             size = hexData.size();
         }
         else
         {
-            size = (injectionData.length());
+            size = (injectionData.toUtf8().size() );
         }
 
         msg.datasize = 4 + 4 + size;
-        if (msg.databuffer) free(msg.databuffer);
+        if (msg.databuffer)
+            free(msg.databuffer);
         msg.databuffer = (uint8_t *) malloc(msg.datasize);
+        if (NULL == msg.databuffer)
+        {
+            qDebug() << "Error could not allocate memory for msg data buffer" << "LINE" << __LINE__ << __FILE__;
+            return;
+        }
 
         memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
         memcpy(msg.databuffer+4, &size, sizeof(size));
 
-        if(injectionDataBinary)
+        if(true == injectionDataBinary)
         {
             memcpy(msg.databuffer+8,hexData.data(),hexData.size());
         }
@@ -4714,6 +4723,8 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         {
             memcpy(msg.databuffer+8, injectionData.toUtf8(), size);
         }
+
+        qDebug() << "Send" << injectionData.toUtf8() << "of size" << size << "string:" << injectionData.toUtf8() <<  "size" << injectionData.toUtf8().size();// << "LINE" << __LINE__;
 
         /* send message */
         controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
@@ -5631,9 +5642,13 @@ void MainWindow::loadPlugins()
     /* load plugins from subdirectory plugins, from directory if set in settings and from /usr/share/dlt-viewer/plugins in Linux */
     QStringList errList;
     if(settings->pluginsPath)
+    {
         errList = pluginManager.loadPlugins(settings->pluginsPathName);
+    }
     else
+    {
         errList = pluginManager.loadPlugins(QString());
+    }
 
     if(errList.size() > 0)
     {
