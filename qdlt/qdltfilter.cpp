@@ -136,8 +136,12 @@ bool QDltFilter::compileRegexps()
     contextRegularExpression.setPattern(ctid);
     appidRegularExpression.setPattern(apid);
 
-    headerRegularExpression.setPatternOptions(ignoreCase_Header?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption);
-    payloadRegularExpression.setPatternOptions(ignoreCase_Payload?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption);
+    headerRegularExpression.setPatternOptions(
+        ignoreCase_Header ? QRegularExpression::CaseInsensitiveOption
+                          : QRegularExpression::NoPatternOption);
+    payloadRegularExpression.setPatternOptions(
+        ignoreCase_Payload ? QRegularExpression::CaseInsensitiveOption
+                           : QRegularExpression::NoPatternOption);
 
     return (headerRegularExpression.isValid() &&
             payloadRegularExpression.isValid() &&
@@ -186,7 +190,7 @@ bool QDltFilter::match(QDltMsg &msg) const
 
     if(true == enableRegexp_Header)
     {
-        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader(),ignoreCase_Header?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption).hasMatch() ) )
+        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader()).hasMatch() ) )
         {
             return false;
         }
@@ -201,7 +205,7 @@ bool QDltFilter::match(QDltMsg &msg) const
 
     if( true == enableRegexp_Payload)
     {
-        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload(),ignoreCase_Payload?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption).hasMatch() ) )
+        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload()).hasMatch() ) )
         {
             return false;
         }
