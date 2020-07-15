@@ -261,6 +261,12 @@ public:
      **/
     QString getFileName(int num = 0);
 
+    //! Get number of messages of the underlying file object
+    /*!
+     * \return File size or -1 in case of "wrong "out of range" input index
+     **/
+    int getFileMsgNumber(int num = 0) const;
+
     //! Get Index of all DLT messages matching filter
     /*!
      * \return List of file positions
