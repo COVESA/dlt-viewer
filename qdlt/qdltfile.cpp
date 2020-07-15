@@ -423,6 +423,14 @@ QString QDltFile::getFileName(int num)
     return files[num]->infile.fileName();
 }
 
+int QDltFile::getFileMsgNumber(int num) const
+{
+    if(num<0 || num>=files.size())
+        return -1;
+
+    return files[num]->indexAll.size();
+}
+
 void QDltFile::close()
 {
     /* close file */
