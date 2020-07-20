@@ -1816,7 +1816,6 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     ui->tableView->selectionModel()->clear();
     m_searchtableModel->clear_SearchResults();
 
-    ui->dockWidgetSearchIndex->show();
     QString title = "Search Results";
     ui->dockWidgetSearchIndex->setWindowTitle(title);
 
@@ -2027,6 +2026,7 @@ void MainWindow::on_actionFindNext()
        }
     QString title = "Search Results";
     ui->dockWidgetSearchIndex->setWindowTitle(title);
+    ui->dockWidgetSearchIndex->show();
     m_CompleterModel.setStringList(list);
     searchTextbox->setCompleter(newCompleter);
 }
