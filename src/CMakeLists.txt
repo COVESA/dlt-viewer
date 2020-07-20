@@ -67,8 +67,8 @@ target_link_libraries (${TARGET_NAME}
     Qt5::SerialPort
 )
 
-install(TARGETS ${TARGET_NAME} DESTINATION deploy)
-install(DIRECTORY icon png svg DESTINATION deploy
+install(TARGETS ${TARGET_NAME} DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
+install(DIRECTORY icon png svg DESTINATION ${RESOURCE_INSTALLATION_PATH}
         PATTERN icon/*.rc EXCLUDE )
 
 include (${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)
