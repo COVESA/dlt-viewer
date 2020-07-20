@@ -136,6 +136,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
     ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
+    ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
+    ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
     newCompleter = new QCompleter(&m_CompleterModel,this);
 
