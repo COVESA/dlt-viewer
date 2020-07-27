@@ -203,12 +203,14 @@ void QDltOptManager::parse(QStringList *opt)
              {
                 logFile = QString("%1").arg(l1);
                 QFile Fout(logFile);
-                if(!Fout.exists())
+                if(false == Fout.exists())
                 {
-                  qDebug()<< "\nError: " << logFile << " not found !\n";
-                  exit(-1);
+                 qDebug()<< "\nGiven file " << logFile << " not found !\nCreate empty file instead ...";
                 }
-                qDebug() << "Logfile is " << logFile;
+                else
+                {
+                 qDebug()<< "\nLogfile is " << logFile;
+                }
                 log = true;
              }
             else

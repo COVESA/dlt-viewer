@@ -9,7 +9,6 @@
 #include <QCryptographicHash>
 #include <QMutexLocker>
 
-#define MODULO_FOR_PROGRESSINDICATION 1000000
 
 extern "C" {
     #include "dlt_common.h"
@@ -87,7 +86,6 @@ bool DltFileIndexer::index(int num)
     }
 
     // prepare indexing
-    //dltFile->clearIndex();
     QFile f(dltFile->getFileName(num));
 
     // open file
@@ -98,14 +96,21 @@ bool DltFileIndexer::index(int num)
     }
 
     // check if file is empty
-    if(f.size() == 0)
+    if(f.size() <= 0)
     {
         // No need to do anything here.
         f.close();
-        return true;
+        qWarning() << "File" << dltFile->getFileName(num) << "is empty";
+        return false;
     }
 
-    qDebug() << "Start creating indexfile for" << dltFile->getFileName(num);// << "run" << currentRun;
+    int modulo = f.size()/2000; // seems to be the propper ratio ...
+    if (modulo == 0) // avoid divison by zero ( very small files )
+    {
+         modulo = 1;
+    }
+
+    qDebug() << "Start creating indexfile for" << dltFile->getFileName(num);
 
     // clear old index
     indexAllList.clear();
@@ -115,6 +120,7 @@ bool DltFileIndexer::index(int num)
     qint64 length = 0;
     qint64 msgindex = 0;
     qint64 pos = 0;
+    qint64 abspos = 0;
     qint64 current_message_pos = 0;
     qint64 next_message_pos = 0;
     qint64 counter_header = 0;
@@ -149,6 +155,7 @@ bool DltFileIndexer::index(int num)
 
         for(number=0;number < length;number++)
         {
+            abspos= pos+number;
             // search length of DLT message
             if(counter_header>0)
             {
@@ -255,23 +262,24 @@ bool DltFileIndexer::index(int num)
                 //qDebug() << "DLT recived but not the stop sign 0x01" << msgindex;
             }
 
+
             /* stop if requested */
             if(true == stopFlag)
             {
                 qDebug().noquote() << "Request stoping indexing received" << __LINE__ << __FILE__;
-                emit(progress((pos+number)));
+                emit(progress((abspos)));
                 delete[] data;
                 f.close();
                 return false;
             }
 
-            if( 0 == ((pos+number)%MODULO_FOR_PROGRESSINDICATION) && ( file_size > 0 ) )
+            if( 0 == (abspos%modulo) && ( file_size > 0 ) )
             {
              //qszPercent = QString("Indexed: %1 %").arg(pos, 0, 'f',2);
-             iPercent = ((pos+number)*100 )/file_size;
-            if( true == QDltOptManager::getInstance()->isCommandlineMode() )
+             iPercent = ( abspos*100 )/file_size;
+            if( true == QDltOptManager::getInstance()->issilentMode() )
              {
-              qDebug() << "Create index file:" << iPercent << "%";// << currentRun;//<< pos << f.size() << __LINE__;
+               qDebug() << "Create index file:" << iPercent << "%";// << currentRun;//<< pos << f.size() << __LINE__;
              }
             else
              {
@@ -347,6 +355,12 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return true;
     }
 
+    unsigned int modvalue = dltFile->size()/100;
+    if (modvalue == 0) // avoid divison by zero
+    {
+        modvalue = 1;
+    }
+
     // Initialise progress bar
     emit(progressText(QString("IF %1/%2").arg(currentRun).arg(maxRun)));
     emit(progressMax(100));
@@ -396,13 +410,13 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
 
         // Update progress
-
-        if(ix % MODULO_FOR_PROGRESSINDICATION == 0)
+        if  (ix > 0 )
+        if( 0 == (ix % modvalue) )
         {
          iPercent = ( ix*100 )/dltFile->size();
-         if( ( true == QDltOptManager::getInstance()->isCommandlineMode() ) )
+         if( ( true == QDltOptManager::getInstance()->issilentMode() ) )
          {
-          qDebug().noquote() << "IF Indexed:" << iPercent << "%";// << currentRun<<  __LINE__;
+             qDebug().noquote() << "IF Indexed:" << iPercent << "%";
          }
          else
          {
@@ -444,7 +458,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         qDebug() << "Saved filter index cache for files" << filenames;
     }
 
-    qDebug() << "Indexed: 100.00 %" << iPercent;
+    qDebug() << "Indexed: 100.00 %";// << iPercent << __LINE__ ;
     //qDebug() << "Dauer:" << time.elapsed()/1000 << __LINE__;
     return true;
 }
@@ -460,6 +474,12 @@ bool DltFileIndexer::indexDefaultFilter()
     // Initialise progress bar
     emit(progressText(QString("IF %1/%2").arg(currentRun).arg(maxRun)));
     emit(progressMax(dltFile->size()));
+
+    unsigned int modulo = dltFile->size()/100;
+    if (modulo == 0) // avoid divison by zero
+    {
+         modulo = 1;
+    }
 
     // clear all default filter cache index
     defaultFilter->clearFilterIndex();
@@ -496,7 +516,7 @@ bool DltFileIndexer::indexDefaultFilter()
             defaultFilterThread.processMessage(msg, ix);
 
         /* Update progress */
-        if(ix % MODULO_FOR_PROGRESSINDICATION == 0)
+        if(ix % modulo == 0)
         {
             //qDebug() << "Index DefaultFilter" << ix;
             emit(progress(ix));
@@ -598,7 +618,7 @@ void DltFileIndexer::run()
         {
             if(!index(num))
             {
-                qDebug() << "Error in indexer" << __FILE__ << __LINE__;
+                //qDebug() << "Error in indexer" << __FILE__ << __LINE__;
                 return;
             }
            // qDebug() << "setDLTIndex" << num << __FILE__ << __LINE__;
@@ -742,7 +762,7 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qi
     filenameCache = filenameFilterIndexCache(filterList,filenames);
 
     // load the cache file
-    qDebug() << "loadIndex" << __LINE__;
+    //qDebug() << "loadIndex" << __LINE__;
     if(loadIndex(filterCache + "/" +filenameCache,index))
     {
         qDebug() << "loadIndex" << filterCache + "/" +filenameCache << "success";
@@ -839,8 +859,6 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     }
     filename += ".dix";
 
-    //qDebug() << filenames << ">>" << filename;
-
     return filename;
 }
 
@@ -907,8 +925,14 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
         return false;
     }
 
+    int modvalue = file.size() / 100;
+    if (modvalue == 0) // avoid divison by zero
+    {
+         modvalue = 1;
+    }
+
    // read complete index
-   if (false == QDltOptManager::getInstance()->isCommandlineMode() )
+   if (false == QDltOptManager::getInstance()->issilentMode() )
      {
        emit(progressText(QString("LI %1/%2").arg(currentRun).arg(maxRun)));
        emit(progress(0));
@@ -926,9 +950,9 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
         {
             index.append(value);
         }
-        if( 0 == (indexcount%MODULO_FOR_PROGRESSINDICATION) && ( file.size() > 0 ) )
+        if( 0 == (indexcount%modvalue) && ( file.size() > 0 ) )
         {
-         if (false == QDltOptManager::getInstance()->isCommandlineMode() )
+         if (false == QDltOptManager::getInstance()->issilentMode() )
           {
            emit(progress((indexcount * 800 )/file.size()));
           }
@@ -943,7 +967,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
     while(length==sizeof(value));
 
     // now that it is doen we have to set the 100 %
-    if (false == QDltOptManager::getInstance()->isCommandlineMode() )
+    if (false == QDltOptManager::getInstance()->issilentMode() )
       {
         emit(progress(file.size()));
       }

@@ -1533,7 +1533,6 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 {
     //qDebug() << "MainWindow::on_action_menuFile_Clear_triggered()" << outputfile.fileName() << __FILE__ <<  __LINE__;
     dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
-    //qDebug() << "Stop Indexer" << indstop << __LINE__ << __FILE__;
 
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(QDltOptManager::getInstance()->issilentMode()), QDltOptManager::getInstance()->issilentMode());
     if(!fn.length())
@@ -3116,7 +3115,7 @@ void MainWindow::on_action_menuConfig_Disconnect_triggered()
 
 void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 {
-    qDebug() << "try to connect" << __LINE__;
+    //qDebug() << "try to connect" << __LINE__;
     if(false == ecuitem->tryToConnect || true == force)
     {
         ecuitem->tryToConnect = true;
@@ -4683,55 +4682,56 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         return;
     }
 
-    //if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
-    {
-        DltMessage msg;
-        QByteArray hexData;
+    DltMessage msg;
+    QByteArray hexData;
 
-        /* initialise new message */
-        dlt_message_init(&msg,0);
+    /* initialise new message */
+    dlt_message_init(&msg,0);
 
-        /* prepare payload of data */
-        if(true == injectionDataBinary)
+    /* prepare payload of data */
+    if(true == injectionDataBinary)
         {
             hexData = QByteArray::fromHex(injectionData.toLatin1());
             size = hexData.size();
         }
-        else
+    else
         {
             size = (injectionData.toUtf8().size() );
         }
 
-        msg.datasize = 4 + 4 + size;
-        if (msg.databuffer)
+    msg.datasize = 4 + 4 + size;
+
+    if (msg.databuffer)
+       {
             free(msg.databuffer);
-        msg.databuffer = (uint8_t *) malloc(msg.datasize);
-        if (NULL == msg.databuffer)
+       }
+    msg.databuffer = (uint8_t *) malloc(msg.datasize);
+
+    if (NULL == msg.databuffer)
         {
             qDebug() << "Error could not allocate memory for msg data buffer" << "LINE" << __LINE__ << __FILE__;
             return;
         }
 
-        memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
-        memcpy(msg.databuffer+4, &size, sizeof(size));
+    memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
+    memcpy(msg.databuffer+4, &size, sizeof(size));
 
-        if(true == injectionDataBinary)
+    if(true == injectionDataBinary)
         {
             memcpy(msg.databuffer+8,hexData.data(),hexData.size());
         }
-        else
+    else
         {
             memcpy(msg.databuffer+8, injectionData.toUtf8(), size);
         }
 
-        qDebug() << "Send" << injectionData.toUtf8() << "of size" << size << "string:" << injectionData.toUtf8() <<  "size" << injectionData.toUtf8().size();// << "LINE" << __LINE__;
+    qDebug() << "Send" << injectionData.toUtf8() << "of size" << size << "string:" << injectionData.toUtf8() <<  "size" << injectionData.toUtf8().size();// << "LINE" << __LINE__;
 
-        /* send message */
-        controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
+    /* send message */
+    controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
 
-        /* free message */
-        dlt_message_free(&msg,0);
-    }
+    /* free message */
+    dlt_message_free(&msg,0);
 }
 
 void MainWindow::on_action_menuDLT_Store_Config_triggered()
