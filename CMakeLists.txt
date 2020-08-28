@@ -42,13 +42,15 @@ get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
 get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
 
-SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -std=gnu99")
-add_definitions( "-Wall" )
-add_definitions( "-Wextra" )
-add_definitions( "-pedantic" )
-add_definitions( "-Wno-variadic-macros" )
-add_definitions( "-Wno-strict-aliasing" )
-
+# Injection of the GCC-specific compilation flags
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -std=gnu99")
+    add_definitions( "-Wall" )
+    add_definitions( "-Wextra" )
+    add_definitions( "-pedantic" )
+    add_definitions( "-Wno-variadic-macros" )
+    add_definitions( "-Wno-strict-aliasing" )
+endif()
 
 # build executables in build/bin directory
 set(BIN_DIR ${CMAKE_BINARY_DIR}/bin)
