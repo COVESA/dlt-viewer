@@ -43,7 +43,7 @@
 \end{center}
 
 Changelog:\linebreak
-v1.0.2, June 2020: updated Show Argument Columns section
+v1.0.2, June 2020: updated Show Argument Columns section\linebreak
 v1.0.1, March 2020: add sort by timestamp and filetransfer autosave documentation\linebreak
 v1.0.0, July 2019: adjust for 2.19.0 Release\linebreak
 v0.0.7, February 2019: added UDP reception\linebreak
@@ -328,7 +328,10 @@ Hover the cursor over toolbar buttons to see their functions. \\
    \item \begin{bf}Timestamp\end{bf}
      Time when the message was sent, measured since the startup of the target.
    \item \begin{bf}Count\end{bf}
-    Cyclical counter, one per context. Can be used to detect lost messages.
+    Cyclical counter, one per context. Can be used to detect lost messages. The count value ist of one byte size. That means after 
+    reaching "255" the count is switching back to "0". So if the count does not increase exactly by "1" it indicates a message loss.
+    But note: in case applications are dynamically registering and unregistering or in case one and the same CTID ist used from
+    different threads on the logging target this counter may not count ab subsequently too !
    \item \begin{bf}Ecuid\end{bf}
     Name of the sending ECU. Defined in the "Projects" tab.
    \item \begin{bf}Apid\end{bf}
@@ -985,7 +988,7 @@ On more information about the command line mode see \autoref{commandlinemode}.
 \subsubsection{Configuration file}
 In the subdirectory plugins/examples you find an example configuration file called \begin{verbatim}"filetransferplugin_configuration.xml"\end{verbatim}.
 In case the target uses the default values to indicate file transfers you do not need to change anything here.
-The default file transfer will work without additional configuration.
+The default file transfer will work without additional configuration. Default APID/CTID of a filetransfer "SYS"/"FILE".
 
 \subsubsection{Autosave feature}
 In case you want to save transfered files automatically to a dedicated directory you can use the configuration file to
