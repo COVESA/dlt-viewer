@@ -418,7 +418,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enableLogLevelMin",QString("%1").arg(enableLogLevelMin));
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
     xml.writeTextElement("enableMarker",QString("%1").arg(enableMarker));
-    xml.writeTextElement("enablemMessageId",QString("%1").arg(enableMessageId));
+    xml.writeTextElement("enableMessageId",QString("%1").arg(enableMessageId));
 
     xml.writeTextElement("filterColour",filterColour);
 
