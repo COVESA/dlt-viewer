@@ -142,3 +142,25 @@ Then give the Qt directory to CMake and build:
 
 The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
 open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app
+
+Building DLT Viewer release version with Qmake on MacOs
+--------------------------------------------------------
+Sometimes building with Cmake or in Qt Creator leads to Plugins not working in  DLT Viewer.
+Building with qmake in release version gets rid of this problem.
+Steps to follow:
+
+* cd dlt-viewer
+* git clone https://github.com/GENIVI/dlt-viewer.git
+* mkdir build
+* cd build
+* <path to Qt folder>/Qt/5.X/gcc_64/bin/qmake <path to BuildDltViewer.pro>/BuildDltViewer.pro -r
+* make
+
+At this point "release" folder should be created in the "build" folder
+
+* cd release
+* export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./
+
+To run:
+
+*./dlt_viewer
