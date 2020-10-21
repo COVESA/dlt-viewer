@@ -441,6 +441,7 @@ void MainWindow::initSignalConnections()
     //for search result table
     connect(searchDlg, SIGNAL(refreshedSearchIndex()), this, SLOT(searchTableRenewed()));
     connect( m_searchresultsTable, SIGNAL( doubleClicked (QModelIndex) ), this, SLOT( searchtable_cellSelected( QModelIndex ) ) );
+    connect( m_searchresultsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onSearchresultsTableSelectionChanged );
 
     // connect tableView selection model change to handler in mainwindow
     connect(ui->tableView->selectionModel(),  &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableViewSelectionChanged);
@@ -467,7 +468,9 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setModel(m_searchtableModel);
 
     m_searchresultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-
+    /* With Autoscroll= false the tableview doesn't jump to the right edge,
+        for example, if the payload column is stretched to full size */
+    m_searchresultsTable->setAutoScroll(false);
 
     m_searchresultsTable->verticalHeader()->setVisible(false);
     m_searchresultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -3850,6 +3853,16 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
         QDltMsg msg;
         int msgIndex;
 
+        // we need to find visible column, otherwise scrollTo does not work, e.g. if Index is disabled
+        for(int col = 0; col <= ui->tableView->model()->columnCount(); col++)
+        {
+           if(!ui->tableView->isColumnHidden(col))
+           {
+                index = index.sibling(index.row(), col);
+                break;
+           }
+        }
+
         //scroll manually because autoscroll is off
         ui->tableView->scrollTo(index);
 
@@ -3883,6 +3896,28 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
             item = (QDltPlugin*)activeViewerPlugins.at(i);
             item->selectedIdxMsgDecoded(msgIndex,msg);
         }
+    }
+}
+
+void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+    Q_UNUSED(deselected);
+    if(selected.size() > 0)
+    {
+        QModelIndex index = selected[0].topLeft();
+
+        // we need to find visible column, otherwise scrollTo does not work, e.g. if Index is disabled
+        for(int col = 0; col <= m_searchresultsTable->model()->columnCount(); col++)
+        {
+            if(!m_searchresultsTable->isColumnHidden(col))
+            {
+                index = index.sibling(index.row(), col);
+                break;
+            }
+        }
+
+        //scroll manually because autoscroll is off
+        m_searchresultsTable->scrollTo(index);
     }
 }
 
