@@ -101,7 +101,7 @@ bool DltFileIndexer::index(int num)
         // No need to do anything here.
         f.close();
         qWarning() << "File" << dltFile->getFileName(num) << "is empty";
-        return false;
+        return true; // because it is just empty, not an error ...
     }
 
     int modulo = f.size()/2000; // seems to be the propper ratio ...
@@ -618,7 +618,7 @@ void DltFileIndexer::run()
         {
             if(!index(num))
             {
-                //qDebug() << "Error in indexer" << __FILE__ << __LINE__;
+                qDebug() << "Error in indexer" << __FILE__ << __LINE__;
                 return;
             }
            // qDebug() << "setDLTIndex" << num << __FILE__ << __LINE__;
