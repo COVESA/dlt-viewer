@@ -20,7 +20,7 @@
 
 #include "fieldnames.h"
 #include "dltuiutils.h"
-
+#include "regex_search_replace.h"
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
     QAbstractTableModel(parent)
@@ -34,8 +34,6 @@ SearchTableModel::~SearchTableModel()
 {
 
 }
-
-
 
 QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 {
@@ -66,6 +64,24 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
             pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
+
+        if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+        {
+            for(int num = 0; num < project->filter->topLevelItemCount (); num++)
+            {
+                FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+
+                    for(int i=0; i<msg.getNumberOfArguments(); i++){
+                        QDltArgument arg;
+                        msg.getArgument(i, arg);
+                        apply_regex(arg, item->filter.regex_search, item->filter.regex_replace);
+                        msg.removeArgument(i);
+                        msg.addArgument(arg, i);
+                    }
+                }
+            }
+        }
 
         switch(index.column())
         {
