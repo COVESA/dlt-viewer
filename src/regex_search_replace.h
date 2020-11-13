@@ -3,16 +3,16 @@
 
 #include "project.h"
 #include <regex>
+#include <stdlib.h>
 
-static void apply_regex(QDltArgument &argument, const QString& regex_search, const QString& regex_replace)
+
+static void apply_regex_string(QString &data, const QString& regex_search, const QString& regex_replace)
 {
-    QByteArray argument_data_to_decode = argument.getData();
-    std::string payload_str = argument_data_to_decode.toStdString();
-
     std::regex regex(regex_search.toStdString());
-    payload_str = std::regex_replace(payload_str, regex, regex_replace.toStdString());
 
-    argument.setData(QByteArray::fromStdString(payload_str));
+    std::string payload_str = std::regex_replace(data.toStdString(), regex, regex_replace.toStdString());
+
+    data = QString::fromStdString(payload_str);
 }
 
 #endif // REGEX_SEARCH_REPLACE_H
