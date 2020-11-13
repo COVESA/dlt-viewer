@@ -6195,6 +6195,8 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setContextId(item->filter.ctid);
     dlg.setHeaderText(item->filter.header);
     dlg.setPayloadText(item->filter.payload);
+    dlg.setRegexSearchText(item->filter.regex_search);
+    dlg.setRegexReplaceText(item->filter.regex_replace);
 
     dlg.setEnableRegexp_Appid(item->filter.enableRegexp_Appid);
     dlg.setEnableRegexp_Context(item->filter.enableRegexp_Context);
@@ -6213,6 +6215,7 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setEnableLogLevelMin(item->filter.enableLogLevelMin);
     dlg.setEnableMarker(item->filter.enableMarker);
     dlg.setEnableMessageId(item->filter.enableMessageId);
+    dlg.setEnableRegexSearchReplace(item->filter.enableRegexSearchReplace);
 
     dlg.setFilterColour(item->filter.filterColour);
 
@@ -6234,6 +6237,8 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.ctid = dlg.getContextId();
     item->filter.header = dlg.getHeaderText();
     item->filter.payload = dlg.getPayloadText();
+    item->filter.regex_search = dlg.getRegexSearchText();
+    item->filter.regex_replace = dlg.getRegexReplaceText();
 
     item->filter.enableRegexp_Appid = dlg.getEnableRegexp_Appid();
     item->filter.enableRegexp_Context = dlg.getEnableRegexp_Context();
@@ -6251,7 +6256,8 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.enableLogLevelMax = dlg.getEnableLogLevelMax();
     item->filter.enableLogLevelMin = dlg.getEnableLogLevelMin();
     item->filter.enableMarker = dlg.getEnableMarker();
-    item->filter.enableMessageId=dlg.getEnableMessageId();
+    item->filter.enableMessageId = dlg.getEnableMessageId();
+    item->filter.enableRegexSearchReplace = dlg.getEnableRegexSearchReplace();
 
     item->filter.filterColour = dlg.getFilterColour();
     item->filter.logLevelMax = dlg.getLogLevelMax();
