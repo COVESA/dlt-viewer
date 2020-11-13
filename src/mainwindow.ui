@@ -402,6 +402,16 @@
           </property>
          </widget>
         </item>
+        <item row="3" column="2">
+         <widget class="QCheckBox" name="checkBoxAppendDefaultFilter">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Append Filter</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </item>

@@ -510,7 +510,6 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
-
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
     {
@@ -7211,7 +7210,7 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
     }
 
     /* load current selected filter */
-    if(!arg1.isEmpty() && project.LoadFilter(arg1,true))
+    if(!arg1.isEmpty() && project.LoadFilter(arg1,!ui->checkBoxAppendDefaultFilter->isChecked()))
     {
         workingDirectory.setDlfDirectory(QFileInfo(arg1).absolutePath());
         setCurrentFilters(arg1);
