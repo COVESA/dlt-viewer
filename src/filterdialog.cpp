@@ -33,6 +33,8 @@ FilterDialog::FilterDialog(QWidget *parent) :
     connect(ui->lineEdit_msgIdMax, SIGNAL(textChanged(const QString&)), this, SLOT(checkMsgIdValid(const QString&)));
     connect(ui->lineEdit_msgIdMin, SIGNAL(textChanged(const QString&)), this, SLOT(checkMsgIdValid(const QString&)));
     connect(ui->checkBoxMessageId, SIGNAL(stateChanged(int)), this, SLOT(on_checkboxMessageId_stateChanged(int)));
+    connect(ui->lineEditRegexSearch, SIGNAL(textChanged(const QString&)), this, SLOT(on_checkRegex(const QString&)));
+    connect(ui->lineEditRegexReplace, SIGNAL(textChanged(const QString&)), this, SLOT(on_checkRegex(const QString&)));
 
     ui->pushButton_c0->setStyleSheet ("QPushButton {background-color: rgb(255, 0  , 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
     ui->pushButton_c1->setStyleSheet ("QPushButton {background-color: rgb(255, 255, 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
@@ -361,6 +363,31 @@ bool FilterDialog::getEnableMarker(){
     return (ui->groupBox_marker->isCheckable()&&ui->groupBox_marker->isChecked());
 }
 
+void FilterDialog::setEnableRegexSearchReplace(bool state){
+    return ui->checkBoxRegexSearchReplace->setChecked(state);
+}
+
+bool FilterDialog::getEnableRegexSearchReplace(){
+    return ui->checkBoxRegexSearchReplace->checkState() == Qt::Checked;
+}
+
+void FilterDialog::setRegexSearchText(const QString& str){
+    ui->lineEditRegexSearch->setText(str);
+}
+
+QString FilterDialog::getRegexSearchText(){
+    return ui->lineEditRegexSearch->text();
+}
+
+void FilterDialog::setRegexReplaceText(const QString& str){
+    ui->lineEditRegexReplace->setText(str);
+}
+
+QString FilterDialog::getRegexReplaceText(){
+    return ui->lineEditRegexReplace->text();
+}
+
+
 void FilterDialog::on_buttonSelectColor_clicked()
 {
     QColor selectedBackgroundColor = QColorDialog::getColor(this->getFilterColour());
@@ -438,6 +465,14 @@ void FilterDialog::on_comboBoxLogLevelMax_currentIndexChanged(int )
 void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int )
 {
     ui->checkBoxLogLevelMin->setCheckState(Qt::Checked);
+}
+
+void FilterDialog::on_checkRegex(const QString&)
+{
+    if (ui->lineEditRegexSearch->text().length() || ui->lineEditRegexReplace->text().length())
+        ui->checkBoxRegexSearchReplace->setCheckState(Qt::Checked);
+    else
+        ui->checkBoxRegexSearchReplace->setCheckState(Qt::Unchecked);
 }
 
 void FilterDialog::validate()
@@ -616,7 +651,8 @@ void FilterDialog::checkMsgIdValid(const QString&)
                 );
 
 }
-void FilterDialog::on_checkboxMessageId_stateChanged(int state)
+
+void FilterDialog::on_checkboxMessageId_stateChanged(int)
     {
         checkMsgIdValid("");
     }
