@@ -25,7 +25,7 @@
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
-
+#include "regex_search_replace.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
@@ -77,6 +77,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
  {
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
+
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
@@ -143,6 +144,24 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
               }
          }
 
+
+         if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+         {
+             for(int num = 0; num < project->filter->topLevelItemCount (); num++)
+             {
+                 FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                 if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+
+                     for(int i=0; i<msg.getNumberOfArguments(); i++){
+                         QDltArgument arg;
+                         msg.getArgument(i, arg);
+                         apply_regex(arg, item->filter.regex_search, item->filter.regex_replace);
+                         msg.removeArgument(i);
+                         msg.addArgument(arg, i);
+                     }
+                 }
+             }
+         }
 
          switch(index.column())
          {
