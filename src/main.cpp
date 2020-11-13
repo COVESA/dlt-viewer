@@ -26,12 +26,13 @@
 
 int main(int argc, char *argv[])
 {
+
+    QApplication a(argc, argv);
+
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
-
-    QApplication a(argc, argv);
 
     QStringList arguments = a.arguments();
     QDltOptManager *opt = QDltOptManager::getInstance();
