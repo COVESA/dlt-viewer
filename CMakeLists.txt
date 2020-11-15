@@ -21,6 +21,8 @@ project (dlt-viewer)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 set(QT_VERSION_REQ "5")
 
 find_package(Qt5 ${QT_VERSION_REQ} REQUIRED COMPONENTS Core Network Widgets SerialPort PrintSupport)
