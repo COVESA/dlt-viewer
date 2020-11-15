@@ -7252,10 +7252,6 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
         on_filterWidget_itemSelectionChanged();
     }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-    }
 }
 
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
