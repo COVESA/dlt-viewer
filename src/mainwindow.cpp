@@ -299,7 +299,6 @@ void MainWindow::initView()
     ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
 
     /* update default filter selection */
-    ui->comboBoxFilterSelection->addItem("<No filter selected>");
     on_actionDefault_Filter_Reload_triggered();
 
     /* set table size and en */
@@ -7268,7 +7267,7 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     ui->comboBoxFilterSelection->clear();
 
     /* add "no default filter" entry */
-    ui->comboBoxFilterSelection->addItem("<No filter selected>");
+    ui->comboBoxFilterSelection->addItem("");
 
     /* clear default filter list */
     defaultFilter.clear();
@@ -7303,11 +7302,18 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
 
+    QStringList completerList;
+
     /* default filter list update combobox */
     QDltFilterList *filterList;
-    foreach(filterList,defaultFilter.defaultFilterList)
+    foreach(filterList,defaultFilter.defaultFilterList){
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
-
+        completerList << filterList->getFilename();
+    }
+    QCompleter *completer = new QCompleter(completerList, this);
+    completer->setFilterMode(Qt::MatchContains);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    ui->comboBoxFilterSelection->setCompleter(completer);
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
