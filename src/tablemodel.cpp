@@ -25,7 +25,7 @@
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
-
+#include "regex_search_replace.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
@@ -77,6 +77,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
  {
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
+
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
@@ -143,7 +144,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
               }
          }
 
-
+         QString visu_data;
          switch(index.column())
          {
          case FieldNames::Index:
@@ -246,7 +247,19 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
              /* display payload */
-             return msg.toStringPayload().trimmed().replace('\n', ' ');
+             visu_data = msg.toStringPayload().trimmed().replace('\n', ' ');
+
+             if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+             {
+                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                         apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                     }
+                 }
+             }
+
+             return visu_data;
          case FieldNames::MessageId:
              return QString().sprintf(project->settings->msgIdFormat.toLatin1() ,msg.getMessageId());
          default:

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>524</width>
-    <height>548</height>
+    <height>560</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -209,19 +209,10 @@
    </item>
    <item row="7" column="0" colspan="3">
     <layout class="QGridLayout" name="gridLayout_3">
-     <item row="3" column="1" colspan="2">
-      <widget class="QLineEdit" name="lineEditHeaderText"/>
-     </item>
-     <item row="4" column="1" colspan="2">
-      <widget class="QLineEdit" name="lineEditPayloadText"/>
-     </item>
-     <item row="1" column="3">
-      <widget class="QCheckBox" name="checkBoxRegexp_Appid">
-       <property name="toolTip">
-        <string>Enable this option, to use regular expressions for AppId  text.</string>
-       </property>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="checkBoxHeaderText">
        <property name="text">
-        <string>RegExp</string>
+        <string>Header Text:</string>
        </property>
       </widget>
      </item>
@@ -235,6 +226,13 @@
        </property>
       </widget>
      </item>
+     <item row="5" column="0">
+      <widget class="QCheckBox" name="checkBoxMessageId">
+       <property name="text">
+        <string>Message Id</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="1" colspan="2">
       <widget class="QLineEdit" name="lineEditContextId">
        <property name="maxLength">
@@ -242,129 +240,8 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="4">
-      <widget class="QCheckBox" name="checkBox_IgnoreCase_Header">
-       <property name="toolTip">
-        <string>Enable this option, to ignore case on header search expression</string>
-       </property>
-       <property name="statusTip">
-        <string/>
-       </property>
-       <property name="text">
-        <string>ic</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="0">
-      <widget class="QCheckBox" name="checkBoxCtrlMsgs">
-       <property name="text">
-        <string>Control Messages</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QCheckBox" name="checkBoxContextId">
-       <property name="text">
-        <string>Context Id:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="checkBoxEcuId">
-       <property name="text">
-        <string>ECU Id:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QCheckBox" name="checkBoxApplicationId">
-       <property name="text">
-        <string>Application Id:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="0">
-      <widget class="QCheckBox" name="checkBoxHeaderText">
-       <property name="text">
-        <string>Header Text:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="8" column="1">
-      <widget class="QComboBox" name="comboBoxLogLevelMax">
-       <item>
-        <property name="text">
-         <string>off</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>fatal</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>error</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>warn</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>info</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>debug</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>verbose</string>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="8" column="0">
-      <widget class="QCheckBox" name="checkBoxLogLevelMax">
-       <property name="text">
-        <string>Log Level Max</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QCheckBox" name="checkBoxLogLevelMin">
-       <property name="text">
-        <string>Log Level Min</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="0">
-      <widget class="QCheckBox" name="checkBoxPayloadText">
-       <property name="text">
-        <string>Payload Text:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1" colspan="2">
-      <widget class="QLineEdit" name="lineEditEcuId"/>
-     </item>
-     <item row="4" column="4">
-      <widget class="QCheckBox" name="checkBox_IgnoreCase_Payload">
-       <property name="toolTip">
-        <string>Enable this option, to ignore case on payload search expression</string>
-       </property>
-       <property name="statusTip">
-        <string/>
-       </property>
-       <property name="text">
-        <string>ic</string>
-       </property>
-      </widget>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditApplicationId"/>
      </item>
      <item row="3" column="3">
       <widget class="QCheckBox" name="checkBoxRegexp_Header">
@@ -376,21 +253,29 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="3">
-      <widget class="QCheckBox" name="checkBoxRegexp_Payload">
-       <property name="toolTip">
-        <string>Enable this option, to use regular expressions for payload text.</string>
-       </property>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="checkBoxContextId">
        <property name="text">
-        <string>RegExp</string>
+        <string>Context Id:</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1" colspan="2">
-      <widget class="QLineEdit" name="lineEditApplicationId"/>
+     <item row="9" column="0">
+      <widget class="QCheckBox" name="checkBoxCtrlMsgs">
+       <property name="text">
+        <string>Control Messages</string>
+       </property>
+      </widget>
      </item>
-     <item row="7" column="1">
-      <widget class="QComboBox" name="comboBoxLogLevelMin">
+     <item row="7" column="0">
+      <widget class="QCheckBox" name="checkBoxLogLevelMin">
+       <property name="text">
+        <string>Log Level Min</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QComboBox" name="comboBoxLogLevelMax">
        <item>
         <property name="text">
          <string>off</string>
@@ -441,11 +326,98 @@
        </property>
       </spacer>
      </item>
-
-     <item row="5" column="0">
-      <widget class="QCheckBox" name="checkBoxMessageId">
+     <item row="3" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditHeaderText"/>
+     </item>
+     <item row="4" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Payload">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for payload text.</string>
+       </property>
        <property name="text">
-        <string>Message Id</string>
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditEcuId"/>
+     </item>
+     <item row="4" column="1" colspan="2">
+      <widget class="QLineEdit" name="lineEditPayloadText"/>
+     </item>
+     <item row="4" column="4">
+      <widget class="QCheckBox" name="checkBox_IgnoreCase_Payload">
+       <property name="toolTip">
+        <string>Enable this option, to ignore case on payload search expression</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>ic</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QCheckBox" name="checkBoxRegexp_Appid">
+       <property name="toolTip">
+        <string>Enable this option, to use regular expressions for AppId  text.</string>
+       </property>
+       <property name="text">
+        <string>RegExp</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="0">
+      <widget class="QCheckBox" name="checkBoxLogLevelMax">
+       <property name="text">
+        <string>Log Level Max</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QComboBox" name="comboBoxLogLevelMin">
+       <item>
+        <property name="text">
+         <string>off</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>fatal</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>error</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>warn</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>info</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>debug</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>verbose</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="checkBoxApplicationId">
+       <property name="text">
+        <string>Application Id:</string>
        </property>
       </widget>
      </item>
@@ -475,6 +447,20 @@
         <widget class="QLineEdit" name="lineEdit_msgIdMax"/>
        </item>
       </layout>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="checkBoxEcuId">
+       <property name="text">
+        <string>ECU Id:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QCheckBox" name="checkBoxPayloadText">
+       <property name="text">
+        <string>Payload Text:</string>
+       </property>
+      </widget>
      </item>
      <item row="6" column="1" colspan="4">
       <widget class="QPlainTextEdit" name="plainTextEdit_msgIdRule">
@@ -526,6 +512,32 @@
         <set>Qt::TextSelectableByMouse</set>
        </property>
       </widget>
+     </item>
+     <item row="3" column="4">
+      <widget class="QCheckBox" name="checkBox_IgnoreCase_Header">
+       <property name="toolTip">
+        <string>Enable this option, to ignore case on header search expression</string>
+       </property>
+       <property name="statusTip">
+        <string/>
+       </property>
+       <property name="text">
+        <string>ic</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="0">
+      <widget class="QCheckBox" name="checkBoxRegexSearchReplace">
+       <property name="text">
+        <string>Regex Replace</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLineEdit" name="lineEditRegexSearch"/>
+     </item>
+     <item row="10" column="2">
+      <widget class="QLineEdit" name="lineEditRegexReplace"/>
      </item>
     </layout>
    </item>

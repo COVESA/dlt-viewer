@@ -61,6 +61,12 @@ public:
     */
     void load(QString path);
 
+    //! Append load to the filter list.
+    /*!
+      The old filter list is kept.
+    */
+    void loadDirectory(QString path);
+
     //! Clear the default filter index cache.
     /*!
       The filter index are cleared.

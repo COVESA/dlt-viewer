@@ -1102,12 +1102,13 @@ bool Project::LoadFilter(QString filename, bool replace){
     {
         if ( QDltOptManager::getInstance()->issilentMode() == false )
         {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
         }
         else
         {
             qDebug() << "Loading" << filterList.getFilename() << " DLT Filter file failed !";
         }
+        return false;
     }
 
 

@@ -48,13 +48,16 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     ctid = _filter.ctid;
     header = _filter.header;
     payload = _filter.payload;
+    regex_search = _filter.regex_search;
+    regex_replace = _filter.regex_replace;
 
-    enableRegexp_Appid   = _filter.enableRegexp_Appid;
-    enableRegexp_Context = _filter.enableRegexp_Context;
-    enableRegexp_Header  = _filter.enableRegexp_Header;
-    enableRegexp_Payload = _filter.enableRegexp_Payload;
-    ignoreCase_Header    = _filter.ignoreCase_Header;
-    ignoreCase_Payload   = _filter.ignoreCase_Payload;
+    enableRegexp_Appid       = _filter.enableRegexp_Appid;
+    enableRegexp_Context     = _filter.enableRegexp_Context;
+    enableRegexp_Header      = _filter.enableRegexp_Header;
+    enableRegexp_Payload     = _filter.enableRegexp_Payload;
+    ignoreCase_Header        = _filter.ignoreCase_Header;
+    ignoreCase_Payload       = _filter.ignoreCase_Payload;
+    enableRegexSearchReplace = _filter.enableRegexSearchReplace;
 
     enableFilter = _filter.enableFilter;
     enableEcuid = _filter.enableEcuid;
@@ -93,6 +96,8 @@ void QDltFilter::clear()
     ctid.clear();
     header.clear();
     payload.clear();
+    regex_search.clear();
+    regex_replace.clear();
 
     enableRegexp_Appid = false;
     enableRegexp_Context = false;
@@ -110,6 +115,7 @@ void QDltFilter::clear()
     enableLogLevelMax = false;
     enableLogLevelMin = false;
     enableMarker = false;
+    enableRegexSearchReplace = false;
 
     filterColour = "#000000"; // QColor() default contructor initializes to an invalid color RGB 0,0,0
     logLevelMax = 6;
@@ -292,6 +298,14 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           payload = xml.readElementText();
     }
+    if(xml.name() == QString("regex_search"))
+    {
+          regex_search = xml.readElementText();
+    }
+    if(xml.name() == QString("regex_replace"))
+    {
+          regex_replace = xml.readElementText();
+    }
     if(xml.name() == QString("enableregexp"))    //legacy
     {
         enableRegexp_Appid   = xml.readElementText().toInt();
@@ -366,6 +380,10 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           enableMessageId = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("enableRegexSearchReplace"))
+    {
+          enableRegexSearchReplace = xml.readElementText().toInt();;
+    }
     if(xml.name() == QString("filterColour"))
     {
           filterColour = xml.readElementText();
@@ -399,6 +417,8 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("contextid",ctid);
     xml.writeTextElement("headertext",header);
     xml.writeTextElement("payloadtext",payload);
+    xml.writeTextElement("regex_search",regex_search);
+    xml.writeTextElement("regex_replace",regex_replace);
     xml.writeTextElement("messageIdMin",QString("%1").arg(messageIdMin));
     xml.writeTextElement("messageIdMax",QString("%1").arg(messageIdMax));
 
@@ -419,6 +439,7 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
     xml.writeTextElement("enableMarker",QString("%1").arg(enableMarker));
     xml.writeTextElement("enableMessageId",QString("%1").arg(enableMessageId));
+    xml.writeTextElement("enableRegexSearchReplace",QString("%1").arg(enableRegexSearchReplace));
 
     xml.writeTextElement("filterColour",filterColour);
 

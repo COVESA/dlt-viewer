@@ -22,6 +22,7 @@
 #include <QtDebug>
 //#include <QMessageBox>
 #include <QDir>
+#include <QDirIterator>
 
 #include "qdlt.h"
 
@@ -60,6 +61,13 @@ void QDltDefaultFilter::load(QString path)
     /* delete old filter list */
     clear();
 
+    /* load directory recursive */
+    loadDirectory(path);
+}
+
+void QDltDefaultFilter::loadDirectory(QString path)
+{
+
     QDir dir(path);
 
     /* set filter for default filter files */
@@ -78,6 +86,14 @@ void QDltDefaultFilter::load(QString path)
         /* add empty index for every filter list */
         QDltFilterIndex *filterIndex = new QDltFilterIndex();
         defaultFilterIndex.append(filterIndex);
+    }
+    /* Iterate over subdirectories and load files */
+    QDirIterator it(path, QDir::Dirs, QDirIterator::Subdirectories | QDirIterator::FollowSymlinks);
+    while (it.hasNext()) {
+        QString dir = it.next();
+        if (dir.endsWith("/.") || dir.endsWith("/.."))
+          continue;
+        loadDirectory(dir);
     }
 }
 

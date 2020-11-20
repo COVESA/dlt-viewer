@@ -20,7 +20,7 @@
 
 #include "fieldnames.h"
 #include "dltuiutils.h"
-
+#include "regex_search_replace.h"
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
     QAbstractTableModel(parent)
@@ -34,8 +34,6 @@ SearchTableModel::~SearchTableModel()
 {
 
 }
-
-
 
 QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 {
@@ -67,6 +65,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
             pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
+        QString visu_data;
         switch(index.column())
         {
         case FieldNames::Index:
@@ -160,7 +159,17 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(msg.getNumberOfArguments());
         case FieldNames::Payload:
             /* display payload */
-            return msg.toStringPayload().trimmed();
+            visu_data = msg.toStringPayload().trimmed();
+            if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+            {
+                for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                    FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                    if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                        apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                    }
+                }
+            }
+            return visu_data;
         case FieldNames::MessageId:
             return QString().sprintf(project->settings->msgIdFormat.toLatin1(),msg.getMessageId());
         default:

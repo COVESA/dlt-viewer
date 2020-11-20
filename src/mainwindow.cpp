@@ -299,7 +299,6 @@ void MainWindow::initView()
     ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
 
     /* update default filter selection */
-    ui->comboBoxFilterSelection->addItem("<No filter selected>");
     on_actionDefault_Filter_Reload_triggered();
 
     /* set table size and en */
@@ -441,6 +440,7 @@ void MainWindow::initSignalConnections()
     //for search result table
     connect(searchDlg, SIGNAL(refreshedSearchIndex()), this, SLOT(searchTableRenewed()));
     connect( m_searchresultsTable, SIGNAL( doubleClicked (QModelIndex) ), this, SLOT( searchtable_cellSelected( QModelIndex ) ) );
+    connect( m_searchresultsTable->selectionModel(), &QItemSelectionModel::selectionChanged, this, &MainWindow::onSearchresultsTableSelectionChanged );
 
     // connect tableView selection model change to handler in mainwindow
     connect(ui->tableView->selectionModel(),  &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableViewSelectionChanged);
@@ -467,7 +467,9 @@ void MainWindow::initSearchTable()
     m_searchresultsTable->setModel(m_searchtableModel);
 
     m_searchresultsTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-
+    /* With Autoscroll= false the tableview doesn't jump to the right edge,
+        for example, if the payload column is stretched to full size */
+    m_searchresultsTable->setAutoScroll(false);
 
     m_searchresultsTable->verticalHeader()->setVisible(false);
     m_searchresultsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -3849,6 +3851,16 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
         QDltMsg msg;
         int msgIndex;
 
+        // we need to find visible column, otherwise scrollTo does not work, e.g. if Index is disabled
+        for(int col = 0; col <= ui->tableView->model()->columnCount(); col++)
+        {
+           if(!ui->tableView->isColumnHidden(col))
+           {
+                index = index.sibling(index.row(), col);
+                break;
+           }
+        }
+
         //scroll manually because autoscroll is off
         ui->tableView->scrollTo(index);
 
@@ -3882,6 +3894,28 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
             item = (QDltPlugin*)activeViewerPlugins.at(i);
             item->selectedIdxMsgDecoded(msgIndex,msg);
         }
+    }
+}
+
+void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
+{
+    Q_UNUSED(deselected);
+    if(selected.size() > 0)
+    {
+        QModelIndex index = selected[0].topLeft();
+
+        // we need to find visible column, otherwise scrollTo does not work, e.g. if Index is disabled
+        for(int col = 0; col <= m_searchresultsTable->model()->columnCount(); col++)
+        {
+            if(!m_searchresultsTable->isColumnHidden(col))
+            {
+                index = index.sibling(index.row(), col);
+                break;
+            }
+        }
+
+        //scroll manually because autoscroll is off
+        m_searchresultsTable->scrollTo(index);
     }
 }
 
@@ -6194,6 +6228,8 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setContextId(item->filter.ctid);
     dlg.setHeaderText(item->filter.header);
     dlg.setPayloadText(item->filter.payload);
+    dlg.setRegexSearchText(item->filter.regex_search);
+    dlg.setRegexReplaceText(item->filter.regex_replace);
 
     dlg.setEnableRegexp_Appid(item->filter.enableRegexp_Appid);
     dlg.setEnableRegexp_Context(item->filter.enableRegexp_Context);
@@ -6212,6 +6248,7 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setEnableLogLevelMin(item->filter.enableLogLevelMin);
     dlg.setEnableMarker(item->filter.enableMarker);
     dlg.setEnableMessageId(item->filter.enableMessageId);
+    dlg.setEnableRegexSearchReplace(item->filter.enableRegexSearchReplace);
 
     dlg.setFilterColour(item->filter.filterColour);
 
@@ -6233,6 +6270,8 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.ctid = dlg.getContextId();
     item->filter.header = dlg.getHeaderText();
     item->filter.payload = dlg.getPayloadText();
+    item->filter.regex_search = dlg.getRegexSearchText();
+    item->filter.regex_replace = dlg.getRegexReplaceText();
 
     item->filter.enableRegexp_Appid = dlg.getEnableRegexp_Appid();
     item->filter.enableRegexp_Context = dlg.getEnableRegexp_Context();
@@ -6250,7 +6289,8 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     item->filter.enableLogLevelMax = dlg.getEnableLogLevelMax();
     item->filter.enableLogLevelMin = dlg.getEnableLogLevelMin();
     item->filter.enableMarker = dlg.getEnableMarker();
-    item->filter.enableMessageId=dlg.getEnableMessageId();
+    item->filter.enableMessageId = dlg.getEnableMessageId();
+    item->filter.enableRegexSearchReplace = dlg.getEnableRegexSearchReplace();
 
     item->filter.filterColour = dlg.getFilterColour();
     item->filter.logLevelMax = dlg.getLogLevelMax();
@@ -7251,10 +7291,6 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
         on_filterWidget_itemSelectionChanged();
     }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-    }
 }
 
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
@@ -7265,7 +7301,7 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     ui->comboBoxFilterSelection->clear();
 
     /* add "no default filter" entry */
-    ui->comboBoxFilterSelection->addItem("<No filter selected>");
+    ui->comboBoxFilterSelection->addItem("");
 
     /* clear default filter list */
     defaultFilter.clear();
@@ -7300,11 +7336,18 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
 
+    QStringList completerList;
+
     /* default filter list update combobox */
     QDltFilterList *filterList;
-    foreach(filterList,defaultFilter.defaultFilterList)
+    foreach(filterList,defaultFilter.defaultFilterList){
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
-
+        completerList << filterList->getFilename();
+    }
+    QCompleter *completer = new QCompleter(completerList, this);
+    completer->setFilterMode(Qt::MatchContains);
+    completer->setCaseSensitivity(Qt::CaseInsensitive);
+    ui->comboBoxFilterSelection->setCompleter(completer);
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
