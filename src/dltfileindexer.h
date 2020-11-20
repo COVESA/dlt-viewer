@@ -16,7 +16,8 @@
 class DltFileIndexerKey
 {
 public:
-    DltFileIndexerKey(time_t time,unsigned int microseconds,unsigned int timestamp);
+    DltFileIndexerKey(time_t time, unsigned int microseconds, int index);
+    DltFileIndexerKey(unsigned int timestamp, int index);
 
     friend bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2);
 
@@ -24,19 +25,30 @@ private:
     time_t time;
     unsigned int microseconds;
     unsigned int timestamp;
+    int index;
 };
 
 inline bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2)
 {
-    if(key1.timestamp==0 && key2.timestamp==0)
+    if (key1.timestamp == 0 && key2.timestamp == 0)
     {
-        if(key1.time<key2.time)
+        if (key1.time < key2.time)
             return true;
-        if(key1.time>key2.time)
+        if (key1.time > key2.time)
             return false;
-        return (key1.microseconds<key2.microseconds);
+        if (key1.microseconds < key2.microseconds)
+            return true;
+        if (key1.microseconds > key2.microseconds)
+            return false;
     }
-    return (key1.timestamp<key2.timestamp);
+    else
+    {
+        if (key1.timestamp < key2.timestamp)
+            return true;
+        if (key1.timestamp > key2.timestamp)
+            return false;
+    }
+    return (key1.index < key2.index);
 }
 
 class DltFileIndexer : public QThread
@@ -156,7 +168,7 @@ private:
 
     // filtered index
     QVector<qint64> indexFilterList;
-    QMultiMap<DltFileIndexerKey,qint64> indexFilterListSorted;
+    QMap<DltFileIndexerKey,qint64> indexFilterListSorted;
 
     // getLogInfoList
     QList<int> getLogInfoList;

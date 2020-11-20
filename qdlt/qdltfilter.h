@@ -49,6 +49,8 @@ public:
     QString ctid;
     QString header;
     QString payload;
+    QString regex_search;
+    QString regex_replace;
 
     bool enableRegexp_Appid;
     bool enableRegexp_Context;
@@ -69,6 +71,7 @@ public:
     bool enableLogLevelMin;
     bool enableMarker;
     bool enableMessageId;
+    bool enableRegexSearchReplace;
 
     QString filterColour;
     int logLevelMax;

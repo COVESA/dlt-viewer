@@ -15,11 +15,20 @@ extern "C" {
     #include "dlt_user.h"
 }
 
-DltFileIndexerKey::DltFileIndexerKey(time_t time,unsigned int microseconds,unsigned int timestamp)
+DltFileIndexerKey::DltFileIndexerKey(time_t time, unsigned int microseconds, int index)
+    : timestamp(0)
 {
     this->time = time;
     this->microseconds = microseconds;
+    this->index = index;
+}
+
+DltFileIndexerKey::DltFileIndexerKey(unsigned int timestamp, int index)
+    : time(0)
+    , microseconds(0)
+{
     this->timestamp = timestamp;
+    this->index = index;
 }
 
 DltFileIndexer::DltFileIndexer(QObject *parent) :

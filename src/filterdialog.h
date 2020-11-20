@@ -118,6 +118,15 @@ public:
     void setEnableMarker(bool state);
     bool getEnableMarker();
 
+    void setEnableRegexSearchReplace(bool state);
+    bool getEnableRegexSearchReplace();
+
+    void setRegexSearchText(const QString&);
+    QString getRegexSearchText();
+
+    void setRegexReplaceText(const QString&);
+    QString getRegexReplaceText();
+
 private:
     Ui::FilterDialog *ui;
     unsigned int msgIdMin=0;
@@ -127,6 +136,7 @@ public slots:
     void on_comboBoxType_currentIndexChanged(int index);
     void checkMsgIdValid(const QString&);
     void on_checkboxMessageId_stateChanged(int state);
+    void on_checkRegex(const QString&);
     void validate();
 private slots:
     void on_lineEditApplicationId_textEdited(const QString &arg1);
