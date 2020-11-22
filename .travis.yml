@@ -23,9 +23,7 @@ jobs:
     - <<: *macos_mojave
 
 install:
-  - chmod +x .ci/travis/install.sh
   - ./.ci/travis/install.sh
 
 script:
-  - chmod +x .ci/travis/build.sh
   - ./.ci/travis/build.sh
