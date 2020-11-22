@@ -7,7 +7,7 @@ The Diagnostic Log and Trace Viewer is an application that can send and receive 
 ## Documentation
 
 + DLT Release Notes: ReleaseNotes.txt
-+ DLT Installation: INSTALL.txt
++ DLT Installation: INSTALL.md
 
 ### Command line usage;
 
