@@ -23,6 +23,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+endif()
+
 set(QT_VERSION_REQ "5")
 
 find_package(Qt5 ${QT_VERSION_REQ} REQUIRED COMPONENTS Core Network Widgets SerialPort PrintSupport)
