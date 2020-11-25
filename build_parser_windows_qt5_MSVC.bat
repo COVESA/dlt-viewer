@@ -2,6 +2,7 @@
 
 REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
+REM 25.11.20 1.2       Alexander Wenzel      Update to Qt 5.12.10
 
 echo ************************************
 echo ***      DLT Parser              ***
@@ -36,8 +37,8 @@ echo *** Setting up environment ***
 
 if "%QTDIR%"=="" (
     if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015_64
-    ) else (set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015)
+        set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015_64
+    ) else (set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015)
 )
 
 if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC

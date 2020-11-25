@@ -36,7 +36,7 @@ See INSTALL.txt regarding doxygen API documentation generation.
 ## Software/Hardware
 
 Developed with QT 5 (http://qt-project.org/)
-Tested with Windows 10 + Qt 5.12.4 + Microsoft Visual Studio 2015 Community Edition
+Tested with Windows 10 + Qt 5.12.10 + Microsoft Visual Studio 2015 Community Edition
 Tested with Ubuntu Linux 18.04 + Qt 5.9.5
 Tested with macOS Sierra + Qt 5.7.0
 Dynamically linked open source software

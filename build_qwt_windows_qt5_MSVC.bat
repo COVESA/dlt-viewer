@@ -2,8 +2,10 @@
 cls
 
 REM Date     Version   Author                Changes
-REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4, Qwt 6.1.4 and Visual Studio 2015
 REM 30.1.18  1.0       Gernot Wirschal       First versioned file
+REM 4.7.19   1.1       Alexander Wenzel      Update to Qt 5.12.4, Qwt 6.1.4 and Visual Studio 2015
+REM 25.11.20 1.2       Alexander Wenzel      Update to Qt 5.12.10
+
 
 echo ************************************
 echo ***    Build QWT Library         ***
@@ -45,15 +47,15 @@ echo *** Setting up environment  ***
 echo Set QT path for %QTVER%
 
 IF "%QTVER%"=="" (
-    set QTVER=5.12.4
+    set QTVER=5.12.10
 )
 
 echo Set QT diretory for %ARCHITECTURE%
 
 if "%QTDIR%"=="" (
     if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015_64
-    ) else (set QTDIR=C:\Qt\Qt5.12.4\5.12.4\msvc2015)
+        set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015_64
+    ) else (set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015)
 )
 
 if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
