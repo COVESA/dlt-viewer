@@ -61,6 +61,10 @@ https://github.com/GENIVI/dlt-viewer
 
 [genivi-diagnostic-log-and-trace](https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace_lists.genivi.org)
 
+## Additional Plugins
+
+https://github.com/svlad-90/DLT-Message-Analyzer
+
 ## Contact
 
 Alexander Wenzel Alexander.AW.Wenzel@bmw.de and Gernot Wirschal Gernot.Wirschal@bmw.de
