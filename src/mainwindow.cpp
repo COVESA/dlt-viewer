@@ -6231,6 +6231,13 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
     dlg.setRegexSearchText(item->filter.regex_search);
     dlg.setRegexReplaceText(item->filter.regex_replace);
 
+    /* Important to set the log level min and max before setting the */
+    /* corresponding checkboxes enableLogLevelXXX. */
+    /* If not checkboxes will be set, when values unequal zero by functions */
+    /* on_comboBoxLogLevelXXX_currentIndexChanged. */
+    dlg.setLogLevelMax(item->filter.logLevelMax);
+    dlg.setLogLevelMin(item->filter.logLevelMin);
+
     dlg.setEnableRegexp_Appid(item->filter.enableRegexp_Appid);
     dlg.setEnableRegexp_Context(item->filter.enableRegexp_Context);
     dlg.setEnableRegexp_Header (item->filter.enableRegexp_Header);
@@ -6252,8 +6259,6 @@ void MainWindow::filterDialogWrite(FilterDialog &dlg,FilterItem* item)
 
     dlg.setFilterColour(item->filter.filterColour);
 
-    dlg.setLogLevelMax(item->filter.logLevelMax);
-    dlg.setLogLevelMin(item->filter.logLevelMin);
     dlg.setMessageId_max(item->filter.messageIdMax);
     dlg.setMessageId_min(item->filter.messageIdMin);
 
