@@ -149,8 +149,6 @@ Sometimes building with Cmake or in Qt Creator leads to Plugins not working in  
 Building with qmake in release version gets rid of this problem.
 Steps to follow:
 
-* cd dlt-viewer
-* git clone https://github.com/GENIVI/dlt-viewer.git
 * mkdir build
 * cd build
 * <path to Qt folder>/Qt/5.X/gcc_64/bin/qmake <path to BuildDltViewer.pro>/BuildDltViewer.pro -r
