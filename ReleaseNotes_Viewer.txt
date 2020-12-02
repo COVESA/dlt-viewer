@@ -5,12 +5,13 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Changes
 -------
+2.12.2020 AW: 2.21.0 Release
 02.05.2019 GW: 2.19.0 Release
 14.04.2020 GW: 2.20.0 Release
 
 Version
 -------
-Version 2.19.0 RELEASE
+Version 2.21.0 RELEASE
 
 
 Known issues
@@ -21,6 +22,85 @@ Known issues
 
 Changes
 -------
+
+2.21.0
+
+Features:
+    * Using better threshold for text color
+        Improved the selection of the text color based on the background. Also
+        fixed calculation (the real value has been used for red rather than the
+        uint8 value).
+    * Enable optional append for default filters
+    * Combo Box for default filter is capable of search
+        Allow to search a filter by a piece of the name in the defaultfilter
+        combobox.
+    * Load dlf from subfolders
+        Enabled the loading of .dlf from subfolders within the default filter
+        location. Symlinks are also allowed.
+    * changed regex filtering to only visualization data
+    * added search/replace to table models
+    * added regex setting to filter config
+    * added regex controls to filter menu
+    * Enable optional append for default filters
+        If the checkbox is activated and default filter is selected it is
+        appended rather than replacing the previous filters.
+    * add extended nonverbose messageid support: column,filter,search
+    * restore settings option ShowArguments
+    * Sync view menu checkboxes with restored window state
+        When the application is restarted the visibility state of the dock
+        widgets does not reflect the checkboxes in the View menu. This will
+        require activating menu items twice to make them in sync.
+    * Introduction of the QDltFile::getFileMsgNumber method
+        - Addition of the QDltFile::getFileMsgNumber method, which allows to get number of messages of the underlying file object
+    * dltexport: Cancel message export implemented
+            Add commandline progress output
+        dltindexer: local variable covered parameter
+            more detailed debug output
+            fix progressbar overflow
+        mainwindow: avoid error output ERROR: bytesRcvd <= 0
+            when ECU in dlt file is given
+            dlt injection: fix error when UTF8 ( chinese character)
+            transmitted
+        settingsdialog: avoid crash when resetting settings due to version change
+
+Fixes:
+    * src/filterdialog.cpp: Use QPalette::Window instead deprecated QPalette::Background
+    * Fix Filter Log Level Min Max enabled by mistake.
+    * Sort by time/timestamp keeps index order
+        For messages that have the exact same time/timestamp, we keep the same order for the messages by using their index.
+    * Fixed scroll in table view in case when Index column is hidden; disabled autoscroll to the right in search results
+    * Fix filter load in case of error
+        If a corrupted file has been passed to LoadFilter it still tried to load
+        the filters after notifying the loading of the file failed. This caused
+        a crash. Also the duplicate Messagebox has been removed.
+    * Set scaling attributes after create QApplication
+        Qt requires these attributes set after the creation else it will stay
+        blurry on macOS.
+    * Plugins are not working on Mac
+        Change description:
+        - Updated the INSTALL.txt for build instructions for release version using qmake on MacOs
+        Verification criteria:
+        - Build on MacOs Catalina Version 10.15.3(19D76) and checked
+    * Fast bugfix for livetracing in dltfileindexer.cpp - disconnected when broom used
+    * CMake build is not supported for MSVC
+        - Introduction of wrapping GCC specific flags into "not MSVC" condition to avoid build fail for MSVC CMake build
+    * Fixed enableMessageId in filter configuration file.
+    * Do not raise search results panel every time the filters are updated
+        If the user explicitly hid it they most likely prefer to keep it hidden.
+        The panel will still be shown when the "FindNext" action is activated.
+    * Fix non-standard binary install destination
+        Use the destination variables defined in the toplevel CMakeLists instead
+        of the hardcoded "deploy" directory. This makes the "install" target
+        behave in the standard CMake way, i.e. allows to relocate the whole
+        installation tree using CMAKE_INSTALL_PREFIX and find the binaries in
+        the expected place.
+    * Fix case insensitive regexp match in filters
+        - Fix inverted condition when setting pattern options.
+        - Fix incorrect passing of case sensitivity flag as match offset which
+          prevented the ^ anchor from working.
+    * Bugfix export index range
+        Commandline mode: option -l, create file if not existing
+        Adapt progress indication for index creation in commandline mode
 
 2.20.0
 
@@ -61,7 +141,6 @@ Changes
     * Seperated settings from UI.
     * Moved local read/write routine to QDltSettingsManager.
     * Updated cmake files.
-
 
     Fixes:
     * fix and cleanup settings parameters.
