@@ -3209,6 +3209,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 if ( NULL != ecuitem->m_serialport )
                 {
                 ecuitem->m_serialport->setBaudRate(ecuitem->getBaudrate(), QSerialPort::AllDirections);
+		ecuitem->m_serialport->setPortName(ecuitem->getPort());
                 ecuitem->m_serialport->setDataBits(QSerialPort::Data8);
                 ecuitem->m_serialport->setParity(QSerialPort::NoParity);
                 ecuitem->m_serialport->setStopBits(QSerialPort::OneStop);
