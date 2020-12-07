@@ -51,6 +51,7 @@ public:
     int get_SearchResultListSize() const;
     bool get_SearchResultEntry(int position, unsigned long &entry);
 
+    QColor getMsgBackgroundColor(QDltMsg &msg) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;

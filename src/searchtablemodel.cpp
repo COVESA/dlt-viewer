@@ -189,39 +189,26 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    if ( role == Qt::ForegroundRole ) {
-        qfile->getMsg(m_searchResultList.at(index.row()), msg);
-
-        // Color the last search row
-        if (QColor(qfile->checkMarker(msg)).isValid())
+    if ( role == Qt::ForegroundRole )
+    {
+        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
         {
-            QColor color = qfile->checkMarker(msg);
-            return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
+            /* Valid message found, calculate background color and find optimal forground color */
+            return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
         }
-        else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  )
-        {
-            return QVariant(QBrush(QColor(255,255,255)));
-        }
-        else
-        {
-            return QVariant(QBrush(QColor(0,0,0)));
-        }
+        /* default return black forground color */
+        return QVariant(QBrush(QColor(0,0,0)));
     }
 
-    if ( role == Qt::BackgroundRole ) {
-        if(!qfile->getMsg(m_searchResultList.at(index.row()), msg)) {
-            //always white
-            return QVariant(QBrush(QColor(255,255,255)));
-        } else {
-            QColor color = qfile->checkMarker(msg);
-
-            if(color.isValid())
-            {
-                return QVariant(QBrush(color));
-            }
-
-            return QVariant(QBrush(QColor(255,255,255)));
+    if ( role == Qt::BackgroundRole )
+    {
+        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        {
+            /* Valid message found, calculate background color */
+            return QVariant(QBrush(getMsgBackgroundColor(msg)));
         }
+        /* default return white background color */
+        return QVariant(QBrush(QColor(255,255,255)));
     }
 
 
@@ -309,4 +296,31 @@ bool SearchTableModel::get_SearchResultEntry(int position, unsigned long &entry)
 int SearchTableModel::get_SearchResultListSize() const
 {
     return m_searchResultList.size();
+}
+
+QColor SearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const
+{
+    /* get check marker color */
+    QColor color = qfile->checkMarker(msg);
+    if(color.isValid())
+    {
+        /* Valid marker found, use background color as defined in marker */
+        return color;
+    }
+    else
+    {
+        if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
+        {
+           /* If automark error is enabled, set red as background color */
+           return QColor(255,0,0);
+        }
+        if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn")
+        {
+            /* If automark warning is enabled, set red as background color */
+           return QColor(255,255,0);
+        }
+    }
+
+    /* default return white background color */
+    return QColor(255,255,255);
 }
