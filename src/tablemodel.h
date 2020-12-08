@@ -71,6 +71,7 @@ private:
     QColor searchhit_higlightColor;
     QColor manualMarkerColor;
     QList<unsigned long int> selectedMarkerRows;
+    QColor getMsgBackgroundColor(QDltMsg &msg,int index,long int filterposindex) const;
 };
 
 class HtmlDelegate : public QStyledItemDelegate

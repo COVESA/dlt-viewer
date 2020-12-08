@@ -20,6 +20,7 @@
 
 #include "fieldnames.h"
 #include "dltuiutils.h"
+#include "dlt_protocol.h"
 #include "regex_search_replace.h"
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -318,6 +319,12 @@ QColor SearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const
         {
             /* If automark warning is enabled, set red as background color */
            return QColor(255,255,0);
+        }
+        if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
+           msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+        {
+            /* If automark marker is enabled, set green as background color */
+           return QColor(0,255,0);
         }
     }
 
