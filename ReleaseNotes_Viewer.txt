@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Changes
 -------
-2.12.2020 AW: 2.21.0 Release
+9.12.2020 AW: 2.21.0 Release
 02.05.2019 GW: 2.19.0 Release
 14.04.2020 GW: 2.20.0 Release
 
@@ -26,6 +26,9 @@ Changes
 2.21.0
 
 Features:
+    * Fix table model colors
+    * Fix forground color issue in search table model
+    * Fix serial connect problem
     * Using better threshold for text color
         Improved the selection of the text color based on the background. Also
         fixed calculation (the real value has been used for red rather than the
