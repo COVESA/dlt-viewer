@@ -13,6 +13,10 @@ macos_mojave: &macos_mojave
   os: osx
   osx_image: xcode11.3.1
 
+macos_mojave: &macos_BigSur
+  os: osx
+  osx_image: xcode12.2
+
 jobs:
   include:
     - <<: *linux
@@ -21,6 +25,7 @@ jobs:
       dist: bionic
     - <<: *macos_high_sierra
     - <<: *macos_mojave
+    - <<: *macos_BigSur
 
 install:
   - ./.ci/travis/install.sh
