@@ -395,6 +395,10 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          index(0, columnCount() - 1);
      }
      lastrow = -1;
+
+     /* last search index must be deleted because model changed */
+     lastSearchIndex = -1;
+
      emit(layoutChanged());
  }
 
