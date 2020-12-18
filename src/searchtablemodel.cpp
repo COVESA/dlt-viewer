@@ -274,6 +274,7 @@ int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
 void SearchTableModel::clear_SearchResults()
 {
     m_searchResultList.clear();
+    modelChanged();
 }
 
 void SearchTableModel::add_SearchResultEntry(unsigned long entry)
