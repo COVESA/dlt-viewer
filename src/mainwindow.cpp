@@ -7175,6 +7175,16 @@ void MainWindow::restoreSelection()
     if(previousSelection.count()==0)
         return;
 
+    // we need to find visible column, otherwise scrollTo does not work, e.g. if Index is disabled
+    int col = 0;
+    for(col = 0; col <= ui->tableView->model()->columnCount(); col++)
+    {
+       if(!ui->tableView->isColumnHidden(col))
+       {
+           break;
+       }
+    }
+
     // restore all selected lines
     for(int j=0;j<previousSelection.count();j++)
     {
@@ -7187,7 +7197,8 @@ void MainWindow::restoreSelection()
             firstIndex = nearestIndex;
         }
 
-        QModelIndex idx = tableModel->index(nearestIndex, 0);
+        QModelIndex idx = tableModel->index(nearestIndex, col);
+
         newSelection.select(idx, idx);
     }
 
@@ -7196,7 +7207,7 @@ void MainWindow::restoreSelection()
 
     // scroll to first selected row
     ui->tableView->setFocus();  // focus must be set before scrollto is possible
-    QModelIndex idx = tableModel->index(firstIndex, 0, QModelIndex());
+    QModelIndex idx = tableModel->index(firstIndex, col, QModelIndex());
     ui->tableView->scrollTo(idx, QAbstractItemView::PositionAtTop);
 }
 
