@@ -157,6 +157,7 @@ bool QDltFile::updateIndex()
 {
     QByteArray buf;
     qint64 pos = 0;
+    quint16 last_message_length = 0;
 
     mutexQDlt.lock();
 
@@ -176,7 +177,18 @@ bool QDltFile::updateIndex()
         {
             /* move behind last found position */
             const QVector<qint64>* const_indexAll = &(files[numFile]->indexAll);
-            pos = (*const_indexAll)[files[numFile]->indexAll.size()-1] + 4;
+            pos = (*const_indexAll)[files[numFile]->indexAll.size()-1];
+
+            // read the first 18 bytes of last message to look for actual size
+            files[numFile]->infile.seek(pos + 18);
+            buf = files[numFile]->infile.read(2);
+
+            // Read low and high bytes of message length
+            last_message_length = (unsigned char)buf.at(0);
+            last_message_length = (last_message_length<<8 | ((unsigned char)buf.at(1))) +16;
+
+            // move just behind the next expected message
+            pos += (last_message_length - 1);
             files[numFile]->infile.seek(pos);
         }
         else {
