@@ -22,9 +22,9 @@ jobs:
       - name: install qt
         run: brew install qt
       - name: install build environment
-        run: .ci/travis/install.sh
+        run: scripts/install.sh
       - name: Build project
-        run: .ci/travis/build.sh
+        run: scripts/build.sh
       - name: Archive artifact
         uses: actions/upload-artifact@v2.0.1
         if: ${{ success() }}
@@ -45,9 +45,9 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: .ci/travis/install.sh
+        run: scripts/install.sh
       - name: Build project
-        run: .ci/travis/build.sh
+        run: scripts/build.sh
       - name: Archive artifact
         uses: actions/upload-artifact@v2.0.1
         if: ${{ success() }}

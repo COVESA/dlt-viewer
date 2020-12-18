@@ -1,5 +1,4 @@
 # Diagnostic Log and Trace Viewer
-Build and Test status: [![Build Status](https://travis-ci.org/GENIVI/dlt-viewer.svg?branch=master)](https://travis-ci.org/GENIVI/dlt-viewer)
 ## Overview
 
 The Diagnostic Log and Trace Viewer is an application that can send and receive control messages to the DLT daemon, e.g. to set individual log levels of applications and contexts or get the list of applications and contexts registered in the DLT daemon. DLT viewer is based on Qt for Windows and Linux and can run on the Mac though that is not officially supported.
