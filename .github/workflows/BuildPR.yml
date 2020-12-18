@@ -52,5 +52,26 @@ jobs:
         uses: actions/upload-artifact@v2.0.1
         if: ${{ success() }}
         with:
-          name: DLT-linux ${{ matrix.ubuntu }}
+          name: DLT ${{ matrix.ubuntu }}
+          path: build/release
+
+  buildWindows:
+    name: Build Windows
+    strategy:
+      matrix:
+        task: [parser, qwt, sdk]
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.3.3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Build ${{ matrix.task }}
+        run: build_${{ matrix.task }}_windows_qt5_MSVC.bat
+      - name: Archive artifact
+        uses: actions/upload-artifact@v2.0.1
+        if: ${{ success() }}
+        with:
+          name: DLT ${{ matrix.task }}
           path: build/release
