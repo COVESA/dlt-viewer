@@ -659,7 +659,7 @@ void QDltMsg::genMsg()
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
     if(mode == DltModeVerbose) {
-        standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
+        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
         standardheader.htyp |= DLT_HTYP_UEH;
         if(!ecuid.isEmpty()) {
             standardheader.htyp |= DLT_HTYP_WEID;
@@ -675,7 +675,7 @@ void QDltMsg::genMsg()
         }
     }
     else {
-        standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + payload.size());
+        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + payload.size());
     }
     standardheader.mcnt = messageCounter;
     header += QByteArray((const char *)&standardheader,sizeof(DltStandardHeader));
@@ -687,11 +687,11 @@ void QDltMsg::genMsg()
             header += QByteArray((const char *)&(headerextra.ecu),sizeof(headerextra.ecu));
         }
         if(sessionid!=0) {
-            headerextra.seid = DLT_SWAP_32(sessionid);
+            headerextra.seid = DLT_HTOBE_32(sessionid);
             header += QByteArray((const char *)&(headerextra.seid),sizeof(headerextra.seid));
         }
         if(timestamp!=0) {
-            headerextra.tmsp = DLT_SWAP_32(timestamp);
+            headerextra.tmsp = DLT_HTOBE_32(timestamp);
             header += QByteArray((const char *)&(headerextra.tmsp),sizeof(headerextra.tmsp));
         }
     }
