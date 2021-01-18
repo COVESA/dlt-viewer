@@ -129,7 +129,8 @@ void EcuItem::update()
             }
             socket = & udpsocket;
             break;
-        case EcuItem::INTERFACETYPE_SERIAL:
+        case EcuItem::INTERFACETYPE_SERIAL_DLT:
+        case EcuItem::INTERFACETYPE_SERIAL_ASCII:
             setData(1,Qt::DisplayRole,QString("%1 [%2]").arg(description).arg(port));
             socket = 0;
             break;

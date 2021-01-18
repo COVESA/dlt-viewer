@@ -52,17 +52,22 @@
         <widget class="QComboBox" name="comboBoxInterface">
          <item>
           <property name="text">
-           <string>TCP</string>
+           <string>TCP DLT</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>UDP</string>
+           <string>UDP DLT</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>Serial</string>
+           <string>Serial DLT</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Serial ASCII</string>
           </property>
          </item>
         </widget>

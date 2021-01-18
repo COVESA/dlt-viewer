@@ -63,7 +63,8 @@ public:
     enum {
         INTERFACETYPE_TCP,
         INTERFACETYPE_UDP,
-        INTERFACETYPE_SERIAL
+        INTERFACETYPE_SERIAL_DLT,
+        INTERFACETYPE_SERIAL_ASCII
     };
 
     EcuItem(QTreeWidgetItem *parent = 0);

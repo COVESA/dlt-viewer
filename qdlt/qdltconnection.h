@@ -99,7 +99,8 @@ public:
     void setSyncSerialHeader(bool _syncSerialHeader);
     bool getSyncSerialHeader() const;
 
-    bool parse(QDltMsg &msg);
+    bool parseDlt(QDltMsg &msg);
+    bool parseAscii(QDltMsg &msg);
 
     void clear();
     void add(const QByteArray &bytes);
@@ -116,7 +117,9 @@ protected:
     bool sendSerialHeader;
     bool syncSerialHeader;
 
+private:
 
+    unsigned char messageCounter;
 
 };
 

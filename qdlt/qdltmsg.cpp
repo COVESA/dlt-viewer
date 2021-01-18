@@ -628,3 +628,89 @@ QString QDltMsg::toStringPayload() const
 
     return text;
 }
+
+void QDltMsg::genMsg()
+{
+    DltStandardHeader standardheader;
+    DltStandardHeaderExtra headerextra;
+    DltExtendedHeader extendedheader;
+    QDltArgument argument;
+
+    // clear existing payload
+    payload.clear();
+
+    // Generate payload for all arguments
+    for(int num=0;num<arguments.size();num++) {
+        if(getArgument(num,argument)) {
+            argument.getArgument(payload,true);
+        }
+
+    }
+
+    // set payload size
+    payloadSize = payload.size();
+
+    // clear existing header
+    header.clear();
+
+    // write standardheader
+    standardheader.htyp = 0x01 << 5; /* intialise with version number 0x1 */
+    if(endianness == DltEndiannessBigEndian) {
+        standardheader.htyp |= DLT_HTYP_MSBF;
+    }
+    if(mode == DltModeVerbose) {
+        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
+        standardheader.htyp |= DLT_HTYP_UEH;
+        if(!ecuid.isEmpty()) {
+            standardheader.htyp |= DLT_HTYP_WEID;
+            standardheader.len += sizeof(headerextra.ecu);
+        }
+        if(sessionid!=0) {
+            standardheader.htyp |= DLT_HTYP_WSID;
+            standardheader.len += sizeof(headerextra.seid);
+        }
+        if(timestamp!=0) {
+            standardheader.htyp |= DLT_HTYP_WTMS;
+            standardheader.len += sizeof(headerextra.tmsp);
+        }
+    }
+    else {
+        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + payload.size());
+    }
+    standardheader.mcnt = messageCounter;
+    header += QByteArray((const char *)&standardheader,sizeof(DltStandardHeader));
+
+    // write standard header extra
+    if(mode == DltModeVerbose) {
+        if(!ecuid.isEmpty()) {
+            strncpy(headerextra.ecu,ecuid.toLatin1().constData(),ecuid.size()>3?4:ecuid.size()+1);
+            header += QByteArray((const char *)&(headerextra.ecu),sizeof(headerextra.ecu));
+        }
+        if(sessionid!=0) {
+            headerextra.seid = DLT_HTOBE_32(sessionid);
+            header += QByteArray((const char *)&(headerextra.seid),sizeof(headerextra.seid));
+        }
+        if(timestamp!=0) {
+            headerextra.tmsp = DLT_HTOBE_32(timestamp);
+            header += QByteArray((const char *)&(headerextra.tmsp),sizeof(headerextra.tmsp));
+        }
+    }
+
+    // write extendedheader
+    if(mode == DltModeVerbose) {
+        strncpy(extendedheader.apid,apid.toLatin1().constData(),apid.size()>3?4:apid.size()+1);
+        strncpy(extendedheader.ctid,ctid.toLatin1().constData(),ctid.size()>3?4:ctid.size()+1);
+        extendedheader.msin = 0;
+        if(mode == DltModeVerbose) {
+            extendedheader.msin |= DLT_MSIN_VERB;
+        }
+        extendedheader.msin |= (((unsigned char)type) << 1) & DLT_MSIN_MSTP;
+        extendedheader.msin |= (((unsigned char)subtype) << 4) & DLT_MSIN_MTIN;
+        extendedheader.noar = numberOfArguments;
+        header += QByteArray((const char *)&extendedheader,sizeof(DltExtendedHeader));
+    }
+
+    // set header size
+    headerSize = header.size();
+
+}

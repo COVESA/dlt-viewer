@@ -388,11 +388,22 @@ void EcuDialog::on_comboBoxInterface_currentIndexChanged(int index)
             ui->comboBoxUDP_mcastaddress->setEnabled(ui->checkBoxMulticast->isChecked());
             break;
 
-        case EcuItem::INTERFACETYPE_SERIAL:
+        case EcuItem::INTERFACETYPE_SERIAL_DLT:
             ui->tabWidget->setTabEnabled(1,false);
             ui->tabWidget->setTabEnabled(2,false);
             ui->tabWidget->setTabEnabled(3,true);
+            ui->checkBoxSendSerialHeaderSerial->setVisible(true);
+            ui->checkBoxSyncToSerialHeaderSerial->setVisible(true);
             break;
+
+        case EcuItem::INTERFACETYPE_SERIAL_ASCII:
+            ui->tabWidget->setTabEnabled(1,false);
+            ui->tabWidget->setTabEnabled(2,false);
+            ui->tabWidget->setTabEnabled(3,true);
+            ui->checkBoxSendSerialHeaderSerial->setVisible(false);
+            ui->checkBoxSyncToSerialHeaderSerial->setVisible(false);
+            break;
+
     }
 }
 

@@ -2997,7 +2997,7 @@ void MainWindow::saveAndDisconnectCurrentlyConnectedSerialECUs()
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if(ecuitem &&  ecuitem->connected && ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL)
+        if(ecuitem &&  ecuitem->connected && (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT || ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII))
         {
             m_previouslyConnectedSerialECUs.append(num);
             disconnectECU(ecuitem);
@@ -3522,7 +3522,8 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->update();
           }
           break;
-      case EcuItem::INTERFACETYPE_SERIAL:
+      case EcuItem::INTERFACETYPE_SERIAL_DLT:
+      case EcuItem::INTERFACETYPE_SERIAL_ASCII:
           data = ecuitem->m_serialport->readAll();
           bytesRcvd = data.size();
           ecuitem->serialcon.add(data);
@@ -3543,8 +3544,9 @@ void MainWindow::read(EcuItem* ecuitem)
 
      while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
                 ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
-                ecuitem->ipcon.parse(qmsg)) ||
-               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->serialcon.parse(qmsg)))
+                ecuitem->ipcon.parseDlt(qmsg)) ||
+               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg)) ||
+               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
             //DltStorageHeader str;
             str.pattern[0]='D';
@@ -4189,7 +4191,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
         ecuitem->socket->write(tmpBuf);
     }
-    else if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
+    else if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
     {
         /* Optional: Send serial header, if requested */
         if (ecuitem->getSendSerialHeaderSerial())
@@ -7452,8 +7454,11 @@ QString MainWindow::GetConnectionType(int iTypeNumber)
    case EcuItem::INTERFACETYPE_UDP:
        port=QString("UDP");
        break;
-   case EcuItem::INTERFACETYPE_SERIAL:
-       port=QString("Serial");
+   case EcuItem::INTERFACETYPE_SERIAL_DLT:
+       port=QString("Serial DLT");
+       break;
+   case EcuItem::INTERFACETYPE_SERIAL_ASCII:
+       port=QString("Serial ASCII");
        break;
    default:
        port=QString("UNDEFINED");
