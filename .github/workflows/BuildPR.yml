@@ -55,11 +55,12 @@ jobs:
           name: DLT ${{ matrix.ubuntu }}
           path: build/release
 
+  # windows build is work in progress
   buildWindows:
     name: Build Windows
     strategy:
       matrix:
-        task: [parser, qwt, sdk]
+        task: [parser, sdk]
     runs-on: windows-2019
     steps:
       - name: Checkout
@@ -67,11 +68,16 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+      - name: Install qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          mirror: http://ftp.fau.de/qtproject/
+          version: 5.12.10
       - name: Build ${{ matrix.task }}
-        run: build_${{ matrix.task }}_windows_qt5_MSVC.bat
+        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v2.0.1
         if: ${{ success() }}
         with:
           name: DLT ${{ matrix.task }}
-          path: build/release
+          path: build/dist

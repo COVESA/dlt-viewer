@@ -46,12 +46,22 @@ if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
 set QTSDK=%QTDIR%
 
-IF "%DLT_PARSER_DIR%"=="" (
+if '%WORKSPACE%'=='' (
+    if '%DLT_PARSER_DIR%'=='' (
         set DLT_PARSER_DIR=c:\DltParser
+    )
+
+    set SOURCE_DIR=%CD%
+    set BUILD_DIR=%CD%\build\release
+) else (
+    if '%DLT_PARSER_DIR%'=='' (
+        set DLT_PARSER_DIR=%WORKSPACE%\build\dist\DltParser
+    )
+
+    set SOURCE_DIR=%WORKSPACE%
+    set BUILD_DIR=%WORKSPACE%\build\release
 )
 
-set SOURCE_DIR=%CD%
-set BUILD_DIR=%CD%\build\release
 
 echo ************************************
 echo * QTDIR     = %QTDIR%
@@ -118,24 +128,6 @@ if not exist %DLT_PARSER_DIR%\examples mkdir %DLT_PARSER_DIR%\examples
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo *** Copy files ***
-rem copy %QTDIR%\bin\icuin54.dll %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem copy %QTDIR%\bin\icuuc54.dll %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem copy %QTDIR%\bin\icudt54.dll %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-rem copy %QTDIR%\bin\libwinpthread-1.dll %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-rem 
-rem copy %QTDIR%\bin\libgcc_s_dw2-1.dll %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-rem 
-rem copy "%QTDIR%\bin\libstdc++-6.dll" %DLT_PARSER_DIR%
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
 copy %QTDIR%\bin\Qt5Core.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
