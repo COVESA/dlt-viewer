@@ -284,6 +284,12 @@ void MainWindow::initState()
     injectionServiceId.clear();
     injectionData.clear();
     injectionDataBinary = false;
+
+    /* initialize raw logging */
+    rawLogging.setPath(settings->rawLoggingPath);
+    rawLogging.setProjectName(settings->rawLoggingProjectName);
+    rawLogging.setTimeout(settings->rawLoggingTimeout);
+    rawLogging.setMaxFileSize(settings->rawLoggingMaxFileSize);
 }
 
 void MainWindow::initView()
@@ -1748,6 +1754,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     qint64 fileerrors = 0;
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
+    tableModel->setRawLoggingEnabled(settings->rawLoggingEnabled);
     tableModel->modelChanged();
 
     if( 0 != settings->loggingOnlyMode )
@@ -1976,6 +1983,7 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 
         updateScrollButton();
 
+        tableModel->setRawLoggingEnabled(settings->rawLoggingEnabled);
         if(loggingOnlyMode!=settings->loggingOnlyMode)
         {
             tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
@@ -1993,6 +2001,13 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 
         // update table, perhaps settings changed table, e.g. number of columns
         tableModel->modelChanged();
+
+        // update raw logging
+        rawLogging.setPath(settings->rawLoggingPath);
+        rawLogging.setProjectName(settings->rawLoggingProjectName);
+        rawLogging.setTimeout(settings->rawLoggingTimeout);
+        rawLogging.setMaxFileSize(settings->rawLoggingMaxFileSize);
+
     }
 }
 
@@ -3427,6 +3442,12 @@ void MainWindow::timeout()
             }
         } // for ecuItem
         checkConnectionState();
+
+        /* Check if timeout reached, when raw logging is enabled */
+        if(settings->rawLoggingEnabled)
+        {
+            rawLogging.checkEndTime();
+        }
 }
 
 void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
@@ -3508,7 +3529,16 @@ void MainWindow::read(EcuItem* ecuitem)
           data = ecuitem->socket->readAll();
           bytesRcvd = data.size();
           //qDebug() << "bytes received" << bytesRcvd;
-          ecuitem->ipcon.add(data);
+          if(settings->rawLoggingEnabled)
+          {
+                /* if raw logging enabled, write data directly into file */
+                rawLogging.writeData(ecuitem->id,data);
+          }
+          else
+          {
+                /* if no raw logging enabled store data in buffer for further analysise */
+                ecuitem->ipcon.add(data);
+          }
           break;
       case EcuItem::INTERFACETYPE_UDP:
           if(ecuitem->udpsocket.hasPendingDatagrams())
@@ -3516,7 +3546,16 @@ void MainWindow::read(EcuItem* ecuitem)
             data.resize(ecuitem->udpsocket.pendingDatagramSize());
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
             //qDebug() << "bytes received" << bytesRcvd;
-            ecuitem->ipcon.add(data);
+            if(settings->rawLoggingEnabled)
+            {
+                /* if raw logging enabled, write data directly into file */
+                rawLogging.writeData(ecuitem->id,data);
+            }
+            else
+            {
+                /* if no raw logging enabled store data in buffer for further analysise */
+                ecuitem->ipcon.add(data);
+            }
             ecuitem->connected= true;
             ecuitem->tryToConnect = true;
             ecuitem->update();
@@ -3526,7 +3565,16 @@ void MainWindow::read(EcuItem* ecuitem)
       case EcuItem::INTERFACETYPE_SERIAL_ASCII:
           data = ecuitem->m_serialport->readAll();
           bytesRcvd = data.size();
-          ecuitem->serialcon.add(data);
+          if(settings->rawLoggingEnabled)
+          {
+              /* if raw logging enabled, write data directly into file */
+              rawLogging.writeData(ecuitem->id,data);
+          }
+          else
+          {
+              /* if no raw logging enabled store data in buffer for further analysise */
+              ecuitem->serialcon.add(data);
+          }
           break;
       default:
          break;
@@ -3541,6 +3589,12 @@ void MainWindow::read(EcuItem* ecuitem)
 
     /* reading data; new data is added to the current buffer */
      ecuitem->totalBytesRcvd += bytesRcvd;
+
+    /* if raw logging is enabled stop here, as data already wirtten into file and no data is in the buffers to be analysed */
+    if(settings->rawLoggingEnabled)
+    {
+        return;
+    }
 
      while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
                 ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&

@@ -41,6 +41,7 @@
 #include "workingdirectory.h"
 #include "exporterdialog.h"
 #include "searchtablemodel.h"
+#include "dltrawlogging.h"
 #include "ui_mainwindow.h"
 
 
@@ -126,6 +127,7 @@ private:
 
     QDltControl qcontrol;
     QFile outputfile;
+    DltRawLogging rawLogging;
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
     TableModel *tableModel;

@@ -145,6 +145,11 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("fmaxFileSizeMB",QString("%1").arg(fmaxFileSizeMB));
             xml.writeTextElement("appendDateTime",QString("%1").arg(appendDateTime));
             xml.writeTextElement("msgIdFormat",QString("%1").arg(msgIdFormat));
+            xml.writeTextElement("rawLoggingEnabled",QString("%1").arg(rawLoggingEnabled));
+            xml.writeTextElement("rawLoggingPath",QString("%1").arg(rawLoggingPath));
+            xml.writeTextElement("rawLoggingProjectName",QString("%1").arg(rawLoggingProjectName));
+            xml.writeTextElement("rawLoggingTimeout",QString("%1").arg(rawLoggingTimeout));
+            xml.writeTextElement("rawLoggingMaxFileSize",QString("%1").arg(rawLoggingMaxFileSize));
         xml.writeEndElement(); // other
     xml.writeEndElement(); // settings
 
@@ -189,6 +194,11 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
     settings->setValue("startup/markercolor",markercolor.name());
+    settings->setValue("startup/rawLoggingEnabled",rawLoggingEnabled);
+    settings->setValue("startup/rawLoggingPath",rawLoggingPath);
+    settings->setValue("startup/rawLoggingProjectName",rawLoggingProjectName);
+    settings->setValue("startup/rawLoggingTimeout",rawLoggingTimeout);
+    settings->setValue("startup/rawLoggingMaxFileSize",rawLoggingMaxFileSize);
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -390,6 +400,26 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         msgIdFormat = xml.readElementText();
     }
+    if(xml.name() == QString("rawLoggingEnabled"))
+    {
+        rawLoggingEnabled = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("rawLoggingPath"))
+    {
+        rawLoggingPath = xml.readElementText();
+    }
+    if(xml.name() == QString("rawLoggingProjectName"))
+    {
+        rawLoggingProjectName = xml.readElementText();
+    }
+    if(xml.name() == QString("rawLoggingTimeout"))
+    {
+        rawLoggingTimeout = xml.readElementText().toUInt();
+    }
+    if(xml.name() == QString("rawLoggingMaxFileSize"))
+    {
+        rawLoggingMaxFileSize = xml.readElementText().toUInt();
+    }
 
 }
 
@@ -434,6 +464,11 @@ void QDltSettingsManager::readSettings()
     fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
     markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
+    rawLoggingEnabled = settings->value("startup/rawLoggingEnabled",0).toInt();
+    rawLoggingPath = settings->value("startup/rawLoggingPath",QDir::tempPath()).toString();
+    rawLoggingProjectName = settings->value("startup/rawLoggingProjectName",QString("MyProject")).toString();
+    rawLoggingTimeout = settings->value("startup/rawLoggingTimeout",5).toUInt();
+    rawLoggingMaxFileSize = settings->value("startup/rawLoggingMaxFileSize",100).toUInt();
 
     /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();

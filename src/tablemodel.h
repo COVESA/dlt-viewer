@@ -59,12 +59,14 @@ public:
     int setManualMarker(QList<unsigned long int> selectedMarkerRows, QColor hlcolor); //used in mainwindow
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
     void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
+    void setRawLoggingEnabled(bool rawLoggingEnabled) { this->rawLoggingEnabled = rawLoggingEnabled; }
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
 
 private:
     long int lastSearchIndex;
     bool emptyForceFlag;
     bool loggingOnlyMode;
+    bool rawLoggingEnabled;
 
     long int searchhit;
     QColor searchBackgroundColor() const;

@@ -63,6 +63,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      lastSearchIndex = -1;
      emptyForceFlag = false;
      loggingOnlyMode = false;
+     rawLoggingEnabled = false;
      searchhit = -1;
      lastrow = -1;
  }
@@ -106,7 +107,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         if(true == loggingOnlyMode)
+         if(true == loggingOnlyMode || true == rawLoggingEnabled)
          {
              msg = QDltMsg();
          }
@@ -246,6 +247,10 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              {
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
+             if( true == rawLoggingEnabled)
+             {
+                 return QString("Raw Logging enabled! Disable in Project Settings!");
+             }
              /* display payload */
              visu_data = msg.toStringPayload().trimmed().replace('\n', ' ');
 
@@ -374,7 +379,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
  {
      if(true == emptyForceFlag)
          return 0;
-     else if(true == loggingOnlyMode)
+     else if(true == loggingOnlyMode || true == rawLoggingEnabled)
          return 1;
      else
          return qfile->sizeFilter();

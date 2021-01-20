@@ -96,6 +96,12 @@ public:
     float fmaxFileSizeMB; // local and project setting
     int appendDateTime; // local and project setting
 
+    int rawLoggingEnabled; // local and project setting
+    QString rawLoggingPath; // local and project setting
+    QString rawLoggingProjectName; // local and project setting
+    unsigned int rawLoggingTimeout; // local and project setting
+    unsigned int rawLoggingMaxFileSize; // local and project setting
+
     int fontSize; // project and local setting
     int sectionSize; // project and local setting
     QString fontName; // project and local setting

@@ -245,7 +245,12 @@ void SettingsDialog::writeDlg()
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
     ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
-    ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxAppendDateTime->setChecked(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxRawLoggingEnabled->setChecked(settings->rawLoggingEnabled?Qt::Checked:Qt::Unchecked);
+    ui->lineEditRawLoggingPath->setText(settings->rawLoggingPath);
+    ui->lineEditRawLoggingProjectName->setText(settings->rawLoggingProjectName);
+    ui->lineEditRawLoggingTimeout->setText(QString("%1").arg(settings->rawLoggingTimeout));
+    ui->lineEditRawLoggingMaxFileSize->setText(QString("%1").arg(settings->rawLoggingMaxFileSize));
 
     /* table */
     ui->spinBoxSectionSize->setValue(settings->sectionSize);
@@ -413,6 +418,10 @@ void SettingsDialog::readDlg()
     settings->autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
     settings->loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
     settings->splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
+    settings->rawLoggingEnabled = ui->groupBoxRawLoggingEnabled->isChecked();
+    settings->rawLoggingPath = ui->lineEditRawLoggingPath->text();
+    settings->rawLoggingTimeout = ui->lineEditRawLoggingTimeout->text().toUInt();
+    settings->rawLoggingMaxFileSize = ui->lineEditRawLoggingMaxFileSize->text().toUInt();
     if(settings->splitlogfile != 0)
      {
         settings->fmaxFileSizeMB = ui->lineEditMaxFileSizeMB->text().toFloat();
@@ -790,4 +799,22 @@ void SettingsDialog::on_spinBox_showArguments_valueChanged(int i)
  {
      if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
  }
+}
+
+void SettingsDialog::on_pushButtonRawLoggingPath_clicked()
+{
+    QString fileName = QFileDialog::getExistingDirectory(this,
+        tr("Raw Logging directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change current working directory */
+    workingDirectory = QFileInfo(fileName).absolutePath();
+
+    ui->lineEditRawLoggingPath->setText(fileName);
+
+    QMessageBox::warning(0, QString("DLT Viewer"),
+                         QString("Raw Logging must be restarted, if already running!"));
+
 }
