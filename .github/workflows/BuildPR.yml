@@ -26,7 +26,7 @@ jobs:
       - name: Build project
         run: scripts/build.sh
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
           name: DLT-macOS ${{ matrix.xcode }}
@@ -49,7 +49,7 @@ jobs:
       - name: Build project
         run: scripts/build.sh
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
           name: DLT ${{ matrix.ubuntu }}
@@ -76,7 +76,7 @@ jobs:
       - name: Build ${{ matrix.task }}
         run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.0.1
+        uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
           name: DLT ${{ matrix.task }}
