@@ -6,7 +6,6 @@ REM 30.1.18  1.0       Gernot Wirschal       First versioned file
 REM 4.7.19   1.1       Alexander Wenzel      Update to Qt 5.12.4, Qwt 6.1.4 and Visual Studio 2015
 REM 25.11.20 1.2       Alexander Wenzel      Update to Qt 5.12.10
 
-
 echo ************************************
 echo ***    Build QWT Library         ***
 echo ************************************
@@ -14,7 +13,6 @@ echo ************************************
 echo ************************************
 echo ***         Configuration        ***
 echo ************************************
-
 
 if "%MSVC_VERSION%"=="" (
    echo "Set default MSVCS ""
@@ -44,12 +42,11 @@ echo Target architecture is %ARCHITECTURE%
 
 echo *** Setting up environment  ***
 
-echo Set QT path for %QTVER%
-
 IF "%QTVER%"=="" (
     set QTVER=5.12.10
 )
 
+echo Set QT path for %QTVER%
 echo Set QT diretory for %ARCHITECTURE%
 
 if "%QTDIR%"=="" (
@@ -71,18 +68,39 @@ IF "%QWT%"=="" (
     set QWT=6.1.4
 )
 
-set QWT_DIR=C:\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
-
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
 
-IF "%WORKSPACE%" == "" (
+if '%WORKSPACE%'=='' (
+    IF "%QWT_DIR%"=="" (
+        set QWT_DIR=C:\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
+    )
+
     set SOURCE_DIR=%CD%\qwt-%QWT%
-) ELSE (
+) else (
+    if '%QWT_DIR%'=='' (
+        set QWT_DIR=%WORKSPACE%\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
+    )
+
     set SOURCE_DIR=%WORKSPACE%\qwt-%QWT%
 )
 
 IF '%SEVENZ_DIR%'=='' (
     set SEVENZ_DIR="C:\Program Files\7-Zip"
+)
+
+echo ************************************
+echo * QTDIR     = %QTDIR%
+echo * MSVC_DIR  = %MSVC_DIR%
+echo * PATH      = %PATH%
+echo * QWT_DIR = %QWT_DIR%
+echo * SOURCE_DIR         = %SOURCE_DIR%
+echo ************************************
+
+IF not exist "%MSVC_DIR%" (
+    echo "\!"
+    echo "No valid MSVC directory found in %MSVC_DIR%"
+	echo "\!"
+    GOTO ERROR_HANDLER
 )
 
 IF exist %QWT_DIR% (
@@ -92,21 +110,6 @@ echo ************************************
 
     rmdir /s /q %QWT_DIR%
     IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-)
-
-echo ************************************
-echo * QTDIR     = %QTDIR%
-echo * MSVC_DIR  = %MSVC_DIR%
-echo * PATH      = %PATH%
-echo * DLT_VIEWER_SDK_DIR = %DLT_VIEWER_SDK_DIR%
-echo * SOURCE_DIR         = %SOURCE_DIR%
-echo ************************************
-
-IF not exist "%MSVC_DIR%" (
-    echo "\!"
-    echo "No valid MSVC directory found in %MSVC_DIR%"
-	echo "\!"
-    GOTO ERROR_HANDLER
 )
 
 echo ************************************
@@ -162,8 +165,9 @@ echo ###       ERROR occured          ###
 echo ####################################
 cd %WORKINGDIR%
 IF '%WORKSPACE%'=='' (
-pause
+    pause
 )
+exit 1
 
 
 :QUIT
@@ -173,6 +177,6 @@ echo ************************************
 echo Qwt installed in: %QWT_DIR%
 cd %WORKINGDIR%
 IF '%WORKSPACE%'=='' (
-pause
+    pause
 )
 
