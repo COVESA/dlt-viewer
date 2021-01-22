@@ -61,7 +61,6 @@ jobs:
           name: DLT-${{ matrix.ubuntu }}
           path: build/release
 
-  # windows build is work in progress
   buildWindows:
     name: Build Windows
     strategy:
