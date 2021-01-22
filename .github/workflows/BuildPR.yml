@@ -1,6 +1,12 @@
 name: PullRequest
 
-on: [pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   buildMac:
@@ -29,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
-          name: DLT-macOS ${{ matrix.xcode }}
+          name: DLT-macOS-${{ matrix.xcode }}
           path: build/release
 
   buildLinux:
@@ -52,10 +58,9 @@ jobs:
         uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
-          name: DLT ${{ matrix.ubuntu }}
+          name: DLT-${{ matrix.ubuntu }}
           path: build/release
 
-  # windows build is work in progress
   buildWindows:
     name: Build Windows
     strategy:
@@ -79,5 +84,5 @@ jobs:
         uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
         with:
-          name: DLT ${{ matrix.task }}
+          name: DLT-Windows-${{ matrix.task }}
           path: build/dist
