@@ -52,7 +52,7 @@ if '%WORKSPACE%'=='' (
     set BUILD_DIR=%CD%\build\release
 ) else (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\build\dist\DltViewerSDK
     )
 
     set SOURCE_DIR=%WORKSPACE%
@@ -288,10 +288,7 @@ echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
 cd ..
-if '%WORKSPACE%'=='' (
-pause
-)
-rem exit 1
+exit 1
 
 :QUIT
 echo ************************************
@@ -299,7 +296,5 @@ echo ***       SUCCESS finish         ***
 echo ************************************
 cd ..
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
-if '%WORKSPACE%'=='' (
-pause
-)
-rem exit 0
+
+exit 0
