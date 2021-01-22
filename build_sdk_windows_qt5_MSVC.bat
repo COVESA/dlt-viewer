@@ -280,21 +280,20 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %SOURCE_DIR%\filters\* %DLT_VIEWER_SDK_DIR%\filters
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-
 GOTO QUIT
 
 :ERROR_HANDLER
 echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
-cd ..
+set /p name= Continue
 exit 1
+
 
 :QUIT
 echo ************************************
 echo ***       SUCCESS finish         ***
 echo ************************************
-cd ..
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
-
+set /p name= Continue
 exit 0
