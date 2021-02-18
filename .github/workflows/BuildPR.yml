@@ -54,6 +54,8 @@ jobs:
         run: scripts/install.sh
       - name: Build project
         run: scripts/build.sh
+      - name: Make artifact executable
+        run: chmod -R +x build/release 
       - name: Archive artifact
         uses: actions/upload-artifact@v2.2.2
         if: ${{ success() }}
