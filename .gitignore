@@ -11,4 +11,5 @@ release/
 .settings
 *.orig
 *~
+.idea
 
