@@ -1730,7 +1730,7 @@ If you call the DLT Viewer on command line you get the following output:
 dlt\_viewer -h ( Linux ) or dlt\_viewer.exe -h ( Windows )
 
 \footnotesize\begin{verbatim}
-Usage: dlt_viewer [OPTIONS]
+Usage: dlt-viewer [OPTIONS]
 Options:
  -h Print usage
  -p projectfile          Loading project file on startup (must end with .dlp)
@@ -1746,13 +1746,13 @@ Options:
  -e "plugin|command|param1|..|param<n>"         Execute a plugin command with <n> parameters.
 
 Examples:
-  dlt_viewer -c ./traces/trace.dlt ./trace.txt
-  dlt_viewer -s -c -u ./trace/trace.dlt ./trace.txt
-  dlt_viewer -s -d -c ./trace/trace.dlt ./trace.dlt
-  dlt_viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt
-  dlt_viewer -s -csv -c ./trace/trace.dlt ./trace.csv
-  dlt_viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt
-  dlt_viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e "Filetransfer Plugin|export|./ftransferdir"
+  dlt-viewer -c ./traces/trace.dlt ./trace.txt
+  dlt-viewer -s -c -u ./trace/trace.dlt ./trace.txt
+  dlt-viewer -s -d -c ./trace/trace.dlt ./trace.dlt
+  dlt-viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt
+  dlt-viewer -s -csv -c ./trace/trace.dlt ./trace.csv
+  dlt-viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt
+  dlt-viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e "Filetransfer Plugin|export|./ftransferdir"
 \end{verbatim}
 \normalsize
 
@@ -1765,9 +1765,9 @@ Also you get some debug output on what the viewer actual is doing.
 Example output:
 
 \begin{verbatim}
-C:\01-viewer\r690>dlt_viewer.exe -s
+C:\01-viewer\r690>dlt-viewer.exe -s
 Enable silent mode
-Start "dlt_viewer.exe"
+Start "dlt-viewer.exe"
 Build time Jun 15 2018 09:24:40
 Version 2.19.0 WORKING
 **********************************************************
@@ -1818,55 +1818,55 @@ dlt\_viewer.exe -p x.dlp -l y.dlt -e "Filetransfer Plugin{\textbar}export{\textb
 
 \paragraph{Command line start of GUI with dedicated logfile}
 \begin{verbatim}
-dlt_viewer -l ./example.dlt
+dlt-viewer -l ./example.dlt
 \end{verbatim}
 
 \paragraph{Command line start of GUI with dedicated logfile and filterfile}
 \begin{verbatim}
-dlt_viewer -l ./example.dlt -f ./filter.dlf
+dlt-viewer -l ./example.dlt -f ./filter.dlf
 \end{verbatim}
 
 
 \paragraph{Convert to ASCII file}
 \begin{verbatim}
-dlt_viewer -c ./example.dlt ./example.txt
+dlt-viewer -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Convert to UTF8 file}
 \begin{verbatim}
-dlt_viewer -u -c ./example.dlt ./example.txt
+dlt-viewer -u -c ./example.dlt ./example.txt
 \end{verbatim}
 
 
 \paragraph{Convert to ASCII file in silent mode}
 \begin{verbatim}
-dlt_viewer -s -c ./example.dlt ./example.txt
+dlt-viewer -s -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Filter and convert to ASCII file}
 \begin{verbatim}
-dlt_viewer -f /viewertests/filterfiles/export.dlf -c ./example.dlt ./example.txt
+dlt-viewer -f /viewertests/filterfiles/export.dlf -c ./example.dlt ./example.txt
 \end{verbatim}
 
 \paragraph{Filter, decode and convert to ASCII file}
 \begin{verbatim}
-dlt_viewer -p /viewertests/filterfiles/example.dlp -c ./example.dlt ./example.txt
+dlt-viewer -p /viewertests/filterfiles/example.dlp -c ./example.dlt ./example.txt
 \end{verbatim}
 
 
 \paragraph{Filter and save as DLT file}
 \begin{verbatim}
-dlt_viewer -s -d -f /filterfiles/filter.dlf -c ./example.dlt ./example_filtered.dlt
+dlt-viewer -s -d -f /filterfiles/filter.dlf -c ./example.dlt ./example_filtered.dlt
 \end{verbatim}
 
 \paragraph{Filter, decode and save as DLT file}
 \begin{verbatim}
-dlt_viewer -s -dd -f /project/example.dlp -c ./example.dlt ./example_decoded.dlt
+dlt-viewer -s -dd -f /project/example.dlp -c ./example.dlt ./example_decoded.dlt
 \end{verbatim}
 
 \paragraph{Decode and save as DLT file}
 \begin{verbatim}
-dlt_viewer -p ./export.dlp -l ./filetransfer.dlt -e "Filetransfer Plugin|export|./ft_dir"
+dlt-viewer -p ./export.dlp -l ./filetransfer.dlt -e "Filetransfer Plugin|export|./ft_dir"
 \end{verbatim}
 
 \subsubsection{Shell script examples of command line calls}
@@ -1880,7 +1880,7 @@ Example:
 #!/bin/bash
 for files in `ls *.dlt`
   do
-    dlt_viewer -s -f ./dltfilters/Filter_v5.dlf -c $files ${files}_filtered.txt
+    dlt-viewer -s -f ./dltfilters/Filter_v5.dlf -c $files ${files}_filtered.txt
 done
 \end{verbatim}
 
