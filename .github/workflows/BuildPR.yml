@@ -25,8 +25,8 @@ jobs:
         run: ls -n /Applications/ | grep Xcode*
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-      - name: install qt
-        run: brew install qt
+      - name: install qt 5
+        run: brew install qt@5
       - name: install build environment
         run: scripts/install.sh
       - name: Build project
