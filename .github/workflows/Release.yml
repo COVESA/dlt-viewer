@@ -81,8 +81,13 @@ jobs:
           version: 5.12.10
       - name: Build ${{ matrix.task }}
         run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
-      #- name: Archive artifact
-      #  run: call cabDir.bat ./build/dist DLT-Windows-${{ matrix.task }}.cab
+      - name: Archive artifact
+        run: Compress-Archive -Path .\build\dist -DestinationPath DLT-Windows-${{ matrix.task }}.zip
+      - name: Upload DLT artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: DLT-Windows-${{ matrix.task }}
+          path: DLT-*.zip
 
   createRelease:
     name: Create release
