@@ -3469,7 +3469,7 @@ void MainWindow::readyRead()
         for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
         {
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) && ( true == ecuitem->connected ) )
+            if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) && ( true == ecuitem->connected || (ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP ) ) )
             {
                 read(ecuitem);
             }
