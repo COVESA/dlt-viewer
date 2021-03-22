@@ -341,6 +341,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
         }
     }
 
+     if ( role == Qt::FontRole )
+     {
+         return QFont("Hack", 10);
+     }
+
      return QVariant();
  }
 
