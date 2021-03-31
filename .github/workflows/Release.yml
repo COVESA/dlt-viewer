@@ -107,6 +107,14 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: DLT-Mac
+      - name: Download DLT Windows parser artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: DLT-Windows-parser
+      - name: Download DLT Windows sdk artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: DLT-Windows-sdk
       - run: |
           assetsZip=$(find . -name 'DLT*.zip' | while read -r asset ; do echo "-a $asset" ; done)
           VERSION=$(echo $VERSION | cut -d'/' -f3)
