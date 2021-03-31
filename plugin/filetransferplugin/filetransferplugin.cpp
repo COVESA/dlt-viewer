@@ -109,10 +109,6 @@ bool FiletransferPlugin::loadConfig(QString filename)
               {
                   config.setFlerTag( xml.readElementText() );
               }
-              if(xml.name() == QString("TAG_FLAPPID"))
-              {
-                  config.setFlAppIdTag( xml.readElementText() );
-              }
               if(xml.name() == QString("TAG_FLCTID"))
               {
                   config.setFlCtIdTag( xml.readElementText() );
@@ -167,7 +163,6 @@ QStringList FiletransferPlugin::infoConfig()
 {
     QStringList list;
 
-    list.append("TAG_FLAPPID: "+ config.getFlAppIdTag());
     list.append("TAG_FLCTID: "+ config.getFlCtIdTag());
     list.append("TAG_FLST: "+ config.getFlstTag());
     list.append("TAG_FLDA: "+ config.getFldaTag());
@@ -262,9 +257,9 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
     }
 
 
-    if(config.getFlAppIdTag().compare(msg.getApid()) != 0 || config.getFlCtIdTag().compare(msg.getCtid()) != 0)
+    if(config.getFlCtIdTag().compare(msg.getCtid()) != 0)
     {
-        // message is not of APID and CTID combination defined to indicate file transfer
+        // message is not of CTID defined to indicate file transfer
         return;
     }
 
