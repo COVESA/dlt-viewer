@@ -465,6 +465,12 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
 
 QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterposindex) const
 {
+    /* first check manual markers with highest priority */
+    if ( selectedMarkerRows.contains(index) )
+    {
+      return manualMarkerColor;
+    }
+
     /* get check marker color */
     QColor color = qfile->checkMarker(msg);
     if(color.isValid())
@@ -481,10 +487,6 @@ QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterp
         if ( searchhit > -1 && searchhit == index )
         {
           return searchhit_higlightColor;
-        }
-        if ( selectedMarkerRows.contains(index) )
-        {
-          return manualMarkerColor;
         }
         if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
         {
