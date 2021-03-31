@@ -7259,14 +7259,7 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 
 void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
 {
-    /* check if not "no default filter" item selected */
-    if(ui->comboBoxFilterSelection->currentIndex()==0)
-    {
-        /* reset all default filter index */
-        defaultFilter.clearFilterIndex();
-
-        return;
-    }
+    qDebug() << "on_comboBoxFilterSelection_activated" << arg1;
 
     /* load current selected filter */
     if(!arg1.isEmpty() && project.LoadFilter(arg1,!ui->checkBoxAppendDefaultFilter->isChecked()))
@@ -7274,41 +7267,11 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
         workingDirectory.setDlfDirectory(QFileInfo(arg1).absolutePath());
         setCurrentFilters(arg1);
 
-        /* if filter index already stored default filter cache, use index from cache */
-        QDltFilterIndex *index = defaultFilter.defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()-1];
+       /* Activate filter and create index there as usual */
+       on_applyConfig_clicked();
 
-        /* check if filename and qfile size is matching cache entry */
-        if(index->allIndexSize == qfile.size() &&
-           index->dltFileName == qfile.getFileName())
-        {
-            /* save selection */
-            saveSelection();
-
-            /* filter index cache found */
-            /* copy index into file */
-            qfile.setIndexFilter(index->indexFilter);
-
-            /* update ui */
-            applyConfigEnabled(false);
-            filterUpdate();
-            tableModel->modelChanged();
-            m_searchtableModel->modelChanged();
-            restoreSelection();
-        }
-        else
-        {
-            /* filter index cache not found */
-            /* Activate filter and create index there as usual */
-            on_applyConfig_clicked();
-
-            /* Now store the created index in the default filter cache */
-            QDltFilterIndex *index = defaultFilter.defaultFilterIndex[ui->comboBoxFilterSelection->currentIndex()-1];
-            index->setIndexFilter(qfile.getIndexFilter());
-            index->setDltFileName(qfile.getFileName());
-            index->setAllIndexSize(qfile.size());
-        }
-        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-        on_filterWidget_itemSelectionChanged();
+       ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+       on_filterWidget_itemSelectionChanged();
     }
 }
 
