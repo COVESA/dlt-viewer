@@ -43,10 +43,14 @@ set (CMAKE_AUTOUIC ON)
 
 set (CMAKE_INCLUDE_CURRENT_DIR ON)
 
-# Add Qt to the RPATH, so that there is no need to set LD_LIBRARY_PATH at runtime if Qt is installed in a non-standard location
-get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
-get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
+option(USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)
+
+if (USE_QT_RPATH)
+	# Add Qt to the RPATH, so that there is no need to set LD_LIBRARY_PATH at runtime if Qt is installed in a non-standard location
+	get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
+	get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
+	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
+endif()
 
 # Injection of the GCC-specific compilation flags
 if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
