@@ -31,7 +31,7 @@ jobs:
       - name: Archive artifact
         run: zip DLT-macOS.zip -r build/release
       - name: Upload DLT artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.3
         with:
           name: DLT-Mac
           path: DLT-macOS.zip
@@ -57,7 +57,7 @@ jobs:
       - name: Archive artifact
         run: zip DLT-Linux.zip -r build/release
       - name: Upload DLT artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.3
         with:
           name: DLT-Linux
           path: DLT-Linux.zip
@@ -84,7 +84,7 @@ jobs:
       - name: Archive artifact
         run: Compress-Archive -Path .\build\dist -DestinationPath DLT-Windows-${{ matrix.task }}.zip
       - name: Upload DLT artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2.2.3
         with:
           name: DLT-Windows-${{ matrix.task }}
           path: DLT-*.zip
