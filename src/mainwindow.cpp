@@ -2207,6 +2207,7 @@ QStringList MainWindow::getAvailableNetworkInterfaces()
 
 void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 {
+    //qDebug() << "on_action_menuConfig_ECU_Add_triggered" << __LINE__ << __FILE__;
     static int autoconnect = 1;
     int okorcancel = 1;
     QStringList hostnameListPreset;
@@ -2716,6 +2717,10 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
         action = new QAction("Application Add...", this);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Application_Add_triggered()));
+        menu.addAction(action);
+
+        action = new QAction("Save IDs as csv", this);
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Save_All_ECUs_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
@@ -3966,7 +3971,6 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
             uint16_t count_app_ids=0,count_app_ids_tmp=0;
             DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
             count_app_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_app_ids_tmp);
-
             for (int32_t num=0;num<count_app_ids;num++)
             {
                 char apid[DLT_ID_SIZE+1];
@@ -4981,7 +4985,6 @@ void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, Q
         {
             appitem->description = appdescription;
             appitem->update();
-
             return;
         }
     }
@@ -4992,11 +4995,14 @@ void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, Q
     appitem->description = appdescription;
     appitem->update();
     ecuitem->addChild(appitem);
+
 }
 
 void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status)
 {
     /* First try to find existing context */
+    //qDebug() << "New CTX for" << apid << ctid << ctdescription;
+
     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
     {
         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
@@ -6847,6 +6853,40 @@ void MainWindow::on_action_menuConfig_Collapse_All_ECUs_triggered()
 {
     ui->configWidget->collapseAll();
 }
+
+
+void MainWindow::on_action_menuConfig_Save_All_ECUs_triggered()
+{
+    QString filename = QFileDialog::getSaveFileName(this, tr("Save DLT Filters"), workingDirectory.getDltDirectory(), tr("Save APID/CTID list (*.csv);;All files (*.*)"));
+    QFile asciiFile(filename);
+    asciiFile.open(QIODevice::WriteOnly);
+
+    // go over ECU Items
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if ( NULL == ecuitem)
+            return;
+        asciiFile.write(QString("ECU;%1\n").arg(ecuitem->id).toLatin1().constData());
+        // go over APIDs
+        for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+        {
+            ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+            asciiFile.write(QString("%1;;%2\n").arg(appitem->id).arg(appitem->description).toLatin1().constData());
+            // go over CTIDs
+            for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+            {
+                ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+                    /* set new log level and trace status */
+                    asciiFile.write(QString(";%1;%2\n").arg(conitem->id).arg(conitem->description).toLatin1().constData());
+                }
+            }
+        }
+    asciiFile.close();
+}
+
+
+
 
 void MainWindow::on_action_menuConfig_Expand_All_ECUs_triggered()
 {
