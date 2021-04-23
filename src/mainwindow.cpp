@@ -6207,7 +6207,10 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
-    openDlfFile(fileName,true);
+    if(!fileName.isEmpty())
+    {
+        openDlfFile(fileName,true);
+    }
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
