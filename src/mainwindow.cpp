@@ -3445,10 +3445,10 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
         if( ecuitem && ecuitem->socket == sender())
         {
             /* save error */
-            ecuitem->connectError = ecuitem->socket->errorString();
-            qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
             if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
             {
+                ecuitem->connectError = ecuitem->socket->errorString();
+                qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
                 /* disconnect socket */
                 ecuitem->socket->disconnectFromHost();
             }
