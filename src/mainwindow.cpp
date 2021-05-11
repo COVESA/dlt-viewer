@@ -3356,7 +3356,9 @@ void MainWindow::disconnected()
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( ecuitem && ecuitem->socket == sender())
+        if( ecuitem &&
+            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
+            ecuitem->socket == sender())
         {
             switch (ecuitem->interfacetype)
             {
@@ -3442,16 +3444,15 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( ecuitem && ecuitem->socket == sender())
+        if( ecuitem &&
+            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
+            ecuitem->socket == sender())
         {
             /* save error */
-            if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
-            {
-                ecuitem->connectError = ecuitem->socket->errorString();
-                qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
-                /* disconnect socket */
-                ecuitem->socket->disconnectFromHost();
-            }
+            ecuitem->connectError = ecuitem->socket->errorString();
+            qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
+            /* disconnect socket */
+            ecuitem->socket->disconnectFromHost();
 
             /* update connection state */
             ecuitem->connected = false;
