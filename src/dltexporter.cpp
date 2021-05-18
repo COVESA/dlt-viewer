@@ -224,7 +224,7 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
             text += msg.toStringHeader();
             text += " ";
         }
-        text += msg.toStringPayload().simplified();
+        text += msg.toStringPayload().trimmed();
         text += "\n";
         try
          {
