@@ -53,7 +53,7 @@ CONFIG   += plugin
 
 
 # Used QT features
-QT += core gui
+QT += core gui network
 
 # Detect QT5 and comply to new Widget hierarchy
 greaterThan(QT_VER_MAJ, 4) {
