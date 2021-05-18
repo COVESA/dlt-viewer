@@ -174,18 +174,12 @@ void DltTestRobotPlugin::updateFileFinish(){
 void DltTestRobotPlugin::readyRead()
 {
     // data on serial port was received
-
-    // loop as long as data is available
-    while(tcpSocket && tcpSocket->bytesAvailable())
+    while (tcpSocket && tcpSocket->canReadLine())
     {
-        char data[256];
+        QString text = QString(tcpSocket->readLine());
 
-        // read one line form serial port
-        qint64 size = tcpSocket->readLine(data,sizeof(data));
-
-        if(size>0)
+        if(text.size()>0)
         {
-            QString text(data);
             text.chop(1);
 
             // line is not empty
