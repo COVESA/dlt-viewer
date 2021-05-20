@@ -107,6 +107,11 @@ private:
     QTcpSocket *tcpSocket;
 
     unsigned int port;
+
+    QStringList filterEcuId;
+    QStringList filterAppId;
+    QStringList filterCtxId;
+
 };
 
 #endif // DLTTESTROBOTPLUGIN_H

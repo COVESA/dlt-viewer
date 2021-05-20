@@ -164,7 +164,16 @@ void DltTestRobotPlugin::updateMsg(int , QDltMsg &){
 
 }
 
-void DltTestRobotPlugin::updateMsgDecoded(int , QDltMsg &){
+void DltTestRobotPlugin::updateMsgDecoded(int , QDltMsg &msg)
+{
+    int index = filterEcuId.indexOf(msg.getEcuid());
+    if(index!=-1 && filterAppId[index]==msg.getApid() && filterCtxId[index]==msg.getCtid() && tcpSocket)
+    {
+        QString text = msg.getEcuid() + " " + msg.getApid() + " " + msg.getCtid() + " " + msg.toStringPayload();
+        qDebug() << "DltTestRobot: send message" << text;
+        text += "\n";
+        tcpSocket->write(text.toLatin1());
+    }
 
 }
 void DltTestRobotPlugin::updateFileFinish(){
@@ -173,7 +182,7 @@ void DltTestRobotPlugin::updateFileFinish(){
 
 void DltTestRobotPlugin::readyRead()
 {
-    // data on serial port was received
+    // data on was received
     while (tcpSocket && tcpSocket->canReadLine())
     {
         QString text = QString(tcpSocket->readLine());
@@ -202,7 +211,22 @@ void DltTestRobotPlugin::readyRead()
                 }
 
             }
+            else if(list[0]=="filter")
+            {
+                if(list[1]=="clear")
+                {
+                    filterEcuId.clear();
+                    filterAppId.clear();
+                    filterCtxId.clear();
+                }
+                else if(list[1]=="add")
+                {
+                    filterEcuId.append(list[2]);
+                    filterAppId.append(list[3]);
+                    filterCtxId.append(list[4]);
+                }
 
+            }
         }
     }
 }
