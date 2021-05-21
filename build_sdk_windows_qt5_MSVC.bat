@@ -226,6 +226,9 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %BUILD_DIR%\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
+copy %BUILD_DIR%\plugins\dlttestrobotplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
 copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
 rem if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
