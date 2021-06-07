@@ -71,6 +71,9 @@ EcuDialog::EcuDialog(QWidget *parent) :
     ui->comboBoxBaudrate->addItem(QLatin1String("38400"),  QSerialPort::Baud38400 );
     ui->comboBoxBaudrate->addItem(QLatin1String("57600"), QSerialPort::Baud57600 );
     ui->comboBoxBaudrate->addItem(QLatin1String("115200"), QSerialPort::Baud115200 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("230400"), 230400 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("460800"), 460800 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("921600"), 921600 );
 
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
 
