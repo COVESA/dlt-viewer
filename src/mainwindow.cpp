@@ -2011,6 +2011,11 @@ void MainWindow::on_actionFindNext()
            list.append(searchTextbox->text());
        }
     QString title = "Search Results";
+
+    if ( 0 < m_searchtableModel->get_SearchResultListSize())
+    {
+        title = QString("Search Results: %L1").arg(m_searchtableModel->get_SearchResultListSize());
+    }
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     ui->dockWidgetSearchIndex->show();
     m_CompleterModel.setStringList(list);
