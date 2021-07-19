@@ -162,6 +162,12 @@ bool DltExporter::finish()
     {
         /* export to clipboard */
         QClipboard *clipboard = QApplication::clipboard();
+
+        /*remove '\n' from the string*/
+        if (clipboardString.endsWith('\n'))
+        {
+            clipboardString.resize(clipboardString.size() - 1);
+        }
         clipboard->setText(clipboardString);
     }
 
