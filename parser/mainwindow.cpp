@@ -138,8 +138,16 @@ int MainWindow::argsParser()
     {
         /* create progress dialog */
         QProgressDialog progress("Parsing Directory...", "Abort parsing", 0, 100, this);
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setMinimumDuration(1000);
+
+
+        if(noGui){
+            progress.setHidden(true);
+        }
+        else{
+            progress.setWindowModality(Qt::WindowModal);
+            progress.setMinimumDuration(1000);
+            progress.setHidden(false);
+        }
 
         /* go through all files in the directory */
         if(!parseDirectory(argParseDir,parseTypeContexts,false,true,progress))
@@ -390,6 +398,7 @@ bool MainWindow::parseDirectory(QString dirName, parseType type,bool convert,boo
     QFileInfoList list;
     QStringList filter;
     QDir dir(dirName);
+    bool progressBarVisible=!progress.isHidden();
 
     /* create filter list for files */
     filter.append(QString("*.h"));
@@ -399,11 +408,14 @@ bool MainWindow::parseDirectory(QString dirName, parseType type,bool convert,boo
 
     /* parse files in current directory */
     list = dir.entryInfoList(filter,QDir::Files);
-    progress.setMaximum(progress.maximum()+list.size());
+    if(progressBarVisible)
+        progress.setMaximum(progress.maximum()+list.size());
+
     for(int i = 0;i<list.size();i++)
     {
         /* increase progress bar */
-        progress.setValue(progress.value()+1);
+        if(progressBarVisible)
+            progress.setValue(progress.value()+1);
 
         if(convert)
         {
@@ -415,8 +427,8 @@ bool MainWindow::parseDirectory(QString dirName, parseType type,bool convert,boo
             if(!parser.parseFile(list.at(i).absoluteFilePath()))
                 return false;
         }
-
-        progress.setLabelText(list.at(i).absoluteFilePath());
+        if(progressBarVisible)
+            progress.setLabelText(list.at(i).absoluteFilePath());
     }
 
     /* go recursive through all the subdiectories */
@@ -610,6 +622,7 @@ void MainWindow::on_actionParseDirectory_triggered()
     QProgressDialog progress("Parsing Directory...", "Abort parsing", 0, 100, this);
     progress.setWindowModality(Qt::WindowModal);
     progress.setMinimumDuration(1000);
+    progress.setHidden(false);
 
     /* go through all files in the directory */
     if(!parseDirectory(dirName,parseTypeContexts,false,true,progress))
@@ -698,7 +711,7 @@ void MainWindow::on_actionConvertDirectory_triggered()
     /* create progress dialog */
     QProgressDialog progress("Convert Directory...", "Abort converting", 0, 100, this);
     progress.setWindowModality(Qt::WindowModal);
-
+    progress.setHidden(false);
     /* go through all files in the directory */
     if(!parseDirectory(dirName,parseTypeMessages,true,true,progress))
     {
