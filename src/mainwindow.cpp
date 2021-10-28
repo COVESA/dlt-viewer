@@ -328,6 +328,7 @@ void MainWindow::initView()
 
     /* Start pulsing the apply changes button, when filters draged&dropped */
     connect(ui->filterWidget, SIGNAL(filterItemDropped()), this, SLOT(filterOrderChanged()));
+    connect(ui->filterWidget, SIGNAL(filterCountChanged()), this, SLOT(filterCountChanged()));
 
     /* initialise statusbar */
     totalBytesRcvd = 0;
@@ -2111,6 +2112,8 @@ bool MainWindow::openDlpFile(QString fileName)
 
         /* After loading the project file update the filters */
         filterUpdate();
+        /* and update UI elements for filters */
+        on_filterWidget_itemSelectionChanged();
 
         /* Finally, enable the 'Apply' button, if needed */
         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) || anyFiltersEnabled())
@@ -2925,6 +2928,13 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Delete_triggered()));
+    menu.addAction(action);
+
+    action = new QAction("Filter Clear all", this);
+    if(list.size() != 1)
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Clear_all_triggered()));
     menu.addAction(action);
 
     menu.addSeparator();
@@ -6402,37 +6412,13 @@ void MainWindow::on_action_menuFilter_Edit_triggered()
 
 void MainWindow::on_action_menuFilter_Delete_triggered()
 {
-    QTreeWidget *widget;
-
-    /* get currently visible filter list in user interface */
-    if(ui->tabPFilter->isVisible()) {
-        widget = project.filter;
-    }
-    else
+    /* skip delete action if filter list is not visible */
+    if(!ui->tabPFilter->isVisible()) {
         return;
-
-    /* get selected filter from list */
-    QList<QTreeWidgetItem *> list = widget->selectedItems();
-    if((list.count() == 1) ) {
-        /* delete filter */
-        FilterItem *item = (FilterItem *)widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
-        filterUpdate();
-        if(item->filter.isMarker())
-        {
-            tableModel->modelChanged();
-        }
-        else
-        {
-            applyConfigEnabled(true);
-        }
-        delete widget->takeTopLevelItem(widget->indexOfTopLevelItem(list.at(0)));
-    }
-    else
-    {
-        QMessageBox::warning(0, QString("DLT Viewer"), QString("No Filter selected!"));
     }
 
-    on_filterWidget_itemSelectionChanged();
+    FilterTreeWidget* filterWidget = static_cast<FilterTreeWidget*>(project.filter);
+    filterWidget->deleteSelected();
 }
 
 void MainWindow::onactionmenuFilter_SetAllActiveTriggered()
@@ -7278,6 +7264,18 @@ void MainWindow::filterOrderChanged()
 {
     filterUpdate();
     tableModel->modelChanged();
+}
+
+void MainWindow::filterCountChanged()
+{
+    // update filters on the DLT file itself
+    filterUpdate();
+    // update the currently shown table
+    tableModel->modelChanged();
+    // enable the "Apply" button
+    applyConfigEnabled(true);
+    // update the menu entries based on current selection
+    on_filterWidget_itemSelectionChanged();
 }
 
 void MainWindow::searchTableRenewed()
