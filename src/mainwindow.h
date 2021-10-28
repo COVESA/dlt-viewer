@@ -562,6 +562,7 @@ public slots:
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
+    void filterCountChanged();
     void jumpToMsgSignal(int index);
     void markerSignal();
     void connectEcuSignal(int index);
