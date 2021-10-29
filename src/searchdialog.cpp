@@ -53,6 +53,9 @@ SearchDialog::SearchDialog(QWidget *parent) :
     checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxHeader", bool(true)).toBool();
     ui->checkBoxHeader->setChecked(checked);
 
+    checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxCombinedHeaderAndPayload", bool(false)).toBool();
+    ui->checkBoxCombinedHeaderAndPayload->setChecked(checked);
+
     checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxCasesensitive", bool(true)).toBool();
     ui->checkBoxCaseSensitive->setChecked(checked);
 
@@ -92,6 +95,11 @@ bool SearchDialog::getHeader()
 bool SearchDialog::getPayload()
 {
     return (ui->checkBoxPayload->checkState() == Qt::Checked);
+}
+
+bool SearchDialog::getCombinedHeaderAndPayload()
+{
+    return (ui->checkBoxCombinedHeaderAndPayload->checkState() == Qt::Checked);
 }
 
 bool SearchDialog::getRegExp()
@@ -561,9 +569,17 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         } // end header search
 
         /* search payload */
-        text.clear();
+        if (getCombinedHeaderAndPayload())
+        {
+            /* in this case the user wants to search the full header + payload string combined,
+             * so don't delete the header text from the text string to be searched */
+        }
+        else
+        {
+            text.clear();
+        }
 
-        if(getPayload() == true) // if payload is selected in the search box
+        if(getPayload() == true || getCombinedHeaderAndPayload() == true) // if payload is selected in the search box
         {
             if ( true == is_payLoadSearchSelected )
             {
@@ -573,14 +589,14 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
                  }
             }
 
-            if( text.isEmpty())
+            if( text.isEmpty() || getCombinedHeaderAndPayload())
             {
                 text += msg.toStringPayload();
             }
 
             if (getRegExp() == true)
             {
-                if(tempPayLoad.contains(searchTextRegExp))
+                if(text.contains(searchTextRegExp))
                 {
                     if ( foundLine(searchLine) )
                     {
@@ -614,7 +630,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
                     }
 
                 }
-                else if(tempPayLoad.contains(getText(),is_Case_Sensitive))
+                else if(text.contains(getText(),is_Case_Sensitive))
                 {
                     if(timeStampPayloadValidityCheck(searchLine))
                     {
@@ -906,6 +922,10 @@ void SearchDialog::on_checkBoxHeader_toggled(bool checked)
    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
+void SearchDialog::on_checkBoxCombinedHeaderAndPayload_toggled(bool checked)
+{
+   QDltSettingsManager::getInstance()->setValue("other/search/checkBoxCombinedHeaderAndPayload", checked);
+}
 
 void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
 {

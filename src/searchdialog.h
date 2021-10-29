@@ -127,6 +127,7 @@ private:
     bool timeStampPayloadValidityCheck(long int searchLine);
     bool getHeader();
     bool getPayload();
+    bool getCombinedHeaderAndPayload();
     bool getCaseSensitive();
     bool getRegExp();
     bool getNextClicked();
@@ -158,6 +159,7 @@ private slots:
     void on_checkBoxSearchIndex_toggled(bool checked);
 
     void on_checkBoxHeader_toggled(bool checked);
+    void on_checkBoxCombinedHeaderAndPayload_toggled(bool checked);
 
     void on_checkBoxCaseSensitive_toggled(bool checked);
 
