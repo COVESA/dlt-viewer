@@ -227,7 +227,14 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
                 text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
             else
                 return false;
-            text += msg.toStringHeader();
+            if (adjustTime)
+            {
+                text += msg.toStringHeader(utcOffset, dst);
+            }
+            else
+            {
+                text += msg.toStringHeader();
+            }
             text += " ";
         }
         text += msg.toStringPayload().trimmed();
@@ -291,6 +298,18 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
     this->exportSelection = exportSelection;
     unsigned long int starting = 0;
     unsigned long int stoping = this->size;
+
+    auto settings = QDltSettingsManager::getInstance();
+    this->adjustTime = false;
+    if (exportFormat == DltExporter::FormatClipboard)
+    {
+        this->adjustTime = !settings->automaticTimeSettings && settings->copyAdjustedTimeToClipboard;
+    }
+    this->utcOffset = QDltSettingsManager::getInstance()->utcOffset;
+    this->dst = QDltSettingsManager::getInstance()->dst;
+
+    QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+
     /* start export */
     if(false == start())
     {

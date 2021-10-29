@@ -121,6 +121,7 @@ public:
     QString msgIdFormat; // project and local setting
     int automaticTimeSettings; // project and local setting
     int automaticTimezoneFromDlt; // project and local setting
+    int copyAdjustedTimeToClipboard; // project and local setting
     qlonglong utcOffset; // project and local setting
     int dst; // project and local setting
 };

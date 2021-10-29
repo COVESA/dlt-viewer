@@ -260,6 +260,7 @@ void SettingsDialog::writeDlg()
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
         ui->checkBoxAutomaticTimezone->setEnabled(false);
+        ui->checkBoxCopyAdjustedTimeToClipboard->setEnabled(false);
     }
     else
     {
@@ -267,8 +268,10 @@ void SettingsDialog::writeDlg()
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);
         ui->checkBoxAutomaticTimezone->setEnabled(true);
+        ui->checkBoxCopyAdjustedTimeToClipboard->setEnabled(true);
     }
     ui->checkBoxAutomaticTimezone->setChecked(settings->automaticTimezoneFromDlt);
+    ui->checkBoxCopyAdjustedTimeToClipboard->setChecked(settings->copyAdjustedTimeToClipboard);
 
     ui->checkBoxDST->setCheckState(settings->dst?Qt::Checked:Qt::Unchecked);
     ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(settings->utcOffset)));
@@ -433,6 +436,7 @@ void SettingsDialog::readDlg()
     /* Time settings */
     settings->automaticTimeSettings = ( ui->groupBoxAutomaticTimeSettings->isChecked() == true ? 1:0);
     settings->automaticTimezoneFromDlt = ( ui->checkBoxAutomaticTimezone->isChecked() == true ? 1:0);
+    settings->copyAdjustedTimeToClipboard = ( ui->checkBoxCopyAdjustedTimeToClipboard->isChecked() == true ? 1:0);
     settings->utcOffset = ui->comboBoxUTCOffset->itemData(ui->comboBoxUTCOffset->currentIndex()).toLongLong();
     settings->dst =           ( ui->checkBoxDST->isChecked()== true ? 1:0);
 
@@ -659,6 +663,7 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
         ui->comboBoxUTCOffset->setEnabled(false);
         ui->labelTimezone->setEnabled(false);
         ui->checkBoxAutomaticTimezone->setEnabled(false);
+        ui->checkBoxCopyAdjustedTimeToClipboard->setEnabled(false);
     }
     else
     {
@@ -666,6 +671,7 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
         ui->comboBoxUTCOffset->setEnabled(true);
         ui->labelTimezone->setEnabled(true);
         ui->checkBoxAutomaticTimezone->setEnabled(true);
+        ui->checkBoxCopyAdjustedTimeToClipboard->setEnabled(true);
     }
 }
 

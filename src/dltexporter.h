@@ -74,6 +74,9 @@ private:
     unsigned long int size;
     unsigned long int starting_index;
     unsigned long int stoping_index;
+    int adjustTime;
+    qlonglong utcOffset;
+    int dst;
     QDltFile *from;
     QFile *to;
     QString clipboardString;

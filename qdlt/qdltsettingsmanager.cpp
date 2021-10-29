@@ -196,6 +196,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/fontName",fontName);
     settings->setValue("startup/automaticTimeSettings",automaticTimeSettings);
     settings->setValue("startup/automaticTimezoneFromDlt",automaticTimezoneFromDlt);
+    settings->setValue("startup/copyAdjustedTimeToClipboard",copyAdjustedTimeToClipboard);
     settings->setValue("startup/utcOffset",utcOffset);
     settings->setValue("startup/dst",dst);
     settings->setValue("startup/showIndex",showIndex);
@@ -441,6 +442,7 @@ void QDltSettingsManager::readSettings()
     fontName = settings->value("startup/fontName","Segoe UI,8").toString();
     automaticTimeSettings = settings->value("startup/automaticTimeSettings",1).toInt();
     automaticTimezoneFromDlt = settings->value("startup/automaticTimezoneFromDlt",1).toInt();
+    copyAdjustedTimeToClipboard = settings->value("startup/copyAdjustedTimeToClipboard",0).toInt();
 
     utcOffset = settings->value("startup/utcOffset",QVariant((qlonglong)TIMEZONE * (-1) )).toLongLong();
     dst = settings->value("startup/dst", DAYLIGHT == 0 ? 0 : 1).toInt();

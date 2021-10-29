@@ -112,7 +112,7 @@ QString QDltMsg::getTimeString() const
     return QString(strtime);
 }
 
-QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
+QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst) const
 {
     struct tm *time_tm;
     time_tm = gmtime(&time);
@@ -505,6 +505,26 @@ QString QDltMsg::toStringHeader() const
     text.reserve(1024);
 
     text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
+    text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
+    text += QString(" %1").arg(getMessageCounter());
+    text += QString(" %1").arg(getEcuid());
+    text += QString(" %1").arg(getApid());
+    text += QString(" %1").arg(getCtid());
+    text += QString(" %1").arg(getSessionid());
+    text += QString(" %2").arg(getTypeString());
+    text += QString(" %2").arg(getSubtypeString());
+    text += QString(" %2").arg(getModeString());
+    text += QString(" %1").arg(getNumberOfArguments());
+
+    return text;
+}
+
+QString QDltMsg::toStringHeader(qlonglong utcOffset, bool dst) const
+{
+    QString text;
+    text.reserve(1024);
+
+    text += QString("%1.%2").arg(getGmTimeWithOffsetString(utcOffset,dst)).arg(getMicroseconds(),6,10,QLatin1Char('0'));
     text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
     text += QString(" %1").arg(getMessageCounter());
     text += QString(" %1").arg(getEcuid());

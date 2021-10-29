@@ -93,7 +93,7 @@ public:
       \param dst Daylight saving time - if true, adding automatically 3600 seconds on top.
       \return QString representing the the time of the message for specific time zone.
     */
-    QString getGmTimeWithOffsetString(qlonglong utcOffsetInSeconds, bool dst);
+    QString getGmTimeWithOffsetString(qlonglong utcOffsetInSeconds, bool dst) const;
 
     //! Get the time, microseconds part, of the DLT message, when the DLT message is logged.
     /*!
@@ -447,6 +447,14 @@ public:
       \return The header string.
     */
     QString toStringHeader() const;
+
+    //! Print Header into a string with adjusted time offset.
+    /*!
+      \param utcOffset the time offset in seconds
+      \param dst true if dst is enabled, false otherwise
+      \return The header string.
+    */
+    QString toStringHeader(qlonglong utcOffset, bool dst) const;
 
     //! Print Payload content into a string.
     /*!
