@@ -289,8 +289,7 @@ GOTO QUIT
 echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
-set /p name= Continue
-exit 1
+exit /b 1
 
 
 :QUIT
@@ -298,5 +297,4 @@ echo ************************************
 echo ***       SUCCESS finish         ***
 echo ************************************
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
-set /p name= Continue
-exit 0
+exit /b 0
