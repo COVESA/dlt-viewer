@@ -14,7 +14,7 @@ jobs:
         xcode: [ Xcode_12.2 ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
           submodules: true
@@ -44,7 +44,7 @@ jobs:
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
           submodules: true
@@ -70,7 +70,7 @@ jobs:
     runs-on: windows-2019
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
           submodules: true
@@ -95,7 +95,7 @@ jobs:
     needs: [ buildMac, buildLinux, buildWindows ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v2.4.0
         with:
           fetch-depth: 0
           submodules: true
