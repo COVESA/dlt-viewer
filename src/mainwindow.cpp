@@ -1726,7 +1726,7 @@ void MainWindow::reloadLogFileFinishFilter()
     }
 
     // reconnect ecus again
-    connectPreviouslyConnectedECUs();
+    //connectPreviouslyConnectedECUs();
 
     // We might have had readyRead events, which we missed
     readyRead();
@@ -1788,7 +1788,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // prevent further receiving any new messages
-    saveAndDisconnectCurrentlyConnectedSerialECUs();
+    // saveAndDisconnectCurrentlyConnectedSerialECUs();
 
     // clear all tables
     ui->tableView->selectionModel()->clear();
