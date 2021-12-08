@@ -75,7 +75,7 @@ echo ************************************
 echo ***  Delete old build Directory  ***
 echo ************************************
 
-    rmdir /s /q build
+    rmdir /s /q build || rem
     if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 )
@@ -85,7 +85,7 @@ echo ***  Configure MSVC environment  ***
 echo ************************************
 
 call vcvarsall.bat %ARCHITECTURE%
-if %ERRORLEVEL% NEQ 0 goto error
+if %ERRORLEVEL% NEQ 0 goto ERROR_HANDLER
 echo configuring was successful
 
 if exist %DLT_VIEWER_SDK_DIR% (
@@ -93,7 +93,7 @@ echo ************************************
 echo ***   Delete old SDK Directory   ***
 echo ************************************
 
-    rmdir /s /q %DLT_VIEWER_SDK_DIR%
+    rmdir /s /q %DLT_VIEWER_SDK_DIR% || rem
     if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 )
 
@@ -289,8 +289,7 @@ GOTO QUIT
 echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
-set /p name= Continue
-exit 1
+exit /b 1
 
 
 :QUIT
@@ -298,5 +297,4 @@ echo ************************************
 echo ***       SUCCESS finish         ***
 echo ************************************
 echo SDK installed in: %DLT_VIEWER_SDK_DIR%
-set /p name= Continue
-exit 0
+exit /b 0
