@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include "export_rules.h"
+#include "qdltipconnection.h"
 
 class QUdpSocket;
 

@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltfilter.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -32,7 +32,9 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QRegularExpression>
+
 #include "export_rules.h"
+#include "qdltmsg.h"
 
 
 class QDLT_EXPORT QDltFilter

@@ -26,6 +26,7 @@
 #include "project.h"
 #include "dltuiutils.h"
 #include "dlt_user.h"
+#include "qdltoptmanager.h"
 
 
 const char *loginfo[] = {"default","off","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
@@ -577,7 +578,7 @@ void PluginItem::update()
     }
 
     //qDebug() << this->getName() << *modeString << this->getFilename();
-    setData(0,0,QString("%1").arg(plugin->getName()));
+    setData(0,0,QString("%1").arg(plugin->name()));
     //setData(1,0,QString("%1").arg(types.join("")));
     setData(1,0,QString("%1").arg(*modeString));
     //setData(3,0,QString("%1").arg(list.size()));
@@ -587,15 +588,15 @@ void PluginItem::update()
 }
 
 QString PluginItem::getName(){
-    return plugin->getName();
+    return plugin->name();
 }
 
 QString PluginItem::getPluginVersion(){
-    return plugin->getPluginVersion();
+    return plugin->pluginVersion();
 }
 
 QString PluginItem::getPluginInterfaceVersion(){
-    return plugin->getPluginInterfaceVersion();
+    return plugin->pluginInterfaceVersion();
 }
 
 QString PluginItem::getFilename(){

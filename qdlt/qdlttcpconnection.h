@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdlttcpconnection.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -31,6 +31,7 @@
 #include <time.h>
 
 #include "export_rules.h"
+#include "qdltipconnection.h"
 
 class QTcpSocket;
 

@@ -3,7 +3,8 @@
 
 #include <QSemaphore>
 #include <QSharedPointer>
-#include "qdlt.h"
+
+#include "qdltmsg.h"
 
 class DltMsgQueue
 {

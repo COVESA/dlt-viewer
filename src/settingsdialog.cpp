@@ -30,6 +30,7 @@
 #include "ui_settingsdialog.h"
 #include "version.h"
 #include "dltuiutils.h"
+#include "qdltsettingsmanager.h"
 
 
 #if (WIN32)

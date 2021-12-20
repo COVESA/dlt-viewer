@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltconnection.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */

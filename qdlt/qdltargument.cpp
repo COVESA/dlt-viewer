@@ -21,7 +21,7 @@
 
 #include <QtDebug>
 
-#include "qdlt.h"
+#include "qdltargument.h"
 
 extern "C"
 {

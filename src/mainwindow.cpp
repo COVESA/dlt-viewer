@@ -78,6 +78,7 @@ extern "C" {
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
+#include "qdltoptmanager.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -5711,8 +5712,8 @@ void MainWindow::loadPlugins()
 
       PluginItem* item = new PluginItem(0,plugin);
 
-      plugin->setMode((QDltPlugin::Mode) QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->getName(),QVariant(QDltPlugin::ModeDisable)).toInt());
-      qDebug() << "Loading plugin" << plugin->getName() << plugin->getPluginVersion();
+      plugin->setMode((QDltPlugin::Mode) QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->name(),QVariant(QDltPlugin::ModeDisable)).toInt());
+      qDebug() << "Loading plugin" << plugin->name() << plugin->pluginVersion();
       if(plugin->isViewer())
       {
         item->widget = plugin->initViewer();
@@ -5720,7 +5721,7 @@ void MainWindow::loadPlugins()
         item->dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
         item->dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
         item->dockWidget->setWidget(item->widget);
-        item->dockWidget->setObjectName(plugin->getName());
+        item->dockWidget->setObjectName(plugin->name());
 
         addDockWidget(Qt::LeftDockWidgetArea, item->dockWidget);
 
@@ -5774,19 +5775,19 @@ void MainWindow::updatePlugin(PluginItem *item)
 
     if ( item->getMode() == QDltPlugin::ModeEnable ) // this is just for user information: what is going on ...
     {
-        qDebug() << "Enable" << item->getPlugin()->getName() << "with" << conffilename << "configuration file";
+        qDebug() << "Enable" << item->getPlugin()->name() << "with" << conffilename << "configuration file";
     }
     else if ( item->getMode() == QDltPlugin::ModeShow )
     {
-        qDebug() << "Show" << item->getPlugin()->getName() << "with" << conffilename << "configuration file";
+        qDebug() << "Show" << item->getPlugin()->name() << "with" << conffilename << "configuration file";
     }
     else if ( item->getMode() == QDltPlugin::ModeDisable )
     {
-        qDebug() << "Disable" << item->getPlugin()->getName();
+        qDebug() << "Disable" << item->getPlugin()->name();
     }
     else
     {
-        qDebug() << "Unknown mode" << item->getMode() << "in" << item->getPlugin()->getName();
+        qDebug() << "Unknown mode" << item->getMode() << "in" << item->getPlugin()->name();
     }
 
     //We should not need error handling when disabling the plugins, so we only call loadConfig when enabling the plugin !
@@ -6736,7 +6737,7 @@ void MainWindow::dropEvent(QDropEvent *event)
                 QList<QDltPlugin*> list = pluginManager.getDecoderPlugins();
                 for(int num=0;num<list.size();num++)
                 {
-                    items << list[num]->getName();
+                    items << list[num]->name();
                 }
 
                 /* check if decoder plugin list is empty */

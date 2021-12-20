@@ -1,9 +1,9 @@
 #ifndef REGEX_SEARCH_REPLACE_H
 #define REGEX_SEARCH_REPLACE_H
 
-#include "project.h"
 #include <regex>
 #include <stdlib.h>
+#include <QString>
 
 
 static void apply_regex_string(QString &data, const QString& regex_search, const QString& regex_replace)

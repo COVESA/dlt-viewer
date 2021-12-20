@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltfile.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -23,6 +23,10 @@
 #define QDLT_FILE_H
 
 #include "export_rules.h"
+#include "qdltfilter.h"
+#include "qdltfilterlist.h"
+#include "qdltmsg.h"
+
 #include <QObject>
 #include <QString>
 #include <QFile>

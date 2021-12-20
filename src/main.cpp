@@ -20,7 +20,7 @@
 #include <QModelIndex>
 #include <QApplication>
 
-#include <qdlt.h>
+#include <qdltoptmanager.h>
 
 #include "mainwindow.h"
 

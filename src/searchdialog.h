@@ -21,7 +21,6 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-#include "qdlt.h"
 #include <QTableView>
 #include <QTreeWidget>
 #include <QCheckBox>

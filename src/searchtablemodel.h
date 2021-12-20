@@ -23,7 +23,7 @@
 #include <QAbstractTableModel>
 
 #include "project.h"
-#include "qdlt.h"
+#include "qdltpluginmanager.h"
 
 #define DLT_VIEWER_SEARCHCOLUMN_COUNT FieldNames::Arg0
 

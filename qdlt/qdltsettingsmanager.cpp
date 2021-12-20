@@ -27,7 +27,7 @@
 
 #include "version.h"
 
-#include "qdlt.h"
+#include "qdltsettingsmanager.h"
 
 #if (WIN32)
  #define TZSET _tzset()

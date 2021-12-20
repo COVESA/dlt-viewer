@@ -27,7 +27,7 @@
 #include <QStyledItemDelegate>
 
 #include "project.h"
-#include "qdlt.h"
+#include "qdltpluginmanager.h"
 
 #define DLT_VIEWER_LIST_BUFFER_SIZE 100024
 #define DLT_VIEWER_COLUMN_COUNT FieldNames::Arg0

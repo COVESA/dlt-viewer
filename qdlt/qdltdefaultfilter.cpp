@@ -24,7 +24,7 @@
 #include <QDir>
 #include <QDirIterator>
 
-#include "qdlt.h"
+#include "qdltdefaultfilter.h"
 
 extern "C"
 {

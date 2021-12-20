@@ -1,4 +1,5 @@
 #include "qdltplugin.h"
+#include "qdltpluginmanager.h"
 
 #include <QDir>
 #include <QCoreApplication>
@@ -133,7 +134,7 @@ void QDltPluginManager::loadConfig(QString pluginName,QString filename)
     for(int num=0;num<plugins.size();num++)
     {
         QDltPlugin *plugin = plugins[num];
-        if(plugin->getName()==pluginName)
+        if(plugin->name()==pluginName)
             plugin->setFilename(filename);
     }
 }
@@ -157,7 +158,7 @@ QDltPlugin* QDltPluginManager::findPlugin(QString &name)
     {
         QDltPlugin *plugin = plugins[num];
 
-        if(plugin->getName()==name)
+        if(plugin->name()==name)
             return plugin;
     }
     return 0;

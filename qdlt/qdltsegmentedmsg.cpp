@@ -21,7 +21,6 @@
 
 #include <QByteArray>
 
-#include "qdlt.h"
 #include "qdltsegmentedmsg.h"
 
 

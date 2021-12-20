@@ -22,7 +22,7 @@
 #include <QtDebug>
 #include <QTcpSocket>
 
-#include "qdlt.h"
+#include "qdlttcpconnection.h"
 
 extern "C"
 {

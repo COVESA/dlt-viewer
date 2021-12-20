@@ -7,12 +7,6 @@
 
 #include "export_rules.h"
 
-class QDLTPluginInterface;
-class QDLTPluginDecoderInterface;
-class QDltPluginViewerInterface;
-class QDltPluginControlInterface;
-class QDltPluginCommandInterface;
-class QTableView;
 
 //! Access class to a DLT Plugin to decode, view and control DLT messages
 /*!
@@ -34,15 +28,6 @@ public:
     //! Load the plugin by attaching the interfaces
     void loadPlugin(QObject *plugin);
 
-    //! Get the name of the plugin
-    QString getName();
-
-    //! Get the plugin version string
-    QString getPluginVersion();
-
-    //! Get the plugin interface version string
-    QString getPluginInterfaceVersion();
-
     //! Get the running status of the plugin
     /*!
       Plugin can be disabled, enabled and viewed.
@@ -60,12 +45,6 @@ public:
 
     //! Set the complete filename of the plugin including path and load the plugin configuration
     void setFilename(QString _filename);
-
-    //! Decode plugin if enabled and messages matches the decoder
-    /*!
-      \return True if decoded, false if not decoded
-    */
-    bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
     //! Check if this is a decoder plugin
     /*!
@@ -92,25 +71,25 @@ public:
     bool isCommand();
 
     // generic plugin interfaces
-    QStringList infoConfig();
+    QString name();
+    QString pluginVersion();
+    QString pluginInterfaceVersion();
     QString error();
     bool loadConfig(QString filename);
+    QStringList infoConfig();
 
     // viewer plugin interfaces
     QWidget* initViewer();
     void initFileStart(QDltFile *file);
-    void initFileFinish();
     void initMsg(int index, QDltMsg &msg);
     void initMsgDecoded(int index, QDltMsg &msg);
+    void initFileFinish();
     void updateFileStart();
     void updateMsg(int index, QDltMsg &msg);
     void updateMsgDecoded(int index, QDltMsg &msg);
     void updateFileFinish();
     void selectedIdxMsg(int index, QDltMsg &msg);
     void selectedIdxMsgDecoded(int index, QDltMsg &msg);
-    void initMessageDecoder(QDltMessageDecoder* messageDecoder);
-    void initMainTableView(QTableView* pTableView);
-    void configurationChanged();
 
     // control plugin interfaces
     bool initControl(QDltControl *control);
@@ -118,9 +97,15 @@ public:
     bool controlMsg(int index, QDltMsg &msg);
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
     bool autoscrollStateChanged(bool enabled);
+    void initMessageDecoder(QDltMessageDecoder* messageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
+
+    // decoder plugin interfaces
+    bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
     // command plugin interfaces
-    bool command(QString cmd,QStringList params);
+    bool command(QString cmd,QList<QString> params);
 
 private:
 

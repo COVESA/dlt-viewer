@@ -8,7 +8,10 @@
 #include <QPair>
 #include <QMutex>
 
-#include "qdlt.h"
+#include "qdltdefaultfilter.h"
+#include "qdltfile.h"
+#include "qdltplugin.h"
+#include "qdltpluginmanager.h"
 
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 2

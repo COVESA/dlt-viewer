@@ -6,7 +6,9 @@
 #include <QModelIndexList>
 #include <QTreeWidget>
 
-#include "qdlt.h"
+#include "qdltfile.h"
+#include "qdltmsg.h"
+#include "qdltpluginmanager.h"
 
 class DltExporter : public QObject
 {

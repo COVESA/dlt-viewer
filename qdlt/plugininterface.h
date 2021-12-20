@@ -20,9 +20,14 @@
 #ifndef PLUGININTERFACE_H
 #define PLUGININTERFACE_H
 
+#include "qdltconnection.h"
+#include "qdltcontrol.h"
+#include "qdltfile.h"
+#include "qdltmessagedecoder.h"
+#include "qdltmsg.h"
+
 #include <QString>
 #include <QTableView>
-#include "qdlt.h"
 
 #define PLUGIN_INTERFACE_VERSION "1.0.1"
 
