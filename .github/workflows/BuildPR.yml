@@ -25,8 +25,6 @@ jobs:
         run: ls -n /Applications/ | grep Xcode*
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-      - name: install qt 5
-        run: brew install qt@5
       - name: install build environment
         run: scripts/install.sh
       - name: Build project
@@ -55,7 +53,7 @@ jobs:
       - name: Build project
         run: scripts/build.sh
       - name: Make artifact executable
-        run: chmod -R +x build/release 
+        run: chmod -R +x build/release
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}

@@ -13,18 +13,14 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-# cmake 2.8.12 doesn't have AUTOUIC ??
-QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/form.ui
-			${CMAKE_CURRENT_SOURCE_DIR}/imagepreviewdialog.ui
-    			${CMAKE_CURRENT_SOURCE_DIR}/textviewdialog.ui )
-
-add_library(filetransferplugin 	MODULE filetransferplugin.cpp
-				form.cpp
-				file.cpp
-				imagepreviewdialog.cpp
-				textviewdialog.cpp
-				configuration.cpp
-				${UI_HEADERS})
+add_library(filetransferplugin MODULE
+    filetransferplugin.cpp
+    form.cpp
+    file.cpp
+    imagepreviewdialog.cpp
+    textviewdialog.cpp
+    configuration.cpp
+    ${UI_HEADERS})
 
 target_link_libraries(filetransferplugin qdlt Qt5::Widgets Qt5::PrintSupport )
 

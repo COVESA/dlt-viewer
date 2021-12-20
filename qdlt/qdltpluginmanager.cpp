@@ -34,35 +34,39 @@ int QDltPluginManager::sizeEnabled() const
 }
 QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
-    QDir pluginsDir;
+    QDir pluginsDir1;
+    QDir pluginsDir2;
+    QDir pluginsDir3;
     QStringList errorStrings;
 
     QString defaultPluginPath = PLUGIN_INSTALLATION_PATH;
 
-    /* The viewer looks in the relativ to the executable in the ./plugins directory */
-    pluginsDir.setPath(QCoreApplication::applicationDirPath());
-    if(pluginsDir.cd("plugins"))
+    /* The viewer always looks in the relative to the executable in the ./plugins directory */
+    pluginsDir1.setPath(QCoreApplication::applicationDirPath());
+    if(pluginsDir1.cd("plugins"))
     {
-        errorStrings << loadPluginsPath(pluginsDir);
+        errorStrings << loadPluginsPath(pluginsDir1);
     }
 
     /* Check system plugins path */
     if(!defaultPluginPath.isEmpty())
     {
-        pluginsDir.setPath(defaultPluginPath);
-        if(pluginsDir.exists())
+        pluginsDir2.setPath(defaultPluginPath);
+        if(pluginsDir2.exists() && pluginsDir2.canonicalPath() != pluginsDir1.canonicalPath())
         {
-            errorStrings << loadPluginsPath(pluginsDir);
+            errorStrings << loadPluginsPath(pluginsDir2);
         }
     }
 
     /* load plugins form settings path if set */
     if(!settingsPluginPath.isEmpty())
     {
-        pluginsDir.setPath(settingsPluginPath);
-        if(pluginsDir.exists() && pluginsDir.isReadable())
+        pluginsDir3.setPath(settingsPluginPath);
+        if(pluginsDir3.exists() && pluginsDir3.isReadable()
+            && pluginsDir3.canonicalPath() != pluginsDir1.canonicalPath()
+            && pluginsDir3.canonicalPath() != pluginsDir2.canonicalPath())
         {
-            errorStrings << loadPluginsPath(pluginsDir);
+            errorStrings << loadPluginsPath(pluginsDir3);
         }
     }
 
