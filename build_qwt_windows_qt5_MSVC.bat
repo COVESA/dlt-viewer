@@ -4,7 +4,7 @@ cls
 REM Date     Version   Author                Changes
 REM 30.1.18  1.0       Gernot Wirschal       First versioned file
 REM 4.7.19   1.1       Alexander Wenzel      Update to Qt 5.12.4, Qwt 6.1.4 and Visual Studio 2015
-REM 25.11.20 1.2       Alexander Wenzel      Update to Qt 5.12.10
+REM 11.1.21  1.2       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools and simplify
 
 echo ************************************
 echo ***    Build QWT Library         ***
@@ -14,71 +14,49 @@ echo ************************************
 echo ***         Configuration        ***
 echo ************************************
 
-if "%MSVC_VERSION%"=="" (
-   echo "Set default MSVCS ""
-   set MSVC_VERSION=2015
-) 
-
-set MSVC_VER=msvc%MSVC_VERSION%
-
-rem parameter of this batch script can be either x86 or x86_amd64
-
-if "%ARCHITECTURE%"=="" (
-    if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
-        set ARCHITECTURE=x86_amd64
-    ) else (
-        set ARCHITECTURE=x86
-    )
-
-    set USE_ARCH_PARAM=false
-    if "%1" NEQ "" (
-        if "%1"=="x86" set USE_ARCH_PARAM=true
-        if "%1"=="x86_amd64" set USE_ARCH_PARAM=true
-    )
-    if "!USE_ARCH_PARAM!"=="true" set ARCHITECTURE=%1
-)
-
-echo Target architecture is %ARCHITECTURE%
-
-echo *** Setting up environment  ***
+echo *** Setting up environment ***
 
 IF "%QTVER%"=="" (
-    set QTVER=5.12.10
+    set QTVER=5.12.12
 )
 
-echo Set QT path for %QTVER%
-echo Set QT diretory for %ARCHITECTURE%
+IF "%MSVC_VER%"=="" (
+	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build" (
+		set MSVC_VER=2017
+	) else (
+		set MSVC_VER=2015
+	)
+)
+
+echo Set QT diretory for %QTVER%
 
 if "%QTDIR%"=="" (
-    if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015_64
-    ) else (set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015)
+    set QTDIR=C:\Qt\Qt%QTVER%\%QTVER%\msvc%MSVC_VER%_64
 )
 
-if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
-
-echo Set suffix for %ARCHITECTURE%
-set DIR_POSTFIX=_32bit
-IF "%ARCHITECTURE%" EQU "x86_amd64" set DIR_POSTFIX=_64bit 
-echo DIR_POSTFIX %DIR_POSTFIX%
+if "%MSVC_VER%"=="2015" (
+	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
+) else (
+	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
+)
 
 set WORKINGDIR=%CD%
 
 IF "%QWT%"=="" (
-    set QWT=6.1.4
+    set QWT=6.2.0
 )
 
-set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
+set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
 
 if '%WORKSPACE%'=='' (
     IF "%QWT_DIR%"=="" (
-        set QWT_DIR=C:\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
+        set QWT_DIR=C:\Qwt-%QWT%_%QTVER%
     )
 
     set SOURCE_DIR=%CD%\qwt-%QWT%
 ) else (
     if '%QWT_DIR%'=='' (
-        set QWT_DIR=%WORKSPACE%\Qwt-%QWT%_%MSVC_VERSION%_%QTVER%%DIR_POSTFIX%
+        set QWT_DIR=%WORKSPACE%\Qwt-%QWT%_%QTVER%
     )
 
     set SOURCE_DIR=%WORKSPACE%\qwt-%QWT%
@@ -92,8 +70,8 @@ echo ************************************
 echo * QTDIR     = %QTDIR%
 echo * MSVC_DIR  = %MSVC_DIR%
 echo * PATH      = %PATH%
-echo * QWT_DIR = %QWT_DIR%
-echo * SOURCE_DIR         = %SOURCE_DIR%
+echo * QWT_DIR   = %QWT_DIR%
+echo * SOURCE_DIR = %SOURCE_DIR%
 echo ************************************
 
 IF not exist "%MSVC_DIR%" (
@@ -132,7 +110,7 @@ echo ************************************
 echo ***  Configure MSVC environment  ***
 echo ************************************
 
-call vcvarsall.bat %ARCHITECTURE%
+call vcvarsall.bat x86_amd64
 if %ERRORLEVEL% NEQ 0 goto error
 echo configuring was successful
 
@@ -146,7 +124,6 @@ qmake qwt.pro
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 nmake clean
-rem IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 nmake
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
