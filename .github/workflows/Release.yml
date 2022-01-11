@@ -67,7 +67,7 @@ jobs:
     strategy:
       matrix:
         task: [ parser, sdk ]
-    runs-on: windows-2019
+    runs-on: windows-2017
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
