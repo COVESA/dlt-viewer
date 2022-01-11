@@ -10,43 +10,13 @@ echo ************************************
 echo ***    Build QWT Library         ***
 echo ************************************
 
-echo ************************************
-echo ***         Configuration        ***
-echo ************************************
-
-echo *** Setting up environment ***
-
-IF "%QTVER%"=="" (
-    set QTVER=5.12.12
-)
-
-IF "%MSVC_VER%"=="" (
-	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build" (
-		set MSVC_VER=2017
-	) else (
-		set MSVC_VER=2015
-	)
-)
-
-echo Set QT diretory for %QTVER%
-
-if "%QTDIR%"=="" (
-    set QTDIR=C:\Qt\Qt%QTVER%\%QTVER%\msvc%MSVC_VER%_64
-)
-
-if "%MSVC_VER%"=="2015" (
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
-) else (
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
-)
+call build_config.bat
 
 set WORKINGDIR=%CD%
 
 IF "%QWT%"=="" (
     set QWT=6.2.0
 )
-
-set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
 
 if '%WORKSPACE%'=='' (
     IF "%QWT_DIR%"=="" (

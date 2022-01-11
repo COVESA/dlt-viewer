@@ -9,37 +9,7 @@ echo ************************************
 echo ***      DLT Viewer SDK (cmake)  ***
 echo ************************************
 
-echo ************************************
-echo ***         Configuration        ***
-echo ************************************
-
-echo *** Setting up environment ***
-
-IF "%QTVER%"=="" (
-    set QTVER=5.12.12
-)
-
-IF "%MSVC_VER%"=="" (
-	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build" (
-		set MSVC_VER=2017
-	) else (
-		set MSVC_VER=2015
-	)
-)
-
-echo Set QT directory for %QTVER%
-
-if "%QTDIR%"=="" (
-    set QTDIR=C:\Qt\Qt%QTVER%\%QTVER%\msvc%MSVC_VER%_64
-)
-
-if "%MSVC_VER%"=="2015" (
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
-) else (
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
-)
-
-set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
+call build_config.bat
 
 if '%WORKSPACE%'=='' (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
