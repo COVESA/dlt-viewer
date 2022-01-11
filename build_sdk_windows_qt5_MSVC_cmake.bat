@@ -3,10 +3,10 @@
 REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
 REM 25.11.20 1.1       Alexander Wenzel      Update to Qt 5.12.10
-REM 11.1.21  1.2       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools and simplify
+REM 11.1.21  1.2       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake
 
 echo ************************************
-echo ***      DLT Viewer SDK          ***
+echo ***      DLT Viewer SDK (cmake)  ***
 echo ************************************
 echo ************************************
 echo ***         Configuration        ***
@@ -21,14 +21,14 @@ if "%QTDIR%"=="" (
 if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build
 
 
-set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
+set PATH=%QTDIR%\bin;%QTDIR%\lib\cmake\Qt5;%MSVC_DIR%;%PATH%
 
 if '%DLT_VIEWER_SDK_DIR%'=='' (
 	set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
 )
 
 set SOURCE_DIR=%CD%
-set BUILD_DIR=%CD%\build\release
+set BUILD_DIR=%CD%\build\Release
 
 echo ************************************
 echo * QTDIR     = %QTDIR%
@@ -76,10 +76,16 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 cd build
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-qmake ../BuildDltViewer.pro
+mkdir Release
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-nmake
+cd Release
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..\..
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+cmake --build .
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo ************************************
@@ -164,31 +170,31 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\dlt-viewer.exe %DLT_VIEWER_SDK_DIR%
+copy %BUILD_DIR%\bin\dlt-viewer.exe %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\qdlt.dll %DLT_VIEWER_SDK_DIR%
+copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\dltviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\dltviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\nonverboseplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\nonverboseplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\filetransferplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\filetransferplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\dltsystemviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\dltdbusplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\dltdbusplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\plugins\dlttestrobotplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
+copy %BUILD_DIR%\bin\plugins\dlttestrobotplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
@@ -209,10 +215,10 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %SOURCE_DIR%\qdlt\*.h %DLT_VIEWER_SDK_DIR%\sdk\include
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\qdlt.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
+copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %BUILD_DIR%\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
+copy %BUILD_DIR%\qdlt\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %SOURCE_DIR%\plugin\dummyviewerplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin

@@ -3,6 +3,7 @@
 REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
 REM 25.11.20 1.2       Alexander Wenzel      Update to Qt 5.12.10
+REM 11.1.21  1.3       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools and simplify
 
 echo ************************************
 echo ***      DLT Parser              ***
@@ -15,57 +16,25 @@ echo ************************************
 
 rem setlocal enabledelayedexpansion
 
-rem parameter of this batch script can be either x86 or x86_amd64
-if "%ARCHITECTURE%"=="" (
-    if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
-        set ARCHITECTURE=x86_amd64
-    ) else (
-        set ARCHITECTURE=x86
-    )
-
-    set USE_ARCH_PARAM=false
-    if "%1" NEQ "" (
-        if "%1"=="x86" set USE_ARCH_PARAM=true
-        if "%1"=="x86_amd64" set USE_ARCH_PARAM=true
-    )
-    if "!USE_ARCH_PARAM!"=="true" set ARCHITECTURE=%1
-)
-
-echo Target architecture is !ARCHITECTURE!
-
 echo *** Setting up environment ***
 
 if "%QTDIR%"=="" (
-    if "%ARCHITECTURE%"=="x86_amd64" (
-        set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015_64
-    ) else (set QTDIR=C:\Qt\Qt5.12.10\5.12.10\msvc2015)
+    set QTDIR=C:\Qt\Qt5.12.12\5.12.12\msvc2017_64
 )
 
-if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC
+if "%MSVC_DIR%"=="" set MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build
 
-set PATH=%QTDIR%\bin;%MSVC_DIR%;%MSVC_DIR%\bin;%PATH%
-set QTSDK=%QTDIR%
+set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
 
-if '%WORKSPACE%'=='' (
-    if '%DLT_PARSER_DIR%'=='' (
-        set DLT_PARSER_DIR=c:\DltParser
-    )
-
-    set SOURCE_DIR=%CD%
-    set BUILD_DIR=%CD%\build\release
-) else (
-    if '%DLT_PARSER_DIR%'=='' (
-        set DLT_PARSER_DIR=%WORKSPACE%\build\dist\DltParser
-    )
-
-    set SOURCE_DIR=%WORKSPACE%
-    set BUILD_DIR=%WORKSPACE%\build\release
+if '%DLT_PARSER_DIR%'=='' (
+	set DLT_PARSER_DIR=c:\DltParser
 )
 
+set SOURCE_DIR=%CD%
+set BUILD_DIR=%CD%\build\release
 
 echo ************************************
 echo * QTDIR     = %QTDIR%
-echo * QTSDK     = %QTSDK%
 echo * MSVC_DIR  = %MSVC_DIR%
 echo * PATH      = %PATH%
 echo * DLT_PARSER_DIR = %DLT_PARSER_DIR%
@@ -94,7 +63,7 @@ echo ************************************
 echo ***  Configure MSVC environment  ***
 echo ************************************
 
-call vcvarsall.bat %ARCHITECTURE%
+call vcvars64.bat
 if %ERRORLEVEL% NEQ 0 goto error
 echo configuring was successful
 

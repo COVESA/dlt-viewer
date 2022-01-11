@@ -1,4 +1,5 @@
 # Diagnostic Log and Trace Viewer
+
 ## Overview
 
 The Diagnostic Log and Trace Viewer is an application that can send and receive control messages to the DLT daemon, e.g. to set individual log levels of applications and contexts or get the list of applications and contexts registered in the DLT daemon. DLT viewer is based on Qt for Windows and Linux and can run on the Mac though that is not officially supported.
@@ -35,7 +36,7 @@ See INSTALL.txt regarding doxygen API documentation generation.
 ## Software/Hardware
 
 Developed with QT 5 (http://qt-project.org/)
-Tested with Windows 10 + Qt 5.12.10 + Microsoft Visual Studio 2015 Community Edition
+Tested with Windows 10 + Qt 5.12.12 + Microsoft Visual Studio Build Tools 2017
 Tested with Ubuntu Linux 18.04 + Qt 5.9.5
 Tested with macOS Sierra + Qt 5.7.0
 Dynamically linked open source software
@@ -43,7 +44,7 @@ Dynamically linked open source software
 Qt 5.x.x (LGPLv3 - Qt)
 GCC (GPL)
 (Optional) Mingw (GPL + BSD Variante + Public Domain)
-Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple LIcenses)
+Open Icon Library (http://openiconlibrary.sourceforge.net,Multiple Licenses)
 License
 
 Full information on the license for this software is available in the "LICENSE.txt" file.
