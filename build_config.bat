@@ -16,7 +16,7 @@ REM    set QTVER=6.2.2
 )
 
 IF "%MSVC_VER%"=="" (
-	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build" (
+	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build" (
      set MSVC_VER=2017
 REM	if exist "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\VC\Auxiliary\Build" (
 REM		set MSVC_VER=2019
