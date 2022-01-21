@@ -78,7 +78,7 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           mirror: http://ftp.fau.de/qtproject/
-          version: 5.12.12
+          version: 5.15.2
       - name: Build ${{ matrix.task }}
         run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
       - name: Archive artifact
