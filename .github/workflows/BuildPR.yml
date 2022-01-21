@@ -63,11 +63,11 @@ jobs:
           name: DLT-${{ matrix.ubuntu }}
           path: build/release
 
-  buildWindows:
-    name: Build Windows
+  buildWindowsCMake:
+    name: Build Windows cmake
     strategy:
       matrix:
-        task: [parser, sdk]
+        task: [sdk]
     runs-on: windows-2019
     steps:
       - name: Checkout
@@ -80,7 +80,7 @@ jobs:
         with:
           version: 5.15.2
       - name: Build ${{ matrix.task }}
-        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC_cmake.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
