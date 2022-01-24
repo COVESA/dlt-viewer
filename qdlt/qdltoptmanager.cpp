@@ -168,7 +168,7 @@ void QDltOptManager::parse(QStringList *opt)
         {
             QString p1 = opt->value(i+1);
 
-            if(p1!=0 && (p1.endsWith(".dlp") || p1.endsWith(".DLP")))
+            if(p1!=nullptr && (p1.endsWith(".dlp") || p1.endsWith(".DLP")))
              {
                 projectFile = QString("%1").arg(opt->at(i+1));
                 QFile Fout(projectFile);
@@ -199,7 +199,7 @@ void QDltOptManager::parse(QStringList *opt)
 
             QString l1 = opt->value(i+1);
 
-            if(l1!=0 && (l1.endsWith(".dlt")||l1.endsWith(".DLT")))
+            if(l1!=nullptr && (l1.endsWith(".dlt")||l1.endsWith(".DLT")))
              {
                 logFile = QString("%1").arg(l1);
                 QFile Fout(logFile);
@@ -225,7 +225,7 @@ void QDltOptManager::parse(QStringList *opt)
          {
             QString f1 = opt->value(i+1);
 
-            if(f1!=0 && (f1.endsWith(".dlf")||f1.endsWith(".DLF")))
+            if(f1!=nullptr && (f1.endsWith(".dlf")||f1.endsWith(".DLF")))
              {
                 filterFile = QString("%1").arg(f1);
                 QFile Fout(filterFile);
@@ -257,13 +257,13 @@ void QDltOptManager::parse(QStringList *opt)
             QString c1 = opt->value(i+1);
             QString c2 = opt->value(i+2);
 
-            if(c1!=0 && (c1.endsWith(".dlt")||c1.endsWith(".DLT")) && c2!=0)
+            if(c1!=nullptr && (c1.endsWith(".dlt")||c1.endsWith(".DLT")) && c2!=nullptr)
              {
                 convertSourceFile = QString("%1").arg(c1);
                 convertDestFile = QString("%1").arg(c2);
                 // check here already if the selected file exists
 
-                if(QFileInfo(convertSourceFile).exists())
+                if(QFileInfo::exists(convertSourceFile))
                  {
                     qDebug() << "Converting " << convertSourceFile << "to" << convertDestFile;
                     convert = true;
@@ -303,7 +303,7 @@ void QDltOptManager::parse(QStringList *opt)
             QString c = opt->value(i+1);
             QStringList args = c.split("|");
             commandline_mode = true;
-            if(c != 0 && args.size() > 1)
+            if(c != nullptr && args.size() > 1)
              {
                 pluginName = args.at(0);
                 commandName = args.at(1);

@@ -660,11 +660,11 @@ void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 
 void SettingsDialog::on_pushButtonMarkerColor_clicked()
 {
-    QColor selectedcolor = QColorDialog::getColor( ui->labelSelectedMarkerColor->palette().background().color().name() );
+    QColor selectedcolor = QColorDialog::getColor( ui->labelSelectedMarkerColor->palette().window().color().name() );
     QPalette palette = ui->labelSelectedMarkerColor->palette();
     palette.setColor(QPalette::Active,this->backgroundRole(),selectedcolor);
     palette.setColor(QPalette::Inactive,this->backgroundRole(),QColor(255,255,255,255));
-    palette.setColor(QPalette::Foreground,DltUiUtils::optimalTextColor(selectedcolor));
+    palette.setColor(QPalette::WindowText,DltUiUtils::optimalTextColor(selectedcolor));
     ui->labelSelectedMarkerColor->setPalette(palette);
 
     if(selectedcolor.isValid())

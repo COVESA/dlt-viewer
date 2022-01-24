@@ -27,14 +27,19 @@ PulseButton::PulseButton(QWidget *parent) :
      * Shape to curve that gives pleasant pulsing behaviour.
      * Loop forever */
     animationTimeline.setFrameRange(0, 100);
+#ifdef QT5_QT6_COMPAT
+    QEasingCurve easing(QEasingCurve::SineCurve);
+    animationTimeline.setEasingCurve(easing);
+#else
     animationTimeline.setCurveShape(QTimeLine::SineCurve);
+#endif
     animationTimeline.setLoopCount(0);
 
     connect(&animationTimeline, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));
     connect(&animationTimeline, SIGNAL(stateChanged(QTimeLine::State)), this, SLOT(animationStateChanged(QTimeLine::State)));
 
     /* Store the original background color */
-    baseColor = this->palette().background().color();
+    baseColor = this->palette().window().color();
 
     /* Let QT draw background whenever needed */
     setAutoFillBackground(true);

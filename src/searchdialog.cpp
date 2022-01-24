@@ -469,7 +469,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             text += msg.toStringHeader();
             if ( msgIdEnabled==true )
             {
-                text += " "+QString().sprintf(msgIdFormat.toLatin1(),msg.getMessageId());
+                text += " "+QString::asprintf(msgIdFormat.toUtf8(),msg.getMessageId());
             }
             tempPayLoad = msg.toStringPayload();
 

@@ -18,6 +18,7 @@
  */
 
 #include <QtGui>
+#include <QTextStream>
 
 #include "dlttestrobotplugin.h"
 
@@ -109,8 +110,11 @@ bool DltTestRobotPlugin::controlMsg(int , QDltMsg &)
 
 bool DltTestRobotPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
 
+#ifdef QT5_QT6_COMPAT
+    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
+#else
     qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
-
+#endif
     return true;
 }
 

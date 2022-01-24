@@ -66,7 +66,7 @@ inline bool operator==(const DltDbusMethodKey &e1, const DltDbusMethodKey &e2)
            && e1.getSerial() == e2.getSerial();
 }
 
-inline uint qHash(const DltDbusMethodKey &key)
+inline size_t qHash(const DltDbusMethodKey &key)
 {
     return qHash(key.getSender()) ^ key.getSerial();
 }
