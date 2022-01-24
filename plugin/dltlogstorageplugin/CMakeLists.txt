@@ -15,9 +15,8 @@
 
 add_library(dltlogstorageplugin MODULE dltlogstorageconfigcreatorplugin.cpp
     logstorageconfigcreatorform.cpp
-    logstoragefilter.cpp
-    ${UI_HEADERS})
+    logstoragefilter.cpp)
 
-target_link_libraries(dltlogstorageplugin qdlt Qt5::Widgets )
+target_link_libraries(dltlogstorageplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dltlogstorageplugin)

@@ -15,9 +15,8 @@
 
 add_library(dummyviewerplugin MODULE
     dummyviewerplugin.cpp
-    form.cpp
-    ${UI_HEADERS})
+    form.cpp)
 
-target_link_libraries(dummyviewerplugin qdlt Qt5::Widgets )
+target_link_libraries(dummyviewerplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dummyviewerplugin)

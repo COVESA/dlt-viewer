@@ -15,9 +15,8 @@
 
 add_library(dltsystemviewerplugin MODULE
     dltsystemviewerplugin.cpp
-    form.cpp
-    ${UI_HEADERS})
+    form.cpp)
 
-target_link_libraries(dltsystemviewerplugin qdlt Qt5::Widgets )
+target_link_libraries(dltsystemviewerplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dltsystemviewerplugin)

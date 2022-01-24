@@ -47,14 +47,9 @@ ELSE (QWT_FOUND)
   ENDIF (QWT_FIND_REQUIRED)
 ENDIF (QWT_FOUND)  
 
-
-# cmake 2.8.12 doesn't have AUTOUIC ??
-QT5_WRAP_UI( UI_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/form.ui )
-
 add_library(speedplugin MODULE speedplugin.cpp
-                               form.cpp
-                               ${UI_HEADERS})
+                               form.cpp)
 
 target_include_directories(speedplugin PUBLIC ${QWT_INCLUDE_DIR})
-target_link_libraries(speedplugin qdlt Qt5::Widgets ${QWT_LIBRARY})
+target_link_libraries(speedplugin qdlt ${QT_PREFIX}::Widgets ${QWT_LIBRARY})
 install(TARGETS speedplugin DESTINATION deploy/plugins)

@@ -19,9 +19,8 @@ add_library(filetransferplugin MODULE
     file.cpp
     imagepreviewdialog.cpp
     textviewdialog.cpp
-    configuration.cpp
-    ${UI_HEADERS})
+    configuration.cpp)
 
-target_link_libraries(filetransferplugin qdlt Qt5::Widgets Qt5::PrintSupport )
+target_link_libraries(filetransferplugin qdlt ${QT_PREFIX}::Widgets ${QT_PREFIX}::PrintSupport )
 
 add_plugin(filetransferplugin)

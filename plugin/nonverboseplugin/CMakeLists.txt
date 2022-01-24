@@ -15,9 +15,8 @@
 #
 
 add_library(nonverboseplugin MODULE
-    nonverboseplugin.cpp
-    ${UI_HEADERS})
+    nonverboseplugin.cpp)
 
-target_link_libraries(nonverboseplugin qdlt Qt5::Widgets )
+target_link_libraries(nonverboseplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(nonverboseplugin)

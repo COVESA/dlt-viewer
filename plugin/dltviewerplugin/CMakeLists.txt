@@ -15,7 +15,8 @@
 
 add_library(dltviewerplugin MODULE
     dltviewerplugin.cpp
-    form.cpp
-)
+    form.cpp)
+
+target_link_libraries(dltviewerplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dltviewerplugin)

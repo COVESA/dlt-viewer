@@ -15,7 +15,7 @@ set_target_properties (dlt-viewer PROPERTIES
   OUTPUT_NAME "DLT Viewer")
 
 # get the path for the macdeployqt tool
-get_target_property(MOC_LOCATION Qt5::moc LOCATION)
+get_target_property(MOC_LOCATION ${QT_PREFIX}::moc LOCATION)
 get_filename_component(MAC_DEPLOY_TOOL ${MOC_LOCATION}/../macdeployqt ABSOLUTE)
 
 # convert the target into a self contained app bundle

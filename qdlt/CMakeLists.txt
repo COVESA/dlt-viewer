@@ -53,10 +53,10 @@ target_include_directories(qdlt PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 target_link_libraries(qdlt PUBLIC
-    Qt5::Core
-    Qt5::Network
-    Qt5::Widgets
-    Qt5::SerialPort)
+    ${QT_PREFIX}::Core
+    ${QT_PREFIX}::Network
+    ${QT_PREFIX}::Widgets
+    ${QT_PREFIX}::SerialPort)
 
 if(WIN32)
     target_link_libraries(qdlt PUBLIC ws2_32)
@@ -65,7 +65,7 @@ endif()
 set_target_properties(qdlt PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    INSTALL_RPATH "$ORIGIN;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+    INSTALL_RPATH "$ORIGIN;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
 
 install(TARGETS qdlt
     LIBRARY DESTINATION "${DLT_LIBRARY_INSTALLATION_PATH}"

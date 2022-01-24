@@ -14,9 +14,8 @@
 #
 
 add_library(dummydecoderplugin MODULE
-    dummydecoderplugin.cpp
-    ${UI_HEADERS})
+    dummydecoderplugin.cpp)
 
-target_link_libraries(dummydecoderplugin qdlt Qt5::Widgets )
+target_link_libraries(dummydecoderplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dummydecoderplugin)
