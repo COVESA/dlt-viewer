@@ -89,31 +89,31 @@ if not exist %DLT_PARSER_DIR%\examples mkdir %DLT_PARSER_DIR%\examples
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 echo *** Copy files ***
-copy %QTDIR%\bin\Qt5Core.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Core.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Gui.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Gui.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Network.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Network.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Sql.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Sql.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Svg.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Svg.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Widgets.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Widgets.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5PrintSupport.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?PrintSupport.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5Xml.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?Xml.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\bin\Qt5OpenGL.dll %DLT_PARSER_DIR%
+copy %QTDIR%\bin\Qt?OpenGL.dll %DLT_PARSER_DIR%
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 copy %BUILD_DIR%\dlt-parser.exe %DLT_PARSER_DIR%
@@ -134,7 +134,13 @@ IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 mkdir %DLT_PARSER_DIR%\platforms 
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
  
+mkdir %DLT_PARSER_DIR%\styles 
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+ 
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_PARSER_DIR%\platforms
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
+copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_PARSER_DIR%\styles
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 
