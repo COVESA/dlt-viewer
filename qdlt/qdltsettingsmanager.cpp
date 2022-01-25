@@ -29,6 +29,8 @@
 
 #include "qdltsettingsmanager.h"
 
+#include <ctime>
+
 #if (WIN32)
  #define TZSET _tzset()
  #define TIMEZONE _timezone
