@@ -11,7 +11,7 @@ on:
 jobs:
   buildMac:
     name: Build macOS
-    runs-on: macOS-latest
+    runs-on: macos-11
     strategy:
       matrix:
         xcode: [Xcode_12.4, Xcode_11.7]
@@ -26,9 +26,9 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
@@ -49,9 +49,9 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Make artifact executable
         run: chmod -R +x build/release
       - name: Archive artifact
@@ -78,7 +78,9 @@ jobs:
         with:
           version: 5.12.12
       - name: Build ${{ matrix.task }}
-        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+        run: >
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
+          ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}

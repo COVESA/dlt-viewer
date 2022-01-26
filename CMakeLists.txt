@@ -16,7 +16,16 @@
 
 cmake_minimum_required (VERSION 3.15)
 
-project(dlt-viewer)
+include(scripts/windows/version.cmake)
+include(scripts/linux/version.cmake)
+
+project(dlt-viewer
+    VERSION ${DLT_PROJECT_VERSION_MAJOR}.${DLT_PROJECT_VERSION_MINOR}.${DLT_PROJECT_VERSION_PATCH}
+    DESCRIPTION "DLT Viewer")
+message(STATUS "DLT Viewer version: ${DLT_PROJECT_VERSION_MAJOR}.${DLT_PROJECT_VERSION_MINOR}.${DLT_PROJECT_VERSION_PATCH}-${DLT_VERSION_SUFFIX}")
+
+file(WRITE "${CMAKE_BINARY_DIR}/version.txt" "${DLT_PROJECT_VERSION_MAJOR}.${DLT_PROJECT_VERSION_MINOR}.${DLT_PROJECT_VERSION_PATCH}")
+file(WRITE "${CMAKE_BINARY_DIR}/full_version.txt" "${DLT_PROJECT_VERSION_MAJOR}.${DLT_PROJECT_VERSION_MINOR}.${DLT_PROJECT_VERSION_PATCH}-${DLT_VERSION_SUFFIX}")
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     set(LINUX TRUE)
@@ -124,3 +133,7 @@ message(STATUS "\tCMAKE_BUILD_TYPE:             ${CMAKE_BUILD_TYPE}")
 message(STATUS "\tCMAKE_SYSTEM_PROCESSOR:       ${CMAKE_SYSTEM_PROCESSOR}")
 message(STATUS "\tCMAKE_SYSTEM_NAME:            ${CMAKE_SYSTEM_NAME}")
 message(STATUS "\tDLT_QT5_LIB_DIR:               ${DLT_QT5_LIB_DIR}\n")
+
+# Must be last
+include(scripts/windows/package.cmake)
+include(scripts/linux/package.cmake)
