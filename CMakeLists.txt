@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: MPL-2.0
 #
 # Copyright (C) 2016, Jack S. Smith
 #
@@ -12,88 +13,114 @@
 #
 # List of changes:
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
-#
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.15)
 
-project (dlt-viewer)
+project(dlt-viewer)
+
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    set(LINUX TRUE)
+endif()
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif()
 
-set(QT_VERSION_REQ "5")
-
-find_package(Qt5 ${QT_VERSION_REQ} REQUIRED COMPONENTS Core Network Widgets SerialPort PrintSupport)
+find_package(Qt5 "5" REQUIRED COMPONENTS Core Network Widgets SerialPort PrintSupport)
 
 if(Qt5Core_VERSION VERSION_LESS "5.5.1")
     # Presumably Qt5Core implies all dependent libs too
     message(FATAL_ERROR "QT minimum version required: 5.5.1")
 endif()
 
-set (CMAKE_VERBOSE_MAKEFILE FALSE)
-
 set (CMAKE_AUTOMOC ON)
 set (CMAKE_AUTOUIC ON)
 
-set (CMAKE_INCLUDE_CURRENT_DIR ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-option(USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)
+get_target_property(DLT_QT5_LIBRARY_PATH Qt5::Core LOCATION)
+get_filename_component(DLT_QT5_LIB_DIR ${DLT_QT5_LIBRARY_PATH} DIRECTORY)
 
-if (USE_QT_RPATH)
-	# Add Qt to the RPATH, so that there is no need to set LD_LIBRARY_PATH at runtime if Qt is installed in a non-standard location
-	get_target_property(QT_LIBRARY_PATH Qt5::Core LOCATION)
-	get_filename_component(QT_LIB_DIR ${QT_LIBRARY_PATH} DIRECTORY)
-	set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${QT_LIB_DIR}")
+if(NOT WIN32)
+    option(DLT_USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)
+    if (DLT_USE_QT_RPATH)
+        # Add Qt to the RPATH, so that there is no need to set LD_LIBRARY_PATH at runtime if Qt is installed in a non-standard location
+        set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${DLT_QT5_LIB_DIR}")
+    endif()
 endif()
 
 # Injection of the GCC-specific compilation flags
-if(NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -std=gnu99")
-    add_definitions( "-Wall" )
-    add_definitions( "-Wextra" )
-    add_definitions( "-pedantic" )
-    add_definitions( "-Wno-variadic-macros" )
-    add_definitions( "-Wno-strict-aliasing" )
+if(CMAKE_COMPILER_IS_GNUCXX)
+    message(STATUS "GCC detected, adding compile flags")
+    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
+    add_definitions("-Wall" "-Wextra" "-pedantic" "-Wno-variadic-macros" "-Wno-strict-aliasing" "-fPIC")
 endif()
 
-# build executables in build/bin directory
-set(BIN_DIR ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
+add_compile_definitions(QT5)
 
-add_definitions(-DQT5)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)   # set location for all executables in the build folder
-
-option(USE_STANDARD_INSTALLATION_LOCATION "Use standard GNU installation locations" OFF)
-
-if (USE_STANDARD_INSTALLATION_LOCATION)
-    include(GNUInstallDirs)    # for standard installation locations
-    set(PLUGIN_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_LIBDIR}/dlt-viewer/plugins)
-    set(RESOURCE_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_DATADIR}/dlt-viewer)
-    set(EXECUTABLE_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_BINDIR})
-    set(LIBRARY_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_LIBDIR})
+option(DLT_USE_STANDARD_INSTALLATION_LOCATION "Use standard GNU installation locations" OFF)
+if(NOT WIN32)
+    if(DLT_USE_STANDARD_INSTALLATION_LOCATION)
+        include(GNUInstallDirs)
+        set(DLT_PLUGIN_INSTALLATION_PATH "${CMAKE_INSTALL_FULL_LIBDIR}/dlt-viewer/plugins")
+        set(DLT_RESOURCE_INSTALLATION_PATH "${CMAKE_INSTALL_FULL_DATADIR}/dlt-viewer")
+        set(DLT_EXECUTABLE_INSTALLATION_PATH "${CMAKE_INSTALL_FULL_BINDIR}")
+        set(DLT_LIBRARY_INSTALLATION_PATH "${CMAKE_INSTALL_FULL_LIBDIR}")
+    else()
+        if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+            set(CMAKE_INSTALL_PREFIX "DLTViewer")
+        endif()
+        if(NOT DLT_PLUGIN_INSTALLATION_PATH)
+            set(DLT_PLUGIN_INSTALLATION_PATH "usr/bin/plugins")
+        endif()
+        if(NOT DLT_RESOURCE_INSTALLATION_PATH)
+            set(DLT_RESOURCE_INSTALLATION_PATH "usr/share")
+        endif()
+        if(NOT DLT_EXECUTABLE_INSTALLATION_PATH)
+            set(DLT_EXECUTABLE_INSTALLATION_PATH "usr/bin")
+        endif()
+        if(NOT DLT_LIBRARY_INSTALLATION_PATH)
+            set(DLT_LIBRARY_INSTALLATION_PATH "usr/lib")
+        endif()
+    endif()
 else()
-    set(PLUGIN_INSTALLATION_PATH deploy/plugins)
-    set(RESOURCE_INSTALLATION_PATH deploy)
-    set(EXECUTABLE_INSTALLATION_PATH deploy)
-    set(LIBRARY_INSTALLATION_PATH deploy)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        # AppData is a modern install location. No Admin rights required.
+        file(TO_CMAKE_PATH "$ENV{LOCALAPPDATA}/Programs" CMAKE_INSTALL_PREFIX)
+        set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "..." FORCE)
+    endif()
+
+    if(NOT DLT_PLUGIN_INSTALLATION_PATH)
+        set(DLT_PLUGIN_INSTALLATION_PATH "plugins")
+    endif()
+    if(NOT DLT_RESOURCE_INSTALLATION_PATH)
+        set(DLT_RESOURCE_INSTALLATION_PATH ".")
+    endif()
+    if(NOT DLT_EXECUTABLE_INSTALLATION_PATH)
+        set(DLT_EXECUTABLE_INSTALLATION_PATH ".")
+    endif()
+    if(NOT DLT_LIBRARY_INSTALLATION_PATH)
+        set(DLT_LIBRARY_INSTALLATION_PATH ".")
+    endif()
 endif()
 
-add_definitions(-DPLUGIN_INSTALLATION_PATH="${PLUGIN_INSTALLATION_PATH}")
+option(DLT_PARSER "Build DLT Parser" OFF)
 
-add_subdirectory(parser)
+if(DLT_PARSER)
+    add_subdirectory(parser)
+endif()
+
 add_subdirectory(qdlt)
 add_subdirectory(src)
 add_subdirectory(plugin)
-#add_subdirectory(dlt-console-viewer)
 
-#get_cmake_property(_variableNames VARIABLES)
-#foreach (_variableName ${_variableNames})
-#    message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
+message(STATUS "\n\t** DLT Viewer Build Summary **")
+message(STATUS "\tCMAKE_INSTALL_PREFIX:         ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "\tCMAKE_BUILD_TYPE:             ${CMAKE_BUILD_TYPE}")
+message(STATUS "\tCMAKE_SYSTEM_PROCESSOR:       ${CMAKE_SYSTEM_PROCESSOR}")
+message(STATUS "\tCMAKE_SYSTEM_NAME:            ${CMAKE_SYSTEM_NAME}")
+message(STATUS "\tDLT_QT5_LIB_DIR:               ${DLT_QT5_LIB_DIR}\n")

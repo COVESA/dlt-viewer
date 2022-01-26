@@ -1628,7 +1628,7 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
 
 void MainWindow::reloadLogFileStop()
 {
- 
+
 }
 
 void MainWindow::reloadLogFileProgressMax(int num)
@@ -2174,7 +2174,7 @@ QStringList MainWindow::getAvailableSerialPorts()
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     QStringList portList;
 
-    for (int i = 0; i < ports.size(); i++) 
+    for (int i = 0; i < ports.size(); i++)
     {
         portList << ports.at(i).portName();
     }
@@ -3794,7 +3794,7 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins.at(i);
             item->updateMsg(num,qmsg);
       }
-     } 
+     }
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
       {
@@ -3813,7 +3813,7 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins[i];
             item->updateMsgDecoded(num,qmsg);
       }
-     } 
+     }
     }
 
     if (!draw_timer.isActive())

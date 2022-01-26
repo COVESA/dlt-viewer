@@ -1,7 +1,7 @@
 # Copyright (C) 2016, Jack S. Smith
-# 
+#
 # This file is part of GENIVI DLT-Viewer project.
-#   
+#
 # This Source Code Form is subject to the terms of the
 # Mozilla Public License (MPL), v. 2.0.
 # If a copy of the MPL was not distributed with this file,
@@ -11,19 +11,10 @@
 #
 # List of changes:
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
-#
 
-cmake_minimum_required (VERSION 2.8.12)
+QT5_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
 
-set (TARGET_NAME dlt-viewer)
-
-# cmake 2.8.12 doesn't have AUTOUIC ??
-FILE(GLOB ALL_UIS ${CMAKE_CURRENT_SOURCE_DIR}/*.ui)
-QT5_WRAP_UI( UI_HEADERS ${ALL_UIS} )
-
-QT5_ADD_RESOURCES(UI_RESOURCES_RCC resource.qrc)
-
-add_executable (${TARGET_NAME}
+add_executable(dlt-viewer
     main.cpp
     mainwindow.cpp
     project.cpp
@@ -54,21 +45,49 @@ add_executable (${TARGET_NAME}
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.cpp
     mcudpsocket.cpp
-    resource.qrc
-    ${UI_HEADERS}
     ${UI_RESOURCES_RCC}
-)
+    resources/dlt_viewer.rc)
 
-target_link_libraries (${TARGET_NAME}
+target_link_libraries(dlt-viewer
     qdlt
     Qt5::Core
     Qt5::Network
     Qt5::Widgets
-    Qt5::SerialPort
-)
+    Qt5::SerialPort)
 
-install(TARGETS ${TARGET_NAME} DESTINATION ${EXECUTABLE_INSTALLATION_PATH})
-install(DIRECTORY icon png svg DESTINATION ${RESOURCE_INSTALLATION_PATH}
-        PATTERN icon/*.rc EXCLUDE )
+if(CMAKE_COMPILER_IS_GNUCXX)
+    # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
+    # https://forum.juce.com/t/cmake-executable-build-shows-up-as-shared-library-on-linux-mint/45503/6
+    target_link_options(dlt-viewer PRIVATE "-no-pie")
+endif()
 
-include (${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)
+set_target_properties(dlt-viewer PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    INSTALL_RPATH "$ORIGIN/../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+
+install(TARGETS dlt-viewer
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    # Underscore for NSIS compatibility https://gitlab.kitware.com/cmake/cmake/-/issues/19982
+    COMPONENT dlt_viewer)
+
+install(FILES
+    ../LICENSE.txt
+    ../MPL.txt
+    ../README.md
+    ../ReleaseNotes_Viewer.txt
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    COMPONENT dlt_viewer)
+install(FILES
+    ../doc/dlt_viewer_user_manual.pdf
+    ../doc/dlt_viewer_plugins_programming_guide.pdf
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/doc"
+    COMPONENT documentation)
+install(DIRECTORY
+    ../filters
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    COMPONENT dlt_viewer)
+install(DIRECTORY
+    ../plugin/examples
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/plugins"
+    COMPONENT dlt_viewer)
+include(cmake/${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)

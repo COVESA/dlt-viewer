@@ -14,10 +14,9 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-# cmake 2.8.12 doesn't have AUTOUIC ??
-
-add_library(nonverboseplugin MODULE nonverboseplugin.cpp
-                          ${UI_HEADERS})
+add_library(nonverboseplugin MODULE
+    nonverboseplugin.cpp
+    ${UI_HEADERS})
 
 target_link_libraries(nonverboseplugin qdlt Qt5::Widgets )
 
