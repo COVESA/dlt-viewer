@@ -1916,12 +1916,12 @@ void MainWindow::applySettings()
 
     for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
     {
-        switch(col)
+        /*switch(col)
         {
         //override column visibility here
         //FieldNames::SessionId: ui->tableView->setColumnHidden(col,true);
-        default:ui->tableView->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));
-        }
+        }*/
+        ui->tableView->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));
     }
     //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
     //Ideally possible with right-click
@@ -5175,7 +5175,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Architecture: Little Endian\n\n")+
                          #endif
-                             QString("(C) 2016 BMW AG\n"));
+                             QString("(C) 2016,2022 BMW AG\n"));
 }
 
 
