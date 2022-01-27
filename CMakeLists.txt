@@ -90,7 +90,7 @@ if(NOT WIN32)
 else()
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         # AppData is a modern install location. No Admin rights required.
-        file(TO_CMAKE_PATH "$ENV{LOCALAPPDATA}/Programs" CMAKE_INSTALL_PREFIX)
+        file(TO_CMAKE_PATH "$ENV{LOCALAPPDATA}/Programs/dlt-viewer" CMAKE_INSTALL_PREFIX)
         set(CMAKE_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX} CACHE PATH "..." FORCE)
     endif()
 
