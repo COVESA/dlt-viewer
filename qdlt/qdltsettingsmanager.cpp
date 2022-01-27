@@ -226,9 +226,9 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/msgIdFormat",msgIdFormat);
 
     /* For settings integrity validation */
-    settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
-    settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
-    settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
+    settings->setValue("startup/versionMajor", PACKAGE_MAJOR_VERSION);
+    settings->setValue("startup/versionMinor", PACKAGE_MINOR_VERSION);
+    settings->setValue("startup/versionPatch", PACKAGE_PATCH_LEVEL);
 }
 
 void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)

@@ -332,13 +332,13 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::TextAlignmentRole )
      {
-         switch(index.column())
+        /*switch(index.column())
         {
             //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
             default:
-                  return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
 
-        }
+        }*/
+        return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
     }
 
      return QVariant();
@@ -355,12 +355,12 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
             return FieldNames::getName((FieldNames::Fields)section, project->settings);
         case Qt::TextAlignmentRole:
             {
-            switch(section)
+            /*switch(section)
                 {
                  //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-                  default:return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
-                }
-
+                default:
+                }*/
+            return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
             }
          default:
             break;
