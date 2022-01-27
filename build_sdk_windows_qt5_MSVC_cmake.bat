@@ -4,6 +4,7 @@ REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
 REM 25.11.20 1.1       Alexander Wenzel      Update to Qt 5.12.10
 REM 11.1.21  1.2       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake
+REM 27.1.21  1.2       Alexander Wenzel      Update using cmake install
 
 echo ************************************
 echo ***      DLT Viewer SDK (cmake)  ***
@@ -79,7 +80,7 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 cd Release
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..\..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=%DLT_VIEWER_SDK_DIR% ..\..
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 cmake --build .
@@ -89,156 +90,7 @@ echo ************************************
 echo ***         Create SDK           ***
 echo ************************************
 
-if not exist %DLT_VIEWER_SDK_DIR% mkdir %DLT_VIEWER_SDK_DIR%
-echo *** Create directories %DLT_VIEWER_SDK_DIR% ***
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\include
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\filters
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\platforms
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\doc
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\cache
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-echo *** Copy files ***
-copy %QTDIR%\bin\Qt5Core.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Gui.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Network.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Sql.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Svg.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Widgets.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5PrintSupport.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5Xml.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5OpenGL.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt5SerialPort.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\dlt-viewer.exe %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\nonverboseplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\filetransferplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltsystemviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltdbusplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dlttestrobotplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
-
-copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %DLT_VIEWER_SDK_DIR%
-
-copy %SOURCE_DIR%\README.md %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\LICENSE.txt %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\MPL.txt %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\qdlt\*.h %DLT_VIEWER_SDK_DIR%\sdk\include
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\qdlt\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\dummyviewerplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-
-copy %SOURCE_DIR%\plugin\dummydecoderplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-
-copy %SOURCE_DIR%\plugin\dummycontrolplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-
-copy %SOURCE_DIR%\sdk\BuildPlugins.pro %DLT_VIEWER_SDK_DIR%\sdk\src
-
-copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-
-copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\examples\nonverboseplugin_configuration.xml %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\examples\filetransferplugin_configuration.xml %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\filters\* %DLT_VIEWER_SDK_DIR%\filters
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+cmake --install .
 
 GOTO QUIT
 

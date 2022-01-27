@@ -36,4 +36,10 @@ if "%MSVC_VER%"=="2015" (
 	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
 )
 
+IF "%QWT%"=="" (
+    set QWT=6.1.4
+REM    set QWT=6.1.6
+REM    set QWT=6.2.0
+)
+
 set PATH=%QTDIR%\bin;%MSVC_DIR%;%PATH%
