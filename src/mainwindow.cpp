@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
 #include <QFileDialog>
@@ -42,6 +43,7 @@
 #include <QNetworkInterface>
 #include <QtAlgorithms>
 #include <QFileSystemModel>
+#include <QSortFilterProxyModel>
 
 /**
  * From QDlt.
@@ -78,7 +80,7 @@ extern "C" {
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
-
+#include "sortfilterproxymodel.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -288,7 +290,6 @@ void MainWindow::initState()
 
 void MainWindow::initView()
 {
-    QFileSystemModel *model = new QFileSystemModel;
     int maxWidth = 0;
     // With QT5.8 we have a bug with the system proxy configuration
     // which we want to avoid, so we disable it
@@ -321,24 +322,24 @@ void MainWindow::initView()
     ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
 
     /* Init Explorer view */
+    QFileSystemModel *model = new QFileSystemModel;
+
     model->setNameFilterDisables(false);
     model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp");
     model->setRootPath(QDir::rootPath());
-    /* get last visited path and go back to it */
 
-    ui->exploreView->setModel(model);
+    /* sort dir entries */
+    SortFilterProxyModel *sortProxyModel = new SortFilterProxyModel(this);
+    sortProxyModel->setSourceModel(model);
+
+    ui->exploreView->setModel(sortProxyModel);
+    ui->exploreView->setSortingEnabled(true);
+
     ui->exploreView->hideColumn(1);
     ui->exploreView->hideColumn(2);
     ui->exploreView->hideColumn(3);
 
-    ui->exploreView->setAutoExpandDelay(0);
-    //ui->exploreView->setSortingEnabled(true);
-    //ui->exploreView->sortByColumn(0, 0);
 
-    if (recentFiles.size() > 0)
-    {
-        ui->exploreView->scrollTo(model->index(recentFiles[0]));
-    }
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -7517,26 +7518,26 @@ void MainWindow::indexStart()
 
 void MainWindow::on_exploreView_activated(const QModelIndex &index)
 {
-    auto model = static_cast<QFileSystemModel*>(ui->exploreView->model());
-    auto path = model->filePath(index);
+    static const QStringList ext        = QStringList() << ".dlt" << ".dlf" << ".dlp";
+    QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
+    QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
+    QString                  path       = fsModel->filePath(proxyModel->mapToSource(index)).toLower();
 
-    if (path.toLower().endsWith(".dlt"))
+    auto result = std::find_if(ext.begin(), ext.end(),
+                                [&path](const QString &el){return path.endsWith(el);});
+    switch(result - ext.begin())
     {
+    case 0: /* this represents index in "ext" list */
         openDltFile(QStringList() << path);
         outputfileIsTemporary = false;
-    }
-    else if (path.toLower().endsWith(".dlf"))
-    {
+        break;
+    case 1:
         openDlfFile(path, true);
-        outputfileIsTemporary = false;
-    }
-    else if (path.toLower().endsWith(".dlp"))
-    {
+        break;
+    case 2:
         openDlpFile(path);
-        outputfileIsTemporary = false;
-    }
-    else
-    {
-        /**/
+        break;
+    default:
+        break;
     }
 }

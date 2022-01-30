@@ -131,6 +131,7 @@ SOURCES += main.cpp \
     injectiondialog.cpp \
     searchdialog.cpp \
     multiplecontextdialog.cpp \
+    sortfilterproxymodel.cpp \
     tablemodel.cpp \
     filtertreewidget.cpp \
     dltfileutils.cpp \
@@ -161,6 +162,7 @@ HEADERS += mainwindow.h \
     settingsdialog.h \
     injectiondialog.h \
     searchdialog.h \
+    sortfilterproxymodel.h \
     version.h \
     multiplecontextdialog.h \
     tablemodel.h \
