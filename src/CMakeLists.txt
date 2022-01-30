@@ -45,6 +45,7 @@ add_executable(dlt-viewer
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.cpp
     mcudpsocket.cpp
+    sortfilterproxymodel.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc)
 
