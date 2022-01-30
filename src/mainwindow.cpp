@@ -339,7 +339,11 @@ void MainWindow::initView()
     ui->exploreView->hideColumn(2);
     ui->exploreView->hideColumn(3);
 
-
+    if (recentFiles.size() > 0)
+    {
+        ui->exploreView->scrollTo(
+                    sortProxyModel->mapFromSource(model->index(recentFiles[0])));
+    }
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -467,6 +471,14 @@ void MainWindow::initSignalConnections()
 
     // connect tableView selection model change to handler in mainwindow
     connect(ui->tableView->selectionModel(),  &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableViewSelectionChanged);
+
+    // connect file loaded signal with  explorerView
+    connect(this, &MainWindow::dltFileLoaded, this, [this](const QStringList& paths){
+        QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
+        QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
+        ui->exploreView->scrollTo(
+                    proxyModel->mapFromSource(fsModel->index(recentFiles[0])));
+    });
 }
 
 void MainWindow::initSearchTable()
