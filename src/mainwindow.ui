@@ -428,6 +428,38 @@
        <property name="movable">
         <bool>false</bool>
        </property>
+       <widget class="QWidget" name="tabExplore">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <attribute name="title">
+         <string>Explore</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_66">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
+          <number>2</number>
+         </property>
+         <item>
+          <widget class="QTreeView" name="exploreView">
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="tabConfig">
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>

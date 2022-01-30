@@ -558,6 +558,8 @@ private slots:
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
 
+    void on_exploreView_activated(const QModelIndex &index);
+
 public slots:
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
@@ -595,6 +597,8 @@ public:
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;
 
+signals:
+    void dltFileLoaded(const QStringList& paths);
 
 };
 

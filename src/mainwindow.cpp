@@ -41,7 +41,7 @@
 #include <QNetworkProxyFactory>
 #include <QNetworkInterface>
 #include <QtAlgorithms>
-
+#include <QFileSystemModel>
 
 /**
  * From QDlt.
@@ -288,6 +288,7 @@ void MainWindow::initState()
 
 void MainWindow::initView()
 {
+    QFileSystemModel *model = new QFileSystemModel;
     int maxWidth = 0;
     // With QT5.8 we have a bug with the system proxy configuration
     // which we want to avoid, so we disable it
@@ -318,6 +319,26 @@ void MainWindow::initView()
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
     // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
     ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
+
+    /* Init Explorer view */
+    model->setNameFilterDisables(false);
+    model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp");
+    model->setRootPath(QDir::rootPath());
+    /* get last visited path and go back to it */
+
+    ui->exploreView->setModel(model);
+    ui->exploreView->hideColumn(1);
+    ui->exploreView->hideColumn(2);
+    ui->exploreView->hideColumn(3);
+
+    ui->exploreView->setAutoExpandDelay(0);
+    //ui->exploreView->setSortingEnabled(true);
+    //ui->exploreView->sortByColumn(0, 0);
+
+    if (recentFiles.size() > 0)
+    {
+        ui->exploreView->scrollTo(model->index(recentFiles[0]));
+    }
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -1052,6 +1073,10 @@ bool MainWindow::openDltFile(QStringList fileNames)
             ret = false;
         }
     }
+
+    if (ret)
+        emit dltFileLoaded(fileNames);
+
     //qDebug() << "Open files done" << __FILE__ << __LINE__;
     return ret;
 }
@@ -7250,7 +7275,7 @@ void MainWindow::restoreSelection()
 
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
-    if(index > 0)
+    if(index > 1)
     {
         ui->enableConfigFrame->setVisible(true);
     }
@@ -7488,4 +7513,30 @@ void MainWindow::indexDone()
 void MainWindow::indexStart()
 {
     statusFileError->setText(QString("FileErr: %L1").arg("-"));
+}
+
+void MainWindow::on_exploreView_activated(const QModelIndex &index)
+{
+    auto model = static_cast<QFileSystemModel*>(ui->exploreView->model());
+    auto path = model->filePath(index);
+
+    if (path.toLower().endsWith(".dlt"))
+    {
+        openDltFile(QStringList() << path);
+        outputfileIsTemporary = false;
+    }
+    else if (path.toLower().endsWith(".dlf"))
+    {
+        openDlfFile(path, true);
+        outputfileIsTemporary = false;
+    }
+    else if (path.toLower().endsWith(".dlp"))
+    {
+        openDlpFile(path);
+        outputfileIsTemporary = false;
+    }
+    else
+    {
+        /**/
+    }
 }
