@@ -1223,7 +1223,11 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     {
         num++;
         if ( 0 == (num%1000))
-            progress.setValue(importfile.file_position*100/importfile.file_length);
+        {
+            progress.setValue(
+                    static_cast<int>(static_cast<float>(importfile.file_position) * 100.0f
+                            / static_cast<float>(importfile.file_length)));
+        }
         if (progress.wasCanceled())
         {
             dlt_file_free(&importfile,0);
@@ -1234,8 +1238,12 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     /* read DLT messages and append to current output file */
     for(int pos = 0 ; pos<num ; pos++)
     {
-        if ( 0 == (pos%1000))
-            progress.setValue(pos*100/num);
+        if ( 0 == (pos % 1000))
+        {
+            progress.setValue(
+                    static_cast<int>(static_cast<float>(pos) * 100.0f
+                                     / static_cast<float>(num)));
+        }
         if (progress.wasCanceled())
         {
             dlt_file_free(&importfile,0);
