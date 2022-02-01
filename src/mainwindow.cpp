@@ -44,6 +44,7 @@
 #include <QtAlgorithms>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
+#include <QDesktopServices>
 
 /**
  * From QDlt.
@@ -329,6 +330,8 @@ void MainWindow::initView()
     model->setRootPath(QDir::rootPath());
 
     /* sort dir entries */
+    ui->exploreView->setContextMenuPolicy(Qt::CustomContextMenu);
+
     SortFilterProxyModel *sortProxyModel = new SortFilterProxyModel(this);
     sortProxyModel->setSourceModel(model);
 
@@ -6645,6 +6648,86 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.exec(globalPos);
 }
 
+
+void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
+{
+    /* show custom pop menu for explorer */
+    QPoint globalPos = ui->exploreView->mapToGlobal(pos);
+    QMenu menu(ui->exploreView);
+    QAction *action;
+    /* Get path from index */
+    auto index   = ui->exploreView->selectionModel()->selectedIndexes()[0];
+    auto path    = getPathFromExplorerViewIndexModel(index);
+    bool is_file = !QDir(path).exists();
+
+    if (is_file)
+    {
+        action = new QAction("&Open", this);
+         connect(action, &QAction::triggered, this, [this](){
+             auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+             on_exploreView_activated(index);
+         });
+        menu.addAction(action);
+
+//        if (!path.toLower().endsWith(".dlp"))
+//        {
+//            action = new QAction("&Append", this);
+//            action->setEnabled(false);
+//            connect(action, &QAction::triggered, this, [this](){
+//                auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+//                auto path  = getPathFromExplorerViewIndexModel(index);
+//                if (path.toLower().endsWith(".dlp"))
+//                    appendDltFile(path);
+//                else
+//                    ; // append dlf file
+//            });
+//            menu.addAction(action);
+//        }
+    }
+    else
+    {
+        /* TODO:
+                search form, search threads
+        */
+        action = new QAction("&Find in files", this);
+        connect(action, &QAction::triggered, this, [this](){
+            auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+            auto path  = getPathFromExplorerViewIndexModel(index);
+            qDebug() << "Find in files - triggered" << path;
+        });
+        menu.addAction(action);
+
+    }
+    menu.addSeparator();
+
+    action = new QAction("&Copy path", this);
+    connect(action, &QAction::triggered, this, [this](){
+        QClipboard *clipboard = QGuiApplication::clipboard();
+        auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+        auto path  = getPathFromExplorerViewIndexModel(index);
+        clipboard->setText(path);
+        qDebug() << "Copy path - triggered" << path;
+
+    });
+    menu.addAction(action);
+    menu.addSeparator();
+
+    action = new QAction("&Show in explorer", this);
+    connect(action, &QAction::triggered, this, [this](){
+        auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+        auto path  = getPathFromExplorerViewIndexModel(index);
+
+        auto path_splitted = path.split("/");
+        path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
+
+        QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
+    });
+    menu.addAction(action);
+
+    /* show popup menu */
+    menu.exec(globalPos);
+}
+
 void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 {
     /* show custom pop menu  for search table */
@@ -7455,6 +7538,15 @@ void MainWindow::resetDefaultFilter()
     ui->comboBoxFilterSelection->setCurrentIndex(0); //no default filter anymore
 }
 
+QString MainWindow::getPathFromExplorerViewIndexModel(const QModelIndex &index)
+{
+    QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
+    QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
+    QString                  path       = fsModel->filePath(proxyModel->mapToSource(index));
+
+    return path;
+}
+
 void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
 {
     on_actionDefault_Filter_Create_Index_triggered();
@@ -7530,13 +7622,11 @@ void MainWindow::indexStart()
 
 void MainWindow::on_exploreView_activated(const QModelIndex &index)
 {
-    static const QStringList ext        = QStringList() << ".dlt" << ".dlf" << ".dlp";
-    QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
-    QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
-    QString                  path       = fsModel->filePath(proxyModel->mapToSource(index)).toLower();
+    static const QStringList ext  = QStringList() << ".dlt" << ".dlf" << ".dlp";
+    QString                  path = getPathFromExplorerViewIndexModel(index);
 
     auto result = std::find_if(ext.begin(), ext.end(),
-                                [&path](const QString &el){return path.endsWith(el);});
+                                [&path](const QString &el){return path.toLower().endsWith(el);});
     switch(result - ext.begin())
     {
     case 0: /* this represents index in "ext" list */

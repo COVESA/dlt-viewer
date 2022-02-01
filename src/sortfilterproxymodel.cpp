@@ -21,6 +21,5 @@ bool SortFilterProxyModel::lessThan(const QModelIndex &left,
     return (left_isdir == right_isdir)?
         (QString::localeAwareCompare(leftData.toString(), rightData.toString()) > 0):
         (left_isdir < right_isdir);
-
 }
 

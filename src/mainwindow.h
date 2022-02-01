@@ -376,6 +376,9 @@ private:
 
     QStringListModel m_CompleterModel;
 
+    /* Get path from explorerView model index */
+    QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
+
 protected:
     void keyPressEvent ( QKeyEvent * event );
     void dragEnterEvent(QDragEnterEvent *event);
@@ -400,6 +403,7 @@ private slots:
     void on_pluginWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_customContextMenuRequested(QPoint pos);
+    void on_exploreView_customContextMenuRequested(QPoint pos);
 
     void on_configWidget_itemSelectionChanged();
     void on_pluginWidget_itemSelectionChanged();
