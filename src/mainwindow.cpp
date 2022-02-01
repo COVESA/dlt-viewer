@@ -1198,6 +1198,11 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     if(!outputfile.isOpen())
         return;
 
+    appendDltFile(fileName);
+}
+
+void MainWindow::appendDltFile(const QString &fileName)
+{
     DltFile importfile;
 
     dlt_file_init(&importfile,0);
@@ -1260,9 +1265,7 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
     /* reload log file */
     reloadLogFile();
-
 }
-
 
 void MainWindow::mark_unmark_lines()
 {

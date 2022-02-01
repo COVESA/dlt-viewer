@@ -330,6 +330,8 @@ private:
     bool openDlpFile(QString filename);
     bool openDlfFile(QString filename, bool replace);
 
+    void appendDltFile(const QString &fileName);
+
     void commandLineConvertToASCII();
     void commandLineConvertToDLT();
     void commandLineConvertToUTF8();
