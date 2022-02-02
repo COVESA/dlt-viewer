@@ -1,4 +1,4 @@
-# Installation of DLT Viewer with plugins on Linux
+# Installation of DLT Viewer on Linux
 # Requirements
 - Supported platforms
     - Ubuntu 18.04+
@@ -30,7 +30,6 @@
 - If AppImage dose not start - try to run it from console. Right click in file manager, *Open Terminal here*.
 - When AppImage is mounted, its content could be accessed and [AppDir](https://docs.appimage.org/reference/appdir.html#ref-appdir) could be copied to any location.
     - This command can mount AppImage `~/bin/DLT_Viewer-2.21.3-x86_64.AppImage --appimage-mount`
-    - This could be used, if you want, for example, to delete some DLT plugins from DLT Viewer folder. You need to copy AppDir somewhere as AppImage is mounted read only.
 - AppImage help
     - `~/bin/DLT_Viewer-2.21.3-x86_64.AppImage --appimage-help`
 ## Optional desktop integration

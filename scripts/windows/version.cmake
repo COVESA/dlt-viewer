@@ -1,6 +1,7 @@
 if(NOT WIN32)
     return()
 endif()
+message(STATUS "windows/version.cmake ${CMAKE_CURRENT_SOURCE_DIR}")
 
 project(GenerateVersion CXX)
 
@@ -19,21 +20,21 @@ execute_process(
 
 execute_process(
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}\\scripts\\windows\\parse_version.bat" "${CMAKE_CURRENT_SOURCE_DIR}\\src\\version.h" PACKAGE_MAJOR_VERSION
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/windows"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/windows"
     OUTPUT_VARIABLE DLT_PROJECT_VERSION_MAJOR
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 execute_process(
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}\\scripts\\windows\\parse_version.bat" "${CMAKE_CURRENT_SOURCE_DIR}\\src\\version.h" PACKAGE_MINOR_VERSION
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/windows"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/windows"
     OUTPUT_VARIABLE DLT_PROJECT_VERSION_MINOR
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
 execute_process(
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}\\scripts\\windows\\parse_version.bat" "${CMAKE_CURRENT_SOURCE_DIR}\\src\\version.h" PACKAGE_PATCH_LEVEL
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/windows"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/windows"
     OUTPUT_VARIABLE DLT_PROJECT_VERSION_PATCH
     OUTPUT_STRIP_TRAILING_WHITESPACE
 )
