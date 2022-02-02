@@ -119,8 +119,8 @@ public:
     bool getMultithreaded() { return multithreaded; }
 
     // get and set filter cache
-    void setFilterCache(QString path) { filterCache = path; }
-    QString getFilterCache() { return filterCache; }
+    void setFilterCacheEnabled(bool enabled) { filterCacheEnabled = enabled; }
+    bool getFilterCacheEnabled() { return filterCacheEnabled; }
 
     // get index of all messages
     QVector<qint64> getIndexAll() { return indexAllList; }
@@ -180,8 +180,8 @@ private:
     bool sortByTimeEnabled;
     bool sortByTimestampEnabled;
 
-    // filter cache path
-    QString filterCache;
+    // filter cache enabled
+    bool filterCacheEnabled;
 
     // file errors
     qint64 errors_in_file;

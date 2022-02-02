@@ -177,8 +177,6 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/pluginsAutoloadPath",pluginsAutoloadPath);
     settings->setValue("startup/pluginsAutoloadPathName",pluginsAutoloadPathName);
     settings->setValue("startup/filterCache",filterCache);
-    settings->setValue("startup/filterCacheDays",filterCacheDays);
-    settings->setValue("startup/filterCacheName",filterCacheName);
     settings->setValue("startup/autoConnect",autoConnect);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
@@ -422,8 +420,6 @@ void QDltSettingsManager::readSettings()
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",1).toInt();
-    filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/indexcache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();

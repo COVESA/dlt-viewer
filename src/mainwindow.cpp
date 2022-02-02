@@ -88,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
+    dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
@@ -107,9 +108,6 @@ MainWindow::MainWindow(QWidget *parent) :
     initSignalConnections();
 
     initFileHandling();
-
-    // check and clear index cache if needed
-    settingsDlg->clearIndexCacheAfterDays();
 
     /* Command plugin */
     if(QDltOptManager::getInstance()->isPlugin())
@@ -1847,10 +1845,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
-    if(settings->filterCache)
-        dltIndexer->setFilterCache(settings->filterCacheName);
-    else
-        dltIndexer->setFilterCache(QString(""));
+    dltIndexer->setFilterCacheEnabled(settings->filterCache);
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
@@ -1947,6 +1942,10 @@ void MainWindow::applySettings()
     {
         draw_interval = 1000 / DEFAULT_REFRESH_RATE;
     }
+
+    // disable or enable filter cache
+    if(dltIndexer)
+        dltIndexer->setFilterCacheEnabled(settings->filterCache);
 }
 
 
