@@ -6,9 +6,9 @@
         - https://www.qt.io/blog/qt-and-cmake-the-past-the-present-and-the-future
         - https://www.qt.io/blog/2019/08/07/technical-vision-qt-6
         - https://doc.qt.io/qt-5/cmake-get-started.html
-- To encourage contribution to DLT Viewer and plugins, development environment is configured with CMake + VS Code. Old QMake/QT Creator based workflow is preserved.
+- To encourage contribution to DLT Viewer, development environment is configured with CMake + VS Code. Old QMake/QT Creator based workflow is preserved.
 - `cmake install` and `cpack` provide easy to maintain cross platform installation and packaging setup.
-- CMake project configuration still allows build and development of `dlt-viewer` and `dlt-viewer-plugins` separately, as before with QMake.
+- CMake project configuration still allows build and development of `dlt-viewer`, as before with QMake.
 - With Ninja parallel build, build time of the whole project is not a concern anymore.
 
 # Windows development environment setup
@@ -135,8 +135,6 @@ Configuration:
     - `CMake: Clean Rebuild`
 - F7 to build.
 - F5 to start debugging.
-    - It takes time to load all plugins in debug mode.
-    - Some plugins can issue messages, because their configs are missing. Just ignore them and configure them later.
 
 ## Defining CMake variables
 - Edit `.vscode\settings.json`
@@ -194,9 +192,6 @@ cmake --build . --target dltsomeipplugin -v
         - `set(DLT_EXECUTABLE_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_BINDIR})`
         - `set(DLT_LIBRARY_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_LIBDIR})`
         - `option(DLT_USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)`
-- dlt-viewer-plugins
-    - `option(QDLT_LIB_DIR "Provide ABSOLUTE path to DIRECTORY, containing QDLT library")`
-    - `option(QDLT_INCLUDE_DIR "Provide ABSOLUTE path to QDLT include directory")`
 ## CMake targets
 - See "CMake: Project outline" on the left in VS Code
 - Verbose list of all targets `cmake --build . --target help`
@@ -204,9 +199,6 @@ cmake --build . --target dltsomeipplugin -v
 - Useful targets are:
     - `dlt-viewer` project
         - `dlt-viewer`, `dlt-parser`, `qdlt`,
-    - `dlt-viewer-plugins` project
-        - `qwt`, `protobuf`, and all plugins
-        - `protobuf` is configured as static library as recommended in it's build help.
 ## Build release package
 - Change project version
     - Update `dlt-viewer/src/version.h`
@@ -259,9 +251,8 @@ cmake --build . --target dltsomeipplugin -v
         - CMake: Set Debug Target
             - dlt-viewer
             - Command is available when there is more than one executable in the project. So only, when this CMake variable is set `DLT_PARSER=ON`.
-- This will avoid building and loading all plugins from `dlt-viewer-plugins` sub-project.
 # DLT Viewer CI builds
-- `dlt-viewer` is designed to build DLT Viewer with plugins and produce artifacts for Windows, Linux and MacOS.
+- `dlt-viewer` is designed to build DLT Viewer and produce artifacts for Windows, Linux and MacOS.
 - CMake configuration support both, comfortable development environment and CI builds without modifications and additional scripts.
 # Microsoft Visual Studio 2019
 - Development with Visual Studio is also supported by current CMake configuration starting from version VS 2019.

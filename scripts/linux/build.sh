@@ -47,7 +47,7 @@ cmake --build "${BUILD_DIR}" -v
 cmake --install "${BUILD_DIR}" --prefix "${APP_DIR}"
 
 cd "${BUILD_DIR}"
-mkdir -p release
+mkdir -p dist
 
 FULL_VERSION=$(cat "${BUILD_DIR}/full_version.txt")
 echo "FULL_VERSION=${FULL_VERSION}"
@@ -56,7 +56,8 @@ if [[ "${PLATFORM}" == 'Darwin' ]]; then
   echo TODO Use macdeployqt https://doc.qt.io/qt-5/macos-deployment.html
   # AppDir archive
   tar -czvf "DLTViewer-${FULL_VERSION}.tgz" DLTViewer
-  cp DLTViewer*.tgz release
+  cp DLTViewer*.tgz dist
+  cp ../scripts/darwin/install.md dist
 elif [[ "${PLATFORM}" == "Linux" ]]; then
   cd "${BUILD_DIR}"
   # pwd
@@ -77,6 +78,7 @@ elif [[ "${PLATFORM}" == "Linux" ]]; then
   # Please note, other CPack generators will NOT call linuxdeploy, therefore they will produce non-relocatable package.
   cpack -G External
 
-  mkdir -p release
-  cp DLTViewer*.AppImage release
+  mkdir -p dist
+  cp DLTViewer*.AppImage dist
+  cp ../scripts/linux/install.md dist
 fi
