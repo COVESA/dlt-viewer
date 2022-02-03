@@ -32,7 +32,9 @@ sudo apt install code
 - Please see [windows/build.md](../windows/build.md) on how to use CMake and VS Code with DLT Viewer project.
 
 # "Build from sources" use-case
-- Build Release configuration and do `cmake --install .` for system-wide install, or `cmake --install . --prefix DLTViewer` for local install.
+- Do not use CMake install on Linux and macOS to install DLT Viewer system wide. CMake configuration is aiming Linux AppImage and macOS Application bundle generation.
+- If you still need to install DLT Viewer system wide, please use `DLT_USE_STANDARD_INSTALLATION_LOCATION` or provide other installation configuration CMake variables.
+- Build Release configuration and do `cmake --install .` for system wide install, or `cmake --install . --prefix DLTViewer` for local install.
     - Set CMake variable `DLT_USE_STANDARD_INSTALLATION_LOCATION=ON`, see [CMakeLists.txt](../CMakeLists.txt)
     - OR set `DLT_USE_STANDARD_INSTALLATION_LOCATION=OFF` and use `DLT_XXX_INSTALLATION_PATH` variables, see [build.sh](./build.sh)
 

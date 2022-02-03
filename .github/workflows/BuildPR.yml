@@ -27,15 +27,15 @@ jobs:
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
       - name: install build environment
-        run: scripts/linux/install.sh
+        run: scripts/darwin/install.sh
       - name: Build project
-        run: scripts/linux/build.sh
+        run: scripts/darwin/build.sh
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
         with:
           name: DLTViewer-${{ matrix.macos }}-x86_64
-          path: build/dist
+          path: build/dist/DLTViewer*.tgz
 
   buildLinux:
     name: Build ${{ matrix.ubuntu }}
@@ -60,9 +60,7 @@ jobs:
         if: ${{ success() }}
         with:
           name: DLTViewer-linux-x86_64
-          path: |
-            build/dist/DLTViewer*.AppImage
-            build/dist/*.md
+          path: build/dist/DLTViewer*.tgz
 
   buildWindows:
     name: Build Windows

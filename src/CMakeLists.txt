@@ -63,31 +63,38 @@ endif()
 
 set_target_properties(dlt-viewer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    INSTALL_RPATH "$ORIGIN/../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+    INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
 
-install(TARGETS dlt-viewer
+    install(TARGETS dlt-viewer
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
     # Underscore for NSIS compatibility https://gitlab.kitware.com/cmake/cmake/-/issues/19982
     COMPONENT dlt_viewer)
+
+if(WIN32)
+    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH "${DLT_EXECUTABLE_INSTALLATION_PATH}")
+else()
+    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
+endif()
 
 install(FILES
     ../LICENSE.txt
     ../MPL.txt
     ../README.md
     ../ReleaseNotes_Viewer.txt
-    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
     COMPONENT dlt_viewer)
 install(FILES
     ../doc/dlt_viewer_user_manual.pdf
     ../doc/dlt_viewer_plugins_programming_guide.pdf
-    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/doc"
+    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/doc"
     COMPONENT documentation)
 install(DIRECTORY
     ../filters
-    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
     COMPONENT dlt_viewer)
 install(DIRECTORY
     ../plugin/examples
-    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/plugins"
+    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/plugins"
     COMPONENT dlt_viewer)
+
 include(cmake/${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)

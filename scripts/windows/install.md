@@ -1,11 +1,12 @@
 # Installation of DLT Viewer on Windows
 # Requirements
 - Supported platforms
-    - Windows 7 x64
-    - Windows 10 x64
-    - Windows 11 x64
+    - Windows 7 x86_64
+    - Windows 10 x86_64
+    - Windows 11 x86_64
 - Administrator rights are **not needed**
 - No need to download and install QT framework.
+
 # Installation
 - Install **Microsoft Visual C++ 2017 Redistributable (x64)** or later
         - Download **latest package** from [Visual C++ Redistributable](https://support.microsoft.com/en-us/help/2977003/)

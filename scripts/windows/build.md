@@ -185,12 +185,13 @@ cmake --build . --target dltsomeipplugin -v
 - dlt-viewer
     - `option(DLT_PARSER "Build DLT Parser" OFF)`
     - `option(DLT_DUMMY_PLUGINS "Build Dummy plugins" OFF)`
-    - Linux only:
-        -  `option(DLT_USE_STANDARD_INSTALLATION_LOCATION "Use standard GNU installation locations" OFF)`
+    - Linux and macOs only:
+        - `option(DLT_USE_STANDARD_INSTALLATION_LOCATION "Use standard GNU installation locations" OFF)`
         - `set(DLT_PLUGIN_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_LIBDIR}/dlt-viewer/plugins)`
         - `set(DLT_RESOURCE_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_DATADIR}/dlt-viewer)`
         - `set(DLT_EXECUTABLE_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_BINDIR})`
         - `set(DLT_LIBRARY_INSTALLATION_PATH ${CMAKE_INSTALL_FULL_LIBDIR})`
+        - `set(DLT_APP_DIR_NAME "DLTViewer")` for Linux, `set(DLT_APP_DIR_NAME "DLTViewer.app")` for macOS
         - `option(DLT_USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)`
 ## CMake targets
 - See "CMake: Project outline" on the left in VS Code
@@ -222,6 +223,7 @@ cmake --build . --target dltsomeipplugin -v
 ## CMake install
 - `cmake install . --prefix C:\DltViewerSDK` command replaces old approach with `.bat` files to prepare DLT Viewer distribution.
 - Each CMake target is configured with additional files, which belongs to it. This allows to reduce amount of scripts and simplify maintenance of cross platform development.
+- Do not use CMake install on Linux and macOS to install DLT Viewer system wide. CMake configuration is aiming AppImage and macOS bundle generation.
 ## CPack
 - [CPack](https://cmake.org/cmake/help/latest/module/CPack.html) is a separate command line utility, part of CMake.
 - CPack uses same concept of generators to produce specific build artifact.

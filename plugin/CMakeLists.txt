@@ -22,7 +22,7 @@ function(add_plugin NAME)
     set_target_properties(${NAME} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/plugins
         RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/plugins
-        INSTALL_RPATH "$ORIGIN/../../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+        INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../../lib;>$<$<BOOL:${APPLE}>:@loader_path/../../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
 
     install(TARGETS ${NAME}
         DESTINATION "${DLT_PLUGIN_INSTALLATION_PATH}"

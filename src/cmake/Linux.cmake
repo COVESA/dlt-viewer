@@ -12,12 +12,12 @@ install(FILES
     COMPONENT dlt_viewer)
 install(FILES
     "resources/icon/256x256/org.genivi.DLTViewer.png"
-    DESTINATION "."
+    DESTINATION "${DLT_APP_DIR_NAME}"
     RENAME ".DirIcon"
     COMPONENT dlt_viewer)
 install(FILES
     "resources/icon/256x256/org.genivi.DLTViewer.png"
-    DESTINATION "."
+    DESTINATION "${DLT_APP_DIR_NAME}"
     RENAME "dlt-viewer.png"
     COMPONENT dlt_viewer)
 
@@ -28,5 +28,5 @@ install(PROGRAMS
     COMPONENT dlt_viewer)
 install(PROGRAMS
     "resources/dlt-viewer.desktop"
-    DESTINATION "."
+    DESTINATION "${DLT_APP_DIR_NAME}"
     COMPONENT dlt_viewer)
