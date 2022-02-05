@@ -24,11 +24,12 @@
 /* this kind of change is tracked in the settings dialogr */
 /* for other bugfixes and not major feature enhancement just use patch level */
 #define PACKAGE_VERSION_STATE "release"
-#define PACKAGE_MAJOR_VERSION "2"
-#define PACKAGE_MINOR_VERSION "21"
-#define PACKAGE_PATCH_LEVEL "3"
-#define PACKAGE_VERSION "2.21.3"
+#define PACKAGE_MAJOR_VERSION 2
+#define PACKAGE_MINOR_VERSION 22
+#define PACKAGE_PATCH_LEVEL 0
+#define PACKAGE_VERSION "2.22.0"
 #define PACKAGE_REVISION ""
+#define PACKAGE_DESCRIPTION "DLT Viewer"
 #define DLT_SUPPORT_MAIL_ADDRESS "genivi-diagnostic-log-and-trace@lists.genivi.org"
 #define DLT_SUPPORT_NAME "GENIVI"
 #endif

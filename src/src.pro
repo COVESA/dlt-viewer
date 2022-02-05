@@ -209,10 +209,10 @@ OTHER_FILES += \
     ../ReleaseNotes_Viewer.txt \
 
 # This contains all the button graphics for toolbar
-RESOURCES += resource.qrc
+RESOURCES += resources/resource.qrc
 
-# Instructions to compile the icon.
-RC_FILE = icon/dlt_viewer.rc
+# Instructions to compile resources.
+RC_FILE = resources/dlt_viewer.rc
 
 DISTFILES += \
     ../build_qwt_windows_qt5_MSVC.bat

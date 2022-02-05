@@ -157,7 +157,7 @@ void SettingsDialog::assertSettingsVersion()
         return; // The settings were empty already
     }
 
-   if(major > QString(PACKAGE_MAJOR_VERSION).toInt() || minor > QString(PACKAGE_MINOR_VERSION).toInt())
+   if(major > PACKAGE_MAJOR_VERSION || minor > PACKAGE_MINOR_VERSION)
     {
         QString msg;
         msg.append("The application version has changed ! The settings file config.ini might be incompatible.\n");
@@ -235,8 +235,6 @@ void SettingsDialog::writeDlg()
     ui->checkBoxPluginsAutoload->setCheckState(settings->pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
     ui->lineEditPluginsAutoload->setText(settings->pluginsAutoloadPathName);
     ui->checkBoxFilterCache->setCheckState(settings->filterCache?Qt::Checked:Qt::Unchecked);
-    ui->spinBoxIndexCacheDays->setValue(settings->filterCacheDays);
-    ui->lineEditFilterCache->setText(settings->filterCacheName);
     ui->checkBoxAutoConnect->setCheckState(settings->autoConnect?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoScroll->setCheckState(settings->autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(settings->autoMarkFatalError?Qt::Checked:Qt::Unchecked);
@@ -404,8 +402,6 @@ void SettingsDialog::readDlg()
     settings->pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
     settings->pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
     settings->filterCache = (ui->checkBoxFilterCache->checkState() == Qt::Checked);
-    settings->filterCacheDays = ui->spinBoxIndexCacheDays->value();
-    settings->filterCacheName = ui->lineEditFilterCache->text();
     settings->autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
     settings->autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     settings->autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
@@ -602,22 +598,6 @@ void SettingsDialog::on_toolButtonPluginsAutoload_clicked()
     ui->lineEditPluginsAutoload->setText(fileName);
 }
 
-
-void SettingsDialog::on_toolButtonFilterCache_clicked()
-{
-    QString fileName = QFileDialog::getExistingDirectory(this,
-        tr("Filter Cache directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change current working directory */
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-    settings->filterCacheName = QFileInfo(fileName).absolutePath();
-
-    ui->lineEditFilterCache->setText(fileName);
-}
-
 void SettingsDialog::on_groupBoxConId_clicked(bool checked)
 {
     if(checked){
@@ -668,66 +648,6 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
         ui->checkBoxAutomaticTimezone->setEnabled(true);
     }
 }
-
-
-void SettingsDialog::on_pushButtonClearIndexCache_clicked()
-{
-    QString path = ui->lineEditFilterCache->text();
-    QDir dir(path);
-    dir.setNameFilters(QStringList() << "*.dix");
-    dir.setFilter(QDir::Files);
-    foreach(QString dirFile, dir.entryList())
-    {
-        dir.remove(dirFile);
-    }
-}
-
-void SettingsDialog::clearIndexCacheAfterDays()
-{
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-
-    // calculate comparison date
-    QDateTime comparisonDate(QDateTime::currentDateTime());
-    comparisonDate = comparisonDate.addSecs((quint64)settings->filterCacheDays*-1*60*60*24);
-
-    // check if index cache is enabled
-    if(0 == settings->filterCache)
-    {
-        return;
-    }
-
-    /* check if directory for configuration exists */
-    QString path = settings->filterCacheName;
-    QDir dir(path);
-    if(!dir.exists())
-    {
-        /* directory does not exist, make it */
-        if(!dir.mkpath(dir.absolutePath()))
-        {
-            /* creation of directory fails */
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                           QString("Cannot create directory to store index cache files!\n\n")+dir.absolutePath(),
-                                           QMessageBox::Ok,
-                                           QMessageBox::Ok);
-        }
-        return;
-    }
-
-    // go through each file and check modification date of file
-    dir.setNameFilters(QStringList() << "*.dix");
-    dir.setFilter(QDir::Files);
-    foreach(QString dirFile, dir.entryList())
-    {
-        QFileInfo info(path+"/"+dirFile);
-        QDateTime fileDate = info.lastRead();
-
-        //qDebug() << fileDate.toString("dd.MM.yyyy hh:mm:ss.zzz") << comparisonDate.toString("dd.MM.yyyy hh:mm:ss.zzz");
-
-        if(fileDate < comparisonDate)
-            dir.remove(dirFile);
-    }
-}
-
 
 void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 {

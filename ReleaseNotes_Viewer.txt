@@ -3,15 +3,9 @@ DLT Viewer  - Release Notes
 Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
-Changes
--------
-9.12.2020 AW: 2.21.0 Release
-02.05.2019 GW: 2.19.0 Release
-14.04.2020 GW: 2.20.0 Release
-
 Version
 -------
-Version 2.21.0 RELEASE
+Version 2.22.0 RELEASE
 
 
 Known issues
@@ -22,6 +16,103 @@ Known issues
 
 Changes
 -------
+
+2.22.0
+
+    * Adapt cmake build (#244)
+    * fix: persist bool args with DLT_TYLE_8BIT (#247)
+    * Update to Qt 5.15.2, Visual Studio 2019 Build Tools and Qwt 6.1.6
+    * Fix bat build
+    * Central config for all Windows batch files (#240)
+    * Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake (#239)
+    * Windows build script improvements (#226)
+    * Fix rmdir usage in Windows build script
+        Apparently, there are problems setting the errorlevel
+        variable after rmdir was called and if errorlevel is
+        checked afterwards it will be always reported as 0,
+        although there were errors when deleting the directories/files.
+        Executing the "rem" command on error works around this
+        issue. For details see https://stackoverflow.com/a/11137825
+    * Windows build script improvement for automation
+    * don't prompt for user input at the end
+    * exit only the script (exit /b) instead of the whole cmd process
+    * Add interactive build script for Windows that waits for user input when finished
+    * Remove unnecessary connect and disconnect during reload log file (#230)
+    * User experience enhancements for filters (#227)
+    * add "Filter Clear all" option to Filter table context menu
+    * support deleting all selected filters (multi-selection support)
+    * support deleting all selected filters with the DELETE key
+    * Hide parse directory progress bar when "--no-gui" option is used (#219)
+    * Minor refactoring at mainwindow and DltExporter  (#216)
+    * [DltExporter] Remove '\n' from the end of clipboard string
+        It's not needed since it's at the end.
+    * [dockWidgetSearchIndex] Add results count to dockWidgetSearchIndex title
+    * Support more serial baudrates (#213)
+
+2.21.3
+
+    * Initial version of DLT Test Robot Plugin
+    * Fix DLT injection multiple messages
+    * Added filter function to DLTTestRobot plugin
+    * Keep whitespaces in ascii export (#210)
+    * Fix serial connection stopped when tcp disconnected (#209)
+    * Fix crash when TCP connection stopped and Serial connection available (#207)
+    * [Bugfix] Avoid error Message when cancelling open filter dialog (#204)
+    * Add "Save IDs to csv" to config tab (#206)
+        to get a list of registered APID/CTID + description from a dlt log file and save it as comma seperated file
+    * Count up version of filetransferplugin
+    * Increased priority of manual markers (#195)
+    * Remove using default filter index (#194)
+    * Removed App Id from Filetransfer Plugin (#193)
+    * Disable RPATH usage: (#192)
+        Make the usage of RPATH settings to detect non-standard QT
+        installations optional.
+    * Reduce macOS builds (#190)
+    * Keep windows artifacts (#189)
+
+2.21.2
+
+    * Bugfix: re-enable UDP reception which was destroyed due to regression in 18.6.20 remove warning "Attribute Qt::AA_EnableHighDpiScaling
+        must be set before QCoreApplication is created" Signed-off-by: Gernot Wirschal <gernot.wirschal@bmw.de>
+    * Windows release artifact (#187)
+    * Use qt 5 on macOS (#186)
+    * Release action (#184)
+    * Remove Windows warning (#183)
+    * Ignore Intellij files (#182)
+    * Make Linux artifact executable (#181)
+    * doc: Fix executable name (#180)
+        executable name is dlt-viewer.
+        Fallout from commit 0e6539e2a5ec6a3d3e5bbb2360463328073e70ea.
+    * Artifact name
+    * Remove pointless comment
+    * appveyor build replaced by github actions (#173)
+    * Introdcue Dependabot to keep actions up to date (#170)
+    * Pause build windows on desktop when finished (#169)
+    * Build on GitHub (#165)
+    * macOS build on Github CI
+    * Remove Travis
+    * Reduce XCode builds
+    * Make Windows Builds work
+    * removed qwt build from ci for now as it seemed optional and needs more refactoring
+    * use correct exit codes for the three .bat files
+    * upload a complete artifact including QT DLLs
+    * make some parameters for the bat files CI-Friendly
+    * No build for Ubuntu 16.04
+
+2.21.1
+
+    * New Connection type Serial ASCII (#166)
+        Provide a new connection type "Serial ASCII" for serial ASCII terminals.
+        All received lines over a serial line are converted and written into DLT message into the currently opened DLT file.
+        Select Interface Type "Serial ASCII" in the ECU configuration.
+    * Fix selection problem when index column not visible (#163)
+    * Fix no update of empty search table (#162)
+    * Fix read of DLT with DLT header in payload (#121)
+    * Remove wrong (swapped) clone commands for macOS (#152)
+    * Build on macOS Big Sur (#151)
+    * CI scripts execute able (#150)
+    * attempt to fix icon for macOS (#149)
+    * Fix index out of range issue (#160)
 
 2.21.0
 

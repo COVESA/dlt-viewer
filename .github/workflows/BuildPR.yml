@@ -11,10 +11,11 @@ on:
 jobs:
   buildMac:
     name: Build macOS
-    runs-on: macOS-latest
+    runs-on: macos-11
     strategy:
       matrix:
-        xcode: [Xcode_12.4, Xcode_11.7]
+        macos: [macos-10.15, macos-11]
+        xcode: [Xcode_12.4]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
@@ -25,24 +26,22 @@ jobs:
         run: ls -n /Applications/ | grep Xcode*
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-      - name: install qt 5
-        run: brew install qt@5
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
         with:
-          name: DLT-macOS-${{ matrix.xcode }}
-          path: build/release
+          name: DLTViewer-${{ matrix.macos }}-x86_64
+          path: build/dist
 
   buildLinux:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: [ubuntu-18.04, ubuntu-20.04]
+        ubuntu: [ubuntu-18.04]
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
@@ -51,23 +50,25 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Make artifact executable
-        run: chmod -R +x build/release 
+        run: chmod -R +x build/dist
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
         with:
-          name: DLT-${{ matrix.ubuntu }}
-          path: build/release
+          name: DLTViewer-linux-x86_64
+          path: |
+            build/dist/DLTViewer*.AppImage
+            build/dist/*.md
 
   buildWindows:
     name: Build Windows
     strategy:
       matrix:
-        task: [parser, sdk]
+        task: [sdk]
     runs-on: windows-2019
     steps:
       - name: Checkout
@@ -79,11 +80,19 @@ jobs:
         uses: jurplel/install-qt-action@v2
         with:
           version: 5.12.12
-      - name: Build ${{ matrix.task }}
-        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+      - name: Build with CMake ${{ matrix.task }}
+        run: >
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE;
+          $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
+          $env:CPACK_7Z="true";
+          $env:CPACK_NSIS="true";
+          ./build_sdk_windows_qt5_MSVC_cmake.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v2.3.1
         if: ${{ success() }}
         with:
-          name: DLT-Windows-${{ matrix.task }}
-          path: build/dist
+          name: DLTViewer-windows-x86_64
+          path: |
+            build/dist/DLTViewer*.7z
+            build/dist/DLTViewer*.exe
+            build/dist/*.md

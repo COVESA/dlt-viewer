@@ -56,10 +56,6 @@ public:
     QStringList getRecentFilters();
     QString getWorkingDirectory();
 
-    // this function checks if old cache files should be deleted
-    // This function should be called during initialisation of dlt viewer
-    void clearIndexCacheAfterDays();
-
 Q_SIGNALS:
     void FilterPathChanged();
     void PluginsAutoloadChanged();
@@ -83,8 +79,6 @@ private slots:
 
     void on_toolButtonDefaultFilterPath_clicked();
     void on_toolButtonPluginsAutoload_clicked();
-    void on_toolButtonFilterCache_clicked();
-    void on_pushButtonClearIndexCache_clicked();
     void on_groupBoxSessionId_clicked(bool checked);
     void on_groupBoxArguments_clicked(bool checked);
     void on_spinBox_showArguments_valueChanged(int i);

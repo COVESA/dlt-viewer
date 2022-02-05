@@ -214,14 +214,14 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
 
     if ( role == Qt::TextAlignmentRole ) {
-        switch(index.column())
+       /*switch(index.column())
        {
            //override default alignment here if needed
            //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
            default:
-                 return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
 
-       }
+       }*/
+       return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
    }
 
     return QVariant();
@@ -238,12 +238,13 @@ QVariant SearchTableModel::headerData(int section, Qt::Orientation orientation,
            return FieldNames::getName((FieldNames::Fields)section, project->settings);
        case Qt::TextAlignmentRole:
            {
-           switch(section)
+           /*switch(section)
                {
                  //override default alignment here if needed
                  //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-                 default:return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
-               }
+                 default:
+               }*/
+           return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
            }
         default:
            break;

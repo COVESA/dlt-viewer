@@ -75,8 +75,6 @@ public:
     int pluginsAutoloadPath; // local setting
     QString pluginsAutoloadPathName; // local setting
     int filterCache; // local setting
-    int filterCacheDays; // local setting
-    QString filterCacheName; // local setting
     QByteArray geometry; // local setting
     QByteArray windowState; // local setting
     int RefreshRate; // local setting

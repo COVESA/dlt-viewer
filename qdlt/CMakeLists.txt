@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MPL-2.0
+#
 # Copyright (C) 2016, Jack S. Smith
 #
 # This file is part of GENIVI DLT-Viewer project.
@@ -13,45 +15,81 @@
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 #
 
-set(QDLT_LIBRARY_TYPE STATIC)
+add_library(qdlt SHARED
+    dlt_common.c
+    qdltipconnection.cpp
+    qdlttcpconnection.cpp
+    qdltudpconnection.cpp
+    qdltserialconnection.cpp
+    qdltmsg.cpp
+    qdltfilter.cpp
+    qdltfile.cpp
+    qdltcontrol.cpp
+    qdltconnection.cpp
+    qdltbase.cpp
+    qdltargument.cpp
+    qdltfilterlist.cpp
+    qdltfilterindex.cpp
+    qdltdefaultfilter.cpp
+    qdltmessagedecoder.cpp
+    qdltpluginmanager.cpp
+    qdltplugin.cpp
+    qdltsegmentedmsg.cpp
+    qdltoptmanager.cpp
+    qdltsettingsmanager.cpp)
+
+target_compile_definitions(qdlt PRIVATE
+    BYTE_ORDER=LITTLE_ENDIAN
+    PLUGIN_INSTALLATION_PATH="${DLT_PLUGIN_INSTALLATION_PATH}")
 
 if(WIN32)
-add_definitions(-DQDLT_LIBRARY)
-set(QDLT_LIBRARY_TYPE SHARED)
+    target_compile_definitions(qdlt PRIVATE QDLT_LIBRARY QT_VIEWER)
+else()
+    target_compile_definitions(qdlt PRIVATE _TTY_POSIX_ QT_VIEWER)
 endif()
 
-add_library (qdlt ${QDLT_LIBRARY_TYPE} dlt_common.c
-                  qdltipconnection.cpp
-                  qdlttcpconnection.cpp
-                  qdltudpconnection.cpp
-                  qdltserialconnection.cpp
-                  qdltmsg.cpp
-                  qdltfilter.cpp
-                  qdltfile.cpp
-                  qdltcontrol.cpp
-                  qdltconnection.cpp
-                  qdltbase.cpp
-                  qdltargument.cpp
-                  qdltfilterlist.cpp
-                  qdltfilterindex.cpp
-                  qdltdefaultfilter.cpp
-                  qdltmessagedecoder.cpp
-                  qdltpluginmanager.cpp
-                  qdltplugin.cpp
-                  qdltsegmentedmsg.cpp
-                  qdltoptmanager.cpp
-                  qdltsettingsmanager.cpp)
+target_include_directories(qdlt PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
-target_include_directories (qdlt  PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
-                                         ${CMAKE_CURRENT_SOURCE_DIR}/../src)
-
-#target_link_libraries(qdlt Qt5::Core Qt5::Network Qt5::SerialPort)
-target_link_libraries(qdlt Qt5::Core Qt5::Network Qt5::Widgets Qt5::SerialPort -lstdc++)
+target_link_libraries(qdlt PUBLIC
+    Qt5::Core
+    Qt5::Network
+    Qt5::Widgets
+    Qt5::SerialPort)
 
 if(WIN32)
-set(QDLT_LINK_LIBS ${QDLT_LINK_LIBS} ws2_32)
+    target_link_libraries(qdlt PUBLIC ws2_32)
 endif()
 
-target_link_libraries(qdlt ${QDLT_LINK_LIBS})
+set_target_properties(qdlt PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    INSTALL_RPATH "$ORIGIN;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
 
-install(TARGETS qdlt DESTINATION ${LIBRARY_INSTALLATION_PATH})
+install(TARGETS qdlt
+    LIBRARY DESTINATION "${DLT_LIBRARY_INSTALLATION_PATH}"
+    RUNTIME DESTINATION "${DLT_LIBRARY_INSTALLATION_PATH}"
+    COMPONENT qdlt)
+
+# Install QDLT SDK
+install(TARGETS qdlt
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/sdk/lib"
+    COMPONENT qdlt_sdk)
+
+install(DIRECTORY "."
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/sdk/include"
+    COMPONENT qdlt_sdk
+    FILES_MATCHING PATTERN "*.h")
+
+set(SDK_EXAMPLES
+    dummycommandplugin
+    dummycontrolplugin
+    dummydecoderplugin
+    dummyviewerplugin)
+
+foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
+    install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
+        DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/sdk/src"
+        COMPONENT qdlt_sdk)
+endforeach()

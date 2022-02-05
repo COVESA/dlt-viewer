@@ -1,9 +1,10 @@
-@echo off
+REM @echo off
 
 REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
 REM 25.11.20 1.1       Alexander Wenzel      Update to Qt 5.12.10
 REM 11.1.21  1.2       Alexander Wenzel      Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake
+REM 27.1.21  1.2       Alexander Wenzel      Update using cmake install
 
 echo ************************************
 echo ***      DLT Viewer SDK (cmake)  ***
@@ -11,21 +12,28 @@ echo ************************************
 
 call build_config.bat
 
-if '%WORKSPACE%'=='' (
-    if '%DLT_VIEWER_SDK_DIR%'=='' (
+REM https://stackoverflow.com/questions/4983508/can-i-have-an-if-block-in-dos-batch-file
+if "%WORKSPACE%"=="" (goto NO_WORKSPACE) else (goto WITH_WORKSPACE)
+:NO_WORKSPACE
+    echo WORKSPACE variable is not defined
+    set SOURCE_DIR=%CD%
+    set BUILD_DIR=%SOURCE_DIR%\build\release
+    set DIST_DIR=%SOURCE_DIR%\build\dist
+
+    if "%DLT_VIEWER_SDK_DIR%"=="" (
         set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
     )
 
-    set SOURCE_DIR=%CD%
-    set BUILD_DIR=%CD%\build\release
-) else (
-    if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\build\dist\DltViewerSDK
-    )
-
+    goto Continue1
+:WITH_WORKSPACE
     set SOURCE_DIR=%WORKSPACE%
-    set BUILD_DIR=%WORKSPACE%\build\release
-)
+    set BUILD_DIR=%SOURCE_DIR%\build\release
+    set DIST_DIR=%SOURCE_DIR%\build\dist
+
+    if "%DLT_VIEWER_SDK_DIR%"=="" (
+        set DLT_VIEWER_SDK_DIR=%DIST_DIR%\DltViewerSDK
+    )
+:Continue1
 
 echo ************************************
 echo * QTDIR     = %QTDIR%
@@ -34,6 +42,7 @@ echo * PATH      = %PATH%
 echo * DLT_VIEWER_SDK_DIR = %DLT_VIEWER_SDK_DIR%
 echo * SOURCE_DIR         = %SOURCE_DIR%
 echo * BUILD_DIR          = %BUILD_DIR%
+echo * DIST_DIR           = %DIST_DIR%
 echo ************************************
 
 if exist build (
@@ -79,7 +88,7 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 cd Release
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-cmake -G Ninja -DCMAKE_BUILD_TYPE=Release ..\..
+cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DDLT_PARSER=ON -DCMAKE_INSTALL_PREFIX=%DLT_VIEWER_SDK_DIR% ..\..
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 cmake --build .
@@ -89,161 +98,21 @@ echo ************************************
 echo ***         Create SDK           ***
 echo ************************************
 
-if not exist %DLT_VIEWER_SDK_DIR% mkdir %DLT_VIEWER_SDK_DIR%
-echo *** Create directories %DLT_VIEWER_SDK_DIR% ***
+cmake --install .
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-mkdir %DLT_VIEWER_SDK_DIR%\plugins
+if "%CPACK_7Z%" NEQ "" (
+    echo CPack 7Z
+    "C:\Program Files\CMake\bin\cpack" -G 7Z
+    cp DLTViewer*.7z %DIST_DIR%\
+)
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-mkdir %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\include
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\filters
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\platforms
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\styles
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\doc
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-mkdir %DLT_VIEWER_SDK_DIR%\cache
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-echo *** Copy files ***
-copy %QTDIR%\bin\Qt?Core.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Gui.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Network.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Sql.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Svg.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Widgets.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?PrintSupport.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?Xml.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?OpenGL.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\bin\Qt?SerialPort.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_VIEWER_SDK_DIR%\styles
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\dlt-viewer.exe %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\nonverboseplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\filetransferplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltsystemviewerplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltdbusplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dltlogstorageplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\plugins\dlttestrobotplugin.dll %DLT_VIEWER_SDK_DIR%\plugins
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\doc\*.txt %DLT_VIEWER_SDK_DIR%\doc
-
-copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %DLT_VIEWER_SDK_DIR%
-
-copy %SOURCE_DIR%\README.md %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\LICENSE.txt %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\MPL.txt %DLT_VIEWER_SDK_DIR%
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\qdlt\*.h %DLT_VIEWER_SDK_DIR%\sdk\include
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\bin\qdlt.dll %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %BUILD_DIR%\qdlt\qdlt.lib %DLT_VIEWER_SDK_DIR%\sdk\lib
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\dummyviewerplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-
-copy %SOURCE_DIR%\plugin\dummydecoderplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-
-copy %SOURCE_DIR%\plugin\dummycontrolplugin %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-
-copy %SOURCE_DIR%\sdk\BuildPlugins.pro %DLT_VIEWER_SDK_DIR%\sdk\src
-
-copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummydecoderplugin
-
-copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummyviewerplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %DLT_VIEWER_SDK_DIR%\sdk\src\dummycontrolplugin
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\examples\nonverboseplugin_configuration.xml %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\plugin\examples\filetransferplugin_configuration.xml %DLT_VIEWER_SDK_DIR%\plugins\examples
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-copy %SOURCE_DIR%\filters\* %DLT_VIEWER_SDK_DIR%\filters
+if "%CPACK_NSIS%" NEQ "" (
+    echo CPack NSIS
+    "C:\Program Files\CMake\bin\cpack" -G NSIS
+    cp DLTViewer*.exe %DIST_DIR%\
+)
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
 GOTO QUIT
@@ -253,7 +122,6 @@ echo ####################################
 echo ###       ERROR occured          ###
 echo ####################################
 exit /b 1
-
 
 :QUIT
 echo ************************************

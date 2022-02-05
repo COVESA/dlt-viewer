@@ -88,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
+    dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
@@ -107,9 +108,6 @@ MainWindow::MainWindow(QWidget *parent) :
     initSignalConnections();
 
     initFileHandling();
-
-    // check and clear index cache if needed
-    settingsDlg->clearIndexCacheAfterDays();
 
     /* Command plugin */
     if(QDltOptManager::getInstance()->isPlugin())
@@ -1628,7 +1626,7 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
 
 void MainWindow::reloadLogFileStop()
 {
- 
+
 }
 
 void MainWindow::reloadLogFileProgressMax(int num)
@@ -1847,10 +1845,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
-    if(settings->filterCache)
-        dltIndexer->setFilterCache(settings->filterCacheName);
-    else
-        dltIndexer->setFilterCache(QString(""));
+    dltIndexer->setFilterCacheEnabled(settings->filterCache);
 
     // run through all viewer plugins
     // must be run in the UI thread, if some gui actions are performed
@@ -1916,12 +1911,12 @@ void MainWindow::applySettings()
 
     for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
     {
-        switch(col)
+        /*switch(col)
         {
         //override column visibility here
         //FieldNames::SessionId: ui->tableView->setColumnHidden(col,true);
-        default:ui->tableView->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));
-        }
+        }*/
+        ui->tableView->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));
     }
     //Removing lines which are unlinkely to be necessary for a search. Maybe make configurable.
     //Ideally possible with right-click
@@ -1947,6 +1942,10 @@ void MainWindow::applySettings()
     {
         draw_interval = 1000 / DEFAULT_REFRESH_RATE;
     }
+
+    // disable or enable filter cache
+    if(dltIndexer)
+        dltIndexer->setFilterCacheEnabled(settings->filterCache);
 }
 
 
@@ -2174,7 +2173,7 @@ QStringList MainWindow::getAvailableSerialPorts()
     QList<QSerialPortInfo> ports = QSerialPortInfo::availablePorts();
     QStringList portList;
 
-    for (int i = 0; i < ports.size(); i++) 
+    for (int i = 0; i < ports.size(); i++)
     {
         portList << ports.at(i).portName();
     }
@@ -3794,7 +3793,7 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins.at(i);
             item->updateMsg(num,qmsg);
       }
-     } 
+     }
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
       {
@@ -3813,7 +3812,7 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins[i];
             item->updateMsgDecoded(num,qmsg);
       }
-     } 
+     }
     }
 
     if (!draw_timer.isActive())
@@ -5175,7 +5174,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Architecture: Little Endian\n\n")+
                          #endif
-                             QString("(C) 2016 BMW AG\n"));
+                             QString("(C) 2016,2022 BMW AG\n"));
 }
 
 

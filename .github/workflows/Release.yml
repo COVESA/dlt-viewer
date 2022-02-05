@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
   buildMac:
@@ -11,7 +11,7 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        xcode: [ Xcode_12.2 ]
+        xcode: [Xcode_12.2]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0
@@ -25,9 +25,9 @@ jobs:
       - name: install qt 5
         run: brew install qt@5
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Archive artifact
         run: zip DLT-macOS.zip -r build/release
       - name: Upload DLT artifact
@@ -40,7 +40,7 @@ jobs:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: [ ubuntu-20.04 ]
+        ubuntu: [ubuntu-20.04]
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
@@ -49,9 +49,9 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/install.sh
+        run: scripts/linux/install.sh
       - name: Build project
-        run: scripts/build.sh
+        run: scripts/linux/build.sh
       - name: Make artifact executable
         run: chmod -R +x build/release
       - name: Archive artifact
@@ -66,7 +66,7 @@ jobs:
     name: Build Windows
     strategy:
       matrix:
-        task: [ parser, sdk ]
+        task: [parser, sdk]
     runs-on: windows-2019
     steps:
       - name: Checkout
@@ -80,9 +80,13 @@ jobs:
           mirror: http://ftp.fau.de/qtproject/
           version: 5.12.12
       - name: Build ${{ matrix.task }}
-        run: $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\'); ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+        run: >
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
+          ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
       - name: Archive artifact
-        run: Compress-Archive -Path .\build\dist -DestinationPath DLT-Windows-${{ matrix.task }}.zip
+        run: >
+          Compress-Archive -Path .\build\dist -DestinationPath
+          DLT-Windows-${{ matrix.task }}.zip
       - name: Upload DLT artifact
         uses: actions/upload-artifact@v2.3.1
         with:
@@ -92,7 +96,7 @@ jobs:
   createRelease:
     name: Create release
     runs-on: ubuntu-20.04
-    needs: [ buildMac, buildLinux, buildWindows ]
+    needs: [buildMac, buildLinux, buildWindows]
     steps:
       - name: Checkout
         uses: actions/checkout@v2.4.0

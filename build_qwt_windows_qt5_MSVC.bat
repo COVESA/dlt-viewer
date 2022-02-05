@@ -14,10 +14,6 @@ call build_config.bat
 
 set WORKINGDIR=%CD%
 
-IF "%QWT%"=="" (
-    set QWT=6.2.0
-)
-
 if '%WORKSPACE%'=='' (
     IF "%QWT_DIR%"=="" (
         set QWT_DIR=C:\Qwt-%QWT%_%QTVER%
