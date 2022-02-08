@@ -3,13 +3,14 @@ set(QMAKE_EXECUTABLE "@QMAKE_EXECUTABLE@")
 set(CMAKE_BINARY_DIR "@CMAKE_BINARY_DIR@")
 set(CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@")
 set(CPACK_PACKAGE_VERSION "@CPACK_PACKAGE_VERSION@")
+set(DLT_APP_DIR_NAME "@DLT_APP_DIR_NAME@")
 
 message(STATUS "Calling linuxdeploy ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "QMAKE=${QMAKE_EXECUTABLE}")
 
 # See CMAKE_INSTALL_PREFIX
 execute_process(COMMAND ${CMAKE_COMMAND} "--install" "." "--prefix" "${CMAKE_INSTALL_PREFIX}"
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
     RESULT_VARIABLE STATUS)
 
 if(STATUS AND NOT STATUS EQUAL 0)
@@ -32,14 +33,14 @@ execute_process(COMMAND
     "${LINUXDEPLOY_EXECUTABLE}"
     --plugin qt
     --output appimage
-    --appdir ${CMAKE_INSTALL_PREFIX}
-    --executable ${CMAKE_INSTALL_PREFIX}/usr/bin/dlt-viewer
-    --deploy-deps-only ${CMAKE_INSTALL_PREFIX}/usr/bin/plugins
-    --desktop-file ${CMAKE_INSTALL_PREFIX}/dlt-viewer.desktop
-    --icon-file ${CMAKE_INSTALL_PREFIX}/dlt-viewer.png
+    --appdir ${DLT_APP_DIR_NAME}
+    --executable ${DLT_APP_DIR_NAME}/usr/bin/dlt-viewer
+    --deploy-deps-only ${DLT_APP_DIR_NAME}/usr/bin/plugins
+    --desktop-file ${DLT_APP_DIR_NAME}/dlt-viewer.desktop
+    --icon-file ${DLT_APP_DIR_NAME}/dlt-viewer.png
     --library /usr/lib/x86_64-linux-gnu/libstdc++.so.6
     --library /lib/x86_64-linux-gnu/libgcc_s.so.1
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
     RESULT_VARIABLE STATUS)
 
 if(STATUS AND NOT STATUS EQUAL 0)
