@@ -4,5 +4,5 @@ Name=DLT Viewer
 Comment=DLT Viewer with plugins
 Terminal=false
 Exec=dlt-viewer
-Icon=dlt-viewer
+Icon=org.genivi.DLTViewer
 Categories=Office;
