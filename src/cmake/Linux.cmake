@@ -21,10 +21,10 @@ install(FILES
 
 
 install(PROGRAMS
-    "resources/dlt-viewer.desktop"
+    "resources/org.genivi.DLTViewer.desktop"
     DESTINATION "${DLT_RESOURCE_INSTALLATION_PATH}/applications"
     COMPONENT dlt_viewer)
 install(PROGRAMS
-    "resources/dlt-viewer.desktop"
+    "resources/org.genivi.DLTViewer.desktop"
     DESTINATION "${DLT_APP_DIR_NAME}"
     COMPONENT dlt_viewer)

@@ -62,7 +62,7 @@ INSTALLS += icons icons_16x16 icons_22x22 icons_24x24 icons_32x32 icons_48x48 ic
 # desktop file to show the application in start menu on Linux
 # This should work on both KDE and Gnome
 desktop.path = $$PREFIX/usr/share/applications
-desktop.files = org.genivi.DLTViewer.desktop
+desktop.files = resources/org.genivi.DLTViewer.desktop
 INSTALLS += desktop
 
 # Unix header exports
