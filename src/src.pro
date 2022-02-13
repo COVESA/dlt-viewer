@@ -39,14 +39,14 @@ win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
 INCLUDEPATH = . ../qdlt
 
 # Icon for application (The smiley face)
-icons.files = icon/org.genivi.DLTViewer.ico
-icons_16x16.files = icon/16x16/org.genivi.DLTViewer.png
-icons_22x22.files = icon/22x22/org.genivi.DLTViewer.png
-icons_24x24.files = icon/24x24/org.genivi.DLTViewer.png
-icons_32x32.files = icon/32x32/org.genivi.DLTViewer.png
-icons_48x48.files = icon/48x48/org.genivi.DLTViewer.png
-icons_256x256.files = icon/256x256/org.genivi.DLTViewer.png
-icons_symbolic.files = icon/symbolic/org.genivi.DLTViewer-symbolic.svg
+icons.files = resources/icon/org.genivi.DLTViewer.ico
+icons_16x16.files = resources/icon/16x16/org.genivi.DLTViewer.png
+icons_22x22.files = resources/icon/22x22/org.genivi.DLTViewer.png
+icons_24x24.files = resources/icon/24x24/org.genivi.DLTViewer.png
+icons_32x32.files = resources/icon/32x32/org.genivi.DLTViewer.png
+icons_48x48.files = resources/icon/48x48/org.genivi.DLTViewer.png
+icons_256x256.files = resources/icon/256x256/org.genivi.DLTViewer.png
+icons_symbolic.files = resources/icon/symbolic/org.genivi.DLTViewer-symbolic.svg
 
 icons.path = $$PREFIX/usr/share/pixmaps
 icons_16x16.path = $$PREFIX/usr/share/icons/hicolor/16x16/apps
