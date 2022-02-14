@@ -55,7 +55,7 @@ public:
     e_convertionmode get_convertionmode();
 
     QString getProjectFile();
-    QString getLogFile();
+    QStringList getLogFiles();
     QString getFilterFile();
     QString getConvertSourceFile();
     QString getConvertDestFile();
@@ -78,7 +78,7 @@ private:
     e_convertionmode convertionmode;
 
     QString projectFile;
-    QString logFile;
+    QStringList logFiles;
     QString filterFile;
     QString convertSourceFile;
     QString convertDestFile;

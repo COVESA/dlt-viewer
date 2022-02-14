@@ -644,7 +644,9 @@ void MainWindow::initFileHandling()
     outputfileIsTemporary = false;
     if(QDltOptManager::getInstance()->isLogFile())
     {
-        openDltFile(QStringList(QDltOptManager::getInstance()->getLogFile()));
+        QStringList logFiles = QDltOptManager::getInstance()->getLogFiles();
+        logFiles.sort();
+        openDltFile(logFiles);
        /* Command line file is treated as temp file */
         outputfileIsTemporary = true;
         outputfileIsFromCLI = true;
