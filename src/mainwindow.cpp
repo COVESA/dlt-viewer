@@ -6667,26 +6667,51 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     QMenu menu(ui->exploreView);
     QAction *action;
     /* Get path from index */
-    auto index   = ui->exploreView->selectionModel()->selectedIndexes()[0];
-    auto path    = getPathFromExplorerViewIndexModel(index);
-    bool is_file = !QDir(path).exists();
+    auto indexes   = ui->exploreView->selectionModel()->selectedIndexes();
+    auto index     = indexes[0];
+    auto path      = getPathFromExplorerViewIndexModel(index);
+    bool is_file   = !QDir(path).exists();
 
     if (is_file)
     {
-        action = new QAction("&Load", this);
-         connect(action, &QAction::triggered, this, [this](){
-             auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
-             on_exploreView_activated(index);
-         });
+        action = new QAction("&Load selected", this);
+        connect(action, &QAction::triggered, this, [this, indexes](){
+            qDebug() << __FUNCTION__;
+
+            QSet<QString> pathsSet;
+            auto selectedIndexes = indexes;
+
+            for (auto &index : selectedIndexes)
+            {
+               QString path = getPathFromExplorerViewIndexModel(index);
+
+               if (path.toLower().endsWith(".dlt"))
+               {
+                   pathsSet.insert(path);
+               }
+            }
+
+            if (!pathsSet.isEmpty())
+            {
+                openDltFile(QStringList(pathsSet.begin(), pathsSet.end()));
+                outputfileIsTemporary = false;
+            }
+            else
+            {
+                QMessageBox msgBox(QMessageBox::Warning, "Warning", "No dlt files in current selection", QMessageBox::Close);
+                msgBox.exec();
+            }
+        });
+
         menu.addAction(action);
 
-        if (!path.toLower().endsWith(".dlp"))
+        if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size()))
         {
-            if (path.toLower().endsWith(".dlt"))
+            if ((path.toLower().endsWith(".dlt")))
             {
                 action = new QAction("&Open in new instance", this);
-                connect(action, &QAction::triggered, this, [this](){
-                    auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+                connect(action, &QAction::triggered, this, [this, indexes](){
+                    auto index = indexes[0];
                     auto path = getPathFromExplorerViewIndexModel(index);
                     QProcess process;
                     process.setProgram(QCoreApplication::applicationFilePath());
@@ -6700,8 +6725,8 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
             }
 
             action = new QAction("&Append", this);
-            connect(action, &QAction::triggered, this, [this](){
-                auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto index = indexes[0];
                 auto path  = getPathFromExplorerViewIndexModel(index);
                 if (path.toLower().endsWith(".dlt"))
                     appendDltFile(path);
@@ -6713,6 +6738,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     }
     else
     {
+#if 0
         /* TODO:
                 search form, search threads
         */
@@ -6724,18 +6750,40 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
             qDebug() << "Find in files - triggered" << path;
         });
         menu.addAction(action);
+#endif
+        action = new QAction("Open all files", this);
+        connect(action, &QAction::triggered, this, [this, indexes](){
+            auto index = indexes[0];
+            auto path  = getPathFromExplorerViewIndexModel(index);
+
+            QStringList  files;
+            QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files, QDirIterator::Subdirectories);
+
+            while (it_sh.hasNext())
+            {
+                files.append(it_sh.next());
+            }
+
+            openDltFile(files); outputfileIsTemporary = true;
+        });
+        menu.addAction(action);
 
     }
     menu.addSeparator();
 
     action = new QAction("&Copy path", this);
-    connect(action, &QAction::triggered, this, [this](){
+    connect(action, &QAction::triggered, this, [this, indexes](){
         QClipboard *clipboard = QGuiApplication::clipboard();
-        auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
-        auto path  = getPathFromExplorerViewIndexModel(index);
-        clipboard->setText(path);
-        qDebug() << "Copy path - triggered" << path;
 
+        QSet<QString> clipboardText;
+        for (auto & index : indexes)
+        {
+            auto path  = getPathFromExplorerViewIndexModel(index);
+            clipboardText += path;
+            qDebug() << "Copy path - triggered" << path;
+        }
+
+        clipboard->setText(QStringList(clipboardText.begin(), clipboardText.end()).join("\n"));
     });
     menu.addAction(action);
     menu.addSeparator();
@@ -6746,9 +6794,6 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
         auto path  = getPathFromExplorerViewIndexModel(index);
 #ifdef WIN32
         QProcess process;
-//        process.setProgram("explorer.exe");
-//        process.setArguments({QString("%1\"%2\"").arg("/select,", QDir::toNativeSeparators(path))});
-//        process.startDetached();
         process.startDetached(QString("explorer.exe /select,%1")
                                     .arg(QDir::toNativeSeparators(path)));
 #else
