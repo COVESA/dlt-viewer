@@ -31,7 +31,7 @@ jobs:
       - name: Build project
         run: scripts/darwin/build.sh
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         if: ${{ success() }}
         with:
           name: DLTViewer-${{ matrix.macos }}-x86_64
@@ -56,7 +56,7 @@ jobs:
       - name: Make artifact executable
         run: chmod -R +x build/dist
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         if: ${{ success() }}
         with:
           name: DLTViewer-linux-x86_64
@@ -86,7 +86,7 @@ jobs:
           $env:CPACK_NSIS="true";
           ./build_sdk_windows_qt5_MSVC_cmake.bat
       - name: Archive artifact
-        uses: actions/upload-artifact@v2.3.1
+        uses: actions/upload-artifact@v3
         if: ${{ success() }}
         with:
           name: DLTViewer-windows-x86_64
