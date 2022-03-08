@@ -6676,8 +6676,6 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     {
         action = new QAction("&Load selected", this);
         connect(action, &QAction::triggered, this, [this, indexes](){
-            qDebug() << __FUNCTION__;
-
             QSet<QString> pathsSet;
             auto selectedIndexes = indexes;
 
@@ -6771,7 +6769,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     }
     menu.addSeparator();
 
-    action = new QAction("&Copy path", this);
+    action = new QAction("&Copy paths", this);
     connect(action, &QAction::triggered, this, [this, indexes](){
         QClipboard *clipboard = QGuiApplication::clipboard();
 
@@ -6783,7 +6781,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
             qDebug() << "Copy path - triggered" << path;
         }
 
-        clipboard->setText(QStringList(clipboardText.begin(), clipboardText.end()).join("\n"));
+        clipboard->setText(clipboardText.toList().join("\n"));
     });
     menu.addAction(action);
     menu.addSeparator();
