@@ -6691,7 +6691,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
 
             if (!pathsSet.isEmpty())
             {
-                openDltFile(QStringList(pathsSet.begin(), pathsSet.end()));
+                openDltFile(pathsSet.toList());
                 outputfileIsTemporary = false;
             }
             else
