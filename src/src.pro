@@ -215,4 +215,8 @@ RESOURCES += resources/resource.qrc
 RC_FILE = resources/dlt_viewer.rc
 
 DISTFILES += \
-    ../build_qwt_windows_qt5_MSVC.bat
+    ../build_config.bat \
+    ../build_qwt_windows_qt5_MSVC.bat \
+    ../build_sdk_windows_qt5_MSVC_cmake.bat \
+    ../build_sdk_windows_qt5_MSVC_cmake_interactive.bat \
+    ../build_sdk_windows_qt5_MSVC_interactive.bat

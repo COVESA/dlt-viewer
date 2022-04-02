@@ -19,6 +19,13 @@ Changes
 
 2.22.0
 
+    * Build macOS package with CPack (#256)
+    * Generate NSIS installer (#252)
+    * Local Index directory instead of global directory. (#254)
+    * Fix export to clipboard sometimes incomplete (#251)
+    * Generate AppImage (#248)
+    * CMake Windows Build improvements (#250)
+    * Prepare v2.22.0 (#249)
     * Adapt cmake build (#244)
     * fix: persist bool args with DLT_TYLE_8BIT (#247)
     * Update to Qt 5.15.2, Visual Studio 2019 Build Tools and Qwt 6.1.6
