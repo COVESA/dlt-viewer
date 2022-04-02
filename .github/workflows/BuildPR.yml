@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         macos: [macos-10.15, macos-11]
-        xcode: [Xcode_12.4]
+        xcode: [Xcode_12.5]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -41,7 +41,7 @@ jobs:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: [ubuntu-18.04]
+        ubuntu: [ubuntu-20.04]
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
