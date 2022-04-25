@@ -6778,15 +6778,17 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     connect(action, &QAction::triggered, this, [this, indexes](){
         QClipboard *clipboard = QGuiApplication::clipboard();
 
-        QSet<QString> clipboardText;
+        QStringList clipboardText;
         for (auto & index : indexes)
         {
-            auto path  = getPathFromExplorerViewIndexModel(index);
-            clipboardText += path;
-            qDebug() << "Copy path - triggered" << path;
+            if (0 == index.column())
+            {
+                auto path  = getPathFromExplorerViewIndexModel(index);
+                clipboardText += path;
+            }
         }
 
-        clipboard->setText(clipboardText.toList().join("\n"));
+        clipboard->setText(clipboardText.join("\n"));
     });
     menu.addAction(action);
     menu.addSeparator();
