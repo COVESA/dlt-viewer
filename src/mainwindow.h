@@ -41,6 +41,7 @@
 #include "workingdirectory.h"
 #include "exporterdialog.h"
 #include "searchtablemodel.h"
+#include "sortfilterproxymodel.h"
 #include "ui_mainwindow.h"
 
 
@@ -237,6 +238,9 @@ private:
 
     QList<unsigned long int> selectedMarkerRows;
 
+    /**/
+    SortFilterProxyModel *sortProxyModel;
+
     /* functions called in constructor */
     void initState();
     void initView();
@@ -298,7 +302,7 @@ private:
     void updateIndex();
     void drawUpdatedView();
 
-     void syncCheckBoxesAndMenu();
+    void syncCheckBoxesAndMenu();
 
     void updateRecentFileActions();
     void setCurrentFile(const QString &fileName);
@@ -565,6 +569,10 @@ private slots:
     void on_actionSort_By_Timestamp_triggered(bool checked);
 
     void on_exploreView_activated(const QModelIndex &index);
+
+    void on_comboBoxExplorerSortType_currentIndexChanged(int index);
+
+    void on_comboBoxExplorerSortOrder_currentIndexChanged(int index);
 
 public slots:
 

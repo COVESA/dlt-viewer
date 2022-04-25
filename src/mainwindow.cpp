@@ -222,6 +222,7 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
     delete newCompleter;
+    delete sortProxyModel;
 }
 
 
@@ -333,11 +334,12 @@ void MainWindow::initView()
     /* sort dir entries */
     ui->exploreView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    SortFilterProxyModel *sortProxyModel = new SortFilterProxyModel(this);
+    sortProxyModel = new SortFilterProxyModel(this);
     sortProxyModel->setSourceModel(model);
 
     ui->exploreView->setModel(sortProxyModel);
     ui->exploreView->setSortingEnabled(true);
+    ui->exploreView->sortByColumn(0, Qt::AscendingOrder);
 
     ui->exploreView->hideColumn(1);
     ui->exploreView->hideColumn(2);
@@ -6676,22 +6678,25 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
     {
         action = new QAction("&Load selected", this);
         connect(action, &QAction::triggered, this, [this, indexes](){
-            QSet<QString> pathsSet;
+            QStringList  pathsList;
             auto selectedIndexes = indexes;
 
             for (auto &index : selectedIndexes)
             {
-               QString path = getPathFromExplorerViewIndexModel(index);
-
-               if (path.toLower().endsWith(".dlt"))
+               if (0 == index.column())
                {
-                   pathsSet.insert(path);
+                   QString path = getPathFromExplorerViewIndexModel(index);
+
+                   if (path.toLower().endsWith(".dlt"))
+                   {
+                       pathsList.append(path);
+                   }
                }
             }
 
-            if (!pathsSet.isEmpty())
+            if (!pathsList.isEmpty())
             {
-                openDltFile(pathsSet.toList());
+                openDltFile(pathsList);
                 outputfileIsTemporary = false;
             }
             else
@@ -7721,3 +7726,32 @@ void MainWindow::on_exploreView_activated(const QModelIndex &index)
         break;
     }
 }
+
+void MainWindow::on_comboBoxExplorerSortType_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 1:
+        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::TIMESTAMP);
+        break;
+    case 0:
+    default:
+        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::ALPHABETICALLY);
+        break;
+    }
+}
+
+void MainWindow::on_comboBoxExplorerSortOrder_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 1:
+        sortProxyModel->changeSortingOrder(Qt::DescendingOrder);
+        break;
+    case 0:
+    default:
+        sortProxyModel->changeSortingOrder(Qt::AscendingOrder);
+        break;
+    }
+}
+
