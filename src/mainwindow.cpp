@@ -3586,7 +3586,7 @@ void MainWindow::read(EcuItem* ecuitem)
           ecuitem->ipcon.add(data);
           break;
       case EcuItem::INTERFACETYPE_UDP:
-          if(ecuitem->udpsocket.hasPendingDatagrams())
+          while(ecuitem->udpsocket.hasPendingDatagrams())
           {
             data.resize(ecuitem->udpsocket.pendingDatagramSize());
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
