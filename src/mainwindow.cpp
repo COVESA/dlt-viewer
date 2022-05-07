@@ -18,6 +18,7 @@
  */
 
 #include <iostream>
+#include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
 #include <QFileDialog>
@@ -41,7 +42,10 @@
 #include <QNetworkProxyFactory>
 #include <QNetworkInterface>
 #include <QtAlgorithms>
-
+#include <QFileSystemModel>
+#include <QSortFilterProxyModel>
+#include <QDesktopServices>
+#include <QProcess>
 
 /**
  * From QDlt.
@@ -78,7 +82,7 @@ extern "C" {
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
-
+#include "sortfilterproxymodel.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -216,6 +220,7 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
     delete newCompleter;
+    delete sortProxyModel;
 }
 
 
@@ -316,6 +321,33 @@ void MainWindow::initView()
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
     // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
     ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
+
+    /* Init Explorer view */
+    QFileSystemModel *model = new QFileSystemModel;
+
+    model->setNameFilterDisables(false);
+    model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp");
+    model->setRootPath(QDir::rootPath());
+
+    /* sort dir entries */
+    ui->exploreView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    sortProxyModel = new SortFilterProxyModel(this);
+    sortProxyModel->setSourceModel(model);
+
+    ui->exploreView->setModel(sortProxyModel);
+    ui->exploreView->setSortingEnabled(true);
+    ui->exploreView->sortByColumn(0, Qt::AscendingOrder);
+
+    ui->exploreView->hideColumn(1);
+    ui->exploreView->hideColumn(2);
+    ui->exploreView->hideColumn(3);
+
+    if (recentFiles.size() > 0)
+    {
+        ui->exploreView->scrollTo(
+                    sortProxyModel->mapFromSource(model->index(recentFiles[0])));
+    }
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -443,6 +475,14 @@ void MainWindow::initSignalConnections()
 
     // connect tableView selection model change to handler in mainwindow
     connect(ui->tableView->selectionModel(),  &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableViewSelectionChanged);
+
+    // connect file loaded signal with  explorerView
+    connect(this, &MainWindow::dltFileLoaded, this, [this](const QStringList& paths){
+        QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
+        QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
+        ui->exploreView->scrollTo(
+                    proxyModel->mapFromSource(fsModel->index(recentFiles[0])));
+    });
 }
 
 void MainWindow::initSearchTable()
@@ -1050,8 +1090,78 @@ bool MainWindow::openDltFile(QStringList fileNames)
             ret = false;
         }
     }
+
+    if (ret)
+        emit dltFileLoaded(fileNames);
+
     //qDebug() << "Open files done" << __FILE__ << __LINE__;
     return ret;
+}
+
+void MainWindow::appendDltFile(const QString &fileName)
+{
+    DltFile importfile;
+
+    dlt_file_init(&importfile,0);
+
+    QProgressDialog progress("Append log file", "Cancel Loading", 0, 100, this);
+    progress.setModal(true);
+    int num = 0;
+
+    /* open DLT log file with same filename as output file */
+    if (dlt_file_open(&importfile,fileName.toLatin1() ,0)<0)
+    {
+        return;
+    }
+
+    if (importfile.file_length <= 0) // This can happen
+    {
+        dlt_file_free(&importfile, 0);
+        return;
+    }
+
+    /* get number of files in DLT log file */
+    while (dlt_file_read(&importfile,0)>=0)
+    {
+        num++;
+        if ( 0 == (num%1000))
+        {
+            progress.setValue(
+                    static_cast<int>(static_cast<float>(importfile.file_position) * 100.0f
+                            / static_cast<float>(importfile.file_length)));
+        }
+        if (progress.wasCanceled())
+        {
+            dlt_file_free(&importfile,0);
+            return;
+        }
+    }
+
+    /* read DLT messages and append to current output file */
+    for(int pos = 0 ; pos<num ; pos++)
+    {
+        if ( 0 == (pos % 1000))
+        {
+            progress.setValue(
+                    static_cast<int>(static_cast<float>(pos) * 100.0f
+                                     / static_cast<float>(num)));
+        }
+        if (progress.wasCanceled())
+        {
+            dlt_file_free(&importfile,0);
+            reloadLogFile();
+            return;
+        }
+        dlt_file_message(&importfile,pos,0);
+        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+    }
+    outputfile.flush();
+
+    dlt_file_free(&importfile,0);
+
+    /* reload log file */
+    reloadLogFile();
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
@@ -1155,63 +1265,8 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
     if(!outputfile.isOpen())
         return;
 
-    DltFile importfile;
-
-    dlt_file_init(&importfile,0);
-
-    QProgressDialog progress("Append log file", "Cancel Loading", 0, 100, this);
-    progress.setModal(true);
-    int num = 0;
-
-    /* open DLT log file with same filename as output file */
-    if (dlt_file_open(&importfile,fileName.toLatin1() ,0)<0)
-    {
-        return;
-    }
-
-    if (importfile.file_length <= 0) // This can happen
-    {
-        dlt_file_free(&importfile, 0);
-        return;
-    }
-
-    /* get number of files in DLT log file */
-    while (dlt_file_read(&importfile,0)>=0)
-    {
-        num++;
-        if ( 0 == (num%1000))
-            progress.setValue(importfile.file_position*100/importfile.file_length);
-        if (progress.wasCanceled())
-        {
-            dlt_file_free(&importfile,0);
-            return;
-        }
-    }
-
-    /* read DLT messages and append to current output file */
-    for(int pos = 0 ; pos<num ; pos++)
-    {
-        if ( 0 == (pos%1000))
-            progress.setValue(pos*100/num);
-        if (progress.wasCanceled())
-        {
-            dlt_file_free(&importfile,0);
-            reloadLogFile();
-            return;
-        }
-        dlt_file_message(&importfile,pos,0);
-        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-    }
-    outputfile.flush();
-
-    dlt_file_free(&importfile,0);
-
-    /* reload log file */
-    reloadLogFile();
-
+    appendDltFile(fileName);
 }
-
 
 void MainWindow::mark_unmark_lines()
 {
@@ -6606,6 +6661,157 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.exec(globalPos);
 }
 
+void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
+{
+    /* show custom pop menu for explorer */
+    QPoint globalPos = ui->exploreView->mapToGlobal(pos);
+    QMenu menu(ui->exploreView);
+    QAction *action;
+    /* Get path from index */
+    auto indexes   = ui->exploreView->selectionModel()->selectedIndexes();
+    auto index     = indexes[0];
+    auto path      = getPathFromExplorerViewIndexModel(index);
+    bool is_file   = !QDir(path).exists();
+
+    if (is_file)
+    {
+        action = new QAction("&Load selected", this);
+        connect(action, &QAction::triggered, this, [this, indexes](){
+            QStringList  pathsList;
+            auto selectedIndexes = indexes;
+
+            for (auto &index : selectedIndexes)
+            {
+               if (0 == index.column())
+               {
+                   QString path = getPathFromExplorerViewIndexModel(index);
+
+                   if (path.toLower().endsWith(".dlt"))
+                   {
+                       pathsList.append(path);
+                   }
+               }
+            }
+
+            if (!pathsList.isEmpty())
+            {
+                openDltFile(pathsList);
+                outputfileIsTemporary = false;
+            }
+            else
+            {
+                QMessageBox msgBox(QMessageBox::Warning, "Warning", "No dlt files in current selection", QMessageBox::Close);
+                msgBox.exec();
+            }
+        });
+
+        menu.addAction(action);
+
+        if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size()))
+        {
+            if ((path.toLower().endsWith(".dlt")))
+            {
+                action = new QAction("&Open in new instance", this);
+                connect(action, &QAction::triggered, this, [this, indexes](){
+                    auto index = indexes[0];
+                    auto path = getPathFromExplorerViewIndexModel(index);
+                    QProcess process;
+                    process.setProgram(QCoreApplication::applicationFilePath());
+                    process.setArguments({path});
+                    process.setStandardOutputFile(QProcess::nullDevice());
+                    process.setStandardErrorFile(QProcess::nullDevice());
+                    qint64 pid;
+                    process.startDetached(&pid);
+                });
+                menu.addAction(action);
+            }
+
+            action = new QAction("&Append", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto index = indexes[0];
+                auto path  = getPathFromExplorerViewIndexModel(index);
+                if (path.toLower().endsWith(".dlt"))
+                    appendDltFile(path);
+                else
+                    openDlfFile(path,false);
+            });
+            menu.addAction(action);
+        }
+    }
+    else
+    {
+#if 0
+        /* TODO:
+                search form, search threads
+        */
+        action = new QAction("&Find in files", this);
+        action->setEnabled(false);
+        connect(action, &QAction::triggered, this, [this](){
+            auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+            auto path  = getPathFromExplorerViewIndexModel(index);
+            qDebug() << "Find in files - triggered" << path;
+        });
+        menu.addAction(action);
+#endif
+        action = new QAction("Open all files", this);
+        connect(action, &QAction::triggered, this, [this, indexes](){
+            auto index = indexes[0];
+            auto path  = getPathFromExplorerViewIndexModel(index);
+
+            QStringList  files;
+            QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files, QDirIterator::Subdirectories);
+
+            while (it_sh.hasNext())
+            {
+                files.append(it_sh.next());
+            }
+
+            openDltFile(files); outputfileIsTemporary = true;
+        });
+        menu.addAction(action);
+
+    }
+    menu.addSeparator();
+
+    action = new QAction("&Copy paths", this);
+    connect(action, &QAction::triggered, this, [this, indexes](){
+        QClipboard *clipboard = QGuiApplication::clipboard();
+
+        QStringList clipboardText;
+        for (auto & index : indexes)
+        {
+            if (0 == index.column())
+            {
+                auto path  = getPathFromExplorerViewIndexModel(index);
+                clipboardText += path;
+            }
+        }
+
+        clipboard->setText(clipboardText.join("\n"));
+    });
+    menu.addAction(action);
+    menu.addSeparator();
+
+    action = new QAction("&Show in explorer", this);
+    connect(action, &QAction::triggered, this, [this](){
+        auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+        auto path  = getPathFromExplorerViewIndexModel(index);
+#ifdef WIN32
+        QProcess process;
+        process.startDetached(QString("explorer.exe /select,%1")
+                                    .arg(QDir::toNativeSeparators(path)));
+#else
+        auto path_splitted = path.split(QDir::separator());
+        path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
+        QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
+#endif
+    });
+    menu.addAction(action);
+
+    /* show popup menu */
+    menu.exec(globalPos);
+}
+
 void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 {
     /* show custom pop menu  for search table */
@@ -7249,7 +7455,7 @@ void MainWindow::restoreSelection()
 
 void MainWindow::on_tabWidget_currentChanged(int index)
 {
-    if(index > 0)
+    if(index > 1)
     {
         ui->enableConfigFrame->setVisible(true);
     }
@@ -7416,6 +7622,15 @@ void MainWindow::resetDefaultFilter()
     ui->comboBoxFilterSelection->setCurrentIndex(0); //no default filter anymore
 }
 
+QString MainWindow::getPathFromExplorerViewIndexModel(const QModelIndex &index)
+{
+    QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
+    QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
+    QString                  path       = fsModel->filePath(proxyModel->mapToSource(index));
+
+    return path;
+}
+
 void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
 {
     on_actionDefault_Filter_Create_Index_triggered();
@@ -7488,3 +7703,56 @@ void MainWindow::indexStart()
 {
     statusFileError->setText(QString("FileErr: %L1").arg("-"));
 }
+
+void MainWindow::on_exploreView_activated(const QModelIndex &index)
+{
+    static const QStringList ext  = QStringList() << ".dlt" << ".dlf" << ".dlp";
+    QString                  path = getPathFromExplorerViewIndexModel(index);
+
+    auto result = std::find_if(ext.begin(), ext.end(),
+                                [&path](const QString &el){return path.toLower().endsWith(el);});
+    switch(result - ext.begin())
+    {
+    case 0: /* this represents index in "ext" list */
+        openDltFile(QStringList() << path);
+        outputfileIsTemporary = false;
+        break;
+    case 1:
+        openDlfFile(path, true);
+        break;
+    case 2:
+        openDlpFile(path);
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::on_comboBoxExplorerSortType_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 1:
+        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::TIMESTAMP);
+        break;
+    case 0:
+    default:
+        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::ALPHABETICALLY);
+        break;
+    }
+}
+
+void MainWindow::on_comboBoxExplorerSortOrder_currentIndexChanged(int index)
+{
+    switch (index)
+    {
+    case 1:
+        sortProxyModel->changeSortingOrder(Qt::DescendingOrder);
+        break;
+    case 0:
+    default:
+        sortProxyModel->changeSortingOrder(Qt::AscendingOrder);
+        break;
+    }
+}
+
