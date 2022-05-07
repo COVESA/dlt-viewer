@@ -8,7 +8,6 @@
 install(FILES
     "resources/icon/256x256/org.genivi.DLTViewer.png"
     DESTINATION "${DLT_RESOURCE_INSTALLATION_PATH}/icons/hicolor/256x256/apps/"
-    RENAME "dlt-viewer.png"
     COMPONENT dlt_viewer)
 install(FILES
     "resources/icon/256x256/org.genivi.DLTViewer.png"
@@ -18,15 +17,14 @@ install(FILES
 install(FILES
     "resources/icon/256x256/org.genivi.DLTViewer.png"
     DESTINATION "${DLT_APP_DIR_NAME}"
-    RENAME "dlt-viewer.png"
     COMPONENT dlt_viewer)
 
 
 install(PROGRAMS
-    "resources/dlt-viewer.desktop"
+    "resources/org.genivi.DLTViewer.desktop"
     DESTINATION "${DLT_RESOURCE_INSTALLATION_PATH}/applications"
     COMPONENT dlt_viewer)
 install(PROGRAMS
-    "resources/dlt-viewer.desktop"
+    "resources/org.genivi.DLTViewer.desktop"
     DESTINATION "${DLT_APP_DIR_NAME}"
     COMPONENT dlt_viewer)

@@ -5,4 +5,4 @@ GenericName=Diagnostic Log and Trace Viewer needed for devices running DLT daemo
 Exec=dlt-viewer %u
 Icon=org.genivi.DLTViewer
 Terminal=false
-Categories=Qt;KDE;Development;System;
+Categories=Development;

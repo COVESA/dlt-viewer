@@ -36,8 +36,8 @@ execute_process(COMMAND
     --appdir ${DLT_APP_DIR_NAME}
     --executable ${DLT_APP_DIR_NAME}/usr/bin/dlt-viewer
     --deploy-deps-only ${DLT_APP_DIR_NAME}/usr/bin/plugins
-    --desktop-file ${DLT_APP_DIR_NAME}/dlt-viewer.desktop
-    --icon-file ${DLT_APP_DIR_NAME}/dlt-viewer.png
+    --desktop-file ${DLT_APP_DIR_NAME}/org.genivi.DLTViewer.desktop
+    --icon-file ${DLT_APP_DIR_NAME}/org.genivi.DLTViewer.png
     --library /usr/lib/x86_64-linux-gnu/libstdc++.so.6
     --library /lib/x86_64-linux-gnu/libgcc_s.so.1
     WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"

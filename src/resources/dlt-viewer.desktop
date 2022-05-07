@@ -1,8 +1,0 @@
-[Desktop Entry]
-Type=Application
-Name=DLT Viewer
-Comment=DLT Viewer with plugins
-Terminal=false
-Exec=dlt-viewer
-Icon=dlt-viewer
-Categories=Office;

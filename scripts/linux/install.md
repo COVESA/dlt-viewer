@@ -47,13 +47,13 @@
     - Note printed out temporary path `/tmp/.mount_DLT_ViWVylOY`
 - Open new terminal window
 - Copy `.desktop` file and icon
-    - `cp /tmp/.mount_DLT_ViWVylOY/dlt-viewer.desktop ~/.local/share/applications`
-    - `chmod +x ~/.local/share/applications/dlt-viewer.desktop`
-    - `cp /tmp/.mount_DLT_ViWVylOY/dlt-viewer.png ~/bin`
-- Edit `dlt-viewer.desktop` with `nano` or `vi`
-    - `nano ~/.local/share/applications/dlt-viewer.desktop`
+    - `cp /tmp/.mount_DLT_ViWVylOY/org.genivi.DLTViewer.desktop ~/.local/share/applications`
+    - `chmod +x ~/.local/share/applications/org.genivi.DLTViewer.desktop`
+    - `cp /tmp/.mount_DLT_ViWVylOY/org.genivi.DLTViewer.png ~/bin`
+- Edit `org.genivi.DLTViewer.desktop` with `nano` or `vi`
+    - `nano ~/.local/share/applications/org.genivi.DLTViewer.desktop`
         - `Exec=/home/<user name>/bin/DLT_Viewer-2.21.3-x86_64.AppImage`
-        - `ICON=/home/<user name>/bin/dlt-viewer.png`
+        - `ICON=/home/<user name>/bin/org.genivi.DLTViewer.png`
     - Full paths are mandatory, `~` as home path **will not work**.
 - DLT Viewer will appear in *Applications* menu automatically.
 
@@ -61,5 +61,5 @@
 - Delete AppImage
     - `rm ~/bin/DLT_Viewer-2.21.3-x86_64.AppImage`
 - Delete desktop integration
-    - `rm ~/.local/share/applications/dlt-viewer.desktop`
-    - `rm ~/bin/dlt-viewer.png`
+    - `rm ~/.local/share/applications/org.genivi.DLTViewer.desktop`
+    - `rm ~/bin/org.genivi.DLTViewer.png`
