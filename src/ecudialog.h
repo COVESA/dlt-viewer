@@ -40,10 +40,10 @@ public:
     int interfacetype();
     QString hostname();
     QString mcastaddress();
+    QString serialPort();
     unsigned int port();
     unsigned int tcpport();
     unsigned int udpport();
-    QString Serialport();
     QString EthInterface();
     QSerialPort::BaudRate baudrate();
     int loglevel();
@@ -60,7 +60,7 @@ public:
     int interfacetypecurrentindex();
 
     void setHostnameList(QStringList hostnames);
-    void setSerialPortList(QStringList ports);
+    void setSerialPortList();
     void setIPPortList(QStringList ports);
     void setUDPPortList(QStringList ports);
     void setNetworkIFList(QStringList ifnames,QString lastsetting);
