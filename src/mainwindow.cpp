@@ -4275,6 +4275,18 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         ecuitem->m_serialport->write((const char*)msg.headerbuffer+sizeof(DltStorageHeader),msg.headersize-sizeof(DltStorageHeader));
         ecuitem->m_serialport->write((const char*)msg.databuffer,msg.datasize);
     }
+    else if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->m_serialport && ecuitem->m_serialport->isOpen())
+    {
+        /* In SERIAL_ASCII mode we send only user input */
+        if (appid == "SER" && contid == "CON") {
+            ecuitem->m_serialport->write((const char*)(msg.databuffer+8),(msg.datasize-8));
+            ecuitem->m_serialport->write("\r\n");
+        }
+        else
+        {
+        return;
+        }
+    }
     else
     {
         /* ECU is not connected */
@@ -4762,6 +4774,13 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
     bool ok = true;
 
     qDebug() << "DLT SendInjection" << injectionAplicationId << injectionContextId << injectionServiceId << __LINE__;
+
+    if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII)
+    {
+        injectionAplicationId = "SER";
+        injectionContextId    = "CON";
+        injectionServiceId    = "9999";
+    }
 
     if (injectionAplicationId.isEmpty() || injectionContextId.isEmpty() || injectionServiceId.isEmpty() )
     {
