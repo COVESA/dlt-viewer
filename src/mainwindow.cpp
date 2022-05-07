@@ -2285,11 +2285,11 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     /* show ECU configuration dialog */
     EcuDialog dlg;
     EcuItem initItem;
+    dlg.setSerialPortList();
     dlg.setData(initItem);
 
     /* Read settings for recent hostnames and ports */
     recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-    recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
     recentIPPorts = QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
     recentUDPPorts = QDltSettingsManager::getInstance()->value("other/recentUDPPortList",UDPportListPreset).toStringList();
     recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
@@ -2301,7 +2301,6 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setIFpresetindex(i_iftypeindex);
     dlg.setMulticast(b_mcastpreset);
     dlg.setHostnameList(recentHostnames);
-    dlg.setSerialPortList(recentSerialPorts);
     dlg.setIPPortList(recentIPPorts);
     dlg.setUDPPortList(recentUDPPorts);
     dlg.setNetworkIFList(NetworkIFListPreset,recentEthIF);
@@ -2336,7 +2335,6 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
        setCurrentMCAddress(ecuitem->getmcastIP()); // store it in the settings file
        setCurrentHostname(ecuitem->getHostname());
        setCurrentEthIF(ecuitem->getEthIF());
-       setCurrentSerialPort(ecuitem->getPort());
        setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
        setCurrentUDPPort(QString("%1").arg(ecuitem->getUdpport()));
        setMcast(ecuitem->is_multicast);
@@ -2368,11 +2366,11 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 
         /* show ECU configuration dialog */
         EcuDialog dlg;
+        dlg.setSerialPortList();
         dlg.setData(*ecuitem);
 
         /* Read settings for recent hostnames and ports */
         recentHostnames = QDltSettingsManager::getInstance()->value("other/recentHostnameList",hostnameListPreset).toStringList();
-        recentSerialPorts = QDltSettingsManager::getInstance()->value("other/recentSerialPortList",SerialportListPreset).toStringList();
         recentIPPorts= QDltSettingsManager::getInstance()->value("other/recentIPPortList",IPportListPreset).toStringList();
         recentUDPPorts= QDltSettingsManager::getInstance()->value("other/recentUDPPortList",UDPportListPreset).toStringList();
         recentEthIF = QDltSettingsManager::getInstance()->value("other/recentEthernetInterface").toString();
@@ -2380,9 +2378,6 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
 
         // Ethernet IF
         setCurrentHostname(ecuitem->getHostname());
-
-        //serial Port
-        setCurrentSerialPort(ecuitem->getPort());
 
         // IP port
         setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
@@ -2392,7 +2387,6 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         setCurrentEthIF(ecuitem->getEthIF());
 
         dlg.setHostnameList(recentHostnames);
-        dlg.setSerialPortList(recentSerialPorts);
         dlg.setIPPortList(recentIPPorts);
         dlg.setUDPPortList(recentUDPPorts);
         dlg.setNetworkIFList(NetworkIFListPreset,ecuitem->getEthIF());
@@ -2407,7 +2401,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
                 ecuitem->getUdpport() != dlg.udpport() ||
                 ecuitem->getEthIF() != dlg.EthInterface() ||
                 ecuitem->getmcastIP() != dlg.mcastaddress() ||
-                ecuitem->getPort() != dlg.Serialport() ||
+                ecuitem->getPort() != dlg.serialPort() ||
                 ecuitem->is_multicast != dlg.getMulticast() ||
                 ecuitem->getBaudrate() != dlg.baudrate()) &&
                 ecuitem->tryToConnect)
@@ -2437,7 +2431,6 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
             setCurrentHostname(ecuitem->getHostname());
             setCurrentMCAddress(ecuitem->getmcastIP()); // store it in the settings file
 //tbd save is muticast
-            setCurrentSerialPort(ecuitem->getPort());
             setCurrentIPPort(QString("%1").arg(ecuitem->getIpport()));
             setCurrentUDPPort(QString("%1").arg(ecuitem->getUdpport()));
             setCurrentEthIF(ecuitem->getEthIF());
@@ -5558,17 +5551,6 @@ void MainWindow::setCurrentEthIF(const QString &EthIfName)
     QDltSettingsManager::getInstance()->setValue("other/recentEthernetInterface",EthIfName);
 }
 
-
-void MainWindow::setCurrentSerialPort(const QString &portName)
-{
-    recentSerialPorts.removeAll(portName);
-    recentSerialPorts.prepend(portName);
-    while (recentSerialPorts.size() > MaxRecentPorts)
-        recentSerialPorts.removeLast();
-
-    /* Write settings for recent ports */
-    QDltSettingsManager::getInstance()->setValue("other/recentSerialPortList",recentSerialPorts);
-}
 
 void MainWindow::setCurrentIPPort(const QString &portName)
 {

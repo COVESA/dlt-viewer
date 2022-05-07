@@ -203,7 +203,6 @@ private:
     enum { MaxRecentHostnames = 10 };
     QStringList recentHostnames;
     enum { MaxRecentPorts = 10 };
-    QStringList recentSerialPorts;
     QStringList recentIPPorts;
     QStringList recentUDPPorts;
     QString recentEthIF;
@@ -319,7 +318,6 @@ private:
 
     void setCurrentHostname(const QString &hostName);
     void setCurrentMCAddress(const QString &mcastaddress);
-    void setCurrentSerialPort(const QString &portName);
     void setCurrentIPPort(const QString &portName);
     void setCurrentUDPPort(const QString &portName);
     void setCurrentEthIF(const QString &EthIfName);
