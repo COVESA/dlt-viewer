@@ -22,6 +22,7 @@
 
 #include <QSerialPort>
 #include <QSerialPortInfo>
+#include <QNetworkInterface>
 
 EcuDialog::EcuDialog(QWidget *parent) :
     QDialog(parent),
@@ -299,11 +300,16 @@ void EcuDialog::setUDPPortList(QStringList ports)
     ui->comboBoxPortIP_UDP->addItems(ports);
 }
 
-void EcuDialog::setNetworkIFList(QStringList ifnames, QString lastsetting)
+void EcuDialog::setNetworkIFList(QString lastsetting)
 {
     ui->comboBoxNetworkIF->clear();
-    ui->comboBoxNetworkIF->addItems(ifnames);
-    ui->comboBoxNetworkIF->setCurrentIndex(ifnames.indexOf(lastsetting));
+    QList<QNetworkInterface> 	interfaces  = QNetworkInterface::allInterfaces();;
+    for(int num = 0; num<interfaces.length();num++)
+    {
+        if(interfaces[num].type()!=1)
+           ui->comboBoxNetworkIF->addItem(interfaces[num].humanReadableName());
+    }
+    ui->comboBoxNetworkIF->setCurrentText(lastsetting);
 }
 
 void EcuDialog::setMulticastAddresses(QStringList mcaddresses)

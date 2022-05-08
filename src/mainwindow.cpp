@@ -2280,7 +2280,6 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     QStringList SerialportListPreset = getAvailableSerialPorts();
     QStringList IPportListPreset = getAvailableIPPorts();
     QStringList UDPportListPreset = getAvailableUDPPorts();
-    QStringList NetworkIFListPreset = getAvailableNetworkInterfaces();
 
     /* show ECU configuration dialog */
     EcuDialog dlg;
@@ -2303,7 +2302,7 @@ void MainWindow::on_action_menuConfig_ECU_Add_triggered()
     dlg.setHostnameList(recentHostnames);
     dlg.setIPPortList(recentIPPorts);
     dlg.setUDPPortList(recentUDPPorts);
-    dlg.setNetworkIFList(NetworkIFListPreset,recentEthIF);
+    dlg.setNetworkIFList(recentEthIF);
     dlg.setMulticastAddresses(recent_multicastAddresses);
 
     if ( ( 1 == settings->autoConnect ) &&
@@ -2389,7 +2388,7 @@ void MainWindow::on_action_menuConfig_ECU_Edit_triggered()
         dlg.setHostnameList(recentHostnames);
         dlg.setIPPortList(recentIPPorts);
         dlg.setUDPPortList(recentUDPPorts);
-        dlg.setNetworkIFList(NetworkIFListPreset,ecuitem->getEthIF());
+        dlg.setNetworkIFList(ecuitem->getEthIF());
         dlg.setMulticastAddresses(recent_multicastAddresses);
 
         if(dlg.exec())
@@ -3233,22 +3232,37 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                  ecuitem->udpsocket.setSocketOption(QAbstractSocket::ReceiveBufferSizeSocketOption,26214400);
                  ecuitem->tryToConnect = true;
                  if (  ecuitem->is_multicast == true )
-                    {
-                     if ( true == ecuitem->udpsocket.joinMulticastGroup(ecuitem->getmcastIP(), ecuitem->getEthIF()) )
-                       {
-                        qDebug() << "Successfully joined multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF();
-                       }
-                     else // setting up multicast failed
+                 {
+                     QList<QNetworkInterface> 	interfaces  = QNetworkInterface::allInterfaces();
+                     int num;
+                     for(num=0;num<interfaces.length();num++)
                      {
-                      ecuitem->connected = false; // unicast socket setup was ok
-                      ecuitem->connectError.append("Error joining multicast group");
-                      qDebug() << "Error joining multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                         if(interfaces[num].humanReadableName()==ecuitem->getEthIF())
+                         {
+                             if ( true == ecuitem->udpsocket.joinMulticastGroup(QHostAddress(ecuitem->getmcastIP()), interfaces[num]) )
+                             {
+                                qDebug() << "Successfully joined multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF();
+                             }
+                             else // setting up multicast failed
+                             {
+                                ecuitem->connected = false; // unicast socket setup was ok
+                                ecuitem->connectError.append("Error joining multicast group");
+                                qDebug() << "Error joining multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                             }
+                             break;
+                         }
                      }
-                    } // multicast
-                  else // unicast case
-                   {
+                     if(num==interfaces.length())
+                     {
+                         ecuitem->connected = false; // unicast socket setup was ok
+                         ecuitem->connectError.append("Interface not found");
+                         qDebug() << "Error joining multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                     }
+                 } // multicast
+                 else // unicast case
+                 {
                      qDebug() <<  "UDP unicast configured to" << ecuitem->getEthIF();
-                   }
+                 }
 
                  connect(ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
                  connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));

@@ -92,8 +92,7 @@ public:
 
     /* connection */
     QTcpSocket tcpsocket;
-    //QUdpSocket udpsocket;
-    MCUdpSocket udpsocket;
+    QUdpSocket udpsocket;
     QAbstractSocket * socket;
 
     QSerialPort *m_serialport;
