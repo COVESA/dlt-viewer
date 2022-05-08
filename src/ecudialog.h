@@ -63,7 +63,7 @@ public:
     void setSerialPortList();
     void setIPPortList(QStringList ports);
     void setUDPPortList(QStringList ports);
-    void setNetworkIFList(QStringList ifnames,QString lastsetting);
+    void setNetworkIFList(QString lastsetting);
     void setMulticastAddresses(QStringList mcaddresses);
     void setMulticast(bool mcast);
     void setIFpresetindex(int preset);
