@@ -27,7 +27,7 @@
 #include "plugininterface.h"
 #include "form.h"
 
-#define DLT_TEST_ROBOT_PLUGIN_VERSION "1.0.0"
+#define DLT_TEST_ROBOT_PLUGIN_VERSION "1.0.1"
 
 class DltTestRobotPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginControlInterface
 {

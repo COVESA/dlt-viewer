@@ -166,13 +166,15 @@ void DltTestRobotPlugin::updateMsg(int , QDltMsg &){
 
 void DltTestRobotPlugin::updateMsgDecoded(int , QDltMsg &msg)
 {
-    int index = filterEcuId.indexOf(msg.getEcuid());
-    if(index!=-1 && filterAppId[index]==msg.getApid() && filterCtxId[index]==msg.getCtid() && tcpSocket)
+    for(int num=0; num<filterEcuId.size(); num++)
     {
-        QString text = msg.getEcuid() + " " + msg.getApid() + " " + msg.getCtid() + " " + msg.toStringPayload();
-        qDebug() << "DltTestRobot: send message" << text;
-        text += "\n";
-        tcpSocket->write(text.toLatin1());
+        if(filterEcuId[num]==msg.getEcuid() && filterAppId[num]==msg.getApid() && filterCtxId[num]==msg.getCtid() && tcpSocket)
+        {
+            QString text = msg.getEcuid() + " " + msg.getApid() + " " + msg.getCtid() + " " + msg.toStringPayload();
+            qDebug() << "DltTestRobot: send message" << text;
+            text += "\n";
+            tcpSocket->write(text.toLatin1());
+        }
     }
 
 }
