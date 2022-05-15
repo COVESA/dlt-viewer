@@ -4966,6 +4966,15 @@ void MainWindow:: disconnectEcuSignal(int index)
     }
 }
 
+void MainWindow::connectAllEcuSignal()
+{
+    connectAll();
+}
+
+void MainWindow:: disconnectAllEcuSignal()
+{
+    disconnectAll();
+}
 
 void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
 {

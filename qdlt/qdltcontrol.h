@@ -51,6 +51,8 @@ public:
     void marker();
     void connectEcu(int index);
     void disconnectEcu(int index);
+    void connectAllEcu();
+    void disconnectAllEcu();
     bool silentmode;
     bool commandlinemode;
 
@@ -65,6 +67,8 @@ signals:
     void markerSignal();
     void connectEcuSignal(int index);
     void disconnectEcuSignal(int index);
+    void connectAllEcuSignal();
+    void disconnectAllEcuSignal();
     void reopenFileSignal();
 
 protected:

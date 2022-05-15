@@ -229,6 +229,54 @@ void DltTestRobotPlugin::readyRead()
                 }
 
             }
+            else if(list[0]=="newFile")
+            {
+                list.removeAt(0);
+                if(dltControl && !list.isEmpty())
+                    dltControl->newFile(list.join(' ').toLatin1());
+            }
+            else if(list[0]=="openFile")
+            {
+                list.removeAt(0);
+                if(dltControl && !list.isEmpty())
+                    dltControl->openFile(QStringList(list.join(' ').toLatin1()));
+            }
+            else if(list[0]=="saveAsFile")
+            {
+                list.removeAt(0);
+                if(dltControl && !list.isEmpty())
+                    dltControl->saveAsFile(list.join(' ').toLatin1());
+            }
+            else if(list[0]=="reopenFile")
+            {
+                if(dltControl)
+                    dltControl->reopenFile();
+            }
+            else if(list[0]=="clearFile")
+            {
+                if(dltControl)
+                    dltControl->clearFile();
+            }
+            else if(list[0]=="quitDltViewer")
+            {
+                if(dltControl)
+                    dltControl->quitDltViewer();
+            }
+            else if(list[0]=="marker")
+            {
+                if(dltControl)
+                    dltControl->marker();
+            }
+            else if(list[0]=="connectAllEcu")
+            {
+                if(dltControl)
+                    dltControl->connectAllEcu();
+            }
+            else if(list[0]=="disconnectAllEcu")
+            {
+                if(dltControl)
+                    dltControl->disconnectAllEcu();
+            }
         }
     }
 }

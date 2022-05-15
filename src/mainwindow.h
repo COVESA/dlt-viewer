@@ -581,6 +581,8 @@ public slots:
     void markerSignal();
     void connectEcuSignal(int index);
     void disconnectEcuSignal(int index);
+    void connectAllEcuSignal();
+    void disconnectAllEcuSignal();
     void reopenFileSignal();
 
     void controlMessage_Timezone(int timezone, unsigned char dst);
