@@ -659,20 +659,21 @@ void QDltMsg::genMsg()
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
     if(mode == DltModeVerbose) {
-        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
+        uint16_t standardheaderlen = sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size();
         standardheader.htyp |= DLT_HTYP_UEH;
         if(!ecuid.isEmpty()) {
             standardheader.htyp |= DLT_HTYP_WEID;
-            standardheader.len += sizeof(headerextra.ecu);
+            standardheaderlen += sizeof(headerextra.ecu);
         }
         if(sessionid!=0) {
             standardheader.htyp |= DLT_HTYP_WSID;
-            standardheader.len += sizeof(headerextra.seid);
+            standardheaderlen += sizeof(headerextra.seid);
         }
         if(timestamp!=0) {
             standardheader.htyp |= DLT_HTYP_WTMS;
-            standardheader.len += sizeof(headerextra.tmsp);
+            standardheaderlen += sizeof(headerextra.tmsp);
         }
+        standardheader.len = DLT_HTOBE_16(standardheaderlen);
     }
     else {
         standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + payload.size());
