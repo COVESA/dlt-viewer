@@ -1302,20 +1302,19 @@ void MainWindow::unmark_all_lines()
 }
 
 
-void MainWindow::exportSelection(bool ascii = true,bool file = false,bool payload_only = false)
+void MainWindow::exportSelection(bool ascii = true,bool file = false,DltExporter::DltExportFormat format = DltExporter::FormatClipboard)
 {
     Q_UNUSED(ascii);
     Q_UNUSED(file);
 
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
-    DltExporter::DltExportFormat exportFormat = (payload_only ? DltExporter::FormatClipboardPayloadOnly : DltExporter::FormatClipboard);
 
     DltExporter exporter;
-    exporter.exportMessages(&qfile,0,&pluginManager,exportFormat,DltExporter::SelectionSelected,&list);
+    exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&list);
 }
 
-void MainWindow::exportSelection_searchTable(bool payload_only = false)
+void MainWindow::exportSelection_searchTable(DltExporter::DltExportFormat format = DltExporter::FormatClipboard)
 {
     const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
 
@@ -1345,10 +1344,8 @@ void MainWindow::exportSelection_searchTable(bool payload_only = false)
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
 
-    DltExporter::DltExportFormat exportFormat = (payload_only ? DltExporter::FormatClipboardPayloadOnly : DltExporter::FormatClipboard);
-
     DltExporter exporter;
-    exporter.exportMessages(&qfile,0,&pluginManager,exportFormat,DltExporter::SelectionSelected,&finallist);
+    exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&finallist);
 }
 
 void MainWindow::on_actionExport_triggered()
@@ -6641,6 +6638,16 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
+    action = new QAction("Copy Selection for &Jira to Clipboard", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyJiraToClipboardTriggered()));
+    menu.addAction(action);
+
+    action = new QAction("Copy Selection for J&ira (+Head) to Clipboard", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyJiraHeadToClipboardTriggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
     action = new QAction("&Export...", this);
     if(qfile.sizeFilter() <= 0)
     {
@@ -6850,6 +6857,16 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     action = new QAction("C&opy Selection Payload to Clipboard", this);
     connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered);
     menu.addAction(action);
+
+    menu.addSeparator();
+    action = new QAction("Copy Selection for &Jira to Clipboard", this);
+    connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyJiraToClipboardTriggered);
+    menu.addAction(action);
+
+    action = new QAction("Copy Selection for J&ira (+Head) to Clipboard", this);
+    connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered);
+    menu.addAction(action);
+
     menu.addSeparator();
     action = new QAction("Resize columns to fit", this);
     connect(action, SIGNAL(triggered()), ui->tableView_SearchIndex, SLOT(resizeColumnsToContents()));
@@ -6863,12 +6880,22 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 
 void MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered()
 {
-    exportSelection_searchTable();
+    exportSelection_searchTable(DltExporter::FormatClipboard);
 }
 
 void MainWindow::onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered()
 {
-    exportSelection_searchTable(true);
+    exportSelection_searchTable(DltExporter::FormatClipboardPayloadOnly);
+}
+
+void MainWindow::onActionMenuConfigSearchTableCopyJiraToClipboardTriggered()
+{
+    exportSelection_searchTable(DltExporter::FormatClipboardJiraTable);
+}
+
+void MainWindow::onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered()
+{
+    exportSelection_searchTable(DltExporter::FormatClipboardJiraTableHead);
 }
 
 void MainWindow::keyPressEvent ( QKeyEvent * event )
@@ -7124,7 +7151,17 @@ void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 
 void MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered()
 {
-    exportSelection(true,false,true);
+    exportSelection(true,false,DltExporter::FormatClipboardPayloadOnly);
+}
+
+void MainWindow::onActionMenuConfigCopyJiraToClipboardTriggered()
+{
+    exportSelection(true,false,DltExporter::FormatClipboardJiraTable);
+}
+
+void MainWindow::onActionMenuConfigCopyJiraHeadToClipboardTriggered()
+{
+    exportSelection(true,false,DltExporter::FormatClipboardJiraTableHead);
 }
 
 void MainWindow::on_action_menuFilter_Append_Filters_triggered()

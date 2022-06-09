@@ -143,6 +143,16 @@ bool DltExporter::start()
     else
         return false;
 
+    if(exportFormat == DltExporter::FormatClipboardJiraTableHead)
+    {
+        clipboardString = "||" "Index"
+                          "||" "Time" "||" "Timestamp"
+                          "||" "EcuID"
+                          "||" "AppID" "||" "CtxID"
+                          "||" "Payload"
+                          "||" "Comment"
+                          "||\n";
+    }
     /* success */
     return true;
 }
@@ -160,7 +170,9 @@ bool DltExporter::finish()
         to->close();
     }
     else if (exportFormat == DltExporter::FormatClipboard ||
-             exportFormat == DltExporter::FormatClipboardPayloadOnly)
+             exportFormat == DltExporter::FormatClipboardPayloadOnly ||
+             exportFormat == DltExporter::FormatClipboardJiraTable ||
+             exportFormat == DltExporter::FormatClipboardJiraTableHead)
     {
         /* export to clipboard */
         QClipboard *clipboard = QApplication::clipboard();
@@ -260,7 +272,29 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
         else
             return false;
     }
+    else if ((exportFormat == DltExporter::FormatClipboardJiraTable) ||
+             (exportFormat == DltExporter::FormatClipboardJiraTableHead) )
+    {
+        QString text = "|";
 
+        if(exportSelection == DltExporter::SelectionAll)
+            text += QString("%1").arg(num);
+        else if(exportSelection == DltExporter::SelectionFiltered)
+            text += QString("%1").arg(from->getMsgFilterPos(num));
+        else if(exportSelection == DltExporter::SelectionSelected)
+            text += QString("%1").arg(from->getMsgFilterPos(selectedRows[num]));
+        else
+            return false;
+
+        text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),4,10,QLatin1Char('0')) +
+                "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
+                "|" + msg.getEcuid() +
+                "|" + msg.getApid() +
+                "|" + msg.getCtid() +
+                "|" + msg.toStringPayload().trimmed().replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
+                "| |\n";
+        clipboardString += text;
+    }
     return true;
 }
 
