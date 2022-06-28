@@ -7340,9 +7340,15 @@ void MainWindow::on_pushButtonMovePluginUp_clicked()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
-    if(list.count() == 1)
-    {
-        qDebug() << "up clicked!";
+    for(auto it = list.cbegin(); it != list.cend(); it++) {
+        pluginManager.raisePluginPriority((*it)->text(0));
+
+        const int row = project.plugin->indexOfTopLevelItem((*it));
+        if (row > 0) {
+            project.plugin->takeTopLevelItem(row);
+            project.plugin->insertTopLevelItem(row - 1, (*it));
+            project.plugin->setCurrentItem((*it));
+        }
     }
 }
 
@@ -7350,9 +7356,15 @@ void MainWindow::on_pushButtonMovePluginDown_clicked()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
-    if(list.count() == 1)
-    {
-        qDebug() << "down clicked!";
+    for(auto it = list.cbegin(); it != list.cend(); it++) {
+        pluginManager.decreasePluginPriority((*it)->text(0));
+
+        const int row = project.plugin->indexOfTopLevelItem((*it));
+        if (row < project.plugin->topLevelItemCount() - 1) {
+            project.plugin->takeTopLevelItem(row);
+            project.plugin->insertTopLevelItem(row + 1, (*it));
+            project.plugin->setCurrentItem((*it));
+        }
     }
 }
 
