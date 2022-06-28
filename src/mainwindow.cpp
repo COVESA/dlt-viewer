@@ -5302,10 +5302,31 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     if((list.count() >= 1) ) {
+        const int first_selected_item_index = project.plugin->indexOfTopLevelItem((PluginItem*) list.at(0));
+        const int last_selected_item_index = project.plugin->indexOfTopLevelItem(list[list.count()-1]);
+
         ui->action_menuPlugin_Edit->setEnabled(true);
         ui->action_menuPlugin_Hide->setEnabled(true);
         ui->action_menuPlugin_Show->setEnabled(true);
         ui->action_menuPlugin_Disable->setEnabled(true);
+
+        if((last_selected_item_index > 0) && (project.plugin->topLevelItemCount() > 1)) {
+            ui->pushButtonMovePluginUp->setEnabled(true);
+        }
+        else {
+            ui->pushButtonMovePluginUp->setEnabled(false);
+        }
+
+        if((first_selected_item_index < (project.plugin->topLevelItemCount() - 1)) && (project.plugin->topLevelItemCount() > 1)) {
+            ui->pushButtonMovePluginDown->setEnabled(true);
+        }
+        else {
+            ui->pushButtonMovePluginDown->setEnabled(false);
+        }
+    }
+    else {
+        ui->pushButtonMovePluginUp->setEnabled(false);
+        ui->pushButtonMovePluginDown->setEnabled(false);
     }
 }
 void MainWindow::on_filterWidget_itemSelectionChanged()
@@ -7296,6 +7317,26 @@ void MainWindow::on_actionAutoScroll_triggered(bool checked)
 
     // inform plugins about changed autoscroll status
     pluginManager.autoscrollStateChanged(settings->autoScroll);
+}
+
+void MainWindow::on_pushButtonMovePluginUp_clicked()
+{
+    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
+
+    if(list.count() == 1)
+    {
+        qDebug() << "up clicked!";
+    }
+}
+
+void MainWindow::on_pushButtonMovePluginDown_clicked()
+{
+    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
+
+    if(list.count() == 1)
+    {
+        qDebug() << "down clicked!";
+    }
 }
 
 void MainWindow::on_actionConnectAll_triggered()

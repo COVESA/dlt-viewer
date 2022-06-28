@@ -430,6 +430,9 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionExport_triggered();
 
+    void on_pushButtonMovePluginUp_clicked();
+    void on_pushButtonMovePluginDown_clicked();
+
 public slots:
 
     void onNewTriggered(QString fileName);
