@@ -560,30 +560,25 @@ void PluginItem::update()
     if(plugin->isCommand())
         types << "Command";
 
-    QString *modeString;
+    QString modeString;
     switch(plugin->getMode()){
         case 0:
-            modeString = new QString("Disabled");
+            modeString = QString("Disabled");
             break;
         case 1:
-            modeString = new QString("Enabled&Not visible");
+            modeString = QString("Enabled&Not visible");
             break;
         case 2:
-            modeString = new QString("Enabled&Visible");
+            modeString = QString("Enabled&Visible");
             break;
         default:
-            modeString = new QString("");
+            modeString = QString("");
             break;
     }
 
-    //qDebug() << this->getName() << *modeString << this->getFilename();
-    setData(0,0,QString("%1").arg(plugin->getName()));
-    //setData(1,0,QString("%1").arg(types.join("")));
-    setData(1,0,QString("%1").arg(*modeString));
-    //setData(3,0,QString("%1").arg(list.size()));
-    setData(2,0,QString("%1").arg(this->getFilename()));
-
-    delete modeString;
+    setText(0, plugin->getName());
+    setText(1, modeString);
+    setText(2, this->getFilename());
 }
 
 QString PluginItem::getName(){

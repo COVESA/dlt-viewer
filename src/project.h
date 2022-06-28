@@ -227,9 +227,8 @@ private:
 //Forward declaration
 class MyPluginDockWidget;
 
-class PluginItem  : public QObject, public QTreeWidgetItem
+class PluginItem  : public QTreeWidgetItem
 {
-    Q_OBJECT
 public:
 
     PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin);
@@ -264,9 +263,6 @@ public:
     QPluginLoader *loader;
 
 private:
-    QString name;
-    QString pluginVersion;
-    QString pluginInterfaceVersion;
     QString filename;
 
     int type;
