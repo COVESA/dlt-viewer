@@ -3052,6 +3052,23 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
             connect(action, SIGNAL(triggered()), this, SLOT(action_menuPlugin_Enable_triggered()));
             menu.addAction(action);
         }
+
+        menu.addSeparator();
+
+        if(project.plugin->indexOfTopLevelItem(item) > 0)
+        {
+            action = new QAction(tr("Move Up..."), this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginUp_clicked()));
+            menu.addAction(action);
+        }
+
+        if(project.plugin->indexOfTopLevelItem(item) < (project.plugin->topLevelItemCount() - 1))
+        {
+            action = new QAction(tr("Move Down..."), this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginDown_clicked()));
+            menu.addAction(action);
+        }
+
         /* show popup menu */
         menu.exec(globalPos);
     }
