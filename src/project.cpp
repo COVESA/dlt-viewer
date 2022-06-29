@@ -535,6 +535,8 @@ PluginItem::PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin)
     type = 0;
 
     plugin = _plugin;
+
+    this->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
 }
 
 PluginItem::~PluginItem()
