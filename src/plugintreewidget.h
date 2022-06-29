@@ -9,6 +9,7 @@ class PluginTreeWidget : public QTreeWidget
 public:
     explicit PluginTreeWidget(QObject *parent = 0);
     void dropEvent(QDropEvent *event);
+    void dragMoveEvent(QDragMoveEvent *event);
 
 signals:
     void pluginOrderChanged(const QString& name, int);

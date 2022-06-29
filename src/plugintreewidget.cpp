@@ -9,12 +9,35 @@ PluginTreeWidget::PluginTreeWidget(QObject *parent) :
     setDragDropMode(QAbstractItemView::InternalMove);
 }
 
+void PluginTreeWidget::dragMoveEvent(QDragMoveEvent *event)
+{
+    const QTreeWidgetItem* target_item = this->itemAt(event->pos());
+
+    // Ignore event if moving over a child item
+    if(target_item != nullptr && target_item->parent() != nullptr){
+        event->ignore();
+    }
+    else{
+        QTreeWidget::dragMoveEvent(event);
+    }
+}
+
+
 void PluginTreeWidget::dropEvent(QDropEvent *event)
 {
-    QTreeWidgetItem* item = this->currentItem();
-    QTreeWidget::dropEvent(event);
-    this->setCurrentItem(item);
+    QTreeWidgetItem* dragged_item = this->currentItem();
+    const QTreeWidgetItem* target_item = this->itemAt(event->pos());
 
-    emit pluginOrderChanged(item->text(0), this->indexOfTopLevelItem(item));
+    // Allow drop only over top level items (or at the end)
+    if(target_item == nullptr || target_item->parent() == nullptr){
+        QTreeWidget::dropEvent(event);
+        this->setCurrentItem(dragged_item);
+        int new_position = this->indexOfTopLevelItem(dragged_item);
+
+        emit pluginOrderChanged(dragged_item->text(0), new_position);
+    }
+    else{
+        event->ignore();
+    }
 }
 
