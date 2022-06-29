@@ -274,6 +274,9 @@ void MainWindow::initState()
     project.ecu = ui->configWidget;
     project.filter = ui->filterWidget;
     project.plugin = ui->pluginWidget;
+
+    connect(ui->pluginWidget, SIGNAL(pluginOrderChanged(QString, int)), this, SLOT(on_pluginWidget_pluginPriorityChanged(QString, int)));
+
     //project.settings = settings;
     project.settings = QDltSettingsManager::getInstance();
 
@@ -5405,6 +5408,11 @@ void MainWindow::on_configWidget_itemSelectionChanged()
     ui->action_menuConfig_Expand_All_ECUs->setEnabled(ecuitem && !appitem );
     ui->action_menuConfig_Collapse_All_ECUs->setEnabled(ecuitem && !appitem );
 
+}
+
+void MainWindow::on_pluginWidget_pluginPriorityChanged(const QString name, int prio)
+{
+    pluginManager.setPluginPriority(name, prio);
 }
 
 void MainWindow::updateScrollButton()
