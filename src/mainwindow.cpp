@@ -489,6 +489,12 @@ void MainWindow::initView()
 
     /* Update the scrollbutton status */
     updateScrollButton();
+
+    /* Add shortcut to apply config */
+    QAction *applyConfig = new QAction(this);
+    applyConfig->setShortcut(Qt::Key_C | Qt::SHIFT | Qt::CTRL);
+    connect(applyConfig, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
+    addAction(applyConfig);
 }
 
 void MainWindow::initSignalConnections()
