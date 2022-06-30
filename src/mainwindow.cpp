@@ -469,6 +469,11 @@ void MainWindow::initView()
     connect(settingsDlg, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
     connect(settingsDlg, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
 
+    QAction *focusSearchTextbox = new QAction(this);
+    focusSearchTextbox->setShortcut(Qt::Key_L | Qt::CTRL);
+    connect(focusSearchTextbox, SIGNAL(triggered()), searchTextbox, SLOT(setFocus()));
+    addAction(focusSearchTextbox);
+
     searchComboBox = new QComboBox();
     searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     searchComboBox->setLineEdit(searchTextbox);
