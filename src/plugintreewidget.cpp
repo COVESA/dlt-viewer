@@ -11,10 +11,11 @@ PluginTreeWidget::PluginTreeWidget(QObject *parent) :
 
 void PluginTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
+    const QTreeWidgetItem* dragged_item = this->currentItem();
     const QTreeWidgetItem* target_item = this->itemAt(event->pos());
 
     // Ignore event if moving over a child item
-    if(target_item != nullptr && target_item->parent() != nullptr){
+    if(dragged_item == nullptr || dragged_item->parent() != nullptr || (target_item != nullptr && target_item->parent() != nullptr)){
         event->ignore();
     }
     else{
@@ -28,8 +29,10 @@ void PluginTreeWidget::dropEvent(QDropEvent *event)
     QTreeWidgetItem* dragged_item = this->currentItem();
     const QTreeWidgetItem* target_item = this->itemAt(event->pos());
 
+    // Avoid dropping children
     // Allow drop only over top level items (or at the end)
-    if(target_item == nullptr || target_item->parent() == nullptr){
+    if( dragged_item != nullptr && dragged_item->parent() == nullptr &&
+         (target_item == nullptr || target_item->parent() == nullptr)){
         QTreeWidget::dropEvent(event);
         this->setCurrentItem(dragged_item);
         int new_position = this->indexOfTopLevelItem(dragged_item);
