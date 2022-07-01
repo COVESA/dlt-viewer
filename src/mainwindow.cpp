@@ -7349,14 +7349,9 @@ void MainWindow::on_pushButtonMovePluginUp_clicked()
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     for(auto it = list.cbegin(); it != list.cend(); it++) {
-        pluginManager.raisePluginPriority((*it)->text(0));
-
-        const int row = project.plugin->indexOfTopLevelItem((*it));
-        if (row > 0) {
-            project.plugin->takeTopLevelItem(row);
-            project.plugin->insertTopLevelItem(row - 1, (*it));
-            project.plugin->setCurrentItem((*it));
-        }
+        const int index = project.plugin->indexOfTopLevelItem((*it));
+        //PluginWidget emits a signal that will trigger the Plugin Manager
+        project.plugin->raisePluginPriority(index);
     }
 }
 
@@ -7365,14 +7360,9 @@ void MainWindow::on_pushButtonMovePluginDown_clicked()
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     for(auto it = list.cbegin(); it != list.cend(); it++) {
-        pluginManager.decreasePluginPriority((*it)->text(0));
-
-        const int row = project.plugin->indexOfTopLevelItem((*it));
-        if (row < project.plugin->topLevelItemCount() - 1) {
-            project.plugin->takeTopLevelItem(row);
-            project.plugin->insertTopLevelItem(row + 1, (*it));
-            project.plugin->setCurrentItem((*it));
-        }
+        const int index = project.plugin->indexOfTopLevelItem((*it));
+        //PluginWidget emits a signal that will trigger the Plugin Manager
+        project.plugin->decreasePluginPriority(index);
     }
 }
 
