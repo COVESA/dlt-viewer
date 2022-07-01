@@ -21,6 +21,7 @@
 #define PROJECT_H
 
 #include "qdlt.h"
+#include "plugintreewidget.h"
 
 
 #include <QTreeWidget>
@@ -267,6 +268,7 @@ private:
 
     int type;
     int mode;
+    int prio;
 
     QDltPlugin *plugin;
 
@@ -299,7 +301,7 @@ public:
 
     QTreeWidget *ecu;
     QTreeWidget *filter;
-    QTreeWidget *plugin;
+    PluginTreeWidget *plugin;
     //SettingsDialog *settings;
     QDltSettingsManager *settings;
 

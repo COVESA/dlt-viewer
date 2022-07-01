@@ -664,6 +664,8 @@ bool Project::Load(QString filename)
 
     QXmlStreamReader xml(&file);
 
+    QMultiMap<int, QString> pluginExecutionPrio;
+
     while (!xml.atEnd())
     {
           xml.readNext();
@@ -887,6 +889,11 @@ bool Project::Load(QString filename)
                     pluginitemexist->setType(xml.readElementText().toInt() );
 
               }
+              if(xml.name() == QString("prio"))
+              {
+                  if(pluginitemexist)
+                      pluginExecutionPrio.insert(xml.readElementText().toInt(), pluginitemexist->getName());
+              }
           }
           if(xml.isEndElement())
           {
@@ -944,6 +951,21 @@ bool Project::Load(QString filename)
               }
           }
     }
+
+    //Set Plugin execution priorities based on project settings
+    QList<int> keys = pluginExecutionPrio.uniqueKeys();
+    QStringList sorted_plugins;
+    for(QList<int>::const_iterator it_key = keys.constBegin(); it_key != keys.constEnd(); ++it_key)
+    {
+        QList<QString> values = pluginExecutionPrio.values(*it_key);
+        for(QList<QString>::const_iterator it_value = values.constBegin(); it_value != values.constEnd(); ++it_value)
+        {
+            sorted_plugins << *it_value;
+        }
+    }
+    plugin->sortAccordingPriority(sorted_plugins);
+
+
     if (xml.hasError())
     {
         if ( QDltOptManager::getInstance()->issilentMode() == false )
@@ -1055,7 +1077,7 @@ bool Project::Save(QString filename)
     }
 
     /* Write Plugin */
-    for(int num = 0; num < plugin->topLevelItemCount (); num++)
+    for(int num = 0; num < plugin->topLevelItemCount(); num++)
     {
         PluginItem *item = (PluginItem*)plugin->topLevelItem(num);
         xml.writeStartElement("plugin");
@@ -1065,6 +1087,7 @@ bool Project::Save(QString filename)
 
         xml.writeTextElement("mode",QString("%1").arg(item->getMode()));
         xml.writeTextElement("type",QString("%1").arg(item->getType()));
+        xml.writeTextElement("prio",QString("%1").arg(num));
 
         xml.writeEndElement(); // plugin
     }
