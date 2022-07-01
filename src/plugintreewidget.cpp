@@ -1,4 +1,5 @@
 #include "plugintreewidget.h"
+#include "project.h"
 #include <QDropEvent>
 #include <QMimeData>
 #include <QDebug>
@@ -7,6 +8,56 @@ PluginTreeWidget::PluginTreeWidget(QObject *parent) :
     QTreeWidget(qobject_cast<QWidget *>(parent))
 {
     setDragDropMode(QAbstractItemView::InternalMove);
+}
+
+void PluginTreeWidget::sortAccordingPriority(const QStringList& prio_list)
+{
+    int prio = 0;
+    for(QStringList::const_iterator it = prio_list.constBegin(); it != prio_list.constEnd(); ++it) {
+        if ( setPluginPriority(*it, prio) ) {
+            emit pluginOrderChanged(*it, prio);
+            ++prio;
+        }
+    }
+}
+
+bool PluginTreeWidget::setPluginPriority(const QString& name, int prio)
+{
+    for(int num = 0; num < topLevelItemCount(); num++) {
+        PluginItem *pItem = (PluginItem*) topLevelItem(num);
+        if(pItem->getName() == name)
+        {
+            if(prio != num)
+            {
+                takeTopLevelItem(num);
+                insertTopLevelItem(prio, pItem);
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+void PluginTreeWidget::raisePluginPriority(int index)
+{
+    if (index > 0) {
+        QTreeWidgetItem *pItem = takeTopLevelItem(index);
+        insertTopLevelItem(index - 1, pItem);
+        setCurrentItem(pItem);
+
+        emit pluginOrderChanged(((PluginItem*)pItem)->getName(), index - 1);
+    }
+}
+
+void PluginTreeWidget::decreasePluginPriority(int index)
+{
+    if (index > 0) {
+        QTreeWidgetItem *pItem = takeTopLevelItem(index);
+        insertTopLevelItem(index + 1, pItem);
+        setCurrentItem(pItem);
+
+        emit pluginOrderChanged(((PluginItem*)pItem)->getName(), index + 1);
+    }
 }
 
 void PluginTreeWidget::dragMoveEvent(QDragMoveEvent *event)
@@ -37,7 +88,7 @@ void PluginTreeWidget::dropEvent(QDropEvent *event)
         this->setCurrentItem(dragged_item);
         int new_position = this->indexOfTopLevelItem(dragged_item);
 
-        emit pluginOrderChanged(dragged_item->text(0), new_position);
+        emit pluginOrderChanged(((PluginItem*)dragged_item)->getName(), new_position);
     }
     else{
         event->ignore();
