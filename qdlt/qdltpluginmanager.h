@@ -83,9 +83,11 @@ public:
     bool initConnections(QStringList list);
 
     //control plugin execution order
+    void initPluginPriority(const QStringList &desiredPrio);
     bool decreasePluginPriority(const QString &name);
     bool raisePluginPriority(const QString &name);
     bool setPluginPriority(const QString name, int prio);
+    QStringList getPluginPriorities() const;
 
 private:
     mutable QMutex* pMutex_pluginList;

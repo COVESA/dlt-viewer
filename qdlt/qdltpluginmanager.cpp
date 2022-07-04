@@ -193,6 +193,21 @@ QDltPlugin* QDltPluginManager::findPlugin(QString &name)
     return plugin;
 }
 
+void QDltPluginManager::initPluginPriority(const QStringList& desiredPrio)
+{
+    QStringList finalPrio;
+
+    if(plugins.size() > 1) {
+        int prio = 0;
+        for (int i = 0; i < desiredPrio.count(); ++i) {
+            QString pluginName(desiredPrio[i]);
+            if (setPluginPriority(pluginName, prio)) {
+                ++prio;
+            }
+        }
+    }
+}
+
 bool QDltPluginManager::decreasePluginPriority(const QString &name)
 {
     bool result = false;
@@ -261,6 +276,22 @@ bool QDltPluginManager::setPluginPriority(const QString name, int prio)
     }
 
     return result;
+}
+
+QStringList QDltPluginManager::getPluginPriorities() const
+{
+    QStringList finalPrio;
+
+    if(plugins.size() > 0) {
+        pMutex_pluginList->lock();
+        for(int num=0; num < plugins.size(); num++)
+        {
+            finalPrio << plugins[num]->getName();
+        }
+        pMutex_pluginList->unlock();
+    }
+
+    return finalPrio;
 }
 
 QList<QDltPlugin*> QDltPluginManager::getDecoderPlugins()
@@ -353,3 +384,4 @@ bool QDltPluginManager::initConnections(QStringList list)
 
     return true;
 }
+
