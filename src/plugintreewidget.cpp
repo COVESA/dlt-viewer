@@ -21,7 +21,7 @@ void PluginTreeWidget::sortAccordingPriority(const QStringList& prio_list)
     }
 }
 
-bool PluginTreeWidget::setPluginPriority(const QString& name, int prio)
+bool PluginTreeWidget::setPluginPriority(const QString& name, unsigned int prio)
 {
     for(int num = 0; num < topLevelItemCount(); num++) {
         PluginItem *pItem = (PluginItem*) topLevelItem(num);

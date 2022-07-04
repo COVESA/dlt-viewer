@@ -21,7 +21,7 @@ signals:
 public slots:
 
 private:
-    bool setPluginPriority(const QString& name, int prio);
+    bool setPluginPriority(const QString& name, unsigned int prio);
 
 };
 

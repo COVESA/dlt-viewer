@@ -86,7 +86,7 @@ public:
     void initPluginPriority(const QStringList &desiredPrio);
     bool decreasePluginPriority(const QString &name);
     bool raisePluginPriority(const QString &name);
-    bool setPluginPriority(const QString name, int prio);
+    bool setPluginPriority(const QString name, unsigned int prio);
     QStringList getPluginPriorities() const;
 
 private:

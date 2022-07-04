@@ -215,7 +215,7 @@ bool QDltPluginManager::decreasePluginPriority(const QString &name)
     if(plugins.size() > 1)
     {
         pMutex_pluginList->lock();
-        for(int num=0; num<plugins.size()-1; num++)
+        for(int num=0; num < plugins.size()-1; ++num)
         {
             if(plugins[num]->getName() == name)
             {
@@ -238,7 +238,7 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
     if(plugins.size() > 1)
     {
         pMutex_pluginList->lock();
-        for(int num=1; num<plugins.size(); num++)
+        for(int num=1; num < plugins.size(); ++num)
         {
             if( plugins[num]->getName() == name)
             {
@@ -254,17 +254,20 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
     return result;
 }
 
-bool QDltPluginManager::setPluginPriority(const QString name, int prio)
+bool QDltPluginManager::setPluginPriority(const QString name, unsigned int prio)
 {
     bool result = false;
 
-    if(prio < plugins.size())
-    {
+    //if prio is too large, put to the end of the list
+    if(prio >= plugins.size()) {
+        prio = plugins.size() - 1;
+    }
+
+    if(plugins.size() > 1) {
         pMutex_pluginList->lock();
-        for(int num=0;num<plugins.size();num++)
-        {
-            if(plugins[num]->getName()==name) {
-                if(prio != num) {
+        for (int num = 0; num < plugins.size(); ++num) {
+            if (plugins[num]->getName() == name) {
+                if (prio != num) {
                     qDebug() << "changing prio of" << name << "from" << num << "to" << prio;
                     plugins.move(num, prio);
                 }
@@ -284,7 +287,7 @@ QStringList QDltPluginManager::getPluginPriorities() const
 
     if(plugins.size() > 0) {
         pMutex_pluginList->lock();
-        for(int num=0; num < plugins.size(); num++)
+        for(int num=0; num < plugins.size(); ++num)
         {
             finalPrio << plugins[num]->getName();
         }
