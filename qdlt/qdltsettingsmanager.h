@@ -121,6 +121,8 @@ public:
     int automaticTimezoneFromDlt; // project and local setting
     qlonglong utcOffset; // project and local setting
     int dst; // project and local setting
+
+    QStringList pluginExecutionPrio; //local setting
 };
 
 #endif // QDLTSETTINGSMANAGER_H

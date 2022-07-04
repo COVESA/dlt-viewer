@@ -852,6 +852,7 @@ void MainWindow::deleteactualFile()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    // Shall we save the updated plugin execution priorities??
 
     settingsDlg->writeSettings(this);
     if(true == isSearchOngoing)
@@ -5824,6 +5825,13 @@ void MainWindow::loadPlugins()
         for(iter = errList.constBegin(); iter != errList.constEnd(); ++iter)
             QMessageBox::warning(0, QString("DLT Viewer"), (*iter).toLocal8Bit().constData());
     }
+
+    // Initialize Plugin Prio
+    pluginManager.initPluginPriority(settings->pluginExecutionPrio);
+
+    // Update settings with current priorities (maybe some plugins are not available anymore)
+    settings->pluginExecutionPrio = pluginManager.getPluginPriorities();
+    qDebug() << settings->pluginExecutionPrio;
 
     /* update plugin widgets */
     QList<QDltPlugin*> plugins = pluginManager.getPlugins();

@@ -227,6 +227,10 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/versionMajor", PACKAGE_MAJOR_VERSION);
     settings->setValue("startup/versionMinor", PACKAGE_MINOR_VERSION);
     settings->setValue("startup/versionPatch", PACKAGE_PATCH_LEVEL);
+
+    for(int i = 0; i < pluginExecutionPrio.count(); ++i) {
+        settings->setValue(QStringLiteral("plugin/default_prio/%1").arg(i), pluginExecutionPrio[i]);
+    }
 }
 
 void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
@@ -467,5 +471,14 @@ void QDltSettingsManager::readSettings()
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
     msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();
+
+    // Read the plugin execution priority of a maximum of 100 plugins
+    for(int i = 0; i < 100; ++i)
+    {
+        QString lastValue(settings->value(QStringLiteral("plugin/default_prio/%1").arg(i),"").toString());
+        if( !lastValue.isEmpty() ) {
+            pluginExecutionPrio << lastValue;
+        }
+    }
 }
 
