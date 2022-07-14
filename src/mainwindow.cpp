@@ -495,6 +495,12 @@ void MainWindow::initView()
     applyConfig->setShortcut(Qt::Key_C | Qt::SHIFT | Qt::CTRL);
     connect(applyConfig, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
     addAction(applyConfig);
+
+    /* Add shortcut to add filter */
+    QAction *addFilter = new QAction(this);
+    addFilter->setShortcut(Qt::Key_A | Qt::SHIFT | Qt::CTRL);
+    connect(addFilter, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Add_triggered()));
+    addAction(addFilter);
 }
 
 void MainWindow::initSignalConnections()
