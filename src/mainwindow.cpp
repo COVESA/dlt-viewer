@@ -6909,8 +6909,15 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     }
     if(event->matches(QKeySequence::Cut))
     {
-        QMessageBox::warning(this, QString("Cut"),
-                             QString("pressed"));
+        if(ui->tableView->hasFocus())
+        {
+            exportSelection(true,false);
+        }
+
+        if(ui->tableView_SearchIndex->hasFocus())
+        {
+            exportSelection_searchTable();
+        }
     }
 
     // Access menu bar
