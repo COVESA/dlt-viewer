@@ -86,6 +86,7 @@ void EcuItem::update()
     if( ( true == tryToConnect ) && ( true == connected ))
     {
         setData(0,Qt::DisplayRole,id + " online");
+        setForeground(0,QBrush(QColor(Qt::black)));
         setBackground(0,QBrush(QColor(Qt::green)));
         //qDebug() << "green";
     }
@@ -94,12 +95,14 @@ void EcuItem::update()
         if(true == connectError.isEmpty())
         {
             setData(0,Qt::DisplayRole,id + " connect");
+            setForeground(0,QBrush(QColor(Qt::black)));
             setBackground(0,QBrush(QColor(Qt::yellow)));
             //qDebug() << "turn to yellow" << __LINE__ << __FILE__;
         }
         else
         {
             setData(0,Qt::DisplayRole,id + " connect ["+connectError+"]");
+            setForeground(0,QBrush(QColor(Qt::black)));
             setBackground(0,QBrush(QColor(Qt::red)));
             //qDebug() << "red" << __LINE__ << __FILE__ <<  tryToConnect << connected;
         }
@@ -108,7 +111,18 @@ void EcuItem::update()
     else
     {
         setData(0,Qt::DisplayRole,id + " offline");
-        setBackground(0,QBrush(QColor(Qt::white)));
+        /* default return white background color */
+        QColor brushColor = QColor(255,255,255);
+        QColor textColor = QColor(0,0,0);
+        #ifdef Q_OS_WIN
+            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+            if(themeSettings.value("AppsUseLightTheme")==0){
+                brushColor = QColor(31,31,31);
+                textColor = QColor(253,253,255);
+            }
+        #endif
+        setBackground(0,QBrush(brushColor));
+        setForeground(0,QBrush(textColor));
     }
 
     switch(interfacetype)
@@ -141,17 +155,23 @@ void EcuItem::update()
 
     if(status == EcuItem::invalid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::red)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::red)));
     }
     else if(status == EcuItem::unknown)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::yellow)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::yellow)));
     }
     else if(status == EcuItem::valid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::green)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::green)));
     }
 }
@@ -276,17 +296,23 @@ void ContextItem::update()
 
     if(status == ContextItem::invalid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::red)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::red)));
     }
     else if(status == ContextItem::unknown)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::yellow)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::yellow)));
     }
     else if(status == ContextItem::valid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::green)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::green)));
     }
 }

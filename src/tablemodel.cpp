@@ -507,5 +507,12 @@ QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterp
     }
 
     /* default return white background color */
-    return QColor(255,255,255); // this is the default background clor
+    QColor brushColor = QColor(255,255,255);
+    #ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+        if(themeSettings.value("AppsUseLightTheme")==0){
+            brushColor = QColor(31,31,31);
+        }
+    #endif
+    return brushColor; // this is the default background color
 }
