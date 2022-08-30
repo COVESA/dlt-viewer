@@ -121,7 +121,7 @@ jobs:
         with:
           name: DLT-Windows-sdk
       - run: |
-          assetsZip=$(find . -name 'DLT*.zip' | while read -r asset ; do echo "-a $asset" ; done)
+          assetsZip=$(find . -name 'DLT*.zip' | xargs -I asset echo "-a asset" | xargs)
           VERSION=$(echo $VERSION | cut -d'/' -f3)
           tag_name="${GITHUB_REF##*/}"
           hub release create ${assetsZip} -m "$tag_name" "$tag_name"
