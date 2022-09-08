@@ -300,6 +300,14 @@ void MainWindow::initView()
     project.ecu->setStyleSheet("QTreeWidget:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
     ui->tableView->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
     ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
+    #ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+        if(themeSettings.value("AppsUseLightTheme")==0){
+            project.ecu->setStyleSheet("QTreeWidget:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+            ui->tableView->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+            ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+        }
+    #endif
 
     /* update default filter selection */
     on_actionDefault_Filter_Reload_triggered();
@@ -6597,15 +6605,24 @@ void MainWindow::filterUpdate()
         {
             item->setBackground(0,QColor(item->filter.filterColour));
             item->setBackground(1,QColor(item->filter.filterColour));
-            item->setForeground(0,DltUiUtils::optimalTextColor(QColor(item->filter.filterColour)));
+            item->setForeground(0,QColor(0xff,0xff,0xff));
             item->setForeground(1,DltUiUtils::optimalTextColor(QColor(item->filter.filterColour)));
         }
         else
         {
             item->setBackground(0,QColor(0xff,0xff,0xff));
             item->setBackground(1,QColor(0xff,0xff,0xff));
-            item->setForeground(0,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
+            item->setForeground(0,QColor(0xff,0xff,0xff));
             item->setForeground(1,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
+        #ifdef Q_OS_WIN
+            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+            if(themeSettings.value("AppsUseLightTheme")==0){
+                item->setBackground(0,QColor(31,31,31));
+                item->setBackground(1,QColor(31,31,31));
+                item->setForeground(0,QColor(0xff,0xff,0xff));
+                item->setForeground(1,DltUiUtils::optimalTextColor(QColor(31,31,31)));
+            }
+        #endif
         }
 
         if(filter->enableRegexp_Appid || filter->enableRegexp_Context || filter->enableRegexp_Header || filter->enableRegexp_Payload)
@@ -6892,8 +6909,15 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     }
     if(event->matches(QKeySequence::Cut))
     {
-        QMessageBox::warning(this, QString("Cut"),
-                             QString("pressed"));
+        if(ui->tableView->hasFocus())
+        {
+            exportSelection(true,false);
+        }
+
+        if(ui->tableView_SearchIndex->hasFocus())
+        {
+            exportSelection_searchTable();
+        }
     }
 
     // Access menu bar
