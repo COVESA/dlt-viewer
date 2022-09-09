@@ -51,7 +51,7 @@ void PluginTreeWidget::raisePluginPriority(int index)
 
 void PluginTreeWidget::decreasePluginPriority(int index)
 {
-    if (index > 0) {
+    if (index >= 0) {
         QTreeWidgetItem *pItem = takeTopLevelItem(index);
         insertTopLevelItem(index + 1, pItem);
         setCurrentItem(pItem);
