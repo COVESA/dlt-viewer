@@ -376,6 +376,8 @@ void SettingsDialog::writeDlg()
     ui->spinBoxFrequency->setValue(settings->RefreshRate);
     ui->checkBoxStartUpMinimized->setChecked(settings->StartupMinimized);
     ui->comboBox_MessageIdFormat->setCurrentText(settings->msgIdFormat);
+
+    ui->comboBoxTheme->setCurrentIndex(static_cast<int>(settings->themeSelectionSettings));
 }
 
 void SettingsDialog::readDlg()
@@ -461,6 +463,8 @@ void SettingsDialog::readDlg()
     settings->RefreshRate = ui->spinBoxFrequency->value();
     settings->StartupMinimized = ui->checkBoxStartUpMinimized->isChecked();
     settings->msgIdFormat=ui->comboBox_MessageIdFormat->currentText();
+
+    settings->themeSelectionSettings = static_cast<QDltSettingsManager::UI_Colour>(ui->comboBoxTheme->currentIndex());
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
