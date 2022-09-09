@@ -161,13 +161,12 @@ void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
     QColor text1 = QColor(0,0,0);
     QColor background0 = QColor(255,102,102);
     QColor background1 = QColor(255,255,255);
-    #ifdef Q_OS_WIN
-        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-        if(themeSettings.value("AppsUseLightTheme")==0){
-            background1 = QColor(31,31,31);
-            text1 = QColor(255,255,255);
-        }
-    #endif
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        background1 = QColor(31,31,31);
+        text1 = QColor(255,255,255);
+    }
 
     switch(result){
     case 0:

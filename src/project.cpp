@@ -114,13 +114,13 @@ void EcuItem::update()
         /* default return white background color */
         QColor brushColor = QColor(255,255,255);
         QColor textColor = QColor(0,0,0);
-        #ifdef Q_OS_WIN
-            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-            if(themeSettings.value("AppsUseLightTheme")==0){
-                brushColor = QColor(31,31,31);
-                textColor = QColor(253,253,255);
-            }
-        #endif
+
+        if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+        {
+            brushColor = QColor(31,31,31);
+            textColor = QColor(253,253,255);
+        }
+
         setBackground(0,QBrush(brushColor));
         setForeground(0,QBrush(textColor));
     }

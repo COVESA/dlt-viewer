@@ -464,7 +464,13 @@ void SettingsDialog::readDlg()
     settings->StartupMinimized = ui->checkBoxStartUpMinimized->isChecked();
     settings->msgIdFormat=ui->comboBox_MessageIdFormat->currentText();
 
+    auto prevUISettings = settings->themeSelectionSettings;
     settings->themeSelectionSettings = static_cast<QDltSettingsManager::UI_Colour>(ui->comboBoxTheme->currentIndex());
+
+    if (prevUISettings != settings->themeSelectionSettings)
+    {
+        /* Signal to update the UI */
+    }
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
@@ -488,6 +494,25 @@ void SettingsDialog::readSettings()
     palette.setColor(QPalette::Active,this->backgroundRole(),settings->markercolor);
     ui->labelSelectedMarkerColor->setPalette(palette);
 
+    auto uiColour = settings->themeSelectionSettings;
+
+    if (QDltSettingsManager::UI_Colour::UI_SystemDefault == uiColour)
+    {
+        uiColour = QDltSettingsManager::UI_Colour::UI_Light;
+
+#ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+
+        if(themeSettings.value("AppsUseLightTheme")==0)
+        {
+            uiColour = QDltSettingsManager::UI_Colour::UI_Dark;
+        }
+#endif
+    }
+
+    settings->uiColour = uiColour;
+
+    qDebug() << "Selected theme: " << static_cast<int>(settings->uiColour);
 }
 
 
