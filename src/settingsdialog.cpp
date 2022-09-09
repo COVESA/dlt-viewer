@@ -469,7 +469,11 @@ void SettingsDialog::readDlg()
 
     if (prevUISettings != settings->themeSelectionSettings)
     {
-        /* Signal to update the UI */
+        QMessageBox msgBox(QMessageBox::Warning,
+                           "Settings updated",
+                           "Restart the application for changes to take effect",
+                           QMessageBox::Ok);
+        msgBox.exec();
     }
 }
 
@@ -511,8 +515,6 @@ void SettingsDialog::readSettings()
     }
 
     settings->uiColour = uiColour;
-
-    qDebug() << "Selected theme: " << static_cast<int>(settings->uiColour);
 }
 
 
