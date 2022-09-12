@@ -6,7 +6,7 @@
 # 
 # Copyright (C) 2011-2012, BMW AG - Alexander Wenzel <alexander.aw.wenzel@bmw.de>
 #
-# Contributions are licensed to the GENIVI Alliance under one or more
+# Contributions are licensed to the COVESA Alliance under one or more
 # Contribution License Agreements.
 # 
 # This Source Code Form is subject to the terms of the
