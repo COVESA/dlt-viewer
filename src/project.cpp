@@ -561,6 +561,8 @@ PluginItem::PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin)
     type = 0;
 
     plugin = _plugin;
+
+    this->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
 }
 
 PluginItem::~PluginItem()
@@ -586,30 +588,25 @@ void PluginItem::update()
     if(plugin->isCommand())
         types << "Command";
 
-    QString *modeString;
+    QString modeString;
     switch(plugin->getMode()){
         case 0:
-            modeString = new QString("Disabled");
+            modeString = QString("Disabled");
             break;
         case 1:
-            modeString = new QString("Enabled&Not visible");
+            modeString = QString("Enabled&Not visible");
             break;
         case 2:
-            modeString = new QString("Enabled&Visible");
+            modeString = QString("Enabled&Visible");
             break;
         default:
-            modeString = new QString("");
+            modeString = QString("");
             break;
     }
 
-    //qDebug() << this->getName() << *modeString << this->getFilename();
-    setData(0,0,QString("%1").arg(plugin->getName()));
-    //setData(1,0,QString("%1").arg(types.join("")));
-    setData(1,0,QString("%1").arg(*modeString));
-    //setData(3,0,QString("%1").arg(list.size()));
-    setData(2,0,QString("%1").arg(this->getFilename()));
-
-    delete modeString;
+    setText(0, plugin->getName());
+    setText(1, modeString);
+    setText(2, this->getFilename());
 }
 
 QString PluginItem::getName(){
@@ -692,6 +689,8 @@ bool Project::Load(QString filename)
     //plugin->clear();
 
     QXmlStreamReader xml(&file);
+
+    QMultiMap<int, QString> pluginExecutionPrio;
 
     while (!xml.atEnd())
     {
@@ -916,6 +915,11 @@ bool Project::Load(QString filename)
                     pluginitemexist->setType(xml.readElementText().toInt() );
 
               }
+              if(xml.name() == QString("prio"))
+              {
+                  if(pluginitemexist)
+                      pluginExecutionPrio.insert(xml.readElementText().toInt(), pluginitemexist->getName());
+              }
           }
           if(xml.isEndElement())
           {
@@ -973,6 +977,21 @@ bool Project::Load(QString filename)
               }
           }
     }
+
+    //Set Plugin execution priorities based on project settings
+    QList<int> keys = pluginExecutionPrio.uniqueKeys();
+    QStringList sorted_plugins;
+    for(QList<int>::const_iterator it_key = keys.constBegin(); it_key != keys.constEnd(); ++it_key)
+    {
+        QList<QString> values = pluginExecutionPrio.values(*it_key);
+        for(QList<QString>::const_iterator it_value = values.constBegin(); it_value != values.constEnd(); ++it_value)
+        {
+            sorted_plugins << *it_value;
+        }
+    }
+    plugin->sortAccordingPriority(sorted_plugins);
+
+
     if (xml.hasError())
     {
         if ( QDltOptManager::getInstance()->issilentMode() == false )
@@ -1084,7 +1103,7 @@ bool Project::Save(QString filename)
     }
 
     /* Write Plugin */
-    for(int num = 0; num < plugin->topLevelItemCount (); num++)
+    for(int num = 0; num < plugin->topLevelItemCount(); num++)
     {
         PluginItem *item = (PluginItem*)plugin->topLevelItem(num);
         xml.writeStartElement("plugin");
@@ -1094,6 +1113,7 @@ bool Project::Save(QString filename)
 
         xml.writeTextElement("mode",QString("%1").arg(item->getMode()));
         xml.writeTextElement("type",QString("%1").arg(item->getType()));
+        xml.writeTextElement("prio",QString("%1").arg(num));
 
         xml.writeEndElement(); // plugin
     }

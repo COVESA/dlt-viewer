@@ -417,6 +417,8 @@ private slots:
 
     void on_pluginWidget_itemExpanded(QTreeWidgetItem* item);
 
+    void on_pluginWidget_pluginPriorityChanged(const QString name, int prio);
+
 // File methods
 
 private slots:
@@ -429,6 +431,9 @@ private slots:
     void on_action_menuFile_Settings_triggered();
     void on_action_menuFile_Open_triggered();
     void on_actionExport_triggered();
+
+    void on_pushButtonMovePluginUp_clicked();
+    void on_pushButtonMovePluginDown_clicked();
 
 public slots:
 

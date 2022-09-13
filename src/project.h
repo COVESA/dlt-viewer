@@ -21,6 +21,7 @@
 #define PROJECT_H
 
 #include "qdlt.h"
+#include "plugintreewidget.h"
 
 
 #include <QTreeWidget>
@@ -227,9 +228,8 @@ private:
 //Forward declaration
 class MyPluginDockWidget;
 
-class PluginItem  : public QObject, public QTreeWidgetItem
+class PluginItem  : public QTreeWidgetItem
 {
-    Q_OBJECT
 public:
 
     PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin);
@@ -264,13 +264,11 @@ public:
     QPluginLoader *loader;
 
 private:
-    QString name;
-    QString pluginVersion;
-    QString pluginInterfaceVersion;
     QString filename;
 
     int type;
     int mode;
+    int prio;
 
     QDltPlugin *plugin;
 
@@ -303,7 +301,7 @@ public:
 
     QTreeWidget *ecu;
     QTreeWidget *filter;
-    QTreeWidget *plugin;
+    PluginTreeWidget *plugin;
     //SettingsDialog *settings;
     QDltSettingsManager *settings;
 
