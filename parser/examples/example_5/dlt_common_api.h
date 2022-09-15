@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2014  BMW AG
  *
- * This file is part of GENIVI Project Dlt - Diagnostic Log and Trace console apps.
+ * This file is part of COVESA Project Dlt - Diagnostic Log and Trace console apps.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -16,7 +16,7 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> BMW 2011-2012
  *
  * \file dlt_common_api.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 

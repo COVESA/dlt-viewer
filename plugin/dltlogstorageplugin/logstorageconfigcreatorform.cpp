@@ -5,7 +5,7 @@
  * This code is developed by Advanced Driver Information Technology.
  * Copyright of Advanced Driver Information Technology, Bosch and DENSO.
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
  *
  * \copyright
@@ -16,7 +16,7 @@
  * \author Christoph Lipka <clipka@jp.adit-jv.com> ADIT 2015
  *
  * \file logstorageconfigcreatorform.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 

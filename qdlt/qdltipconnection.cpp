@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2015-2016  Harman Becker Automotive Systems GmbH
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,7 +15,7 @@
  * \author Olaf Dreyer <olaf.dreyer@harman.com>
  *
  * \file qdltipconnection.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
