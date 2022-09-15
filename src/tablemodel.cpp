@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file treemodel.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -507,5 +507,12 @@ QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterp
     }
 
     /* default return white background color */
-    return QColor(255,255,255); // this is the default background clor
+    QColor brushColor = QColor(255,255,255);
+    #ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+        if(themeSettings.value("AppsUseLightTheme")==0){
+            brushColor = QColor(31,31,31);
+        }
+    #endif
+    return brushColor; // this is the default background color
 }

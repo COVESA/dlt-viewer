@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file searchdialog.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -157,10 +157,18 @@ void SearchDialog::setStartLine(long int start)
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
     QPalette palette = lineEdit->palette();
-    QColor text0(255,255,255);
-    QColor text1(0,0,0);
-    QColor background0(255,102,102);
-    QColor background1(255,255,255);
+    QColor text0 = QColor(255,255,255);
+    QColor text1 = QColor(0,0,0);
+    QColor background0 = QColor(255,102,102);
+    QColor background1 = QColor(255,255,255);
+    #ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+        if(themeSettings.value("AppsUseLightTheme")==0){
+            background1 = QColor(31,31,31);
+            text1 = QColor(255,255,255);
+        }
+    #endif
+
     switch(result){
     case 0:
         palette.setColor(QPalette::Text,text0);

@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file project.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -86,6 +86,7 @@ void EcuItem::update()
     if( ( true == tryToConnect ) && ( true == connected ))
     {
         setData(0,Qt::DisplayRole,id + " online");
+        setForeground(0,QBrush(QColor(Qt::black)));
         setBackground(0,QBrush(QColor(Qt::green)));
         //qDebug() << "green";
     }
@@ -94,12 +95,14 @@ void EcuItem::update()
         if(true == connectError.isEmpty())
         {
             setData(0,Qt::DisplayRole,id + " connect");
+            setForeground(0,QBrush(QColor(Qt::black)));
             setBackground(0,QBrush(QColor(Qt::yellow)));
             //qDebug() << "turn to yellow" << __LINE__ << __FILE__;
         }
         else
         {
             setData(0,Qt::DisplayRole,id + " connect ["+connectError+"]");
+            setForeground(0,QBrush(QColor(Qt::black)));
             setBackground(0,QBrush(QColor(Qt::red)));
             //qDebug() << "red" << __LINE__ << __FILE__ <<  tryToConnect << connected;
         }
@@ -108,7 +111,18 @@ void EcuItem::update()
     else
     {
         setData(0,Qt::DisplayRole,id + " offline");
-        setBackground(0,QBrush(QColor(Qt::white)));
+        /* default return white background color */
+        QColor brushColor = QColor(255,255,255);
+        QColor textColor = QColor(0,0,0);
+        #ifdef Q_OS_WIN
+            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+            if(themeSettings.value("AppsUseLightTheme")==0){
+                brushColor = QColor(31,31,31);
+                textColor = QColor(253,253,255);
+            }
+        #endif
+        setBackground(0,QBrush(brushColor));
+        setForeground(0,QBrush(textColor));
     }
 
     switch(interfacetype)
@@ -141,17 +155,23 @@ void EcuItem::update()
 
     if(status == EcuItem::invalid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::red)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::red)));
     }
     else if(status == EcuItem::unknown)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::yellow)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::yellow)));
     }
     else if(status == EcuItem::valid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::green)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::green)));
     }
 }
@@ -276,17 +296,23 @@ void ContextItem::update()
 
     if(status == ContextItem::invalid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::red)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::red)));
     }
     else if(status == ContextItem::unknown)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::yellow)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::yellow)));
     }
     else if(status == ContextItem::valid)
     {
+        setForeground(2,QBrush(QColor(Qt::black)));
         setBackground(2,QBrush(QColor(Qt::green)));
+        setForeground(3,QBrush(QColor(Qt::black)));
         setBackground(3,QBrush(QColor(Qt::green)));
     }
 }
@@ -535,6 +561,8 @@ PluginItem::PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin)
     type = 0;
 
     plugin = _plugin;
+
+    this->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled);
 }
 
 PluginItem::~PluginItem()
@@ -560,30 +588,25 @@ void PluginItem::update()
     if(plugin->isCommand())
         types << "Command";
 
-    QString *modeString;
+    QString modeString;
     switch(plugin->getMode()){
         case 0:
-            modeString = new QString("Disabled");
+            modeString = QString("Disabled");
             break;
         case 1:
-            modeString = new QString("Enabled&Not visible");
+            modeString = QString("Enabled&Not visible");
             break;
         case 2:
-            modeString = new QString("Enabled&Visible");
+            modeString = QString("Enabled&Visible");
             break;
         default:
-            modeString = new QString("");
+            modeString = QString("");
             break;
     }
 
-    //qDebug() << this->getName() << *modeString << this->getFilename();
-    setData(0,0,QString("%1").arg(plugin->getName()));
-    //setData(1,0,QString("%1").arg(types.join("")));
-    setData(1,0,QString("%1").arg(*modeString));
-    //setData(3,0,QString("%1").arg(list.size()));
-    setData(2,0,QString("%1").arg(this->getFilename()));
-
-    delete modeString;
+    setText(0, plugin->getName());
+    setText(1, modeString);
+    setText(2, this->getFilename());
 }
 
 QString PluginItem::getName(){
@@ -666,6 +689,8 @@ bool Project::Load(QString filename)
     //plugin->clear();
 
     QXmlStreamReader xml(&file);
+
+    QMultiMap<int, QString> pluginExecutionPrio;
 
     while (!xml.atEnd())
     {
@@ -890,6 +915,11 @@ bool Project::Load(QString filename)
                     pluginitemexist->setType(xml.readElementText().toInt() );
 
               }
+              if(xml.name() == QString("prio"))
+              {
+                  if(pluginitemexist)
+                      pluginExecutionPrio.insert(xml.readElementText().toInt(), pluginitemexist->getName());
+              }
           }
           if(xml.isEndElement())
           {
@@ -947,6 +977,21 @@ bool Project::Load(QString filename)
               }
           }
     }
+
+    //Set Plugin execution priorities based on project settings
+    QList<int> keys = pluginExecutionPrio.uniqueKeys();
+    QStringList sorted_plugins;
+    for(QList<int>::const_iterator it_key = keys.constBegin(); it_key != keys.constEnd(); ++it_key)
+    {
+        QList<QString> values = pluginExecutionPrio.values(*it_key);
+        for(QList<QString>::const_iterator it_value = values.constBegin(); it_value != values.constEnd(); ++it_value)
+        {
+            sorted_plugins << *it_value;
+        }
+    }
+    plugin->sortAccordingPriority(sorted_plugins);
+
+
     if (xml.hasError())
     {
         if ( QDltOptManager::getInstance()->issilentMode() == false )
@@ -1058,7 +1103,7 @@ bool Project::Save(QString filename)
     }
 
     /* Write Plugin */
-    for(int num = 0; num < plugin->topLevelItemCount (); num++)
+    for(int num = 0; num < plugin->topLevelItemCount(); num++)
     {
         PluginItem *item = (PluginItem*)plugin->topLevelItem(num);
         xml.writeStartElement("plugin");
@@ -1068,6 +1113,7 @@ bool Project::Save(QString filename)
 
         xml.writeTextElement("mode",QString("%1").arg(item->getMode()));
         xml.writeTextElement("type",QString("%1").arg(item->getType()));
+        xml.writeTextElement("prio",QString("%1").arg(num));
 
         xml.writeEndElement(); // plugin
     }

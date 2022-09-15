@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,7 +15,7 @@
  * \author Lassi Marttala <Lassi.LM.Marttala@partner.bmw.de
  *
  * \file dltsettingsmanager.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -227,6 +227,10 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/versionMajor", PACKAGE_MAJOR_VERSION);
     settings->setValue("startup/versionMinor", PACKAGE_MINOR_VERSION);
     settings->setValue("startup/versionPatch", PACKAGE_PATCH_LEVEL);
+
+    for(int i = 0; i < pluginExecutionPrio.count(); ++i) {
+        settings->setValue(QStringLiteral("plugin/default_prio/%1").arg(i), pluginExecutionPrio[i]);
+    }
 }
 
 void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
@@ -467,5 +471,14 @@ void QDltSettingsManager::readSettings()
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
     msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();
+
+    // Read the plugin execution priority of a maximum of 100 plugins
+    for(int i = 0; i < 100; ++i)
+    {
+        QString lastValue(settings->value(QStringLiteral("plugin/default_prio/%1").arg(i),"").toString());
+        if( !lastValue.isEmpty() ) {
+            pluginExecutionPrio << lastValue;
+        }
+    }
 }
 

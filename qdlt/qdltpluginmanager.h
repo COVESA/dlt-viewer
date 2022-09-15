@@ -13,6 +13,7 @@
 */
 
 class QDltPlugin;
+class QMutex;
 
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
@@ -20,6 +21,7 @@ public:
 
     //! Constructor
     QDltPluginManager();
+    ~QDltPluginManager();
 
     //! The number of plugins
     /*!
@@ -80,7 +82,15 @@ public:
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
 
+    //control plugin execution order
+    void initPluginPriority(const QStringList &desiredPrio);
+    bool decreasePluginPriority(const QString &name);
+    bool raisePluginPriority(const QString &name);
+    bool setPluginPriority(const QString name, unsigned int prio);
+    QStringList getPluginPriorities() const;
+
 private:
+    mutable QMutex* pMutex_pluginList;
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;
