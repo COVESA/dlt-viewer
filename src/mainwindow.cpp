@@ -221,6 +221,7 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchprev;
     delete newCompleter;
     delete sortProxyModel;
+    delete m_indexRangeProxyModel;
 }
 
 
@@ -270,6 +271,10 @@ void MainWindow::initState()
     tableModel->project = &project;
     tableModel->pluginManager = &pluginManager;
 
+    m_indexRangeProxyModel = new IndexRangeProxyModel;
+    m_indexRangeProxyModel->setSourceModel(tableModel);
+
+
     /* initialise project configuration */
     project.ecu = ui->configWidget;
     project.filter = ui->filterWidget;
@@ -315,8 +320,10 @@ void MainWindow::initView()
     /* update default filter selection */
     on_actionDefault_Filter_Reload_triggered();
 
+    ui->tableView->setModel(m_indexRangeProxyModel);
+
     /* set table size and en */
-    ui->tableView->setModel(tableModel);
+   // ui->tableView->setModel(tableModel);
 
     /* For future use enable HTML View in Table */
     //HtmlDelegate* delegate = new HtmlDelegate();
@@ -6374,6 +6381,32 @@ void MainWindow::on_action_menuFilter_Load_triggered()
         openDlfFile(fileName,true);
     }
 }
+void MainWindow::on_action_menuFilter_StartIndex_triggered(){
+    QMessageBox qmsg;
+    QModelIndex id=ui->tableView->selectionModel()->currentIndex();
+    QVariant test=id.row();
+    int startIndex = test.toInt();
+
+    ui->checkBoxStartIndex->setChecked(true);
+    m_indexRangeProxyModel->setStartIndex(startIndex);
+
+}
+
+void MainWindow::on_action_menuFilter_EndIndex_triggered(){
+    int endIndex=0;
+    QMessageBox qmsg;
+    QModelIndex id=ui->tableView->selectionModel()->currentIndex();
+    QVariant test=id.row();
+    endIndex=test.toInt();
+
+    ui->checkBoxEndIndex->setChecked(true);
+    m_indexRangeProxyModel->setEndIndex(endIndex);
+
+}
+void MainWindow::on_checkBoxEndIndex_stateChanged(int arg1)
+{
+ m_indexRangeProxyModel->setEndIndex(0);
+}
 
 void MainWindow::on_action_menuFilter_Add_triggered() {
     /* show filter dialog */
@@ -6737,6 +6770,16 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     menu.addSeparator();
+
+    action = new QAction("Start Index", this);
+   connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_StartIndex_triggered()));
+   menu.addAction(action);
+
+   menu.addSeparator();
+
+   action = new QAction("End Index", this);
+   connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_EndIndex_triggered()));
+   menu.addAction(action);
 
     action = new QAction("Resize columns to fit", this);
     connect(action, SIGNAL(triggered()), ui->tableView, SLOT(resizeColumnsToContents()));
@@ -7879,4 +7922,7 @@ void MainWindow::on_comboBoxExplorerSortOrder_currentIndexChanged(int index)
         break;
     }
 }
+
+
+
 

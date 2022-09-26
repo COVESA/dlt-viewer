@@ -120,6 +120,7 @@ TEMPLATE = app
 
 # Compile these sources
 SOURCES += main.cpp \
+    indexrangeproxymodel.cpp \
     mainwindow.cpp \
     project.cpp \
     ecudialog.cpp \
@@ -153,6 +154,7 @@ SOURCES += main.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
+    indexrangeproxymodel.h \
     project.h \
     ecudialog.h \
     applicationdialog.h \

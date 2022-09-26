@@ -187,7 +187,10 @@ void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 
 void SearchDialog::focusRow(long int searchLine)
 {
-    TableModel *model = qobject_cast<TableModel *>(table->model());
+    //TableModel *model = qobject_cast<TableModel *>(table->model());
+       QSortFilterProxyModel* proxyModel = reinterpret_cast<QSortFilterProxyModel*>(table->model());
+       TableModel* model    = reinterpret_cast<TableModel*>(proxyModel->sourceModel());
+
     QModelIndex idx = model->index(searchLine, 0, QModelIndex());
     //qDebug() << "Focus row in message table window" << searchLine << __FILE__ << __LINE__;
 

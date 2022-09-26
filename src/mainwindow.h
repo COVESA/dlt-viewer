@@ -33,6 +33,7 @@
 
 #include "qdlt.h"
 #include "tablemodel.h"
+#include "indexrangeproxymodel.h"
 #include "project.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
@@ -130,6 +131,7 @@ private:
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
     TableModel *tableModel;
+    IndexRangeProxyModel *m_indexRangeProxyModel;
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
 
@@ -511,6 +513,9 @@ private slots:
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_action_menuFilter_StartIndex_triggered();
+    void on_action_menuFilter_EndIndex_triggered();
+    void on_checkBoxEndIndex_stateChanged(int checked);
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
@@ -576,6 +581,8 @@ private slots:
     void on_comboBoxExplorerSortType_currentIndexChanged(int index);
 
     void on_comboBoxExplorerSortOrder_currentIndexChanged(int index);
+
+
 
 public slots:
 
