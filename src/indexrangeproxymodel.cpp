@@ -7,13 +7,13 @@ IndexRangeProxyModel::IndexRangeProxyModel(QObject *parent): QSortFilterProxyMod
 {
 }
 
-void IndexRangeProxyModel::setStartIndex(int startIndex){
+void IndexRangeProxyModel::setStartIndex(unsigned long int startIndex){
     if(m_startIndex != startIndex)
         m_startIndex = startIndex;
     //invalidateFilter();
 }
 
-void IndexRangeProxyModel::setEndIndex(int endIndex){
+void IndexRangeProxyModel::setEndIndex(unsigned long int endIndex){
     if(m_endIndex != endIndex)
         m_endIndex = endIndex;
     invalidateFilter();
