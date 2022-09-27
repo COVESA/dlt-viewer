@@ -6385,7 +6385,7 @@ void MainWindow::on_action_menuFilter_StartIndex_triggered(){
     QMessageBox qmsg;
     QModelIndex id=ui->tableView->selectionModel()->currentIndex();
     QVariant test=id.row();
-    int startIndex = test.toInt();
+    unsigned long int startIndex = test.toInt();
 
     ui->checkBoxStartIndex->setChecked(true);
     m_indexRangeProxyModel->setStartIndex(startIndex);
@@ -6393,7 +6393,7 @@ void MainWindow::on_action_menuFilter_StartIndex_triggered(){
 }
 
 void MainWindow::on_action_menuFilter_EndIndex_triggered(){
-    int endIndex=0;
+    unsigned long int endIndex=0;
     QMessageBox qmsg;
     QModelIndex id=ui->tableView->selectionModel()->currentIndex();
     QVariant test=id.row();
@@ -6780,6 +6780,8 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
    action = new QAction("End Index", this);
    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_EndIndex_triggered()));
    menu.addAction(action);
+   
+   menu.addSeparator();
 
     action = new QAction("Resize columns to fit", this);
     connect(action, SIGNAL(triggered()), ui->tableView, SLOT(resizeColumnsToContents()));
