@@ -16,6 +16,7 @@ public:
 public slots:
     void setStartIndex(unsigned long int startIndex);
     void setEndIndex(unsigned long int endIndex);
+    unsigned long int getEndIndex();
 private:
     unsigned long int m_startIndex;
     unsigned long int m_endIndex;

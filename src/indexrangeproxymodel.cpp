@@ -19,6 +19,9 @@ void IndexRangeProxyModel::setEndIndex(unsigned long int endIndex){
     invalidateFilter();
     //this->invalidate();
 }
+unsigned long int IndexRangeProxyModel::getEndIndex(){
+    return m_endIndex;
+}
 
 bool IndexRangeProxyModel::filterAcceptsRow(int source_row,
                                   const QModelIndex &source_parent) const{
@@ -28,8 +31,7 @@ bool IndexRangeProxyModel::filterAcceptsRow(int source_row,
 
     if(m_endIndex > m_startIndex ){
 
-    if(sourceModel()->data(index).toInt() < m_startIndex ||
-            sourceModel()->data(index).toInt() > m_endIndex)
+    if(source_row < m_startIndex || source_row > m_endIndex)
         return false;
     }
     return true;

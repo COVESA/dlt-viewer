@@ -24,6 +24,7 @@ add_executable(dlt-viewer
     filterdialog.cpp
     plugindialog.cpp
     settingsdialog.cpp
+    indexrangeproxymodel.cpp
     injectiondialog.cpp
     searchdialog.cpp
     multiplecontextdialog.cpp

@@ -6405,7 +6405,9 @@ void MainWindow::on_action_menuFilter_EndIndex_triggered(){
 }
 void MainWindow::on_checkBoxEndIndex_stateChanged(int arg1)
 {
- m_indexRangeProxyModel->setEndIndex(0);
+        if (m_indexRangeProxyModel->getEndIndex() != 0 ) {
+            m_indexRangeProxyModel->setEndIndex(0);
+        }
 }
 
 void MainWindow::on_action_menuFilter_Add_triggered() {

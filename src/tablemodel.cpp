@@ -382,6 +382,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
  void TableModel::modelChanged()
  {
+    emit(layoutAboutToBeChanged());
      if(true == emptyForceFlag)
      {
          index(0, 1);
