@@ -14,11 +14,11 @@ public:
                         int role) const;
 
 public slots:
-    void setStartIndex(int startIndex);
-    void setEndIndex(int endIndex);
+    void setStartIndex(unsigned long int startIndex);
+    void setEndIndex(unsigned long int endIndex);
 private:
-    int m_startIndex;
-    int m_endIndex;
+    unsigned long int m_startIndex;
+    unsigned long int m_endIndex;
 };
 
 
