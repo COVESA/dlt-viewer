@@ -46,6 +46,7 @@
 #include <QSortFilterProxyModel>
 #include <QDesktopServices>
 #include <QProcess>
+#include <QStyleFactory>
 
 /**
  * From QDlt.
@@ -231,6 +232,46 @@ void MainWindow::initState()
     settingsDlg->assertSettingsVersion();
     settingsDlg->readSettings();
 
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        qApp->setStyle(QStyleFactory::create("Fusion"));
+        QPalette darkMode;
+        QColor foregroundColor = QColor(49,50,53);
+        QColor backgroundColor = QColor(31,31,31);
+        QColor disabledColor = QColor(127,127,127);
+        QColor brightColor = QColor(253,253,255);
+        QColor brighterColor = QColor(Qt::white);
+        QColor darkColor = QColor(Qt::black);
+        QColor highlightColor = QColor(51,144,255);
+        darkMode.setColor(QPalette::AlternateBase, foregroundColor);
+        darkMode.setColor(QPalette::Base, backgroundColor);
+        darkMode.setColor(QPalette::BrightText, brighterColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::BrightText, disabledColor);
+        darkMode.setColor(QPalette::Button, foregroundColor);
+        darkMode.setColor(QPalette::ButtonText, brightColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::ButtonText, disabledColor);
+        darkMode.setColor(QPalette::Highlight, highlightColor);
+        darkMode.setColor(QPalette::HighlightedText, darkColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::HighlightedText, disabledColor);
+        darkMode.setColor(QPalette::Link, highlightColor);
+        darkMode.setColor(QPalette::Text, brightColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::Text, disabledColor);
+        darkMode.setColor(QPalette::ToolTipBase, foregroundColor);
+        darkMode.setColor(QPalette::ToolTipText, brighterColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::ToolTipText, disabledColor);
+        darkMode.setColor(QPalette::PlaceholderText, brightColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::PlaceholderText, disabledColor);
+        darkMode.setColor(QPalette::Window, foregroundColor);
+        darkMode.setColor(QPalette::WindowText, brightColor);
+        darkMode.setColor(QPalette::Disabled, QPalette::WindowText, disabledColor);
+        darkMode.setColor(QPalette::Light, disabledColor);
+        darkMode.setColor(QPalette::Midlight, disabledColor);
+        darkMode.setColor(QPalette::Dark, foregroundColor);
+        darkMode.setColor(QPalette::Mid, backgroundColor);
+        darkMode.setColor(QPalette::Shadow, darkColor);
+        qApp->setPalette(darkMode);
+    }
+
     recentFiles = settingsDlg->getRecentFiles();
     recentProjects = settingsDlg->getRecentProjects();
     recentFilters = settingsDlg->getRecentFilters();
@@ -303,14 +344,13 @@ void MainWindow::initView()
     project.ecu->setStyleSheet("QTreeWidget:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
     ui->tableView->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
     ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:lightgray; border-style:solid; border-width:1px; }");
-    #ifdef Q_OS_WIN
-        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-        if(themeSettings.value("AppsUseLightTheme")==0){
-            project.ecu->setStyleSheet("QTreeWidget:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
-            ui->tableView->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
-            ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
-        }
-    #endif
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        project.ecu->setStyleSheet("QTreeWidget:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+        ui->tableView->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+        ui->tableView_SearchIndex->setStyleSheet("QTableView:focus { border-color:#7f7f7f; border-style:solid; border-width:1px; }");
+    }
 
     /* update default filter selection */
     on_actionDefault_Filter_Reload_triggered();
@@ -6668,15 +6708,14 @@ void MainWindow::filterUpdate()
             item->setBackground(1,QColor(0xff,0xff,0xff));
             item->setForeground(0,QColor(0xff,0xff,0xff));
             item->setForeground(1,DltUiUtils::optimalTextColor(QColor(0xff,0xff,0xff)));
-        #ifdef Q_OS_WIN
-            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-            if(themeSettings.value("AppsUseLightTheme")==0){
+
+            if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+            {
                 item->setBackground(0,QColor(31,31,31));
                 item->setBackground(1,QColor(31,31,31));
                 item->setForeground(0,QColor(0xff,0xff,0xff));
                 item->setForeground(1,DltUiUtils::optimalTextColor(QColor(31,31,31)));
             }
-        #endif
         }
 
         if(filter->enableRegexp_Appid || filter->enableRegexp_Context || filter->enableRegexp_Header || filter->enableRegexp_Payload)

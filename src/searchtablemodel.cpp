@@ -201,12 +201,12 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         }
         /* default return black forground color */
         QColor brushColor = QColor(0,0,0);
-        #ifdef Q_OS_WIN
-            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-            if(themeSettings.value("AppsUseLightTheme")==0){
-                brushColor = QColor(255,255,255);
-            }
-        #endif
+
+        if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+        {
+            brushColor = QColor(255,255,255);
+        }
+
         return QVariant(QBrush(brushColor));
     }
 
@@ -219,12 +219,12 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         }
         /* default return white background color */
         QColor brushColor = QColor(255,255,255);
-        #ifdef Q_OS_WIN
-            QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-            if(themeSettings.value("AppsUseLightTheme")==0){
-                brushColor = QColor(31,31,31);
-            }
-        #endif
+
+        if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+        {
+            brushColor = QColor(31,31,31);
+        }
+
         return QVariant(QBrush(brushColor));
     }
 
@@ -348,11 +348,11 @@ QColor SearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const
 
     /* default return white background color */
     QColor brushColor = QColor(255,255,255);
-    #ifdef Q_OS_WIN
-        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
-        if(themeSettings.value("AppsUseLightTheme")==0){
-            brushColor = QColor(31,31,31);
-        }
-    #endif
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        brushColor = QColor(31,31,31);
+    }
+
     return brushColor;
 }

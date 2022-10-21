@@ -35,6 +35,11 @@ class QDLT_EXPORT QDltSettingsManager
 {
 // Singleton pattern
 public:
+    enum class UI_Colour
+    {
+        UI_SystemDefault, UI_Light, UI_Dark
+    };
+
     static QDltSettingsManager* getInstance();
     static void close();
 
@@ -79,6 +84,8 @@ public:
     QByteArray windowState; // local setting
     int RefreshRate; // local setting
     int StartupMinimized; // local settings
+    UI_Colour themeSelectionSettings; // local settings
+    UI_Colour uiColour; // local settings
 
     QColor markercolor; // local and project setting
     int autoConnect; // project and local setting

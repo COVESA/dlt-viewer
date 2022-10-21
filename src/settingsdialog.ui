@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>614</height>
+    <width>506</width>
+    <height>709</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,18 +38,54 @@
        <string>Global</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="8" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="5" column="4">
+        <widget class="QPushButton" name="toolButtonDefaultFilterPath">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
          </property>
-         <property name="sizeHint" stdset="0">
+         <property name="maximumSize">
           <size>
-           <width>20</width>
-           <height>40</height>
+           <width>24</width>
+           <height>16777215</height>
           </size>
          </property>
-        </spacer>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="checkBoxPluginsAutoload">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable plugins autoload mechanism:  every activated plugin tries to load its optional config file from the path containing &amp;lt;plugin name&amp;gt;&amp;lt;SW version&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Plugins Autoload</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
+         <property name="text">
+          <string>Default Log File</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultFilterPath">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quick select you filters in filter tab ( &amp;lt;No filter selected &amp;gt;  ) when placed in the given directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Default Filter Path</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
        </item>
        <item row="2" column="0">
         <widget class="QCheckBox" name="checkBoxDefaultProjectFile">
@@ -58,16 +94,6 @@
          </property>
          <property name="text">
           <string>Default Project</string>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditDefaultFilterPath"/>
-       </item>
-       <item row="6" column="0">
-        <widget class="QCheckBox" name="checkBoxFilterCache">
-         <property name="text">
-          <string>Index Cache</string>
          </property>
         </widget>
        </item>
@@ -81,15 +107,110 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultFilterPath">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quick select you filters in filter tab ( &amp;lt;No filter selected &amp;gt;  ) when placed in the given directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <item row="2" column="4">
+        <widget class="QToolButton" name="toolButtonDefaultProjectFile">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>16777215</height>
+          </size>
          </property>
          <property name="text">
-          <string>Default Filter Path</string>
+          <string>...</string>
          </property>
         </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QCheckBox" name="checkBoxFilterCache">
+         <property name="text">
+          <string>Index Cache</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="4">
+        <widget class="QToolButton" name="toolButtonDefaultLogFile">
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditDefaultFilterPath"/>
+       </item>
+       <item row="2" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditDefaultProjectFile"/>
+       </item>
+       <item row="3" column="4">
+        <widget class="QPushButton" name="tooButtonPluginsPath">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="focusPolicy">
+          <enum>Qt::TabFocus</enum>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditPluginsPath"/>
+       </item>
+       <item row="4" column="4">
+        <widget class="QPushButton" name="toolButtonPluginsAutoload">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="9" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item row="0" column="0" colspan="5">
         <widget class="QGroupBox" name="gbTempDir">
@@ -157,86 +278,67 @@
          </layout>
         </widget>
        </item>
-       <item row="2" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditDefaultProjectFile"/>
+       <item row="4" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditPluginsAutoload"/>
        </item>
-       <item row="3" column="4">
-        <widget class="QPushButton" name="tooButtonPluginsPath">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
+       <item row="8" column="0" colspan="4">
+        <widget class="QGroupBox" name="groupBox_ThemeSettings">
+         <property name="title">
+          <string>Theme Settings</string>
          </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="focusPolicy">
-          <enum>Qt::TabFocus</enum>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_81" columnminimumwidth="0,0,0,0,0">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Choose your colour</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="4">
+           <widget class="QComboBox" name="comboBoxTheme">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+            </property>
+            <property name="minimumContentsLength">
+             <number>10</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>System Default</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Light</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Dark</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
-       <item row="5" column="4">
-        <widget class="QPushButton" name="toolButtonDefaultFilterPath">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
-       </item>
-       <item row="2" column="4">
-        <widget class="QToolButton" name="toolButtonDefaultProjectFile">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0">
-        <widget class="QCheckBox" name="checkBoxPluginsAutoload">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable plugins autoload mechanism:  every activated plugin tries to load its optional config file from the path containing &amp;lt;plugin name&amp;gt;&amp;lt;SW version&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Plugins Autoload</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0" colspan="3">
+       <item row="7" column="0" colspan="4">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
           <string>Performance Settings</string>
@@ -276,51 +378,6 @@
            </spacer>
           </item>
          </layout>
-        </widget>
-       </item>
-       <item row="4" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditPluginsAutoload"/>
-       </item>
-       <item row="3" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditPluginsPath"/>
-       </item>
-       <item row="4" column="4">
-        <widget class="QPushButton" name="toolButtonPluginsAutoload">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="4">
-        <widget class="QToolButton" name="toolButtonDefaultLogFile">
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
-         <property name="text">
-          <string>Default Log File</string>
-         </property>
         </widget>
        </item>
       </layout>
@@ -855,66 +912,9 @@
              </property>
              <property name="palette">
               <palette>
-               <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </active>
-               <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </inactive>
-               <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </disabled>
+               <active/>
+               <inactive/>
+               <disabled/>
               </palette>
              </property>
              <property name="autoFillBackground">
