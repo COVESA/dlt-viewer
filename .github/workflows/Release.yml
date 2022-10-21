@@ -1,3 +1,4 @@
+---
 name: Release
 
 on:
@@ -25,11 +26,11 @@ jobs:
       - name: install qt 5
         run: brew install qt@5
       - name: install build environment
-        run: scripts/linux/install.sh
+        run: scripts/darwin/install.sh
       - name: Build project
-        run: scripts/linux/build.sh
+        run: scripts/darwin/build.sh
       - name: Archive artifact
-        run: zip DLT-macOS.zip -r build/release
+        run: zip DLT-macOS.zip -r build/dist
       - name: Upload DLT artifact
         uses: actions/upload-artifact@v3
         with:
@@ -120,7 +121,7 @@ jobs:
         with:
           name: DLT-Windows-sdk
       - run: |
-          assetsZip=$(find . -name 'DLT*.zip' | while read -r asset ; do echo "-a $asset" ; done)
+          assetsZip=$(find . -name 'DLT*.zip' | xargs -I asset echo "-a asset" | xargs)
           VERSION=$(echo $VERSION | cut -d'/' -f3)
           tag_name="${GITHUB_REF##*/}"
           hub release create ${assetsZip} -m "$tag_name" "$tag_name"
