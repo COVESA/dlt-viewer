@@ -261,8 +261,8 @@ private:
 
     void reloadLogFileDefaultFilter();
 
-    void exportSelection(bool ascii,bool file,bool payload_only);
-    void exportSelection_searchTable(bool payload_only);
+    void exportSelection(bool ascii,bool file,DltExporter::DltExportFormat format);
+    void exportSelection_searchTable(DltExporter::DltExportFormat format);
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);
@@ -483,8 +483,13 @@ private slots:
     void on_action_menuConfig_Delete_All_Contexts_triggered();
     void onActionAenuConfigCopyPayloadToClipboardTriggered();
     void on_action_menuConfig_Copy_to_clipboard_triggered();
+    void onActionMenuConfigCopyJiraToClipboardTriggered();
+    void onActionMenuConfigCopyJiraHeadToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered();
+    void onActionMenuConfigSearchTableCopyJiraToClipboardTriggered();
+    void onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered();
+
     void on_action_menuConfig_Save_All_ECUs_triggered();
 
     // DLT methods
