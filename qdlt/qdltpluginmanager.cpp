@@ -17,7 +17,7 @@
 
 QDltPluginManager::QDltPluginManager()
 {
-    pMutex_pluginList = new QMutex();
+    pMutex_pluginList = new QMutex(QMutex::Recursive);
 }
 
 QDltPluginManager::~QDltPluginManager()
