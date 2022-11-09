@@ -1143,6 +1143,11 @@ bool MainWindow::openDltFile(QStringList fileNames)
         }
     }
 
+    // clear index filter
+    ui->checkBoxFilterRange->setChecked(false);
+    ui->lineEditFilterStart->setText(QString("0"));
+    ui->lineEditFilterEnd->setText(QString("0"));
+
     if (ret)
         emit dltFileLoaded(fileNames);
 
@@ -1887,6 +1892,20 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
         clearSelection();
+    }
+
+    // set index filter range
+    if(ui->checkBoxFilterRange->isChecked())
+    {
+        dltIndexer->setFilterIndexEnabled(true);
+        dltIndexer->setFilterIndexStart(ui->lineEditFilterStart->text().toULong());
+        dltIndexer->setFilterIndexEnd(ui->lineEditFilterEnd->text().toULong());
+    }
+    else
+    {
+        dltIndexer->setFilterIndexEnabled(false);
+        dltIndexer->setFilterIndexStart(0);
+        dltIndexer->setFilterIndexEnd(0);
     }
 
     // prevent further receiving any new messages
@@ -6285,6 +6304,55 @@ void MainWindow::on_action_menuPlugin_Disable_triggered()
 // Filter functionalities
 //----------------------------------------------------------------------------
 
+void MainWindow::filterIndexStart()
+{
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+
+    if(list.count()<=0)
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                              QString("No message selected"));
+        return;
+    }
+
+    QModelIndex index;
+    for(int num=0; num < list.count();num++)
+    {
+        index = list[num];
+        if(index.column()==0)
+        {
+            break;
+        }
+    }
+
+    ui->lineEditFilterStart->setText(QString("%1").arg(index.row()));
+}
+
+void MainWindow::filterIndexEnd()
+{
+    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
+
+    if(list.count()<=0)
+    {
+        QMessageBox::critical(0, QString("DLT Viewer"),
+                              QString("No message selected"));
+        return;
+    }
+
+    QModelIndex index;
+    for(int num=0; num < list.count();num++)
+    {
+        index = list[num];
+        if(index.column()==0)
+        {
+            break;
+        }
+    }
+
+    ui->lineEditFilterEnd->setText(QString("%1").arg(index.row()));
+
+}
+
 void MainWindow::filterAddTable() {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -6796,6 +6864,16 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Unmark all lines", this);
     connect(action, SIGNAL(triggered()), this, SLOT(unmark_all_lines()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Filter Index Start", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(filterIndexStart()));
+    menu.addAction(action);
+
+    action = new QAction("Filter Index End", this);
+    connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
     menu.addAction(action);
 
     /* show popup menu */
@@ -7956,3 +8034,20 @@ void MainWindow::on_comboBoxExplorerSortOrder_currentIndexChanged(int index)
     }
 }
 
+void MainWindow::on_checkBoxFilterRange_stateChanged(int arg1)
+{
+    applyConfigEnabled(true);
+
+    ui->lineEditFilterStart->setEnabled(arg1==Qt::Checked);
+    ui->lineEditFilterEnd->setEnabled(arg1==Qt::Checked);
+}
+
+void MainWindow::on_lineEditFilterStart_textChanged(const QString &arg1)
+{
+    applyConfigEnabled(true);
+}
+
+void MainWindow::on_lineEditFilterEnd_textChanged(const QString &arg1)
+{
+    applyConfigEnabled(true);
+}
