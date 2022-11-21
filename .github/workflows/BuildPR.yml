@@ -75,7 +75,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: Install qt
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
           version: 5.12.12
       - name: Build with CMake ${{ matrix.task }}
