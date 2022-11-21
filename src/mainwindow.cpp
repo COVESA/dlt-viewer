@@ -601,6 +601,9 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTime->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    ui->checkBoxFilterRange->setEnabled(ui->filtersEnabled->isChecked());
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
 
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
@@ -7591,6 +7594,10 @@ void MainWindow::on_filtersEnabled_toggled(bool checked)
     QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
     ui->checkBoxSortByTimestamp->setEnabled(checked);
+    ui->checkBoxFilterRange->setEnabled(checked);
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
+
     applyConfigEnabled(true);
 }
 
