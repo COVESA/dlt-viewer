@@ -53,6 +53,10 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     msecsIndexCounter = 0;
     msecsFilterCounter = 0;
     msecsDefaultFilterCounter = 0;
+
+    filterIndexEnabled = false;
+    filterIndexStart = 0;
+    filterIndexEnd = 0;
 }
 
 DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManager, QDltDefaultFilter *defaultFilter, QMainWindow *parent) :
@@ -76,6 +80,10 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     msecsIndexCounter = 0;
     msecsFilterCounter = 0;
     msecsDefaultFilterCounter = 0;
+
+    filterIndexEnabled = false;
+    filterIndexStart = 0;
+    filterIndexEnd = 0;
 }
 
 DltFileIndexer::~DltFileIndexer()
@@ -337,7 +345,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     QTime time;
-    qint64 ix = 0;
+    quint64 ix = 0;
     unsigned int iPercent = 0;
 
     // start performance counter
@@ -349,6 +357,27 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     indexFilterList.clear();
     indexFilterListSorted.clear();
     getLogInfoList.clear();
+
+    // calculate start and end index
+    quint64 start,end;
+    if(!filterIndexEnabled)
+    {
+        start = 0;
+        end = dltFile->size();
+    }
+    else
+    {
+        if(filterIndexStart<=dltFile->size())
+            start = filterIndexStart;
+        else
+            start = 0;
+        if(filterIndexEnd<=dltFile->size())
+            end = filterIndexEnd;
+        else
+            end = dltFile->size();
+        if(start>end)
+            start=end;
+    }
 
     // load filter index, if enabled and not an initial loading of file
     if(filterCacheEnabled && mode != modeIndexAndFilter && loadFilterIndexCache(filterList,indexFilterList,filenames))
@@ -404,7 +433,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     }
 
     // Start reading messages
-    for(ix=0;ix<dltFile->size();ix++)
+    for(ix=start;ix<end;ix++)
     {
         msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
 
@@ -424,7 +453,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         if  (ix > 0 )
         if( 0 == (ix % modvalue) )
         {
-         iPercent = ( ix*100 )/dltFile->size();
+         iPercent = ( (ix-start)*100 )/(end-start);
          if( ( true == QDltOptManager::getInstance()->issilentMode() ) )
          {
              qDebug().noquote() << "IF Indexed:" << iPercent << "%";
@@ -684,6 +713,36 @@ void DltFileIndexer::run()
     */
 }
 
+bool DltFileIndexer::getFilterIndexEnabled() const
+{
+    return filterIndexEnabled;
+}
+
+void DltFileIndexer::setFilterIndexEnabled(bool newFilterIndexEnabled)
+{
+    filterIndexEnabled = newFilterIndexEnabled;
+}
+
+qint64 DltFileIndexer::getFilterIndexStart() const
+{
+    return filterIndexStart;
+}
+
+void DltFileIndexer::setFilterIndexStart(qint64 newFilterIndexStart)
+{
+    filterIndexStart = newFilterIndexStart;
+}
+
+qint64 DltFileIndexer::getFilterIndexEnd() const
+{
+    return filterIndexEnd;
+}
+
+void DltFileIndexer::setFilterIndexEnd(qint64 newFilterIndexEnd)
+{
+    filterIndexEnd = newFilterIndexEnd;
+}
+
 void DltFileIndexer::stop()
 {
     // stop the thread
@@ -885,6 +944,10 @@ QString DltFileIndexer::filenameFilterIndexCache(QDltFilterList &filterList,QStr
     if(this->sortByTimestampEnabled)
     {
         filename += "_STS";
+    }
+    if(this->filterIndexEnabled)
+    {
+        filename += QString("_%1_%2").arg(this->filterIndexStart).arg(this->filterIndexEnd);
     }
     filename += ".dix";
 

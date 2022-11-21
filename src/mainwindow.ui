@@ -17,7 +17,7 @@
    <string>MainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset resource="resources/resource.qrc">
     <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <property name="tabShape">
@@ -41,7 +41,6 @@
      <widget class="DltTableView" name="tableView">
       <property name="font">
        <font>
-        <family>Segoe UI</family>
         <pointsize>8</pointsize>
        </font>
       </property>
@@ -94,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -312,9 +311,6 @@
    <property name="focusPolicy">
     <enum>Qt::NoFocus</enum>
    </property>
-   <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
-   </property>
    <property name="windowTitle">
     <string>Project</string>
    </property>
@@ -357,16 +353,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="pluginsEnabled">
-          <property name="text">
-           <string>Plugins Enabled</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0" colspan="4">
          <widget class="QPushButton" name="applyConfig">
           <property name="enabled">
@@ -376,9 +362,29 @@
            <string>Apply Configuration</string>
           </property>
           <property name="icon">
-           <iconset resource="resource.qrc">
+           <iconset resource="resources/resource.qrc">
             <normaloff>:/toolbar/png/weather-storm.png</normaloff>
             <disabledoff>:/toolbar/png/weather-clear.png</disabledoff>:/toolbar/png/weather-storm.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Sorted by Timestamp</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="pluginsEnabled">
+          <property name="text">
+           <string>Plugins Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -392,13 +398,30 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="checkBoxFilterRange">
           <property name="text">
-           <string>Sorted by Timestamp</string>
+           <string>Filter Range</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLineEdit" name="lineEditFilterStart">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string extracomment="Filter Range Start Index"/>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="lineEditFilterEnd">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string extracomment="Filter Range End Index"/>
           </property>
          </widget>
         </item>
@@ -420,7 +443,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideNone</enum>
@@ -1338,7 +1361,7 @@
   </action>
   <action name="actionNewDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-new.png</normaloff>:/toolbar/png/document-new.png</iconset>
    </property>
    <property name="text">
@@ -1350,7 +1373,7 @@
   </action>
   <action name="actionOpenDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-open.png</normaloff>:/toolbar/png/document-open.png</iconset>
    </property>
    <property name="text">
@@ -1362,7 +1385,7 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/edit-clear.png</normaloff>:/toolbar/png/edit-clear.png</iconset>
    </property>
    <property name="text">
@@ -1374,7 +1397,7 @@
   </action>
   <action name="actionSaveDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-save-as.png</normaloff>:/toolbar/png/document-save-as.png</iconset>
    </property>
    <property name="text">
@@ -1386,7 +1409,7 @@
   </action>
   <action name="actionSaveProjectFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-save-as2.png</normaloff>:/toolbar/png/document-save-as2.png</iconset>
    </property>
    <property name="text">
@@ -1398,7 +1421,7 @@
   </action>
   <action name="actionConnectAll">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/network-transmit-receive.png</normaloff>:/toolbar/png/network-transmit-receive.png</iconset>
    </property>
    <property name="text">
@@ -1410,7 +1433,7 @@
   </action>
   <action name="actionDisconnectAll">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/network-offline.png</normaloff>:/toolbar/png/network-offline.png</iconset>
    </property>
    <property name="text">
@@ -1422,7 +1445,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/preferences-desktop.png</normaloff>:/toolbar/png/preferences-desktop.png</iconset>
    </property>
    <property name="text">
@@ -1434,7 +1457,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-bottom.png</normaloff>:/toolbar/png/go-bottom.png</iconset>
    </property>
    <property name="text">
@@ -1446,7 +1469,7 @@
   </action>
   <action name="actionFind">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
    </property>
    <property name="text">
@@ -1461,7 +1484,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/action-regexp.png</normaloff>:/toolbar/png/action-regexp.png</iconset>
    </property>
    <property name="text">
@@ -1473,7 +1496,7 @@
   </action>
   <action name="actionFindPrevious">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-previous.png</normaloff>:/toolbar/png/go-previous.png</iconset>
    </property>
    <property name="text">
@@ -1485,7 +1508,7 @@
   </action>
   <action name="actionFindNext">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-next.png</normaloff>:/toolbar/png/go-next.png</iconset>
    </property>
    <property name="text">
@@ -1503,7 +1526,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/action-searchlist.png</normaloff>:/toolbar/png/action-searchlist.png</iconset>
    </property>
    <property name="text">
@@ -1561,7 +1584,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/bookmark-new.png</normaloff>:/toolbar/png/bookmark-new.png</iconset>
    </property>
    <property name="text">
@@ -1581,7 +1604,7 @@
   </action>
   <action name="actionApply_Configuration">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/weather-clear.png</normaloff>
      <normalon>:/toolbar/png/weather-storm.png</normalon>
      <selectedoff>:/toolbar/png/weather-clear.png</selectedoff>:/toolbar/png/weather-clear.png</iconset>
@@ -1598,7 +1621,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/view-filter_32_off.png</normaloff>
      <normalon>:/toolbar/png/view-filter_32_on.png</normalon>:/toolbar/png/view-filter_32_off.png</iconset>
    </property>
@@ -1614,7 +1637,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/x-kde-nsplugin-generated_gray.png</normaloff>
      <normalon>:/toolbar/png/x-kde-nsplugin-generated.png</normalon>:/toolbar/png/x-kde-nsplugin-generated_gray.png</iconset>
    </property>
@@ -1677,7 +1700,7 @@
   <tabstop>tableView_SearchIndex</tabstop>
  </tabstops>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

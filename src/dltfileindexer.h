@@ -136,6 +136,15 @@ public:
     // main thread routine
     void run();
 
+    bool getFilterIndexEnabled() const;
+    void setFilterIndexEnabled(bool newFilterIndexEnabled);
+
+    qint64 getFilterIndexStart() const;
+    void setFilterIndexStart(qint64 newFilterIndexStart);
+
+    qint64 getFilterIndexEnd() const;
+    void setFilterIndexEnd(qint64 newFilterIndexEnd);
+
 protected:
 
 private:
@@ -193,6 +202,11 @@ private:
     int msecsIndexCounter;
     int msecsFilterCounter;
     int msecsDefaultFilterCounter;
+
+    // filter index only in a specific range
+    bool filterIndexEnabled;
+    qint64 filterIndexStart;
+    qint64 filterIndexEnd;
 
 signals:
 

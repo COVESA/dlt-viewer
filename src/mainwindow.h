@@ -446,7 +446,8 @@ public slots:
     void on_actionFindNext();
     void mark_unmark_lines();
     void unmark_all_lines();
-
+    void filterIndexStart();
+    void filterIndexEnd();
 
 private slots:
 
@@ -581,6 +582,12 @@ private slots:
     void on_comboBoxExplorerSortType_currentIndexChanged(int index);
 
     void on_comboBoxExplorerSortOrder_currentIndexChanged(int index);
+
+    void on_checkBoxFilterRange_stateChanged(int arg1);
+
+    void on_lineEditFilterStart_textChanged(const QString &arg1);
+
+    void on_lineEditFilterEnd_textChanged(const QString &arg1);
 
 public slots:
 
