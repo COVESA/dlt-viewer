@@ -372,7 +372,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         else
             start = 0;
         if(filterIndexEnd<=dltFile->size())
-            end = filterIndexEnd;
+            end = filterIndexEnd + 1;
         else
             end = dltFile->size();
         if(start>end)
