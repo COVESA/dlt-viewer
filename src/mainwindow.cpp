@@ -3056,14 +3056,14 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
-    action = new QAction("Set All Active", this);
+    action = new QAction("Set Selected Active", this);
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(onactionmenuFilter_SetAllActiveTriggered()));
     menu.addAction(action);
 
-    action = new QAction("Set All Inactive", this);
+    action = new QAction("Set Selected Inactive", this);
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
