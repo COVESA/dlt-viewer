@@ -16,7 +16,7 @@ Description: GENIVI DLT Viewer
  and decode logs and traces from an infotainment ECU.
  The Open Source Project is hosted by the GENIVI organisation.
  More information can be found on the homepage of the project:
- https://at.projects.genivi.org/wiki/display/PROJ/DLT+Viewer+Manual
+ https://github.com/COVESA/dlt-viewer 
 
 Package: genivi-dlt-viewer-dev
 Architecture: any
@@ -30,5 +30,5 @@ Description: GENIVI DLT Viewer Development files
  and decode logs and traces from an infotainment ECU.
  The Open Source Project is hosted by the GENIVI organisation.
  More information can be found on the homepage of the project:
- https://at.projects.genivi.org/wiki/display/PROJ/DLT+Viewer+Manual
+ https://github.com/COVESA/dlt-viewer 
 
