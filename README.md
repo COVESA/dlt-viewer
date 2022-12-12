@@ -51,15 +51,15 @@ Full information on the license for this software is available in the "LICENSE.t
 
 ## Source Code for DLT Viewer (This repository)
 
-https://github.com/GENIVI/dlt-viewer
+https://github.com/COVESA/dlt-viewer 
 
 ## Homepage
 
-[Diagnostic Log and Trace](https://at.projects.genivi.org/wiki/display/PROJ/Diagnostic+Log+and+Trace) on GENIVI Projects Wiki
+[Diagnostic Log and Trace Homepage](https://github.com/COVESA/dlt-viewer) on Github
 
-## Mailinglist
+## Issues and questions
 
-[genivi-diagnostic-log-and-trace](https://lists.genivi.org/mailman/listinfo/genivi-diagnostic-log-and-trace_lists.genivi.org)
+[Diagnostic Log and Trace Homepage Issues](https://github.com/COVESA/dlt-viewer/issues)
 
 ## Additional Plugins
 
