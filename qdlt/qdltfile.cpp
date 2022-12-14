@@ -22,7 +22,7 @@
 #include <QFile>
 #include <QtDebug>
 
-#include "qdlt.h"
+#include "qdltfile.h"
 
 extern "C"
 {

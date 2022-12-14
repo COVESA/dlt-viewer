@@ -22,7 +22,7 @@
 #include <QtDebug>
 #include <QCryptographicHash>
 
-#include "qdlt.h"
+#include "qdltfilterlist.h"
 
 
 extern "C"

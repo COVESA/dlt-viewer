@@ -1,7 +1,6 @@
 #include "qdltplugin.h"
 #include "qdltpluginmanager.h"
 
-
 #include <QDir>
 #include <QDebug>
 #include <QCoreApplication>
@@ -155,7 +154,7 @@ void QDltPluginManager::loadConfig(QString pluginName,QString filename)
     for(int num=0;num<plugins.size();num++)
     {
         QDltPlugin *plugin = plugins[num];
-        if(plugin->getName()==pluginName)
+        if(plugin->name()==pluginName)
             plugin->setFilename(filename);
     }
     pMutex_pluginList->unlock();
@@ -182,11 +181,18 @@ QDltPlugin* QDltPluginManager::findPlugin(QString &name)
     pMutex_pluginList->lock();
     for(int num=0;num<plugins.size();num++)
     {
+<<<<<<< HEAD
         if(plugins[num]->getName()==name)
         {
             plugin = plugins[num];
             break;
         }
+=======
+        QDltPlugin *plugin = plugins[num];
+
+        if(plugin->name()==name)
+            return plugin;
+>>>>>>> pr237
     }
     pMutex_pluginList->unlock();
 

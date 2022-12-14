@@ -21,7 +21,7 @@
 #include <QApplication>
 #include <QStyleFactory>
 
-#include <qdlt.h>
+#include <qdltoptmanager.h>
 
 #include "mainwindow.h"
 

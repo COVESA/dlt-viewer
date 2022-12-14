@@ -14,8 +14,13 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
+<<<<<<< HEAD
  * \file qdlt.h
  * For further information see http://www.covesa.global/.
+=======
+ * \file qdltargument.h
+ * For further information see http://www.genivi.org/.
+>>>>>>> pr237
  * @licence end@
  */
 
@@ -31,6 +36,7 @@
 #include <QVariant>
 #include <time.h>
 
+#include "qdltbase.h"
 #include "export_rules.h"
 
 //! One argument of a DLT message.

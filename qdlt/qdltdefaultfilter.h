@@ -33,6 +33,8 @@
 #include <QXmlStreamWriter>
 
 #include "export_rules.h"
+#include "qdltfilterindex.h"
+#include "qdltfilterlist.h"
 
 
 class QDLT_EXPORT QDltDefaultFilter

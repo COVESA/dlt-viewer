@@ -20,9 +20,9 @@
  */
 
 #include <QtDebug>
-#include <QSerialPort>
 
-#include "qdlt.h"
+#include <QSerialPort>
+#include "qdltserialconnection.h"
 
 extern "C"
 {

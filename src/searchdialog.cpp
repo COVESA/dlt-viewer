@@ -20,6 +20,7 @@
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "mainwindow.h"
+#include "qdltoptmanager.h"
 
 #include <QMessageBox>
 #include <QProgressBar>

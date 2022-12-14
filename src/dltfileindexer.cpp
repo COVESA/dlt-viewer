@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QFileInfo>
 
+#include "qdltoptmanager.h"
 
 extern "C" {
     #include "dlt_common.h"
@@ -896,8 +897,8 @@ QByteArray DltFileIndexer::md5ActiveDecoderPlugins()
     {
         QDltPlugin *plugin = activeDecoderPlugins[num];
 
-        hashString += plugin->getName();
-        hashString += plugin->getPluginVersion();
+        hashString += plugin->name();
+        hashString += plugin->pluginVersion();
         hashString += plugin->getFilename();
     }
     hashByteArray = hashString.toLatin1();

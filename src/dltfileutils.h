@@ -2,7 +2,6 @@
 #define DLTFILEUTILS_H
 
 #include <QDir>
-#include "settingsdialog.h"
 
 class DltFileUtils : QObject
 {

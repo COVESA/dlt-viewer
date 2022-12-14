@@ -22,6 +22,7 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "regex_search_replace.h"
+#include "qdltoptmanager.h"
 
 
 

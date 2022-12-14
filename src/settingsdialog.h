@@ -23,7 +23,8 @@
 #include <QDialog>
 #include <QMainWindow>
 #include <QColorDialog>
-#include "qdlt.h"
+
+#include "qdltfile.h"
 
 #define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
