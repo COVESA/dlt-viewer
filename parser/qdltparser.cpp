@@ -472,9 +472,11 @@ QStringList QDltParser::parseMessageLine(QFile &file,QString &line,int &linecoun
 bool  QDltParser::parseMessageId(QString text)
 {
     QStringList list;
-
+#ifdef QT5_QT6_COMPAT
+    list = text.split(" ",Qt::SkipEmptyParts);
+#else
     list = text.split(" ",QString::SkipEmptyParts);
-
+#endif
     for (int i = 0; i < list.size(); ++i)
     {
         if((list[i] == QString("#define")) && (list.size() > (i+2)))

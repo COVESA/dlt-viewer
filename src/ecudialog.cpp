@@ -20,6 +20,7 @@
 #include "ecudialog.h"
 #include "ui_ecudialog.h"
 
+#include <QRegularExpression>
 #include <QSerialPort>
 #include <QSerialPortInfo>
 #include <QNetworkInterface>
@@ -195,6 +196,20 @@ unsigned int EcuDialog::udpport()
 QString EcuDialog::EthInterface()
 {
     return  ui->comboBoxNetworkIF->currentText();
+}
+
+QString EcuDialog::Serialport()
+{
+    QRegularExpression rx("^(com|COM)\\d\\d*$");    // matches from COM0 to COM99
+    if(ui->comboBoxPortSerial->currentText().contains(rx))
+    {
+        QString str = "\\\\.\\";
+        return str.append(ui->comboBoxPortSerial->currentText());
+    }
+    else
+    {
+        return  ui->comboBoxPortSerial->currentText();
+    }
 }
 
 QSerialPort::BaudRate EcuDialog::baudrate()

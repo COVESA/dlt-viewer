@@ -650,7 +650,7 @@ bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     argument.setEndianness(msg.getEndianness());
     argument.setOffsetPayload(0);
     QByteArray dataText;
-    dataText.append(text);
+    dataText.append(text.toUtf8());
     argument.setData(dataText);
     msg.addArgument(argument);
 

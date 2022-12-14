@@ -49,8 +49,8 @@ File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
     fileData = NULL;
 
     this->setText(COLUMN_STATUS, "Incomplete");
-    this->setTextColor(COLUMN_STATUS,Qt::white);
-    this->setBackgroundColor(COLUMN_STATUS,Qt::red);
+    this->setForeground(COLUMN_STATUS,Qt::white);
+    this->setBackground(COLUMN_STATUS,Qt::red);
     this->setText(COLUMN_RECPACKAGES, "0");
 }
 
@@ -132,8 +132,8 @@ void File::setBuffersize(QString b){
 
 void File::setComplete(){
     this->setText(COLUMN_STATUS, "Complete");
-    this->setBackgroundColor(COLUMN_STATUS,Qt::green);
-    this->setTextColor(COLUMN_STATUS,Qt::black);
+    this->setForeground(COLUMN_STATUS,Qt::black);
+    this->setBackground(COLUMN_STATUS,Qt::green);
 }
 
 void File::errorHappens(QString filename, QString errorCode1, QString errorCode2, QString time){
@@ -150,8 +150,8 @@ void File::errorHappens(QString filename, QString errorCode1, QString errorCode2
 
     this->setText(COLUMN_FILEDATE,time);
     this->setText(COLUMN_STATUS, "ERROR");
-    this->setTextColor(COLUMN_STATUS,Qt::white);
-    this->setBackgroundColor(COLUMN_STATUS,Qt::red);
+    this->setForeground(COLUMN_STATUS,Qt::white);
+    this->setBackground(COLUMN_STATUS,Qt::red);
 
 }
 

@@ -262,7 +262,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
              return visu_data;
          case FieldNames::MessageId:
-             return QString().sprintf(project->settings->msgIdFormat.toLatin1() ,msg.getMessageId());
+             return QString::asprintf(project->settings->msgIdFormat.toUtf8() ,msg.getMessageId());
          default:
              if (index.column()>=FieldNames::Arg0)
              {

@@ -41,12 +41,13 @@
 #include <QSerialPortInfo>
 #include <QNetworkProxyFactory>
 #include <QNetworkInterface>
-#include <QtAlgorithms>
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
 #include <QDesktopServices>
 #include <QProcess>
 #include <QStyleFactory>
+#include <QTextStream>
+
 
 /**
  * From QDlt.
@@ -83,12 +84,9 @@ extern "C" {
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
-<<<<<<< HEAD
 #include "sortfilterproxymodel.h"
-=======
 #include "qdltoptmanager.h"
 
->>>>>>> pr237
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -6796,7 +6794,11 @@ void MainWindow::filterUpdate()
             if(false == filter->compileRegexps())
             {
                 // This is also validated in the UI part
+#ifdef QT5_QT6_COMPAT
+                qDebug() << "Error compiling a regexp" << Qt::endl << "in" << __FILE__ << __LINE__;
+#else
                 qDebug() << "Error compiling a regexp" << endl << "in" << __FILE__ << __LINE__;
+#endif
             }
         }
 
@@ -7404,7 +7406,7 @@ int MainWindow::nearest_line(int line)
             if(lastFound < 0)
             {
                 QVector<qint64> sortedIndices = filterIndices;
-                qSort(sortedIndices);
+                std::sort(sortedIndices.begin(), sortedIndices.end());
 
                 int lastIndex = sortedIndices[0];
 
