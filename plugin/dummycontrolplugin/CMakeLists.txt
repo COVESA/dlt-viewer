@@ -15,9 +15,8 @@
 #
 
 add_library(dummycontrolplugin MODULE dummycontrolplugin.cpp
-   form.cpp
-   ${UI_HEADERS})
+   form.cpp)
 
-target_link_libraries(dummycontrolplugin qdlt Qt5::Widgets )
+target_link_libraries(dummycontrolplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dummycontrolplugin)

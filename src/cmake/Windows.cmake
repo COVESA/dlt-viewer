@@ -1,10 +1,10 @@
 set(QT_LIBS
-  Qt5::Core
-  Qt5::Gui
-  Qt5::Network
-  Qt5::PrintSupport
-  Qt5::SerialPort
-  Qt5::Widgets)
+  ${QT_PREFIX}::Core
+  ${QT_PREFIX}::Gui
+  ${QT_PREFIX}::Network
+  ${QT_PREFIX}::PrintSupport
+  ${QT_PREFIX}::SerialPort
+  ${QT_PREFIX}::Widgets)
 
 foreach(QT_LIB IN ITEMS ${QT_LIBS})
   get_target_property(LIBRARY_PATH ${QT_LIB} LOCATION)
@@ -14,28 +14,32 @@ foreach(QT_LIB IN ITEMS ${QT_LIBS})
       COMPONENT qt_libraries)
 endforeach()
 
+if("${QT_PREFIX}" STREQUAL "Qt5")
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/bearer/qgenericbearer.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/bearer/qgenericbearer.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/bearer"
     COMPONENT qt_libraries)
+endif()
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/iconengines/qsvgicon.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/iconengines/qsvgicon.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/iconengines"
     COMPONENT qt_libraries)
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/platforms/qwindows.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/platforms/qwindows.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/platforms"
     COMPONENT qt_libraries)
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/imageformats/qico.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/imageformats/qico.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/imageformats"
     COMPONENT qt_libraries)
+if("${QT_PREFIX}" STREQUAL "Qt5")
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/printsupport/windowsprintersupport.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/printsupport/windowsprintersupport.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/printsupport"
     COMPONENT qt_libraries)
+endif()
 install(FILES
-    "${DLT_QT5_LIB_DIR}/../plugins/styles/qwindowsvistastyle.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/styles/qwindowsvistastyle.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/styles"
     COMPONENT qt_libraries)
 

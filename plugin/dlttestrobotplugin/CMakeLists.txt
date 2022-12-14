@@ -15,8 +15,7 @@
 #
 
 add_library(dlttestrobotplugin MODULE dlttestrobotplugin.cpp
-   form.cpp
-   ${UI_HEADERS})
+   form.cpp)
 
-target_link_libraries(dlttestrobotplugin qdlt Qt5::Widgets )
+target_link_libraries(dlttestrobotplugin qdlt ${QT_PREFIX}::Widgets )
 add_plugin(dlttestrobotplugin)
