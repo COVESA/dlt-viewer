@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.22.0 RELEASE
+Version 2.23.0 RELEASE
 
 
 Known issues
@@ -16,6 +16,48 @@ Known issues
 
 Changes
 -------
+2.23.0
+
+    * Fixed menu name set selected filters active/inactive. (#306)
+    * Fixed links to Homepage. (#305)
+    * Fix filter range end (#302)
+    * Filter Range should Enabled/Disabled on Filter Enabled option (#301)
+    * Bump jurplel/install-qt-action from 2 to 3 (#300)
+    * Filter in selected Index Range (#298)
+    * [ISSUE #292] Fix dead-lock in the dltpluginmanager (#293)
+    * Remove unnecessary settings check
+    * Remove the name GENIVI in the header of all source files. Replaced genivi.org with covesa.global in Links
+    * Notify user about changed settings
+    * Use UI theme depending on user choice
+    * Add theme selection option in settings dialog
+    * Add dark mode for Windows
+    * Ensure that no-one tries to set negative priority
+    * Read and store of default plugin execution priority settings
+    * Initialize plugin execution priority without triggering any events
+    * Read/Write of Plugin priority into project file
+    * Add sorting methods for plugin priority in TreeWidget
+    * Avoid child items to be draggable in Plugin Widget
+    * Enable Drag & Drop in PluginTreeWidget
+    * Cleanup PluginItem (QTreeWidgetItem)
+    * Allow to move up/down the Plugins in the TreeWidget
+    * Add "move-up", "move-down" to plugin context menu
+    * Plugin "move-up", "move-down" buttons enabling
+    * Add UI elements into Pluginlist (MainWindow)
+    * Reordering of Plugins in PluginManager
+    * added feature to export (selected) Dlt messages as Jira table
+    * Fixed message len for generated message from QDltMsg in case of using sessionId, timestamp and ecuId
+    * Add further commands to DLT Test Robot Plugin.
+    * Fix filter in DLT Test Robot Plugin
+    * Select UDP interface by interface name instead of IP address
+    * Improve selection of serial port
+    * Fix udp performance
+    * Linux scripts cleanups (#257)
+    * Add plain serial sending ability for send injection on serial ascii mode (#263)
+    * Add file explorer feature (#253)
+    * Bump actions/download-artifact from 2 to 3 (#265)
+    * Fix Action build
+    * Bump actions/checkout from 2.4.0 to 3 (#258)
+    * Bump actions/upload-artifact from 2.3.1 to 3 (#259)
 
 2.22.0
 
