@@ -51,11 +51,11 @@ LogstorageConfigCreatorForm::LogstorageConfigCreatorForm(QWidget *parent) :
     ui->lineEdit_fsize->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,7}$"), 0));
     ui->lineEdit_nofiles->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,2}$"), 0));
 #else
-    ui->lineEdit_apid->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
-    ui->lineEdit_ctid->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
-    ui->lineEdit_fname->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_-]\\S{0,20}$"), 0));
-    ui->lineEdit_fsize->setValidator( new QRegExpValidator( QRegExp("[1-9]\\d{0,7}$"), 0));
-    ui->lineEdit_nofiles->setValidator( new QRegExpValidator( QRegExp("[1-9]\\d{0,2}$"), 0));
+    ui->lineEdit_apid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_ctid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_fname->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_-]\\S{0,20}$"), 0));
+    ui->lineEdit_fsize->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,7}$"), 0));
+    ui->lineEdit_nofiles->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,2}$"), 0));
 #endif
     setFilterDefaults();
 

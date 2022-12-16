@@ -6797,7 +6797,7 @@ void MainWindow::filterUpdate()
 #ifdef QT5_QT6_COMPAT
                 qDebug() << "Error compiling a regexp" << Qt::endl << "in" << __FILE__ << __LINE__;
 #else
-                qDebug() << "Error compiling a regexp" << endl << "in" << __FILE__ << __LINE__;
+                qDebug() << "Error compiling a regexp" << Qt::endl << "in" << __FILE__ << __LINE__;
 #endif
             }
         }

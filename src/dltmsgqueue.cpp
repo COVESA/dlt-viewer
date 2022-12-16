@@ -25,9 +25,9 @@ void DltMsgQueue::enqueueMsg(const QSharedPointer<QDltMsg> &msg, int index)
 
     while(nextWritePosition == readPosition.loadRelaxed()) // buffer full?
 #else
-    int nextWritePosition = (writePosition.load() + 1) % bufferSize;
+    int nextWritePosition = (writePosition.loadRelaxed() + 1) % bufferSize;
 
-    while(nextWritePosition == readPosition.load()) // buffer full?
+    while(nextWritePosition == readPosition.loadRelaxed()) // buffer full?
 #endif
     {
         if(writeSleepTime > 0)
@@ -43,10 +43,10 @@ void DltMsgQueue::enqueueMsg(const QSharedPointer<QDltMsg> &msg, int index)
 
     writePosition.storeRelaxed(nextWritePosition);
 #else
-    buffer[writePosition.load()].first = msg;
-    buffer[writePosition.load()].second = index;
+    buffer[writePosition.loadRelaxed()].first = msg;
+    buffer[writePosition.loadRelaxed()].second = index;
 
-    writePosition.store(nextWritePosition);
+    writePosition.storeRelaxed(nextWritePosition);
 #endif
 }
 
@@ -55,7 +55,7 @@ bool DltMsgQueue::dequeue(QPair<QSharedPointer<QDltMsg>, int> &dequeuedData)
 #ifdef QT5_QT6_COMPAT
     while(readPosition.loadRelaxed() == writePosition.loadRelaxed()) // buffer empty?
 #else
-    while(readPosition.load() == writePosition.load()) // buffer empty?
+    while(readPosition.loadRelaxed() == writePosition.loadRelaxed()) // buffer empty?
 #endif
     {
         if(stopRequested)
@@ -73,9 +73,9 @@ bool DltMsgQueue::dequeue(QPair<QSharedPointer<QDltMsg>, int> &dequeuedData)
 
     readPosition.storeRelaxed((readPosition.loadRelaxed() + 1) % bufferSize);
 #else
-    dequeuedData = buffer[readPosition.load()];
+    dequeuedData = buffer[readPosition.loadRelaxed()];
 
-    readPosition.store((readPosition.load() + 1) % bufferSize);
+    readPosition.storeRelaxed((readPosition.loadRelaxed() + 1) % bufferSize);
 #endif
 
 
