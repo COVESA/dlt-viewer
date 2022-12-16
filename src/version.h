@@ -23,13 +23,13 @@
 /* changing minor & major when layout of settings file config.ini changes */
 /* this kind of change is tracked in the settings dialogr */
 /* for other bugfixes and not major feature enhancement just use patch level */
-#define PACKAGE_VERSION_STATE "unstable"
+#define PACKAGE_VERSION_STATE ""
 #define PACKAGE_MAJOR_VERSION 2
 #define PACKAGE_MINOR_VERSION 23
 #define PACKAGE_PATCH_LEVEL 0
 #define PACKAGE_VERSION "2.23.0"
 #define PACKAGE_REVISION ""
 #define PACKAGE_DESCRIPTION "DLT Viewer"
-#define DLT_SUPPORT_MAIL_ADDRESS "genivi-diagnostic-log-and-trace@lists.genivi.org"
+#define DLT_SUPPORT_MAIL_ADDRESS ""
 #define DLT_SUPPORT_NAME "COVESA"
 #endif
