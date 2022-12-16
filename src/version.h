@@ -30,6 +30,6 @@
 #define PACKAGE_VERSION "2.23.0"
 #define PACKAGE_REVISION ""
 #define PACKAGE_DESCRIPTION "DLT Viewer"
-#define DLT_SUPPORT_MAIL_ADDRESS "genivi-diagnostic-log-and-trace@lists.genivi.org"
+#define DLT_SUPPORT_MAIL_ADDRESS ""
 #define DLT_SUPPORT_NAME "COVESA"
 #endif
