@@ -113,7 +113,7 @@ bool DltTestRobotPlugin::stateChanged(int index, QDltConnection::QDltConnectionS
 #ifdef QT5_QT6_COMPAT
     qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
 #else
-    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
+    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
 #endif
     return true;
 }
