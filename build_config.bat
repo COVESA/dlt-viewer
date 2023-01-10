@@ -11,7 +11,8 @@ REM 6.2.2 msvc2019
 
 if "%QTVER%"=="" (
 REM    set QTVER=5.12.12
-    set QTVER=6.4.1
+REM    set QTVER=6.4.1
+set QTVER=5.15.2
 REM    set QTVER=6.2.2
 )
 
@@ -24,8 +25,8 @@ REM    set MSVC_VER=2017
 if "%MSVC_VER%"=="2015" (
     if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
 ) else (
-    if exist "C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Professional\VC\Auxiliary\Build" (
-        if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Professional\VC\Auxiliary\Build"
+    if exist "C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build" (
+        if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build"
     ) else (
         if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
     )
