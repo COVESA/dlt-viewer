@@ -44,7 +44,7 @@ QT                     += serialport
 greaterThan(QT_VERSION, 4.8.4) {
     QT += widgets
     INCLUDEPATH += QtWidgets
-    DEFINES += QT5_QT6_COMPAT
+    win32:DEFINES += QT5_QT6_COMPAT
 }
 
 # Put intermediate files in the build directory
