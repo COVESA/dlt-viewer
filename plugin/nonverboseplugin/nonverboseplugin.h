@@ -109,7 +109,7 @@ class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderI
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.NonVerbosePlugin")
 #endif
 

@@ -32,7 +32,7 @@ class DummyControlPlugin : public QObject, QDLTPluginInterface, QDltPluginViewer
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginControlInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DummyControlPlugin")
 #endif
 

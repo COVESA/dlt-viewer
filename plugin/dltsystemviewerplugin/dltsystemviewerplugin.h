@@ -31,7 +31,7 @@ class DltSystemViewerPlugin : public QObject, QDLTPluginInterface, QDltPluginVie
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDltPluginViewerInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DltSystemViewerPlugin")
 #endif
 
