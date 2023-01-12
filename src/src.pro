@@ -103,7 +103,7 @@ QT += core gui network serialport
 greaterThan(QT_VER_MAJ, 4) {
     QT += widgets
     INCLUDEPATH += QtWidgets
-    DEFINES += QT5_QT6_COMPAT
+    win32:DEFINES += QT5_QT6_COMPAT
 }
 
 # Put intermediate files in the build directory
