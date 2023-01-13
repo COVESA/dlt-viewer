@@ -148,6 +148,8 @@ bool DltFileIndexer::index(int num)
     qint64 readresult = 0;
     qint64 file_size = f.size();
     qint64 number=0;
+    quint8 version=1;
+    qint64 lengthOffset=2;
     int iPercent =0;
     errors_in_file  = 0;
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
@@ -180,12 +182,29 @@ bool DltFileIndexer::index(int num)
             if(counter_header>0)
             {
                 counter_header++;
-                if (counter_header==16)
+                if (counter_header==14)
+                {
+                    // Read DLT protocol version
+                    version = (((unsigned char)data[number])&0xe0)>>5;
+                    if(version==1)
+                    {
+                        lengthOffset = 2;
+                    }
+                    else if(version==2)
+                    {
+                        lengthOffset = 5;
+                    }
+                    else
+                    {
+                        lengthOffset = 2;  // default
+                    }
+                }
+                else if (counter_header==14+lengthOffset) // was 16
                 {
                     // Read low byte of message length
                     message_length = (unsigned char)data[number];
                 }
-                else if (counter_header==17)
+                else if (counter_header==15+lengthOffset) // was 17
                 {
                     // Read high byte of message length
                     counter_header = 0;
@@ -198,11 +217,11 @@ bool DltFileIndexer::index(int num)
                         break;
                     }
                     // speed up move directly to next message, if inside current buffer
-                    if((message_length > 20))
+                    if((message_length > (18+lengthOffset))) // was 20
                     {
-                        if((number+message_length-20<length))
+                        if((number+message_length-(18+lengthOffset)<length))  // was 20
                         {
-                            number+=message_length-20;
+                            number+=message_length-(18+lengthOffset);  // was 20
                         }
                     }
                 }
@@ -235,10 +254,10 @@ bool DltFileIndexer::index(int num)
                         qDebug() << "------------";
                     }
                     // speed up and move directly to message length, if it is still inside of the current buffer
-                    if(number+14<length)
+                    if(number+12<length)
                     {
-                        number+=14;
-                        counter_header+=14;
+                        number+=12;
+                        counter_header+=12;
                     }
                 }
                 else if( next_message_pos == (pos+number-3) )
@@ -251,10 +270,10 @@ bool DltFileIndexer::index(int num)
                     // speed up move directly to message length, if inside current buffer
                     //if ( (errors_in_file > 0)  &&  ((pos%1000)) )    qDebug() << "Add index "<< msgindex << "at file position" << current_message_pos << pos << number << length;
 
-                    if(number+14 < length)
+                    if(number+12 < length)
                     {
-                        number+=14;
-                        counter_header+=14;
+                        number+=12;
+                        counter_header+=12;
                     }
                 }
                 else if(next_message_pos > (pos+number-3))

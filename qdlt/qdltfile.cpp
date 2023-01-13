@@ -158,6 +158,8 @@ bool QDltFile::updateIndex()
     QByteArray buf;
     qint64 pos = 0;
     quint16 last_message_length = 0;
+    quint8 version=1;
+    qint64 lengthOffset=2;
 
     mutexQDlt.lock();
 
@@ -180,12 +182,25 @@ bool QDltFile::updateIndex()
             pos = (*const_indexAll)[files[numFile]->indexAll.size()-1];
 
             // read the first 18 bytes of last message to look for actual size
-            files[numFile]->infile.seek(pos + 18);
-            buf = files[numFile]->infile.read(2);
+            files[numFile]->infile.seek(pos + 16); // was 18
+            buf = files[numFile]->infile.read(7);  // was 2
 
             // Read low and high bytes of message length
-            last_message_length = (unsigned char)buf.at(0);
-            last_message_length = (last_message_length<<8 | ((unsigned char)buf.at(1))) +16;
+            version = (((unsigned char)buf.at(0))&0xe0)>>5;
+            if(version==1)
+            {
+                lengthOffset = 2;
+            }
+            else if(version==2)
+            {
+                lengthOffset = 5;
+            }
+            else
+            {
+                lengthOffset = 2;  // default
+            }
+            last_message_length = (unsigned char)buf.at(lengthOffset); // was 0
+            last_message_length = (last_message_length<<8 | ((unsigned char)buf.at(lengthOffset+1))) +16; // was 1
 
             // move just behind the next expected message
             pos += (last_message_length - 1);
@@ -227,12 +242,29 @@ bool QDltFile::updateIndex()
                 if(counter_header>0)
                 {
                     counter_header++;
-                    if (counter_header==16)
+                    if (counter_header==14)
+                    {
+                        // Read DLT protocol version
+                        version = (((unsigned char)cbuf[num])&0xe0)>>5;
+                        if(version==1)
+                        {
+                            lengthOffset = 2;
+                        }
+                        else if(version==2)
+                        {
+                            lengthOffset = 5;
+                        }
+                        else
+                        {
+                            lengthOffset = 2;  // default
+                        }
+                    }
+                    else if (counter_header==(14+lengthOffset)) // was 16
                     {
                         // Read low byte of message length
                         message_length = (unsigned char)cbuf[num];
                     }
-                    else if (counter_header==17)
+                    else if (counter_header==(15+lengthOffset)) // was 17
                     {
                         // Read high byte of message length
                         counter_header = 0;
@@ -245,11 +277,11 @@ bool QDltFile::updateIndex()
                             break;
                         }
                         // speed up move directly to next message, if inside current buffer
-                        if((message_length > 20))
+                        if((message_length > 18+lengthOffset)) // was 20
                         {
-                            if((num+message_length-20<cbuf_sz))
+                            if((num+message_length-(18+lengthOffset)<cbuf_sz))  // was 20
                             {
-                                num+=message_length-20;
+                                num+=message_length-(18+lengthOffset);  // was 20
                             }
                         }
                     }
@@ -279,10 +311,10 @@ bool QDltFile::updateIndex()
                             errors_in_file++;
                         }
                         // speed up move directly to message length, if inside current buffer
-                        if(num+14<cbuf_sz)
+                        if(num+12<cbuf_sz)
                         {
-                            num+=14;
-                            counter_header+=14;
+                            num+=12;
+                            counter_header+=12;
                         }
                     }
                     else if( next_message_pos == (pos+num-3) )
@@ -292,10 +324,10 @@ bool QDltFile::updateIndex()
                         current_message_pos = pos+num-3;
                         counter_header = 1;
                         // speed up move directly to message length, if inside current buffer
-                        if(num+14<cbuf_sz)
+                        if(num+12<cbuf_sz)
                         {
-                            num+=14;
-                            counter_header+=14;
+                            num+=12;
+                            counter_header+=12;
                         }
                     }
                     else if(next_message_pos > (pos+num-3))

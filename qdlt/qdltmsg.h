@@ -15,7 +15,7 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdltmsg.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -520,6 +520,9 @@ private:
 
     //! List of arguments of the DLT message.
     QList<QDltArgument> arguments;
+
+    //! Version of DLT protocol
+    uint8_t versionNumber;
 };
 
 #endif // QDLT_MSG_H
