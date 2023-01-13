@@ -22,25 +22,21 @@
 #ifndef QDLT_H
 #define QDLT_H
 
-#include <qdltbase.h>
+#include "qdltbase.h"
 
-#include <qdltargument.h>
-#include <qdltmsg.h>
-#include <qdltfilter.h>
-#include <qdltfilterlist.h>
-#include <qdltfilterindex.h>
-#include <qdltdefaultfilter.h>
-#include <qdltfile.h>
-#include <qdltcontrol.h>
-#include <qdltconnection.h>
-#include <qdltipconnection.h>
-#include <qdlttcpconnection.h>
-#include <qdltudpconnection.h>
-#include <qdltserialconnection.h>
-#include <qdltmessagedecoder.h>
-#include <qdltplugin.h>
-#include <qdltpluginmanager.h>
-#include <qdltoptmanager.h>
-#include <qdltsettingsmanager.h>
+#include "qdltargument.h"
+#include "qdltmsg.h"
+#include "qdltfilter.h"
+#include "qdltfilterlist.h"
+#include "qdltfilterindex.h"
+#include "qdltdefaultfilter.h"
+#include "qdltfile.h"
+#include "qdltcontrol.h"
+#include "qdltconnection.h"
+#include "qdltipconnection.h"
+#include "qdlttcpconnection.h"
+#include "qdltudpconnection.h"
+#include "qdltserialconnection.h"
+#include "qdltmessagedecoder.h"
 
 #endif // QDLT_H

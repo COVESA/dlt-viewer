@@ -18,6 +18,7 @@
  */
 
 #include <QtGui>
+#include <QTextStream>
 
 #include "dummycontrolplugin.h"
 
@@ -108,8 +109,11 @@ void DummyControlPlugin::updateCounters(int ,int )
 
 bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
 
+#ifdef QT5_QT6_COMPAT
+    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
+#else
     qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
-
+#endif
     return true;
 }
 
@@ -171,6 +175,6 @@ void DummyControlPlugin::updateFileFinish(){
 
 }
 
-#ifndef QT5
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(dummycontrolplugin, DummyControlPlugin);
 #endif

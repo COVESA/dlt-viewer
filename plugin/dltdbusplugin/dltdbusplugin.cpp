@@ -650,7 +650,7 @@ bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     argument.setEndianness(msg.getEndianness());
     argument.setOffsetPayload(0);
     QByteArray dataText;
-    dataText.append(text);
+    dataText.append(text.toUtf8());
     argument.setData(dataText);
     msg.addArgument(argument);
 
@@ -825,6 +825,6 @@ void DltDBusPlugin::initMainTableView(QTableView* pTableView)
 void DltDBusPlugin::configurationChanged()
 {}
 
-#ifndef QT5
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(dltdbusplugin, DltDBusPlugin);
 #endif

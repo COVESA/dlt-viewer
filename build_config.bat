@@ -12,6 +12,7 @@ REM 6.2.2 msvc2019
 if "%QTVER%"=="" (
 REM    set QTVER=5.12.12
     set QTVER=5.15.2
+REM    set QTVER=6.4.1
 REM    set QTVER=6.2.2
 )
 

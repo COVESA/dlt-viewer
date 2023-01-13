@@ -59,7 +59,7 @@ QT += core gui network
 greaterThan(QT_VER_MAJ, 4) {
     QT += widgets
     INCLUDEPATH += QtWidgets
-    DEFINES += QT5
+    win32:DEFINES += QT5_QT6_COMPAT
 }
 
 

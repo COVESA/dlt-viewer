@@ -22,6 +22,7 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "regex_search_replace.h"
+#include "qdltoptmanager.h"
 
 
 
@@ -174,7 +175,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             }
             return visu_data;
         case FieldNames::MessageId:
-            return QString().sprintf(project->settings->msgIdFormat.toLatin1(),msg.getMessageId());
+            return QString::asprintf(project->settings->msgIdFormat.toUtf8(),msg.getMessageId());
         default:
             if (index.column()>=FieldNames::Arg0)
             {

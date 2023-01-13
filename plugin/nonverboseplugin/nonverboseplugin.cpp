@@ -575,7 +575,7 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
                 argument.setTypeInfo(QDltArgument::DltTypeInfoStrg);
                 argument.setEndianness(msg.getEndianness());
                 argument.setOffsetPayload(offset);
-                data.append(pdu->description);
+                data.append(pdu->description.toUtf8());
                 argument.setData(data);
             }
             else {
@@ -610,6 +610,6 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     return true;
 }
 
-#ifndef QT5
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(nonverboseplugin, NonverbosePlugin);
 #endif

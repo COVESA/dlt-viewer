@@ -66,7 +66,7 @@ inline bool operator==(const DltDbusMethodKey &e1, const DltDbusMethodKey &e2)
            && e1.getSerial() == e2.getSerial();
 }
 
-inline uint qHash(const DltDbusMethodKey &key)
+inline size_t qHash(const DltDbusMethodKey &key)
 {
     return qHash(key.getSender()) ^ key.getSerial();
 }
@@ -78,7 +78,7 @@ class DltDBusPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInter
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginControlInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DltDbusPlugin")
 #endif
 

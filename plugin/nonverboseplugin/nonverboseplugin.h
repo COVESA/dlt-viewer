@@ -43,7 +43,7 @@ public:
     }
 
     friend bool operator==(const DltFibexKey &e1, const DltFibexKey &e2);
-    friend uint qHash(const DltFibexKey &key);
+    friend size_t qHash(const DltFibexKey &key);
 
     QString id;
     QString appid;
@@ -56,7 +56,7 @@ inline bool operator==(const DltFibexKey &e1, const DltFibexKey &e2)
            && (e1.appid == e2.appid) && (e1.ctid == e2.ctid);
 }
 
-inline uint qHash(const DltFibexKey &key)
+inline size_t qHash(const DltFibexKey &key)
 {
     return qHash(key.id) ^ qHash(key.appid) ^ qHash(key.ctid);
 }
@@ -109,7 +109,7 @@ class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderI
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.NonVerbosePlugin")
 #endif
 

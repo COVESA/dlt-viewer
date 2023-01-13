@@ -18,11 +18,11 @@ add_executable(dlt-parser main.cpp
     mainwindow.ui
     qdltparser.cpp)
 
-target_link_libraries(dlt-parser Qt5::Widgets)
+target_link_libraries(dlt-parser ${QT_PREFIX}::Widgets -lstdc++)
 
 set_target_properties(dlt-parser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+    INSTALL_RPATH "$ORIGIN/../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
 
     if(CMAKE_COMPILER_IS_GNUCXX)
     # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking

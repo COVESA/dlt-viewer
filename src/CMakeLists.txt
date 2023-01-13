@@ -12,7 +12,11 @@
 # List of changes:
 # 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
 
-QT5_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
+if("${QT_PREFIX}" STREQUAL "Qt6")
+    QT6_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
+else()
+    QT5_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
+endif()
 
 add_executable(dlt-viewer
     main.cpp
@@ -51,10 +55,10 @@ add_executable(dlt-viewer
 
 target_link_libraries(dlt-viewer
     qdlt
-    Qt5::Core
-    Qt5::Network
-    Qt5::Widgets
-    Qt5::SerialPort)
+    ${QT_PREFIX}::Core
+    ${QT_PREFIX}::Network
+    ${QT_PREFIX}::Widgets
+    ${QT_PREFIX}::SerialPort)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
@@ -64,7 +68,7 @@ endif()
 
 set_target_properties(dlt-viewer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT5_LIB_DIR}>")
+    INSTALL_RPATH "$ORIGIN/../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
 
     install(TARGETS dlt-viewer
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"

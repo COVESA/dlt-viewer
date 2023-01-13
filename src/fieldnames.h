@@ -1,7 +1,7 @@
 #ifndef FIELDNAMES_H
 #define FIELDNAMES_H
 
-#include "settingsdialog.h"
+#include "qdltsettingsmanager.h"
 #include <QObject>
 #include <QString>
 

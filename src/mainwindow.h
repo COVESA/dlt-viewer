@@ -31,9 +31,7 @@
 #include <QCompleter>
 #include <QStringListModel>
 
-#include "qdlt.h"
 #include "tablemodel.h"
-#include "project.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
 #include "filterdialog.h"

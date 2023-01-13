@@ -14,8 +14,8 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
- * For further information see http://www.covesa.global/.
+ * \file qdltbase.h
+ * For further information see http://www.genivi.org/.
  * @licence end@
  */
 

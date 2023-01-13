@@ -1,11 +1,13 @@
+#include <algorithm>
 #include <QProgressDialog>
 #include <QMessageBox>
 #include <QApplication>
 #include <QClipboard>
+#include <QDebug>
 
 #include "dltexporter.h"
 #include "fieldnames.h"
-#include "project.h"
+#include "qdltoptmanager.h"
 
 DltExporter::DltExporter(QObject *parent) :
     QObject(parent)
@@ -74,7 +76,7 @@ bool DltExporter::start()
     /* Sort the selection list and create Row list */
     if(exportSelection == DltExporter::SelectionSelected && selection != NULL)
     {
-        qSort(selection->begin(), selection->end());
+        std::sort(selection->begin(), selection->end());
         selectedRows.clear();
         for(int num=0;num<selection->count();num++)
         {

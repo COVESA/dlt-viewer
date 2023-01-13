@@ -176,7 +176,7 @@ void Form::on_saveButton_clicked()
 void Form::savetofile()
 {
     QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"), QDir::currentPath(), QFileDialog::DontResolveSymlinks);
-    if(path != NULL)
+    if(path != nullptr)
     {
         QDir::setCurrent(path); // because we want to keep the last selected path to offer next time again
         QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );
@@ -276,7 +276,7 @@ void Form::on_saveRightButtonClicked()
     QString FiletoSave;
     QString path = QFileDialog::getExistingDirectory(this, tr("Save file to directory"), QDir::currentPath(), QFileDialog::DontResolveSymlinks);
 
-    if(path != NULL)
+    if(path != nullptr)
     {
         QDir::setCurrent(path); // because we want to keep the last selected path to offer next time again
         QTreeWidgetItemIterator it(ui->treeWidget,QTreeWidgetItemIterator::NoChildren );

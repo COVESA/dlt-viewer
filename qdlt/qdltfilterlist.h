@@ -14,8 +14,8 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
- * For further information see http://www.covesa.global/.
+ * \file qdltfilterlist.h
+ * For further information see http://www.genivi.org/.
  * @licence end@
  */
 
@@ -23,6 +23,9 @@
 #define QDLT_FILTER_LIST_H
 
 #include "export_rules.h"
+#include "qdltfilter.h"
+#include "qdltmsg.h"
+
 #include <QObject>
 #include <QString>
 #include <QFile>
@@ -34,6 +37,7 @@
 #include <time.h>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
 
 class QDLT_EXPORT QDltFilterList
 {

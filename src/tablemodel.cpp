@@ -25,6 +25,7 @@
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
+#include "qdltoptmanager.h"
 #include "regex_search_replace.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
@@ -261,7 +262,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
              return visu_data;
          case FieldNames::MessageId:
-             return QString().sprintf(project->settings->msgIdFormat.toLatin1() ,msg.getMessageId());
+             return QString::asprintf(project->settings->msgIdFormat.toUtf8() ,msg.getMessageId());
          default:
              if (index.column()>=FieldNames::Arg0)
              {

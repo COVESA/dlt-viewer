@@ -20,8 +20,13 @@
 #ifndef PROJECT_H
 #define PROJECT_H
 
+
 #include "qdlt.h"
 #include "plugintreewidget.h"
+#include "qdltipconnection.h"
+#include "qdltserialconnection.h"
+#include "qdltplugin.h"
+#include "qdltsettingsmanager.h"
 
 
 #include <QTreeWidget>

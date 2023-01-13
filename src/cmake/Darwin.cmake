@@ -15,8 +15,14 @@ install(FILES
     COMPONENT dlt_viewer)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/../scripts/darwin/Info.plist.in" "${CMAKE_BINARY_DIR}/Info.plist" @ONLY)
-
 install(PROGRAMS
-    "${CMAKE_BINARY_DIR}/Info.plist"
-    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/.."
-    COMPONENT dlt_viewer)
+  "${CMAKE_BINARY_DIR}/Info.plist"
+  DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/.."
+  COMPONENT dlt_viewer)
+
+# COMMAND ${MAC_DEPLOY_TOOL} $<TARGET_FILE_DIR:dlt-viewer>/../.. -always-overwrite
+
+# # enable high-DPI displays support
+# add_custom_command(TARGET dlt-viewer POST_BUILD
+#   COMMAND plutil -replace NSPrincipalClass -string NSApplication $<TARGET_FILE_DIR:dlt-viewer>/../Info.plist
+#   COMMAND plutil -replace NSHighResolutionCapable -bool true $<TARGET_FILE_DIR:dlt-viewer>/../Info.plist)

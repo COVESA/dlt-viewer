@@ -15,9 +15,8 @@
 
 add_library(dltdbusplugin MODULE dltdbusplugin.cpp
     form.cpp
-    dbus.cpp
-    ${UI_HEADERS})
+    dbus.cpp)
 
-target_link_libraries(dltdbusplugin qdlt Qt5::Widgets )
+target_link_libraries(dltdbusplugin qdlt ${QT_PREFIX}::Widgets )
 
 add_plugin(dltdbusplugin)

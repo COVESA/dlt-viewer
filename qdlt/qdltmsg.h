@@ -14,8 +14,8 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
- * For further information see http://www.covesa.global/.
+ * \file qdltmsg.h
+ * For further information see http://www.genivi.org/.
  * @licence end@
  */
 
@@ -31,6 +31,8 @@
 #include <time.h>
 
 #include "export_rules.h"
+#include "qdltbase.h"
+#include "qdltargument.h"
 
 //! Access to a DLT message.
 /*!
