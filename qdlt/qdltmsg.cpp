@@ -408,14 +408,14 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
 
         /* decode Header Type 2 */
-        bool withSessionId = htyp2 & 0x10;
-        bool withAppContextId = htyp2 & 0x08;
-        bool withEcuId = htyp2 & 0x04;
-        quint8 contentInformation = htyp2 & 0x03; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
-        bool withHFMessageInfo = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
-        bool withHFNumberOfArguments = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
-        bool withHFTimestamp = (contentInformation == 0x00) || (contentInformation == 0x01); // verbose or none verbose
-        bool withHFMessageId = (contentInformation == 0x01); // none verbose
+        withSessionId = htyp2 & 0x10;
+        withAppContextId = htyp2 & 0x08;
+        withEcuId = htyp2 & 0x04;
+        contentInformation = htyp2 & 0x03; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+        withHFMessageInfo = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
+        withHFNumberOfArguments = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
+        withHFTimestamp = (contentInformation == 0x00) || (contentInformation == 0x01); // verbose or none verbose
+        withHFMessageId = (contentInformation == 0x01); // none verbose
         if(contentInformation==0x00)
         {
             mode = DltModeVerbose;
@@ -433,16 +433,15 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
             /* error used reserved value */
             return false;
         }
-        bool withSegementation = htyp2 & 0x0800;
-        bool withPrivacyLevel = htyp2 & 0x0400;
-        bool withTags = htyp2 & 0x0200;
-        bool withSourceFileNameLineNumber = htyp2 & 0x0100;
+        withSegementation = htyp2 & 0x0800;
+        withPrivacyLevel = htyp2 & 0x0400;
+        withTags = htyp2 & 0x0200;
+        withSourceFileNameLineNumber = htyp2 & 0x0100;
         /* TODO: Endianess of payload not defined in DLTv2, undefined, set to LittleEndian by default */
         endianness = DltEndiannessLittleEndian;
 
         /* get Message Counter : always*/
-        quint8 messageCounter = *((quint8*) (buf.constData() + 4 + sizeStorageHeader));
-        this->messageCounter = messageCounter;
+        messageCounter = *((quint8*) (buf.constData() + 4 + sizeStorageHeader));
 
         /* get Message Length : always*/
         quint16 messageLength = messageLength = qFromBigEndian(*((quint16*) (buf.constData() + 5 + sizeStorageHeader)));
@@ -470,7 +469,6 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
 
         /* get Number of Arguments : conditional */
-        quint8 numberOfArguments;
         if(withHFNumberOfArguments)
         {
             headerLength += 1;
@@ -478,20 +476,17 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
                 return false; // length error
             }
             numberOfArguments = *((quint8*) (buf.constData() + headerLength - 1 + sizeStorageHeader));
-            this-> numberOfArguments = numberOfArguments;
         }
 
         /* get Timestamp : conditional */
-        quint32 timestampNanoseconds = 0;
-        quint64 timestampSeconds = 0;
+        timestampNanoseconds = 0;
+        timestampSeconds = 0;
         if(withHFTimestamp)
         {
             if(buf.size() < (int)(sizeStorageHeader + headerLength + 9)) {
                 return false; // length error
             }
             timestampNanoseconds = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
-//            timestampSeconds = qFromBigEndian((((quint64)(*((quint32*) (buf.constData() + headerLength + 4 + sizeStorageHeader))))<<8)|
-//                                              ((quint64)(*((quint8*) (buf.constData() + headerLength + 8 + sizeStorageHeader)))));
             timestampSeconds = (((quint64)(*((quint8*) (buf.constData() + headerLength + 4 + sizeStorageHeader))))<<32)|
                                (((quint64)(*((quint8*) (buf.constData() + headerLength + 5 + sizeStorageHeader))))<<24)|
                                (((quint64)(*((quint8*) (buf.constData() + headerLength + 6 + sizeStorageHeader))))<<16)|
@@ -515,14 +510,12 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
 
         /* get Message ID : conditional */
-        quint32 messageId = 0;
         if(withHFMessageId)
         {
             if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
                 return false; // length error
             }
             messageId = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
-            this-> messageId = messageId;
             headerLength += 4;
         }
 
@@ -539,6 +532,11 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
             }
             ecuid = QString(buf.mid(headerLength + sizeStorageHeader,length));
             headerLength += length;
+        }
+        else
+        {
+            if(storageheader)
+                ecuid = QString(QByteArray(storageheader->ecu,4));
         }
 
         /* read optional App Id and Ctx Id */
@@ -564,14 +562,12 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
 
         /* read optional Session Id */
-        quint32 sessionId;
         if(withSessionId)
         {
             if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
                 return false; // length error
             }
-            sessionId = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
-            sessionid = sessionId;
+            sessionid = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
             headerLength += 4;
         }
 
@@ -583,7 +579,16 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
             }
             quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
             headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                return false; // length error
+            }
+            sourceFileName = QString(buf.mid(headerLength + sizeStorageHeader,length));
             headerLength += length;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                return false; // length error
+            }
+            lineNumber = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+            headerLength += 4;
         }
 
         /* read optional Tags */
@@ -604,12 +609,12 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
                 if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
                     return false; // length error
                 }
+                tags += QString(buf.mid(headerLength + sizeStorageHeader,length));
                 headerLength += length;
             }
         }
 
         /* read privacy level */
-        quint8 privacyLevel;
         if(withPrivacyLevel)
         {
             if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
@@ -626,7 +631,47 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
                 return false; // length error
             }
             quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
-            headerLength += length + 1;
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            segmentationFrameType = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(segmentationFrameType == 0) // FirstFrame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 8)) {
+                    return false; // length error
+                }
+                segmentationTotalLength = qFromBigEndian(*((quint64*) (buf.constData() + headerLength + sizeStorageHeader)));
+                headerLength += 8;
+            }
+            else if(segmentationFrameType == 1) // ConsecutiveFrame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                    return false; // length error
+                }
+                segmentationConsecutiveFrame = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+                headerLength += 4;
+            }
+            else if(segmentationFrameType == 2) // LastFrame
+            {
+
+            }
+            else if(segmentationFrameType == 3) // Abort Frame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                    return false; // length error
+                }
+                segmentationAbortReason = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+                headerLength += 1;
+            }
+            else
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                    return false; // length error
+                }
+                headerLength += length;
+            }
         }
 
         headerSize = sizeStorageHeader + headerLength;
@@ -779,6 +824,35 @@ void QDltMsg::clear()
     header.clear();
     headerSize = 0;
     versionNumber=0;
+
+    withSessionId = false;
+    withAppContextId = false;
+    withEcuId = false;
+    contentInformation = 0; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+    withHFMessageInfo = false; // verbose or control
+    withHFNumberOfArguments = false; // verbose or control
+    withHFTimestamp = false; // verbose or none verbose
+    withHFMessageId = false; // none verbose
+
+    withSegementation = false;
+    withPrivacyLevel = false;
+    withTags = false;
+    withSourceFileNameLineNumber = false;
+
+    timestampNanoseconds = 0;
+    timestampSeconds = 0;
+
+    sourceFileName.clear();
+    lineNumber = 0;
+
+    tags.clear();
+
+    privacyLevel = 0;
+
+    segmentationFrameType = 0;
+    segmentationTotalLength = 0;
+    segmentationConsecutiveFrame = 0;
+    segmentationAbortReason = 0;
 }
 
 void QDltMsg::clearArguments()
@@ -943,6 +1017,236 @@ QString QDltMsg::toStringPayload() const
     }
 
     return text;
+}
+
+uint8_t QDltMsg::getVersionNumber() const
+{
+    return versionNumber;
+}
+
+void QDltMsg::setVersionNumber(uint8_t newVersionNumber)
+{
+    versionNumber = newVersionNumber;
+}
+
+bool QDltMsg::getWithSessionId() const
+{
+    return withSessionId;
+}
+
+void QDltMsg::setWithSessionId(bool newWithSessionId)
+{
+    withSessionId = newWithSessionId;
+}
+
+bool QDltMsg::getWithAppContextId() const
+{
+    return withAppContextId;
+}
+
+void QDltMsg::setWithAppContextId(bool newWithAppContextId)
+{
+    withAppContextId = newWithAppContextId;
+}
+
+bool QDltMsg::getWithEcuId() const
+{
+    return withEcuId;
+}
+
+void QDltMsg::setWithEcuId(bool newWithEcuId)
+{
+    withEcuId = newWithEcuId;
+}
+
+quint8 QDltMsg::getContentInformation() const
+{
+    return contentInformation;
+}
+
+void QDltMsg::setContentInformation(quint8 newContentInformation)
+{
+    contentInformation = newContentInformation;
+}
+
+bool QDltMsg::getWithHFMessageInfo() const
+{
+    return withHFMessageInfo;
+}
+
+void QDltMsg::setWithHFMessageInfo(bool newWithHFMessageInfo)
+{
+    withHFMessageInfo = newWithHFMessageInfo;
+}
+
+bool QDltMsg::getWithHFNumberOfArguments() const
+{
+    return withHFNumberOfArguments;
+}
+
+void QDltMsg::setWithHFNumberOfArguments(bool newWithHFNumberOfArguments)
+{
+    withHFNumberOfArguments = newWithHFNumberOfArguments;
+}
+
+bool QDltMsg::getWithHFTimestamp() const
+{
+    return withHFTimestamp;
+}
+
+void QDltMsg::setWithHFTimestamp(bool newWithHFTimestamp)
+{
+    withHFTimestamp = newWithHFTimestamp;
+}
+
+bool QDltMsg::getWithHFMessageId() const
+{
+    return withHFMessageId;
+}
+
+void QDltMsg::setWithHFMessageId(bool newWithHFMessageId)
+{
+    withHFMessageId = newWithHFMessageId;
+}
+
+bool QDltMsg::getWithSegementation() const
+{
+    return withSegementation;
+}
+
+void QDltMsg::setWithSegementation(bool newWithSegementation)
+{
+    withSegementation = newWithSegementation;
+}
+
+bool QDltMsg::getWithPrivacyLevel() const
+{
+    return withPrivacyLevel;
+}
+
+void QDltMsg::setWithPrivacyLevel(bool newWithPrivacyLevel)
+{
+    withPrivacyLevel = newWithPrivacyLevel;
+}
+
+bool QDltMsg::getWithTags() const
+{
+    return withTags;
+}
+
+void QDltMsg::setWithTags(bool newWithTags)
+{
+    withTags = newWithTags;
+}
+
+bool QDltMsg::getWithSourceFileNameLineNumber() const
+{
+    return withSourceFileNameLineNumber;
+}
+
+void QDltMsg::setWithSourceFileNameLineNumber(bool newWithSourceFileNameLineNumber)
+{
+    withSourceFileNameLineNumber = newWithSourceFileNameLineNumber;
+}
+
+quint32 QDltMsg::getTimestampNanoseconds() const
+{
+    return timestampNanoseconds;
+}
+
+void QDltMsg::setTimestampNanoseconds(quint32 newTimestampNanoseconds)
+{
+    timestampNanoseconds = newTimestampNanoseconds;
+}
+
+quint64 QDltMsg::getTimestampSeconds() const
+{
+    return timestampSeconds;
+}
+
+void QDltMsg::setTimestampSeconds(quint64 newTimestampSeconds)
+{
+    timestampSeconds = newTimestampSeconds;
+}
+
+const QString &QDltMsg::getSourceFileName() const
+{
+    return sourceFileName;
+}
+
+void QDltMsg::setSourceFileName(const QString &newSourceFileName)
+{
+    sourceFileName = newSourceFileName;
+}
+
+quint32 QDltMsg::getLineNumber() const
+{
+    return lineNumber;
+}
+
+void QDltMsg::setLineNumber(quint32 newLineNumber)
+{
+    lineNumber = newLineNumber;
+}
+
+const QStringList &QDltMsg::getTags() const
+{
+    return tags;
+}
+
+void QDltMsg::setTags(const QStringList &newTags)
+{
+    tags = newTags;
+}
+
+quint8 QDltMsg::getPrivacyLevel() const
+{
+    return privacyLevel;
+}
+
+void QDltMsg::setPrivacyLevel(quint8 newPrivacyLevel)
+{
+    privacyLevel = newPrivacyLevel;
+}
+
+quint8 QDltMsg::getSegmentationFrameType() const
+{
+    return segmentationFrameType;
+}
+
+void QDltMsg::setSegmentationFrameType(quint8 newSegmentationFrameType)
+{
+    segmentationFrameType = newSegmentationFrameType;
+}
+
+quint64 QDltMsg::getSegmentationTotalLength() const
+{
+    return segmentationTotalLength;
+}
+
+void QDltMsg::setSegmentationTotalLength(quint64 newSegmentationTotalLength)
+{
+    segmentationTotalLength = newSegmentationTotalLength;
+}
+
+quint32 QDltMsg::getSegmentationConsecutiveFrame() const
+{
+    return segmentationConsecutiveFrame;
+}
+
+void QDltMsg::setSegmentationConsecutiveFrame(quint32 newSegmentationConsecutiveFrame)
+{
+    segmentationConsecutiveFrame = newSegmentationConsecutiveFrame;
+}
+
+quint8 QDltMsg::getSegmentationAbortReason() const
+{
+    return segmentationAbortReason;
+}
+
+void QDltMsg::setSegmentationAbortReason(quint8 newSegmentationAbortReason)
+{
+    segmentationAbortReason = newSegmentationAbortReason;
 }
 
 void QDltMsg::genMsg()
