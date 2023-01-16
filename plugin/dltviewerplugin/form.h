@@ -42,6 +42,7 @@ public:
     void setTextBrowserBinary(QString text);
     void setTextBrowserMixed(QString text);
     void setTextBrowserUncoded(QString text);
+    void setTextBrowserDltV2(QString text);
 
 private:
     Ui::Form *ui;
