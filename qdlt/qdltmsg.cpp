@@ -149,6 +149,9 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
+    quint32 storageHeaderTimestampNanoseconds = 0;
+    quint64 storageHeaderTimestampSeconds = 0;
+    QString storageHeaderEcuId;
 
     /* empty message */
     clear();
@@ -165,11 +168,22 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
         else if(storageHeaderVersion==2)
         {
-            if(buf.size() < (int)(4)) {
+            if(buf.size() < (int)(14)) {
                 return false; // length error
             }
+            storageHeaderTimestampNanoseconds = *((quint32*) (buf.constData() + 4)); // not in big endian format
+            storageHeaderTimestampSeconds = (((quint64)(*((quint8*) (buf.constData() + 12))))<<32)|
+                               (((quint64)(*((quint8*) (buf.constData() + 11))))<<24)|
+                               (((quint64)(*((quint8*) (buf.constData() + 10))))<<16)|
+                               (((quint64)(*((quint8*) (buf.constData() + 9))))<<8)|
+                               (((quint64)(*((quint8*) (buf.constData() + 8)))));
             quint8 ecuIdLength = *((quint8*) (buf.constData() + 13));
+            if(buf.size() < (int)(14+ecuIdLength)) {
+                return false; // length error
+            }
+            storageHeaderEcuId = QString(buf.mid(14,ecuIdLength));
             sizeStorageHeader = 14 + ecuIdLength;
+
         }
         else
         {
@@ -497,8 +511,8 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
                 timestampNanoseconds &= 0x7fffffff;
                 timestamp = (timestampSeconds * (quint64)10000) + ((quint64)timestampNanoseconds / (quint64)100000ul);
                 if(storageheader) {
-                    time = storageheader->seconds;
-                    microseconds = storageheader->microseconds;
+                    time = storageHeaderTimestampSeconds;
+                    microseconds = storageHeaderTimestampNanoseconds;
                 }
             }
             else

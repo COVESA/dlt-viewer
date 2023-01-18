@@ -47,7 +47,7 @@
 #include <QProcess>
 #include <QStyleFactory>
 #include <QTextStream>
-
+#include <QtEndian>
 
 /**
  * From QDlt.
@@ -3752,7 +3752,7 @@ void MainWindow::read(EcuItem* ecuitem)
                dlt_set_id(str.ecu,qmsg.getEcuid().toLatin1());
                if ( ecuitem->id == ecuitem->default_id ) // in this case we take the ECUid from the dlt message
                 {
-                qDebug() << "Received ECU ID " << qmsg.getEcuid().toLatin1();
+                //qDebug() << "Received ECU ID " << qmsg.getEcuid().toLatin1();
                 ecuitem->id = qmsg.getEcuid().toLatin1();
                 ecuitem->update();
                }
@@ -3788,7 +3788,26 @@ void MainWindow::read(EcuItem* ecuitem)
                     }
 
                     // write data into file
-                    outputfile.write((char*)&str,sizeof(DltStorageHeader));
+                    if(qmsg.getVersionNumber()==1)
+                    {
+                        // write version 1 storage header
+                        outputfile.write((char*)&str,sizeof(DltStorageHeader));
+                    }
+                    else if(qmsg.getVersionNumber()==2)
+                    {
+                        // write version 2 storage header
+                        outputfile.write((char*)"DLT",3);
+                        quint8 version = 2;
+                        outputfile.write((char*)&version,1);
+                        quint32 nanoseconds = str.microseconds * 1000ul; // not in big endian format
+                        outputfile.write((char*)&nanoseconds,4);
+                        quint64 seconds = (quint64) str.seconds; // not in big endian format
+                        outputfile.write(((char*)&seconds),5);
+                        quint8 length;
+                        length = qmsg.getEcuid().length();
+                        outputfile.write((char*)&length,1);
+                        outputfile.write(qmsg.getEcuid().toLatin1(),qmsg.getEcuid().length());
+                    }
                     outputfile.write(bufferHeader);
                     outputfile.write(bufferPayload);
                     outputfile.flush();
