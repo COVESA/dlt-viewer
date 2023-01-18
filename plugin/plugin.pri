@@ -66,7 +66,8 @@ greaterThan(QT_VER_MAJ, 4) {
 
 # Include path
 INCLUDEPATH += ../../src \
-            ../../qdlt
+            ../../qdlt \
+            /usr/include/qdlt
 # QWT
 # win32:INCLUDEPATH += $$QWT_INSTALL_PREFIX\\include
 
