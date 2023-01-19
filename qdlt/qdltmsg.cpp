@@ -713,7 +713,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
         }
 
         /* get the arguments of the payload */
-        if(mode==DltModeVerbose) {
+        if(mode==DltModeVerbose && !withSegementation) {
             offset = 0;
             arguments.clear();
             for(int num=0;num<numberOfArguments;num++) {
@@ -1020,6 +1020,27 @@ QString QDltMsg::toStringPayload() const
         data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         text += toAscii(data);
 
+        return text;
+    }
+
+    if(withSegementation)
+    {
+        if(segmentationFrameType==0)
+        {
+            text += "Segmentation: First Frame with total length " + QString("%1").arg(segmentationTotalLength);
+        }
+        else if(segmentationFrameType==1)
+        {
+            text += "Segmentation: Consectutive Frame number " + QString("%1").arg(segmentationConsecutiveFrame);
+        }
+        else if(segmentationFrameType==2)
+        {
+            text += "Segmentation: Last Frame";
+        }
+        else if(segmentationFrameType==3)
+        {
+            text += "Segmentation: Abort Frame with abort reason " + QString("%1").arg(segmentationAbortReason);;
+        }
         return text;
     }
 
