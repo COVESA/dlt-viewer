@@ -933,7 +933,10 @@ QString QDltMsg::toStringPayload() const
 
     if((getMode()==QDltMsg::DltModeNonVerbose) && (getType()!=QDltMsg::DltTypeControl) && (getNumberOfArguments() == 0)) {
         text += QString("[%1] ").arg(getMessageId());
-        data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
+        if(versionNumber==2)
+            data = payload.mid(0,(payload.size()>260)?260:payload.size());
+        else
+            data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         if(!data.isEmpty())
         {
             text += toAsciiTable(data,false,false,true,1024,1024,false);

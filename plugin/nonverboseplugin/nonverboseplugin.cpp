@@ -519,7 +519,7 @@ bool NonverbosePlugin::isMsg(QDltMsg &msg, int triggeredByUser)
 bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
     Q_UNUSED(triggeredByUser)
-    int offset = 4;
+    int offset = 0;
 
     if((msg.getMode() != QDltMsg::DltModeNonVerbose))
     {
@@ -561,6 +561,18 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     msg.setType((QDltMsg::DltTypeDef)(frame->messageType));
     msg.setSubtype(frame->messageInfo);
     QByteArray payload = msg.getPayload();
+
+    // starting offset depends on DLT protocol version
+    if(msg.getVersionNumber()==2)
+    {
+        // offset is 0, as message id is already in the header
+        offset = 0;
+    }
+    else
+    {
+        // message id is in the payload in the first four bytes
+        offset = 4;
+    }
 
     /* Look for all PDUs for this message */
     for (int i=0;i < frame->pdureflist.size();i++)
