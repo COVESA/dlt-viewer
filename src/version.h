@@ -30,6 +30,6 @@
 #define PACKAGE_VERSION "2.24.0"
 #define PACKAGE_REVISION ""
 #define PACKAGE_DESCRIPTION "DLT Viewer"
-#define DLT_SUPPORT_MAIL_ADDRESS ""
+#define DLT_SUPPORT_MAIL_ADDRESS "support.dltviewer@list.bmw.com"
 #define DLT_SUPPORT_NAME "COVESA"
 #endif
