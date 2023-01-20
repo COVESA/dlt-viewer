@@ -734,6 +734,26 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     }
 }
 
+bool QDltMsg::parseArguments()
+{
+    QDltArgument argument;
+    unsigned int offset = 0;
+
+    /* get the arguments of the payload */
+    if(mode==DltModeVerbose) {
+        arguments.clear();
+        for(int num=0;num<numberOfArguments;num++) {
+            if(argument.setArgument(payload,offset,endianness)==false) {
+                /* There was an error parsing the arguments */
+                return false;
+            }
+            arguments.append(argument);
+        }
+    }
+
+    return true;
+}
+
 bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
     DltStorageHeader storageheader;
     DltStandardHeader standardheader;
@@ -867,6 +887,8 @@ void QDltMsg::clear()
     segmentationTotalLength = 0;
     segmentationConsecutiveFrame = 0;
     segmentationAbortReason = 0;
+
+    index = -1;
 }
 
 void QDltMsg::clearArguments()
@@ -1023,7 +1045,7 @@ QString QDltMsg::toStringPayload() const
         return text;
     }
 
-    if(withSegementation)
+    if(withSegementation && arguments.isEmpty())
     {
         if(segmentationFrameType==0)
         {
@@ -1285,6 +1307,16 @@ quint8 QDltMsg::getSegmentationAbortReason() const
 void QDltMsg::setSegmentationAbortReason(quint8 newSegmentationAbortReason)
 {
     segmentationAbortReason = newSegmentationAbortReason;
+}
+
+int QDltMsg::getIndex() const
+{
+    return index;
+}
+
+void QDltMsg::setIndex(int newIndex)
+{
+    index = newIndex;
 }
 
 void QDltMsg::genMsg()

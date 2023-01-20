@@ -432,6 +432,9 @@ public:
     */
     bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
 
+    //! Parse the arguments from the Payload.
+    bool parseArguments();
+
     //! Get the message written into a byte array containing the DLT message.
     /*!
       This function returns false, if an error in the data was found.
@@ -525,6 +528,9 @@ public:
 
     quint8 getSegmentationAbortReason() const;
     void setSegmentationAbortReason(quint8 newSegmentationAbortReason);
+
+    int getIndex() const;
+    void setIndex(int newIndex);
 
 protected:
 
@@ -622,6 +628,9 @@ private:
     quint64 segmentationTotalLength;
     quint32 segmentationConsecutiveFrame;
     quint8 segmentationAbortReason;
+
+    //! Position of current file in a QDltFile
+    int index;
 
 };
 

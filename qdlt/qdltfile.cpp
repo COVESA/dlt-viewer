@@ -413,6 +413,7 @@ bool QDltFile::updateIndexFilter()
         buf = getMsg(num);
         if(!buf.isEmpty()) {
             msg.setMsg(buf);
+            msg.setIndex(num);
             if(checkFilter(msg)) {
                 indexFilter.append(num);
             }
@@ -591,7 +592,11 @@ bool QDltFile::getMsg(int index,QDltMsg &msg) const
     if(data.isEmpty())
         return false;
 
-    return msg.setMsg(data);
+    bool result = msg.setMsg(data);
+
+    msg.setIndex(index);
+
+    return result;
 }
 
 QByteArray QDltFile::getMsgFilter(int index) const

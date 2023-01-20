@@ -3957,6 +3957,7 @@ void MainWindow::updateIndex()
     for(int num=oldsize;num<qfile.size();num++)
     {
      qmsg.setMsg(qfile.getMsg(num));
+     qmsg.setIndex(num);
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
      {
@@ -4061,6 +4062,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
 
         msgIndex = qfile.getMsgFilterPos(index.row());
         msg.setMsg(qfile.getMsgFilter(index.row()));
+        msg.setIndex(qfile.getMsgFilterPos(index.row()));
         activeViewerPlugins = pluginManager.getViewerPlugins();
         activeDecoderPlugins = pluginManager.getDecoderPlugins();
 
@@ -6402,6 +6404,7 @@ void MainWindow::filterAddTable() {
 
     data = qfile.getMsgFilter(index.row());
     msg.setMsg(data);
+    msg.setIndex(qfile.getMsgFilterPos(index.row()));
 
     /* decode message if necessary */
     iterateDecodersForMsg(msg,!QDltOptManager::getInstance()->issilentMode());
