@@ -71,6 +71,13 @@ public:
     //! The verbose mode of the message.
     typedef enum { DltModeUnknown = -2, DltModeNonVerbose = 0, DltModeVerbose = 1 } DltModeDef;
 
+    //! Get QString from const char id with length of 4 bytes.
+    /*!
+      \param text Pointer to 4 byte id.
+      \return QString of const char text.
+    */
+    static QString getStringFromId(const char *text);
+
     //! Get the time of the DLT message, when the DLT message is logged.
     /*!
       \return The time when the DLT message is logged.
