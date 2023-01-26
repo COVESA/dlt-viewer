@@ -38,6 +38,19 @@ QDltMsg::~QDltMsg()
 
 }
 
+QString QDltMsg::getStringFromId(const char *text)
+{
+    if(text[1]==0)
+        return QString(QByteArray(text,1));
+    else if(text[2]==0)
+        return QString(QByteArray(text,2));
+    else if(text[3]==0)
+        return QString(QByteArray(text,3));
+    else
+        return QString(QByteArray(text,4));
+
+}
+
 QString QDltMsg::getTypeString() const
 {
     return QString((type>=0 && type<=7)?qDltMessageType[type]:"");
@@ -230,24 +243,26 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     /* extract ecu id */
     if ( DLT_IS_HTYP_WEID(standardheader->htyp) )
     {
-        ecuid = QString(QByteArray(headerextra.ecu,4));
+        ecuid = QDltMsg::getStringFromId(headerextra.ecu);
     }
     else
     {
         if(storageheader)
-            ecuid = QString(QByteArray(storageheader->ecu,4));
+        {
+            ecuid = QDltMsg::getStringFromId(storageheader->ecu);
+        }
     }
 
     /* extract application id */
     if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->apid[0]!=0))
     {
-        apid = QString(QByteArray(extendedheader->apid,4));
+        apid = QDltMsg::getStringFromId(extendedheader->apid);
     }
 
     /* extract context id */
     if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->ctid[0]!=0))
     {
-        ctid = QString(QByteArray(extendedheader->ctid,4));
+        ctid = QDltMsg::getStringFromId(extendedheader->ctid);
     }
 
     /* extract type */
@@ -572,7 +587,7 @@ QString QDltMsg::toStringPayload() const
                 default:
                     text += "unknown";
                 }
-                text += " " + QString(QByteArray(service->comid,4));
+                text += " " + QDltMsg::getStringFromId(service->comid);
             }
             else
             {
