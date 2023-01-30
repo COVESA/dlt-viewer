@@ -4290,7 +4290,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
             DltServiceUnregisterContext *service;
             service = (DltServiceUnregisterContext*) payload.constData();
 
-            controlMessage_UnregisterContext(msg.getEcuid(),QString(QByteArray(service->apid,4)),QString(QByteArray(service->ctid,4)));
+            controlMessage_UnregisterContext(msg.getEcuid(),QDltMsg::getStringFromId(service->apid),QDltMsg::getStringFromId(service->ctid));
         }
         break;
     }
