@@ -82,12 +82,24 @@ else()
     set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
 endif()
 
-install(TARGETS qdlt
-    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/lib"
-    COMPONENT qdlt_sdk)
+if(DLT_INSTALL_SDK)
+    install(TARGETS qdlt
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/lib"
+        COMPONENT qdlt_sdk)
+    install(DIRECTORY "."
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/include/qdlt"
+        COMPONENT qdlt_sdk
+        FILES_MATCHING PATTERN "*.h")
+
+foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
+    install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/src"
+        COMPONENT qdlt_sdk)
+endforeach()
+endif()
 
 install(DIRECTORY "."
-    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/include"
+    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/include/qdlt"
     COMPONENT qdlt_sdk
     FILES_MATCHING PATTERN "*.h")
 
@@ -99,6 +111,6 @@ set(SDK_EXAMPLES
 
 foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
     install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
-        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/src"
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/src"
         COMPONENT qdlt_sdk)
 endforeach()
