@@ -11,6 +11,7 @@ mkdir %TARGET_DIR%
 mkdir %TARGET_DIR%\plugins
 mkdir %TARGET_DIR%\sdk
 mkdir %TARGET_DIR%\sdk\include
+mkdir %TARGET_DIR%\sdk\include\qdlt
 mkdir %TARGET_DIR%\sdk\lib
 mkdir %TARGET_DIR%\sdk\src
 mkdir %TARGET_DIR%\sdk\src\dummydecoderplugin
@@ -35,14 +36,14 @@ copy %BUILD_DIR%\plugins\dltsystemviewerplugin.dll %TARGET_DIR%\plugins
 
 copy %SOURCE_DIR%\ReleaseNotes_Viewer.txt %TARGET_DIR%
 
-copy %SOURCE_DIR%\qdlt\dlt.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\dlt_common.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\dlt_protocol.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\dlt_types.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\dlt_user.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\dlt_user_macros.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\qdlt\qdlt.h %TARGET_DIR%\sdk\include
-copy %SOURCE_DIR%\src\plugininterface.h %TARGET_DIR%\sdk\include
+copy %SOURCE_DIR%\qdlt\dlt.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\dlt_common.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\dlt_protocol.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\dlt_types.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\dlt_user.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\dlt_user_macros.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\qdlt\qdlt.h %TARGET_DIR%\sdk\include\qdlt
+copy %SOURCE_DIR%\src\plugininterface.h %TARGET_DIR%\sdk\include\qdlt
 
 copy %BUILD_DIR%\libqdlt.a %TARGET_DIR%\sdk\lib
 

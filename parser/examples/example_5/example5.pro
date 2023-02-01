@@ -18,7 +18,7 @@ TEMPLATE = app
 
 DEFINES += DLT_EXAMPLE
 
-INCLUDEPATH = ../src
+INCLUDEPATH = ../src /usr/include/qdlt
 
 SOURCES += main.cpp\
            mainwindow.cpp \
