@@ -41,13 +41,16 @@ set(DLT_QT_VERSION "${${QT_PREFIX}Core_VERSION}" CACHE STRING "DLT_QT_VERSION")
 get_target_property(DLT_QT_LIBRARY_PATH ${QT_PREFIX}::Core LOCATION)
 get_filename_component(DLT_QT_LIB_DIR ${DLT_QT_LIBRARY_PATH} DIRECTORY)
 
-find_package(Git REQUIRED)
-execute_process(
-    COMMAND ${GIT_EXECUTABLE} rev-list --count --no-merges HEAD
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_PATCH_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+find_package(Git)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND ${GIT_EXECUTABLE} rev-list --count --no-merges HEAD
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_PATCH_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+endif()
+
 message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/parse_version.sh" "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h" PACKAGE_MAJOR_VERSION)
 execute_process(
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/parse_version.sh" "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h" PACKAGE_MAJOR_VERSION
