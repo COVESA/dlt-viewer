@@ -24,11 +24,11 @@ TARGET = $$qtLibraryTarget(dummydecoderplugin)
 # Defines and Header Directories
 DEFINES  += QT_VIEWER
 
-INCLUDEPATH += ../../include
+INCLUDEPATH += ../../include /usr/include/qdlt
 
 # Project files
 HEADERS += dummydecoderplugin.h \
-            ../../include/qdlt.h \
-            ../../include/plugininterface.h
+            ../../include/qdlt/qdlt.h \
+            ../../include/qdlt/plugininterface.h
 
 SOURCES += dummydecoderplugin.cpp
