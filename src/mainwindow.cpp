@@ -915,8 +915,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
     else if(settings->tempCloseWithoutAsking || outputfile.size() == 0)
     {
-
-        deleteactualFile();
+        if(!settings->tempSaveOnExit)
+            deleteactualFile();
 
         QMainWindow::closeEvent(event);
     }
@@ -926,7 +926,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
            "You still have an unsaved temporary file open. Exit anyway?",
            QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
         {
-            deleteactualFile();
+            if(!settings->tempSaveOnExit)
+                deleteactualFile();
 
             QMainWindow::closeEvent(event);
         }

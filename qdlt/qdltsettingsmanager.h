@@ -68,6 +68,7 @@ public:
     QString tempOwnPath; // local setting
     int     tempCloseWithoutAsking; // local setting
     int     tempSaveOnClear; // local setting
+    int     tempSaveOnExit; // local setting
 
     int defaultLogFile; // local setting
     QString defaultLogFileName; // local setting
