@@ -102,7 +102,7 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
             DltServiceUnregisterContext *service;
             service = (DltServiceUnregisterContext *) payload.constData();
 
-            indexer->unregisterContext(msg->getEcuid(), QString(QByteArray(service->apid, 4)), QString(QByteArray(service->ctid, 4)));
+            indexer->unregisterContext(msg->getEcuid(), QDltMsg::getStringFromId(service->apid), QDltMsg::getStringFromId(service->ctid));
         }
     }
 

@@ -435,7 +435,7 @@ void QDltSettingsManager::readSettings()
     autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
     splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
-    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
+    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",100).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
     markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
 

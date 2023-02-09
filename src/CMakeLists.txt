@@ -81,18 +81,21 @@ else()
     set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
 endif()
 
-install(FILES
-    ../LICENSE.txt
-    ../MPL.txt
-    ../README.md
-    ../ReleaseNotes_Viewer.txt
-    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
-    COMPONENT dlt_viewer)
-install(FILES
-    ../doc/dlt_viewer_user_manual.pdf
-    ../doc/dlt_viewer_plugins_programming_guide.pdf
-    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/doc"
-    COMPONENT documentation)
+if(DLT_INSTALL_SDK)
+    install(FILES
+        ../LICENSE.txt
+        ../MPL.txt
+        ../README.md
+        ../ReleaseNotes_Viewer.txt
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
+        COMPONENT dlt_viewer)
+    install(FILES
+        ../doc/dlt_viewer_user_manual.pdf
+        ../doc/dlt_viewer_plugins_programming_guide.pdf
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/doc"
+        COMPONENT documentation)
+endif()
+
 install(DIRECTORY
     ../filters
     DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
