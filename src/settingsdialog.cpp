@@ -223,6 +223,7 @@ void SettingsDialog::writeDlg()
     ui->lineEditOwnTemp->setText(settings->tempOwnPath);
     ui->checkBoxCloseWithoutAsking->setChecked(settings->tempCloseWithoutAsking == 1 ? true : false);
     ui->checkBoxSaveOnClear->setChecked(settings->tempSaveOnClear == 1 ? true : false);
+    ui->checkBoxSaveOnExit->setChecked(settings->tempSaveOnExit == 1 ? true : false);
 
     /* startup */
     ui->checkBoxDefaultProjectFile->setCheckState(settings->defaultProjectFile?Qt::Checked:Qt::Unchecked);
@@ -392,6 +393,7 @@ void SettingsDialog::readDlg()
     settings->tempOwnPath                 = ui->lineEditOwnTemp->text();
     settings->tempCloseWithoutAsking      = (ui->checkBoxCloseWithoutAsking->isChecked() == true ? 1 : 0);
     settings->tempSaveOnClear             = (ui->checkBoxSaveOnClear->isChecked() == true ? 1 : 0);
+    settings->tempSaveOnExit              = (ui->checkBoxSaveOnExit->isChecked() == true ? 1 : 0);
 
     /* startup */
     settings->defaultProjectFile = (ui->checkBoxDefaultProjectFile->checkState() == Qt::Checked);
