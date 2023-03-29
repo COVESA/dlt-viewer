@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>383</width>
-    <height>614</height>
+    <width>513</width>
+    <height>767</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -218,23 +218,13 @@
           <string>Temporary File Behaviour</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEditOwnTemp"/>
-          </item>
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioButtonUseTemp">
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBoxSaveOnClear">
             <property name="text">
-             <string>Use %TEMP%</string>
+             <string>Keep temporary file on clear</string>
             </property>
             <property name="checked">
              <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QToolButton" name="toolButtonTempPath">
-            <property name="text">
-             <string>...</string>
             </property>
            </widget>
           </item>
@@ -242,6 +232,13 @@
            <widget class="QRadioButton" name="radioButtonSelectTemp">
             <property name="text">
              <string>Select:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QToolButton" name="toolButtonTempPath">
+            <property name="text">
+             <string>...</string>
             </property>
            </widget>
           </item>
@@ -261,14 +258,27 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Close temporary file without asking</string>
+             <string>Do not ask to save temporary file on exit</string>
             </property>
            </widget>
           </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBoxSaveOnClear">
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEditOwnTemp"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="radioButtonUseTemp">
             <property name="text">
-             <string>Save temporary file on clear</string>
+             <string>Use %TEMP%</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="checkBoxSaveOnExit">
+            <property name="text">
+             <string>Keep temporary file on exit</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -1039,6 +1049,64 @@
             <property name="text">
              <string>Auto connect to ECUs at start</string>
             </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
+           <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>60</height>
+             </size>
+            </property>
+            <property name="cursor">
+             <cursorShape>ArrowCursor</cursorShape>
+            </property>
+            <property name="focusPolicy">
+             <enum>Qt::StrongFocus</enum>
+            </property>
+            <property name="contextMenuPolicy">
+             <enum>Qt::NoContextMenu</enum>
+            </property>
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the logfile is split to files of selected size ( limit &amp;lt; 0.01 Mb )&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="title">
+             <string>Maximum file size (in MBytes)</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2">
+             <item>
+              <widget class="QLineEdit" name="lineEditMaxFileSizeMB">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <property name="cursor">
+                <cursorShape>ArrowCursor</cursorShape>
+               </property>
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
           <item row="1" column="0">

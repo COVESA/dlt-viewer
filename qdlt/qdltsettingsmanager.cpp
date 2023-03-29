@@ -166,6 +166,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("tempdir/tempOwnPath", tempOwnPath);
     settings->setValue("tempdir/tempCloseWithoutAsking", tempCloseWithoutAsking);
     settings->setValue("tempdir/tempSaveOnClear", tempSaveOnClear);
+    settings->setValue("tempdir/tempSaveOnExit", tempSaveOnExit);
 
     /* startup */
     settings->setValue("startup/defaultProjectFile",defaultProjectFile);
@@ -402,6 +403,7 @@ void QDltSettingsManager::readSettings()
     tempOwnPath                 = settings->value("tempdir/tempOwnPath", QString("")).toString();
     tempCloseWithoutAsking      = settings->value("tempdir/tempCloseWithoutAsking", 0).toInt();
     tempSaveOnClear             = settings->value("tempdir/tempSaveOnClear", 1).toInt();
+    tempSaveOnExit              = settings->value("tempdir/tempSaveOnExit", 1).toInt();
 
     geometry = settings->value("geometry",0).toByteArray();
     windowState = settings->value("windowState",0).toByteArray();
