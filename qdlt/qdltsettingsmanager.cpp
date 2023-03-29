@@ -139,7 +139,6 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("autoMarkFatalError",QString("%1").arg(autoMarkFatalError));
             xml.writeTextElement("autoMarkWarn",QString("%1").arg(autoMarkWarn));
             xml.writeTextElement("autoMarkMarker",QString("%1").arg(autoMarkMarker));
-            xml.writeTextElement("writeControl",QString("%1").arg(writeControl));
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(updateContextLoadingFile));
             xml.writeTextElement("updateContextsUnregister",QString("%1").arg(updateContextsUnregister));
             xml.writeTextElement("loggingOnlyMode",QString("%1").arg(loggingOnlyMode));
@@ -221,7 +220,6 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/showMsgId",showMsgId);
 
     /* other */
-    settings->setValue("startup/writeControl",writeControl);
     settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
     settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
     settings->setValue("startup/msgIdFormat",msgIdFormat);
@@ -363,10 +361,6 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         markercolor.setNamedColor(xml.readElementText());
     }
-    if(xml.name() == QString("writeControl"))
-    {
-        writeControl = xml.readElementText().toInt();
-    }
     if(xml.name() == QString("updateContextLoadingFile"))
     {
         updateContextLoadingFile = xml.readElementText().toInt();
@@ -471,7 +465,6 @@ void QDltSettingsManager::readSettings()
     showArguments = settings->value("startup/showArguments",0).toInt();
     showMsgId = settings->value("startup/showMsgId",0).toInt();
     /* other */
-    writeControl = settings->value("startup/writeControl",1).toInt();
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
     msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();

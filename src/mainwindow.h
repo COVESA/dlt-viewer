@@ -211,8 +211,6 @@ private:
     quint16 senderPort; // in readdatagramm
 
     /* used in ::read() */
-    QByteArray bufferHeader;
-    QByteArray bufferPayload;
     QByteArray data;
     QDltMsg qmsg;
 
@@ -380,6 +378,8 @@ private:
 
     /* Get path from explorerView model index */
     QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
+
+    void writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &bufferPayload,EcuItem* ecuitem);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );

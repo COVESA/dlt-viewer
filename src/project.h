@@ -132,6 +132,7 @@ private:
      unsigned int udpport; /*basically the same*/
      bool sendSerialHeaderIp;
      bool syncSerialHeaderIp;
+     bool writeDLTv2StorageHeader;
 
 public:
      QDltIPConnection ipcon;
@@ -174,7 +175,8 @@ public:
      void setSendSerialHeaderSerial(bool b) {sendSerialHeaderSerial = b;serialcon.setSendSerialHeader(sendSerialHeaderSerial);}
      void setSyncSerialHeaderSerial(bool b) {syncSerialHeaderSerial = b;serialcon.setSyncSerialHeader(syncSerialHeaderSerial);}
 
-
+     bool getWriteDLTv2StorageHeader() const;
+     void setWriteDLTv2StorageHeader(bool newWriteDLTv2StorageHeader);
 };
 
 class ApplicationItem  : public QTreeWidgetItem
