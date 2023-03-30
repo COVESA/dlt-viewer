@@ -192,18 +192,40 @@ bool DltExporter::finish()
 
 bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
 {
+    bool result;
     buf.clear();
     if(exportSelection == DltExporter::SelectionAll)
     {
         buf = from->getMsg(num);
+        if( true == buf.isEmpty())
+        {
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            return false;
+        }
+        result =  msg.setMsg(buf);
+        msg.setIndex(num);
     }
     else if(exportSelection == DltExporter::SelectionFiltered)
     {
         buf = from->getMsgFilter(num);
+        if( true == buf.isEmpty())
+        {
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            return false;
+        }
+        result =  msg.setMsg(buf);
+        msg.setIndex(from->getMsgFilterPos(num));
     }
     else if(exportSelection == DltExporter::SelectionSelected)
     {
         buf = from->getMsgFilter(selectedRows[num]);
+        if( true == buf.isEmpty())
+        {
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            return false;
+        }
+        result =  msg.setMsg(buf);
+        msg.setIndex(from->getMsgFilterPos(selectedRows[num]));
     }
     else
     {
@@ -211,12 +233,7 @@ bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
         return false;
     }
 
-    if( true == buf.isEmpty())
-    {
-        qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
-        return false;
-    }
-    return msg.setMsg(buf);
+    return result;
 }
 
 bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf)

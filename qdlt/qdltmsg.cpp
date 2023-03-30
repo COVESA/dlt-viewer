@@ -20,6 +20,7 @@
  */
 
 #include <QtDebug>
+#include <QtEndian>
 
 #include "qdltmsg.h"
 
@@ -161,207 +162,598 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
-
-    /* set offset of storage header */
-    if(withStorageHeader) {
-        sizeStorageHeader = sizeof(DltStorageHeader);
-    }
+    quint32 storageHeaderTimestampNanoseconds = 0;
+    quint64 storageHeaderTimestampSeconds = 0;
+    QString storageHeaderEcuId;
 
     /* empty message */
     clear();
 
-    if(buf.size() < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
-        return false;
-    }
-
+    /* set offset of storage header */
     if(withStorageHeader) {
-        storageheader = (DltStorageHeader*) buf.constData();
-    }
-    standardheader = (DltStandardHeader*) (buf.constData() + sizeStorageHeader);
+        if(buf.size() < (int)(4)) {
+            return false; // length error
+        }
+        quint8 storageHeaderVersion = *((quint8*) (buf.constData() + 3));
+        if(storageHeaderVersion==1)
+        {
+            sizeStorageHeader = sizeof(DltStorageHeader);
+        }
+        else if(storageHeaderVersion==2)
+        {
+            if(buf.size() < (int)(14)) {
+                return false; // length error
+            }
+            storageHeaderTimestampNanoseconds = *((quint32*) (buf.constData() + 4)); // not in big endian format
+            storageHeaderTimestampSeconds = (((quint64)(*((quint8*) (buf.constData() + 12))))<<32)|
+                               (((quint64)(*((quint8*) (buf.constData() + 11))))<<24)|
+                               (((quint64)(*((quint8*) (buf.constData() + 10))))<<16)|
+                               (((quint64)(*((quint8*) (buf.constData() + 9))))<<8)|
+                               (((quint64)(*((quint8*) (buf.constData() + 8)))));
+            quint8 ecuIdLength = *((quint8*) (buf.constData() + 13));
+            if(buf.size() < (int)(14+ecuIdLength)) {
+                return false; // length error
+            }
+            storageHeaderEcuId = QString(buf.mid(14,ecuIdLength));
+            sizeStorageHeader = 14 + ecuIdLength;
 
-    /* calculate complete size of headers */
-    extra_size = DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp)+(DLT_IS_HTYP_UEH(standardheader->htyp) ? sizeof(DltExtendedHeader) : 0);
-    headersize = sizeStorageHeader + sizeof(DltStandardHeader) + extra_size;
-    if(DLT_SWAP_16(standardheader->len)<(static_cast<int>(headersize) - sizeStorageHeader))
-    {
-        // there is something wrong with the header, at least size of header
-        // at the momment no error, distinguish different errors needed
-        datasize = 0;
-    }
-    else
-    {
-        datasize =  DLT_SWAP_16(standardheader->len) - (headersize - sizeStorageHeader);
+        }
+        else
+        {
+            return false; // unknown storage header version
+        }
     }
 
-    /* check header length */
-    if (buf.size()  < (int)(headersize)) {
+    /* get DLT protocol version */
+    if(buf.size() < (int)(sizeStorageHeader+4)) {
         return false;
     }
+    quint32 htyp2 = *((quint32*) (buf.constData() + sizeStorageHeader));
+    versionNumber = (htyp2 & 0xe0) >> 5;  // Byte 0, Bit 5-7
 
-    /* store payload size */
-    payloadSize = datasize;
-
-    /* store header size */
-    headerSize = headersize;
-
-    /* copy header */
-    header = buf.mid(0,headersize);
-
-    /* load standard header extra parameters and Extended header if used */
-    if (extra_size>0)
+    if(versionNumber==1)
     {
-        /* set extended header ptr and get standard header extra parameters */
-        if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
-            extendedheader = (DltExtendedHeader*) (buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader) +
-                                  DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp));
-        }
-        else {
-            extendedheader = 0;
+
+        if(buf.size() < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
+            return false;
         }
 
-        if (DLT_IS_HTYP_WEID(standardheader->htyp))
+        if(withStorageHeader) {
+            storageheader = (DltStorageHeader*) buf.constData();
+        }
+
+        standardheader = (DltStandardHeader*) (buf.constData() + sizeStorageHeader);
+
+        /* calculate complete size of headers */
+        extra_size = DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp)+(DLT_IS_HTYP_UEH(standardheader->htyp) ? sizeof(DltExtendedHeader) : 0);
+        headersize = sizeStorageHeader + sizeof(DltStandardHeader) + extra_size;
+        if(DLT_SWAP_16(standardheader->len)<(static_cast<int>(headersize) - sizeStorageHeader))
         {
-            memcpy(headerextra.ecu,buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader),DLT_ID_SIZE);
+            // there is something wrong with the header, at least size of header
+            // at the momment no error, distinguish different errors needed
+            datasize = 0;
+        }
+        else
+        {
+            datasize =  DLT_SWAP_16(standardheader->len) - (headersize - sizeStorageHeader);
         }
 
-        if (DLT_IS_HTYP_WSID(standardheader->htyp))
-        {
-            memcpy(&(headerextra.seid),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
-                   + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0), DLT_SIZE_WSID);
-            headerextra.seid = DLT_BETOH_32(headerextra.seid);
+        /* check header length */
+        if (buf.size()  < (int)(headersize)) {
+            return false;
         }
 
-        if (DLT_IS_HTYP_WTMS(standardheader->htyp))
+        /* store payload size */
+        payloadSize = datasize;
+
+        /* store header size */
+        headerSize = headersize;
+
+        /* copy header */
+        header = buf.mid(0,headersize);
+
+        /* load standard header extra parameters and Extended header if used */
+        if (extra_size>0)
         {
-            memcpy(&(headerextra.tmsp),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
-                   + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0)
-                   + (DLT_IS_HTYP_WSID(standardheader->htyp) ? DLT_SIZE_WSID : 0),DLT_SIZE_WTMS);
-            headerextra.tmsp = DLT_BETOH_32(headerextra.tmsp);
+            /* set extended header ptr and get standard header extra parameters */
+            if (DLT_IS_HTYP_UEH(standardheader->htyp)) {
+                extendedheader = (DltExtendedHeader*) (buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader) +
+                                      DLT_STANDARD_HEADER_EXTRA_SIZE(standardheader->htyp));
+            }
+            else {
+                extendedheader = 0;
+            }
+
+            if (DLT_IS_HTYP_WEID(standardheader->htyp))
+            {
+                memcpy(headerextra.ecu,buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader),DLT_ID_SIZE);
+            }
+
+            if (DLT_IS_HTYP_WSID(standardheader->htyp))
+            {
+                memcpy(&(headerextra.seid),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
+                       + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0), DLT_SIZE_WSID);
+                headerextra.seid = DLT_BETOH_32(headerextra.seid);
+            }
+
+            if (DLT_IS_HTYP_WTMS(standardheader->htyp))
+            {
+                memcpy(&(headerextra.tmsp),buf.constData() + sizeStorageHeader + sizeof(DltStandardHeader)
+                       + (DLT_IS_HTYP_WEID(standardheader->htyp) ? DLT_SIZE_WEID : 0)
+                       + (DLT_IS_HTYP_WSID(standardheader->htyp) ? DLT_SIZE_WSID : 0),DLT_SIZE_WTMS);
+                headerextra.tmsp = DLT_BETOH_32(headerextra.tmsp);
+            }
         }
-    }
 
-    /* extract ecu id */
-    if ( DLT_IS_HTYP_WEID(standardheader->htyp) )
-    {
-        ecuid = QDltMsg::getStringFromId(headerextra.ecu);
-    }
-    else
-    {
-        if(storageheader)
+        /* extract ecu id */
+        if ( DLT_IS_HTYP_WEID(standardheader->htyp) )
         {
-            ecuid = QDltMsg::getStringFromId(storageheader->ecu);
+            ecuid = QDltMsg::getStringFromId(headerextra.ecu);
         }
-    }
-
-    /* extract application id */
-    if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->apid[0]!=0))
-    {
-        apid = QDltMsg::getStringFromId(extendedheader->apid);
-    }
-
-    /* extract context id */
-    if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->ctid[0]!=0))
-    {
-        ctid = QDltMsg::getStringFromId(extendedheader->ctid);
-    }
-
-    /* extract type */
-    if (DLT_IS_HTYP_UEH(standardheader->htyp))
-    {
-        type = (DltTypeDef) DLT_GET_MSIN_MSTP(extendedheader->msin);
-    }
-
-    /* extract subtype */
-    if (DLT_IS_HTYP_UEH(standardheader->htyp))
-    {
-        subtype = DLT_GET_MSIN_MTIN(extendedheader->msin);
-    }
-
-    /* extract mode */
-    if (DLT_IS_HTYP_UEH(standardheader->htyp))
-    {
-        if(DLT_IS_MSIN_VERB(extendedheader->msin))
+        else
         {
-            mode = DltModeVerbose;
+            if(storageheader)
+                ecuid = QDltMsg::getStringFromId(storageheader->ecu);
+        }
+
+        /* extract application id */
+        if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->apid[0]!=0))
+        {
+            apid = QDltMsg::getStringFromId(extendedheader->apid);
+        }
+
+        /* extract context id */
+        if ((DLT_IS_HTYP_UEH(standardheader->htyp)) && (extendedheader->ctid[0]!=0))
+        {
+            ctid = QDltMsg::getStringFromId(extendedheader->ctid);
+        }
+
+        /* extract type */
+        if (DLT_IS_HTYP_UEH(standardheader->htyp))
+        {
+            type = (DltTypeDef) DLT_GET_MSIN_MSTP(extendedheader->msin);
+        }
+
+        /* extract subtype */
+        if (DLT_IS_HTYP_UEH(standardheader->htyp))
+        {
+            subtype = DLT_GET_MSIN_MTIN(extendedheader->msin);
+        }
+
+        /* extract mode */
+        if (DLT_IS_HTYP_UEH(standardheader->htyp))
+        {
+            if(DLT_IS_MSIN_VERB(extendedheader->msin))
+            {
+                mode = DltModeVerbose;
+            }
+            else
+            {
+                mode = DltModeNonVerbose;
+            }
         }
         else
         {
             mode = DltModeNonVerbose;
         }
+
+        /* extract endianness */
+        if(DLT_IS_HTYP_MSBF(standardheader->htyp)) {
+            endianness = DltEndiannessBigEndian;
+        }
+        else {
+            endianness = DltEndiannessLittleEndian;
+        }
+
+        /* extract time */
+        if(storageheader) {
+            time = storageheader->seconds;
+            microseconds = storageheader->microseconds;
+        }
+
+        /* extract timestamp */
+        if ( DLT_IS_HTYP_WTMS(standardheader->htyp) ) {
+            timestamp = headerextra.tmsp; /* big endian to host little endian conversion already done */
+        }
+
+        /* extract session id */
+        if (DLT_IS_HTYP_WSID(standardheader->htyp)) {
+            sessionid = headerextra.seid;
+        }
+
+        /* extract message counter */
+        messageCounter = standardheader->mcnt;
+
+        /* extract number of arguments */
+        if (DLT_IS_HTYP_UEH(standardheader->htyp) && (mode == DltModeVerbose)) {
+            numberOfArguments = extendedheader->noar;
+        }
+
+        /* check complete length */
+        if (buf.size()  < (int)(headersize+payloadSize)) {
+            return false;
+        }
+
+        /* copy payload */
+        if(payloadSize>0)
+            payload = buf.mid(headersize,payloadSize);
+
+        /* set messageid if non verbose */
+        if((mode == DltModeNonVerbose) && payload.size()>=4) {
+            /* message id is always in big endian format */
+            if(endianness == DltEndiannessLittleEndian) {
+                messageId = (*((unsigned int*) payload.constData()));
+            }
+            else {
+                messageId = DLT_SWAP_32((*((unsigned int*) payload.constData())));
+            }
+        }
+
+        /* set service id if message of type control */
+        if((type == DltTypeControl) && payload.size()>=4) {
+            if(endianness == DltEndiannessLittleEndian)
+                ctrlServiceId = *((unsigned int*) payload.constData());
+            else
+                ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
+        }
+
+        /* set return type if message of type control response */
+        if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=5) {
+            ctrlReturnType = *((unsigned char*) &(payload.constData()[4]));
+        }
+
+        /* get the arguments of the payload */
+        if(mode==DltModeVerbose) {
+            offset = 0;
+            arguments.clear();
+            for(int num=0;num<numberOfArguments;num++) {
+                if(argument.setArgument(payload,offset,endianness)==false) {
+                    /* There was an error parsing the arguments */
+                    return false;
+                }
+                arguments.append(argument);
+            }
+        }
+
+        return true;
+    }
+    else if(versionNumber==2)
+    {
+        /* Version 2 */
+
+        if(buf.size() < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
+            return false;
+        }
+
+        if(withStorageHeader) {
+            storageheader = (DltStorageHeader*) buf.constData();
+        }
+
+        quint32 headerLength = 7;
+        if(buf.size() < (int)(sizeStorageHeader+headerLength)) {
+            return false; // length error
+        }
+
+        /* decode Header Type 2 */
+        withSessionId = htyp2 & 0x10;
+        withAppContextId = htyp2 & 0x08;
+        withEcuId = htyp2 & 0x04;
+        contentInformation = htyp2 & 0x03; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+        withHFMessageInfo = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
+        withHFNumberOfArguments = (contentInformation == 0x00) || (contentInformation == 0x02); // verbose or control
+        withHFTimestamp = (contentInformation == 0x00) || (contentInformation == 0x01); // verbose or none verbose
+        withHFMessageId = (contentInformation == 0x01); // none verbose
+        if(contentInformation==0x00)
+        {
+            mode = DltModeVerbose;
+        }
+        else if(contentInformation==0x01)
+        {
+            mode = DltModeNonVerbose;
+        }
+        else if(contentInformation==0x02)
+        {
+            mode = DltModeNonVerbose;
+        }
+        else
+        {
+            /* error used reserved value */
+            return false;
+        }
+        withSegementation = htyp2 & 0x0800;
+        withPrivacyLevel = htyp2 & 0x0400;
+        withTags = htyp2 & 0x0200;
+        withSourceFileNameLineNumber = htyp2 & 0x0100;
+        /* TODO: Endianess of payload not defined in DLTv2, undefined, set to LittleEndian by default */
+        endianness = DltEndiannessLittleEndian;
+
+        /* get Message Counter : always*/
+        messageCounter = *((quint8*) (buf.constData() + 4 + sizeStorageHeader));
+
+        /* get Message Length : always*/
+        quint16 messageLength = messageLength = qFromBigEndian(*((quint16*) (buf.constData() + 5 + sizeStorageHeader)));
+
+        /* get Message Info : conditional */
+        quint8 messageInfo = 0;
+        quint8 messageType = 0;
+        quint8 messageTypeInfo = 0;
+        if(withHFMessageInfo) // verbose or control
+        {
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader+headerLength)) {
+                return false; // length error
+            }
+            messageInfo = *((quint8*) (buf.constData() + 7 + sizeStorageHeader));
+            messageType =  (messageInfo & 0x0e) >> 1;
+            type = (QDltMsg::DltTypeDef) messageType;
+            if(messageType>0x03)
+            {
+                /* error used reserved value */
+                return false;
+            }
+            messageTypeInfo =  (messageInfo & 0xf0) >> 4;
+            subtype = (int) messageTypeInfo;
+        }
+
+        /* get Number of Arguments : conditional */
+        if(withHFNumberOfArguments)
+        {
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader+headerLength)) {
+                return false; // length error
+            }
+            numberOfArguments = *((quint8*) (buf.constData() + headerLength - 1 + sizeStorageHeader));
+        }
+
+        /* get Timestamp : conditional */
+        timestampNanoseconds = 0;
+        timestampSeconds = 0;
+        if(withHFTimestamp)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 9)) {
+                return false; // length error
+            }
+            timestampNanoseconds = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+            timestampSeconds = (((quint64)(*((quint8*) (buf.constData() + headerLength + 4 + sizeStorageHeader))))<<32)|
+                               (((quint64)(*((quint8*) (buf.constData() + headerLength + 5 + sizeStorageHeader))))<<24)|
+                               (((quint64)(*((quint8*) (buf.constData() + headerLength + 6 + sizeStorageHeader))))<<16)|
+                               (((quint64)(*((quint8*) (buf.constData() + headerLength + 7 + sizeStorageHeader))))<<8)|
+                               (((quint64)(*((quint8*) (buf.constData() + headerLength + 8 + sizeStorageHeader)))));
+            if(timestampNanoseconds&0x80000000)
+            {
+                timestampNanoseconds &= 0x7fffffff;
+                timestamp = (timestampSeconds * (quint64)10000) + ((quint64)timestampNanoseconds / (quint64)100000ul);
+                if(storageheader) {
+                    time = storageHeaderTimestampSeconds;
+                    microseconds = storageHeaderTimestampNanoseconds;
+                }
+            }
+            else
+            {
+                time = timestamp;
+                microseconds = (quint64)timestampNanoseconds / (quint64)1000ul;
+            }
+            headerLength += 9;
+        }
+
+        /* get Message ID : conditional */
+        if(withHFMessageId)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                return false; // length error
+            }
+            messageId = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+            headerLength += 4;
+        }
+
+        /* read optional ECU Id */
+        if(withEcuId)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                return false; // length error
+            }
+            ecuid = QString(buf.mid(headerLength + sizeStorageHeader,length));
+            headerLength += length;
+        }
+        else
+        {
+            if(storageheader)
+                ecuid = QString(QByteArray(storageheader->ecu,4));
+        }
+
+        /* read optional App Id and Ctx Id */
+        if(withAppContextId)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                return false; // length error
+            }
+            apid = QString(buf.mid(headerLength + sizeStorageHeader,length));
+            headerLength += length;
+            length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                return false; // length error
+            }
+            ctid = QString(buf.mid(headerLength + sizeStorageHeader,length));
+            headerLength += length;
+        }
+
+        /* read optional Session Id */
+        if(withSessionId)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                return false; // length error
+            }
+            sessionid = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+            headerLength += 4;
+        }
+
+        /* read optional Source File Name and Line Number */
+        if(withSourceFileNameLineNumber)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                return false; // length error
+            }
+            sourceFileName = QString(buf.mid(headerLength + sizeStorageHeader,length));
+            headerLength += length;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                return false; // length error
+            }
+            lineNumber = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+            headerLength += 4;
+        }
+
+        /* read optional Tags */
+        if(withTags)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            quint8 numberOfTags = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            for(int num=0;num<numberOfTags;num++)
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                    return false; // length error
+                }
+                quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+                headerLength += 1;
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                    return false; // length error
+                }
+                tags += QString(buf.mid(headerLength + sizeStorageHeader,length));
+                headerLength += length;
+            }
+        }
+
+        /* read privacy level */
+        if(withPrivacyLevel)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            privacyLevel = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+        }
+
+        /* read Segmentation */
+        if(withSegementation)
+        {
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            quint8 length = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                return false; // length error
+            }
+            segmentationFrameType = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+            headerLength += 1;
+            if(segmentationFrameType == 0) // FirstFrame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 8)) {
+                    return false; // length error
+                }
+                segmentationTotalLength = qFromBigEndian(*((quint64*) (buf.constData() + headerLength + sizeStorageHeader)));
+                headerLength += 8;
+            }
+            else if(segmentationFrameType == 1) // ConsecutiveFrame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 4)) {
+                    return false; // length error
+                }
+                segmentationConsecutiveFrame = qFromBigEndian(*((quint32*) (buf.constData() + headerLength + sizeStorageHeader)));
+                headerLength += 4;
+            }
+            else if(segmentationFrameType == 2) // LastFrame
+            {
+
+            }
+            else if(segmentationFrameType == 3) // Abort Frame
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + 1)) {
+                    return false; // length error
+                }
+                segmentationAbortReason = *((quint8*) (buf.constData() + headerLength + sizeStorageHeader));
+                headerLength += 1;
+            }
+            else
+            {
+                if(buf.size() < (int)(sizeStorageHeader + headerLength + length)) {
+                    return false; // length error
+                }
+                headerLength += length;
+            }
+        }
+
+        headerSize = sizeStorageHeader + headerLength;
+        headersize = headerSize;
+        payloadSize = messageLength - (headerSize - sizeStorageHeader);
+
+        /* copy header */
+        header = buf.mid(0,headersize);
+
+        /* copy payload */
+        if(payloadSize>0)
+            payload = buf.mid(headersize,payloadSize);
+
+        /* set service id if message of type control */
+        if((type == DltTypeControl) && payload.size()>=4) {
+            if(endianness == DltEndiannessLittleEndian)
+                ctrlServiceId = *((unsigned int*) payload.constData());
+            else
+                ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
+        }
+
+        /* set return type if message of type control response */
+        if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=5) {
+            ctrlReturnType = *((unsigned char*) &(payload.constData()[4]));
+        }
+
+        /* get the arguments of the payload */
+        if(mode==DltModeVerbose && !withSegementation) {
+            offset = 0;
+            arguments.clear();
+            for(int num=0;num<numberOfArguments;num++) {
+                if(argument.setArgument(payload,offset,endianness)==false) {
+                    /* There was an error parsing the arguments */
+                    return false;
+                }
+                arguments.append(argument);
+            }
+        }
+
+        return true;
     }
     else
     {
-        mode = DltModeNonVerbose;
-    }
-
-    /* extract endianness */
-    if(DLT_IS_HTYP_MSBF(standardheader->htyp)) {
-        endianness = DltEndiannessBigEndian;
-    }
-    else {
-        endianness = DltEndiannessLittleEndian;
-    }
-
-    /* extract time */
-    if(storageheader) {
-        time = storageheader->seconds;
-        microseconds = storageheader->microseconds;
-    }
-
-    /* extract timestamp */
-    if ( DLT_IS_HTYP_WTMS(standardheader->htyp) ) {
-        timestamp = headerextra.tmsp; /* big endian to host little endian conversion already done */
-    }
-
-    /* extract session id */
-    if (DLT_IS_HTYP_WSID(standardheader->htyp)) {
-        sessionid = headerextra.seid;
-    }
-
-    /* extract message counter */
-    messageCounter = standardheader->mcnt;
-
-    /* extract number of arguments */
-    if (DLT_IS_HTYP_UEH(standardheader->htyp) && (mode == DltModeVerbose)) {
-        numberOfArguments = extendedheader->noar;
-    }
-
-    /* check complete length */
-    if (buf.size()  < (int)(headersize+payloadSize)) {
+        /* unsupported version */
         return false;
     }
+}
 
-    /* copy payload */
-    if(payloadSize>0)
-        payload = buf.mid(headersize,payloadSize);
-
-    /* set messageid if non verbose */
-    if((mode == DltModeNonVerbose) && payload.size()>=4) {
-        /* message id is always in big endian format */
-        if(endianness == DltEndiannessLittleEndian) {
-            messageId = (*((unsigned int*) payload.constData()));
-        }
-        else {
-            messageId = DLT_SWAP_32((*((unsigned int*) payload.constData())));
-        }
-    }
-
-    /* set service id if message of type control */
-    if((type == DltTypeControl) && payload.size()>=4) {
-        if(endianness == DltEndiannessLittleEndian)
-            ctrlServiceId = *((unsigned int*) payload.constData());
-        else
-            ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
-    }
-
-    /* set return type if message of type control response */
-    if((type == QDltMsg::DltTypeControl) && (subtype == QDltMsg::DltControlResponse) && payload.size()>=5) {
-        ctrlReturnType = *((unsigned char*) &(payload.constData()[4]));
-    }
+bool QDltMsg::parseArguments()
+{
+    QDltArgument argument;
+    unsigned int offset = 0;
 
     /* get the arguments of the payload */
     if(mode==DltModeVerbose) {
-        offset = 0;
         arguments.clear();
         for(int num=0;num<numberOfArguments;num++) {
             if(argument.setArgument(payload,offset,endianness)==false) {
@@ -478,6 +870,38 @@ void QDltMsg::clear()
     payloadSize = 0;
     header.clear();
     headerSize = 0;
+    versionNumber=0;
+
+    withSessionId = false;
+    withAppContextId = false;
+    withEcuId = false;
+    contentInformation = 0; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+    withHFMessageInfo = false; // verbose or control
+    withHFNumberOfArguments = false; // verbose or control
+    withHFTimestamp = false; // verbose or none verbose
+    withHFMessageId = false; // none verbose
+
+    withSegementation = false;
+    withPrivacyLevel = false;
+    withTags = false;
+    withSourceFileNameLineNumber = false;
+
+    timestampNanoseconds = 0;
+    timestampSeconds = 0;
+
+    sourceFileName.clear();
+    lineNumber = 0;
+
+    tags.clear();
+
+    privacyLevel = 0;
+
+    segmentationFrameType = 0;
+    segmentationTotalLength = 0;
+    segmentationConsecutiveFrame = 0;
+    segmentationAbortReason = 0;
+
+    index = -1;
 }
 
 void QDltMsg::clearArguments()
@@ -544,7 +968,10 @@ QString QDltMsg::toStringPayload() const
 
     if((getMode()==QDltMsg::DltModeNonVerbose) && (getType()!=QDltMsg::DltTypeControl) && (getNumberOfArguments() == 0)) {
         text += QString("[%1] ").arg(getMessageId());
-        data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
+        if(versionNumber==2)
+            data = payload.mid(0,(payload.size()>260)?260:payload.size());
+        else
+            data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         if(!data.isEmpty())
         {
             text += toAsciiTable(data,false,false,true,1024,1024,false);
@@ -631,6 +1058,27 @@ QString QDltMsg::toStringPayload() const
         return text;
     }
 
+    if(withSegementation && arguments.isEmpty())
+    {
+        if(segmentationFrameType==0)
+        {
+            text += "Segmentation: First Frame with total length " + QString("%1").arg(segmentationTotalLength);
+        }
+        else if(segmentationFrameType==1)
+        {
+            text += "Segmentation: Consectutive Frame number " + QString("%1").arg(segmentationConsecutiveFrame);
+        }
+        else if(segmentationFrameType==2)
+        {
+            text += "Segmentation: Last Frame";
+        }
+        else if(segmentationFrameType==3)
+        {
+            text += "Segmentation: Abort Frame with abort reason " + QString("%1").arg(segmentationAbortReason);;
+        }
+        return text;
+    }
+
     for(int num=0;num<arguments.size();num++) {
         if(getArgument(num,argument)) {
             if(num!=0) {
@@ -642,6 +1090,246 @@ QString QDltMsg::toStringPayload() const
     }
 
     return text;
+}
+
+uint8_t QDltMsg::getVersionNumber() const
+{
+    return versionNumber;
+}
+
+void QDltMsg::setVersionNumber(uint8_t newVersionNumber)
+{
+    versionNumber = newVersionNumber;
+}
+
+bool QDltMsg::getWithSessionId() const
+{
+    return withSessionId;
+}
+
+void QDltMsg::setWithSessionId(bool newWithSessionId)
+{
+    withSessionId = newWithSessionId;
+}
+
+bool QDltMsg::getWithAppContextId() const
+{
+    return withAppContextId;
+}
+
+void QDltMsg::setWithAppContextId(bool newWithAppContextId)
+{
+    withAppContextId = newWithAppContextId;
+}
+
+bool QDltMsg::getWithEcuId() const
+{
+    return withEcuId;
+}
+
+void QDltMsg::setWithEcuId(bool newWithEcuId)
+{
+    withEcuId = newWithEcuId;
+}
+
+quint8 QDltMsg::getContentInformation() const
+{
+    return contentInformation;
+}
+
+void QDltMsg::setContentInformation(quint8 newContentInformation)
+{
+    contentInformation = newContentInformation;
+}
+
+bool QDltMsg::getWithHFMessageInfo() const
+{
+    return withHFMessageInfo;
+}
+
+void QDltMsg::setWithHFMessageInfo(bool newWithHFMessageInfo)
+{
+    withHFMessageInfo = newWithHFMessageInfo;
+}
+
+bool QDltMsg::getWithHFNumberOfArguments() const
+{
+    return withHFNumberOfArguments;
+}
+
+void QDltMsg::setWithHFNumberOfArguments(bool newWithHFNumberOfArguments)
+{
+    withHFNumberOfArguments = newWithHFNumberOfArguments;
+}
+
+bool QDltMsg::getWithHFTimestamp() const
+{
+    return withHFTimestamp;
+}
+
+void QDltMsg::setWithHFTimestamp(bool newWithHFTimestamp)
+{
+    withHFTimestamp = newWithHFTimestamp;
+}
+
+bool QDltMsg::getWithHFMessageId() const
+{
+    return withHFMessageId;
+}
+
+void QDltMsg::setWithHFMessageId(bool newWithHFMessageId)
+{
+    withHFMessageId = newWithHFMessageId;
+}
+
+bool QDltMsg::getWithSegementation() const
+{
+    return withSegementation;
+}
+
+void QDltMsg::setWithSegementation(bool newWithSegementation)
+{
+    withSegementation = newWithSegementation;
+}
+
+bool QDltMsg::getWithPrivacyLevel() const
+{
+    return withPrivacyLevel;
+}
+
+void QDltMsg::setWithPrivacyLevel(bool newWithPrivacyLevel)
+{
+    withPrivacyLevel = newWithPrivacyLevel;
+}
+
+bool QDltMsg::getWithTags() const
+{
+    return withTags;
+}
+
+void QDltMsg::setWithTags(bool newWithTags)
+{
+    withTags = newWithTags;
+}
+
+bool QDltMsg::getWithSourceFileNameLineNumber() const
+{
+    return withSourceFileNameLineNumber;
+}
+
+void QDltMsg::setWithSourceFileNameLineNumber(bool newWithSourceFileNameLineNumber)
+{
+    withSourceFileNameLineNumber = newWithSourceFileNameLineNumber;
+}
+
+quint32 QDltMsg::getTimestampNanoseconds() const
+{
+    return timestampNanoseconds;
+}
+
+void QDltMsg::setTimestampNanoseconds(quint32 newTimestampNanoseconds)
+{
+    timestampNanoseconds = newTimestampNanoseconds;
+}
+
+quint64 QDltMsg::getTimestampSeconds() const
+{
+    return timestampSeconds;
+}
+
+void QDltMsg::setTimestampSeconds(quint64 newTimestampSeconds)
+{
+    timestampSeconds = newTimestampSeconds;
+}
+
+const QString &QDltMsg::getSourceFileName() const
+{
+    return sourceFileName;
+}
+
+void QDltMsg::setSourceFileName(const QString &newSourceFileName)
+{
+    sourceFileName = newSourceFileName;
+}
+
+quint32 QDltMsg::getLineNumber() const
+{
+    return lineNumber;
+}
+
+void QDltMsg::setLineNumber(quint32 newLineNumber)
+{
+    lineNumber = newLineNumber;
+}
+
+const QStringList &QDltMsg::getTags() const
+{
+    return tags;
+}
+
+void QDltMsg::setTags(const QStringList &newTags)
+{
+    tags = newTags;
+}
+
+quint8 QDltMsg::getPrivacyLevel() const
+{
+    return privacyLevel;
+}
+
+void QDltMsg::setPrivacyLevel(quint8 newPrivacyLevel)
+{
+    privacyLevel = newPrivacyLevel;
+}
+
+quint8 QDltMsg::getSegmentationFrameType() const
+{
+    return segmentationFrameType;
+}
+
+void QDltMsg::setSegmentationFrameType(quint8 newSegmentationFrameType)
+{
+    segmentationFrameType = newSegmentationFrameType;
+}
+
+quint64 QDltMsg::getSegmentationTotalLength() const
+{
+    return segmentationTotalLength;
+}
+
+void QDltMsg::setSegmentationTotalLength(quint64 newSegmentationTotalLength)
+{
+    segmentationTotalLength = newSegmentationTotalLength;
+}
+
+quint32 QDltMsg::getSegmentationConsecutiveFrame() const
+{
+    return segmentationConsecutiveFrame;
+}
+
+void QDltMsg::setSegmentationConsecutiveFrame(quint32 newSegmentationConsecutiveFrame)
+{
+    segmentationConsecutiveFrame = newSegmentationConsecutiveFrame;
+}
+
+quint8 QDltMsg::getSegmentationAbortReason() const
+{
+    return segmentationAbortReason;
+}
+
+void QDltMsg::setSegmentationAbortReason(quint8 newSegmentationAbortReason)
+{
+    segmentationAbortReason = newSegmentationAbortReason;
+}
+
+int QDltMsg::getIndex() const
+{
+    return index;
+}
+
+void QDltMsg::setIndex(int newIndex)
+{
+    index = newIndex;
 }
 
 void QDltMsg::genMsg()

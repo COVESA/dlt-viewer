@@ -65,3 +65,7 @@ void Form::setTextBrowserUncoded(QString text)
     ui->textBrowserUncoded->setText(text);
 }
 
+void Form::setTextBrowserDltV2(QString text)
+{
+    ui->textBrowserDltV2->setText(text);
+}

@@ -15,7 +15,7 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdltmsg.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -439,6 +439,9 @@ public:
     */
     bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
 
+    //! Parse the arguments from the Payload.
+    bool parseArguments();
+
     //! Get the message written into a byte array containing the DLT message.
     /*!
       This function returns false, if an error in the data was found.
@@ -462,6 +465,80 @@ public:
       \return The payload string.
     */
     QString toStringPayload() const;
+
+    // Setter and Getters for new DLTv2 parameters
+    uint8_t getVersionNumber() const;
+    void setVersionNumber(uint8_t newVersionNumber);
+
+    bool getWithSessionId() const;
+    void setWithSessionId(bool newWithSessionId);
+
+    bool getWithAppContextId() const;
+    void setWithAppContextId(bool newWithAppContextId);
+
+    bool getWithEcuId() const;
+    void setWithEcuId(bool newWithEcuId);
+
+    quint8 getContentInformation() const;
+    void setContentInformation(quint8 newContentInformation);
+
+    bool getWithHFMessageInfo() const;
+    void setWithHFMessageInfo(bool newWithHFMessageInfo);
+
+    bool getWithHFNumberOfArguments() const;
+    void setWithHFNumberOfArguments(bool newWithHFNumberOfArguments);
+
+    bool getWithHFTimestamp() const;
+    void setWithHFTimestamp(bool newWithHFTimestamp);
+
+    bool getWithHFMessageId() const;
+    void setWithHFMessageId(bool newWithHFMessageId);
+
+    bool getWithSegementation() const;
+    void setWithSegementation(bool newWithSegementation);
+
+    bool getWithPrivacyLevel() const;
+    void setWithPrivacyLevel(bool newWithPrivacyLevel);
+
+    bool getWithTags() const;
+    void setWithTags(bool newWithTags);
+
+    bool getWithSourceFileNameLineNumber() const;
+    void setWithSourceFileNameLineNumber(bool newWithSourceFileNameLineNumber);
+
+    quint32 getTimestampNanoseconds() const;
+    void setTimestampNanoseconds(quint32 newTimestampNanoseconds);
+
+    quint64 getTimestampSeconds() const;
+    void setTimestampSeconds(quint64 newTimestampSeconds);
+
+    const QString &getSourceFileName() const;
+    void setSourceFileName(const QString &newSourceFileName);
+
+    quint32 getLineNumber() const;
+    void setLineNumber(quint32 newLineNumber);
+
+    const QStringList &getTags() const;
+    void setTags(const QStringList &newTags);
+
+    quint8 getPrivacyLevel() const;
+    void setPrivacyLevel(quint8 newPrivacyLevel);
+
+    quint8 getSegmentationFrameType() const;
+    void setSegmentationFrameType(quint8 newSegmentationFrameType);
+
+    quint64 getSegmentationTotalLength() const;
+    void setSegmentationTotalLength(quint64 newSegmentationTotalLength);
+
+    quint32 getSegmentationConsecutiveFrame() const;
+    void setSegmentationConsecutiveFrame(quint32 newSegmentationConsecutiveFrame);
+
+    quint8 getSegmentationAbortReason() const;
+    void setSegmentationAbortReason(quint8 newSegmentationAbortReason);
+
+    int getIndex() const;
+    void setIndex(int newIndex);
+
 protected:
 
 private:
@@ -527,6 +604,41 @@ private:
 
     //! List of arguments of the DLT message.
     QList<QDltArgument> arguments;
+
+    //! New parameters of DLTv2 protocol
+    uint8_t versionNumber;
+    bool withSessionId;
+    bool withAppContextId;
+    bool withEcuId;
+    quint8 contentInformation; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+    bool withHFMessageInfo; // verbose or control
+    bool withHFNumberOfArguments; // verbose or control
+    bool withHFTimestamp; // verbose or none verbose
+    bool withHFMessageId; // none verbose
+
+    bool withSegementation;
+    bool withPrivacyLevel;
+    bool withTags;
+    bool withSourceFileNameLineNumber;
+
+    quint32 timestampNanoseconds;
+    quint64 timestampSeconds;
+
+    QString sourceFileName;
+    quint32 lineNumber;
+
+    QStringList tags;
+
+    quint8 privacyLevel;
+
+    quint8 segmentationFrameType;
+    quint64 segmentationTotalLength;
+    quint32 segmentationConsecutiveFrame;
+    quint8 segmentationAbortReason;
+
+    //! Position of current file in a QDltFile
+    int index;
+
 };
 
 #endif // QDLT_MSG_H

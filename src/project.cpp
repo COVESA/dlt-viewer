@@ -75,6 +75,8 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     //socket.setReadBufferSize(64000);
 
     autoReconnectTimestamp = QDateTime::currentDateTime();
+
+    writeDLTv2StorageHeader = false;
 }
 
 EcuItem::~EcuItem()
@@ -213,6 +215,16 @@ bool EcuItem::operator< ( const QTreeWidgetItem & other ) const {
 //    qDebug()<<"currentItemEcu: "<<currentItem <<" otherItemEcu: "<<otherItem;
 
     return currentItem.toLower() < otherItem.toLower();
+}
+
+bool EcuItem::getWriteDLTv2StorageHeader() const
+{
+    return writeDLTv2StorageHeader;
+}
+
+void EcuItem::setWriteDLTv2StorageHeader(bool newWriteDLTv2StorageHeader)
+{
+    writeDLTv2StorageHeader = newWriteDLTv2StorageHeader;
 }
 
 bool EcuItem::isAutoReconnectTimeoutPassed()
@@ -879,6 +891,12 @@ bool Project::Load(QString filename)
                       ecuitem->autoReconnectTimeout = xml.readElementText().toInt();
 
               }
+              if(xml.name() == QString("writeDLTv2StorageHeader"))
+              {
+                  if(ecuitem)
+                      ecuitem->setWriteDLTv2StorageHeader(xml.readElementText().toInt());
+
+              }
 
               if(filteritem)
                 filteritem->filter.LoadFilterItem(xml);
@@ -1064,6 +1082,7 @@ bool Project::Save(QString filename)
         xml.writeTextElement("multicast",QString("%1").arg(ecuitem->is_multicast));
         xml.writeTextElement("autoReconnect",QString("%1").arg(ecuitem->autoReconnect));
         xml.writeTextElement("autoReconnectTimeout",QString("%1").arg(ecuitem->autoReconnectTimeout));
+        xml.writeTextElement("writeDLTv2StorageHeader",QString("%1").arg(ecuitem->getWriteDLTv2StorageHeader()));
 
         for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
         {

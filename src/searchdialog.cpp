@@ -461,6 +461,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         /* get the message with the selected item id */
         buf = file->getMsgFilter(searchLine);
         msg.setMsg(buf);
+        msg.setIndex(file->getMsgFilterPos(searchLine));
 
         /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())

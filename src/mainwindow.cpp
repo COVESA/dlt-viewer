@@ -47,7 +47,7 @@
 #include <QProcess>
 #include <QStyleFactory>
 #include <QTextStream>
-
+#include <QtEndian>
 
 /**
  * From QDlt.
@@ -3310,7 +3310,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                if (  ecuitem->is_multicast == true )
                {
                  qDebug()<< "Try to connect (UDP/MC) on" << ecuitem->getEthIF() << GetConnectionType(ecuitem->interfacetype)  << "on port" << ecuitem->getUdpport() << "at" << QDateTime::currentDateTime().toString("hh:mm:ss");
-                 bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getUdpport(),QUdpSocket::ShareAddress );
+                 //bindstate = ecuitem->socket->bind(QHostAddress(ecuitem->getmcastIP()), ecuitem->getUdpport(),QUdpSocket::ShareAddress );
+                 bindstate = ecuitem->socket->bind(QHostAddress(connectIPaddress), ecuitem->getUdpport(),QUdpSocket::ShareAddress ) ;
                }
                else
                {
@@ -3660,18 +3661,96 @@ void MainWindow::readyRead()
 
 }
 
+void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &bufferPayload,EcuItem* ecuitem)
+{
+    DltStorageHeader str;
+
+    //DltStorageHeader str;
+    str.pattern[0]='D';
+    str.pattern[1]='L';
+    str.pattern[2]='T';
+    str.pattern[3]=0x01;
+    str.ecu[0]=0;
+    str.ecu[1]=0;
+    str.ecu[2]=0;
+    str.ecu[3]=0;
+
+    /* get time of day */
+    #if defined(_MSC_VER)
+       SYSTEMTIME systemtime;
+       GetSystemTime(&systemtime);
+       time_t timestamp_sec;
+       time(&timestamp_sec);
+       str.seconds = (time_t)timestamp_sec;
+       str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
+    #else
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        str.seconds = (time_t)tv.tv_sec; /* value is long */
+        str.microseconds = (int32_t)tv.tv_usec; /* value is long */
+    #endif
+
+    dlt_set_id(str.ecu,ecuitem->id.toLatin1());
+
+    /* check if message is matching the filter */
+    if (outputfile.isOpen())
+    {
+        // https://bugreports.qt-project.org/browse/QTBUG-26069
+        outputfile.seek(outputfile.size());
+        // set start time when writing first data
+        if(startLoggingDateTime.isNull())
+            {
+            startLoggingDateTime = QDateTime::currentDateTime();
+            }
+
+        if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
+         {
+         // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
+         if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())) > settings->fmaxFileSizeMB *1000*1000) )
+          {
+            createsplitfile();
+          }
+        }
+
+        // write data into file
+        if(!ecuitem->getWriteDLTv2StorageHeader())
+        {
+            // write version 1 storage header
+            outputfile.write((char*)&str,sizeof(DltStorageHeader));
+        }
+        else
+        {
+            // write version 2 storage header
+            outputfile.write((char*)"DLT",3);
+            quint8 version = 2;
+            outputfile.write((char*)&version,1);
+            quint32 nanoseconds = str.microseconds * 1000ul; // not in big endian format
+            outputfile.write((char*)&nanoseconds,4);
+            quint64 seconds = (quint64) str.seconds; // not in big endian format
+            outputfile.write(((char*)&seconds),5);
+            quint8 length;
+            length = ecuitem->id.length();
+            outputfile.write((char*)&length,1);
+            outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
+        }
+        outputfile.write(bufferHeader);
+        outputfile.write(bufferPayload);
+        outputfile.flush();
+    }
+
+}
+
 void MainWindow::read(EcuItem* ecuitem)
 {
+    int udpMessageCounter = 0;
+    long int bytesRcvd = 0;
+
     if (nullptr == ecuitem)
     {
        qDebug() << "Invalid ECU given in" << __FILE__ << "Line:" << __LINE__;
        return;
     }
 
-    long int bytesRcvd = 0;
-    DltStorageHeader str;
-    bufferHeader.clear();
-    bufferPayload.clear();
     qmsg.clear();
     data.clear();
 
@@ -3685,15 +3764,28 @@ void MainWindow::read(EcuItem* ecuitem)
           ecuitem->ipcon.add(data);
           break;
       case EcuItem::INTERFACETYPE_UDP:
-          while(ecuitem->udpsocket.hasPendingDatagrams())
+          while(ecuitem->udpsocket.hasPendingDatagrams() && udpMessageCounter<100)
           {
             data.resize(ecuitem->udpsocket.pendingDatagramSize());
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
             //qDebug() << "bytes received" << bytesRcvd;
-            ecuitem->ipcon.add(data);
+            QByteArray empty;
+            writeDLTMessageToFile(empty,data,ecuitem);
+            totalBytesRcvd+=bytesRcvd;
+            //ecuitem->ipcon.add(data);
             ecuitem->connected= true;
             ecuitem->tryToConnect = true;
             ecuitem->update();
+            udpMessageCounter++;
+
+            /* analyse received message, check if DLT control message response */
+            /*if(qmsg.setMsg(data,false))
+            {
+                if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
+                {
+                    controlMessage_ReceiveControlMessage(ecuitem,qmsg);
+                }
+            }*/
           }
           break;
       case EcuItem::INTERFACETYPE_SERIAL_DLT:
@@ -3716,85 +3808,16 @@ void MainWindow::read(EcuItem* ecuitem)
     /* reading data; new data is added to the current buffer */
      ecuitem->totalBytesRcvd += bytesRcvd;
 
-     while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP ||
-                ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP) &&
-                ecuitem->ipcon.parseDlt(qmsg)) ||
-               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg)) ||
-               (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
+     while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP) && ecuitem->ipcon.parseDlt(qmsg)) ||
+            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg)) ||
+            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
-            //DltStorageHeader str;
-            str.pattern[0]='D';
-            str.pattern[1]='L';
-            str.pattern[2]='T';
-            str.pattern[3]=0x01;
-            str.ecu[0]=0;
-            str.ecu[1]=0;
-            str.ecu[2]=0;
-            str.ecu[3]=0;
-
-            /* get time of day */
-            #if defined(_MSC_VER)
-               SYSTEMTIME systemtime;
-               GetSystemTime(&systemtime);
-               time_t timestamp_sec;
-               time(&timestamp_sec);
-               str.seconds = (time_t)timestamp_sec;
-               str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
-            #else
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                str.seconds = (time_t)tv.tv_sec; /* value is long */
-                str.microseconds = (int32_t)tv.tv_usec; /* value is long */
-            #endif
-
-            /* prepare storage header */
-            if (false == qmsg.getEcuid().isEmpty()) // means the ECU ID field is NOT empty
-            {
-               dlt_set_id(str.ecu,qmsg.getEcuid().toLatin1());
-               if ( ecuitem->id == ecuitem->default_id ) // in this case we take the ECUid from the dlt message
-                {
-                qDebug() << "Received ECU ID " << qmsg.getEcuid().toLatin1();
-                ecuitem->id = qmsg.getEcuid().toLatin1();
-                ecuitem->update();
-               }
-            }
-            else
-            {
-                dlt_set_id(str.ecu,ecuitem->id.toLatin1());
-            }
-
-            /* check if message is matching the filter */
-            if (outputfile.isOpen())
-            {
-
-                if ((settings->writeControl && (qmsg.getType()==QDltMsg::DltTypeControl)) || (!(qmsg.getType()==QDltMsg::DltTypeControl)))
-                {
-                    // https://bugreports.qt-project.org/browse/QTBUG-26069
-                    outputfile.seek(outputfile.size());
-                    bufferHeader = qmsg.getHeader();
-                    bufferPayload = qmsg.getPayload();
-                    // set start time when writing first data
-                    if(startLoggingDateTime.isNull())
-                        {
-                        startLoggingDateTime = QDateTime::currentDateTime();
-                        }
-
-                    if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
-                     {
-                     // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
-                     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())) > settings->fmaxFileSizeMB *1000*1000) )
-                      {
-                        createsplitfile();
-                      }
-                    }
-
-                    // write data into file
-                    outputfile.write((char*)&str,sizeof(DltStorageHeader));
-                    outputfile.write(bufferHeader);
-                    outputfile.write(bufferPayload);
-                    outputfile.flush();
-                 }
-            }
+            /* write message to file */
+            QByteArray bufferHeader;
+            QByteArray bufferPayload;
+            bufferHeader = qmsg.getHeader();
+            bufferPayload = qmsg.getPayload();
+            writeDLTMessageToFile(bufferHeader,bufferPayload,ecuitem);
 
             /* analyse received message, check if DLT control message response */
             if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
@@ -3803,7 +3826,7 @@ void MainWindow::read(EcuItem* ecuitem)
             }
         } //end while
 
-     if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP)
+     if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)
         {
             /* TCP or UDP */
             totalByteErrorsRcvd+=ecuitem->ipcon.bytesError;
@@ -3939,6 +3962,7 @@ void MainWindow::updateIndex()
     for(int num=oldsize;num<qfile.size();num++)
     {
      qmsg.setMsg(qfile.getMsg(num));
+     qmsg.setIndex(num);
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
      {
@@ -4043,6 +4067,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
 
         msgIndex = qfile.getMsgFilterPos(index.row());
         msg.setMsg(qfile.getMsgFilter(index.row()));
+        msg.setIndex(qfile.getMsgFilterPos(index.row()));
         activeViewerPlugins = pluginManager.getViewerPlugins();
         activeDecoderPlugins = pluginManager.getDecoderPlugins();
 
@@ -4399,14 +4424,11 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
         /* store ctrl message in log file */
         if (outputfile.isOpen())
         {
-            if (settings->writeControl)
-            {
-                // https://bugreports.qt-project.org/browse/QTBUG-26069
-                outputfile.seek(outputfile.size());
-                outputfile.write((const char*)msg.headerbuffer,msg.headersize);
-                outputfile.write((const char*)msg.databuffer,msg.datasize);
-                outputfile.flush();
-            }
+            // https://bugreports.qt-project.org/browse/QTBUG-26069
+            outputfile.seek(outputfile.size());
+            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+            outputfile.write((const char*)msg.databuffer,msg.datasize);
+            outputfile.flush();
         }
 
         /* read received messages in DLT file parser and update DLT message list view */
@@ -4475,14 +4497,11 @@ void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString app
         /* store ctrl message in log file */
         if (outputfile.isOpen())
         {
-            if (settings->writeControl)
-            {
-                // https://bugreports.qt-project.org/browse/QTBUG-26069
-                outputfile.seek(outputfile.size());
-                outputfile.write((const char*)msg.headerbuffer,msg.headersize);
-                outputfile.write((const char*)msg.databuffer,msg.datasize);
-                outputfile.flush();
-            }
+            // https://bugreports.qt-project.org/browse/QTBUG-26069
+            outputfile.seek(outputfile.size());
+            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+            outputfile.write((const char*)msg.databuffer,msg.datasize);
+            outputfile.flush();
         }
 
         /* read received messages in DLT file parser and update DLT message list view */
@@ -6384,6 +6403,7 @@ void MainWindow::filterAddTable() {
 
     data = qfile.getMsgFilter(index.row());
     msg.setMsg(data);
+    msg.setIndex(qfile.getMsgFilterPos(index.row()));
 
     /* decode message if necessary */
     iterateDecodersForMsg(msg,!QDltOptManager::getInstance()->issilentMode());

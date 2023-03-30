@@ -22,11 +22,10 @@
 
 #include <QWidget>
 
-
-namespace DltViewer {
+namespace DltSegmantationPlugin {
     namespace Ui {
         class Form;
-}
+    }
 
 class Form : public QWidget
 {
@@ -36,18 +35,10 @@ public:
     explicit Form(QWidget *parent = 0);
     ~Form();
 
-    void setTextBrowserDetails(QString text);
-    void setTextBrowserMessage(QString text);
-    void setTextBrowserAscii(QString text);
-    void setTextBrowserBinary(QString text);
-    void setTextBrowserMixed(QString text);
-    void setTextBrowserUncoded(QString text);
-    void setTextBrowserDltV2(QString text);
-
 private:
     Ui::Form *ui;
 };
 
-} //namespace DltViewer
+} //namespace DltSegmantationPlugin
 
 #endif // FORM_H

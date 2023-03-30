@@ -121,6 +121,8 @@ void EcuDialog::setData(EcuItem &item)
     ui->checkBoxAutoReconnect->setCheckState(item.autoReconnect?Qt::Checked:Qt::Unchecked);
     ui->spinBoxAutoreconnect->setValue(item.autoReconnectTimeout);
     on_comboBoxInterface_currentIndexChanged(ui->comboBoxInterface->currentIndex());
+
+    ui->checkBoxWriteDLTv2StorageHeader->setCheckState((item.getWriteDLTv2StorageHeader())?Qt::Checked:Qt::Unchecked);
 }
 
 void EcuDialog::changeEvent(QEvent *e)
@@ -351,6 +353,8 @@ void EcuDialog::setDialogToEcuItem(EcuItem *item)
     item->serialcon.setPort(ui->comboBoxPortSerial->currentText());
     item->setSendSerialHeaderSerial(this->ui->checkBoxSendSerialHeaderSerial->checkState()==Qt::Checked);
     item->setSyncSerialHeaderSerial(this->ui->checkBoxSyncToSerialHeaderSerial->checkState()==Qt::Checked);
+
+    item->setWriteDLTv2StorageHeader(ui->checkBoxWriteDLTv2StorageHeader->checkState()==Qt::Checked);
 }
 
 void EcuDialog::on_checkBoxAutoReconnect_toggled(bool checked)

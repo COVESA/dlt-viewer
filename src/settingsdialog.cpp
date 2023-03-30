@@ -371,7 +371,6 @@ void SettingsDialog::writeDlg()
     ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
-    ui->checkBoxWriteControl->setCheckState(settings->writeControl?Qt::Checked:Qt::Unchecked);
     ui->checkBoxUpdateContextLoadingFile->setCheckState(settings->updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
     ui->checkBoxUpdateContextUnregister->setCheckState(settings->updateContextsUnregister?Qt::Checked:Qt::Unchecked);
 
@@ -459,7 +458,6 @@ void SettingsDialog::readDlg()
     settings->showMsgId     = (ui->groupBoxMessageId->isChecked()==true?1:0);
 
     /* other */
-    settings->writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
     settings->updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
     settings->updateContextsUnregister = (ui->checkBoxUpdateContextUnregister->checkState() == Qt::Checked);
 

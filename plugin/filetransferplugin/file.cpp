@@ -213,6 +213,7 @@ QByteArray* File::getFileData(){
        int qfileIdx = dltFileIndex->value(i);
        msgBuffer =  dltFile->getMsg(qfileIdx);
        msg.setMsg(msgBuffer);
+       msg.setIndex(qfileIdx);
        msg.getArgument(PROTOCOL_FLDA_DATA,data);
        fileData->append(data.getData());
     }
