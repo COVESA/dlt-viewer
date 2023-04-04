@@ -100,7 +100,7 @@ win32-g++ {
 QT += core gui network serialport
 
 # Detect QT5 and comply to new Widgets hierarchy
-greaterThan(QT_VER_MAJ, 4) {
+greaterThan(QT_VERSION, 4.8.4) {
     QT += widgets
     INCLUDEPATH += QtWidgets
     win32:DEFINES += QT5_QT6_COMPAT
