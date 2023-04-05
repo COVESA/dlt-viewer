@@ -6815,7 +6815,7 @@ void MainWindow::filterUpdate()
             if(false == filter->compileRegexps())
             {
                 // This is also validated in the UI part
-#ifdef QT5_QT6_COMPAT
+#if QT_5_SUPPORTED_VERSION
                 qDebug() << "Error compiling a regexp" << Qt::endl << "in" << __FILE__ << __LINE__;
 #else
                 qDebug() << "Error compiling a regexp" << endl << "in" << __FILE__ << __LINE__;
