@@ -439,6 +439,14 @@ public:
     */
     bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
 
+    //! Check the message size provided by a byte array containing the DLT message, without parsing the whole message.
+    /*!
+      \param data the buffer containing the DLT messages.
+      \param size the size of the buffer
+      \return the size of the DLT message including storage header if found
+    */
+    quint32 checkMsgSize(const char *data,quint32 size);
+
     //! Parse the arguments from the Payload.
     bool parseArguments();
 

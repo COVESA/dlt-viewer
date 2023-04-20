@@ -379,7 +379,7 @@ private:
     /* Get path from explorerView model index */
     QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
 
-    void writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &bufferPayload,EcuItem* ecuitem);
+    void writeDLTMessageToFile(QByteArray &bufferHeader,char*bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
