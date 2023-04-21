@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>398</width>
-    <height>511</height>
+    <width>314</width>
+    <height>455</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -48,55 +48,6 @@
        <string>ECU</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
-       <item row="11" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Verbose Mode:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="18" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultLogLevel">
-         <property name="text">
-          <string>Send &quot;Default Log Level,Trace Status and Verbose Mode&quot; if online</string>
-         </property>
-        </widget>
-       </item>
-       <item row="12" column="0">
-        <widget class="QComboBox" name="comboBoxVerboseMode">
-         <item>
-          <property name="text">
-           <string>Non-Verbose Mode</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Verbose Mode</string>
-          </property>
-         </item>
-        </widget>
-       </item>
-       <item row="5" column="0">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Interface Type:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="7" column="0" colspan="2">
-        <widget class="QLabel" name="label_4">
-         <property name="text">
-          <string>Default Log Level:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="16" column="0">
-        <widget class="QCheckBox" name="checkBoxGetLogInfo">
-         <property name="text">
-          <string>Send &quot;Get Log Info&quot; if online</string>
-         </property>
-        </widget>
-       </item>
        <item row="6" column="0">
         <widget class="QComboBox" name="comboBoxInterface">
          <item>
@@ -121,38 +72,60 @@
          </item>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_2">
+       <item row="9" column="0" colspan="3">
+        <widget class="QLabel" name="label_5">
          <property name="text">
-          <string>Description:</string>
+          <string>Default Trace Status:</string>
          </property>
         </widget>
        </item>
-       <item row="15" column="0">
-        <widget class="QCheckBox" name="checkBoxTiming">
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Timing packets from ECU</string>
+          <string>Id:</string>
          </property>
         </widget>
        </item>
-       <item row="14" column="0">
-        <spacer name="verticalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+       <item row="16" column="0">
+        <widget class="QCheckBox" name="checkBoxGetLogInfo">
+         <property name="text">
+          <string>Send &quot;Get Log Info&quot; if online</string>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
+        </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLineEdit" name="idLineEdit">
-         <property name="maxLength">
-          <number>4</number>
+       <item row="5" column="0">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Interface Type:</string>
          </property>
+        </widget>
+       </item>
+       <item row="12" column="0">
+        <widget class="QComboBox" name="comboBoxVerboseMode">
+         <item>
+          <property name="text">
+           <string>Non-Verbose Mode</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Verbose Mode</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="10" column="0">
+        <widget class="QComboBox" name="tracestatusComboBox">
+         <item>
+          <property name="text">
+           <string>off</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>on</string>
+          </property>
+         </item>
         </widget>
        </item>
        <item row="8" column="0">
@@ -194,23 +167,6 @@
          </item>
         </widget>
        </item>
-       <item row="4" column="0">
-        <widget class="QLineEdit" name="descriptionLineEdit"/>
-       </item>
-       <item row="9" column="0" colspan="3">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>Default Trace Status:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Id:</string>
-         </property>
-        </widget>
-       </item>
        <item row="17" column="0">
         <widget class="QCheckBox" name="checkBoxGetSoftwareVersion">
          <property name="text">
@@ -218,18 +174,11 @@
          </property>
         </widget>
        </item>
-       <item row="10" column="0">
-        <widget class="QComboBox" name="tracestatusComboBox">
-         <item>
-          <property name="text">
-           <string>off</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>on</string>
-          </property>
-         </item>
+       <item row="7" column="0" colspan="2">
+        <widget class="QLabel" name="label_4">
+         <property name="text">
+          <string>Default Log Level:</string>
+         </property>
         </widget>
        </item>
        <item row="13" column="0">
@@ -238,6 +187,57 @@
           <string>Write DLTv2 Storage Header</string>
          </property>
         </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLineEdit" name="descriptionLineEdit"/>
+       </item>
+       <item row="11" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Verbose Mode:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="18" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultLogLevel">
+         <property name="text">
+          <string>Send &quot;Default Log Level,Trace Status and Verbose Mode&quot; if online</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Description:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="15" column="0">
+        <widget class="QCheckBox" name="checkBoxTiming">
+         <property name="text">
+          <string>Timing packets from ECU</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLineEdit" name="idLineEdit">
+         <property name="maxLength">
+          <number>4</number>
+         </property>
+        </widget>
+       </item>
+       <item row="19" column="0">
+        <spacer name="verticalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -331,103 +331,76 @@
       <attribute name="title">
        <string>UDP</string>
       </attribute>
-      <widget class="QLabel" name="label_UDP_receiver">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>10</y>
-         <width>194</width>
-         <height>14</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Receiving interface:</string>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_UDP_mcastadress">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>160</y>
-         <width>194</width>
-         <height>14</height>
-        </rect>
-       </property>
-       <property name="autoFillBackground">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Multicast address:</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="comboBoxUDP_mcastaddress">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>180</y>
-         <width>291</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="comboBoxNetworkIF">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>30</y>
-         <width>291</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QCheckBox" name="checkBoxMulticast">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>130</y>
-         <width>194</width>
-         <height>20</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>Multicast on network interface</string>
-       </property>
-      </widget>
-      <widget class="QComboBox" name="comboBoxPortIP_UDP">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>80</y>
-         <width>194</width>
-         <height>22</height>
-        </rect>
-       </property>
-       <property name="editable">
-        <bool>true</bool>
-       </property>
-      </widget>
-      <widget class="QLabel" name="label_11">
-       <property name="geometry">
-        <rect>
-         <x>20</x>
-         <y>60</y>
-         <width>194</width>
-         <height>14</height>
-        </rect>
-       </property>
-       <property name="text">
-        <string>IP Port:</string>
-       </property>
-      </widget>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <item>
+        <widget class="QLabel" name="label_UDP_receiver">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Receiving interface:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxNetworkIF">
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_11">
+         <property name="text">
+          <string>IP Port:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxPortIP_UDP">
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="checkBoxMulticast">
+         <property name="text">
+          <string>Multicast on network interface</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLabel" name="label_UDP_mcastadress">
+         <property name="autoFillBackground">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Multicast address:</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="comboBoxUDP_mcastaddress">
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_4">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>212</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+      </layout>
      </widget>
      <widget class="QWidget" name="tab_2">
       <property name="toolTipDuration">
