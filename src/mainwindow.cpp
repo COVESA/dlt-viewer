@@ -3781,7 +3781,7 @@ void MainWindow::read(EcuItem* ecuitem)
                     QByteArray empty;
                     writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
                     totalBytesRcvd+=sizeMsg;
-                    if(sizeMsg>=dataSize)
+                    if(sizeMsg<=dataSize)
                     {
                         dataSize -= sizeMsg;
                         dataPtr += sizeMsg;
