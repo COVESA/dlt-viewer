@@ -3661,7 +3661,7 @@ void MainWindow::readyRead()
 
 }
 
-void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &bufferPayload,EcuItem* ecuitem)
+void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem)
 {
     DltStorageHeader str;
 
@@ -3706,7 +3706,7 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &buff
         if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
          {
          // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
-         if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayload.size())) > settings->fmaxFileSizeMB *1000*1000) )
+         if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayloadSize)) > settings->fmaxFileSizeMB *1000*1000) )
           {
             createsplitfile();
           }
@@ -3734,7 +3734,7 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,QByteArray &buff
             outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
         }
         outputfile.write(bufferHeader);
-        outputfile.write(bufferPayload);
+        outputfile.write(bufferPayload,bufferPayloadSize);
         outputfile.flush();
     }
 
@@ -3769,9 +3769,33 @@ void MainWindow::read(EcuItem* ecuitem)
             data.resize(ecuitem->udpsocket.pendingDatagramSize());
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
             //qDebug() << "bytes received" << bytesRcvd;
-            QByteArray empty;
-            writeDLTMessageToFile(empty,data,ecuitem);
-            totalBytesRcvd+=bytesRcvd;
+            unsigned int dataSize = data.size();
+            char* dataPtr = data.data();
+            // Find one ore more DLT messages in the UDP message
+            while(dataSize>0)
+            {
+                quint32 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
+                if(sizeMsg>0)
+                {
+                    // DLT message found, write it with storage header
+                    QByteArray empty;
+                    writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                    totalBytesRcvd+=sizeMsg;
+                    if(sizeMsg<=dataSize)
+                    {
+                        dataSize -= sizeMsg;
+                        dataPtr += sizeMsg;
+                    }
+                    else
+                    {
+                        dataSize = 0;
+                    }
+                }
+                else
+                {
+                    dataSize = 0;
+                }
+            }
             //ecuitem->ipcon.add(data);
             ecuitem->connected= true;
             ecuitem->tryToConnect = true;
@@ -3817,7 +3841,7 @@ void MainWindow::read(EcuItem* ecuitem)
             QByteArray bufferPayload;
             bufferHeader = qmsg.getHeader();
             bufferPayload = qmsg.getPayload();
-            writeDLTMessageToFile(bufferHeader,bufferPayload,ecuitem);
+            writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
 
             /* analyse received message, check if DLT control message response */
             if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
