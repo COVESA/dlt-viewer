@@ -3332,15 +3332,23 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                      {
                          if(interfaces[num].humanReadableName()==ecuitem->getEthIF())
                          {
-                             if ( true == ecuitem->udpsocket.joinMulticastGroup(QHostAddress(ecuitem->getmcastIP()), interfaces[num]) )
+                             QString multicastAddressArray = ecuitem->getmcastIP();
+                             QStringList multicastAddress = multicastAddressArray.split(QRegularExpression("\\s+"));
+                             for(int i = 0;i<multicastAddress.size();i++)
                              {
-                                qDebug() << "Successfully joined multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF();
-                             }
-                             else // setting up multicast failed
-                             {
-                                ecuitem->connected = false; // unicast socket setup was ok
-                                ecuitem->connectError.append("Error joining multicast group");
-                                qDebug() << "Error joining multicast group" << ecuitem->getmcastIP() << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                                 if(!multicastAddress[i].isEmpty())
+                                 {
+                                     if ( true == ecuitem->udpsocket.joinMulticastGroup(QHostAddress(multicastAddress[i]), interfaces[num]) )
+                                     {
+                                        qDebug() << "Successfully joined multicast group" << multicastAddress[i] << "on interface" << ecuitem->getEthIF();
+                                     }
+                                     else // setting up multicast failed
+                                     {
+                                        ecuitem->connected = false; // unicast socket setup was ok
+                                        ecuitem->connectError.append("Error joining multicast group");
+                                        qDebug() << "Error joining multicast group" << multicastAddress[i] << "on interface" << ecuitem->getEthIF() << ecuitem->socket->errorString();
+                                     }
+                                 }
                              }
                              break;
                          }
