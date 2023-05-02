@@ -3088,64 +3088,67 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     if((list.count() == 1) ) {
-        PluginItem* item = (PluginItem*) list.at(0);
-
-        action = new QAction("Plugin Edit...", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Edit_triggered()));
-        menu.addAction(action);
-        menu.addSeparator();
-
-        if(item->getPlugin()->isViewer())
+        QTreeWidgetItem *widgetItem = list.at(0);
+        PluginItem* item = (PluginItem*) widgetItem;
+        if(widgetItem->type()!=1000)
         {
-            /* If a viewer plugin is disabled, or enabled but not shown,
-             * add 'show' action. Else add 'hide' action */
-            if(item->getPlugin()->getMode() != QDltPlugin::ModeShow)
+            action = new QAction("Plugin Edit...", this);
+            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Edit_triggered()));
+            menu.addAction(action);
+            menu.addSeparator();
+
+            if(item->getPlugin()->isViewer())
             {
-                action = new QAction("Plugin Show", this);
-                connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Show_triggered()));
+                /* If a viewer plugin is disabled, or enabled but not shown,
+                 * add 'show' action. Else add 'hide' action */
+                if(item->getPlugin()->getMode() != QDltPlugin::ModeShow)
+                {
+                    action = new QAction("Plugin Show", this);
+                    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Show_triggered()));
+                    menu.addAction(action);
+                }
+                else
+                {
+                    action = new QAction("Plugin Hide", this);
+                    connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Hide_triggered()));
+                    menu.addAction(action);
+                }
+            }
+
+            /* If the plugin is shown or enabled, present the 'disable' option.
+             * Else, present the 'enable' option */
+            if(item->getMode() != QDltPlugin::ModeDisable)
+            {
+                action = new QAction("Plugin Disable", this);
+                connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Disable_triggered()));
                 menu.addAction(action);
             }
             else
             {
-                action = new QAction("Plugin Hide", this);
-                connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Hide_triggered()));
+                action = new QAction("Plugin Enable", this);
+                connect(action, SIGNAL(triggered()), this, SLOT(action_menuPlugin_Enable_triggered()));
                 menu.addAction(action);
             }
-        }
 
-        /* If the plugin is shown or enabled, present the 'disable' option.
-         * Else, present the 'enable' option */
-        if(item->getMode() != QDltPlugin::ModeDisable)
-        {
-            action = new QAction("Plugin Disable", this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuPlugin_Disable_triggered()));
-            menu.addAction(action);
-        }
-        else
-        {
-            action = new QAction("Plugin Enable", this);
-            connect(action, SIGNAL(triggered()), this, SLOT(action_menuPlugin_Enable_triggered()));
-            menu.addAction(action);
-        }
+            menu.addSeparator();
 
-        menu.addSeparator();
+            if(project.plugin->indexOfTopLevelItem(item) > 0)
+            {
+                action = new QAction(tr("Move Up..."), this);
+                connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginUp_clicked()));
+                menu.addAction(action);
+            }
 
-        if(project.plugin->indexOfTopLevelItem(item) > 0)
-        {
-            action = new QAction(tr("Move Up..."), this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginUp_clicked()));
-            menu.addAction(action);
+            if(project.plugin->indexOfTopLevelItem(item) < (project.plugin->topLevelItemCount() - 1))
+            {
+                action = new QAction(tr("Move Down..."), this);
+                connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginDown_clicked()));
+                menu.addAction(action);
+            }
+
+            /* show popup menu */
+            menu.exec(globalPos);
         }
-
-        if(project.plugin->indexOfTopLevelItem(item) < (project.plugin->topLevelItemCount() - 1))
-        {
-            action = new QAction(tr("Move Down..."), this);
-            connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginDown_clicked()));
-            menu.addAction(action);
-        }
-
-        /* show popup menu */
-        menu.exec(globalPos);
     }
 }
 
@@ -6098,7 +6101,7 @@ void MainWindow::updatePlugin(PluginItem *item)
     QStringList list = item->getPlugin()->infoConfig();
     for(int num=0;num<list.size();num++)
     {
-        item->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
+        item->addChild(new QTreeWidgetItem(QStringList(list.at(num)),1000));
     }
 
     item->update(); //update the table view in plugin tab
@@ -7319,7 +7322,7 @@ void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
     QStringList list = plugin->getPlugin()->infoConfig();
     for(int num=0;num<list.size();num++)
     {
-        plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num))));
+        plugin->addChild(new QTreeWidgetItem(QStringList(list.at(num)),1000));
     }
 }
 
