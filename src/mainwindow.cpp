@@ -2223,6 +2223,9 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
 
 bool MainWindow::openDlpFile(QString fileName)
 {
+    /* stop first all ECU connections, so that DLT Viewer will not crash */
+    disconnectAll();
+
     /* Open existing project */
     if(project.Load(fileName))
     {
