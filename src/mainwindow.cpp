@@ -137,6 +137,9 @@ MainWindow::MainWindow(QWidget *parent) :
     restoreGeometry(settings->geometry);
     restoreState(settings->windowState);
 
+    /* update plugins again to hide plugins shown before after restoreState */
+    updatePlugins();
+
     /*sync checkboxes with action toolbar*/
     ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
