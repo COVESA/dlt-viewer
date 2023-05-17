@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.23.0 RELEASE
+Version 2.24.0 RELEASE
 
 
 Known issues
@@ -16,6 +16,86 @@ Known issues
 
 Changes
 -------
+2.24.0
+
+    * Close ECU connections before loading new project to prevent crash of DLT Viewer.
+    * Fix plugins shown, even if they are disabled at startup.
+    * Fix settings ui.
+    * Fix crash when opening plugin context menu. (#354)
+    * Support joining multiple Multicast Addresses (#353)
+    * Support Multiple DLT messages in a single UDP message (#349)
+    * Fix ECU Dialog structure
+    * Add qt version define comparison (#348)
+    * Support of DLTv2 protocol
+    * Do not bind to Multicast Group when connect to UDP connection.
+    * Fix crash when right on Explorer tab in some specific empty area (#345) (#346)
+    * Add new option to save temporary file on exit. (#343)
+    * Temporary files were not saved before.
+    * Improve performance of UDP reception.
+    * Add setting to ECU to select storage header version.
+    * Write always ECU Id as configured in ECU settings.
+    * Always write Control messages to DLT file.
+    * Do not interpret control messages during UDP reception.
+    * Fix Settings Maximum file size cannot be changed anymore (#342)
+    * Update cmakelists.txt to set RPATH only if requested (#329)
+    * DLT_USE_QT_RPATH variable is meant to set RPATH only when set to ON, not regardless of its value.
+    * Fix installation of icons and other resource files
+    * Ignore installation of other tools
+    * Install in qdlt subdirectory, to avoid clashes with similar-named files
+    * convert.sh: delete intermediate files after creating final pdf pages (#331)
+    * version.cmake: if no git is found, just leave GIT_PATCH_VERSION set as null. (#332)
+    * Distributions are not using the same git tree as upstream, or no git at all, so this check can't succeed
+    * Fix build fail on Darwin. (#326)
+    * Darwin script still references Qt5 rather than Qt6.
+    * Changed to ${QT_PREFIX}:moc to be compatible on both Qt5 and Qt6
+    * Fix QString from QByteArray length error with Qt6 (#336)
+    * Add Segmentation Decoder Plugin.
+    * Update DLT Viewer to support Segmentation Plugin.
+    * Basic segmentation support
+    * Support DLTv2 non verbose messages
+    * Add DLTv2 storage header
+    * Update DLT Viewer Plugin for DLTv2
+    * Cleanup parameters.
+    * Add missing parameters.
+    * First support of DLTv2 protocol, but still without Storageheaderv2
+    * Update version to unstable
+    * QT 6 support code changes  (#324)
+    * Include_fix: Corrected all qdlt includes
+    * tested with Qt 5.15.2 and Qt 6.2.2
+    * tested on Windows (MSVC 2019) and Linux (gcc 11)
+    * QDltPlugin doesn't need forwarded classes anymore
+    * QDltPlugin matches plugininterface more closely
+    * moved includes from qdlt.h into respective headers
+    * analysis with clang and clazy now possible
+    * Include_fix: Corrected all qdlt includes
+    * fixes unknown _timezone and _daylight
+    * QT6: Batch script update
+    * batch files support Qt5 and Qt6
+    * QT6: CMakeLists update
+    * CMakeLists support Qt6 and Qt5
+    * removed QT5_WRAP_UI call as CMake 3+ handles that
+    * added define for Qt5/Qt6 compat code
+    * QT6: Added support for QT6
+    * replaced QRegExp with QRegularExpression
+    * replaced qSort with std::sort
+    * replaced QString!=0 with QString!=nullptr
+    * replaced QByteArray.append(QString) with QByteArray.append(QByteArray)
+    * replaced sprintf() with asprintf()
+    * replaced load() with loadRelaxed()
+    * replaced store() with storeRelaxed()
+    * added ifdefs for Qt < 5.14
+    * Qt6 changes
+    * Check build
+    * QTVER reset to 5.15.2
+    * MSVC_DIR path reset
+    * reset code changes for QT 5.12.12 compatible
+    * code cleanup
+    * reverted changes in src/cmake/Darwin.cmake file
+    * qmake build issue resolved by defining variable, removed QT5 specific checkes
+    * windows check added to check linux build failed
+    * reverted last code changes
+    * windows specific code changes
+
 2.23.0
 
     * Fixed menu name set selected filters active/inactive. (#306)
