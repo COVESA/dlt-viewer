@@ -23,7 +23,7 @@
 /* changing minor & major when layout of settings file config.ini changes */
 /* this kind of change is tracked in the settings dialogr */
 /* for other bugfixes and not major feature enhancement just use patch level */
-#define PACKAGE_VERSION_STATE "RC1"
+#define PACKAGE_VERSION_STATE ""
 #define PACKAGE_MAJOR_VERSION 2
 #define PACKAGE_MINOR_VERSION 24
 #define PACKAGE_PATCH_LEVEL 0
