@@ -1794,6 +1794,12 @@ void MainWindow::reloadLogFileFinishIndex()
     this->update(); // force update
     restoreSelection();
 
+    if(( dltIndexer->getMode() == DltFileIndexer::modeIndex))
+    {
+        // hide progress bar when finished
+        statusProgressBar->reset();
+        statusProgressBar->hide();
+    }
 }
 
 void MainWindow::reloadLogFileFinishFilter()
@@ -1900,7 +1906,16 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
     else // no update
     {
-        dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
+        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool() || pluginsEnabled == true)
+        {
+            //qDebug() << "indexer with filter" << __LINE__;
+            dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
+        }
+        else
+        {
+            dltIndexer->setMode(DltFileIndexer::modeIndex);
+        }
+
         clearSelection();
     }
 
