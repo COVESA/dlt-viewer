@@ -685,7 +685,7 @@ void DltFileIndexer::run()
     currentRun = 1;
 
     // index
-    if(mode == modeIndexAndFilter)
+    if(mode == modeIndex || mode == modeIndexAndFilter)
     {
         for(int num=0;num < dltFile->getNumberOfFiles();num++)
         {

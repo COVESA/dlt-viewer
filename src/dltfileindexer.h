@@ -66,7 +66,7 @@ public:
     // destructor
     ~DltFileIndexer();
 
-    typedef enum { modeNone, modeIndexAndFilter, modeFilter, modeDefaultFilter } IndexingMode;
+    typedef enum { modeNone, modeIndex, modeIndexAndFilter, modeFilter, modeDefaultFilter } IndexingMode;
 
     // create main index
     bool index(int num);
