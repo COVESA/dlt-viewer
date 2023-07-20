@@ -15,7 +15,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 * sudo apt install build-essential
 * sudo apt install qtcreator
-* sudo apt install qt5-default
+* sudo apt install qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
 * sudo apt install libqt5serialport5-dev
 * mkdir build
 * cd build
