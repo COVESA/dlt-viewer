@@ -11,11 +11,11 @@ on:
 jobs:
   buildMac:
     name: Build macOS
-    runs-on: macos-11
+    runs-on: ${{ matrix.macos }}
     strategy:
       matrix:
-        macos: [ macos-10.15, macos-11 ]
-        xcode: [ Xcode_12.5 ]
+        macos: [ macos-12 ]
+        xcode: [ Xcode_14.1.0 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
