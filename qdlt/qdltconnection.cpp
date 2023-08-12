@@ -75,7 +75,7 @@ void QDltConnection::add(const QByteArray &bytes)
 {
     bytesReceived += bytes.size();
 
-    data = dataView + bytes;
+    data = static_cast<QByteArray>(dataView) + bytes;
 
     dataView.align(data);
 }
