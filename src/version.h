@@ -25,10 +25,10 @@
 /* for other bugfixes and not major feature enhancement just use patch level */
 #define PACKAGE_VERSION_STATE ""
 #define PACKAGE_MAJOR_VERSION 2
-#define PACKAGE_MINOR_VERSION 24
+#define PACKAGE_MINOR_VERSION 25
 #define PACKAGE_PATCH_LEVEL 0
-#define PACKAGE_VERSION "2.24.0"
-#define PACKAGE_REVISION ""
+#define PACKAGE_VERSION "2.25.0"
+#define PACKAGE_REVISION "unstable"
 #define PACKAGE_DESCRIPTION "DLT Viewer"
 #define DLT_SUPPORT_MAIL_ADDRESS ""
 #define DLT_SUPPORT_NAME "COVESA"

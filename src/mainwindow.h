@@ -379,7 +379,7 @@ private:
     /* Get path from explorerView model index */
     QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
 
-    void writeDLTMessageToFile(QByteArray &bufferHeader,char*bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem);
+    void writeDLTMessageToFile(QByteArray &bufferHeader,char*bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec=0,quint32 use=0);
 
 protected:
     void keyPressEvent ( QKeyEvent * event );
@@ -586,6 +586,8 @@ private slots:
     void on_lineEditFilterStart_textChanged(const QString &arg1);
 
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
+
+    void on_actionImport_DLT_from_PCAP_triggered();
 
 public slots:
 
