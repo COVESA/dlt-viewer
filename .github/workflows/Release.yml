@@ -120,11 +120,33 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: DLT-Windows-sdk
-      - run: |
-          assetsZip=$(find . -name 'DLT*.zip' | xargs -I asset echo "-a asset" | xargs)
-          VERSION=$(echo $VERSION | cut -d'/' -f3)
-          tag_name="${GITHUB_REF##*/}"
-          hub release create ${assetsZip} -m "$tag_name" "$tag_name"
+
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v2
+        with:
+          skip-unshallow: 'true'
+          abbrev: false
+          commit-ish: HEAD
+      - name: Check pre-release
+        run: |
+          echo "tag=${{steps.tagger.outputs.tag}}"
+          if [[ ${{ steps.tagger.outputs.tag }} == *alpha* || ${{ steps.tagger.outputs.tag }} == *beta* ]]
+          then
+             prerelease=true
+          else
+             prerelease=false
+          fi
+          echo "PRE_RELEASE=$prerelease" >> $GITHUB_ENV
+          echo "prerelease=$prerelease"
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{steps.tagger.outputs.tag}}
+          generate_release_notes: true
+          prerelease: ${{ env.PRE_RELEASE }}
+          name: ${{steps.tagger.outputs.tag}}
+          files: |
+            DLT-*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ github.ref }}
