@@ -1275,6 +1275,178 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 
 }
 
+typedef struct pcap_hdr_s {
+        quint32 magic_number;   /* magic number */
+        quint16 version_major;  /* major version number */
+        quint16 version_minor;  /* minor version number */
+        qint32  thiszone;       /* GMT to local correction */
+        quint32 sigfigs;        /* accuracy of timestamps */
+        quint32 snaplen;        /* max length of captured packets, in octets */
+        quint32 network;        /* data link type */
+} PACKED pcap_hdr_t;
+
+typedef struct pcaprec_hdr_s {
+        quint32 ts_sec;         /* timestamp seconds */
+        quint32 ts_usec;        /* timestamp microseconds */
+        quint32 incl_len;       /* number of octets of packet saved in file */
+        quint32 orig_len;       /* actual length of packet */
+} PACKED pcaprec_hdr_t;
+
+void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
+{
+    quint32 counterRecords = 0, counterRecordsDLT = 0, counterDLTMessages = 0;
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Import DLT from PCAP file"), workingDirectory.getDltDirectory(), tr("PCAP file (*.pcap)"));
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+
+    if(!outputfile.isOpen())
+        return;
+
+    QFile inputfile(fileName);
+
+    if(!inputfile.open(QFile::ReadOnly))
+       return;
+
+    QProgressDialog progress("Import DLT from PCAP...", "Abort Import", 0, inputfile.size()/1000, this);
+    progress.setWindowModality(Qt::WindowModal);
+
+    pcap_hdr_t globalHeader;
+    pcaprec_hdr_t recordHeader;
+
+    qDebug() << "Import DLt from PCAp file:" << fileName;
+
+    if(inputfile.read((char*)&globalHeader,sizeof(pcap_hdr_t))!=sizeof(pcap_hdr_t))
+    {
+        inputfile.close();
+        return;
+    }
+    while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
+    {
+        progress.setValue(inputfile.pos()/1000);
+
+        if (progress.wasCanceled())
+        {
+            inputfile.close();
+
+            qDebug() << "Counter Records:" << counterRecords;
+            qDebug() << "Counter Records DLT:" << counterRecordsDLT;
+            qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
+
+            reloadLogFile();
+            return;
+        }
+
+        QByteArray record = inputfile.read(recordHeader.incl_len);
+         if(record.length() != recordHeader.incl_len)
+         {
+             inputfile.close();
+             qDebug() << "PCAP file not complete!";
+             qDebug() << "Counter Records:" << counterRecords;
+             qDebug() << "Counter Records DLT:" << counterRecordsDLT;
+             qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
+             return;
+         }
+         counterRecords ++;
+         // Check if Record is IP/UDP Packet with Dest Port 3490
+         quint64 pos = 12;
+         //Read EtherType
+         if(record.size()<(pos+2))
+         {
+             qDebug() << "Size issue!";
+             inputfile.close();
+             return;
+         }
+         quint16 etherType = record.at(pos)<<8+record.at(pos+1);
+         if(etherType==0x8100)
+         {
+             // VLAN tagging used
+             pos+=4;
+             if(record.size()<(pos+2))
+             {
+                 qDebug() << "Size issue!";
+                 inputfile.close();
+                 return;
+             }
+             etherType = record.at(pos)<<8+record.at(pos+1);
+         }
+         if(etherType==0x0800) // IP packet found
+         {
+            pos+=2;
+            pos+=9;
+            if(record.size()<(pos+1))
+            {
+                qDebug() << "Size issue!";
+                inputfile.close();
+                return;
+            }
+            quint8 protocol = record.at(pos);
+            if(protocol==0x11) // UDP packet found
+            {
+                pos+=11;
+                pos+=2;
+                if(record.size()<(pos+2))
+                {
+                    qDebug() << "Size issue!";
+                    inputfile.close();
+                    return;
+                }
+                quint16 destPort = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+                if(destPort==3490)
+                {
+                    pos+=6;
+                    counterRecordsDLT++;
+                    // Now read the DLT Messages
+                    quint64 dataSize;
+                    if(recordHeader.orig_len<record.size())
+                        dataSize = recordHeader.orig_len-pos;
+                    else
+                        dataSize = record.size()-pos;
+                    char* dataPtr = record.data()+pos;
+                    // Find one ore more DLT messages in the UDP message
+                    while(dataSize>0)
+                    {
+                        quint64 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
+                        if(sizeMsg>0)
+                        {
+                            // DLT message found, write it with storage header
+                            QByteArray empty;
+                            writeDLTMessageToFile(empty,dataPtr,sizeMsg,0,recordHeader.ts_sec,recordHeader.ts_usec);
+                            counterDLTMessages++;
+
+                            //totalBytesRcvd+=sizeMsg;
+                            if(sizeMsg<=dataSize)
+                            {
+                                dataSize -= sizeMsg;
+                                dataPtr += sizeMsg;
+                            }
+                            else
+                            {
+                                dataSize = 0;
+                            }
+                        }
+                        else
+                        {
+                            dataSize = 0;
+                        }
+                    }
+                }
+            }
+         }
+    }
+    inputfile.close();
+
+    qDebug() << "Counter Records:" << counterRecords;
+    qDebug() << "Counter Records DLT:" << counterRecordsDLT;
+    qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
+
+    reloadLogFile();
+}
+
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -3693,7 +3865,7 @@ void MainWindow::readyRead()
 
 }
 
-void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem)
+void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)
 {
     DltStorageHeader str;
 
@@ -3713,16 +3885,29 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
        GetSystemTime(&systemtime);
        time_t timestamp_sec;
        time(&timestamp_sec);
-       str.seconds = (time_t)timestamp_sec;
-       str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
+       if(sec)
+            str.seconds = (time_t)sec;
+       else
+            str.seconds = (time_t)timestamp_sec;
+       if(usec)
+            str.microseconds = (int32_t)usec; // for some reasons we do not have microseconds in Windows !
+       else
+            str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
     #else
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        str.seconds = (time_t)tv.tv_sec; /* value is long */
-        str.microseconds = (int32_t)tv.tv_usec; /* value is long */
+        if(sec)
+            str.seconds = (time_t)sec; /* value is long */
+        else
+            str.seconds = (time_t)tv.tv_sec; /* value is long */
+        if(usec)
+            str.microseconds = (int32_t)usec; /* value is long */
+        else
+            str.microseconds = (int32_t)tv.tv_usec; /* value is long */
     #endif
 
-    dlt_set_id(str.ecu,ecuitem->id.toLatin1());
+    if(ecuitem)
+        dlt_set_id(str.ecu,ecuitem->id.toLatin1());
 
     /* check if message is matching the filter */
     if (outputfile.isOpen())
@@ -3745,7 +3930,7 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
         }
 
         // write data into file
-        if(!ecuitem->getWriteDLTv2StorageHeader())
+        if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
         {
             // write version 1 storage header
             outputfile.write((char*)&str,sizeof(DltStorageHeader));

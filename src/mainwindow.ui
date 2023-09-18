@@ -114,6 +114,7 @@
     <addaction name="separator"/>
     <addaction name="action_menuFile_Import_DLT_Stream"/>
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
+    <addaction name="actionImport_DLT_from_PCAP"/>
     <addaction name="action_menuFile_Append_DLT_File"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionExport"/>
@@ -312,7 +313,7 @@
     <enum>Qt::NoFocus</enum>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetMovable|QDockWidget::DockWidgetFloatable</set>
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
     <string>Project</string>
@@ -1668,6 +1669,11 @@
    </property>
    <property name="text">
     <string>Sort By Timestamp</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_from_PCAP">
+   <property name="text">
+    <string>Import DLT from PCAP...</string>
    </property>
   </action>
  </widget>
