@@ -5,7 +5,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 ## Instructions for installing DLT Viewer (GUI)
 
 * Install Qt5 SDK including Qt Creator and Microsoft Visual Studio Build Tools 2017
-* Tested with QT 5.12.12 (Windows) and Qt 5.9.5 (Ubuntu Linux)
+* Tested with QT 5.15.2 (Windows) and Qt 5.12.8 (Ubuntu 20.04LTS Linux)
 * Open project BuildDltViewer.pro in Qt Creator.
 * Ensure that build options point to correct QT and MSVC.
 * Build Release in Qt Creator or via CMake (see last).
@@ -27,7 +27,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 ## Build DLT Viewer in Windows
 
-* Install Qt5 SDK and Microsoft Visual Studio Build Tools 2017
+* Install Qt5 SDK and Microsoft Visual Studio Build Tools 2019
 * If needed adapt you configuration in build_sdk_windows_qt5_MSVC.bat
 * Run build_sdk_windows_qt5_MSVC.bat
 
@@ -38,10 +38,10 @@ The DLT Viewer will be installed by default in C:\DltViewerSDK
 Some DLT Viewer plugins will use the Qwt library for displaying graphs.
 The Qwt library must be compiled and installed before it can be used.
 
-(Tested with Qwt 6.2.0)
+(Tested with Qwt 6.1.6)
 
-* Install Qt5 SDK and Microsoft Visual Studio Build Tools 2017
-* Copy Qwt zip package qwt-6.2.0.zip to DLT Viewer folder
+* Install Qt5 SDK and Microsoft Visual Studio Build Tools 2019
+* Copy Qwt zip package qwt-6.1.6.zip to DLT Viewer folder
 * Run build_qwt_windows_qt5_MSVC.bat
 
 ## Create SDK (Linux)
