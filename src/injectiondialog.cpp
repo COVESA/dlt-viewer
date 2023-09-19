@@ -21,6 +21,7 @@
 #include "ui_injectiondialog.h"
 
 #include "qdltsettingsmanager.h"
+#include <QCompleter>
 
 InjectionDialog::InjectionDialog(QString appid,QString conid,QWidget *parent) :
     QDialog(parent),
@@ -29,6 +30,12 @@ InjectionDialog::InjectionDialog(QString appid,QString conid,QWidget *parent) :
     ui->setupUi(this);
     ui->applicationidComboBox->setEditText(appid);
     ui->contextidComboBox->setEditText(conid);
+
+    ui->applicationidComboBox->setCompleter(NULL);
+    ui->contextidComboBox->setCompleter(NULL);
+    ui->serviceidComboBox->setCompleter(NULL);
+    ui->dataComboBox->setCompleter(NULL);
+
 }
 
 InjectionDialog::~InjectionDialog()
