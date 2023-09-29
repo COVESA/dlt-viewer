@@ -61,9 +61,9 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
        text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
     text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getEcuid())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getApid())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getCtid())).append(",");
+    text += escapeCSVValue(QString("%1").arg(msg.getEcuid().simplified())).append(",");
+    text += escapeCSVValue(QString("%1").arg(msg.getApid().simplified())).append(",");
+    text += escapeCSVValue(QString("%1").arg(msg.getCtid().simplified())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getSessionid())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getTypeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(",");
