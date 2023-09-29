@@ -9,6 +9,7 @@
 #include "qdltfile.h"
 #include "qdltmsg.h"
 #include "qdltpluginmanager.h"
+#include "project.h"
 
 class DltExporter : public QObject
 {
@@ -53,7 +54,7 @@ public:
     /* Default QT constructor.
      * Please pass a window as a parameter to parent dialogs correctly.
      */
-    explicit DltExporter(QObject *parent = 0);
+    explicit DltExporter(Project *_project,QObject *parent = 0);
 
     /* Export some messages from QDltFile to a CSV file.
      * \param from QDltFile to pull messages from
@@ -85,6 +86,7 @@ private:
     QList<int> selectedRows;
     DltExporter::DltExportFormat exportFormat;
     DltExporter::DltExportSelection exportSelection;
+    Project *project;
 };
 
 #endif // DLTEXPORTER_H

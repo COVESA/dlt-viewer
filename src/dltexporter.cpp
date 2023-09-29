@@ -9,7 +9,7 @@
 #include "fieldnames.h"
 #include "qdltoptmanager.h"
 
-DltExporter::DltExporter(QObject *parent) :
+DltExporter::DltExporter(Project *_project,QObject *parent) :
     QObject(parent)
 {
     size = 0;
@@ -21,6 +21,7 @@ DltExporter::DltExporter(QObject *parent) :
     exportSelection = SelectionAll;
     starting_index=0;
     stoping_index=0;
+    project = _project;
 }
 
 QString DltExporter::escapeCSVValue(QString arg)
@@ -260,7 +261,21 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
                 text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
             else
                 return false;
-            text += msg.toStringHeader();
+            if( project->settings->automaticTimeSettings == 0 )
+               text += QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+            else
+               text += QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+            text += QString(" %1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
+            text += QString(" %1").arg(msg.getMessageCounter());
+            text += QString(" %1").arg(msg.getEcuid());
+            text += QString(" %1").arg(msg.getApid());
+            text += QString(" %1").arg(msg.getCtid());
+            text += QString(" %1").arg(msg.getSessionid());
+            text += QString(" %2").arg(msg.getTypeString());
+            text += QString(" %2").arg(msg.getSubtypeString());
+            text += QString(" %2").arg(msg.getModeString());
+            text += QString(" %1").arg(msg.getNumberOfArguments());
+
             text += " ";
         }
         text += msg.toStringPayload().trimmed();
