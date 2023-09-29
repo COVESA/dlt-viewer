@@ -752,7 +752,7 @@ void MainWindow::commandLineConvertToDLT()
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter;
+    DltExporter exporter(&project);
     qDebug() << "Commandline DLT convert to " << dltFile.fileName();
      //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
     exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDlt,DltExporter::SelectionFiltered);
@@ -771,7 +771,7 @@ void MainWindow::commandLineConvertToASCII()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter;
+    DltExporter exporter(&project);
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
     qDebug() << "DLT export ASCII done";
@@ -788,7 +788,7 @@ void MainWindow::commandLineConvertToCSV()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter;
+    DltExporter exporter(&project);
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatCsv,DltExporter::SelectionFiltered);
     qDebug() << "DLT export CSV done";
@@ -805,7 +805,7 @@ void MainWindow::commandLineConvertToUTF8()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter;
+    DltExporter exporter(&project);
     qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
     qDebug() << "DLT export UTF8 done";
@@ -821,7 +821,7 @@ void MainWindow::commandLineConvertToDLTDecoded()
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter;
+    DltExporter exporter(&project);
     qDebug() << "Commandline decoding to dlt formated file" << dltFile.fileName();
     exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDltDecoded,DltExporter::SelectionFiltered);
     qDebug() << "DLT export DLT decoded done";
@@ -1549,7 +1549,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,DltExporter
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
 
-    DltExporter exporter;
+    DltExporter exporter(&project);
     exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&list);
 }
 
@@ -1583,7 +1583,7 @@ void MainWindow::exportSelection_searchTable(DltExporter::DltExportFormat format
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
 
-    DltExporter exporter;
+    DltExporter exporter(&project);
     exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&finallist);
 }
 
@@ -1681,7 +1681,7 @@ void MainWindow::on_actionExport_triggered()
 
     /* change last export directory */
     workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-    DltExporter exporter(this);
+    DltExporter exporter(&project,this);
     QFile outfile(fileName);
 
     unsigned long int startix, stopix;
