@@ -55,7 +55,10 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     QString text("");
 
     text += escapeCSVValue(QString("%1").arg(index)).append(",");
-    text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
+    if( project->settings->automaticTimeSettings == 0 )
+       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
+    else
+       text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
     text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getEcuid())).append(",");
@@ -320,8 +323,11 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
         else
             return false;
 
-        text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),4,10,QLatin1Char('0')) +
-                "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
+        if( project->settings->automaticTimeSettings == 0 )
+           text += "|" + QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+        else
+           text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+        text += "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
                 "|" + msg.getEcuid() +
                 "|" + msg.getApid() +
                 "|" + msg.getCtid() +
