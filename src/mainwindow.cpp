@@ -3869,7 +3869,6 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
 {
     DltStorageHeader str;
 
-    //DltStorageHeader str;
     str.pattern[0]='D';
     str.pattern[1]='L';
     str.pattern[2]='T';
@@ -3879,35 +3878,27 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
     str.ecu[2]=0;
     str.ecu[3]=0;
 
-    /* get time of day */
-    #if defined(_MSC_VER)
-       SYSTEMTIME systemtime;
-       GetSystemTime(&systemtime);
-       time_t timestamp_sec;
-       time(&timestamp_sec);
-       if(sec)
-            str.seconds = (time_t)sec;
-       else
-            str.seconds = (time_t)timestamp_sec;
-       if(usec)
-            str.microseconds = (int32_t)usec; // for some reasons we do not have microseconds in Windows !
-       else
-            str.microseconds = (int32_t)systemtime.wMilliseconds * 1000; // for some reasons we do not have microseconds in Windows !
-    #else
+    if (sec || usec)
+    { // todo should better use ptrs and not != 0
+        str.seconds = (time_t)sec;
+        str.microseconds = (int32_t)usec;
+    }
+    else
+    {
+#if defined(_MSC_VER)
+        struct timespec ts;
+        (void)timespec_get(&ts, TIME_UTC);
+        str.seconds = (time_t)ts.tv_sec;
+        str.microseconds = (int32_t)(ts.tv_nsec / 1000);
+#else
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        if(sec)
-            str.seconds = (time_t)sec; /* value is long */
-        else
-            str.seconds = (time_t)tv.tv_sec; /* value is long */
-        if(usec)
-            str.microseconds = (int32_t)usec; /* value is long */
-        else
-            str.microseconds = (int32_t)tv.tv_usec; /* value is long */
-    #endif
-
-    if(ecuitem)
-        dlt_set_id(str.ecu,ecuitem->id.toLatin1());
+        str.seconds = (time_t)tv.tv_sec;        /* value is long */
+        str.microseconds = (int32_t)tv.tv_usec; /* value is long */
+#endif
+    }
+    if (ecuitem)
+        dlt_set_id(str.ecu, ecuitem->id.toLatin1());
 
     /* check if message is matching the filter */
     if (outputfile.isOpen())
