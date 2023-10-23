@@ -76,7 +76,7 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: Install qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           mirror: http://ftp.fau.de/qtproject/
           version: 5.12.12
