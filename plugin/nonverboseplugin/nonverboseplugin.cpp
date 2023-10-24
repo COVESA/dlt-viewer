@@ -20,6 +20,7 @@
 #include <QtGui>
 #include <QMessageBox>
 #include <QDir>
+#include <QDebug>
 
 #include "nonverboseplugin.h"
 #include "dlt_protocol.h"
@@ -121,6 +122,8 @@ bool NonverbosePlugin::parseFile(QString filename)
 
     DltFibexPdu *pdu = 0;
     DltFibexFrame *frame = 0;
+
+    qDebug() << "Start loading Fibex XML " << filename;
 
     QXmlStreamReader xml(&file);
     while (!xml.atEnd()) {
@@ -430,12 +433,15 @@ bool NonverbosePlugin::parseFile(QString filename)
 
     file.close();
 
+    qDebug() << "Finish loading Fibex XML.";
+
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
         m_error_string.append("Duplicated FRAMES ignored: \n").append(warning_text);
         ret = true;//it is not breaking the plugin functionality, but could cause wrong decoding.
     }
 
+    qDebug() << "Start Creating Links";
     /* create PDU Ref links */
     foreach(DltFibexFrame *frame, framemapwithkey)
     {
@@ -443,17 +449,15 @@ bool NonverbosePlugin::parseFile(QString filename)
         {
             foreach(DltFibexPduRef *ref, frame->pdureflist)
             {
-                foreach(DltFibexPdu *pdu, pdumap)
-                {
-                    if((pdu->id == ref->id))
-                    {
-                        ref->ref = pdu;
-                        break;
-                    }
+                QHash<QString,DltFibexPdu*>::iterator i = pdumap.find(ref->id);
+                while (i != pdumap.end() && i.key() == ref->id) {
+                    ref->ref = i.value();
+                    ++i;
                 }
             }
         }
     }
+    qDebug() << "Finish Creating Links";
 
     pdumap.clear();
 
