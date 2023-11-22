@@ -96,6 +96,7 @@ private:
     void doFLST(QDltMsg *msg); // file transfer start
     void doFLDA(int index, QDltMsg *msg); // file transfer update
     void doFLIF(QDltMsg *msg);
+    void doFLFI(QDltMsg *msg);
     void doFLER(QDltMsg *msg); // file transfer error handling
 
     Configuration config;
