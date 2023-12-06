@@ -18,6 +18,10 @@ Changes
 -------
 2.25.0
 
+    * Experimental IPC import from PCAP file
+    * filetransferplugin: Present save popup once (#392)
+    * Fixes a bug where doFLDA was erroneously called on messages ending
+    * Adds FiletransferPlugin::doFLFI which emits a new signal
     * Allow passing multiple dlt files on commandline (#390)
     * More search history (#388) 
     * Add more keyboard shortcuts (#387)
@@ -27,9 +31,9 @@ Changes
     * Improve speed of non verbose plugin Fibex loader (#386)
     * Fix non-monotonic timestamps under Windows
     * Remove Linefeeds and Cariage Returns in CSV Export of ECUId, AppId and CtxId.
-    * Fix also Timezone export for CSV and Jira.
+    * Fix also Timezone export for CSV and Jira
     * Fix to use configured timezone during export
-    * Import from PCAP file.
+    * Import from PCAP file
     * Disable Completer in Injection Dialog
     * Update INSTALL.md
     * Release with auto. generated changelog
@@ -40,7 +44,7 @@ Changes
     * Show cmake version
     * Fix release on CI
     * Code format
-    * Improved speed when loading DLT files, when plugins and filters are disabled.
+    * Improved speed when loading DLT files, when plugins and filters are disabled
     * bugfix: install qt5 dev packages manually since qt5-default is not available
 
 2.24.0
