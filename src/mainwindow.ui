@@ -115,6 +115,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream"/>
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="actionImport_DLT_from_PCAP"/>
+    <addaction name="actionImport_IPC_from_PCAP"/>
     <addaction name="action_menuFile_Append_DLT_File"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionExport"/>
@@ -1674,6 +1675,11 @@
   <action name="actionImport_DLT_from_PCAP">
    <property name="text">
     <string>Import DLT from PCAP...</string>
+   </property>
+  </action>
+  <action name="actionImport_IPC_from_PCAP">
+   <property name="text">
+    <string>Import IPC from PCAP...</string>
    </property>
   </action>
  </widget>

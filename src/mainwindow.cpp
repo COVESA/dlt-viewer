@@ -1380,7 +1380,7 @@ void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
              inputfile.close();
              return;
          }
-         quint16 etherType = record.at(pos)<<8+record.at(pos+1);
+         quint16 etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
          if(etherType==0x8100)
          {
              // VLAN tagging used
@@ -1391,7 +1391,7 @@ void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
                  inputfile.close();
                  return;
              }
-             etherType = record.at(pos)<<8+record.at(pos+1);
+             etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
          }
          if(etherType==0x0800) // IP packet found
          {
@@ -1464,6 +1464,239 @@ void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
     qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
 
     reloadLogFile();
+}
+
+typedef struct plp_header {
+        quint16 probeId;
+        quint16 counter;
+        quint8 version;
+        quint8 plpType;
+        quint16 msgType;
+        quint16 reserved;
+        quint16 probeFlags;
+} PACKED plp_header_t;
+
+typedef struct plp_header_data {
+        quint32 busSpecId;
+        quint32 timeStampHigh;
+        quint32 timeStampLow;
+        quint16 length;
+        quint16 dataFlags;
+} PACKED plp_header_data_t;
+
+void MainWindow::on_actionImport_IPC_from_PCAP_triggered()
+{
+    quint32 counterRecords = 0, counterRecordsIPC = 0, counterIPCMessages = 0;
+    QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Import IPC from PCAP file"), workingDirectory.getDltDirectory(), tr("PCAP file (*.pcap)"));
+
+    if(fileName.isEmpty())
+        return;
+
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+
+    if(!outputfile.isOpen())
+        return;
+
+    QFile inputfile(fileName);
+
+    if(!inputfile.open(QFile::ReadOnly))
+       return;
+
+    QProgressDialog progress("Import IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, this);
+    progress.setWindowModality(Qt::WindowModal);
+
+    pcap_hdr_t globalHeader;
+    pcaprec_hdr_t recordHeader;
+
+    qDebug() << "Import DLt from PCAp file:" << fileName;
+
+    if(inputfile.read((char*)&globalHeader,sizeof(pcap_hdr_t))!=sizeof(pcap_hdr_t))
+    {
+        inputfile.close();
+        return;
+    }
+
+    bool inSegment = false;
+    QByteArray segmentBuffer;
+    while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
+    {
+        progress.setValue(inputfile.pos()/1000);
+
+        if (progress.wasCanceled())
+        {
+            inputfile.close();
+
+            qDebug() << "Counter Records:" << counterRecords;
+            qDebug() << "Counter Records IPC:" << counterRecordsIPC;
+            qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
+
+            reloadLogFile();
+            return;
+        }
+
+        QByteArray record = inputfile.read(recordHeader.incl_len);
+         if(record.length() != recordHeader.incl_len)
+         {
+             inputfile.close();
+             qDebug() << "PCAP file not complete!";
+             qDebug() << "Counter Records:" << counterRecords;
+             qDebug() << "Counter Records IPC:" << counterRecordsIPC;
+             qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
+             return;
+         }
+         counterRecords ++;
+         // Check if Record is PLP packet
+         quint64 pos = 12;
+         //Read EtherType
+         if(record.size()<(pos+2))
+         {
+             qDebug() << "Size issue!";
+             inputfile.close();
+             qDebug() << "PCAP file not complete!";
+             qDebug() << "Counter Records:" << counterRecords;
+             qDebug() << "Counter Records IPC:" << counterRecordsIPC;
+             qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
+             return;
+         }
+         quint16 etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+         if(etherType==0x8100)
+         {
+             // VLAN tagging used
+             pos+=4;
+             if(record.size()<(pos+2))
+             {
+                 qDebug() << "Size issue!";
+                 inputfile.close();
+                 qDebug() << "PCAP file not complete!";
+                 qDebug() << "Counter Records:" << counterRecords;
+                 qDebug() << "Counter Records IPC:" << counterRecordsIPC;
+                 qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
+                 return;
+             }
+             etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+         }
+         if(etherType==0x2090) // PLP packet found
+         {
+            pos += 2;
+
+            if(record.size()<(pos+sizeof(plp_header_t)))
+            {
+                qDebug() << "Size issue!";
+                inputfile.close();
+                return;
+            }
+            plp_header_t *plpHeader = (plp_header_t *) (record.data()+pos);
+
+            pos += sizeof(plp_header_t);
+
+            bool startOfSegment = qFromBigEndian(plpHeader->probeFlags) & 0x2;
+            if(startOfSegment)
+            {
+                inSegment = true;
+                segmentBuffer.clear();
+            }
+            bool endOfSegment = qFromBigEndian(plpHeader->probeFlags) & 0x1;
+            if(endOfSegment)
+            {
+                inSegment = false;
+            }
+            bool multiFrame = qFromBigEndian(plpHeader->probeFlags) & 0x8;
+            if(qFromBigEndian(plpHeader->probeId) == 0xd0 && qFromBigEndian(plpHeader->msgType) == 0x500)
+            {
+                counterRecordsIPC++;
+                while(record.size()>=(pos+sizeof(plp_header_data_t)))
+                {
+                    plp_header_data_t *plpHeaderData = (plp_header_data_t *) (record.data()+pos);
+
+                    pos += sizeof(plp_header_data_t);
+
+                    if(record.size()<(pos+qFromBigEndian(plpHeaderData->length)))
+                    {
+                        qDebug() << "Size issue!";
+                        break;
+                    }
+                    counterIPCMessages++;
+
+                    if(inSegment || endOfSegment)
+                    {
+                        segmentBuffer += record.mid(pos,qFromBigEndian(plpHeaderData->length));
+                    }
+                    if(!inSegment || endOfSegment)
+                    {
+                        /* now write DLT message here */
+                        QByteArray empty,payload;
+                        QDltMsg msg;
+
+                        // set parameters of DLT message to be generated
+                        msg.clear();
+                        msg.setEcuid("IPNP");
+                        msg.setApid("IPC");
+                        msg.setCtid("IPC");
+                        msg.setMode(QDltMsg::DltModeVerbose);
+                        msg.setType(QDltMsg::DltTypeLog);
+                        msg.setSubtype(QDltMsg::DltLogInfo);
+                        msg.setMessageCounter(0);
+                        msg.setNumberOfArguments(3);
+
+                        // add PLP Header Data
+                        QDltArgument arg1;
+                        arg1.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                        arg1.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                        arg1.setOffsetPayload(0);
+                        arg1.setData(record.mid(pos-sizeof(plp_header_data_t),sizeof(plp_header_data_t)));
+                        msg.addArgument(arg1);
+
+                        // add IPC Header
+                        QDltArgument arg2;
+                        arg2.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                        arg2.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                        arg2.setOffsetPayload(0);
+                        if(endOfSegment)
+                        {
+                            arg2.setData(segmentBuffer.mid(0,35));
+                        }
+                        else
+                        {
+                            arg2.setData(record.mid(pos,35));
+                        }
+                        msg.addArgument(arg2);
+
+                        // add IPC Data
+                        QDltArgument arg3;
+                        arg3.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                        arg3.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                        arg3.setOffsetPayload(0);
+                        if(endOfSegment)
+                        {
+                            arg3.setData(segmentBuffer.mid(35));
+                            segmentBuffer.clear();
+                        }
+                        else
+                        {
+                            arg3.setData(record.mid(pos+35,qFromBigEndian(plpHeaderData->length)-35));
+                        }
+                        msg.addArgument(arg3);
+
+                        // write DLT message
+                        msg.getMsg(payload,false);
+                        writeDLTMessageToFile(payload,0,0,0,recordHeader.ts_sec,recordHeader.ts_usec);
+                    }
+
+                    pos += qFromBigEndian(plpHeaderData->length);
+                }
+            }
+         }
+    }
+    inputfile.close();
+
+    qDebug() << "Counter Records:" << counterRecords;
+    qDebug() << "Counter Records IPC:" << counterRecordsIPC;
+    qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
+
+    reloadLogFile();
+
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
@@ -8329,3 +8562,4 @@ void MainWindow::on_lineEditFilterEnd_textChanged(const QString &arg1)
 {
     applyConfigEnabled(true);
 }
+

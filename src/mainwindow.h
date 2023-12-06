@@ -589,6 +589,8 @@ private slots:
 
     void on_actionImport_DLT_from_PCAP_triggered();
 
+    void on_actionImport_IPC_from_PCAP_triggered();
+
 public slots:
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
