@@ -41,7 +41,6 @@ File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
     receivedPackages = 0;
     fileSerialNumber = 0;
     packages = 0;
-    receivedPackages = 0;
     sizeInBytes = 0;
     buffer = 0;
     dltFileIndex = NULL;
@@ -76,7 +75,7 @@ QString File::getFileSerialNumber(){
 
     return str;
 }
-unsigned int File:: getPackages(){
+unsigned int File::getPackages(){
     return packages;
 }
 unsigned int File::getReceivedPackages(){
@@ -88,7 +87,6 @@ unsigned int File::getSizeInBytes(){
 unsigned int File::getBufferSize(){
     return buffer;
 }
-
 
 
 void File::setFilename(QString f){
@@ -161,7 +159,7 @@ bool File::isComplete(){
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    dltFileIndex->insert(i-1,index);
+    dltFileIndex->insert(i-1, index);
     increaseReceivedPackages();
 }
 

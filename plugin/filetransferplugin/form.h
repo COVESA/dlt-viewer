@@ -45,6 +45,7 @@ signals:
     void additem_signal(File *f);
     void export_signal(QDir dir, QString *errorText, bool *success);
     void handleupdate_signal(QString filestring, QString packetnumber, int index);
+    void handlefinish_signal (QString fileid);
     void err_signal(QDltMsg *msg);
     void handle_errorsignal(QString filesname, QString errorCode1, QString errorCode2, QString time);
 
@@ -70,6 +71,7 @@ private slots:
     void on_saveRightButtonClicked();
     void additem_slot(File *f);
     void updatefile_slot(QString filestring, QString packetnumber, int index);
+    void finishfile_slot (QString fileid);
     void export_slot(QDir dir, QString *errorText, bool *success);
     void error_slot(QString filesname, QString errorCode1, QString errorCode2, QString time);
 };

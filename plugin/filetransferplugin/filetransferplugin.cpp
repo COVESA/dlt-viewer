@@ -295,7 +295,7 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
             msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
             if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
             {
-                doFLDA(index,&msg);
+                doFLFI(&msg);
             }
             return;
     }
@@ -363,16 +363,19 @@ void FiletransferPlugin::doFLDA(int index,QDltMsg *msg)
     msg->getArgument(PROTOCOL_FLDA_FILEID,argument);
     msg->getArgument(PROTOCOL_FLDA_PACKAGENR,packageNumber);
 
-    emit(form->handleupdate_signal(argument.toString(),packageNumber.toString(), index ));
+    emit(form->handleupdate_signal(argument.toString(), packageNumber.toString(), index ));
   return;
 }
-
-void FiletransferPlugin::doFLIF(QDltMsg *msg)
-{
+void FiletransferPlugin::doFLIF(QDltMsg *msg) {
     Q_UNUSED(msg);
+    //not implemented yet. Would handle extended file information: file serialnumber, name ,size, creation date
+}
 
-//empty.
-//not implemented yet. Would handle extended file information: file serialnumber, name ,size, creation date, number of packages
+void FiletransferPlugin::doFLFI(QDltMsg *msg)
+{
+    QDltArgument id;
+    msg->getArgument(PROTOCOL_FLFI_FILEID, id);
+    emit(form->handlefinish_signal(id.toString()));
 }
 
 void FiletransferPlugin::doFLER(QDltMsg *msg)
