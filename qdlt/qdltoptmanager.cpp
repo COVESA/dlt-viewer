@@ -92,6 +92,7 @@ void QDltOptManager::printUsage()
     qDebug()<<"  dlt-viewer.exe -s -csv -c c:\\trace\\trace.dlt .\\trace.csv";
     qDebug()<<"  dlt-viewer.exe -s -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
     qDebug()<<"  dlt-viewer.exe -p c:\\proj\\export.dlp -l c:\\trace\\trace.dlt -e \"Filetransfer Plugin|export|ftransferdir\"";
+    qDebug()<<"  dlt-viewer.exe trace_1.dlt trace_2.dlt";
     #else
     qDebug()<<"  dlt-viewer -c ./traces/trace.dlt ./trace.txt";
     qDebug()<<"  dlt-viewer -s -c -u ./trace/trace.dlt ./trace.txt";
@@ -100,6 +101,7 @@ void QDltOptManager::printUsage()
     qDebug()<<"  dlt-viewer -s -csv -c ./trace/trace.dlt ./trace.csv";
     qDebug()<<"  dlt-viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
     qDebug()<<"  dlt-viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
+    qDebug()<<"  dlt-viewer trace_1.dlt trace_2.dlt";
     #endif
 }
 
@@ -134,7 +136,8 @@ void QDltOptManager::parse(QStringList *opt)
            }
            if(opt->at(1).endsWith(".dlt") || opt->at(1).endsWith(".DLT"))
            {
-               logFile = QString("%1").arg(opt->at(1));
+               const QString logFile = QString("%1").arg(opt->at(1));
+               logFiles += logFile;
                log = true;
                qDebug()<< "Loading logfile " << logFile;
                return;
@@ -151,7 +154,7 @@ void QDltOptManager::parse(QStringList *opt)
             printUsage();
             exit(0);
           }
-        if(str.compare("-s") == 0 || str.compare("--silent") == 0)
+        else if(str.compare("-s") == 0 || str.compare("--silent") == 0)
          {
             if ( silent_mode == false)
             {
@@ -159,12 +162,12 @@ void QDltOptManager::parse(QStringList *opt)
             qDebug() << "Enable silent mode";
             }
          }
-        if(str.compare("-v") == 0 || str.compare("--version") == 0)
+        else if(str.compare("-v") == 0 || str.compare("--version") == 0)
          {
             printVersion(opt->at(0));
             exit(0);
          }
-        if(str.compare("-p")==0)
+        else if(str.compare("-p")==0)
         {
             QString p1 = opt->value(i+1);
 
@@ -187,8 +190,9 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
+            i += 1;
           }
-        if(str.compare("-l")==0)
+        else if(str.compare("-l")==0)
          {
             if (convert == true)
             {
@@ -201,7 +205,8 @@ void QDltOptManager::parse(QStringList *opt)
 
             if(l1!=nullptr && (l1.endsWith(".dlt")||l1.endsWith(".DLT")))
              {
-                logFile = QString("%1").arg(l1);
+                const QString logFile = QString("%1").arg(l1);
+                logFiles += logFile;
                 QFile Fout(logFile);
                 if(false == Fout.exists())
                 {
@@ -220,8 +225,9 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
+            i += 1;
          }
-        if(str.compare("-f")==0)
+        else if(str.compare("-f")==0)
          {
             QString f1 = opt->value(i+1);
 
@@ -244,9 +250,9 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
-
+            i += 1;
          }
-        if(str.compare("-c")==0)
+        else if(str.compare("-c")==0)
          {
             if (log == true)
             {
@@ -281,24 +287,25 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
+            i += 2;
          }
-        if(str.compare("-u")==0)
+        else if(str.compare("-u")==0)
          {
             convertionmode = e_UTF8;
          }
-        if(str.compare("-csv")==0)
+        else if(str.compare("-csv")==0)
          {
             convertionmode = e_CSV;
          }
-        if(str.compare("-d")==0)
+        else if(str.compare("-d")==0)
          {
             convertionmode = e_DLT;
          }
-        if(str.compare("-dd")==0)
+        else if(str.compare("-dd")==0)
          {
             convertionmode = e_DDLT;
          }
-        if(str.compare("-e")==0)
+        else if(str.compare("-e")==0)
          {
             QString c = opt->value(i+1);
             QStringList args = c.split("|");
@@ -319,7 +326,22 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
+            ++i;
          }
+        else if(opt->at(i).endsWith(".dlt") || opt->at(i).endsWith(".DLT"))
+        {
+            if (convert == true)
+            {
+                qDebug() << "\nError: Can't use -c and multiple logfiles once\n";
+                printUsage();
+                exit(-1);
+            }
+
+            const QString logFile = QString("%1").arg(opt->at(i));
+            logFiles += logFile;
+            log = true;
+            qDebug()<< "Loading logfile " << logFile;
+        }
 
      } // end of for loop
     printVersion(opt->at(0));
@@ -339,7 +361,7 @@ e_convertionmode QDltOptManager::get_convertionmode()
 }
 
 QString QDltOptManager::getProjectFile(){return projectFile;}
-QString QDltOptManager::getLogFile(){return logFile;}
+QStringList QDltOptManager::getLogFiles(){return logFiles;}
 QString QDltOptManager::getFilterFile(){return filterFile;}
 QString QDltOptManager::getConvertSourceFile(){return convertSourceFile;}
 QString QDltOptManager::getConvertDestFile(){return convertDestFile;}
