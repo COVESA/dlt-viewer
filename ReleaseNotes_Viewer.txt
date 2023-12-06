@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.24.0 RELEASE
+Version 2.25.0 RELEASE
 
 
 Known issues
@@ -16,6 +16,37 @@ Known issues
 
 Changes
 -------
+2.25.0
+
+    * Experimental IPC import from PCAP file
+    * filetransferplugin: Present save popup once (#392)
+    * Fixes a bug where doFLDA was erroneously called on messages ending
+    * Adds FiletransferPlugin::doFLFI which emits a new signal
+    * Allow passing multiple dlt files on commandline (#390)
+    * More search history (#388) 
+    * Add more keyboard shortcuts (#387)
+    * Add shortcut to focus search input
+    * Add shortcut to apply config
+    * Add filter shortcut
+    * Improve speed of non verbose plugin Fibex loader (#386)
+    * Fix non-monotonic timestamps under Windows
+    * Remove Linefeeds and Cariage Returns in CSV Export of ECUId, AppId and CtxId.
+    * Fix also Timezone export for CSV and Jira
+    * Fix to use configured timezone during export
+    * Import from PCAP file
+    * Disable Completer in Injection Dialog
+    * Update INSTALL.md
+    * Release with auto. generated changelog
+    * Merge pull request #373 from SangTruongTan/build-on-apple-silicon
+    * No viable conversion from 'QDltDataView' to 'QByteArray'
+    * Revert "Build on Apple Silicon"
+    * Build on Apple Silicon
+    * Show cmake version
+    * Fix release on CI
+    * Code format
+    * Improved speed when loading DLT files, when plugins and filters are disabled
+    * bugfix: install qt5 dev packages manually since qt5-default is not available
+
 2.24.0
 
     * Close ECU connections before loading new project to prevent crash of DLT Viewer.
