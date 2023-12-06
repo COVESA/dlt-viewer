@@ -469,6 +469,11 @@ void MainWindow::initView()
     connect(settingsDlg, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
     connect(settingsDlg, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
 
+    QAction *focusSearchTextbox = new QAction(this);
+    focusSearchTextbox->setShortcut(Qt::Key_L | Qt::CTRL);
+    connect(focusSearchTextbox, SIGNAL(triggered()), searchTextbox, SLOT(setFocus()));
+    addAction(focusSearchTextbox);
+
     searchComboBox = new QComboBox();
     searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     searchComboBox->setLineEdit(searchTextbox);
@@ -484,6 +489,18 @@ void MainWindow::initView()
 
     /* Update the scrollbutton status */
     updateScrollButton();
+
+    /* Add shortcut to apply config */
+    QAction *applyConfig = new QAction(this);
+    applyConfig->setShortcut(Qt::Key_C | Qt::SHIFT | Qt::CTRL);
+    connect(applyConfig, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
+    addAction(applyConfig);
+
+    /* Add shortcut to add filter */
+    QAction *addFilter = new QAction(this);
+    addFilter->setShortcut(Qt::Key_A | Qt::SHIFT | Qt::CTRL);
+    connect(addFilter, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Add_triggered()));
+    addAction(addFilter);
 }
 
 void MainWindow::initSignalConnections()
