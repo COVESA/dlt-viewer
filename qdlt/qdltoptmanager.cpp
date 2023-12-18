@@ -328,6 +328,11 @@ void QDltOptManager::parse(QStringList *opt)
              }
             ++i;
          }
+        else if (str.compare("-w") == 0)
+        {
+            workingDirectory = opt->value(i+1);
+            ++i;
+        }
         else if(opt->at(i).endsWith(".dlt") || opt->at(i).endsWith(".DLT"))
         {
             if (convert == true)
@@ -368,3 +373,4 @@ QString QDltOptManager::getConvertDestFile(){return convertDestFile;}
 QString QDltOptManager::getPluginName(){return pluginName;}
 QString QDltOptManager::getCommandName(){return commandName;}
 QStringList QDltOptManager::getCommandParams(){return commandParams;}
+QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
