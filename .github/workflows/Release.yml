@@ -105,19 +105,19 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: Download DLT Linux artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: DLT-Linux
       - name: Download DLT macOS artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: DLT-Mac
       - name: Download DLT Windows parser artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: DLT-Windows-parser
       - name: Download DLT Windows sdk artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: DLT-Windows-sdk
 
