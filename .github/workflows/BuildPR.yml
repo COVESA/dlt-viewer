@@ -80,6 +80,7 @@ jobs:
           echo $env:PATH
           dir "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
           "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+          echo "::add-path::C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC"
       - name: Install qt
         uses: jurplel/install-qt-action@v3
         with:
