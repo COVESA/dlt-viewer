@@ -79,14 +79,14 @@ jobs:
       - name: Install qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: 5.12.12
+          version: 6.6.1
       - name: Build with CMake ${{ matrix.task }}
         run: >
           $env:WORKSPACE=$env:GITHUB_WORKSPACE;
-          $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
+          $env:QTDIR=$env:Qt6_DIR.Replace('/','\');
           $env:CPACK_7Z="true";
           $env:CPACK_NSIS="true";
-          ./build_sdk_windows_qt5_MSVC_cmake.bat
+          ./build_sdk_windows_MSVC_cmake.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
