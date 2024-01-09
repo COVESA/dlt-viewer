@@ -74,6 +74,12 @@ jobs:
         with:
           fetch-depth: 0
           submodules: true
+      - name: Investigate
+        run: |
+          echo %path%
+          echo $env:PATH
+          dir "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+          "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
       - name: Install qt
         uses: jurplel/install-qt-action@v3
         with:
