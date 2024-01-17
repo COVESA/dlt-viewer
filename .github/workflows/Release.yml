@@ -9,10 +9,10 @@ on:
 jobs:
   buildMac:
     name: Build macOS
-    runs-on: macos-12
+    runs-on: macos-13
     strategy:
       matrix:
-        xcode: [ Xcode_14.1.0 ]
+        xcode: [ Xcode_15.2 ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
