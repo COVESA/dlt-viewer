@@ -25,7 +25,10 @@ jobs:
       - name: Investigate available XCode versions
         run: ls -n /Applications/ | grep Xcode*
       - name: Set XCode Version
-        run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+        run: |
+          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+          xcodebuild -version
+          xcode-select --print-path
       - name: install build environment
         run: scripts/darwin/install.sh
       - name: Show cmake version
