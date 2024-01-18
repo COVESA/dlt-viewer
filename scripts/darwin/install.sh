@@ -6,7 +6,8 @@ pwd
 
 brew update
 brew install qt@5
-brew link --overwrite qt@5 --force --overwrite
+brew unlink qt@5 && brew link --force qt@5
+#brew link --overwrite qt@5 --force --overwrite
 # https://github.com/Homebrew/homebrew-core/issues/8392
 # https://github.com/Homebrew/legacy-homebrew/issues/29938
 QT_VERSION=$(brew list --versions qt@5 | awk '{print $2}')
