@@ -290,16 +290,10 @@ int SearchDialog::find()
             return 1;
         }
 
-        searchTextRegExpression.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        if ( getCaseSensitive() == true )
-        {
-         searchTextRegExpression.setPatternOptions(QRegularExpression::NoPatternOption);
-        }
-        else
-        {
-         searchTextRegExpression.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        }
-
+        int options = QRegularExpression::DotMatchesEverythingOption;
+        if (!getCaseSensitive())
+            options |= QRegularExpression::CaseInsensitiveOption;
+        searchTextRegExpression.setPatternOptions(static_cast<QRegularExpression::PatternOption>(options));
     }
 
     //check timestamp search pattern

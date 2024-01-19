@@ -151,8 +151,9 @@ bool QDltFilter::compileRegexps()
         ignoreCase_Header ? QRegularExpression::CaseInsensitiveOption
                           : QRegularExpression::NoPatternOption);
     payloadRegularExpression.setPatternOptions(
-        ignoreCase_Payload ? QRegularExpression::CaseInsensitiveOption
-                           : QRegularExpression::NoPatternOption);
+        QRegularExpression::DotMatchesEverythingOption |
+        (ignoreCase_Payload ? QRegularExpression::CaseInsensitiveOption
+                            : QRegularExpression::NoPatternOption));
 
     return (headerRegularExpression.isValid() &&
             payloadRegularExpression.isValid() &&
