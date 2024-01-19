@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QDebug>
+#include <QProgressDialog>
 
 #include "nonverboseplugin.h"
 #include "dlt_protocol.h"
@@ -34,9 +35,14 @@ extern const char *control_type[];
 extern const char *service_id[];
 extern const char *return_type[];
 
+NonverbosePlugin::NonverbosePlugin()
+{
+    dltControl = 0;
+}
+
 QString NonverbosePlugin::name()
 {
-    return QString("Non Verbose Mode Plugin");
+    return QString(NON_VERBOSE_PLUGIN_NAME);
 }
 
 QString NonverbosePlugin::pluginVersion(){
@@ -123,11 +129,34 @@ bool NonverbosePlugin::parseFile(QString filename)
     DltFibexPdu *pdu = 0;
     DltFibexFrame *frame = 0;
 
-    qDebug() << "Start loading Fibex XML " << filename;
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Start loading Fibex XML " << filename;
 
     QXmlStreamReader xml(&file);
+
+    QProgressDialog progress("Load Fibex file "+filename, "Abort Load", 0, xml.device()->size(), 0);
+    if(!dltControl->silentmode)
+    {
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setWindowTitle(name());
+        progress.raise();
+        progress.activateWindow();
+    }
+
+    int progressCounter = 0;
+
     while (!xml.atEnd()) {
           xml.readNext();
+
+          progressCounter++;
+          if(!dltControl->silentmode && ((progressCounter%1000) == 0))
+          {
+              progress.setValue(xml.device()->pos());
+
+              if (progress.wasCanceled())
+              {
+                  break;
+              }
+          }
 
           if(xml.isStartElement())
           {
@@ -433,7 +462,7 @@ bool NonverbosePlugin::parseFile(QString filename)
 
     file.close();
 
-    qDebug() << "Finish loading Fibex XML.";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Finish loading Fibex XML.";
 
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
@@ -441,7 +470,7 @@ bool NonverbosePlugin::parseFile(QString filename)
         ret = true;//it is not breaking the plugin functionality, but could cause wrong decoding.
     }
 
-    qDebug() << "Start Creating Links";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Start Creating Links";
     /* create PDU Ref links */
     foreach(DltFibexFrame *frame, framemapwithkey)
     {
@@ -457,9 +486,13 @@ bool NonverbosePlugin::parseFile(QString filename)
             }
         }
     }
-    qDebug() << "Finish Creating Links";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Finish Creating Links";
 
     pdumap.clear();
+
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of framemapwithkey" << framemapwithkey.size();
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of framemap" << framemap.size();
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of pdumap" << pdumap.size();
 
     return ret;
 }
@@ -478,7 +511,7 @@ QStringList NonverbosePlugin::infoConfig()
         QString text;
         text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
         int c = 0;
-        foreach(DltFibexPduRef *ref, frame->pdureflist)
+        /* foreach(DltFibexPduRef *ref, frame->pdureflist)
         {
             if(c == 0)
                 text += " (";
@@ -489,7 +522,7 @@ QStringList NonverbosePlugin::infoConfig()
                 text += ")";
             else
                 text += ", ";
-        }
+        } */
         list.append(text);
     }
     return list;
@@ -541,12 +574,12 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     if(!msg.getApid().isEmpty() && !msg.getCtid().isEmpty())
     {
         // search in full key, if msg already contains AppId and CtId
-        frame = framemapwithkey[DltFibexKey(idtext,msg.getApid(),msg.getCtid())];
+        frame = framemapwithkey.value(DltFibexKey(idtext,msg.getApid(),msg.getCtid()),0);
     }
     else
     {
         // search only for id
-        frame = framemap[idtext];
+        frame = framemap.value(idtext,0);
     }
     if(!frame)
             return false;
@@ -625,6 +658,52 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 
     return true;
 }
+
+bool NonverbosePlugin::initControl(QDltControl *control)
+{
+    dltControl = control;
+
+    return true;
+}
+
+bool NonverbosePlugin::initConnections(QStringList list)
+{
+    Q_UNUSED(list);
+
+    return false;
+}
+
+bool NonverbosePlugin::controlMsg(int , QDltMsg &)
+{
+    return false;
+}
+
+bool NonverbosePlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
+
+    Q_UNUSED(index);
+    Q_UNUSED(connectionState);
+    Q_UNUSED(hostname);
+    return false;
+}
+
+bool NonverbosePlugin::autoscrollStateChanged(bool enabled)
+{
+    Q_UNUSED(enabled);
+    return false;
+}
+
+void NonverbosePlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
+
+void NonverbosePlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void NonverbosePlugin::configurationChanged()
+{}
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(nonverboseplugin, NonverbosePlugin);
