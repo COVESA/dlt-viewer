@@ -41,17 +41,6 @@ TEMPLATE  = lib
 # ...of type plugin
 CONFIG   += plugin
 
-# QWT
-# CONFIG  += qwt
-
-# QWT_DIR = $$(QWT_DIR)
-# !isEmpty(QWT_DIR) {
-#     QWT_INSTALL_PREFIX = $$QWT_DIR
-# } else {
-#     QWT_INSTALL_PREFIX = C:\\Qwt-6.1.3
-# }
-
-
 # Used QT features
 QT += core gui network
 
