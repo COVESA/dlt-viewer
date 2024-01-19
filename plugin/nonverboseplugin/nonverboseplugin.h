@@ -104,16 +104,19 @@ public:
         uint32_t pduRefCounter;
 };
 
-class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface
+class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface, QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
+    Q_INTERFACES(QDltPluginControlInterface)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.NonVerbosePlugin")
 #endif
 
 public:
+    NonverbosePlugin();
+
     /* QDLTPluginInterface interface */
     QString name();
     QString pluginVersion();
@@ -128,6 +131,16 @@ public:
     bool isMsg(QDltMsg &msg, int triggeredByUser);
     bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
+    /* QDltPluginControlInterface */
+    bool initControl(QDltControl *control);
+    bool initConnections(QStringList list);
+    bool controlMsg(int index, QDltMsg &msg);
+    bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname);
+    bool autoscrollStateChanged(bool enabled);
+    void initMessageDecoder(QDltMessageDecoder* pMessageDecoder);
+    void initMainTableView(QTableView* pTableView);
+    void configurationChanged();
+
     /* Faster lookup */
     //is it necessary that this is public?
     QHash<QString, DltFibexPdu *> pdumap;
@@ -137,6 +150,8 @@ public:
 private:
     bool parseFile(QString filename);
     void clear();
+
+    QDltControl *dltControl;
 
     QString m_error_string;
 };

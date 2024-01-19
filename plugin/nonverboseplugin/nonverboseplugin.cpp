@@ -21,6 +21,7 @@
 #include <QMessageBox>
 #include <QDir>
 #include <QDebug>
+#include <QProgressDialog>
 
 #include "nonverboseplugin.h"
 #include "dlt_protocol.h"
@@ -33,6 +34,11 @@ extern const char *nw_trace_type[];
 extern const char *control_type[];
 extern const char *service_id[];
 extern const char *return_type[];
+
+NonverbosePlugin::NonverbosePlugin()
+{
+    dltControl = 0;
+}
 
 QString NonverbosePlugin::name()
 {
@@ -126,8 +132,28 @@ bool NonverbosePlugin::parseFile(QString filename)
     qDebug() << "Start loading Fibex XML " << filename;
 
     QXmlStreamReader xml(&file);
+
+    QProgressDialog progress("Load Fibex file "+filename, "Abort Load", 0, xml.device()->size(), 0);
+    if(!dltControl->silentmode)
+    {
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setWindowTitle(name());
+        progress.raise();
+        progress.activateWindow();
+    }
+
     while (!xml.atEnd()) {
           xml.readNext();
+
+          if(!dltControl->silentmode)
+          {
+              progress.setValue(xml.device()->pos());
+
+              if (progress.wasCanceled())
+              {
+                  break;
+              }
+          }
 
           if(xml.isStartElement())
           {
@@ -625,6 +651,52 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 
     return true;
 }
+
+bool NonverbosePlugin::initControl(QDltControl *control)
+{
+    dltControl = control;
+
+    return true;
+}
+
+bool NonverbosePlugin::initConnections(QStringList list)
+{
+    Q_UNUSED(list);
+
+    return false;
+}
+
+bool NonverbosePlugin::controlMsg(int , QDltMsg &)
+{
+    return false;
+}
+
+bool NonverbosePlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
+
+    Q_UNUSED(index);
+    Q_UNUSED(connectionState);
+    Q_UNUSED(hostname);
+    return false;
+}
+
+bool NonverbosePlugin::autoscrollStateChanged(bool enabled)
+{
+    Q_UNUSED(enabled);
+    return false;
+}
+
+void NonverbosePlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
+{
+    Q_UNUSED(pMessageDecoder);
+}
+
+void NonverbosePlugin::initMainTableView(QTableView* pTableView)
+{
+    Q_UNUSED(pTableView);
+}
+
+void NonverbosePlugin::configurationChanged()
+{}
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(nonverboseplugin, NonverbosePlugin);
