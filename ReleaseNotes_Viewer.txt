@@ -181,7 +181,6 @@ Changes
     * Prepare v2.22.0 (#249)
     * Adapt cmake build (#244)
     * fix: persist bool args with DLT_TYLE_8BIT (#247)
-    * Update to Qt 5.15.2, Visual Studio 2019 Build Tools and Qwt 6.1.6
     * Fix bat build
     * Central config for all Windows batch files (#240)
     * Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake (#239)
@@ -253,7 +252,6 @@ Changes
     * Remove Travis
     * Reduce XCode builds
     * Make Windows Builds work
-    * removed qwt build from ci for now as it seemed optional and needs more refactoring
     * use correct exit codes for the three .bat files
     * upload a complete artifact including QT DLLs
     * make some parameters for the bat files CI-Friendly
@@ -430,7 +428,6 @@ Fixes:
     * Adjust to cmake changes
     * QTextStream wants an IO target. Fixes a crash when a plugin failes to load
     * Changed ambiguous wording in documentation for CMake builds (#44)
-    * Upgrade version of qt, qwt and visual studio for windows build.
     * Fixed corrupt message received when the DLT frame starting sequence is detected in the payload.
     * Fix the manual trigger for all ECUs
     * README: Fix links to mailing list and wiki page (#42)
