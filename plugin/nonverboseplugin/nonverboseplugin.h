@@ -31,6 +31,7 @@
 #endif
 
 #define NON_VERBOSE_PLUGIN_VERSION "1.0.0"
+#define NON_VERBOSE_PLUGIN_NAME "Non Verbose Mode Plugin"
 
 class DltFibexKey
 {

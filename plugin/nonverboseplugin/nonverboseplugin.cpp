@@ -42,7 +42,7 @@ NonverbosePlugin::NonverbosePlugin()
 
 QString NonverbosePlugin::name()
 {
-    return QString("Non Verbose Mode Plugin");
+    return QString(NON_VERBOSE_PLUGIN_NAME);
 }
 
 QString NonverbosePlugin::pluginVersion(){
@@ -129,7 +129,7 @@ bool NonverbosePlugin::parseFile(QString filename)
     DltFibexPdu *pdu = 0;
     DltFibexFrame *frame = 0;
 
-    qDebug() << "Start loading Fibex XML " << filename;
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Start loading Fibex XML " << filename;
 
     QXmlStreamReader xml(&file);
 
@@ -142,10 +142,13 @@ bool NonverbosePlugin::parseFile(QString filename)
         progress.activateWindow();
     }
 
+    int progressCounter = 0;
+
     while (!xml.atEnd()) {
           xml.readNext();
 
-          if(!dltControl->silentmode)
+          progressCounter++;
+          if(!dltControl->silentmode && ((progressCounter%1000) == 0))
           {
               progress.setValue(xml.device()->pos());
 
@@ -459,7 +462,7 @@ bool NonverbosePlugin::parseFile(QString filename)
 
     file.close();
 
-    qDebug() << "Finish loading Fibex XML.";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Finish loading Fibex XML.";
 
     if (warning_text.length()){
         warning_text.chop(2); // remove last ", "
@@ -467,7 +470,7 @@ bool NonverbosePlugin::parseFile(QString filename)
         ret = true;//it is not breaking the plugin functionality, but could cause wrong decoding.
     }
 
-    qDebug() << "Start Creating Links";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Start Creating Links";
     /* create PDU Ref links */
     foreach(DltFibexFrame *frame, framemapwithkey)
     {
@@ -483,9 +486,13 @@ bool NonverbosePlugin::parseFile(QString filename)
             }
         }
     }
-    qDebug() << "Finish Creating Links";
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Finish Creating Links";
 
     pdumap.clear();
+
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of framemapwithkey" << framemapwithkey.size();
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of framemap" << framemap.size();
+    qDebug() << NON_VERBOSE_PLUGIN_NAME << ": Size of pdumap" << pdumap.size();
 
     return ret;
 }
@@ -504,7 +511,7 @@ QStringList NonverbosePlugin::infoConfig()
         QString text;
         text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
         int c = 0;
-        foreach(DltFibexPduRef *ref, frame->pdureflist)
+        /* foreach(DltFibexPduRef *ref, frame->pdureflist)
         {
             if(c == 0)
                 text += " (";
@@ -515,7 +522,7 @@ QStringList NonverbosePlugin::infoConfig()
                 text += ")";
             else
                 text += ", ";
-        }
+        } */
         list.append(text);
     }
     return list;
@@ -567,12 +574,12 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     if(!msg.getApid().isEmpty() && !msg.getCtid().isEmpty())
     {
         // search in full key, if msg already contains AppId and CtId
-        frame = framemapwithkey[DltFibexKey(idtext,msg.getApid(),msg.getCtid())];
+        frame = framemapwithkey.value(DltFibexKey(idtext,msg.getApid(),msg.getCtid()),0);
     }
     else
     {
         // search only for id
-        frame = framemap[idtext];
+        frame = framemap.value(idtext,0);
     }
     if(!frame)
             return false;
