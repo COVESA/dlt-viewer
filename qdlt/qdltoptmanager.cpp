@@ -55,6 +55,16 @@ QDltOptManager::QDltOptManager(QDltOptManager const&)
 
 }
 
+const QStringList &QDltOptManager::getPostPluginCommands() const
+{
+    return postPluginCommands;
+}
+
+const QStringList &QDltOptManager::getPrePluginCommands() const
+{
+    return prePluginCommands;
+}
+
 void QDltOptManager::printVersion(QString appname)
 {
   qDebug() << "Start" << appname << "\nBuild time" << __DATE__ << __TIME__;
@@ -65,24 +75,26 @@ void QDltOptManager::printVersion(QString appname)
 void QDltOptManager::printUsage()
 {
 #if (WIN32)
-    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS]";
+    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile]";
 #else
-    qDebug()<<"Usage: dlt-viewer [OPTIONS]";
+    qDebug()<<"Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile]";
 #endif
 
     qDebug()<<"Options:";
-    qDebug()<<" -h Print usage";
-    qDebug()<<" -p projectfile \t Loading project file on startup (must end with .dlp)";
-    qDebug()<<" -l logfile     \t Loading logfile on startup (must end with .dlt)";
-    qDebug()<<" -f filterfile  \t Loading filterfile on startup (must end with .dlf)";
-    qDebug()<<" -s or --silent  \t Enable silent mode without warning message boxes.";
-    qDebug()<<" -v or --version \t Only show version and buildtime information";
-    qDebug()<<" -c logfile textfile \t Convert logfile file to textfile (logfile must end with .dlt)";
-    qDebug()<<" -u Conversion will be done in UTF8 instead of ASCII";
-    qDebug()<<" -csv Conversion will be done in CSV format";
-    qDebug()<<" -d Conversion will NOT be done, save in dlt file format again instead";
-    qDebug()<<" -dd Conversion will NOT be done, save as decoded messages in dlt format";
-    qDebug()<<" -e \"plugin|command|param1|..|param<n>\" \tExecute a plugin command with <n> parameters.\n";
+    qDebug()<<" [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
+    qDebug()<<" [projectfile]\tLoading project file on startup (must end with .dlp)";
+    qDebug()<<" [filterfile]\tLoading filterfile on startup (must end with .dlf)";
+    qDebug()<<" -h \t Print usage";
+    qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
+    qDebug()<<" -v or --version\tOnly show version and buildtime information";
+    qDebug()<<" -c logfile textfile\tConvert logfile file to textfile (logfile must end with .dlt)";
+    qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
+    qDebug()<<" -csv\tConversion will be done in CSV format";
+    qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
+    qDebug()<<" -dd\tConversion will NOT be done, save as decoded messages in dlt format";
+    qDebug()<<" -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
+    qDebug()<<" -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
+    qDebug()<<" -w workingdirectory\tSet the working directory";
     qDebug()<<"Examples:";
     #if (WIN32)
     qDebug()<<"  dlt-viewer.exe -c c:\\trace\\trace.dlt .\\trace.txt";
@@ -167,91 +179,6 @@ void QDltOptManager::parse(QStringList *opt)
             printVersion(opt->at(0));
             exit(0);
          }
-        else if(str.compare("-p")==0)
-        {
-            QString p1 = opt->value(i+1);
-
-            if(p1!=nullptr && (p1.endsWith(".dlp") || p1.endsWith(".DLP")))
-             {
-                projectFile = QString("%1").arg(opt->at(i+1));
-                QFile Fout(projectFile);
-                if(!Fout.exists())
-                {
-                  qDebug()<< "\n Error: " << projectFile << " not found !\n";
-                  exit(-1);
-                }
-                qDebug()<< "Projectfile is " << projectFile;
-                project = true;
-             }
-            else
-             {
-                qDebug()<<"\nError occured during processing of command line option \"-p\"";
-                qDebug()<<"e.g. file extension has to be \".dlp\"\n";
-                printUsage();
-                exit(-1);
-             }
-            i += 1;
-          }
-        else if(str.compare("-l")==0)
-         {
-            if (convert == true)
-            {
-              qDebug() << "\nError: Can't use -l and -c at once\n";
-              printUsage();
-              exit(-1);
-            }
-
-            QString l1 = opt->value(i+1);
-
-            if(l1!=nullptr && (l1.endsWith(".dlt")||l1.endsWith(".DLT")))
-             {
-                const QString logFile = QString("%1").arg(l1);
-                logFiles += logFile;
-                QFile Fout(logFile);
-                if(false == Fout.exists())
-                {
-                 qDebug()<< "\nGiven file " << logFile << " not found !\nCreate empty file instead ...";
-                }
-                else
-                {
-                 qDebug()<< "\nLogfile is " << logFile;
-                }
-                log = true;
-             }
-            else
-             {
-                qDebug()<<"\nError occured during processing of command line option \"-l\"";
-                qDebug()<<"e.g. file extension has to be \".dlt\"\n";
-                printUsage();
-                exit(-1);
-             }
-            i += 1;
-         }
-        else if(str.compare("-f")==0)
-         {
-            QString f1 = opt->value(i+1);
-
-            if(f1!=nullptr && (f1.endsWith(".dlf")||f1.endsWith(".DLF")))
-             {
-                filterFile = QString("%1").arg(f1);
-                QFile Fout(filterFile);
-                if(!Fout.exists())
-                {
-                  qDebug()<< "\nError: " << filterFile << " not found !\n";
-                  exit(-1);
-                }
-                filter = true;
-                qDebug()<< "Filterfile is " << filterFile;
-             }
-            else
-             {
-                qDebug()<<"\nError occured during processing of command line option \"-f\"";
-                qDebug()<<"e.g. file extension has to be \".dlf\"\n";
-                printUsage();
-                exit(-1);
-             }
-            i += 1;
-         }
         else if(str.compare("-c")==0)
          {
             if (log == true)
@@ -308,6 +235,7 @@ void QDltOptManager::parse(QStringList *opt)
         else if(str.compare("-e")==0)
          {
             QString c = opt->value(i+1);
+            postPluginCommands += c;
             QStringList args = c.split("|");
             commandline_mode = true;
             if(c != nullptr && args.size() > 1)
@@ -318,7 +246,6 @@ void QDltOptManager::parse(QStringList *opt)
                 args.removeAt(0);
                 commandParams = args;
                 plugin = true;
-
              }
             else
              {
@@ -326,6 +253,13 @@ void QDltOptManager::parse(QStringList *opt)
                 printUsage();
                 exit(-1);
              }
+            ++i;
+         }
+        else if(str.compare("-b")==0)
+         {
+            QString c = opt->value(i+1);
+            prePluginCommands += c;
+            commandline_mode = true;
             ++i;
          }
         else if (str.compare("-w") == 0)
@@ -359,6 +293,19 @@ void QDltOptManager::parse(QStringList *opt)
             projectFile = QString("%1").arg(opt->at(i));
             project = true;
             qDebug()<< "Loading projectfile " << projectFile;
+        }
+        else if(opt->at(i).endsWith(".dlf") || opt->at(i).endsWith(".DLF"))
+        {
+            if (filter == true)
+            {
+                qDebug() << "\nError: Can't load multiple filter files once\n";
+                printUsage();
+                exit(-1);
+            }
+
+            filterFile = QString("%1").arg(opt->at(i));
+            filter = true;
+            qDebug()<< "Loading filterfile " << filterFile;
         }
 
      } // end of for loop

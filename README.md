@@ -11,23 +11,25 @@ The Diagnostic Log and Trace Viewer is an application that can send and receive 
 
 ### Command line usage;
 
-+ Windows: `dlt-viewer.exe [OPTIONS]`
-+ Linux: `dlt-viewer [OPTIONS]`
-+ MacOS: `open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app --args [OPTIONS]`
++ Windows: `dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile]`
++ Linux: `dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile]`
++ MacOS: `open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app --args [OPTIONS] [logfile] [projectfile] [filterfile]`
 
 Options: 
++ [logfile] Loading one or more logfiles on startup (must end with .dlt)
++ [projectfile] Loading project file on startup (must end with .dlp)
++ [filterfile] Loading filterfile on startup (must end with .dlf)
 + `-h` Print usage
-+ `-p projectfile` Loading project file on startup (must end with .dlp)
-+ `-l logfile`     Loading logfile on startup (must end with .dlt)
-+ `-f filterfile`  Loading filterfile on startup (must end with .dlf)
 + `-s or --silent`  Enable silent mode without warning message boxes
 + `-v or --version` Only show version and buildtime information
 + `-c logfile textfile`  Convert logfile file to textfile (logfile must end with .dlt)
-+ `-u` Conversion will be done in UTF8 instead of ASCII";
-+ `-csv` Conversion will be done in CSV format";
-+ `-d` Conversion will NOT be done, save in dlt file format again instead"
-+ `-dd` Conversion will NOT be done, save as decoded messages in dlt format"
-+ `-e "name of plugin|command in plugin|param1|..|param<n>"` Execute a plugin command with <n> parameters
++ `-u` Conversion will be done in UTF8 instead of ASCII;
++ `-csv` Conversion will be done in CSV format;
++ `-d` Conversion will NOT be done, save in dlt file format again instead
++ `-dd` Conversion will NOT be done, save as decoded messages in dlt format
++ `-b "name of plugin|command in plugin|param1|..|param<n>"` Execute a plugin command with <n> parameters before loading log file
++ `-e "name of plugin|command in plugin|param1|..|param<n>"` Execute a plugin command with <n> parameters after loading log file
++ `-w workingdirectory` Set the working directory
 
 ## API Documentation
 
