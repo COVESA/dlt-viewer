@@ -63,6 +63,8 @@ public:
     QString getCommandName();
     QStringList getCommandParams();
     QString getWorkingDirectory() const;
+    const QStringList &getPrePluginCommands() const;
+    const QStringList &getPostPluginCommands() const;
 
 private:
     QDltOptManager();
@@ -86,6 +88,10 @@ private:
     QString pluginName;
     QString commandName;
     QStringList commandParams;
+
+    QStringList prePluginCommands; // command before loading log file
+    QStringList postPluginCommands; // command after loading log file
+
     QString  workingDirectory;
 };
 

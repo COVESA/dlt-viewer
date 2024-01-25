@@ -115,14 +115,46 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initSignalConnections();
 
-    initFileHandling();
-
-    /* Command plugin */
+    /* Commands plugin before loading log file */
     if(QDltOptManager::getInstance()->isPlugin())
     {
-        commandLineExecutePlugin(QDltOptManager::getInstance()->getPluginName(),
-                                 QDltOptManager::getInstance()->getCommandName(),
-                                 QDltOptManager::getInstance()->getCommandParams());
+        QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
+
+        for(int num = 0; num< commands.size();num++)
+        {
+            QStringList args = commands[num].split("|");
+            if(args.size() > 1)
+             {
+                QString pluginName = args.at(0);
+                QString commandName = args.at(1);
+                args.removeAt(0);
+                args.removeAt(0);
+                QStringList commandParams = args;
+                commandLineExecutePlugin(pluginName,commandName,commandParams);
+             }
+        }
+    }
+
+    initFileHandling();
+
+    /* Commands plugin after loading log file */
+    if(QDltOptManager::getInstance()->isPlugin())
+    {
+        QStringList commands = QDltOptManager::getInstance()->getPostPluginCommands();
+
+        for(int num = 0; num< commands.size();num++)
+        {
+            QStringList args = commands[num].split("|");
+            if(args.size() > 1)
+             {
+                QString pluginName = args.at(0);
+                QString commandName = args.at(1);
+                args.removeAt(0);
+                args.removeAt(0);
+                QStringList commandParams = args;
+                commandLineExecutePlugin(pluginName,commandName,commandParams);
+             }
+        }
     }
 
     /* auto connect */
@@ -5869,26 +5901,26 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
 
     QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
                          #ifdef WIN32
-                             QString("Usage: dlt-viewer.exe [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile]\n\n")+
                              QString("Options:\n")+
                          #else
-                             QString("Usage: dlt-viewer [OPTIONS]\n\n")+
+                             QString("Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile]\n\n")+
                              QString("Options:\n")+
                          #endif
-                             QString(" -h \t\tPrint usage\n")+
-                             QString(" -v \t\tShow version and buildtime information\n")+
-                             QString("\n")+
-                             QString(" -p <projectfile> \tLoading project (*.dlp) file on startup\n")+
-                             QString(" -f <filterfile> \t\tLoading filterfile on startup (must end with \".dlf\")\n")+
-                             QString(" -l <logfile> \t\tLoading (*.dlt) logfile on startup\n")+
-                             QString(" -c <logfile> <textfile> \tConvert (*.dlt) logfile to ASCII textfile\n")+
+                             QString(" [logfile]\t\t\tLoading one or more logfiles on startup (must end with .dlt)\n")+
+                             QString(" [projectfile]\t\tLoading project file on startup (must end with .dlp)\n")+
+                             QString(" [filterfile]\t\tLoading filterfile on startup (must end with .dlf)\n")+
+                             QString(" -h\t\t\tPrint usage\n")+
+                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
+                             QString(" -v\t\t\tShow version and buildtime information\n")+
+                             QString(" -c <logfile> <textfile>\tConvert (*.dlt) logfile to ASCII textfile\n")+
                              QString(" -u \t\t\tExport logfile to UTF8 instead\n")+
                              QString(" -csv \t\t\tExport logfile to csv ( Excel ) instead\n")+
                              QString(" -d \t\t\tExport logfile to DLT format\n")+
                              QString(" -dd \t\t\tExport logfile to  decoded DLT format\n")+
-                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
-                             QString("\n")+
-                             QString(" -e <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters")
+                             QString(" -b <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters before loading log file\n")+
+                             QString(" -e <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
+                             QString(" -w workingdirectory\tSet the working directory\n")
                              );
 }
 
