@@ -347,6 +347,19 @@ void QDltOptManager::parse(QStringList *opt)
             log = true;
             qDebug()<< "Loading logfile " << logFile;
         }
+        else if(opt->at(i).endsWith(".dlp") || opt->at(i).endsWith(".DLP"))
+        {
+            if (project == true)
+            {
+                qDebug() << "\nError: Can only load one project file\n";
+                printUsage();
+                exit(-1);
+            }
+
+            projectFile = QString("%1").arg(opt->at(i));
+            project = true;
+            qDebug()<< "Loading projectfile " << projectFile;
+        }
 
      } // end of for loop
     printVersion(opt->at(0));
