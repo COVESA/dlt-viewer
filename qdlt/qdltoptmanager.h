@@ -62,6 +62,7 @@ public:
     QString getPluginName();
     QString getCommandName();
     QStringList getCommandParams();
+    QString getWorkingDirectory() const;
 
 private:
     QDltOptManager();
@@ -85,6 +86,7 @@ private:
     QString pluginName;
     QString commandName;
     QStringList commandParams;
+    QString  workingDirectory;
 };
 
 #endif //QDLTOPTMANAGER_H
