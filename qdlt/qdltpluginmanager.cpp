@@ -184,10 +184,13 @@ QDltPlugin* QDltPluginManager::findPlugin(QString &name)
         QDltPlugin *plugin = plugins[num];
 
         if(plugin->name()==name)
+        {
+            pMutex_pluginList->unlock();
             return plugin;
+        }
     }
-    pMutex_pluginList->unlock();
 
+    pMutex_pluginList->unlock();
     return plugin;
 }
 

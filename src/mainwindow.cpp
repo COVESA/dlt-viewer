@@ -115,26 +115,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initSignalConnections();
 
-    /* Commands plugin before loading log file */
-    if(QDltOptManager::getInstance()->isPlugin())
-    {
-        QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
-
-        for(int num = 0; num< commands.size();num++)
-        {
-            QStringList args = commands[num].split("|");
-            if(args.size() > 1)
-             {
-                QString pluginName = args.at(0);
-                QString commandName = args.at(1);
-                args.removeAt(0);
-                args.removeAt(0);
-                QStringList commandParams = args;
-                commandLineExecutePlugin(pluginName,commandName,commandParams);
-             }
-        }
-    }
-
     initFileHandling();
 
     /* Commands plugin after loading log file */
@@ -142,18 +122,22 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         QStringList commands = QDltOptManager::getInstance()->getPostPluginCommands();
 
-        for(int num = 0; num< commands.size();num++)
+        if(commands.size())
         {
-            QStringList args = commands[num].split("|");
-            if(args.size() > 1)
-             {
-                QString pluginName = args.at(0);
-                QString commandName = args.at(1);
-                args.removeAt(0);
-                args.removeAt(0);
-                QStringList commandParams = args;
-                commandLineExecutePlugin(pluginName,commandName,commandParams);
-             }
+            for(int num = 0; num< commands.size();num++)
+            {
+                QStringList args = commands[num].split("|");
+                if(args.size() > 1)
+                 {
+                    QString pluginName = args.at(0);
+                    QString commandName = args.at(1);
+                    args.removeAt(0);
+                    args.removeAt(0);
+                    QStringList commandParams = args;
+                    commandLineExecutePlugin(pluginName,commandName,commandParams);
+                 }
+            }
+            exit(0); // exit after last plugin command from command line
         }
     }
 
@@ -687,6 +671,25 @@ void MainWindow::initFileHandling()
         }
     }
 
+    /* Commands plugin before loading log file */
+    if(QDltOptManager::getInstance()->isPlugin())
+    {
+        QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
+
+        for(int num = 0; num< commands.size();num++)
+        {
+            QStringList args = commands[num].split("|");
+            if(args.size() > 1)
+             {
+                QString pluginName = args.at(0);
+                QString commandName = args.at(1);
+                args.removeAt(0);
+                args.removeAt(0);
+                QStringList commandParams = args;
+                commandLineExecutePlugin(pluginName,commandName,commandParams);
+             }
+        }
+    }
 
     /* Process Logfile */
     outputfileIsFromCLI = false;
@@ -926,11 +929,6 @@ void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList
 
         exit(-1);
     }
-    else
-    {
-        exit(0);
-    }
-
 }
 
 void MainWindow::deleteactualFile()
