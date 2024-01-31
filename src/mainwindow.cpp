@@ -729,6 +729,7 @@ void MainWindow::initFileHandling()
                 openFileNames = QStringList(fn);
                 isDltFileReadOnly = false;
                 reloadLogFile(); // because we have a dedicated file in this case -> no index run for default file necessary
+                outputfile.close(); // open later again when writing
               }
              else
               {
@@ -1039,6 +1040,7 @@ void MainWindow::onNewTriggered(QString fileName)
         isDltFileReadOnly = false;
         //reloadLogFile(false,false); // avoid "CORRUPT MESSAGE" - non threading !
         reloadLogFile(); // avoid "CORRUPT MESSAGE" - non threading !
+        outputfile.close(); // open later again when writing
     }
     else
      {
@@ -1166,6 +1168,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
             //reloadLogFile(false,false);
             reloadLogFile();
          }
+        outputfile.close(); // open later again when writing
         ret = true;
     }
     else
@@ -1185,6 +1188,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
                 // normally load log file mutithreaded
                 reloadLogFile();
              }
+            outputfile.close(); // open later again when writing
             ret = true;
             //qDebug() << "Loading file" << fileNames.last() << outputfile.errorString();
         }
@@ -1254,6 +1258,11 @@ void MainWindow::appendDltFile(const QString &fileName)
     }
 
     /* read DLT messages and append to current output file */
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        return;
+    }
     for(int pos = 0 ; pos<num ; pos++)
     {
         if ( 0 == (pos % 1000))
@@ -1266,6 +1275,7 @@ void MainWindow::appendDltFile(const QString &fileName)
         {
             dlt_file_free(&importfile,0);
             reloadLogFile();
+            outputfile.close();
             return;
         }
         dlt_file_message(&importfile,pos,0);
@@ -1273,6 +1283,7 @@ void MainWindow::appendDltFile(const QString &fileName)
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
     }
     outputfile.flush();
+    outputfile.close();
 
     dlt_file_free(&importfile,0);
 
@@ -1291,9 +1302,6 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
-    if(!outputfile.isOpen())
-        return;
-
     DltFile importfile;
 
     dlt_file_init(&importfile,0);
@@ -1302,15 +1310,18 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        return;
+    }
     while (dlt_file_read_raw(&importfile,false,0)>=0)
     {
-        // https://bugreports.qt-project.org/browse/QTBUG-26069
-        outputfile.seek(outputfile.size());
         outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-        outputfile.flush();
-
     }
+    outputfile.flush();
+    outputfile.close();
 
     dlt_file_free(&importfile,0);
 
@@ -1352,9 +1363,6 @@ void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
 
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
-
-    if(!outputfile.isOpen())
-        return;
 
     QFile inputfile(fileName);
 
@@ -1525,9 +1533,6 @@ void MainWindow::on_actionImport_IPC_from_PCAP_triggered()
 
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
-
-    if(!outputfile.isOpen())
-        return;
 
     QFile inputfile(fileName);
 
@@ -1740,9 +1745,6 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
 
-    if(!outputfile.isOpen())
-        return;
-
     DltFile importfile;
 
     dlt_file_init(&importfile,0);
@@ -1751,15 +1753,18 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        return;
+    }
     while (dlt_file_read_raw(&importfile,true,0)>=0)
     {
-        // https://bugreports.qt-project.org/browse/QTBUG-26069
-        outputfile.seek(outputfile.size());
         outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-        outputfile.flush();
-
     }
+    outputfile.flush();
+    outputfile.close();
 
     dlt_file_free(&importfile,0);
 
@@ -1782,9 +1787,6 @@ void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
 
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
-
-    if(!outputfile.isOpen())
-        return;
 
     appendDltFile(fileName);
 }
@@ -2069,6 +2071,7 @@ void MainWindow::onSaveAsTriggered(QString fileName)
         openFileNames = QStringList(fileName);
         isDltFileReadOnly = false;
         reloadLogFile();
+        outputfile.close(); // open later again when writing
     }
     else
         QMessageBox::critical(0, QString("DLT Viewer"),
@@ -2131,6 +2134,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
         isDltFileReadOnly = false;
         statusFilename->setMinimumWidth(statusFilename->width()); // just works to show default tmp file + location in status line
         reloadLogFile();
+        outputfile.close(); // open later again when writing
     }
     else
     {
@@ -4183,50 +4187,50 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
         dlt_set_id(str.ecu, ecuitem->id.toLatin1());
 
     /* check if message is matching the filter */
-    if (outputfile.isOpen())
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
-        // https://bugreports.qt-project.org/browse/QTBUG-26069
-        outputfile.seek(outputfile.size());
-        // set start time when writing first data
-        if(startLoggingDateTime.isNull())
-            {
-            startLoggingDateTime = QDateTime::currentDateTime();
-            }
-
-        if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
-         {
-         // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
-         if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayloadSize)) > settings->fmaxFileSizeMB *1000*1000) )
-          {
-            createsplitfile();
-          }
-        }
-
-        // write data into file
-        if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
-        {
-            // write version 1 storage header
-            outputfile.write((char*)&str,sizeof(DltStorageHeader));
-        }
-        else
-        {
-            // write version 2 storage header
-            outputfile.write((char*)"DLT",3);
-            quint8 version = 2;
-            outputfile.write((char*)&version,1);
-            quint32 nanoseconds = str.microseconds * 1000ul; // not in big endian format
-            outputfile.write((char*)&nanoseconds,4);
-            quint64 seconds = (quint64) str.seconds; // not in big endian format
-            outputfile.write(((char*)&seconds),5);
-            quint8 length;
-            length = ecuitem->id.length();
-            outputfile.write((char*)&length,1);
-            outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
-        }
-        outputfile.write(bufferHeader);
-        outputfile.write(bufferPayload,bufferPayloadSize);
-        outputfile.flush();
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
     }
+    // set start time when writing first data
+    if(startLoggingDateTime.isNull())
+    {
+        startLoggingDateTime = QDateTime::currentDateTime();
+    }
+
+    if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
+     {
+     // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
+     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayloadSize)) > settings->fmaxFileSizeMB *1000*1000) )
+      {
+        createsplitfile();
+      }
+    }
+
+    // write data into file
+    if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
+    {
+        // write version 1 storage header
+        outputfile.write((char*)&str,sizeof(DltStorageHeader));
+    }
+    else
+    {
+        // write version 2 storage header
+        outputfile.write((char*)"DLT",3);
+        quint8 version = 2;
+        outputfile.write((char*)&version,1);
+        quint32 nanoseconds = str.microseconds * 1000ul; // not in big endian format
+        outputfile.write((char*)&nanoseconds,4);
+        quint64 seconds = (quint64) str.seconds; // not in big endian format
+        outputfile.write(((char*)&seconds),5);
+        quint8 length;
+        length = ecuitem->id.length();
+        outputfile.write((char*)&length,1);
+        outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
+    }
+    outputfile.write(bufferHeader);
+    outputfile.write(bufferPayload,bufferPayloadSize);
+    outputfile.flush();
+    outputfile.close();
 
 }
 
@@ -4362,13 +4366,13 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->serialcon.syncFound = 0;
          }
 
-     if ( ( true == outputfile.isOpen() ) ) //&& ( settings->loggingOnlyMode == 0 )  )
-        {
+     //if(outputfile.isOpen()) //&& ( settings->loggingOnlyMode == 0 )  )
+     //   {
             if(false == dltIndexer->isRunning())
             {
                 updateIndex();
             }
-        }
+     //   }
 }
 
 
@@ -4427,6 +4431,7 @@ void MainWindow::SplitTriggered(QString fileName)
         openFileNames = QStringList(fileName);
         isDltFileReadOnly = false;
         reloadLogFile(false,true);
+        outputfile.close(); // open later again when writing
      }
     else
      {
@@ -4933,17 +4938,17 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
 
     /* Skip the file handling, if indexer is working on the file */
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        return;
+    }
     if(dltIndexer->tryLock())
     {
         /* store ctrl message in log file */
-        if (outputfile.isOpen())
-        {
-            // https://bugreports.qt-project.org/browse/QTBUG-26069
-            outputfile.seek(outputfile.size());
-            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
-            outputfile.write((const char*)msg.databuffer,msg.datasize);
-            outputfile.flush();
-        }
+        outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+        outputfile.write((const char*)msg.databuffer,msg.datasize);
+        outputfile.flush();
 
         /* read received messages in DLT file parser and update DLT message list view */
         /* update indexes  and table view */
@@ -4952,6 +4957,8 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
         dltIndexer->unlock();
     }
+    outputfile.close();
+
 }
 
 void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
@@ -5006,17 +5013,19 @@ void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString app
     msg.standardheader->len = DLT_HTOBE_16(msg.headersize - sizeof(DltStorageHeader) + msg.datasize);
 
     /* Skip the file handling, if indexer is working on the file */
+    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    {
+        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        return;
+    }
     if(dltIndexer->tryLock())
     {
         /* store ctrl message in log file */
-        if (outputfile.isOpen())
-        {
-            // https://bugreports.qt-project.org/browse/QTBUG-26069
-            outputfile.seek(outputfile.size());
-            outputfile.write((const char*)msg.headerbuffer,msg.headersize);
-            outputfile.write((const char*)msg.databuffer,msg.datasize);
-            outputfile.flush();
-        }
+        // https://bugreports.qt-project.org/browse/QTBUG-26069
+        outputfile.seek(outputfile.size());
+        outputfile.write((const char*)msg.headerbuffer,msg.headersize);
+        outputfile.write((const char*)msg.databuffer,msg.datasize);
+        outputfile.flush();
 
         /* read received messages in DLT file parser and update DLT message list view */
         /* update indexes  and table view */
@@ -5025,6 +5034,7 @@ void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString app
 
         dltIndexer->unlock();
     }
+    outputfile.close();
 }
 
 void MainWindow::on_action_menuDLT_Get_Default_Log_Level_triggered()
