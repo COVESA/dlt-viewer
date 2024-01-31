@@ -142,6 +142,7 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(updateContextLoadingFile));
             xml.writeTextElement("updateContextsUnregister",QString("%1").arg(updateContextsUnregister));
             xml.writeTextElement("loggingOnlyMode",QString("%1").arg(loggingOnlyMode));
+            xml.writeTextElement("loggingOnlyFilteredMessages",QString("%1").arg(loggingOnlyFilteredMessages));
             xml.writeTextElement("splitlogfile",QString("%1").arg(splitlogfile));
             xml.writeTextElement("fmaxFileSizeMB",QString("%1").arg(fmaxFileSizeMB));
             xml.writeTextElement("appendDateTime",QString("%1").arg(appendDateTime));
@@ -186,6 +187,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/autoMarkMarker",autoMarkMarker);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
+    settings->setValue("startup/loggingOnlyFilteredMessages",loggingOnlyFilteredMessages);
     settings->setValue("startup/splitfileyesno",splitlogfile);
     settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
@@ -358,6 +360,10 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         loggingOnlyMode = xml.readElementText().toInt();
     }
+    if(xml.name() == QString("loggingOnlyFilteredMessages"))
+    {
+        loggingOnlyFilteredMessages = xml.readElementText().toInt();
+    }
     if(xml.name() == QString("markercolor"))
     {
         markercolor.setNamedColor(xml.readElementText());
@@ -430,6 +436,7 @@ void QDltSettingsManager::readSettings()
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
     autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
+    loggingOnlyFilteredMessages = settings->value("startup/loggingOnlyFilteredMessages",0).toInt();
     splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
     fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",100).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();

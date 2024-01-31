@@ -243,6 +243,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkWarn->setCheckState(settings->autoMarkWarn?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxLoggingOnlyFilteredMessages->setCheckState(settings->loggingOnlyFilteredMessages?Qt::Checked:Qt::Unchecked);
     ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
     ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
@@ -412,6 +413,7 @@ void SettingsDialog::readDlg()
     settings->autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
     settings->autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
     settings->loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
+    settings->loggingOnlyFilteredMessages = (ui->checkBoxLoggingOnlyFilteredMessages->checkState() == Qt::Checked);
     settings->splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
     if(settings->splitlogfile != 0)
      {

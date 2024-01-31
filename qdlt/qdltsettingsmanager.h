@@ -97,6 +97,7 @@ public:
     int updateContextLoadingFile; // project and local setting
     int updateContextsUnregister; // project and local setting
     int loggingOnlyMode; // project and local setting
+    int loggingOnlyFilteredMessages; // project and local setting
     int splitlogfile; // local and project setting
     float fmaxFileSizeMB; // local and project setting
     int appendDateTime; // local and project setting
