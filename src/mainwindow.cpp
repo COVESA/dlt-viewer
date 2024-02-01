@@ -4273,7 +4273,26 @@ void MainWindow::read(EcuItem* ecuitem)
                 {
                     // DLT message found, write it with storage header
                     QByteArray empty;
-                    writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                    if(settings->loggingOnlyFilteredMessages)
+                    {
+                        // write only messages which match filter
+                        bool silentMode = !QDltOptManager::getInstance()->issilentMode();
+                        QDltMsg qmsg;
+                        qmsg.setMsg(QByteArray(dataPtr,sizeMsg),false);
+                        if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+                        {
+                           pluginManager.decodeMsg(qmsg,silentMode);
+                        }
+                        if(qfile.checkFilter(qmsg))
+                        {
+                            writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                        }
+                    }
+                    else
+                    {
+                        // write all messages
+                        writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                    }
                     totalBytesRcvd+=sizeMsg;
                     if(sizeMsg<=dataSize)
                     {
@@ -4330,18 +4349,36 @@ void MainWindow::read(EcuItem* ecuitem)
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg)) ||
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
-            /* write message to file */
-            QByteArray bufferHeader;
-            QByteArray bufferPayload;
-            bufferHeader = qmsg.getHeader();
-            bufferPayload = qmsg.getPayload();
-            writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
-
             /* analyse received message, check if DLT control message response */
             if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
             {
                 controlMessage_ReceiveControlMessage(ecuitem,qmsg);
             }
+
+            /* write message to file */
+            QByteArray bufferHeader;
+            QByteArray bufferPayload;
+            bufferHeader = qmsg.getHeader();
+            bufferPayload = qmsg.getPayload();
+            if(settings->loggingOnlyFilteredMessages)
+            {
+                // write only messages which match filter
+                bool silentMode = !QDltOptManager::getInstance()->issilentMode();
+                if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+                {
+                   pluginManager.decodeMsg(qmsg,silentMode);
+                }
+                if(qfile.checkFilter(qmsg))
+                {
+                    writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
+                }
+            }
+            else
+            {
+                // write all messages
+                writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
+            }
+
         } //end while
 
      if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP)

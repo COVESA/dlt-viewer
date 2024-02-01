@@ -842,44 +842,17 @@
           <string>Other</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_4">
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically mark all messages of subtype ( loglevel ) &amp;quot;fatal&amp;quot; and &amp;quot;error&amp;quot; with red color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Auto mark fatal/error messages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
+          <item row="9" column="0">
            <widget class="QCheckBox" name="checkBoxAppendDateTime">
             <property name="text">
              <string>Append Date/Time to filename when closing DLT Viewer</string>
             </property>
            </widget>
           </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
+          <item row="6" column="0">
+           <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
             <property name="text">
-             <string>Update Contexts when loading log file</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoConnect">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this chechbox is enabled the last ECU connected is tried to be connected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Auto connect to ECUs at start</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoScroll">
-            <property name="text">
-             <string>Auto scroll</string>
+             <string>Update Context Unregister</string>
             </property>
            </widget>
           </item>
@@ -890,6 +863,13 @@
             </property>
            </widget>
           </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkMarker">
+            <property name="text">
+             <string>Auto mark Marker messages</string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
             <property name="text">
@@ -897,7 +877,7 @@
             </property>
            </widget>
           </item>
-          <item row="11" column="0">
+          <item row="12" column="0">
            <widget class="QGroupBox" name="groupBox_MarkerColor">
             <property name="title">
              <string>Manual marker color</string>
@@ -972,14 +952,24 @@
             </layout>
            </widget>
           </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkMarker">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoConnect">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this chechbox is enabled the last ECU connected is tried to be connected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
-             <string>Auto mark Marker messages</string>
+             <string>Auto connect to ECUs at start</string>
             </property>
            </widget>
           </item>
-          <item row="9" column="0">
+          <item row="5" column="0">
+           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
+            <property name="text">
+             <string>Update Contexts when loading log file</string>
+            </property>
+           </widget>
+          </item>
+          <item row="10" column="0">
            <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -1018,7 +1008,7 @@
              <item>
               <widget class="QLineEdit" name="lineEditMaxFileSizeMB">
                <property name="enabled">
-                <bool>true</bool>
+                <bool>false</bool>
                </property>
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -1037,10 +1027,27 @@
             </layout>
            </widget>
           </item>
-          <item row="6" column="0">
-           <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
+          <item row="1" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoScroll">
             <property name="text">
-             <string>Update Context Unregister</string>
+             <string>Auto scroll</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically mark all messages of subtype ( loglevel ) &amp;quot;fatal&amp;quot; and &amp;quot;error&amp;quot; with red color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Auto mark fatal/error messages</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QCheckBox" name="checkBoxLoggingOnlyFilteredMessages">
+            <property name="text">
+             <string>Logging only filtered DLT Messages</string>
             </property>
            </widget>
           </item>
