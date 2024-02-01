@@ -23,8 +23,8 @@ jobs:
         run: ls -n /Applications/ | grep Xcode*
       - name: Set XCode Version
         run: sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-      - name: install qt 5
-        run: brew install qt@5
+      - name: install qt 6
+        run: brew install qt@6
       - name: install build environment
         run: scripts/darwin/install.sh
       - name: Build project
@@ -79,11 +79,11 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           mirror: http://ftp.fau.de/qtproject/
-          version: 5.12.12
+          version: 6.6.1
       - name: Build ${{ matrix.task }}
         run: >
-          $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
-          ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt6_DIR.Replace('/','\');
+          ./build_${{ matrix.task }}_windows_cmake.bat
       - name: Archive artifact
         run: >
           Compress-Archive -Path .\build\dist -DestinationPath
