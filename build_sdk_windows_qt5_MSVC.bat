@@ -13,14 +13,14 @@ call build_config.bat
 
 if '%WORKSPACE%'=='' (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDKQt%QTNO%
     )
 
     set SOURCE_DIR=%CD%
     set BUILD_DIR=%CD%\build\release
 ) else (
     if '%DLT_VIEWER_SDK_DIR%'=='' (
-        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\build\dist\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=%WORKSPACE%\build\dist\DltViewerSDKQt%QTNO%
     )
 
     set SOURCE_DIR=%WORKSPACE%
