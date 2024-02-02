@@ -556,8 +556,6 @@ private slots:
     void on_applyConfig_clicked();
     void on_tabWidget_currentChanged(int index);
 
-    void on_comboBoxFilterSelection_activated(const QString &arg1);
-
     void on_actionDefault_Filter_Reload_triggered();
 
     void on_actionDefault_Filter_Create_Index_triggered();
@@ -590,6 +588,8 @@ private slots:
     void on_actionImport_DLT_from_PCAP_triggered();
 
     void on_actionImport_IPC_from_PCAP_triggered();
+
+    void on_comboBoxFilterSelection_textActivated(const QString &arg1);
 
 public slots:
 

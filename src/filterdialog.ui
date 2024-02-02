@@ -14,7 +14,7 @@
    <string>Filter Configuration</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset resource="resources/resource.qrc">
     <normaloff>:/toolbar/png/edit-cut.png</normaloff>:/toolbar/png/edit-cut.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -80,7 +80,7 @@
          <string>Positive</string>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
+         <iconset resource="resources/resource.qrc">
           <normaloff>:/icons/png/view-filter_32_on_g.png</normaloff>
           <normalon>:/toolbar/png/view-filter_32_on.png</normalon>:/icons/png/view-filter_32_on_g.png</iconset>
         </property>
@@ -119,7 +119,7 @@
          <string>Negative</string>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
+         <iconset resource="resources/resource.qrc">
           <normaloff>:/icons/png/dialog-error-3_g.png</normaloff>
           <normalon>:/icons/png/dialog-error-3.png</normalon>:/icons/png/dialog-error-3_g.png</iconset>
         </property>
@@ -152,7 +152,7 @@
          <string>Marker</string>
         </property>
         <property name="icon">
-         <iconset resource="resource.qrc">
+         <iconset resource="resources/resource.qrc">
           <normaloff>:/icons/png/colorize-2_g.png</normaloff>
           <normalon>:/icons/png/colorize-2.png</normalon>:/icons/png/colorize-2_g.png</iconset>
         </property>
@@ -174,34 +174,6 @@
         <attribute name="buttonGroup">
          <string notr="true">buttonGroup_filterType</string>
         </attribute>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBoxType">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>25</height>
-         </size>
-        </property>
-        <item>
-         <property name="text">
-          <string>positive</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>negative</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>marker</string>
-         </property>
-        </item>
        </widget>
       </item>
      </layout>
@@ -862,7 +834,7 @@
           <string>Pick..</string>
          </property>
          <property name="icon">
-          <iconset resource="resource.qrc">
+          <iconset resource="resources/resource.qrc">
            <normaloff>:/icons/png/colorize-2.png</normaloff>
            <normalon>:/icons/png/colorize-2.png</normalon>:/icons/png/colorize-2.png</iconset>
          </property>
@@ -963,7 +935,6 @@
   <tabstop>pushButton_Positive</tabstop>
   <tabstop>pushButton_Negative</tabstop>
   <tabstop>pushButton_Marker</tabstop>
-  <tabstop>comboBoxType</tabstop>
   <tabstop>groupBox_marker</tabstop>
   <tabstop>pushButton_c0</tabstop>
   <tabstop>pushButton_c1</tabstop>
@@ -1000,7 +971,7 @@
   <tabstop>checkBoxCtrlMsgs</tabstop>
  </tabstops>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

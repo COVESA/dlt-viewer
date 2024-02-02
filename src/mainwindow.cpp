@@ -8375,9 +8375,9 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 
 }
 
-void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
+void MainWindow::on_comboBoxFilterSelection_textActivated(const QString &arg1)
 {
-    qDebug() << "on_comboBoxFilterSelection_activated" << arg1;
+    qDebug() << "on_comboBoxFilterSelection_textActivated" << arg1;
 
     /* load current selected filter */
     if(!arg1.isEmpty() && project.LoadFilter(arg1,!ui->checkBoxAppendDefaultFilter->isChecked()))
@@ -8391,6 +8391,7 @@ void MainWindow::on_comboBoxFilterSelection_activated(const QString &arg1)
        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
        on_filterWidget_itemSelectionChanged();
     }
+
 }
 
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
@@ -8639,4 +8640,3 @@ void MainWindow::on_lineEditFilterEnd_textChanged(const QString &arg1)
 {
     applyConfigEnabled(true);
 }
-

@@ -158,6 +158,9 @@ private slots:
     void on_pushButton_c10_clicked();
     void on_buttonGroup_filterType_buttonClicked( int id );
 
+    void on_pushButton_Positive_clicked();
+    void on_pushButton_Negative_clicked();
+    void on_pushButton_Marker_clicked();
 };
 
 #endif // FILTERDIALOG_H
