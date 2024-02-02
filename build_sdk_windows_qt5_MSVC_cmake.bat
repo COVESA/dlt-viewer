@@ -21,7 +21,7 @@ if "%WORKSPACE%"=="" (goto NO_WORKSPACE) else (goto WITH_WORKSPACE)
     set DIST_DIR=%SOURCE_DIR%\build\dist
 
     if "%DLT_VIEWER_SDK_DIR%"=="" (
-        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=c:\DltViewerSDKQt%QTNO%
     )
 
     goto Continue1
@@ -31,7 +31,7 @@ if "%WORKSPACE%"=="" (goto NO_WORKSPACE) else (goto WITH_WORKSPACE)
     set DIST_DIR=%SOURCE_DIR%\build\dist
 
     if "%DLT_VIEWER_SDK_DIR%"=="" (
-        set DLT_VIEWER_SDK_DIR=%DIST_DIR%\DltViewerSDK
+        set DLT_VIEWER_SDK_DIR=%DIST_DIR%\DltViewerSDKQt%QTNO%
     )
 :Continue1
 

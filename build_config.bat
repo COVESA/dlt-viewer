@@ -8,9 +8,16 @@ REM Currently tested combinations by Qt installation
 REM 5.15.2 msvc2019
 REM 6.6.1 msvc2019
 
+if "%QTNO%"=="" (
+   set QTNO=5
+)
+
 if "%QTVER%"=="" (
-   set QTVER=5.15.2
-   REM set QTVER=6.6.1
+   if "%QTNO%"=="5" (
+		set QTVER=5.15.2 
+   )  else (
+		set QTVER=6.6.1 
+   )
 )
 
 if "%MSVC_VER%"=="" (
