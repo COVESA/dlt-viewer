@@ -257,7 +257,7 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
     }
 
 
-    if(config.getFlCtIdTag().compare(msg.getCtid()) != 0)
+    if(config.getFlCtIdTag()!=msg.getCtid())
     {
         // message is not of CTID defined to indicate file transfer
         return;
@@ -270,40 +270,42 @@ void FiletransferPlugin::updateFiletransfer(int index, QDltMsg &msg)
 
     // so we have a valid file transfer packet and now we look for the tag contained in the message
 
-    if(msgFirstArgument.toString().compare(config.getFldaTag()) == 0 ) // Filetransfer Update
+    QString arg0 = msgFirstArgument.toString().remove(QChar::Null);
+    if(arg0==config.getFldaTag()) // Filetransfer Update
     {
             msg.getArgument(PROTOCOL_FLDA_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFldaTag()) == 0)
+            QString arg4 = msgLastArgument.toString().remove(QChar::Null);
+            if(arg4==config.getFldaTag())
             {
                 doFLDA(index,&msg);
             }
             return;
-     }
-
-    if(msgFirstArgument.toString().compare(config.getFlstTag()) == 0 ) // Filetransfer Start
+     }    
+    else if(arg0==config.getFlstTag()) // Filetransfer Start
     {
             msg.getArgument(PROTOCOL_FLST_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFlstTag()) == 0)
+            QString arg4 = msgLastArgument.toString().remove(QChar::Null);
+            if(arg4==config.getFlstTag())
             {
                 doFLST(&msg);
             }
             return;
     }
-
-    if(msgFirstArgument.toString().compare(config.getFlfiTag()) == 0 ) // Filetransfer Stop
+    else if(arg0==config.getFlfiTag()) // Filetransfer Stop
     {
             msg.getArgument(PROTOCOL_FLFI_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFlfiTag()) == 0)
+            QString arg4 = msgLastArgument.toString().remove(QChar::Null);
+            if(arg4==config.getFlfiTag())
             {
                 doFLFI(&msg);
             }
             return;
     }
-
-    if (msgFirstArgument.toString().compare(config.getFlerTag()) == 0 )
+    else if(arg0==config.getFlerTag())
     {
             msg.getArgument(PROTOCOL_FLER_ENDFLAG,msgLastArgument);
-            if(msgLastArgument.toString().compare(config.getFlerTag()) == 0)
+            QString arg4 = msgLastArgument.toString().remove(QChar::Null);
+            if(arg4==config.getFlerTag())
             {
                 doFLER(&msg);
             }
@@ -351,9 +353,8 @@ void FiletransferPlugin::doFLST(QDltMsg *msg)
     msg->getArgument(PROTOCOL_FLST_BUFFERSIZE,argument);
     file->setBuffersize(argument.toString());
 
-    emit(form->additem_signal(file));
-
-  return;
+    emit form->additem_signal(file);
+    return;
 }
 
 void FiletransferPlugin::doFLDA(int index,QDltMsg *msg)
@@ -363,8 +364,8 @@ void FiletransferPlugin::doFLDA(int index,QDltMsg *msg)
     msg->getArgument(PROTOCOL_FLDA_FILEID,argument);
     msg->getArgument(PROTOCOL_FLDA_PACKAGENR,packageNumber);
 
-    emit(form->handleupdate_signal(argument.toString(), packageNumber.toString(), index ));
-  return;
+    emit form->handleupdate_signal(argument.toString(), packageNumber.toString(), index );
+    return;
 }
 void FiletransferPlugin::doFLIF(QDltMsg *msg) {
     Q_UNUSED(msg);
@@ -375,7 +376,7 @@ void FiletransferPlugin::doFLFI(QDltMsg *msg)
 {
     QDltArgument id;
     msg->getArgument(PROTOCOL_FLFI_FILEID, id);
-    emit(form->handlefinish_signal(id.toString()));
+    emit form->handlefinish_signal(id.toString());
 }
 
 void FiletransferPlugin::doFLER(QDltMsg *msg)
@@ -387,7 +388,7 @@ void FiletransferPlugin::doFLER(QDltMsg *msg)
     QDltArgument errorCode2;
     msg->getArgument(PROTOCOL_FLER_ERRCODE2,errorCode2);
 
-    emit(form->handle_errorsignal(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTimeString()));
+    emit form->handle_errorsignal(filename.toString(),errorCode1.toString(),errorCode2.toString(),msg->getTimeString());
 }
 
 bool FiletransferPlugin::command(QString command, QList<QString> params)
@@ -438,7 +439,7 @@ bool FiletransferPlugin::exportAll(QDir extract_dir)
 {
    bool ret = true;
    QApplication::processEvents();
-   emit(form->export_signal(extract_dir,&errorText, &ret));
+   emit form->export_signal(extract_dir,&errorText, &ret);
    return ret;
 }
 
