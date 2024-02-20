@@ -1419,6 +1419,18 @@ void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
              return;
          }
          quint16 etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+         if(etherType==0x9100 || etherType==0x88a8)
+         {
+             // VLAN tagging used
+             pos+=4;
+             if(record.size()<(pos+2))
+             {
+                 qDebug() << "Size issue!";
+                 inputfile.close();
+                 return;
+             }
+             etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+         }
          if(etherType==0x8100)
          {
              // VLAN tagging used
