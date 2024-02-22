@@ -400,7 +400,7 @@ void MainWindow::initView()
     QFileSystemModel *model = new QFileSystemModel;
 
     model->setNameFilterDisables(false);
-    model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp");
+    model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp" << "*.pcap" << "*.mf4");
     model->setRootPath(QDir::rootPath());
 
     /* sort dir entries */
@@ -1367,24 +1367,6 @@ void MainWindow::on_actionImport_DLT_from_MF4_triggered()
     importer.dltFromMF4(outputfile,fileName,this);
 
     reloadLogFile();
-}
-
-void MainWindow::on_actionImport_IPC_from_PCAP_triggered()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Import IPC from PCAP file"), workingDirectory.getDltDirectory(), tr("PCAP file (*.pcap)"));
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
-
-    DltImporter importer;
-    importer.ipcFromPCAP(outputfile,fileName,this);
-
-    reloadLogFile();
-
 }
 
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
@@ -7417,6 +7399,20 @@ void MainWindow::dropEvent(QDropEvent *event)
                 /* Filter file dropped */
                 openDlfFile(filename,true);
             }
+            else if(filename.endsWith(".pcap", Qt::CaseInsensitive))
+            {
+                /* Filter file dropped */
+                DltImporter importer;
+                importer.dltFromPCAP(outputfile,filename,this);
+                reloadLogFile();
+            }
+            else if(filename.endsWith(".mf4", Qt::CaseInsensitive))
+            {
+                /* Filter file dropped */
+                DltImporter importer;
+                importer.dltFromMF4(outputfile,filename,this);
+                reloadLogFile();
+            }
             else
             {
                 /* ask for active decoder plugin to load configuration */
@@ -8226,11 +8222,12 @@ void MainWindow::indexStart()
 
 void MainWindow::on_exploreView_activated(const QModelIndex &index)
 {
-    static const QStringList ext  = QStringList() << ".dlt" << ".dlf" << ".dlp";
+    static const QStringList ext  = QStringList() << ".dlt" << ".dlf" << ".dlp" << ".pcap" << ".mf4";
     QString                  path = getPathFromExplorerViewIndexModel(index);
 
     auto result = std::find_if(ext.begin(), ext.end(),
                                 [&path](const QString &el){return path.toLower().endsWith(el);});
+    DltImporter importer;
     switch(result - ext.begin())
     {
     case 0: /* this represents index in "ext" list */
@@ -8242,6 +8239,14 @@ void MainWindow::on_exploreView_activated(const QModelIndex &index)
         break;
     case 2:
         openDlpFile(path);
+        break;
+    case 3:
+        importer.dltFromPCAP(outputfile,path,this);
+        reloadLogFile();
+        break;
+    case 4:
+        importer.dltFromMF4(outputfile,path,this);
+        reloadLogFile();
         break;
     default:
         break;

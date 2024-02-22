@@ -1,6 +1,8 @@
 #ifndef DLTIMPORTER_H
 #define DLTIMPORTER_H
 
+#include <QMap>
+
 #include "qdltfile.h"
 #include "qdltmsg.h"
 #include "dlt_common.h"
@@ -130,7 +132,6 @@ public:
     ~DltImporter();
 
     void dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent);
-    void ipcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent);
     void dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent);
 
 private:
@@ -151,6 +152,8 @@ private:
 
     bool inSegment = false;
     QByteArray segmentBuffer;
+
+    QMap<quint16,int> channelGroupLength;
 
 };
 
