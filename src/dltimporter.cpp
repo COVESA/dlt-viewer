@@ -2,6 +2,7 @@
 #include <QProgressDialog>
 #include <QLabel>
 #include <QDebug>
+#include <QtEndian>
 
 /**
  * From QDlt.
