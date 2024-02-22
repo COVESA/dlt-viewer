@@ -131,8 +131,8 @@ public:
     explicit DltImporter();
     ~DltImporter();
 
-    void dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent);
-    void dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent);
+    void dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
+    void dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
 
 private:
 

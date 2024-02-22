@@ -55,6 +55,16 @@ QDltOptManager::QDltOptManager(QDltOptManager const&)
 
 }
 
+const QStringList &QDltOptManager::getMf4Files() const
+{
+    return mf4Files;
+}
+
+const QStringList &QDltOptManager::getPcapFiles() const
+{
+    return pcapFiles;
+}
+
 const QStringList &QDltOptManager::getPostPluginCommands() const
 {
     return postPluginCommands;
@@ -75,15 +85,17 @@ void QDltOptManager::printVersion(QString appname)
 void QDltOptManager::printUsage()
 {
 #if (WIN32)
-    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile]";
+    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
 #else
-    qDebug()<<"Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile]";
+    qDebug()<<"Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
 #endif
 
     qDebug()<<"Options:";
     qDebug()<<" [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
     qDebug()<<" [projectfile]\tLoading project file on startup (must end with .dlp)";
     qDebug()<<" [filterfile]\tLoading filterfile on startup (must end with .dlf)";
+    qDebug()<<" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
+    qDebug()<<" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
     qDebug()<<" -h \t Print usage";
     qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
     qDebug()<<" -v or --version\tOnly show version and buildtime information";
@@ -306,6 +318,18 @@ void QDltOptManager::parse(QStringList *opt)
             filterFile = QString("%1").arg(opt->at(i));
             filter = true;
             qDebug()<< "Loading filterfile " << filterFile;
+        }
+        else if(opt->at(i).endsWith(".pcap") || opt->at(i).endsWith(".PCAP"))
+        {
+            const QString pcapFile = QString("%1").arg(opt->at(i));
+            pcapFiles += pcapFile;
+            qDebug()<< "Importing pcapfile" << pcapFile;
+        }
+        else if(opt->at(i).endsWith(".mf4") || opt->at(i).endsWith(".MF4"))
+        {
+            const QString mf4File = QString("%1").arg(opt->at(i));
+            mf4Files += mf4File;
+            qDebug()<< "Importing mf4file" << mf4File;
         }
 
      } // end of for loop

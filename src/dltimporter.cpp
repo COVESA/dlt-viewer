@@ -36,7 +36,7 @@ DltImporter::~DltImporter()
 
 }
 
-void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent)
+void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -50,10 +50,13 @@ void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent
        return;
 
     QProgressDialog progress("Import DLT/IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
-    progress.setWindowTitle("Import DLT/IPC from PCAP");
     QLabel label(&progress);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setLabel(&label);
+    if(!silent)
+    {
+        progress.setWindowTitle("Import DLT/IPC from PCAP");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setLabel(&label);
+    }
     quint64 progressCounter = 0;
 
     pcap_hdr_t globalHeader;
@@ -72,7 +75,7 @@ void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent
     while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
     {
         progressCounter++;
-        if(progressCounter%1000==0)
+        if(!silent && progressCounter%1000==0)
         {
             progress.setValue(inputfile.pos()/1000);
             label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
@@ -357,7 +360,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
+void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -375,10 +378,13 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
     }
 
     QProgressDialog progress("Import DLT/IPC from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
-    progress.setWindowTitle("Import DLT/IPC from MF4");
     QLabel label(&progress);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setLabel(&label);
+    if(!silent)
+    {
+        progress.setWindowTitle("Import DLT/IPC from MF4");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setLabel(&label);
+    }
     quint64 progressCounter = 0;
 
     qDebug() << "Import DLT/IPC from MF4 file:" << fileName;
@@ -502,7 +508,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
             while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
             {
                 progressCounter++;
-                if(progressCounter%1000==0)
+                if(!silent && progressCounter%1000==0)
                 {
                     progress.setValue(inputfile.pos()/1000);
                     label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
