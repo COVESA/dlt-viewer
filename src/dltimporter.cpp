@@ -1,9 +1,29 @@
-#include "dltimporter.h"
-
 #include <QFile>
 #include <QProgressDialog>
 #include <QLabel>
 #include <QDebug>
+
+/**
+ * From QDlt.
+ * Must be a "C" include to interpret the imports correctly
+ * for MSVC compilers.
+ **/
+#include "dlt_common.h"
+extern "C" {
+
+    #include "dlt_user.h"
+}
+
+#if defined(_MSC_VER)
+#include <io.h>
+#include <time.h>
+#include <WinSock.h>
+#else
+#include <unistd.h>     /* for read(), close() */
+#include <sys/time.h>	/* for gettimeofday() */
+#endif
+
+#include "dltimporter.h"
 
 DltImporter::DltImporter()
 {
