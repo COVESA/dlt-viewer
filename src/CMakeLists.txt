@@ -37,6 +37,7 @@ add_executable(dlt-viewer
     dltfileindexer.cpp
     dlttableview.cpp
     dltexporter.cpp
+    dltimporter.cpp
     fieldnames.cpp
     dltuiutils.cpp
     workingdirectory.cpp

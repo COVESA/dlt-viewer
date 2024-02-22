@@ -591,6 +591,8 @@ private slots:
 
     void on_comboBoxFilterSelection_textActivated(const QString &arg1);
 
+    void on_actionImport_DLT_from_MF4_triggered();
+
 public slots:
 
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
