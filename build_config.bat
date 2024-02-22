@@ -9,7 +9,7 @@ REM 5.15.2 msvc2019
 REM 6.6.1 msvc2019
 
 if "%QTNO%"=="" (
-   set QTNO=5
+   set QTNO=6
 )
 
 if "%QTVER%"=="" (
@@ -25,9 +25,11 @@ if "%MSVC_VER%"=="" (
 )
 
 if exist "C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build" (
+    REM Visual Studio Community Edition 2019
 	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build"
 ) else (
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\BuildTools\VC\Auxiliary\Build"
+    REM Vidual Studio Professional 2019
+	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build"
 )
 
 echo Set QT directory for %QTVER% and %MSVC_VER%

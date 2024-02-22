@@ -81,7 +81,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
-       <number>21</number>
+       <number>23</number>
       </attribute>
      </widget>
     </item>
@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>18</height>
+     <height>17</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -116,6 +116,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="actionImport_DLT_from_PCAP"/>
     <addaction name="actionImport_IPC_from_PCAP"/>
+    <addaction name="actionImport_DLT_from_MF4"/>
     <addaction name="action_menuFile_Append_DLT_File"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionExport"/>
@@ -1680,6 +1681,11 @@
   <action name="actionImport_IPC_from_PCAP">
    <property name="text">
     <string>Import IPC from PCAP...</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_from_MF4">
+   <property name="text">
+    <string>Import DLT/IPC from MF4...</string>
    </property>
   </action>
  </widget>
