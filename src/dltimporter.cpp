@@ -36,22 +36,27 @@ DltImporter::~DltImporter()
 
 }
 
-void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent)
+void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
+    counterRecordsIPC = 0;
     counterDLTMessages = 0;
+    counterIPCMessages = 0;
 
     QFile inputfile(fileName);
 
     if(!inputfile.open(QFile::ReadOnly))
        return;
 
-    QProgressDialog progress("Import DLT from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
-    progress.setWindowTitle("Import DLT from PCAP");
+    QProgressDialog progress("Import DLT/IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
     QLabel label(&progress);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setLabel(&label);
+    if(!silent)
+    {
+        progress.setWindowTitle("Import DLT/IPC from PCAP");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setLabel(&label);
+    }
     quint64 progressCounter = 0;
 
     pcap_hdr_t globalHeader;
@@ -59,43 +64,35 @@ void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent
 
     QDltMsg qmsg;
 
-    qDebug() << "Import DLT from PCAP file:" << fileName;
+    qDebug() << "Import DLT/IPC from PCAP file:" << fileName;
 
     if(inputfile.read((char*)&globalHeader,sizeof(pcap_hdr_t))!=sizeof(pcap_hdr_t))
     {
         inputfile.close();
-        qDebug() << "dltFromPCAP:" << "Cannot open file" << fileName;
+        qDebug() << "fromPCAP:" << "Cannot open file" << fileName;
         return;
     }
     while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
     {
         progressCounter++;
-        if(progressCounter%1000==0)
+        if(!silent && progressCounter%1000==0)
         {
             progress.setValue(inputfile.pos()/1000);
-            label.setText(QString("Found %1").arg(counterDLTMessages));
+            label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
         }
 
         if (progress.wasCanceled())
         {
-            inputfile.close();
-
-            qDebug() << "Counter Records:" << counterRecords;
-            qDebug() << "Counter Records DLT:" << counterRecordsDLT;
-            qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
-            qDebug() << "dltFromPCAP:" << "Import Stopped";
-            return;
+            qDebug() << "fromPCAP:" << "Import Stopped";
+            break;
         }
 
         QByteArray record = inputfile.read(recordHeader.incl_len);
          if(record.length() != recordHeader.incl_len)
          {
              inputfile.close();
-             qDebug() << "PCAP file not complete!";
-             qDebug() << "Counter Records:" << counterRecords;
-             qDebug() << "Counter Records DLT:" << counterRecordsDLT;
-             qDebug() << "Counter DLT Mesages:" << counterDLTMessages;
-             qDebug() << "dltFromPCAP:" << "Size Error: Cannot read Record";
+             qDebug() << "fromPCAP: PCAP file not complete!";
+             qDebug() << "fromPCAP:" << "Size Error: Cannot read Record";
              return;
          }
          counterRecords ++;
@@ -113,20 +110,25 @@ void DltImporter::dltFromPCAP(QFile &outputfile,QString fileName,QWidget *parent
          if(!dltFromEthernetFrame(outputfile,record,pos,etherType,recordHeader.ts_sec,recordHeader.ts_usec))
          {
              inputfile.close();
-             qDebug() << "dltFromPCAP: Counter Records:" << counterRecords;
-             qDebug() << "dltFromPCAP: Counter Records DLT:" << counterRecordsDLT;
-             qDebug() << "dltFromPCAP: Counter DLT Mesages:" << counterDLTMessages;
-             qDebug() << "dltFromPCAP:" << "Size Error: Cannot read Ethernet Frame";
+             qDebug() << "fromPCAP:" << "Size Error: Cannot read Ethernet Frame";
+             return;
+         }
+         if(!ipcFromEthernetFrame(outputfile,record,pos,etherType,recordHeader.ts_sec,recordHeader.ts_usec))
+         {
+             inputfile.close();
+             qDebug() << "fromPCAP:" << "Size Error: Cannot read Ethernet Frame";
              return;
          }
     }
     inputfile.close();
 
-    qDebug() << "dltFromPCAP: Counter Records:" << counterRecords;
-    qDebug() << "dltFromPCAP: Counter Records DLT:" << counterRecordsDLT;
-    qDebug() << "dltFromPCAP: Counter DLT Mesages:" << counterDLTMessages;
+    qDebug() << "fromPCAP: Counter Records:" << counterRecords;
+    qDebug() << "fromPCAP: Counter Records DLT:" << counterRecordsDLT;
+    qDebug() << "fromPCAP: Counter DLT Mesages:" << counterDLTMessages;
+    qDebug() << "fromPCAP: Counter Records IPC:" << counterRecordsIPC;
+    qDebug() << "fromPCAP: Counter IPC Mesages:" << counterIPCMessages;
 
-    qDebug() << "dltFromPCAP: Import finished";
+    qDebug() << "fromPCAP: Import finished";
 
 }
 
@@ -268,6 +270,101 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
+bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+{
+       bool startOfSegment = plpRaw->probeFlags & 0x2;
+       if(startOfSegment)
+       {
+           inSegment = true;
+           segmentBuffer.clear();
+       }
+       bool endOfSegment = plpRaw->probeFlags & 0x1;
+       if(endOfSegment)
+       {
+           inSegment = false;
+       }
+       bool multiFrame = plpRaw->probeFlags & 0x8;
+       if(plpRaw->probeId == 0xd0 && plpRaw->msgType == 0x500)
+       {
+           counterRecordsIPC++;
+               counterIPCMessages++;
+
+               if(inSegment || endOfSegment)
+               {
+                   segmentBuffer += record;
+               }
+               if(!inSegment || endOfSegment)
+               {
+                   /* now write DLT message here */
+                   QByteArray empty,payload;
+                   QDltMsg msg;
+
+                   // set parameters of DLT message to be generated
+                   msg.clear();
+                   msg.setEcuid("IPNP");
+                   msg.setApid("IPC");
+                   msg.setCtid("IPC");
+                   msg.setMode(QDltMsg::DltModeVerbose);
+                   msg.setType(QDltMsg::DltTypeLog);
+                   msg.setSubtype(QDltMsg::DltLogInfo);
+                   msg.setMessageCounter(0);
+                   msg.setNumberOfArguments(3);
+
+                   // add PLP Header Data
+                   QDltArgument arg1;
+                   arg1.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                   arg1.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg1.setOffsetPayload(0);
+                   plp_header_data_t  plpHeaderData;
+                   plpHeaderData.busSpecId=0;
+                   plpHeaderData.dataFlags=plpRaw->dataFlags;
+                   plpHeaderData.length=plpRaw->dataLength;
+                   plpHeaderData.timeStampHigh=0;
+                   plpHeaderData.timeStampLow=0;
+                   arg1.setData(QByteArray((char*)&plpHeaderData,sizeof(plp_header_data_t)));
+                   msg.addArgument(arg1);
+
+                   // add IPC Header
+                   QDltArgument arg2;
+                   arg2.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                   arg2.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg2.setOffsetPayload(0);
+                   if(endOfSegment)
+                   {
+                       arg2.setData(segmentBuffer.mid(0,35));
+                   }
+                   else
+                   {
+                       arg2.setData(record.mid(0,35));
+                   }
+                   msg.addArgument(arg2);
+
+                   // add IPC Data
+                   QDltArgument arg3;
+                   arg3.setTypeInfo(QDltArgument::DltTypeInfoRawd);
+                   arg3.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg3.setOffsetPayload(0);
+                   if(endOfSegment)
+                   {
+                       arg3.setData(segmentBuffer.mid(35));
+                       segmentBuffer.clear();
+                   }
+                   else
+                   {
+                       arg3.setData(record.mid(35));
+                   }
+                   msg.addArgument(arg3);
+
+                   // write DLT message
+                   msg.getMsg(payload,false);
+                   writeDLTMessageToFile(outputfile,payload,0,0,0,sec,usec);
+               }
+
+       }
+
+    return true;
+}
+
 bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
@@ -358,133 +455,39 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-void DltImporter::ipcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent)
-{
-    counterRecords = 0;
-    counterRecordsIPC = 0;
-    counterIPCMessages = 0;
-
-    QFile inputfile(fileName);
-
-    if(!inputfile.open(QFile::ReadOnly))
-       return;
-
-    QProgressDialog progress("Import IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
-    progress.setWindowTitle("Import IPC from PCAP");
-    QLabel label(&progress);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setLabel(&label);
-    quint64 progressCounter = 0;
-
-    pcap_hdr_t globalHeader;
-    pcaprec_hdr_t recordHeader;
-
-    qDebug() << "Import IPC from PCAP file:" << fileName;
-
-    if(inputfile.read((char*)&globalHeader,sizeof(pcap_hdr_t))!=sizeof(pcap_hdr_t))
-    {
-        inputfile.close();
-        return;
-    }
-
-    inSegment = false;
-    segmentBuffer.clear();
-    while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
-    {
-        progressCounter++;
-        if(progressCounter%1000==0)
-        {
-            progress.setValue(inputfile.pos()/1000);
-            label.setText(QString("Found %1").arg(counterIPCMessages));
-        }
-
-        if (progress.wasCanceled())
-        {
-            inputfile.close();
-
-            qDebug() << "Counter Records:" << counterRecords;
-            qDebug() << "Counter Records IPC:" << counterRecordsIPC;
-            qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
-
-            return;
-        }
-
-        QByteArray record = inputfile.read(recordHeader.incl_len);
-         if(record.length() != recordHeader.incl_len)
-         {
-             inputfile.close();
-             qDebug() << "PCAP file not complete!";
-             qDebug() << "Counter Records:" << counterRecords;
-             qDebug() << "Counter Records IPC:" << counterRecordsIPC;
-             qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
-             return;
-         }
-         counterRecords ++;
-         // Check if Record is PLP packet
-         quint64 pos = 12;
-         //Read EtherType
-         if(record.size()<(pos+2))
-         {
-             qDebug() << "Size issue!";
-             inputfile.close();
-             qDebug() << "PCAP file not complete!";
-             qDebug() << "Counter Records:" << counterRecords;
-             qDebug() << "Counter Records IPC:" << counterRecordsIPC;
-             qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
-             return;
-         }
-         quint16 etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
-         pos+=2;
-         if(!ipcFromEthernetFrame(outputfile,record,pos,etherType,recordHeader.ts_sec,recordHeader.ts_usec))
-         {
-             inputfile.close();
-             qDebug() << "ipcFromPCAP: Counter Records:" << counterRecords;
-             qDebug() << "ipcFromPCAP: Counter Records IPC:" << counterRecordsIPC;
-             qDebug() << "ipcFromPCAP: Counter IPC Mesages:" << counterIPCMessages;
-             qDebug() << "ipcFromPCAP:" << "Size Error: Cannot read Ethernet Frame";
-             return;
-         }
-
-    }
-    inputfile.close();
-
-    qDebug() << "Counter Records:" << counterRecords;
-    qDebug() << "Counter Records IPC:" << counterRecordsIPC;
-    qDebug() << "Counter IPC Mesages:" << counterIPCMessages;
-
-}
-
-void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
+void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
     counterRecordsIPC = 0;
     counterDLTMessages = 0;
     counterIPCMessages = 0;
+    channelGroupLength.clear();
 
     QFile inputfile(fileName);
 
     if(!inputfile.open(QFile::ReadOnly))
     {
-       qDebug() << "dltFromMF4:" << "Cannot open file" << fileName;
+       qDebug() << "fromMF4:" << "Cannot open file" << fileName;
        return;
     }
 
-    QProgressDialog progress("Import DLT from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
-    progress.setWindowTitle("Import DLT from MF4");
+    QProgressDialog progress("Import DLT/IPC from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
     QLabel label(&progress);
-    progress.setWindowModality(Qt::WindowModal);
-    progress.setLabel(&label);
+    if(!silent)
+    {
+        progress.setWindowTitle("Import DLT/IPC from MF4");
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setLabel(&label);
+    }
     quint64 progressCounter = 0;
 
-    qDebug() << "Import DLT from MF4 file:" << fileName;
+    qDebug() << "Import DLT/IPC from MF4 file:" << fileName;
 
     if(inputfile.read((char*)&mdfIdblock,sizeof(mdf_idblock_t))!=sizeof(mdf_idblock_t))
     {
         inputfile.close();
-        qDebug() << "counterRecords:" << counterRecords;
-        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-        qDebug() << "dltFromMF4:" << "Size Error: Cannot reard Id Block";
+        qDebug() << "fromMF4:" << "Size Error: Cannot reard Id Block";
         return;
     }
 
@@ -501,9 +504,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
             if(inputfile.read((char*)&hdBlockLinks,sizeof(mdf_hdblocklinks_t))!=sizeof(mdf_hdblocklinks_t))
             {
                 inputfile.close();
-                qDebug() << "counterRecords:" << counterRecords;
-                qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                qDebug() << "dltFromMF4:" << "Size Error: Cannot reard HD Block";
+                qDebug() << "fromMF4:" << "Size Error: Cannot reard HD Block";
                 return;
             }
             // Iterate through all data groups
@@ -514,9 +515,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                 if(inputfile.read((char*)&mdfDgHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
                 {
                     inputfile.close();
-                    qDebug() << "counterRecords:" << counterRecords;
-                    qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                    qDebug() << "dltFromMF4:" << "Size Error: Cannot reard DG Block";
+                    qDebug() << "fromMF4:" << "Size Error: Cannot reard DG Block";
                     return;
                 }
                 if(mdfDgHeader.id[0]=='#' && mdfDgHeader.id[1]=='#' && mdfDgHeader.id[2]=='D' && mdfDgHeader.id[3]=='G')
@@ -526,9 +525,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                     if(inputfile.read((char*)&mdfDgBlockLinks,sizeof(mdf_dgblocklinks_t))!=sizeof(mdf_dgblocklinks_t))
                     {
                         inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot reard DG Block";
+                        qDebug() << "fromMF4:" << "Size Error: Cannot reard DG Block";
                         return;
                     }
                     ptrDg=mdfDgBlockLinks.dg_dg_next;
@@ -540,9 +537,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                         if(inputfile.read((char*)&mdfCgHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
                         {
                             inputfile.close();
-                            qDebug() << "counterRecords:" << counterRecords;
-                            qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                            qDebug() << "dltFromMF4:" << "Size Error: Cannot reard CG Block";
+                            qDebug() << "fromMF4:" << "Size Error: Cannot reard CG Block";
                             return;
                         }
                         if(mdfCgHeader.id[0]=='#' && mdfCgHeader.id[1]=='#' && mdfCgHeader.id[2]=='C' && mdfCgHeader.id[3]=='G')
@@ -552,14 +547,16 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                             if(inputfile.read((char*)&mdfCgBlockLinks,sizeof(mdf_cgblocklinks_t))!=sizeof(mdf_cgblocklinks_t))
                             {
                                 inputfile.close();
-                                qDebug() << "counterRecords:" << counterRecords;
-                                qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                                qDebug() << "dltFromMF4:" << "Size Error: Cannot reard CG Block";
+                                qDebug() << "fromMF4:" << "Size Error: Cannot reard CG Block";
                                 return;
                             }
                             //qDebug() << "\t\cg_record_id =" << mdfCgBlockLinks.cg_record_id;
                             //qDebug() << "\t\cg_data_bytes =" << mdfCgBlockLinks.cg_data_bytes;
                             ptrCg=mdfCgBlockLinks.cg_cg_next;
+                            if(mdfCgBlockLinks.cg_flags&1) // VLSD
+                                channelGroupLength[mdfCgBlockLinks.cg_record_id]=-1;
+                            else
+                                channelGroupLength[mdfCgBlockLinks.cg_record_id]=mdfCgBlockLinks.cg_data_bytes;
                             // Iterate through all channels
                             quint64 ptrCh = mdfCgBlockLinks.cg_cn_first;
                             while(ptrCh)
@@ -567,9 +564,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                                 inputfile.seek(ptrCh);
                                 if(inputfile.read((char*)&mdfCnHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
                                 {
-                                    qDebug() << "counterRecords:" << counterRecords;
-                                    qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                                    qDebug() << "dltFromMF4:" << "Size Error: Cannot reard CN Block";
+                                    qDebug() << "fromMF4:" << "Size Error: Cannot reard CN Block";
                                     inputfile.close();
                                     return;
                                 }
@@ -580,9 +575,7 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                                     if(inputfile.read((char*)&mdfChBlockLinks,sizeof(mdf_cnblocklinks_t))!=sizeof(mdf_cnblocklinks_t))
                                     {
                                         inputfile.close();
-                                        qDebug() << "counterRecords:" << counterRecords;
-                                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                                        qDebug() << "dltFromMF4:" << "Size Error: Cannot reard CN Block";
+                                        qDebug() << "fromMF4:" << "Size Error: Cannot reard CN Block";
                                         return;
                                     }
                                     ptrCh=mdfChBlockLinks.cn_cn_next;
@@ -606,24 +599,21 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
             quint16 recordId;
             quint32 lengthVLSD;
             mdf_ethFrame ethFrame;
+            mdf_plpRaw_t plpRaw;
             QByteArray recordData;
             while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
             {
                 progressCounter++;
-                if(progressCounter%1000==0)
+                if(!silent && progressCounter%1000==0)
                 {
                     progress.setValue(inputfile.pos()/1000);
-                    label.setText(QString("Found DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
+                    label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
                 }
 
                 if (progress.wasCanceled())
                 {
-                    inputfile.close();
-
-                    qDebug() << "counterRecords:" << counterRecords;
-                    qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                    qDebug() << "dltFromMF4:" << "Import Stopped";
-                    return;
+                    qDebug() << "fromMF4:" << "Import Stopped";
+                    break;
                 }
 
                 //qDebug() << "posDt =" << posDt;
@@ -632,125 +622,188 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
                 if(inputfile.read((char*)&recordId,sizeof(quint16))!=sizeof(quint16))
                 {
                     inputfile.close();
-                    qDebug() << "counterRecords:" << counterRecords;
-                    qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                    qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
+                    qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                     return;
                 }
                 posDt += sizeof(quint16);
-                if(recordId==6 || recordId==4 ||recordId==2)
+                if(channelGroupLength.contains(recordId))
                 {
-                    if(inputfile.read((char*)&lengthVLSD,sizeof(quint32))!=sizeof(quint32))
+                    if(channelGroupLength[recordId]==-1)
                     {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
+                        if(inputfile.read((char*)&lengthVLSD,sizeof(quint32))!=sizeof(quint32))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        posDt += sizeof(quint32);
+                        posDt += lengthVLSD;
+                        recordData = inputfile.read(lengthVLSD);
+                        //qDebug() << "recordId =" << recordId << "length =" << lengthVLSD;
                     }
-                    posDt += sizeof(quint32);
-                    posDt += lengthVLSD;
-                    recordData = inputfile.read(lengthVLSD);
-                    //qDebug() << "recordId =" << recordId << "length =" << lengthVLSD;
-                }
-                else if(recordId==5 || recordId==3 ||recordId==1)
-                {
-                    if(inputfile.read((char*)&ethFrame.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                    else if(channelGroupLength[recordId]==43)
                     {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
+                        // Ethernet Group
+                        if(inputfile.read((char*)&ethFrame.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.source,6)!=6)
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.destination,6)!=6)
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.etherType,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.crc,sizeof(quint32))!=sizeof(quint32))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.receivedDataByteCount,sizeof(quint32))!=sizeof(quint32))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.dataLength,sizeof(quint32))!=sizeof(quint32))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&ethFrame.dataBytes,sizeof(quint64))!=sizeof(quint64))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        posDt += 43;
+                        //qDebug() << "recordId =" << recordId << "length =" << 43;
+                        if(!recordData.isEmpty())
+                        {
+                            int pos = 0;
+                            quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
+                            if(!dltFromEthernetFrame(outputfile,recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            {
+                                inputfile.close();
+                                qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
+                                return;
+                            }
+                            pos = 0;
+                            if(!ipcFromEthernetFrame(outputfile,recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            {
+                                inputfile.close();
+                                qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
+                                return;
+                            }
+                            recordData.clear();
+                        }
                     }
-                    if(inputfile.read((char*)&ethFrame.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                    else if(channelGroupLength[recordId]==29)
                     {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
+                        // PLP Raw
+                        if(inputfile.read((char*)&plpRaw.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.probeId,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.msgType,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.probeFlags,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.dataFlags,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.dataCounter,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.dataLength,sizeof(quint16))!=sizeof(quint16))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        if(inputfile.read((char*)&plpRaw.dataBytes,sizeof(quint32))!=sizeof(quint32))
+                        {
+                            inputfile.close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
+                            return;
+                        }
+                        posDt += 29;
+                        //qDebug() << "recordId =" << recordId << "length =" << 43;
+                        if(!recordData.isEmpty())
+                        {
+                            int pos = 0;
+                            quint64 time = hdBlockLinks.start_time_ns+plpRaw.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
+                            if(!ipcFromPlpRaw(&plpRaw,outputfile,recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            {
+                                inputfile.close();
+                                qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
+                                return;
+                            }
+                            recordData.clear();
+                        }
                     }
-                    if(inputfile.read((char*)&ethFrame.source,6)!=6)
+
+                    else
                     {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.destination,6)!=6)
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.etherType,sizeof(quint16))!=sizeof(quint16))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.crc,sizeof(quint32))!=sizeof(quint32))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.receivedDataByteCount,sizeof(quint32))!=sizeof(quint32))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.dataLength,sizeof(quint32))!=sizeof(quint32))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    if(inputfile.read((char*)&ethFrame.dataBytes,sizeof(quint64))!=sizeof(quint64))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4:" << "Size Error: Cannot read Record";
-                        return;
-                    }
-                    posDt += 43;
-                    //qDebug() << "recordId =" << recordId << "length =" << 43;
-                    int pos = 0;
-                    if(!dltFromEthernetFrame(outputfile,recordData,pos,ethFrame.etherType,(hdBlockLinks.start_time_ns+ethFrame.timeStamp)/1000000,(hdBlockLinks.start_time_ns+ethFrame.timeStamp)%1000000/1000))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
-                        return;
-                    }
-                    pos = 0;
-                    if(!ipcFromEthernetFrame(outputfile,recordData,pos,ethFrame.etherType,(hdBlockLinks.start_time_ns+ethFrame.timeStamp)/1000000,(hdBlockLinks.start_time_ns+ethFrame.timeStamp)%1000000/1000))
-                    {
-                        inputfile.close();
-                        qDebug() << "counterRecords:" << counterRecords;
-                        qDebug() << "counterDLTMessages:" << counterDLTMessages;
-                        qDebug() << "dltFromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
-                        return;
+                        qDebug() << "fromMF4: ERROR: Unknown recordId Length =" << channelGroupLength[recordId];
+                        qDebug() << "fromMF4: But try to continue read file.";
+                        posDt += sizeof(quint32);
+                        posDt += channelGroupLength[recordId];
                     }
                 }
                 else
                 {
-                    qDebug() << "dltFromMF4: ERROR: Unknown recordId =" << recordId;
+                    qDebug() << "fromMF4: ERROR: Unknown recordId =" << recordId;
                     break;
                 }
             }
@@ -767,13 +820,13 @@ void DltImporter::dltFromMF4(QFile &outputfile,QString fileName,QWidget *parent)
 
     inputfile.close();
 
-    qDebug() << "dltFromMF4: counterRecords:" << counterRecords;
-    qDebug() << "dltFromMF4: counterRecordsDLT:" << counterRecordsDLT;
-    qDebug() << "dltFromMF4: counterDLTMessages:" << counterDLTMessages;
-    qDebug() << "dltFromMF4: counterRecordsIPC:" << counterRecordsIPC;
-    qDebug() << "dltFromMF4: counterIPCMessages:" << counterIPCMessages;
+    qDebug() << "fromMF4: counterRecords:" << counterRecords;
+    qDebug() << "fromMF4: counterRecordsDLT:" << counterRecordsDLT;
+    qDebug() << "fromMF4: counterDLTMessages:" << counterDLTMessages;
+    qDebug() << "fromMF4: counterRecordsIPC:" << counterRecordsIPC;
+    qDebug() << "fromMF4: counterIPCMessages:" << counterIPCMessages;
 
-    qDebug() << "dltFromMF4: Import finished";
+    qDebug() << "fromMF4: Import finished";
 }
 
 void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)

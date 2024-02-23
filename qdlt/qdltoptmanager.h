@@ -66,6 +66,10 @@ public:
     const QStringList &getPrePluginCommands() const;
     const QStringList &getPostPluginCommands() const;
 
+    const QStringList &getPcapFiles() const;
+
+    const QStringList &getMf4Files() const;
+
 private:
     QDltOptManager();
     QDltOptManager(QDltOptManager const&);
@@ -82,6 +86,8 @@ private:
 
     QString projectFile;
     QStringList logFiles;
+    QStringList pcapFiles;
+    QStringList mf4Files;
     QString filterFile;
     QString convertSourceFile;
     QString convertDestFile;
