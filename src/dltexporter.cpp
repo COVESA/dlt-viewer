@@ -188,6 +188,8 @@ bool DltExporter::finish()
         {
             clipboardString.resize(clipboardString.size() - 1);
         }
+        /* remove null characters */
+        clipboardString.remove(QChar::Null);
         clipboard->setText(clipboardString);
     }
 
