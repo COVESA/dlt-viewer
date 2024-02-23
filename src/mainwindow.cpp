@@ -753,7 +753,7 @@ void MainWindow::initFileHandling()
     {
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getPcapFiles() )
-            importer.dltFromPCAP(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
+            importer.dltIpcFromPCAP(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
         reloadLogFile();
     }
 
@@ -762,7 +762,7 @@ void MainWindow::initFileHandling()
     {
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getMf4Files() )
-            importer.dltFromMF4(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
+            importer.dltIpcFromMF4(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
         reloadLogFile();
     }
 
@@ -1353,36 +1353,26 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     reloadLogFile();
 }
 
-void MainWindow::on_actionImport_DLT_from_PCAP_triggered()
+void MainWindow::on_actionImport_DLT_IPC_from_PCAP_MF4_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Import DLT from PCAP file"), workingDirectory.getDltDirectory(), tr("PCAP file (*.pcap)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+        tr("Import DLT/IPC from PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("PCAP files (*.pcap);MF4 files (*.mf4)"));
 
-    if(fileName.isEmpty())
+    if(fileNames.isEmpty())
         return;
 
     /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
 
     DltImporter importer;
-    importer.dltFromPCAP(outputfile,fileName,this,false);
 
-    reloadLogFile();
-}
-
-void MainWindow::on_actionImport_DLT_from_MF4_triggered()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Import DLT from MF4 file"), workingDirectory.getDltDirectory(), tr("MF4 file (*.mf4)"));
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
-
-    DltImporter importer;
-    importer.dltFromMF4(outputfile,fileName,this,false);
+    for ( const auto& i : fileNames )
+    {
+        if(i.endsWith(".pcap",Qt::CaseInsensitive))
+            importer.dltIpcFromPCAP(outputfile,i,this,false);
+        else if(i.endsWith(".mf4",Qt::CaseInsensitive))
+            importer.dltIpcFromMF4(outputfile,i,this,false);
+    }
 
     reloadLogFile();
 }
@@ -7144,7 +7134,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
 
         if (is_file)
         {
-            action = new QAction("&Load selected", this);
+            action = new QAction("&Load selected DLT", this);
             connect(action, &QAction::triggered, this, [this, indexes](){
                 QStringList  pathsList;
                 auto selectedIndexes = indexes;
@@ -7173,7 +7163,41 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                     msgBox.exec();
                 }
             });
+            menu.addAction(action);
 
+            action = new QAction("&Import DLT/IPC from selected PCAP/MF4 file...", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                QStringList  pathsList;
+                auto selectedIndexes = indexes;
+                for (auto &index : selectedIndexes)
+                {
+                   if (0 == index.column())
+                   {
+                       QString path = getPathFromExplorerViewIndexModel(index);
+                       if (path.endsWith(".pcap",Qt::CaseInsensitive))
+                           pathsList.append(path);
+                       else if (path.endsWith(".mf4",Qt::CaseInsensitive))
+                           pathsList.append(path);
+                   }
+                }
+                if (!pathsList.isEmpty())
+                {
+                    DltImporter importer;
+                    for (auto i : pathsList)
+                    {
+                        if (i.endsWith(".pcap",Qt::CaseInsensitive))
+                            importer.dltIpcFromPCAP(outputfile,i,this,false);
+                        else if (i.endsWith(".mf4",Qt::CaseInsensitive))
+                            importer.dltIpcFromMF4(outputfile,i,this,false);
+                    }
+                    reloadLogFile();
+                }
+                else
+                {
+                    QMessageBox msgBox(QMessageBox::Warning, "Warning", "No pcap/mf4 files in current selection", QMessageBox::Close);
+                    msgBox.exec();
+                }
+            });
             menu.addAction(action);
 
             if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size()))
@@ -7195,7 +7219,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                     menu.addAction(action);
                 }
 
-                action = new QAction("&Append", this);
+                action = new QAction("&Append DLT/Filter", this);
                 connect(action, &QAction::triggered, this, [this, indexes](){
                     auto index = indexes[0];
                     auto path  = getPathFromExplorerViewIndexModel(index);
@@ -7209,7 +7233,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
         }
         else
         {
-            action = new QAction("Open all files", this);
+            action = new QAction("Open all DLT files", this);
             connect(action, &QAction::triggered, this, [this, indexes](){
                 auto index = indexes[0];
                 auto path  = getPathFromExplorerViewIndexModel(index);
@@ -7223,6 +7247,27 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                 }
 
                 openDltFile(files); outputfileIsTemporary = true;
+            });
+            menu.addAction(action);
+            action = new QAction("Import all PCAP/MF4 files", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto index = indexes[0];
+                auto path  = getPathFromExplorerViewIndexModel(index);
+
+                QStringList  files;
+                QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files, QDirIterator::Subdirectories);
+
+                DltImporter importer;
+                while (it_sh.hasNext())
+                {
+                    QString i = it_sh.next();
+                    if (i.endsWith(".pcap",Qt::CaseInsensitive))
+                        importer.dltIpcFromPCAP(outputfile,i,this,false);
+                    else if (i.endsWith(".mf4",Qt::CaseInsensitive))
+                        importer.dltIpcFromMF4(outputfile,i,this,false);
+                }
+                reloadLogFile();
+
             });
             menu.addAction(action);
 
@@ -7423,14 +7468,14 @@ void MainWindow::dropEvent(QDropEvent *event)
             {
                 /* Filter file dropped */
                 DltImporter importer;
-                importer.dltFromPCAP(outputfile,filename,this,false);
+                importer.dltIpcFromPCAP(outputfile,filename,this,false);
                 reloadLogFile();
             }
             else if(filename.endsWith(".mf4", Qt::CaseInsensitive))
             {
                 /* Filter file dropped */
                 DltImporter importer;
-                importer.dltFromMF4(outputfile,filename,this,false);
+                importer.dltIpcFromMF4(outputfile,filename,this,false);
                 reloadLogFile();
             }
             else
@@ -8261,11 +8306,11 @@ void MainWindow::on_exploreView_activated(const QModelIndex &index)
         openDlpFile(path);
         break;
     case 3:
-        importer.dltFromPCAP(outputfile,path,this,false);
+        importer.dltIpcFromPCAP(outputfile,path,this,false);
         reloadLogFile();
         break;
     case 4:
-        importer.dltFromMF4(outputfile,path,this,false);
+        importer.dltIpcFromMF4(outputfile,path,this,false);
         reloadLogFile();
         break;
     default:
