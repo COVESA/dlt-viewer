@@ -165,6 +165,7 @@ private:
 
     bool inSegment = false;
     QByteArray segmentBuffer;
+    QByteArray segmentBufferUDP;
 
     QMap<quint16,int> channelGroupLength;
 

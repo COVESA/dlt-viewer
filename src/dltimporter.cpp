@@ -393,8 +393,24 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     }
     if(etherType==0x0800) // IP packet found
     {
-       pos+=9;
-       if(record.size()<(pos+1))
+       pos+=4;
+       if(record.size()<(pos+2))
+       {
+           qDebug() << "Size issue!";
+           return false;
+       }
+       quint16 identification = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+       pos+=2;
+       if(record.size()<(pos+2))
+       {
+           qDebug() << "Size issue!";
+           return false;
+       }
+       quint16 flagsOffset = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+       quint16 flags =  flagsOffset >> 13;
+       quint16 offset =  flagsOffset & 0x1fff;
+       pos+=3;
+       if(record.size()<(pos+2))
        {
            qDebug() << "Size issue!";
            return false;
@@ -403,51 +419,100 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
        if(protocol==0x11) // UDP packet found
        {
            pos+=11;
-           pos+=2;
-           if(record.size()<(pos+2))
+           if(flags==0 && offset==0)
            {
-               qDebug() << "Size issue!";
-               return false;
-           }
-           quint16 destPort = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
-           if(destPort==3490)
-           {
-               pos+=6;
-               counterRecordsDLT++;
-               // Now read the DLT Messages
-               quint64 dataSize;
-               //if(recordHeader.orig_len<record.size())
-               //    dataSize = recordHeader.orig_len-pos;
-               //else
-                   dataSize = record.size()-pos;
-               char* dataPtr = record.data()+pos;
-               // Find one ore more DLT messages in the UDP message
-               while(dataSize>0)
+               // no fragmentation
+               pos+=2;
+               if(record.size()<(pos+2))
                {
-                   QDltMsg qmsg;
-                   quint64 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
-                   if(sizeMsg>0)
+                   qDebug() << "Size issue!";
+                   return false;
+               }
+               quint16 destPort = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+               if(destPort==3490)
+               {
+                   pos+=6;
+                   counterRecordsDLT++;
+                   // Now read the DLT Messages
+                   quint64 dataSize;
+                   //if(recordHeader.orig_len<record.size())
+                   //    dataSize = recordHeader.orig_len-pos;
+                   //else
+                       dataSize = record.size()-pos;
+                   char* dataPtr = record.data()+pos;
+                   // Find one ore more DLT messages in the UDP message
+                   while(dataSize>0)
                    {
-                       // DLT message found, write it with storage header
-                       QByteArray empty;
-                       writeDLTMessageToFile(outputfile,empty,dataPtr,sizeMsg,0,sec,usec);
-                       counterDLTMessages++;
-
-                       //totalBytesRcvd+=sizeMsg;
-                       if(sizeMsg<=dataSize)
+                       QDltMsg qmsg;
+                       quint64 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
+                       if(sizeMsg>0)
                        {
-                           dataSize -= sizeMsg;
-                           dataPtr += sizeMsg;
+                           // DLT message found, write it with storage header
+                           QByteArray empty;
+                           writeDLTMessageToFile(outputfile,empty,dataPtr,sizeMsg,0,sec,usec);
+                           counterDLTMessages++;
+
+                           //totalBytesRcvd+=sizeMsg;
+                           if(sizeMsg<=dataSize)
+                           {
+                               dataSize -= sizeMsg;
+                               dataPtr += sizeMsg;
+                           }
+                           else
+                           {
+                               dataSize = 0;
+                           }
                        }
                        else
                        {
                            dataSize = 0;
                        }
                    }
-                   else
+               }
+           }
+           else
+           {
+               //fragmentation
+               if(flags==0)
+               {
+                   // last fragment
+                   segmentBufferUDP += QByteArray(record.data()+pos,record.size()-pos);
+
+                   pos=2;
+                   if(segmentBufferUDP.size()<(pos+2))
                    {
-                       dataSize = 0;
+                       qDebug() << "Size issue!";
+                       return false;
                    }
+                   quint16 destPort = (((quint16)segmentBufferUDP.at(pos))<<8)|((quint16)(segmentBufferUDP.at(pos+1)&0xff));
+                   if(destPort==3490)
+                   {
+                       pos+=6;
+                       counterRecordsDLT++;
+                       // Now read the DLT Messages
+                       quint64 dataSize;
+                       //if(recordHeader.orig_len<record.size())
+                       //    dataSize = recordHeader.orig_len-pos;
+                       //else
+                           dataSize = segmentBufferUDP.size()-pos;
+                       char* dataPtr = segmentBufferUDP.data()+pos;
+                       // Find DLT message in the UDP message
+                       QDltMsg qmsg;
+                       quint64 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
+                       if(sizeMsg>0)
+                       {
+                           // DLT message found, write it with storage header
+                           QByteArray empty;
+                           writeDLTMessageToFile(outputfile,empty,dataPtr,sizeMsg,0,sec,usec);
+                           counterDLTMessages++;
+                        }
+                   }
+                   segmentBufferUDP.clear();
+               }
+               else
+               {
+                   // first or further fragment
+                   segmentBufferUDP += QByteArray(record.data()+pos,record.size()-pos);
                }
            }
        }
