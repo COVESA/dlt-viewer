@@ -62,8 +62,8 @@ typedef struct mdf_hdblocklinks {
         quint64 hd_ev_first;
         quint64 hd_md_comment;
         quint64 start_time_ns;
-        quint16 hd_tz_offset_min;
-        quint16 hd_dst_offset_min;
+        qint16 hd_tz_offset_min;
+        qint16 hd_dst_offset_min;
         quint8 hd_time_flags;
         quint8 hd_time_class;
         quint8 hd_flags;
@@ -116,6 +116,18 @@ typedef struct mdf_ethFrame {
         quint64 dataBytes;
 } PACKED mdf_ethFrame_t;
 
+typedef struct mdf_plpRaw {
+        quint64 timeStamp;
+        quint8 asynchronous;
+        quint16 probeId;
+        quint16 msgType;
+        quint16 probeFlags;
+        quint16 dataFlags;
+        quint16 dataCounter;
+        quint16 dataLength;
+        quint32 dataBytes;
+} PACKED mdf_plpRaw_t;
+
 typedef struct mdf_hdr {
         char id[4];                /* id */
         unsigned char reserved[4]; /* reserved */
@@ -138,6 +150,7 @@ private:
 
     bool dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
     bool ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
+    bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
 
     void writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem = 0,quint32 sec = 0,quint32 usec = 0);
 

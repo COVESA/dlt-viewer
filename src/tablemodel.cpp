@@ -260,6 +260,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  }
              }
 
+             /* limit size of string to 1000 characters to speed up scrolling */
+             if(visu_data.size()>1000)
+             {
+                visu_data =  visu_data.first(1000);
+             }
              return visu_data;
          case FieldNames::MessageId:
              return QString::asprintf(project->settings->msgIdFormat.toUtf8() ,msg.getMessageId());
