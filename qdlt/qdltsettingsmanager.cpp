@@ -159,6 +159,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("RefreshRate",RefreshRate);
     settings->setValue("StartUpMinimized",StartupMinimized);
     settings->setValue("ThemeSettings", static_cast<int>(themeSelectionSettings));
+    settings->setValue("msgCacheSize",msgCacheSize);
 
     /* Temporary directory */
     settings->setValue("tempdir/tempUseSystem", tempUseSystem);
@@ -417,6 +418,7 @@ void QDltSettingsManager::readSettings()
     RefreshRate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
     StartupMinimized = settings->value("StartupMinimized",0).toInt();
     themeSelectionSettings = static_cast<UI_Colour>(settings->value("ThemeSettings", 0).toInt());
+    msgCacheSize = settings->value("msgCacheSize",1000).toInt();
 
     /* startup */
     defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();

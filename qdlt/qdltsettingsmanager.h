@@ -87,6 +87,7 @@ public:
     int StartupMinimized; // local settings
     UI_Colour themeSelectionSettings; // local settings
     UI_Colour uiColour; // local settings
+    quint64 msgCacheSize; // local settings
 
     QColor markercolor; // local and project setting
     int autoConnect; // project and local setting

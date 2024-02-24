@@ -2205,6 +2205,9 @@ void MainWindow::applySettings()
     // disable or enable filter cache
     if(dltIndexer)
         dltIndexer->setFilterCacheEnabled(settings->filterCache);
+
+    // set DLT message chache size
+    qfile.setCacheSize(settings->msgCacheSize);
 }
 
 
