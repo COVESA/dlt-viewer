@@ -36,6 +36,7 @@
 #endif
 #include <QMutex>
 #include <time.h>
+#include <QCache>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -147,7 +148,7 @@ public:
       \param msg The message which contains the DLT message after the function returns.
       \return true if the message is valid, false if an error occurred.
     */
-    bool getMsg(int index,QDltMsg &msg) const;
+    bool getMsg(int index,QDltMsg &msg);
 
     //! Get one DLT message of the DLT log file selected by index
     /*!
@@ -283,6 +284,12 @@ public:
      **/
     void setIndexFilter(QVector<qint64> _indexFilter);
 
+    //! Sets the max cache size for DLT messages
+    /*!
+     * \param cost Cache size
+     **/
+    void setCacheSize(qsizetype cost);
+
 protected:
 
 private:
@@ -321,6 +328,8 @@ private:
       false sorting is disabled.
     */
     bool sortByTimestampFlag;
+
+    QCache<int,QDltMsg> cache;
 };
 
 

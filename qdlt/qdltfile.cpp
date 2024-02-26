@@ -34,11 +34,18 @@ QDltFile::QDltFile()
     filterFlag = false;
     sortByTimeFlag = false;
     sortByTimestampFlag = false;
+
+    cache.setMaxCost(1000);
 }
 
 QDltFile::~QDltFile()
 {
     clear();
+}
+
+void QDltFile::setCacheSize(qsizetype cost)
+{
+    cache.setMaxCost(cost);
 }
 
 void QDltFile::clear()
@@ -51,6 +58,8 @@ void QDltFile::clear()
         delete(files[num]);
     }
     files.clear();
+
+    cache.clear();
 }
 
 int QDltFile::getNumberOfFiles() const
@@ -585,16 +594,31 @@ QByteArray QDltFile::getMsg(int index) const
     return buf;
 }
 
-bool QDltFile::getMsg(int index,QDltMsg &msg) const
+bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
-    QByteArray data = getMsg(index);
 
+    // check if msg is already in cache
+    QDltMsg *cacheMsg = cache[index];
+    bool result;
+    if(cacheMsg)
+    {
+        // load from cache
+        msg = *cacheMsg;
+        return true;
+    }
+
+    // load message from DLT file
+    QByteArray data = getMsg(index);
     if(data.isEmpty())
         return false;
-
-    bool result = msg.setMsg(data);
-
+    result = msg.setMsg(data);
     msg.setIndex(index);
+
+    // store msg in cache
+    cacheMsg = new QDltMsg();
+    *cacheMsg = msg;
+    if(!cache.insert(index,cacheMsg))
+        delete cacheMsg;
 
     return result;
 }
