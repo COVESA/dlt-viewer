@@ -585,11 +585,9 @@ private slots:
 
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
 
-    void on_actionImport_DLT_from_PCAP_triggered();
+    void on_actionImport_DLT_IPC_from_PCAP_MF4_triggered();
 
     void on_comboBoxFilterSelection_textActivated(const QString &arg1);
-
-    void on_actionImport_DLT_from_MF4_triggered();
 
 public slots:
 
