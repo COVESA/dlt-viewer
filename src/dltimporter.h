@@ -107,11 +107,13 @@ typedef struct mdf_cnblocklinks {
 typedef struct mdf_ethFrame {
         quint64 timeStamp;
         quint8 asynchronous;
+        quint8 busChannel[6];
         quint8 source[6];
         quint8 destination[6];
         quint16 etherType;
         quint32 crc;
         quint32 receivedDataByteCount;
+        quint64 beaconTimeStamp;
         quint32 dataLength;
         quint64 dataBytes;
 } PACKED mdf_ethFrame_t;
@@ -127,6 +129,16 @@ typedef struct mdf_plpRaw {
         quint16 dataLength;
         quint32 dataBytes;
 } PACKED mdf_plpRaw_t;
+
+typedef struct mdf_dltFrame {
+        quint64 timeStamp;
+        quint8 asynchronous;
+        quint16 currentFragmentNumber;
+        quint16 lastFragmentNumber;
+        quint32 ecuId;
+        quint32 dataLength;
+        quint32 dataBytes;
+} PACKED mdf_dltFrame_t;
 
 typedef struct mdf_hdr {
         char id[4];                /* id */
@@ -148,6 +160,7 @@ public:
 
 private:
 
+    bool dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec = 0,quint32 usec = 0);
     bool dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
     bool ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
     bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
@@ -168,6 +181,7 @@ private:
     QByteArray segmentBufferUDP;
 
     QMap<quint16,int> channelGroupLength;
+    QMap<quint16,QString> channelGroupName;
 
 };
 
