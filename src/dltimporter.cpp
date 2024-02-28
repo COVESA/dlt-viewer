@@ -96,7 +96,6 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
              return;
          }
          counterRecords ++;
-         // Check if Record is IP/UDP Packet with Dest Port 3490
          quint64 pos = 12;
          //Read EtherType
          if(record.size()<(pos+2))
@@ -765,6 +764,43 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
         etherType = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
         pos+=2;
     }
+    if(etherType==0x2090) // PLP packet found
+    {
+        if(record.size()<(pos+sizeof(plp_header_t)))
+        {
+            qDebug() << "dltFromEthernetFrame: Size issue!";
+            return false;
+        }
+        plp_header_t *plpHeader = (plp_header_t *) (record.data()+pos);
+
+        pos += sizeof(plp_header_t);
+
+        if(/*qFromBigEndian(plpHeader->probeId) == 0x62 &&*/ qFromBigEndian(plpHeader->msgType) == 0x80)
+        {
+            plp_header_data_t *plpHeaderData = (plp_header_data_t *) (record.data()+pos);
+
+            pos += sizeof(plp_header_data_t);
+
+            if(record.size()<(pos+qFromBigEndian(plpHeaderData->length)))
+            {
+                qDebug() << "dltFromEthernetFrame: Size issue!";
+                return false;
+            }
+            pos+=12;
+            if(record.size()<(pos+2))
+            {
+                qDebug() << "dltFromEthernetFrame:" << "Size Error: Cannot read Ethernet frame in PLP";
+                return false;
+            }
+            quint16 etherType2 = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+            pos+=2;
+            if(!dltFromEthernetFrame(outputfile,record,pos,etherType2,sec,usec)) // TODO: Use time from PLP instead
+            {
+                qDebug() << "dltFromEthernetFrame:" << "Size Error: Cannot read Ethernet Frame";
+                return false;
+            }
+        }
+    }
     if(etherType==0x0800) // IP packet found
     {
        pos+=4;
@@ -781,7 +817,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
            return false;
        }
        quint16 flagsOffset = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
-       quint16 flags =  flagsOffset >> 13;
+       quint16 flags =  flagsOffset >> 13; // TODO: Flags are in the wrong bit order
        quint16 offset =  flagsOffset & 0x1fff;
        pos+=3;
        if(record.size()<(pos+2))
@@ -793,7 +829,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
        if(protocol==0x11) // UDP packet found
        {
            pos+=11;
-           if(flags==0 && offset==0)
+           if((flags==0 || flags==2) && offset==0)
            {
                // no fragmentation
                pos+=2;
