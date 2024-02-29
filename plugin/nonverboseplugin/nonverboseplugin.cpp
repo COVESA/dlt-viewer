@@ -510,8 +510,8 @@ QStringList NonverbosePlugin::infoConfig()
     {
         QString text;
         text += frame->id + QString(" AppI:%1 CtI:%2 Len:%3 MT:%4 MI:%5").arg(frame->appid).arg(frame->ctid).arg(frame->byteLength).arg(frame->messageType).arg(frame->messageInfo);
-        int c = 0;
-        /* foreach(DltFibexPduRef *ref, frame->pdureflist)
+        /*int c = 0;
+        foreach(DltFibexPduRef *ref, frame->pdureflist)
         {
             if(c == 0)
                 text += " (";

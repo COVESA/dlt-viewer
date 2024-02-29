@@ -176,7 +176,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
         if(storageHeaderVersion==1)
         {
             sizeStorageHeader = sizeof(DltStorageHeader);
-            if(size < (int)(sizeStorageHeader))
+            if(size < (quint32)(sizeStorageHeader))
             {
                 // length error
                 return 0;
@@ -202,7 +202,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
                                (((quint64)(*((quint8*) (data + 9))))<<8)|
                                (((quint64)(*((quint8*) (data + 8)))));
             quint8 ecuIdLength = *((quint8*) (data + 13));
-            if(size < (int)(14+ecuIdLength)) {
+            if(size < (quint32)(14+ecuIdLength)) {
                 return 0; // length error
             }
             storageHeaderEcuId = QString(QByteArray(data+14,ecuIdLength));
@@ -216,7 +216,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
     }
 
     /* get DLT protocol version */
-    if(size < (int)(sizeStorageHeader+4)) {
+    if(size < (quint32)(sizeStorageHeader+4)) {
         return 0;
     }
     quint32 htyp2 = *((quint32*) (data + sizeStorageHeader));
@@ -226,7 +226,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
     if(versionNumber==1)
     {
         const DltStandardHeader *standardheader = 0;
-        unsigned int extra_size,headersize,datasize;
+        unsigned int extra_size,headersize;
 
         if(size < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
             return 0;
@@ -245,7 +245,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
         }
         else
         {
-            if(size < (DLT_SWAP_16(standardheader->len) + sizeStorageHeader))
+            if(size < (quint32)(DLT_SWAP_16(standardheader->len) + sizeStorageHeader))
             {
                 // whole message does not fit
                 return 0;
@@ -302,7 +302,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
         /* get Message Length */
         quint16 messageLength = messageLength = qFromBigEndian(*((quint16*) (data + 5 + sizeStorageHeader)));
 
-        if(size < (messageLength+sizeStorageHeader))
+        if(size < (quint32)(messageLength+sizeStorageHeader))
         {
             // whole message does not fit
             return 0;

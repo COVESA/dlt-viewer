@@ -75,6 +75,7 @@ QWidget* DltSegmentationPlugin::initViewer()
 }
 
 void DltSegmentationPlugin::selectedIdxMsg(int index, QDltMsg &/*msg*/) {
+    Q_UNUSED(index)
     if(!dltFile)
         return;
 }
@@ -130,7 +131,9 @@ void DltSegmentationPlugin::updateMsg(int index, QDltMsg &msg){
     }
 }
 
-void DltSegmentationPlugin::updateMsgDecoded(int index, QDltMsg &){
+void DltSegmentationPlugin::updateMsgDecoded(int index, QDltMsg &msg){
+    Q_UNUSED(index)
+    Q_UNUSED(msg)
     if(nullptr == dltFile)
          return;
 }

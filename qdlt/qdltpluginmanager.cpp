@@ -260,7 +260,7 @@ bool QDltPluginManager::setPluginPriority(const QString name, unsigned int prio)
     bool result = false;
 
     //if prio is too large, put to the end of the list
-    if(prio >= plugins.size()) {
+    if(prio >= (unsigned int) (plugins.size())) {
         prio = plugins.size() - 1;
     }
 

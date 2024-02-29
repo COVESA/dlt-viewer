@@ -569,6 +569,7 @@ void MainWindow::initSignalConnections()
 
     // connect file loaded signal with  explorerView
     connect(this, &MainWindow::dltFileLoaded, this, [this](const QStringList& paths){
+        Q_UNUSED(paths)
         QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
         QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
         ui->exploreView->scrollTo(
@@ -8359,10 +8360,12 @@ void MainWindow::on_checkBoxFilterRange_stateChanged(int arg1)
 
 void MainWindow::on_lineEditFilterStart_textChanged(const QString &arg1)
 {
+    Q_UNUSED(arg1)
     applyConfigEnabled(true);
 }
 
 void MainWindow::on_lineEditFilterEnd_textChanged(const QString &arg1)
 {
+    Q_UNUSED(arg1)
     applyConfigEnabled(true);
 }
