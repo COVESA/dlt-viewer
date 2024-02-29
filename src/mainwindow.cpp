@@ -1356,7 +1356,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 void MainWindow::on_actionImport_DLT_IPC_from_PCAP_MF4_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Import DLT/IPC from PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("PCAP files (*.pcap);MF4 files (*.mf4)"));
+        tr("Import DLT/IPC from PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("PCAP/MF4 files (*.pcap *.mf4)"));
 
     if(fileNames.isEmpty())
         return;
