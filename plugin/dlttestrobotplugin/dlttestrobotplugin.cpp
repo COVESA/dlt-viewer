@@ -120,7 +120,7 @@ bool DltTestRobotPlugin::stateChanged(int index, QDltConnection::QDltConnectionS
 
 bool DltTestRobotPlugin::autoscrollStateChanged(bool enabled)
 {
-
+    Q_UNUSED(enabled)
     return true;
 }
 

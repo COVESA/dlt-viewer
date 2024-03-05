@@ -8,7 +8,7 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
     QMAKE_CFLAGS += -std=gnu99
     QMAKE_CFLAGS += -Wall
     QMAKE_CFLAGS += -Wextra
-    #QMAKE_CFLAGS += -pedantic
+    #QMAKE_CXXFLAGS += -pedantic
 }
 
 *-g++* {

@@ -163,7 +163,7 @@ private:
     bool dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec = 0,quint32 usec = 0);
     bool dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
     bool ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
-    bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
+    bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec = 0,quint32 usec = 0);
 
     void writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem = 0,quint32 sec = 0,quint32 usec = 0);
 

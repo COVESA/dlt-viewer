@@ -98,7 +98,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
          counterRecords ++;
          quint64 pos = 12;
          //Read EtherType
-         if(record.size()<(pos+2))
+         if(record.size()<(qsizetype)(pos+2))
          {
              inputfile.close();
              qDebug() << "dltFromPCAP:" << "Size Error: Cannot read Record";
@@ -170,7 +170,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
 
     mdf_hdr_t mdfHeader,mdfDgHeader,mdfCgHeader,mdfCnHeader,mdfTxHeader;
     memset((char*)&mdfHeader,0,sizeof(mdf_hdr_t));
-    quint64 pos,posDg;
+    quint64 pos;
 
     while(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))==sizeof(mdf_hdr_t))
     {
@@ -622,9 +622,8 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
                         }
                         if(!recordData.isEmpty())
                         {
-                            int pos = 0;
                             quint64 time = hdBlockLinks.start_time_ns+plpRaw.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!ipcFromPlpRaw(&plpRaw,outputfile,recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            if(!ipcFromPlpRaw(&plpRaw,outputfile,recordData,time/1000000000,time%1000000000/1000))
                             {
                                 inputfile.close();
                                 qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
@@ -697,7 +696,7 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     }
     if(etherType==0x2090) // PLP packet found
     {
-       if(record.size()<(pos+sizeof(plp_header_t)))
+       if(record.size()<(qsizetype)(pos+sizeof(plp_header_t)))
        {
            qDebug() << "ipcFromEthernetFrame: Size issue!";
            return false;
@@ -717,11 +716,11 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
        {
            inSegment = false;
        }
-       bool multiFrame = qFromBigEndian(plpHeader->probeFlags) & 0x8;
+       //bool multiFrame = qFromBigEndian(plpHeader->probeFlags) & 0x8;
        if(qFromBigEndian(plpHeader->probeId) == 0xd0 && qFromBigEndian(plpHeader->msgType) == 0x500)
        {
            counterRecordsIPC++;
-           while(record.size()>=(pos+sizeof(plp_header_data_t)))
+           while(record.size()>=(qsizetype)(pos+sizeof(plp_header_data_t)))
            {
                plp_header_data_t *plpHeaderData = (plp_header_data_t *) (record.data()+pos);
 
@@ -807,7 +806,7 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec,quint32 usec)
 {
        bool startOfSegment = plpRaw->probeFlags & 0x2;
        if(startOfSegment)
@@ -820,7 +819,7 @@ bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArr
        {
            inSegment = false;
        }
-       bool multiFrame = plpRaw->probeFlags & 0x8;
+       //bool multiFrame = plpRaw->probeFlags & 0x8;
        if(plpRaw->probeId == 0xd0 && plpRaw->msgType == 0x500)
        {
            counterRecordsIPC++;
@@ -970,7 +969,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     }
     if(etherType==0x2090) // PLP packet found
     {
-        if(record.size()<(pos+sizeof(plp_header_t)))
+        if(record.size()<(qsizetype)(pos+sizeof(plp_header_t)))
         {
             qDebug() << "dltFromEthernetFrame: Size issue!";
             return false;
@@ -1013,7 +1012,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
            qDebug() << "Size issue!";
            return false;
        }
-       quint16 identification = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
+       //quint16 identification = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
        pos+=2;
        if(record.size()<(pos+2))
        {
