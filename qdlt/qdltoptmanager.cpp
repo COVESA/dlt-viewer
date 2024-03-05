@@ -272,6 +272,7 @@ void QDltOptManager::parse(QStringList *opt)
             QString c = opt->value(i+1);
             prePluginCommands += c;
             commandline_mode = true;
+            plugin = true;
             ++i;
          }
         else if (str.compare("-w") == 0)
