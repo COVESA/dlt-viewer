@@ -36,6 +36,7 @@ QDltFile::QDltFile()
     sortByTimestampFlag = false;
 
     cache.setMaxCost(1000);
+    cacheEnable = true;
 }
 
 QDltFile::~QDltFile()
@@ -45,7 +46,16 @@ QDltFile::~QDltFile()
 
 void QDltFile::setCacheSize(qsizetype cost)
 {
-    cache.setMaxCost(cost);
+    if(cost==0)
+    {
+        cacheEnable = false;
+        cache.setMaxCost(1);
+    }
+    else
+    {
+        cacheEnable = true;
+        cache.setMaxCost(cost);
+    }
 }
 
 void QDltFile::clear()
@@ -596,15 +606,19 @@ QByteArray QDltFile::getMsg(int index) const
 
 bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
+    bool result;
+    QDltMsg *cacheMsg;
 
     // check if msg is already in cache
-    QDltMsg *cacheMsg = cache[index];
-    bool result;
-    if(cacheMsg)
+    if(cacheEnable)
     {
-        // load from cache
-        msg = *cacheMsg;
-        return true;
+        cacheMsg = cache[index];
+        if(cacheMsg)
+        {
+            // load from cache
+            msg = *cacheMsg;
+            return true;
+        }
     }
 
     // load message from DLT file
@@ -615,10 +629,13 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     msg.setIndex(index);
 
     // store msg in cache
-    cacheMsg = new QDltMsg();
-    *cacheMsg = msg;
-    if(!cache.insert(index,cacheMsg))
-        delete cacheMsg;
+    if(cacheEnable && result)
+    {
+        cacheMsg = new QDltMsg();
+        *cacheMsg = msg;
+        if(!cache.insert(index,cacheMsg))
+            delete cacheMsg;
+    }
 
     return result;
 }
