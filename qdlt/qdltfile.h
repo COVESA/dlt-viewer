@@ -330,6 +330,7 @@ private:
     bool sortByTimestampFlag;
 
     QCache<int,QDltMsg> cache;
+    bool cacheEnable;
 };
 
 
