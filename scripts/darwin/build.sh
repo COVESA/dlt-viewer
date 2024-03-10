@@ -16,28 +16,30 @@ Qt5_DIR="/usr/local/opt/qt"
 qmake ../BuildDltViewer.pro
 make
 
-echo Cleanup
-rm -rf "${INSTALL_DIR}"
-rm -rf "${SRC_DIR}/build"
-mkdir -p "${BUILD_DIR}"
-cd "${BUILD_DIR}"
+macdeployqt ${APP_DIR_NAME}
 
-echo Build with CMake
+#echo Cleanup
+#rm -rf "${INSTALL_DIR}"
+#rm -rf "${SRC_DIR}/build"
+#mkdir -p "${BUILD_DIR}"
+#cd "${BUILD_DIR}"
+
+#echo Build with CMake
 # Installation paths configuration creates proper macOS Application bundle structure
 # https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
-cmake -G Ninja \
-  -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-  -DCMAKE_PREFIX_PATH=/opt/qt512/lib/cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DDLT_USE_QT_RPATH=ON \
-  -DDLT_PARSER=OFF \
-  -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
-  -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
-  -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
-  -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
-  -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
-  "${SRC_DIR}"
-cmake --build "${BUILD_DIR}"
+#cmake -G Ninja \
+#  -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+#  -DCMAKE_PREFIX_PATH=/opt/qt512/lib/cmake \
+#  -DCMAKE_BUILD_TYPE=Release \
+#  -DDLT_USE_QT_RPATH=ON \
+#  -DDLT_PARSER=OFF \
+#  -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
+#  -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
+#  -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
+#  -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
+#  -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
+#  "${SRC_DIR}"
+#cmake --build "${BUILD_DIR}"
 
 # See src/cmake/Darwin.cmake and scripts/darwin/package.cmake
 #
@@ -50,7 +52,7 @@ cmake --build "${BUILD_DIR}"
 #
 # CMake install takes care of proper macOs Application bundle setup. Each CMake target has a pre-configured path in bundle.
 # macdeployqt copies all used QT5 Frameworks into bundle and patches RPATH in project binaries.
-cpack -G External
+# cpack -G External
 
 cd "${BUILD_DIR}"
 FULL_VERSION=$(cat "${BUILD_DIR}/full_version.txt")
