@@ -1,6 +1,8 @@
 #
 TEMPLATE = subdirs
 CONFIG   += ordered
+CONFIG += app_bundle
+
 SUBDIRS  += qdlt src plugin
 CONFIG += c++11
 
