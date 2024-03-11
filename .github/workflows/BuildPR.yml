@@ -82,7 +82,7 @@ jobs:
       - name: Install qt
         uses: jurplel/install-qt-action@v3
         with:
-          version: 5.12.12
+          version: 5.15.2
       - name: Build with CMake ${{ matrix.task }}
         run: >
           $env:WORKSPACE=$env:GITHUB_WORKSPACE;

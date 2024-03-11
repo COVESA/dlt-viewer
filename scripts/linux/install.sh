@@ -9,9 +9,9 @@ sudo apt update
 sudo apt-get install -y --no-install-recommends apt-utils
 sudo apt install -y wget unzip software-properties-common lsb-release openssh-client curl
 
-# QT 5.12.10, is installed into /opt/qt512/
+# QT 5.15.2, is installed into /opt/qt515/
 sudo touch /etc/apt/sources.list
-sudo add-apt-repository -y ppa:beineri/opt-qt-5.12.10-$(lsb_release -cs)
+sudo add-apt-repository -y ppa:beineri/opt-qt-5.15.2-$(lsb_release -cs)
 
 # Latest cmake for current platform
 sudo wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo gpg --dearmor - | sudo tee /etc/apt/trusted.gpg.d/kitware.gpg >/dev/null
@@ -22,7 +22,7 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 
 sudo apt update
 sudo apt install -y git cmake build-essential ninja-build \
-    qt512declarative qt512serialport qt512charts-no-lgpl qt512svg \
+    qt515declarative qt515serialport qt515charts-no-lgpl qt515svg \
     libgtk2.0-dev libgl-dev gcc-11 g++-11
 
 sudo update-alternatives --remove-all cpp
@@ -45,10 +45,10 @@ chmod a+x ~/bin/linuxdeploy-plugin-qt
 # https://github.com/probonopd/linuxdeployqt/issues/338
 # https://github.com/probonopd/linuxdeployqt/issues/355
 # https://github.com/probonopd/linuxdeployqt/issues/60
-cd /opt
-git clone http://code.qt.io/qt/qtstyleplugins.git
-cd qtstyleplugins
-/opt/qt512/bin/qmake
-make -j$(nproc)
-sudo make install
-rm -rf /opt/qtstyleplugins
+# cd /opt
+# git clone http://code.qt.io/qt/qtstyleplugins.git
+# cd qtstyleplugins
+# /opt/qt515/bin/qmake
+# make -j$(nproc)
+# sudo make install
+# rm -rf /opt/qtstyleplugins

@@ -16,7 +16,7 @@
                 }
             ],
             "console": "internalConsole",
-            "symbolSearchPath": "C:/Qt/Qt5.12.10/5.12.10/msvc2017_64",
+            "symbolSearchPath": "C:/Qt/Qt5.15.2/5.15.2/msvc2019_64",
             "visualizerFile": "c:\\Users\\%USER%\\AppData\\Roaming\\Code\\User\\workspaceStorage\\4b0d9a6cc41ecace0b5cf1701d8f6462\\tonka3000.qtvsctools\\qt.natvis.xml"
         }
     ]

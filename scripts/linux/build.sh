@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -ex
 
-# https://launchpad.net/~beineri/+archive/ubuntu/opt-qt-5.12.10-bionic
-source /opt/qt512/bin/qt512-env.sh || true
+# https://launchpad.net/~beineri/+archive/ubuntu/opt-qt-5.15.2-bionic
+source /opt/qt515/bin/qt515-env.sh || true
 
 SRC_DIR=$(pwd)
 BUILD_DIR="${SRC_DIR}/build"
@@ -27,7 +27,7 @@ cd "${BUILD_DIR}"
 echo Build with CMake
 cmake -G Ninja \
   -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-  -DCMAKE_PREFIX_PATH=/opt/qt512/lib/cmake \
+  -DCMAKE_PREFIX_PATH=/opt/qt515/lib/cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DDLT_USE_QT_RPATH=ON \
   -DDLT_PARSER=OFF \
