@@ -634,7 +634,10 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
         cacheMsg = new QDltMsg();
         *cacheMsg = msg;
         if(!cache.insert(index,cacheMsg))
-            delete cacheMsg;
+        {
+            // object deleted already by insert function
+            // delete cacheMsg;
+        }
     }
 
     return result;
