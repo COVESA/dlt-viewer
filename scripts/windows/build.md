@@ -44,17 +44,17 @@ Configuration:
     - No need to download and install MS Visual Studio (Community Edition)
 - Ninja
     - Already bundled with VS Build Tools.
-- QT 5.12.10
+- QT 5.15.2
     - Later versions of QT5 will require using [QT Online installer](https://www.qt.io/download-qt-installer).
     - QT6 is not yet supported by DLT Viewer.
-    - https://download.qt.io/official_releases/qt/5.12/5.12.10/qt-opensource-windows-x86-5.12.10.exe
+    - https://download.qt.io/official_releases/qt/5.15/5.15.2/qt-opensource-windows-x86-5.15.2.exe
     - Install requires QT account. Use private E-Mail to register for free.
     - Select
         - [x] *MSVC 2017 64-bit*
         - [x] *QT Charts*
         - [x] *QT Creator* - Needed only for visual editing of `.ui` files.
     - No need to build QT from sources.
-    - Add `c:\Qt\Qt5.12.10\5.12.10\msvc2017_64\bin\` to PATH.
+    - Add `c:\Qt\Qt5.15.2\5.15.2\msvc2017_64\bin\` to PATH.
 - VS Code extensions
     - Just copy extension name in extension search box
     - `ms-vscode.cpptools`
@@ -82,9 +82,9 @@ Configuration:
     - Not included in offline QT installer https://bugreports.qt.io/browse/QTBUG-72733
     - Should be manually downloaded and installed
         - https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt5_51210/qt.qt5.51210.debug_info.win64_msvc2017_64/
-        - QT Base is enough for beginning. https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt5_51210/qt.qt5.51210.debug_info.win64_msvc2017_64/5.12.10-0-202011040843qtbase-Windows-Windows_10-MSVC2017-Windows-Windows_10-X86_64-debug-symbols.7z
-    - Unpack over existing QT install into C:\Qt\Qt5.12.10\5.12.10\msvc2017_64\
-    - Set in *launch.json* `symbolSearchPath": "C:/Qt/Qt5.12.10/5.12.10/msvc2017_64",`
+        - QT Base is enough for beginning. https://download.qt.io/online/qtsdkrepository/windows_x86/desktop/qt5_51210/qt.qt5.51210.debug_info.win64_msvc2017_64/5.15.2-0-202011040843qtbase-Windows-Windows_10-MSVC2017-Windows-Windows_10-X86_64-debug-symbols.7z
+    - Unpack over existing QT install into C:\Qt\Qt5.15.2\5.15.2\msvc2017_64\
+    - Set in *launch.json* `symbolSearchPath": "C:/Qt/Qt5.15.2/5.15.2/msvc2017_64",`
     - Installing QT sources not necessary.
 - QT5 Natvis
     - Natvis is a Microsoft debugger visualization framework of MS VisualStudio and MS VS Code, built into [MIEngine](https://github.com/microsoft/MIEngine)

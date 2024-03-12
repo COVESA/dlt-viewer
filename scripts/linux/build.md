@@ -9,11 +9,11 @@ Configuration:
 - Administrator rights `sudo`
 - Build environment [install.sh](./install.sh)
     - `sudo dlt-viewer/scripts/linux/install.sh`
-- QT 5.12.10
+- QT 5.15.2
     - Default QT version published with each Ubuntu version is different. Good one is installed by `install.sh`
-    - Source QT5.12.10 environment. **Don't miss dot**.
-        - `. /opt/qt512/bin/qt512-env.sh`
-    - OR use `-DCMAKE_PREFIX_PATH=/opt/qt512/lib/cmake`
+    - Source QT5.15.2 environment. **Don't miss dot**.
+        - `. /opt/qt515/bin/qt515-env.sh`
+    - OR use `-DCMAKE_PREFIX_PATH=/opt/qt515/lib/cmake`
 - MS VS Code
 ```bash
 curl -sSL https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
