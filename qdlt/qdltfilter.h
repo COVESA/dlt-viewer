@@ -26,7 +26,6 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>

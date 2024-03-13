@@ -500,7 +500,7 @@ void SettingsDialog::readSettings()
     settings->readSettings();
 
     QPalette palette = ui->labelSelectedMarkerColor->palette();
-    palette.setColor(QPalette::Active,this->backgroundRole(),settings->markercolor);
+    palette.setColor(QPalette::Active,this->backgroundRole(),QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue));
     ui->labelSelectedMarkerColor->setPalette(palette);
 
     auto uiColour = settings->themeSelectionSettings;
@@ -706,7 +706,9 @@ void SettingsDialog::on_pushButtonMarkerColor_clicked()
     if(selectedcolor.isValid())
     {
         QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-        settings->markercolor =  selectedcolor;
+        settings->markercolorRed =  selectedcolor.red();
+        settings->markercolorGreen =  selectedcolor.green();
+        settings->markercolorBlue =  selectedcolor.blue();
     }
 }
 

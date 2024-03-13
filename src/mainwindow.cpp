@@ -1458,14 +1458,14 @@ void MainWindow::mark_unmark_lines()
       }
     }
     //qDebug() << selectedMarkerRows;
-    model->setManualMarker(selectedMarkerRows, settings->markercolor); //used in mainwindow
+    model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
 }
 
 void MainWindow::unmark_all_lines()
 {
     TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
     selectedMarkerRows.clear();
-    model->setManualMarker(selectedMarkerRows, settings->markercolor); //used in mainwindow
+    model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
 }
 
 

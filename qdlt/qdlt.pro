@@ -8,7 +8,6 @@ DEFINES += QDLT_LIBRARY
     QMAKE_CFLAGS += -std=gnu99
     QMAKE_CFLAGS += -Wall
     QMAKE_CFLAGS += -Wextra
-    #QMAKE_CFLAGS += -pedantic
 }
 
 *-g++* {
@@ -16,13 +15,7 @@ DEFINES += QDLT_LIBRARY
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
     QMAKE_CXXFLAGS += -DPLUGIN_INSTALLATION_PATH=\\\"$$PREFIX/usr/share/dlt-viewer/plugins\\\"
-    #QMAKE_CXXFLAGS += -pedantic
 }
-
-# Uncomment to add debug symbols to Release build
-#QMAKE_CXXFLAGS_RELEASE += -g
-#QMAKE_CFLAGS_RELEASE += -g
-#QMAKE_LFLAGS_RELEASE =
 
 unix:DEFINES += BYTE_ORDER=LITTLE_ENDIAN _TTY_POSIX_ QT_VIEWER
 win32:DEFINES += BYTE_ORDER=LITTLE_ENDIAN QT_VIEWER
@@ -37,15 +30,7 @@ INSTALLS += target
 
 CONFIG                 += warn_on qt
 QT                     += network
-QT                     += gui
 QT                     += serialport
-
-# Detect QT5 and comply to new Widgets hierarchy
-greaterThan(QT_VERSION, 4.8.4) {
-    QT += widgets
-    INCLUDEPATH += QtWidgets
-    win32:DEFINES += QT5_QT6_COMPAT
-}
 
 # Put intermediate files in the build directory
 MOC_DIR     = build/moc

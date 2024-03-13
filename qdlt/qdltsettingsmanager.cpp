@@ -19,9 +19,9 @@
  * @licence end@
  */
 
-#include <QApplication>
+//#include <QApplication>
 #include <QDir>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QDateTime>
 #include <QStandardPaths>
 
@@ -67,10 +67,11 @@ QDltSettingsManager::QDltSettingsManager()
         if(!dir.mkpath(dir.absolutePath()))
         {
             /* creation of directory fails */
-            QMessageBox::critical(0, QString("DLT Viewer"),
+ /*           QMessageBox::critical(0, QString("DLT Viewer"),
                                            QString("Cannot create directory to store configuration!\n\n")+dir.absolutePath(),
                                            QMessageBox::Ok,
                                            QMessageBox::Ok);
+*/
         }
     }
 
@@ -130,7 +131,9 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("showPayload",QString("%1").arg(showPayload));
             xml.writeTextElement("showArguments",QString("%1").arg(showArguments));
             xml.writeTextElement("showMsgId",QString("%1").arg(showMsgId));
-            xml.writeTextElement("markercolor",QString("%1").arg(markercolor.name()));
+            xml.writeTextElement("markercolorRed",QString("%1").arg(markercolorRed));
+            xml.writeTextElement("markercolorGreen",QString("%1").arg(markercolorGreen));
+            xml.writeTextElement("markercolorBlue",QString("%1").arg(markercolorBlue));
         xml.writeEndElement(); // table
 
         xml.writeStartElement("other");
@@ -192,7 +195,9 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/splitfileyesno",splitlogfile);
     settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
-    settings->setValue("startup/markercolor",markercolor.name());
+    settings->setValue("startup/markercolorRed",markercolorRed);
+    settings->setValue("startup/markercolorGreen",markercolorGreen);
+    settings->setValue("startup/markercolorBlue",markercolorBlue);
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -365,9 +370,17 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         loggingOnlyFilteredMessages = xml.readElementText().toInt();
     }
-    if(xml.name() == QString("markercolor"))
+    if(xml.name() == QString("markercolorRed"))
     {
-        markercolor.setNamedColor(xml.readElementText());
+        markercolorRed = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("markercolorGreen"))
+    {
+        markercolorGreen = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("markercolorBlue"))
+    {
+        markercolorBlue = xml.readElementText().toInt();
     }
     if(xml.name() == QString("updateContextLoadingFile"))
     {
@@ -442,7 +455,9 @@ void QDltSettingsManager::readSettings()
     splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
     fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",100).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
-    markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
+    markercolorRed = settings->value("startup/markercolorRed",128).toInt();
+    markercolorGreen = settings->value("startup/markercolorGreen",128).toInt();
+    markercolorBlue = settings->value("startup/markercolorBlue",128).toInt();
 
     /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();
