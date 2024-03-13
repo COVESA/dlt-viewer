@@ -31,9 +31,6 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#ifdef USECOLOR
-#include <QColor>
-#endif
 #include <QMutex>
 #include <time.h>
 #include <QCache>

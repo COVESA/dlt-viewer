@@ -55,7 +55,6 @@ target_include_directories(qdlt PUBLIC
 target_link_libraries(qdlt PUBLIC
     ${QT_PREFIX}::Core
     ${QT_PREFIX}::Network
-    ${QT_PREFIX}::Widgets
     ${QT_PREFIX}::SerialPort)
 
 if(WIN32)

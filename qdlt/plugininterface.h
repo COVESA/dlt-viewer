@@ -27,9 +27,10 @@
 #include "qdltmsg.h"
 
 #include <QString>
-#include <QTableView>
 
 #define PLUGIN_INTERFACE_VERSION "1.0.1"
+
+class QTableView;
 
 //! Standard DLT Viewer Plugin Interface.
 /*!

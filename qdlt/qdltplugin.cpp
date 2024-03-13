@@ -2,7 +2,7 @@
 
 #include <QDir>
 #include <QCoreApplication>
-#include <QTableView>
+//#include <QTableView>
 
 #include <QPluginLoader>
 

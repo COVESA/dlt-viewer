@@ -22,7 +22,6 @@
 #ifndef QDLTSETTINGSMANAGER_H
 #define QDLTSETTINGSMANAGER_H
 
-#include <QColor>
 #include <qsettings.h>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
@@ -89,7 +88,7 @@ public:
     UI_Colour uiColour; // local settings
     quint64 msgCacheSize; // local settings
 
-    QColor markercolor; // local and project setting
+    int markercolorRed,markercolorGreen,markercolorBlue; // local and project setting
     int autoConnect; // project and local setting
     int autoScroll; // project and local setting
     int autoMarkFatalError; // local and local setting
