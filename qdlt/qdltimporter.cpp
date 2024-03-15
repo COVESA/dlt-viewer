@@ -1,6 +1,6 @@
 #include <QFile>
-#include <QProgressDialog>
-#include <QLabel>
+//#include <QProgressDialog>
+//#include <QLabel>
 #include <QDebug>
 #include <QtEndian>
 
@@ -24,19 +24,19 @@ extern "C" {
 #include <sys/time.h>	/* for gettimeofday() */
 #endif
 
-#include "dltimporter.h"
+#include "qdltimporter.h"
 
-DltImporter::DltImporter()
+QDltImporter::QDltImporter()
 {
 
 }
 
-DltImporter::~DltImporter()
+QDltImporter::~QDltImporter()
 {
 
 }
 
-void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
+void QDltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -49,6 +49,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
     if(!inputfile.open(QFile::ReadOnly))
        return;
 
+    /*
     QProgressDialog progress("Import DLT/IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
     QLabel label(&progress);
     if(!silent)
@@ -57,7 +58,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
         progress.setWindowModality(Qt::WindowModal);
         progress.setLabel(&label);
     }
-    quint64 progressCounter = 0;
+    quint64 progressCounter = 0;*/
 
     pcap_hdr_t globalHeader;
     pcaprec_hdr_t recordHeader;
@@ -74,7 +75,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
     }
     while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
     {
-        progressCounter++;
+        /*progressCounter++;
         if(!silent && progressCounter%1000==0)
         {
             progress.setValue(inputfile.pos()/1000);
@@ -85,7 +86,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
         {
             qDebug() << "fromPCAP:" << "Import Stopped";
             break;
-        }
+        }*/
 
         QByteArray record = inputfile.read(recordHeader.incl_len);
          if(record.length() != recordHeader.incl_len)
@@ -131,7 +132,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
 
 }
 
-void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
+void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -149,7 +150,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
        return;
     }
 
-    QProgressDialog progress("Import DLT/IPC from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
+    /*QProgressDialog progress("Import DLT/IPC from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
     QLabel label(&progress);
     if(!silent)
     {
@@ -157,7 +158,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
         progress.setWindowModality(Qt::WindowModal);
         progress.setLabel(&label);
     }
-    quint64 progressCounter = 0;
+    quint64 progressCounter = 0;*/
 
     qDebug() << "Import DLT/IPC from MF4 file:" << fileName;
 
@@ -301,7 +302,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
             QByteArray recordData;
             while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
             {
-                progressCounter++;
+                /*progressCounter++;
                 if(!silent && progressCounter%1000==0)
                 {
                     progress.setValue(inputfile.pos()/1000);
@@ -312,7 +313,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
                 {
                     qDebug() << "fromMF4:" << "Import Stopped";
                     break;
-                }
+                }*/
 
                 //qDebug() << "posDt =" << posDt;
                 inputfile.seek(pos+sizeof(mdf_hdr_t)+posDt);
@@ -668,7 +669,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
     qDebug() << "fromMF4: Import finished";
 }
 
-bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+bool QDltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
     {
@@ -806,7 +807,7 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec,quint32 usec)
+bool QDltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec,quint32 usec)
 {
        bool startOfSegment = plpRaw->probeFlags & 0x2;
        if(startOfSegment)
@@ -901,7 +902,7 @@ bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArr
     return true;
 }
 
-bool DltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec,quint32 usec)
+bool QDltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec,quint32 usec)
 {
     counterRecordsDLT++;
     // Now read the DLT Messages
@@ -941,7 +942,7 @@ bool DltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 
 }
 
 
-bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+bool QDltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
     {
@@ -1081,7 +1082,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)
+void QDltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec,quint32 usec)
 {
     DltStorageHeader str;
 
@@ -1113,8 +1114,7 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
         str.microseconds = (int32_t)tv.tv_usec; /* value is long */
 #endif
     }
-    if (ecuitem)
-        dlt_set_id(str.ecu, ecuitem->id.toLatin1());
+    dlt_set_id(str.ecu, ecuId.toLatin1());
 
     /* check if message is matching the filter */
     if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
@@ -1123,12 +1123,12 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
     }
 
     // write data into file
-    if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
+    //if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
     {
         // write version 1 storage header
         outputfile.write((char*)&str,sizeof(DltStorageHeader));
     }
-    else
+    /*else
     {
         // write version 2 storage header
         outputfile.write((char*)"DLT",3);
@@ -1139,10 +1139,10 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
         quint64 seconds = (quint64) str.seconds; // not in big endian format
         outputfile.write(((char*)&seconds),5);
         quint8 length;
-        length = ecuitem->id.length();
+        length = ecuId.length();
         outputfile.write((char*)&length,1);
-        outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
-    }
+        outputfile.write(ecuId.toLatin1(),ecuId.length());
+    }*/
     outputfile.write(bufferHeader);
     outputfile.write(bufferPayload,bufferPayloadSize);
     outputfile.flush();

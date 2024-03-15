@@ -257,8 +257,8 @@ private:
 
     void reloadLogFileDefaultFilter();
 
-    void exportSelection(bool ascii,bool file,DltExporter::DltExportFormat format);
-    void exportSelection_searchTable(DltExporter::DltExportFormat format);
+    void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
+    void exportSelection_searchTable(QDltExporter::DltExportFormat format);
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);

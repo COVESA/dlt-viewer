@@ -80,8 +80,8 @@ extern "C" {
 #include "version.h"
 #include "dltfileutils.h"
 #include "dltuiutils.h"
-#include "dltexporter.h"
-#include "dltimporter.h"
+#include "qdltexporter.h"
+#include "qdltimporter.h"
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
@@ -752,7 +752,7 @@ void MainWindow::initFileHandling()
     // Import PCAP files from commandline
     if(!QDltOptManager::getInstance()->getPcapFiles().isEmpty())
     {
-        DltImporter importer;
+        QDltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getPcapFiles() )
             importer.dltIpcFromPCAP(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
         reloadLogFile();
@@ -761,7 +761,7 @@ void MainWindow::initFileHandling()
     // Import mf4 files from commandline
     if(!QDltOptManager::getInstance()->getMf4Files().isEmpty())
     {
-        DltImporter importer;
+        QDltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getMf4Files() )
             importer.dltIpcFromMF4(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
         reloadLogFile();
@@ -827,10 +827,10 @@ void MainWindow::commandLineConvertToDLT()
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter(&project);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
     qDebug() << "Commandline DLT convert to " << dltFile.fileName();
      //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
-    exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDlt,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDlt,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export to DLT file format done";
 }
 
@@ -846,9 +846,9 @@ void MainWindow::commandLineConvertToASCII()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter(&project);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatAscii,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatAscii,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export ASCII done";
 }
 
@@ -863,9 +863,9 @@ void MainWindow::commandLineConvertToCSV()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter(&project);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatCsv,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatCsv,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export CSV done";
 }
 
@@ -880,9 +880,9 @@ void MainWindow::commandLineConvertToUTF8()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter(&project);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
     qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatUTF8,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export UTF8 done";
 }
 
@@ -896,9 +896,9 @@ void MainWindow::commandLineConvertToDLTDecoded()
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
-    DltExporter exporter(&project);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
     qDebug() << "Commandline decoding to dlt formated file" << dltFile.fileName();
-    exporter.exportMessages(&qfile,&dltFile,&pluginManager,DltExporter::FormatDltDecoded,DltExporter::SelectionFiltered);
+    exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDltDecoded,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export DLT decoded done";
 }
 
@@ -1365,7 +1365,7 @@ void MainWindow::on_actionImport_DLT_IPC_from_PCAP_MF4_triggered()
     /* change DLT file working directory */
     workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
 
-    DltImporter importer;
+    QDltImporter importer;
 
     for ( const auto& i : fileNames )
     {
@@ -1469,7 +1469,7 @@ void MainWindow::unmark_all_lines()
 }
 
 
-void MainWindow::exportSelection(bool ascii = true,bool file = false,DltExporter::DltExportFormat format = DltExporter::FormatClipboard)
+void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard)
 {
     Q_UNUSED(ascii);
     Q_UNUSED(file);
@@ -1477,11 +1477,11 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,DltExporter
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
 
-    DltExporter exporter(&project);
-    exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&list);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&list);
 }
 
-void MainWindow::exportSelection_searchTable(DltExporter::DltExportFormat format = DltExporter::FormatClipboard)
+void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard)
 {
     const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
 
@@ -1511,8 +1511,8 @@ void MainWindow::exportSelection_searchTable(DltExporter::DltExportFormat format
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
 
-    DltExporter exporter(&project);
-    exporter.exportMessages(&qfile,0,&pluginManager,format,DltExporter::SelectionSelected,&finallist);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&finallist);
 }
 
 void MainWindow::on_actionExport_triggered()
@@ -1524,12 +1524,12 @@ void MainWindow::on_actionExport_triggered()
     if(exporterDialog.result() != QDialog::Accepted)
         return;
 
-    DltExporter::DltExportFormat exportFormat = exporterDialog.getFormat();
-    DltExporter::DltExportSelection exportSelection = exporterDialog.getSelection();
+    QDltExporter::DltExportFormat exportFormat = exporterDialog.getFormat();
+    QDltExporter::DltExportSelection exportSelection = exporterDialog.getSelection();
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
     /* check plausibility */
-    if(exportSelection == DltExporter::SelectionAll)
+    if(exportSelection == QDltExporter::SelectionAll)
     {
         qDebug() << "DLT Export of all" << qfile.size() << "messages";
         if(qfile.size() <= 0)
@@ -1539,7 +1539,7 @@ void MainWindow::on_actionExport_triggered()
             return;
         }
     }
-    else if(exportSelection == DltExporter::SelectionFiltered)
+    else if(exportSelection == QDltExporter::SelectionFiltered)
     {
         qDebug() << "DLT Export of filterd" << qfile.sizeFilter() << "messages";
         if(qfile.sizeFilter() <= 0)
@@ -1549,7 +1549,7 @@ void MainWindow::on_actionExport_triggered()
             return;
         }
     }
-    else if(exportSelection == DltExporter::SelectionSelected)
+    else if(exportSelection == QDltExporter::SelectionSelected)
     {
         qDebug() << "DLT Export of selected" << list.count() << "messages";
         if(list.count() <= 0)
@@ -1564,28 +1564,28 @@ void MainWindow::on_actionExport_triggered()
     QFileDialog dialog(this);
     QStringList filters;
 
-    if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
+    if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
     {
         filters << "DLT Files (*.dlt)" <<"All files (*.*)";
         dialog.setDefaultSuffix("dlt");
         dialog.setWindowTitle("Export to DLT file");
         qDebug() << "DLT Export to Dlt";
     }
-    else if(exportFormat == DltExporter::FormatAscii)
+    else if(exportFormat == QDltExporter::FormatAscii)
     {
         filters << "Ascii Files (*.txt)" <<"All files (*.*)";
         dialog.setDefaultSuffix("txt");
         dialog.setWindowTitle("Export to Ascii file");
         qDebug() << "DLT Export to Ascii";
     }
-    else if(exportFormat == DltExporter::FormatUTF8)
+    else if(exportFormat == QDltExporter::FormatUTF8)
     {
         filters << "UTF8 Text Files (*.txt)" <<"All files (*.*)";
         dialog.setDefaultSuffix("txt");
         dialog.setWindowTitle("Export to UTF8 file");
         qDebug() << "DLT Export to UTF8";
     }
-    else if(exportFormat == DltExporter::FormatCsv)
+    else if(exportFormat == QDltExporter::FormatCsv)
     {
         filters << "CSV Files (*.csv)" <<"All files (*.*)";
         dialog.setDefaultSuffix("csv");
@@ -1609,13 +1609,13 @@ void MainWindow::on_actionExport_triggered()
 
     /* change last export directory */
     workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-    DltExporter exporter(&project,this);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,this);
     QFile outfile(fileName);
 
     unsigned long int startix, stopix;
     exporterDialog.getRange(&startix,&stopix);
 
-    if(exportSelection == DltExporter::SelectionSelected) // marked messages
+    if(exportSelection == QDltExporter::SelectionSelected) // marked messages
     {
         //qDebug() << "Selection" << __LINE__;
         exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection,&list);
@@ -7186,7 +7186,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                 }
                 if (!pathsList.isEmpty())
                 {
-                    DltImporter importer;
+                    QDltImporter importer;
                     for (auto i : pathsList)
                     {
                         if (i.endsWith(".pcap",Qt::CaseInsensitive))
@@ -7261,7 +7261,7 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                 QStringList  files;
                 QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files, QDirIterator::Subdirectories);
 
-                DltImporter importer;
+                QDltImporter importer;
                 while (it_sh.hasNext())
                 {
                     QString i = it_sh.next();
@@ -7356,22 +7356,22 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 
 void MainWindow::onActionMenuConfigSearchTableCopyToClipboardTriggered()
 {
-    exportSelection_searchTable(DltExporter::FormatClipboard);
+    exportSelection_searchTable(QDltExporter::FormatClipboard);
 }
 
 void MainWindow::onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered()
 {
-    exportSelection_searchTable(DltExporter::FormatClipboardPayloadOnly);
+    exportSelection_searchTable(QDltExporter::FormatClipboardPayloadOnly);
 }
 
 void MainWindow::onActionMenuConfigSearchTableCopyJiraToClipboardTriggered()
 {
-    exportSelection_searchTable(DltExporter::FormatClipboardJiraTable);
+    exportSelection_searchTable(QDltExporter::FormatClipboardJiraTable);
 }
 
 void MainWindow::onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered()
 {
-    exportSelection_searchTable(DltExporter::FormatClipboardJiraTableHead);
+    exportSelection_searchTable(QDltExporter::FormatClipboardJiraTableHead);
 }
 
 void MainWindow::keyPressEvent ( QKeyEvent * event )
@@ -7380,7 +7380,7 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     {
         if(ui->tableView->hasFocus())
         {
-            exportSelection(true,false);
+            exportSelection(true,false,QDltExporter::FormatClipboard);
         }
 
         if(ui->tableView_SearchIndex->hasFocus())
@@ -7397,7 +7397,7 @@ void MainWindow::keyPressEvent ( QKeyEvent * event )
     {
         if(ui->tableView->hasFocus())
         {
-            exportSelection(true,false);
+            exportSelection(true,false,QDltExporter::FormatClipboard);
         }
 
         if(ui->tableView_SearchIndex->hasFocus())
@@ -7471,14 +7471,14 @@ void MainWindow::dropEvent(QDropEvent *event)
             else if(filename.endsWith(".pcap", Qt::CaseInsensitive))
             {
                 /* Filter file dropped */
-                DltImporter importer;
+                QDltImporter importer;
                 importer.dltIpcFromPCAP(outputfile,filename,this,false);
                 reloadLogFile();
             }
             else if(filename.endsWith(".mf4", Qt::CaseInsensitive))
             {
                 /* Filter file dropped */
-                DltImporter importer;
+                QDltImporter importer;
                 importer.dltIpcFromMF4(outputfile,filename,this,false);
                 reloadLogFile();
             }
@@ -7643,22 +7643,22 @@ void MainWindow::on_action_menuConfig_Expand_All_ECUs_triggered()
 
 void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
 {
-    exportSelection(true,false);
+    exportSelection(true,false,QDltExporter::FormatClipboard);
 }
 
 void MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered()
 {
-    exportSelection(true,false,DltExporter::FormatClipboardPayloadOnly);
+    exportSelection(true,false,QDltExporter::FormatClipboardPayloadOnly);
 }
 
 void MainWindow::onActionMenuConfigCopyJiraToClipboardTriggered()
 {
-    exportSelection(true,false,DltExporter::FormatClipboardJiraTable);
+    exportSelection(true,false,QDltExporter::FormatClipboardJiraTable);
 }
 
 void MainWindow::onActionMenuConfigCopyJiraHeadToClipboardTriggered()
 {
-    exportSelection(true,false,DltExporter::FormatClipboardJiraTableHead);
+    exportSelection(true,false,QDltExporter::FormatClipboardJiraTableHead);
 }
 
 void MainWindow::on_action_menuFilter_Append_Filters_triggered()
@@ -8296,7 +8296,7 @@ void MainWindow::on_exploreView_activated(const QModelIndex &index)
 
     auto result = std::find_if(ext.begin(), ext.end(),
                                 [&path](const QString &el){return path.toLower().endsWith(el);});
-    DltImporter importer;
+    QDltImporter importer;
     switch(result - ext.begin())
     {
     case 0: /* this represents index in "ext" list */

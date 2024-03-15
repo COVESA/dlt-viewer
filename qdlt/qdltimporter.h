@@ -1,12 +1,13 @@
-#ifndef DLTIMPORTER_H
-#define DLTIMPORTER_H
+#ifndef QDLTIMPORTER_H
+#define QDLTIMPORTER_H
 
 #include <QMap>
 
+#include "export_rules.h"
 #include "qdltfile.h"
 #include "qdltmsg.h"
 #include "dlt_common.h"
-#include "project.h"
+//#include "project.h"
 
 typedef struct pcap_hdr_s {
         quint32 magic_number;   /* magic number */
@@ -147,13 +148,13 @@ typedef struct mdf_hdr {
         quint64 link_count;     /* number of links in link section */
 } PACKED mdf_hdr_t;
 
-class DltImporter
+class QDLT_EXPORT QDltImporter
 {
 
 public:
 
-    explicit DltImporter();
-    ~DltImporter();
+    explicit QDltImporter();
+    ~QDltImporter();
 
     void dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
     void dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
@@ -165,7 +166,7 @@ private:
     bool ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
     bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec = 0,quint32 usec = 0);
 
-    void writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem = 0,quint32 sec = 0,quint32 usec = 0);
+    void writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec = 0,quint32 usec = 0);
 
     mdf_idblock_t mdfIdblock;
     mdf_hdblocklinks_t hdBlockLinks;
@@ -185,4 +186,4 @@ private:
 
 };
 
-#endif // DLTIMPORTER_H
+#endif // QDLTIMPORTER_H
