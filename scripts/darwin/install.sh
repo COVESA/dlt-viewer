@@ -5,8 +5,8 @@ id
 env
 pwd
 
-brew install qt@5
-brew link qt@5 --force
+brew install --ignore-dependencies qt@5
+brew link qt@5 --force --overwrite
 # https://github.com/Homebrew/homebrew-core/issues/8392
 # https://github.com/Homebrew/legacy-homebrew/issues/29938
 QT_VERSION=$(brew list --versions qt@5 | sed -n '/qt@5/s/^.*[^0-9]\([0-9]*\.[0-9]*\.[0-9]*.*\).*$/\1/p')
