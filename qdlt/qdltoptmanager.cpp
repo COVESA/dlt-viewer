@@ -25,7 +25,6 @@
 #include "version.h"
 #include <QDebug>
 #include <QFileInfo>
-#include <iostream>
 
 // Global static pointer used to ensure a single instance of the class.
 QDltOptManager* QDltOptManager::instance;
@@ -33,11 +32,8 @@ QDltOptManager* QDltOptManager::instance;
 QDltOptManager::QDltOptManager()
 {
     project = false;
-    log = false;
-    convert = false;
-    filter = false;
-    plugin = false;
     silent_mode = false;
+    terminate=false;
     convertionmode = e_ASCI;
     commandline_mode = false;
 }
@@ -97,53 +93,33 @@ void QDltOptManager::printUsage()
     qDebug()<<" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
     qDebug()<<" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
     qDebug()<<" -h \t Print usage";
-    qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
-    qDebug()<<" -v or --version\tOnly show version and buildtime information";
-    qDebug()<<" -c logfile textfile\tConvert logfile file to textfile (logfile must end with .dlt)";
+    qDebug()<<" -c textfile\tConvert logfile file to textfile";
     qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv\tConversion will be done in CSV format";
     qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
     qDebug()<<" -dd\tConversion will NOT be done, save as decoded messages in dlt format";
     qDebug()<<" -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
+    qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
+    qDebug()<<" -t or --terminate\tTerminate DLT Viewer after command line execution.";
+    qDebug()<<" -v or --version\tOnly show version and buildtime information";
     qDebug()<<" -w workingdirectory\tSet the working directory";
     qDebug()<<"Examples:";
-    #if (WIN32)
-    qDebug()<<"  dlt-viewer.exe -c c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt-viewer.exe -s -c -u c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt-viewer.exe -s -d -c c:\\trace\\trace.dlt .\\trace.dlt";
-    qDebug()<<"  dlt-viewer.exe -s -p \\proj\\decodeded.dlp -dd -c c:\\trace\\trace.dlt .\\trace.dlt";
-    qDebug()<<"  dlt-viewer.exe -s -csv -c c:\\trace\\trace.dlt .\\trace.csv";
-    qDebug()<<"  dlt-viewer.exe -s -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
-    qDebug()<<"  dlt-viewer.exe -p c:\\proj\\export.dlp -l c:\\trace\\trace.dlt -e \"Filetransfer Plugin|export|ftransferdir\"";
-    qDebug()<<"  dlt-viewer.exe trace_1.dlt trace_2.dlt";
-    #else
-    qDebug()<<"  dlt-viewer -c ./traces/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt-viewer -s -c -u ./trace/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt-viewer -s -d -c ./trace/trace.dlt ./trace.dlt";
-    qDebug()<<"  dlt-viewer -s -p ./proj/decodeded.dlp -dd -c ./trace/trace.dlt ./trace.dlt";
-    qDebug()<<"  dlt-viewer -s -csv -c ./trace/trace.dlt ./trace.csv";
-    qDebug()<<"  dlt-viewer -s -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
-    qDebug()<<"  dlt-viewer -p ./proj/export.dlp -l ./trace/trace.dlt -e \"Filetransfer Plugin|export|./ftransferdir\"";
-    qDebug()<<"  dlt-viewer trace_1.dlt trace_2.dlt";
-    #endif
+    qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
+    qDebug()<<"  dlt-viewer.exe -t -s -u -c output.dlt input.txt";
+    qDebug()<<"  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
+    qDebug()<<"  dlt-viewer.exe -t -s -p decodeded.dlp -dd -c output.dlt input.dlt ";
+    qDebug()<<"  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
+    qDebug()<<"  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
+    qDebug()<<"  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";
+    qDebug()<<"  dlt-viewer.exe input1.dlt input2.dlt";
+    qDebug()<<"  dlt-viewer.exe -t -c output.txt input.pcap";
+    qDebug()<<"  dlt-viewer.exe -t -c output.txt input1.mf4 input2.mf4";
 }
 
 void QDltOptManager::parse(QStringList *opt)
 {
     QString str;
-
-     /* On Windows we do not want to open a console in case
-      * we start the application e.g. from file explorer.
-      * Unfortunateley Windows opens a console anyway.
-      * So we have to close it in this case
-     */
-     #if (WIN32)
-     if ( opt->size() < 2)
-     {
-      FreeConsole();
-     }
-     #endif
 
      /* the default parameter - exactly one parameter - should either be
       * a dlt or a dlp file, so this enables the "doubleclick" feature
@@ -162,7 +138,6 @@ void QDltOptManager::parse(QStringList *opt)
            {
                const QString logFile = QString("%1").arg(opt->at(1));
                logFiles += logFile;
-               log = true;
                qDebug()<< "Loading logfile " << logFile;
                return;
            }
@@ -191,42 +166,22 @@ void QDltOptManager::parse(QStringList *opt)
             printVersion(opt->at(0));
             exit(0);
          }
+         else if(str.compare("-t") == 0 || str.compare("--terminate") == 0)
+         {
+             terminate = true;
+             commandline_mode = true;
+         }
         else if(str.compare("-c")==0)
          {
-            if (log == true)
-            {
-              qDebug() << "\nError: Can't use -l and -c at once\n";
-              printUsage();
-              exit(-1);
-            }
             QString c1 = opt->value(i+1);
-            QString c2 = opt->value(i+2);
 
-            if(c1!=nullptr && (c1.endsWith(".dlt")||c1.endsWith(".DLT")) && c2!=nullptr)
-             {
-                convertSourceFile = QString("%1").arg(c1);
-                convertDestFile = QString("%1").arg(c2);
-                // check here already if the selected file exists
+            convertDestFile = QString("%1").arg(c1);
+            // check here already if the selected file exists
 
-                if(QFileInfo::exists(convertSourceFile))
-                 {
-                    qDebug() << "Converting " << convertSourceFile << "to" << convertDestFile;
-                    convert = true;
-                    commandline_mode = true;
-                 }
-                else
-                 {
-                    qDebug() << "Convertfile source"  << convertSourceFile << "does not exist";
-                    exit(-1);
-                 }
-             }
-            else
-             {
-                qDebug()<<"Error occured during processing of command line option \"-c\"";
-                printUsage();
-                exit(-1);
-             }
-            i += 2;
+            qDebug() << "Converting to" << convertDestFile;
+            commandline_mode = true;
+
+            i += 1;
          }
         else if(str.compare("-u")==0)
          {
@@ -250,21 +205,6 @@ void QDltOptManager::parse(QStringList *opt)
             postPluginCommands += c;
             QStringList args = c.split("|");
             commandline_mode = true;
-            if(c != nullptr && args.size() > 1)
-             {
-                pluginName = args.at(0);
-                commandName = args.at(1);
-                args.removeAt(0);
-                args.removeAt(0);
-                commandParams = args;
-                plugin = true;
-             }
-            else
-             {
-                qDebug()<<"Error occured during processing of command line option \"-e\"";
-                printUsage();
-                exit(-1);
-             }
             ++i;
          }
         else if(str.compare("-b")==0)
@@ -272,7 +212,6 @@ void QDltOptManager::parse(QStringList *opt)
             QString c = opt->value(i+1);
             prePluginCommands += c;
             commandline_mode = true;
-            plugin = true;
             ++i;
          }
         else if (str.compare("-w") == 0)
@@ -282,16 +221,8 @@ void QDltOptManager::parse(QStringList *opt)
         }
         else if(opt->at(i).endsWith(".dlt") || opt->at(i).endsWith(".DLT"))
         {
-            if (convert == true)
-            {
-                qDebug() << "\nError: Can't use -c and multiple logfiles once\n";
-                printUsage();
-                exit(-1);
-            }
-
             const QString logFile = QString("%1").arg(opt->at(i));
             logFiles += logFile;
-            log = true;
             qDebug()<< "Loading logfile " << logFile;
         }
         else if(opt->at(i).endsWith(".dlp") || opt->at(i).endsWith(".DLP"))
@@ -309,16 +240,8 @@ void QDltOptManager::parse(QStringList *opt)
         }
         else if(opt->at(i).endsWith(".dlf") || opt->at(i).endsWith(".DLF"))
         {
-            if (filter == true)
-            {
-                qDebug() << "\nError: Can't load multiple filter files once\n";
-                printUsage();
-                exit(-1);
-            }
-
-            filterFile = QString("%1").arg(opt->at(i));
-            filter = true;
-            qDebug()<< "Loading filterfile " << filterFile;
+            filterFiles += QString("%1").arg(opt->at(i));
+            qDebug()<< "Loading filterfile " << QString("%1").arg(opt->at(i));
         }
         else if(opt->at(i).endsWith(".pcap") || opt->at(i).endsWith(".PCAP"))
         {
@@ -334,14 +257,24 @@ void QDltOptManager::parse(QStringList *opt)
         }
 
      } // end of for loop
+
+    /* On Windows we do not want to open a console in case
+      * we start the application e.g. from file explorer.
+      * Unfortunateley Windows opens a console anyway.
+      * So we have to close it in this case
+     */
+    #if (WIN32)
+        if ( !commandline_mode)
+        {
+            FreeConsole();
+        }
+    #endif
+
     printVersion(opt->at(0));
 }
 
 bool QDltOptManager::isProjectFile(){ return project;}
-bool QDltOptManager::isLogFile(){return log;}
-bool QDltOptManager::isFilterFile(){return filter;}
-bool QDltOptManager::isConvert(){return convert;}
-bool QDltOptManager::isPlugin(){return plugin;}
+bool QDltOptManager::isTerminate(){return terminate;}
 bool QDltOptManager::issilentMode(){return silent_mode;}
 bool QDltOptManager::isCommandlineMode(){return commandline_mode;}
 
@@ -352,8 +285,7 @@ e_convertionmode QDltOptManager::get_convertionmode()
 
 QString QDltOptManager::getProjectFile(){return projectFile;}
 QStringList QDltOptManager::getLogFiles(){return logFiles;}
-QString QDltOptManager::getFilterFile(){return filterFile;}
-QString QDltOptManager::getConvertSourceFile(){return convertSourceFile;}
+QStringList QDltOptManager::getFilterFiles(){return filterFiles;}
 QString QDltOptManager::getConvertDestFile(){return convertDestFile;}
 QString QDltOptManager::getPluginName(){return pluginName;}
 QString QDltOptManager::getCommandName(){return commandName;}
