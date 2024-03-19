@@ -119,31 +119,59 @@ MainWindow::MainWindow(QWidget *parent) :
     initFileHandling();
 
     /* Commands plugin after loading log file */
-    if(QDltOptManager::getInstance()->isPlugin())
+    if(!QDltOptManager::getInstance()->getPostPluginCommands().isEmpty())
     {
         QStringList commands = QDltOptManager::getInstance()->getPostPluginCommands();
 
-        if(commands.size())
+        for(int num = 0; num< commands.size();num++)
         {
-            for(int num = 0; num< commands.size();num++)
-            {
-                QStringList args = commands[num].split("|");
-                if(args.size() > 1)
-                 {
-                    QString pluginName = args.at(0);
-                    QString commandName = args.at(1);
-                    args.removeAt(0);
-                    args.removeAt(0);
-                    QStringList commandParams = args;
-                    commandLineExecutePlugin(pluginName,commandName,commandParams);
-                 }
-            }
-            exit(0); // exit after last plugin command from command line
+            QStringList args = commands[num].split("|");
+            if(args.size() > 1)
+             {
+                QString pluginName = args.at(0);
+                QString commandName = args.at(1);
+                args.removeAt(0);
+                args.removeAt(0);
+                QStringList commandParams = args;
+                commandLineExecutePlugin(pluginName,commandName,commandParams);
+             }
+        }
+
+    }
+
+    if(!QDltOptManager::getInstance()->getConvertDestFile().isEmpty())
+    {
+        switch ( QDltOptManager::getInstance()->get_convertionmode() )
+        {
+        case e_UTF8:
+             commandLineConvertToUTF8();
+            break;
+        case e_DLT:
+             commandLineConvertToDLT();
+            break;
+        case e_ASCI:
+             commandLineConvertToASCII();
+            break;
+        case e_CSV:
+             commandLineConvertToCSV();
+            break;
+        case e_DDLT:
+             commandLineConvertToDLTDecoded();
+            break;
+        default:
+             commandLineConvertToASCII();
+            break;
         }
     }
 
+    if(QDltOptManager::getInstance()->isTerminate())
+    {
+        qDebug() << "Terminated DLT Viewer by command line option -t";
+        exit(0);
+    }
+
     /* auto connect */
-    if( (settings->autoConnect != 0) && ( false ==  QDltOptManager::getInstance()->isConvert()) ) // in convertion mode we do not need any connection ...)
+    if( (settings->autoConnect != 0) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
     }
@@ -674,7 +702,7 @@ void MainWindow::initFileHandling()
     }
 
     /* Commands plugin before loading log file */
-    if(QDltOptManager::getInstance()->isPlugin())
+    if(!QDltOptManager::getInstance()->getPrePluginCommands().isEmpty())
     {
         QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
 
@@ -693,10 +721,35 @@ void MainWindow::initFileHandling()
         }
     }
 
+    /* load filters by command line */
+    if(!QDltOptManager::getInstance()->getFilterFiles().isEmpty())
+    {
+        for ( const auto& filter : QDltOptManager::getInstance()->getFilterFiles() )
+        {
+            if(project.LoadFilter(filter,false))
+            {
+                // qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
+                filterUpdate();
+                setCurrentFilters(filter);
+            }
+            else
+            {
+               if (QDltOptManager::getInstance()->issilentMode())
+                {
+                    qDebug() << "Loading DLT Filter file failed!";
+                }
+                else
+                {
+                    QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+                }
+            }
+        }
+    }
+
     /* Process Logfile */
     outputfileIsFromCLI = false;
     outputfileIsTemporary = false;
-    if(QDltOptManager::getInstance()->isLogFile())
+    if(!QDltOptManager::getInstance()->getLogFiles().isEmpty())
     {
         QStringList logFiles = QDltOptManager::getInstance()->getLogFiles();
         logFiles.sort();
@@ -723,18 +776,20 @@ void MainWindow::initFileHandling()
             outputfileIsTemporary = true;
             outputfileIsFromCLI = false;
 
-          if (false == QDltOptManager::getInstance()->isConvert()) // not needed in commandline convertion mode, avoid indexer thread run
+            if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
             {
-
-             if(true == outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
-              {
                 openFileNames = QStringList(fn);
                 isDltFileReadOnly = false;
-                reloadLogFile(); // because we have a dedicated file in this case -> no index run for default file necessary
+                if(QDltOptManager::getInstance()->isCommandlineMode())
+                    // if dlt viewer started as converter or with plugin option load file non multithreaded
+                    reloadLogFile(false,false);
+                else
+                    // normally load log file mutithreaded
+                    reloadLogFile();
                 outputfile.close(); // open later again when writing
-              }
-             else
-              {
+            }
+            else
+            {
                if (QDltOptManager::getInstance()->issilentMode())
                 {
                 qDebug() << QString("Cannot load temporary log file %1 %2").arg(outputfile.fileName()).arg(outputfile.errorString());
@@ -743,10 +798,8 @@ void MainWindow::initFileHandling()
                 {
                  QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot load temporary log file \"%1\"\n%2").arg(outputfile.fileName()).arg(outputfile.errorString()));
                 }
-             } // isConvert false
-         }
-
-       }
+            }
+        }
     }
 
     // Import PCAP files from commandline
@@ -755,7 +808,12 @@ void MainWindow::initFileHandling()
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getPcapFiles() )
             importer.dltIpcFromPCAP(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
-        reloadLogFile();
+        if(QDltOptManager::getInstance()->isCommandlineMode())
+            // if dlt viewer started as converter or with plugin option load file non multithreaded
+            reloadLogFile(false,false);
+        else
+            // normally load log file mutithreaded
+            reloadLogFile();
     }
 
     // Import mf4 files from commandline
@@ -764,66 +822,18 @@ void MainWindow::initFileHandling()
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getMf4Files() )
             importer.dltIpcFromMF4(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
-        reloadLogFile();
-    }
-
-    if(QDltOptManager::getInstance()->isFilterFile())
-    {
-        if(project.LoadFilter(QDltOptManager::getInstance()->getFilterFile(),false))
-        {
-       //     qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
-            filterUpdate();
-            setCurrentFilters(QDltOptManager::getInstance()->getFilterFile());
-        }
+        if(QDltOptManager::getInstance()->isCommandlineMode())
+            // if dlt viewer started as converter or with plugin option load file non multithreaded
+            reloadLogFile(false,false);
         else
-        {
-           if (QDltOptManager::getInstance()->issilentMode())
-            {
-             qDebug() << "Loading DLT Filter file failed!";
-            }
-           else
-            {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-            }
-        }
+            // normally load log file mutithreaded
+            reloadLogFile();
     }
-
-    if(true == QDltOptManager::getInstance()->isConvert())
-    {
-        switch ( QDltOptManager::getInstance()->get_convertionmode() )
-        {
-        case e_UTF8:
-             commandLineConvertToUTF8();
-            break;
-        case e_DLT:
-             commandLineConvertToDLT();
-            break;
-        case e_ASCI:
-             commandLineConvertToASCII();
-            break;
-        case e_CSV:
-             commandLineConvertToCSV();
-            break;
-        case e_DDLT:
-             commandLineConvertToDLTDecoded();
-            break;
-        default:
-             commandLineConvertToASCII();
-            break;
-        }
-    }
-
 }
 
 
 void MainWindow::commandLineConvertToDLT()
 {
-
-    qfile.enableFilter(true);
-    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
-    outputfileIsFromCLI = false;
-    outputfileIsTemporary = false;
-
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
@@ -837,12 +847,6 @@ void MainWindow::commandLineConvertToDLT()
 
 void MainWindow::commandLineConvertToASCII()
 {
-
-    qfile.enableFilter(true);
-    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
-    outputfileIsFromCLI = false;
-    outputfileIsTemporary = false;
-
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
@@ -854,12 +858,6 @@ void MainWindow::commandLineConvertToASCII()
 
 void MainWindow::commandLineConvertToCSV()
 {
-
-    qfile.enableFilter(true);
-    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
-    outputfileIsFromCLI = false;
-    outputfileIsTemporary = false;
-
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
@@ -872,11 +870,6 @@ void MainWindow::commandLineConvertToCSV()
 
 void MainWindow::commandLineConvertToUTF8()
 {
-    qfile.enableFilter(true);
-    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
-    outputfileIsFromCLI = false;
-    outputfileIsTemporary = false;
-
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
@@ -888,11 +881,6 @@ void MainWindow::commandLineConvertToUTF8()
 
 void MainWindow::commandLineConvertToDLTDecoded()
 {
-    qfile.enableFilter(true);
-    openDltFile(QStringList(QDltOptManager::getInstance()->getConvertSourceFile()));
-    outputfileIsFromCLI = false;
-    outputfileIsTemporary = false;
-
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
@@ -1177,17 +1165,12 @@ bool MainWindow::openDltFile(QStringList fileNames)
         openFileNames = fileNames;
         isDltFileReadOnly = false;
         //qDebug() << "Opening file(s) wo" << outputfile.fileName() << __FILE__ << __LINE__;
-        if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
-         {
+        if(QDltOptManager::getInstance()->isCommandlineMode())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
-         }
         else
-         {
             // normally load log file mutithreaded
-            //reloadLogFile(false,false);
             reloadLogFile();
-         }
         outputfile.close(); // open later again when writing
         ret = true;
     }
@@ -1198,16 +1181,12 @@ bool MainWindow::openDltFile(QStringList fileNames)
         {
             openFileNames = fileNames;
             isDltFileReadOnly = true;
-            if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
-             {
+            if(QDltOptManager::getInstance()->isCommandlineMode())
                 // if dlt viewer started as converter or with plugin option load file non multithreaded
                 reloadLogFile(false,false);
-             }
             else
-             {
                 // normally load log file mutithreaded
                 reloadLogFile();
-             }
             outputfile.close(); // open later again when writing
             ret = true;
             //qDebug() << "Loading file" << fileNames.last() << outputfile.errorString();
@@ -2376,7 +2355,7 @@ bool MainWindow::openDlpFile(QString fileName)
             applyConfigEnabled(true);
         }
         // Reload logile to enable filters from project file
-        if(QDltOptManager::getInstance()->isConvert() || QDltOptManager::getInstance()->isPlugin())
+        if(QDltOptManager::getInstance()->isCommandlineMode())
             // if dlt viewer started as converter or with plugin option load file non multithreaded
             reloadLogFile(false,false);
         else
@@ -5607,13 +5586,16 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString(" -h\t\t\tPrint usage\n")+
                              QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
                              QString(" -v\t\t\tShow version and buildtime information\n")+
-                             QString(" -c <logfile> <textfile>\tConvert (*.dlt) logfile to ASCII textfile\n")+
+                             QString(" -c <textfile>\tConvert logfile to ASCII textfile\n")+
                              QString(" -u \t\t\tExport logfile to UTF8 instead\n")+
                              QString(" -csv \t\t\tExport logfile to csv ( Excel ) instead\n")+
                              QString(" -d \t\t\tExport logfile to DLT format\n")+
                              QString(" -dd \t\t\tExport logfile to  decoded DLT format\n")+
                              QString(" -b <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters before loading log file\n")+
                              QString(" -e <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
+                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
+                             QString(" -t \t\t\tTerminate DLT Viewer after command line execution\n")+
+                             QString(" -v\t\t\tShow version and buildtime information\n")+
                              QString(" -w workingdirectory\tSet the working directory\n")
                              );
 }

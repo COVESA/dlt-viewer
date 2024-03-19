@@ -20,15 +20,16 @@ Options:
 + [projectfile] Loading project file on startup (must end with .dlp)
 + [filterfile] Loading filterfile on startup (must end with .dlf)
 + `-h` Print usage
-+ `-s or --silent`  Enable silent mode without warning message boxes
-+ `-v or --version` Only show version and buildtime information
-+ `-c logfile textfile`  Convert logfile file to textfile (logfile must end with .dlt)
++ `-c textfile`  Convert logfile file to textfile
 + `-u` Conversion will be done in UTF8 instead of ASCII;
 + `-csv` Conversion will be done in CSV format;
 + `-d` Conversion will NOT be done, save in dlt file format again instead
 + `-dd` Conversion will NOT be done, save as decoded messages in dlt format
 + `-b "name of plugin|command in plugin|param1|..|param<n>"` Execute a plugin command with <n> parameters before loading log file
 + `-e "name of plugin|command in plugin|param1|..|param<n>"` Execute a plugin command with <n> parameters after loading log file
++ `-s or --silent`  Enable silent mode without warning message boxes
++ `-t or --terminate` Terminate DLT Viewer after command line execution
++ `-v or --version` Only show version and buildtime information
 + `-w workingdirectory` Set the working directory
 
 ## API Documentation

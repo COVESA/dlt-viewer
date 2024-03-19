@@ -40,16 +40,6 @@ int main(int argc, char *argv[])
     opt->parse(&arguments);
 
     MainWindow w;
-    /* check variable commandline_finished
-       instead of stopping during constructor run
-       after running a commandline mode call
-       which often leads to crash
-    */
-    if(opt->getInstance()->isConvert() == true )
-    {
-        return 0;
-    }
-
     w.show();
 
     return a.exec();

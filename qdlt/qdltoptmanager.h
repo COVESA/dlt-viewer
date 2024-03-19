@@ -44,11 +44,8 @@ public:
     void parse(QStringList *opt);
 
     bool isProjectFile();
-    bool isLogFile();
-    bool isFilterFile();
-    bool isConvert();
+    bool isTerminate();
     bool isConvertUTF8();
-    bool isPlugin();
     bool issilentMode();
     bool isCommandlineMode();
 
@@ -56,8 +53,7 @@ public:
 
     QString getProjectFile();
     QStringList getLogFiles();
-    QString getFilterFile();
-    QString getConvertSourceFile();
+    QStringList getFilterFiles();
     QString getConvertDestFile();
     QString getPluginName();
     QString getCommandName();
@@ -76,10 +72,7 @@ private:
     static QDltOptManager *instance;
 
     bool project;
-    bool log;
-    bool filter;
-    bool convert;
-    bool plugin;
+    bool terminate;
     bool silent_mode;
     bool commandline_mode;
     e_convertionmode convertionmode;
@@ -88,8 +81,7 @@ private:
     QStringList logFiles;
     QStringList pcapFiles;
     QStringList mf4Files;
-    QString filterFile;
-    QString convertSourceFile;
+    QStringList filterFiles;
     QString convertDestFile;
     QString pluginName;
     QString commandName;
