@@ -612,13 +612,16 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     // check if msg is already in cache
     if(cacheEnable)
     {
+        mutexQDlt.lock();
         cacheMsg = cache[index];
         if(cacheMsg)
         {
             // load from cache
             msg = *cacheMsg;
+            mutexQDlt.unlock();
             return true;
         }
+        mutexQDlt.unlock();
     }
 
     // load message from DLT file
@@ -633,11 +636,13 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     {
         cacheMsg = new QDltMsg();
         *cacheMsg = msg;
+        mutexQDlt.lock();
         if(!cache.insert(index,cacheMsg))
         {
             // object deleted already by insert function
             // delete cacheMsg;
         }
+        mutexQDlt.unlock();
     }
 
     return result;
