@@ -339,7 +339,7 @@ void FiletransferPlugin::doFLST(QDltMsg *msg)
     file->setFileSerialNumber(argument.toString());
 
     msg->getArgument(PROTOCOL_FLST_FILENAME,argument);
-    file->setFilename(argument.toString());
+    file->setFilename(argument.toString().remove(QChar::Null));
 
     msg->getArgument(PROTOCOL_FLST_FILEDATE,argument);
     file->setFileCreationDate(argument.toString());
