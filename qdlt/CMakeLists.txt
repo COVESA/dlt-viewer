@@ -36,6 +36,9 @@ add_library(qdlt SHARED
     qdltplugin.cpp
     qdltsegmentedmsg.cpp
     qdltoptmanager.cpp
+	qdltimporter.cpp
+	qdltexporter.cpp
+    fieldnames.cpp
     qdltsettingsmanager.cpp)
 
 target_compile_definitions(qdlt PRIVATE
