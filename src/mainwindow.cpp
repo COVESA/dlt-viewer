@@ -3894,7 +3894,7 @@ void MainWindow::read(EcuItem* ecuitem)
             // Find one ore more DLT messages in the UDP message
             while(dataSize>0)
             {
-                quint32 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize);
+                quint32 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize,settings->supportDLTv2Decoding);
                 if(sizeMsg>0)
                 {
                     // DLT message found, write it with storage header
@@ -3904,7 +3904,7 @@ void MainWindow::read(EcuItem* ecuitem)
                         // write only messages which match filter
                         bool silentMode = !QDltOptManager::getInstance()->issilentMode();
                         QDltMsg qmsg;
-                        qmsg.setMsg(QByteArray(dataPtr,sizeMsg),false);
+                        qmsg.setMsg(QByteArray(dataPtr,sizeMsg),false,settings->supportDLTv2Decoding);
                         if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
                         {
                            pluginManager.decodeMsg(qmsg,silentMode);
@@ -3971,8 +3971,8 @@ void MainWindow::read(EcuItem* ecuitem)
     /* reading data; new data is added to the current buffer */
      ecuitem->totalBytesRcvd += bytesRcvd;
 
-     while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP) && ecuitem->ipcon.parseDlt(qmsg)) ||
-            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg)) ||
+     while(((ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP) && ecuitem->ipcon.parseDlt(qmsg,settings->supportDLTv2Decoding)) ||
+            (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg,settings->supportDLTv2Decoding)) ||
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
             /* analyse received message, check if DLT control message response */
@@ -4143,7 +4143,7 @@ void MainWindow::updateIndex()
 
     for(int num=oldsize;num<qfile.size();num++)
     {
-     qmsg.setMsg(qfile.getMsg(num));
+     qmsg.setMsg(qfile.getMsg(num),settings->supportDLTv2Decoding);
      qmsg.setIndex(num);
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
@@ -4248,7 +4248,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
         ui->tableView->scrollTo(index);
 
         msgIndex = qfile.getMsgFilterPos(index.row());
-        msg.setMsg(qfile.getMsgFilter(index.row()));
+        msg.setMsg(qfile.getMsgFilter(index.row()),settings->supportDLTv2Decoding);
         msg.setIndex(qfile.getMsgFilterPos(index.row()));
         activeViewerPlugins = pluginManager.getViewerPlugins();
         activeDecoderPlugins = pluginManager.getDecoderPlugins();
@@ -6594,7 +6594,7 @@ void MainWindow::filterAddTable() {
     }
 
     data = qfile.getMsgFilter(index.row());
-    msg.setMsg(data);
+    msg.setMsg(data,settings->supportDLTv2Decoding);
     msg.setIndex(qfile.getMsgFilterPos(index.row()));
 
     /* decode message if necessary */

@@ -436,7 +436,7 @@ public:
       \param withSH message to be parsed contains storage header, default true.
       \return True if the operation was successful, false if there was an error.
     */
-    bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
+    bool setMsg(const QByteArray& buf,bool withStorageHeader = true,bool supportDLTv2 = false);
 
     //! Check the message size provided by a byte array containing the DLT message, without parsing the whole message.
     /*!
@@ -444,7 +444,7 @@ public:
       \param size the size of the buffer
       \return the size of the DLT message including storage header if found
     */
-    quint32 checkMsgSize(const char *data,quint32 size);
+    quint32 checkMsgSize(const char *data,quint32 size,bool supportDLTv2 = false);
 
     //! Parse the arguments from the Payload.
     bool parseArguments();

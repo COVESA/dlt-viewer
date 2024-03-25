@@ -98,7 +98,7 @@ public:
     void setSyncSerialHeader(bool _syncSerialHeader);
     bool getSyncSerialHeader() const;
 
-    bool parseDlt(QDltMsg &msg);
+    bool parseDlt(QDltMsg &msg,bool supportDLTv2 = false);
     bool parseAscii(QDltMsg &msg);
 
     void clear();
