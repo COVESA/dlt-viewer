@@ -4143,7 +4143,7 @@ void MainWindow::updateIndex()
 
     for(int num=oldsize;num<qfile.size();num++)
     {
-     qmsg.setMsg(qfile.getMsg(num),settings->supportDLTv2Decoding);
+     qmsg.setMsg(qfile.getMsg(num),true,settings->supportDLTv2Decoding);
      qmsg.setIndex(num);
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
@@ -4248,7 +4248,7 @@ void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, co
         ui->tableView->scrollTo(index);
 
         msgIndex = qfile.getMsgFilterPos(index.row());
-        msg.setMsg(qfile.getMsgFilter(index.row()),settings->supportDLTv2Decoding);
+        msg.setMsg(qfile.getMsgFilter(index.row()),true,settings->supportDLTv2Decoding);
         msg.setIndex(qfile.getMsgFilterPos(index.row()));
         activeViewerPlugins = pluginManager.getViewerPlugins();
         activeDecoderPlugins = pluginManager.getDecoderPlugins();
@@ -6594,7 +6594,7 @@ void MainWindow::filterAddTable() {
     }
 
     data = qfile.getMsgFilter(index.row());
-    msg.setMsg(data,settings->supportDLTv2Decoding);
+    msg.setMsg(data,true,settings->supportDLTv2Decoding);
     msg.setIndex(qfile.getMsgFilterPos(index.row()));
 
     /* decode message if necessary */
