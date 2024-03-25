@@ -151,7 +151,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
     return gmDateTime.toString("yyyy/MM/dd hh:mm:ss");
 }
 
-quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
+quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
 {
     int sizeStorageHeader = 0;
     quint32 storageHeaderTimestampNanoseconds = 0;
@@ -223,7 +223,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
     versionNumber = (htyp2 & 0xe0) >> 5;  // Byte 0, Bit 5-7
 
 
-    if(versionNumber==1)
+    if(!supportDLTv2 || versionNumber==1)
     {
         const DltStandardHeader *standardheader = 0;
         unsigned int extra_size,headersize;
@@ -316,7 +316,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size)
     }
 }
 
-bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
+bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportDLTv2)
 {
     unsigned int offset;
     QDltArgument argument;
@@ -375,7 +375,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader)
     quint32 htyp2 = *((quint32*) (buf.constData() + sizeStorageHeader));
     versionNumber = (htyp2 & 0xe0) >> 5;  // Byte 0, Bit 5-7
 
-    if(versionNumber==1)
+    if(!supportDLTv2 || versionNumber==1)
     {
 
         if(buf.size() < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {

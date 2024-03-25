@@ -81,7 +81,7 @@ void QDltConnection::add(const QByteArray &bytes)
     dataView.align(data);
 }
 
-bool QDltConnection::parseDlt(QDltMsg &msg)
+bool QDltConnection::parseDlt(QDltMsg &msg , bool supportDLTv2)
 {
     /* if sync to serial header search for header */
     int found = 0;
@@ -150,7 +150,7 @@ bool QDltConnection::parseDlt(QDltMsg &msg)
     {
         /* two sync headers found */
         /* try to read msg */
-        if(!msg.setMsg(dataView.mid(firstPos,secondPos-firstPos-4),false))
+        if(!msg.setMsg(dataView.mid(firstPos,secondPos-firstPos-4),false,supportDLTv2))
         {
             /* no valid msg found, perhaps to short */
             dataView.advance(secondPos-4);
@@ -175,7 +175,7 @@ bool QDltConnection::parseDlt(QDltMsg &msg)
         bytesError += firstPos-4;
 
     /* try to read msg */
-    if(!msg.setMsg(dataView.mid(firstPos),false))
+    if(!msg.setMsg(dataView.mid(firstPos),false,supportDLTv2))
     {
         /* no complete msg found */
         /* perhaps not completely received */
