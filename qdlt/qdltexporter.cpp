@@ -1,15 +1,16 @@
 #include <algorithm>
-#include <QProgressDialog>
-#include <QMessageBox>
-#include <QApplication>
+//#include <QProgressDialog>
+//#include <QMessageBox>
+//#include <QApplication>
 #include <QClipboard>
 #include <QDebug>
+#include <QFile>
 
-#include "dltexporter.h"
+#include "qdltexporter.h"
 #include "fieldnames.h"
 #include "qdltoptmanager.h"
 
-DltExporter::DltExporter(Project *_project,QObject *parent) :
+QDltExporter::QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,QObject *parent) :
     QObject(parent)
 {
     size = 0;
@@ -21,17 +22,20 @@ DltExporter::DltExporter(Project *_project,QObject *parent) :
     exportSelection = SelectionAll;
     starting_index=0;
     stoping_index=0;
-    project = _project;
+    //project = _project;
+    automaticTimeSettings=_automaticTimeSettings;
+    utcOffset=_utcOffset;
+    dst=_dst;
 }
 
-QString DltExporter::escapeCSVValue(QString arg)
+QString QDltExporter::escapeCSVValue(QString arg)
 {
     QString retval = arg.replace(QChar('\"'), QString("\"\""));
     retval = QString("\"%1\"").arg(retval);
     return retval;
 }
 
-bool DltExporter::writeCSVHeader(QFile *file)
+bool QDltExporter::writeCSVHeader(QFile *file)
 {
     QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\",\"%13\"\n");
     header = header.arg(FieldNames::getName(FieldNames::Index))
@@ -50,13 +54,13 @@ bool DltExporter::writeCSVHeader(QFile *file)
     return file->write(header.toLatin1().constData()) < 0 ? false : true;
 }
 
-void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
+void QDltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
 {
     QString text("");
 
     text += escapeCSVValue(QString("%1").arg(index)).append(",");
-    if( project->settings->automaticTimeSettings == 0 )
-       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
+    if( automaticTimeSettings == 0 )
+       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
     else
        text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
     text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(",");
@@ -75,10 +79,10 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     to->write(text.toLatin1().constData());
 }
 
-bool DltExporter::start()
+bool QDltExporter::start()
 {
     /* Sort the selection list and create Row list */
-    if(exportSelection == DltExporter::SelectionSelected && selection != NULL)
+    if(exportSelection == QDltExporter::SelectionSelected && selection != NULL)
     {
         std::sort(selection->begin(), selection->end());
         selectedRows.clear();
@@ -91,9 +95,9 @@ bool DltExporter::start()
     }
 
     /* open the export file */
-    if(exportFormat == DltExporter::FormatAscii ||
-       exportFormat == DltExporter::FormatUTF8 ||
-       exportFormat == DltExporter::FormatCsv)
+    if(exportFormat == QDltExporter::FormatAscii ||
+       exportFormat == QDltExporter::FormatUTF8 ||
+       exportFormat == QDltExporter::FormatCsv)
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
         {
@@ -102,12 +106,12 @@ bool DltExporter::start()
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
             else
-            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot open the export file %1").arg(to->fileName()));
+                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                 //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
-    else if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
+    else if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
     {
         if(!to->open(QIODevice::WriteOnly))
         {
@@ -116,14 +120,14 @@ bool DltExporter::start()
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
             else
-            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot open the export file %1").arg(to->fileName()));
+                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                 //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
 
     /* write CSV header if CSV export */
-    if(exportFormat == DltExporter::FormatCsv)
+    if(exportFormat == QDltExporter::FormatCsv)
     {
         /* Write the first line of CSV file */
         if(!writeCSVHeader(to))
@@ -133,23 +137,23 @@ bool DltExporter::start()
              qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
              }
             else
-            QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                                  QString("Cannot open the export file %1").arg(to->fileName()));
+                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+                 //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
     }
 
     /* calculate size */
-    if(exportSelection == DltExporter::SelectionAll)
+    if(exportSelection == QDltExporter::SelectionAll)
         size = from->size();
-    else if(exportSelection == DltExporter::SelectionFiltered)
+    else if(exportSelection == QDltExporter::SelectionFiltered)
         size = from->sizeFilter();
-    else if(exportSelection == DltExporter::SelectionSelected)
+    else if(exportSelection == QDltExporter::SelectionSelected)
         size = selectedRows.size();
     else
         return false;
 
-    if(exportFormat == DltExporter::FormatClipboardJiraTableHead)
+    if(exportFormat == QDltExporter::FormatClipboardJiraTableHead)
     {
         clipboardString = "||" "Index"
                           "||" "Time" "||" "Timestamp"
@@ -163,25 +167,25 @@ bool DltExporter::start()
     return true;
 }
 
-bool DltExporter::finish()
+bool QDltExporter::finish()
 {
 
-    if(exportFormat == DltExporter::FormatAscii ||
-       exportFormat == DltExporter::FormatUTF8 ||
-       exportFormat == DltExporter::FormatCsv ||
-       exportFormat == DltExporter::FormatDlt ||
-       exportFormat == DltExporter::FormatDltDecoded)
+    if(exportFormat == QDltExporter::FormatAscii ||
+       exportFormat == QDltExporter::FormatUTF8 ||
+       exportFormat == QDltExporter::FormatCsv ||
+       exportFormat == QDltExporter::FormatDlt ||
+       exportFormat == QDltExporter::FormatDltDecoded)
     {
         /* close output file */
         to->close();
     }
-    else if (exportFormat == DltExporter::FormatClipboard ||
-             exportFormat == DltExporter::FormatClipboardPayloadOnly ||
-             exportFormat == DltExporter::FormatClipboardJiraTable ||
-             exportFormat == DltExporter::FormatClipboardJiraTableHead)
+    else if (exportFormat == QDltExporter::FormatClipboard ||
+             exportFormat == QDltExporter::FormatClipboardPayloadOnly ||
+             exportFormat == QDltExporter::FormatClipboardJiraTable ||
+             exportFormat == QDltExporter::FormatClipboardJiraTableHead)
     {
         /* export to clipboard */
-        QClipboard *clipboard = QApplication::clipboard();
+        //QClipboard *clipboard = QApplication::clipboard();
 
         /*remove '\n' from the string*/
         if (clipboardString.endsWith('\n'))
@@ -190,17 +194,17 @@ bool DltExporter::finish()
         }
         /* remove null characters */
         clipboardString.remove(QChar::Null);
-        clipboard->setText(clipboardString);
+        //clipboard->setText(clipboardString);
     }
 
     return true;
 }
 
-bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
+bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
 {
     bool result;
     buf.clear();
-    if(exportSelection == DltExporter::SelectionAll)
+    if(exportSelection == QDltExporter::SelectionAll)
     {
         buf = from->getMsg(num);
         if( true == buf.isEmpty())
@@ -211,7 +215,7 @@ bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
         result =  msg.setMsg(buf);
         msg.setIndex(num);
     }
-    else if(exportSelection == DltExporter::SelectionFiltered)
+    else if(exportSelection == QDltExporter::SelectionFiltered)
     {
         buf = from->getMsgFilter(num);
         if( true == buf.isEmpty())
@@ -222,7 +226,7 @@ bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
         result =  msg.setMsg(buf);
         msg.setIndex(from->getMsgFilterPos(num));
     }
-    else if(exportSelection == DltExporter::SelectionSelected)
+    else if(exportSelection == QDltExporter::SelectionSelected)
     {
         buf = from->getMsgFilter(selectedRows[num]);
         if( true == buf.isEmpty())
@@ -242,32 +246,32 @@ bool DltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
     return result;
 }
 
-bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf)
+bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf)
 {
-    if((exportFormat == DltExporter::FormatDlt)||(exportFormat == DltExporter::FormatDltDecoded))
+    if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
     {
         to->write(buf);
     }
-    else if(exportFormat == DltExporter::FormatAscii ||
-            exportFormat == DltExporter::FormatUTF8  ||
-            exportFormat == DltExporter::FormatClipboard ||
-            exportFormat == DltExporter::FormatClipboardPayloadOnly)
+    else if(exportFormat == QDltExporter::FormatAscii ||
+            exportFormat == QDltExporter::FormatUTF8  ||
+            exportFormat == QDltExporter::FormatClipboard ||
+            exportFormat == QDltExporter::FormatClipboardPayloadOnly)
     {
         QString text;
 
         /* get message ASCII text */
-        if(exportFormat != DltExporter::FormatClipboardPayloadOnly)
+        if(exportFormat != QDltExporter::FormatClipboardPayloadOnly)
         {
-            if(exportSelection == DltExporter::SelectionAll)
+            if(exportSelection == QDltExporter::SelectionAll)
                 text += QString("%1 ").arg(num);
-            else if(exportSelection == DltExporter::SelectionFiltered)
+            else if(exportSelection == QDltExporter::SelectionFiltered)
                 text += QString("%1 ").arg(from->getMsgFilterPos(num));
-            else if(exportSelection == DltExporter::SelectionSelected)
+            else if(exportSelection == QDltExporter::SelectionSelected)
                 text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
             else
                 return false;
-            if( project->settings->automaticTimeSettings == 0 )
-               text += QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+            if( automaticTimeSettings == 0 )
+               text += QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
             else
                text += QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
             text += QString(" %1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
@@ -287,46 +291,46 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
         text += "\n";
         try
          {
-            if(exportFormat == DltExporter::FormatAscii)
+            if(exportFormat == QDltExporter::FormatAscii)
                 /* write to file */
                 to->write(text.toLatin1().constData());
-            else if (exportFormat == DltExporter::FormatUTF8)
+            else if (exportFormat == QDltExporter::FormatUTF8)
                 to->write(text.toUtf8().constData());
-            else if(exportFormat == DltExporter::FormatClipboard ||
-                    exportFormat == DltExporter::FormatClipboardPayloadOnly)
+            else if(exportFormat == QDltExporter::FormatClipboard ||
+                    exportFormat == QDltExporter::FormatClipboardPayloadOnly)
                 clipboardString += text;
          }
         catch (...)
          {
          }
     }
-    else if(exportFormat == DltExporter::FormatCsv)
+    else if(exportFormat == QDltExporter::FormatCsv)
     {
-        if(exportSelection == DltExporter::SelectionAll)
+        if(exportSelection == QDltExporter::SelectionAll)
             writeCSVLine(num, to, msg);
-        else if(exportSelection == DltExporter::SelectionFiltered)
+        else if(exportSelection == QDltExporter::SelectionFiltered)
             writeCSVLine(from->getMsgFilterPos(num), to, msg);
-        else if(exportSelection == DltExporter::SelectionSelected)
+        else if(exportSelection == QDltExporter::SelectionSelected)
             writeCSVLine(from->getMsgFilterPos(selectedRows[num]), to, msg);
         else
             return false;
     }
-    else if ((exportFormat == DltExporter::FormatClipboardJiraTable) ||
-             (exportFormat == DltExporter::FormatClipboardJiraTableHead) )
+    else if ((exportFormat == QDltExporter::FormatClipboardJiraTable) ||
+             (exportFormat == QDltExporter::FormatClipboardJiraTableHead) )
     {
         QString text = "|";
 
-        if(exportSelection == DltExporter::SelectionAll)
+        if(exportSelection == QDltExporter::SelectionAll)
             text += QString("%1").arg(num);
-        else if(exportSelection == DltExporter::SelectionFiltered)
+        else if(exportSelection == QDltExporter::SelectionFiltered)
             text += QString("%1").arg(from->getMsgFilterPos(num));
-        else if(exportSelection == DltExporter::SelectionSelected)
+        else if(exportSelection == QDltExporter::SelectionSelected)
             text += QString("%1").arg(from->getMsgFilterPos(selectedRows[num]));
         else
             return false;
 
-        if( project->settings->automaticTimeSettings == 0 )
-           text += "|" + QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+        if( automaticTimeSettings == 0 )
+           text += "|" + QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
         else
            text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
         text += "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
@@ -341,15 +345,15 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
 }
 
 
-void DltExporter::exportMessageRange(unsigned long start, unsigned long stop)
+void QDltExporter::exportMessageRange(unsigned long start, unsigned long stop)
 {
     this->starting_index=start;
     this->stoping_index=stop;
 }
 
-void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
-                                 DltExporter::DltExportFormat exportFormat,
-                                 DltExporter::DltExportSelection exportSelection, QModelIndexList *selection)
+void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
+                                 QDltExporter::DltExportFormat exportFormat,
+                                 QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection)
 {
     QDltMsg msg;
     QByteArray buf;
@@ -395,19 +399,19 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 
     /* init fileprogress */
 
-    QProgressDialog fileprogress("Export ...", "Cancel", 0, stoping, qobject_cast<QWidget *>(parent()));
+    /*QProgressDialog fileprogress("Export ...", "Cancel", 0, stoping, qobject_cast<QWidget *>(parent()));
     if (silentMode == true)
      {
       fileprogress.setWindowTitle("DLT Viewer");
       fileprogress.setWindowModality(Qt::WindowModal);
       fileprogress.show();
-     }
+     }*/
 
     for(starting;starting<stoping;starting++)
     {
         // Update progress dialog every 1000 lines
 
-        if( 0 == (starting%1000))
+        /*if( 0 == (starting%1000))
         {
           percent=(( starting * 100.0 ) /stoping );
           if (silentMode == true)
@@ -425,7 +429,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         {
             qDebug().noquote() << "Export canceled !";
             return;
-        }
+        }*/
 
         // get message
         if(false == getMsg(starting,msg,buf))
@@ -437,10 +441,10 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
         //  return;
         }
         // decode message if needed
-        if(exportFormat != DltExporter::FormatDlt)
+        if(exportFormat != QDltExporter::FormatDlt)
         {
             pluginManager->decodeMsg(msg,silentMode);
-            if (exportFormat == DltExporter::FormatDltDecoded)
+            if (exportFormat == QDltExporter::FormatDltDecoded)
             {
                 msg.setNumberOfArguments(msg.sizeArguments());
                 msg.getMsg(buf,true);
@@ -462,7 +466,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
 
     if (silentMode == true)
     {
-     fileprogress.close();
+     //fileprogress.close();
     }
 
 
@@ -477,7 +481,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
        //qDebug() << "DLT Export finish() failed";
        if (silentMode == true ) // reversed login in this case !
        {
-        QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
+        //QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
        }
        return;
     }

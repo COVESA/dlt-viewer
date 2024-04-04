@@ -134,6 +134,7 @@ endif()
 
 add_subdirectory(qdlt)
 add_subdirectory(src)
+add_subdirectory(cmd)
 add_subdirectory(plugin)
 
 message(STATUS "\n\t** DLT Viewer Build Summary **")
