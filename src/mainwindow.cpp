@@ -1071,12 +1071,55 @@ void MainWindow::onNewTriggered(QString fileName)
 void MainWindow::on_action_menuFile_Open_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Open one or more DLT Log files"), workingDirectory.getDltDirectory(), tr("DLT Files (*.dlt);;All files (*.*)"));
+        tr("Open DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.pcap *.mf4);;DLT files (*.dlt);;PCAP files (*.pcap);;MF4 files (*.mf4)"));
 
     if(fileNames.isEmpty())
         return;
 
-    onOpenTriggered(fileNames);
+    /* change DLT file working directory */
+    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
+
+    DltImporter importer;
+    QStringList dltFileNames,pcapFileNames,mf4FileNames;
+
+    for ( const auto& i : fileNames )
+    {
+        if(i.endsWith(".dlt",Qt::CaseInsensitive))
+            dltFileNames+=i;
+        else if(i.endsWith(".pcap",Qt::CaseInsensitive))
+            pcapFileNames+=i;
+        else if(i.endsWith(".mf4",Qt::CaseInsensitive))
+            mf4FileNames+=i;
+    }
+
+    if(!dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty())
+    {
+        onOpenTriggered(dltFileNames);
+    }
+    else if(dltFileNames.isEmpty()&&!pcapFileNames.isEmpty()&&mf4FileNames.isEmpty())
+    {
+        on_action_menuFile_Clear_triggered();
+        for ( const auto& i : pcapFileNames )
+        {
+            importer.dltIpcFromPCAP(outputfile,i,this,false);
+        }
+        reloadLogFile();
+    }
+    else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&!mf4FileNames.isEmpty())
+    {
+        on_action_menuFile_Clear_triggered();
+        for ( const auto& i : mf4FileNames )
+        {
+            importer.dltIpcFromMF4(outputfile,i,this,false);
+        }
+        reloadLogFile();
+    }
+    else
+    {
+        QMessageBox msgBox(QMessageBox::Warning, "Open DLT/PCAP/MF4 files", "Mixing opening different file types not allowed!", QMessageBox::Close);
+        qDebug() << "ERROR: Mixing opening different file types not allowed!";
+    }
+
 }
 
 
@@ -1333,30 +1376,6 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     reloadLogFile();
 }
 
-void MainWindow::on_actionImport_DLT_IPC_from_PCAP_MF4_triggered()
-{
-    QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Import DLT/IPC from PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("PCAP/MF4 files (*.pcap *.mf4)"));
-
-    if(fileNames.isEmpty())
-        return;
-
-    /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
-
-    DltImporter importer;
-
-    for ( const auto& i : fileNames )
-    {
-        if(i.endsWith(".pcap",Qt::CaseInsensitive))
-            importer.dltIpcFromPCAP(outputfile,i,this,false);
-        else if(i.endsWith(".mf4",Qt::CaseInsensitive))
-            importer.dltIpcFromMF4(outputfile,i,this,false);
-    }
-
-    reloadLogFile();
-}
-
 void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
@@ -1400,18 +1419,30 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     reloadLogFile();
 }
 
-void MainWindow::on_action_menuFile_Append_DLT_File_triggered()
+void MainWindow::on_actionAppend_triggered()
 {
-    QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Append DLT File"), workingDirectory.getDltDirectory(), tr("DLT File (*.dlt)"));
+    QStringList fileNames = QFileDialog::getOpenFileNames(this,
+        tr("Append DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.pcap *.mf4);;DLT files (*.dlt);;PCAP files (*.pcap);;MF4 files (*.mf4)"));
 
-    if(fileName.isEmpty())
+    if(fileNames.isEmpty())
         return;
 
     /* change DLT file working directory */
-    workingDirectory.setDltDirectory(QFileInfo(fileName).absolutePath());
+    workingDirectory.setDltDirectory(QFileInfo(fileNames[0]).absolutePath());
 
-    appendDltFile(fileName);
+    DltImporter importer;
+
+    for ( const auto& i : fileNames )
+    {
+        if(i.endsWith(".dlt",Qt::CaseInsensitive))
+            appendDltFile(i);
+        else if(i.endsWith(".pcap",Qt::CaseInsensitive))
+            importer.dltIpcFromPCAP(outputfile,i,this,false);
+        else if(i.endsWith(".mf4",Qt::CaseInsensitive))
+            importer.dltIpcFromMF4(outputfile,i,this,false);
+    }
+
+    reloadLogFile();
 }
 
 void MainWindow::mark_unmark_lines()
@@ -7120,10 +7151,10 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
 
         if (is_file)
         {
-            action = new QAction("&Load selected DLT", this);
+            action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
             connect(action, &QAction::triggered, this, [this, indexes](){
-                QStringList  pathsList;
                 auto selectedIndexes = indexes;
+                QStringList dltFileNames,pcapFileNames,mf4FileNames,dlfFileNames;
 
                 for (auto &index : selectedIndexes)
                 {
@@ -7131,58 +7162,87 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                    {
                        QString path = getPathFromExplorerViewIndexModel(index);
 
-                       if (path.toLower().endsWith(".dlt"))
-                       {
-                           pathsList.append(path);
-                       }
+                       if(path.endsWith(".dlt",Qt::CaseInsensitive))
+                           dltFileNames+=path;
+                       else if(path.endsWith(".pcap",Qt::CaseInsensitive))
+                           pcapFileNames+=path;
+                       else if(path.endsWith(".mf4",Qt::CaseInsensitive))
+                           mf4FileNames+=path;
+                       else if(path.endsWith(".dlf",Qt::CaseInsensitive))
+                           dlfFileNames+=path;
                    }
                 }
 
-                if (!pathsList.isEmpty())
+                if(!dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
                 {
-                    openDltFile(pathsList);
-                    outputfileIsTemporary = false;
+                    onOpenTriggered(dltFileNames);
                 }
-                else
+                else if(dltFileNames.isEmpty()&&!pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
                 {
-                    QMessageBox msgBox(QMessageBox::Warning, "Warning", "No dlt files in current selection", QMessageBox::Close);
-                    msgBox.exec();
-                }
-            });
-            menu.addAction(action);
-
-            action = new QAction("&Import DLT/IPC from selected PCAP/MF4 file...", this);
-            connect(action, &QAction::triggered, this, [this, indexes](){
-                QStringList  pathsList;
-                auto selectedIndexes = indexes;
-                for (auto &index : selectedIndexes)
-                {
-                   if (0 == index.column())
-                   {
-                       QString path = getPathFromExplorerViewIndexModel(index);
-                       if (path.endsWith(".pcap",Qt::CaseInsensitive))
-                           pathsList.append(path);
-                       else if (path.endsWith(".mf4",Qt::CaseInsensitive))
-                           pathsList.append(path);
-                   }
-                }
-                if (!pathsList.isEmpty())
-                {
-                    DltImporter importer;
-                    for (auto i : pathsList)
+                    on_action_menuFile_Clear_triggered();
+                    for ( const auto& i : pcapFileNames )
                     {
-                        if (i.endsWith(".pcap",Qt::CaseInsensitive))
-                            importer.dltIpcFromPCAP(outputfile,i,this,false);
-                        else if (i.endsWith(".mf4",Qt::CaseInsensitive))
-                            importer.dltIpcFromMF4(outputfile,i,this,false);
+                        DltImporter importer;
+                        importer.dltIpcFromPCAP(outputfile,i,this,false);
+                    }
+                    reloadLogFile();
+                }
+                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&!mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
+                {
+                    on_action_menuFile_Clear_triggered();
+                    for ( const auto& i : mf4FileNames )
+                    {
+                        DltImporter importer;
+                        importer.dltIpcFromMF4(outputfile,i,this,false);
+                    }
+                    reloadLogFile();
+                }
+                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&!dlfFileNames.isEmpty())
+                {
+                    bool first = true;
+                    for ( const auto& i : dlfFileNames )
+                    {
+                        DltImporter importer;
+                        if(first)
+                        {
+                            openDlfFile(i,true);
+                            first = false;
+                        }
+                        else
+                            openDlfFile(i,false);
                     }
                     reloadLogFile();
                 }
                 else
                 {
-                    QMessageBox msgBox(QMessageBox::Warning, "Warning", "No pcap/mf4 files in current selection", QMessageBox::Close);
-                    msgBox.exec();
+                    QMessageBox msgBox(QMessageBox::Warning, "Open DLT/PCAP/MF4/DLF files", "Mixing opening different file types not allowed!", QMessageBox::Close);
+                    qDebug() << "ERROR: Mixing opening different file types not allowed!";
                 }
+
+            });
+            menu.addAction(action);
+
+            action = new QAction("&Append DLT/PCAP/MF4/DLF file...", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                QStringList  pathsList;
+                auto selectedIndexes = indexes;
+                DltImporter importer;
+                for (auto &index : selectedIndexes)
+                {
+                   if (0 == index.column())
+                   {
+                       QString i = getPathFromExplorerViewIndexModel(index);
+                       if(i.endsWith(".dlt",Qt::CaseInsensitive))
+                           appendDltFile(i);
+                       else if(i.endsWith(".pcap",Qt::CaseInsensitive))
+                           importer.dltIpcFromPCAP(outputfile,i,this,false);
+                       else if(i.endsWith(".mf4",Qt::CaseInsensitive))
+                           importer.dltIpcFromMF4(outputfile,i,this,false);
+                       else if(i.endsWith(".dlf",Qt::CaseInsensitive))
+                           openDlfFile(i,false);
+                   }
+                }
+                reloadLogFile();
             });
             menu.addAction(action);
 
@@ -7204,17 +7264,6 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                     });
                     menu.addAction(action);
                 }
-
-                action = new QAction("&Append DLT/Filter", this);
-                connect(action, &QAction::triggered, this, [this, indexes](){
-                    auto index = indexes[0];
-                    auto path  = getPathFromExplorerViewIndexModel(index);
-                    if (path.toLower().endsWith(".dlt"))
-                        appendDltFile(path);
-                    else
-                        openDlfFile(path,false);
-                });
-                menu.addAction(action);
             }
         }
         else
@@ -7232,10 +7281,11 @@ void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
                     files.append(it_sh.next());
                 }
 
-                openDltFile(files); outputfileIsTemporary = true;
+                openDltFile(files);
+                outputfileIsTemporary = true;
             });
             menu.addAction(action);
-            action = new QAction("Import all PCAP/MF4 files", this);
+            action = new QAction("Append all PCAP/MF4 files", this);
             connect(action, &QAction::triggered, this, [this, indexes](){
                 auto index = indexes[0];
                 auto path  = getPathFromExplorerViewIndexModel(index);
@@ -8351,3 +8401,4 @@ void MainWindow::on_lineEditFilterEnd_textChanged(const QString &arg1)
     Q_UNUSED(arg1)
     applyConfigEnabled(true);
 }
+

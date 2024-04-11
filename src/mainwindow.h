@@ -424,10 +424,10 @@ private slots:
     void on_action_menuFile_New_triggered();
     void on_action_menuFile_SaveAs_triggered();
     void on_action_menuFile_Import_DLT_Stream_with_Serial_Header_triggered();
-    void on_action_menuFile_Append_DLT_File_triggered();
     void on_action_menuFile_Import_DLT_Stream_triggered();
     void on_action_menuFile_Settings_triggered();
     void on_action_menuFile_Open_triggered();
+    void on_actionAppend_triggered();
     void on_actionExport_triggered();
 
     void on_pushButtonMovePluginUp_clicked();
@@ -584,8 +584,6 @@ private slots:
     void on_lineEditFilterStart_textChanged(const QString &arg1);
 
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
-
-    void on_actionImport_DLT_IPC_from_PCAP_MF4_triggered();
 
     void on_comboBoxFilterSelection_textActivated(const QString &arg1);
 
