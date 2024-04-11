@@ -159,7 +159,14 @@ bool File::isComplete(){
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    dltFileIndex->insert(i-1, index);
+    if((i-1) <= dltFileIndex->length())
+    {
+        dltFileIndex->insert(i-1, index);
+    }
+    else
+    {
+        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is greater than dltFileIndex length" << dltFileIndex->length() << "FileSerialNumber" << fileSerialNumber;
+    }
     increaseReceivedPackages();
 }
 
