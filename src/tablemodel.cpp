@@ -248,7 +248,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
              /* display payload */
-             visu_data = msg.toStringPayload().trimmed().replace('\n', ' ');
+             visu_data = msg.toStringPayload().simplified();
 
              if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
              {

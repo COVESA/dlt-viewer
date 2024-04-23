@@ -163,7 +163,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(msg.getNumberOfArguments());
         case FieldNames::Payload:
             /* display payload */
-            visu_data = msg.toStringPayload().trimmed();
+            visu_data = msg.toStringPayload().simplified();
             if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
             {
                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
