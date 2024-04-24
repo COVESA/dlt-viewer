@@ -190,7 +190,7 @@ bool DltExporter::finish()
         }
         /* remove null characters */
         clipboardString.remove(QChar::Null);
-        clipboard->setText(clipboardString);
+        clipboard->setText(clipboardString,QClipboard::Clipboard);
     }
 
     return true;
@@ -283,7 +283,7 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
 
             text += " ";
         }
-        text += msg.toStringPayload().trimmed();
+        text += msg.toStringPayload().simplified();
         text += "\n";
         try
          {
@@ -333,7 +333,7 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
                 "|" + msg.getEcuid() +
                 "|" + msg.getApid() +
                 "|" + msg.getCtid() +
-                "|" + msg.toStringPayload().trimmed().replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
+                "|" + msg.toStringPayload().simplified().replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
                 "| |\n";
         clipboardString += text;
     }

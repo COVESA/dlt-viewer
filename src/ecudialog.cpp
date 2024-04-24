@@ -76,6 +76,7 @@ EcuDialog::EcuDialog(QWidget *parent) :
     ui->comboBoxBaudrate->addItem(QLatin1String("230400"), 230400 );
     ui->comboBoxBaudrate->addItem(QLatin1String("460800"), 460800 );
     ui->comboBoxBaudrate->addItem(QLatin1String("921600"), 921600 );
+    ui->comboBoxBaudrate->addItem(QLatin1String("1000000"), 1000000 );
 
     ui->comboBoxBaudrate->setCurrentIndex(ui->comboBoxBaudrate->count()-1);
 
