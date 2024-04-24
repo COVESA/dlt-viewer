@@ -80,10 +80,14 @@ void PluginDialog::on_toolButton_clicked() {
     if(ui->comboBoxType->currentIndex()==0)
     {
         // filename
-        fileName = QFileDialog::getOpenFileName(this,
+        QStringList fileNames = QFileDialog::getOpenFileNames(this,
             QString("Open ")+name+QString(" configuration file"),
             workingDirectory.getPluginDirectory(name),
             tr("Plugin configuration (*.*)"));
+        if(fileNames.size()==1)
+            fileName = fileNames[0];
+        else if(fileNames.size()>1)
+            fileName = fileNames.join('|');
     }
     else
     {
