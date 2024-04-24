@@ -420,10 +420,10 @@
        <item row="3" column="0">
         <widget class="QComboBox" name="comboBoxBaudrate">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="editable">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="currentIndex">
           <number>-1</number>
