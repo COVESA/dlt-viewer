@@ -49,7 +49,6 @@
 #include <QTextStream>
 #include <QtEndian>
 
-// ISSUE_307
 /**
  * From QDlt.
  * Must be a "C" include to interpret the imports correctly
@@ -89,6 +88,9 @@ extern "C" {
 #include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
 
+#define ISSUE_307
+
+//
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -1983,6 +1985,18 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
 void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
     qint64 fileerrors = 0;
+	#ifdef DEBUG
+	qDebug() << "reloadLogFile";
+	for(int num=0;num<openFileNames.size();num++)
+        {
+			     qDebug() << "openFileNames" << openFileNames[num];
+            //bool back = qfile.open(openFileNames[num],num!=0);
+           // if ( false == back )
+            //{
+              //qDebug() << "ERROR opening file (s)" << openFileNames[num] << __FILE__ << __LINE__;
+            //}
+        }
+	#endif
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
@@ -2066,6 +2080,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // open qfile
     if( false == update)
     {
+			#ifdef DEBUG
+			 qDebug() << "#ifdef ISSUE_307";
+			#endif
         for(int num=0;num<openFileNames.size();num++)
         {
             bool back = qfile.open(openFileNames[num],num!=0);
@@ -3650,6 +3667,10 @@ void MainWindow::checkConnectionState()
     {
      // green
      this->ui->actionConnectAll->setIcon(QIcon(":/toolbar/png/network-transmit-receive_connected.png"));
+	 #ifdef DEBUG
+	 // qDebug() << "green";
+	 // on_applyConfig_clicked();
+	 #endif
     }
    else
     {
@@ -5689,6 +5710,9 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
 
 void MainWindow::on_configWidget_itemSelectionChanged()
 {
+	#ifdef DEBUG
+	qDebug() << "--->on_configWidget_itemSelectionChanged";
+	#endif
     /* get selected ECU from configuration */
     EcuItem* ecuitem = 0;
     ApplicationItem* appitem = 0;
@@ -5723,6 +5747,9 @@ void MainWindow::on_configWidget_itemSelectionChanged()
     ui->action_menuConfig_Expand_All_ECUs->setEnabled(ecuitem && !appitem );
     ui->action_menuConfig_Collapse_All_ECUs->setEnabled(ecuitem && !appitem );
 
+	#ifdef DEBUG
+	qDebug() << "<---on_configWidget_itemSelectionChanged";
+	#endif
 }
 
 void MainWindow::on_pluginWidget_pluginPriorityChanged(const QString name, int prio)
@@ -6047,6 +6074,12 @@ void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
                 pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting,ecuitem->getHostname());
                 break;
             case QAbstractSocket::ConnectedState:
+			#ifdef ISSUE_307
+			#ifdef DEBUG
+			qDebug() << "online";
+			#endif
+			on_applyConfig_clicked();
+			#endif
                 pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
                 break;
             case QAbstractSocket::ClosingState:
@@ -7994,11 +8027,17 @@ void MainWindow::syncCheckBoxesAndMenu()
 
 void MainWindow::on_applyConfig_clicked()
 {
+	#ifdef DEBUG
+	qDebug() << "--->on_applyConfig_clicked";
+	#endif
     syncCheckBoxesAndMenu();
     applyConfigEnabled(false);
     filterUpdate();
     reloadLogFile(true);
     triggerPluginsAutoload();
+	#ifdef DEBUG
+	qDebug() << "<---on_applyConfig_clicked";
+	#endif
 }
 
 void MainWindow::clearSelection()
