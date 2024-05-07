@@ -8219,7 +8219,7 @@ void MainWindow::applyConfigEnabled(bool enabled)
         ui->applyConfig->setEnabled(true);
 
         /* reset default filter selection and default filter index */
-        resetDefaultFilter();
+        // resetDefaultFilter();
     }
     else
     {
