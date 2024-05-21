@@ -63,6 +63,11 @@ void QDltFile::setDLTv2Support(bool _dltv2Support)
     dltv2Support = _dltv2Support;
 }
 
+bool QDltFile::getDLTv2Support() const
+{
+    return dltv2Support;
+}
+
 void QDltFile::clear()
 {
     for(int num=0;num<files.size();num++)

@@ -293,6 +293,12 @@ public:
      **/
     void setDLTv2Support(bool dltv2Support);
 
+    //! Gets DLTv2 support setting
+    /*!
+     * \return DLTv2 Support
+     **/
+    bool getDLTv2Support() const;
+
 protected:
 
 private:
