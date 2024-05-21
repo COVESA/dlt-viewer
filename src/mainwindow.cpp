@@ -2209,6 +2209,9 @@ void MainWindow::applySettings()
 
     // set DLT message chache size
     qfile.setCacheSize(settings->msgCacheSize);
+
+    // set DLTv2 Support
+    qfile.setDLTv2Support(settings->supportDLTv2Decoding);
 }
 
 
