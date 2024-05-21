@@ -16,6 +16,7 @@ public:
     QString getFlifTag();
     QString getFlCtIdTag();
     QString getAutoSavePath();
+    QString getStandardSavePath();
 
     void setFlstTag(QString newTag);
     void setFldaTag(QString newTag);
@@ -24,7 +25,7 @@ public:
     void setFlifTag(QString newTag);
     void setFlCtIdTag(QString newTag);
     void setAutoSavePath(QString newTag);
-
+    void setStandardSavePath(QString newTag);
     void setDefault();
 
 private:
@@ -35,7 +36,7 @@ private:
     QString tagFLIF;
     QString tagFLCtId;
     QString AutoSavePath;
-
+    QString StandardSavePath;
 };
 
 #endif // CONFIGURATION_H

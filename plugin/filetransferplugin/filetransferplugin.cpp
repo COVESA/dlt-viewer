@@ -35,6 +35,7 @@ FiletransferPlugin::FiletransferPlugin()
 
 FiletransferPlugin::~FiletransferPlugin()
 {
+
 }
 
 QString FiletransferPlugin::name()
@@ -132,8 +133,13 @@ bool FiletransferPlugin::loadConfig(QString filename)
                     }
                   }
                 form->setAutoSave(config.getAutoSavePath(), true);
+               }
+              if(xml.name() == QString("STANDARDSAVEPATH"))
+              {
+                  config.setStandardSavePath( xml.readElementText() );
+                  qDebug() << "Set standard save path for filetransfer plugin: " << config.getStandardSavePath();
+                  form->setStandardPath(config.getStandardSavePath());
               }
-
           }
     }
     if (xml.hasError())

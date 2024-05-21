@@ -171,20 +171,24 @@ void File::setQFileIndexForPackage(QString packageNumber, int index){
 }
 
 
-bool File::saveFile(QString newFile){
-
-    //QString newFile = directory.append("/").append(getFilename());
+bool File::saveFile(QString newFile)
+{
 
     if(QFile::exists(newFile)){
-        if(!QFile::remove(newFile)){
-            return false;
+        if(!QFile::remove(newFile))
+        {
+            qDebug() << "File " << newFile << "already exists";
+            // everything fine, file exists so that is what we want anyway
+            return true;
         }
     }
 
     QByteArray *completeFileData = getFileData();
 
     QFile file(newFile);
-    if (!file.open(QIODevice::WriteOnly)){
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "File " << newFile << "could not be opened" << __LINE__;
         freeFile();
         return false;
     }
