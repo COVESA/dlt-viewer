@@ -287,6 +287,12 @@ public:
      **/
     void setCacheSize(qsizetype cost);
 
+    //! Sets DLTv2 support
+    /*!
+     * \param dltv2Support DLTv2 Support
+     **/
+    void setDLTv2Support(bool dltv2Support);
+
 protected:
 
 private:
@@ -328,6 +334,13 @@ private:
 
     QCache<int,QDltMsg> cache;
     bool cacheEnable;
+
+    //! DLTv2 Support.
+    /*!
+      true dltv2 support is enabled.
+      false dltv2 support is disabled.
+    */
+    bool dltv2Support;
 };
 
 

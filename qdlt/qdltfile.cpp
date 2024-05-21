@@ -58,6 +58,11 @@ void QDltFile::setCacheSize(qsizetype cost)
     }
 }
 
+void QDltFile::setDLTv2Support(bool _dltv2Support)
+{
+    dltv2Support = _dltv2Support;
+}
+
 void QDltFile::clear()
 {
     for(int num=0;num<files.size();num++)
@@ -431,7 +436,7 @@ bool QDltFile::updateIndexFilter()
     for(int num=index;num<size();num++) {
         buf = getMsg(num);
         if(!buf.isEmpty()) {
-            msg.setMsg(buf);
+            msg.setMsg(buf,true,dltv2Support);
             msg.setIndex(num);
             if(checkFilter(msg)) {
                 indexFilter.append(num);
@@ -628,7 +633,7 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     QByteArray data = getMsg(index);
     if(data.isEmpty())
         return false;
-    result = msg.setMsg(data);
+    result = msg.setMsg(data,true,dltv2Support);
     msg.setIndex(index);
 
     // store msg in cache
