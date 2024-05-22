@@ -40,6 +40,7 @@ public:
     QTreeWidget* getTreeWidget();
     void clearSelectedFiles();
     void setAutoSave(QString path, bool autosave);
+    void setStandardPath(QString path);
 
 signals:
     void additem_signal(File *f);
@@ -54,7 +55,8 @@ private:
     Ui::Form *ui;
     int selectedFiles=0;
     bool autosave=false;
-    QString savepath="";
+    QString autosavepath="";
+    QString standardsavepath="";
 
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);
@@ -69,6 +71,7 @@ private slots:
     void on_deselectButton_clicked();
     void savetofile();
     void on_saveRightButtonClicked();
+    void on_selectionRightButton();
     void additem_slot(File *f);
     void updatefile_slot(QString filestring, QString packetnumber, int index);
     void finishfile_slot (QString fileid);

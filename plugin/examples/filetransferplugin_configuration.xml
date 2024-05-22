@@ -4,5 +4,7 @@
 <TAG_FLDA>FLDA</TAG_FLDA>     
 <TAG_FLFI>FLFI</TAG_FLFI>     
 <TAG_FLER>FLER</TAG_FLER>     
-<TAG_FLCTID>FILE</TAG_FLCTID>   
- </filetransferplugin_configuration>
+<TAG_FLCTID>FILE</TAG_FLCTID>
+<AUTOSAVE></AUTOSAVE>
+<STANDARDSAVEPATH></STANDARDSAVEPATH>
+</filetransferplugin_configuration>
