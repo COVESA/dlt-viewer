@@ -1071,7 +1071,7 @@ void MainWindow::onNewTriggered(QString fileName)
 void MainWindow::on_action_menuFile_Open_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Open DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.pcap *.mf4);;DLT files (*.dlt);;PCAP files (*.pcap);;MF4 files (*.mf4)"));
+        tr("Open DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.DLT *.pcap *.PCAP *.mf4 *.MF4);;DLT files (*.dlt *.DLT);;PCAP files (*.pcap *.PCAP);;MF4 files (*.mf4 *.MF4)"));
 
     if(fileNames.isEmpty())
         return;
@@ -1422,7 +1422,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
 void MainWindow::on_actionAppend_triggered()
 {
     QStringList fileNames = QFileDialog::getOpenFileNames(this,
-        tr("Append DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.pcap *.mf4);;DLT files (*.dlt);;PCAP files (*.pcap);;MF4 files (*.mf4)"));
+        tr("Append DLT/PCAP/MF4 files"), workingDirectory.getDltDirectory(), tr("DLT/PCAP/MF4 files (*.dlt *.DLT *.pcap *.PCAP *.mf4 *.MF4);;DLT files (*.dlt *.DLT);;PCAP files (*.pcap *.PCAP);;MF4 files (*.mf4 *.MF4)"));
 
     if(fileNames.isEmpty())
         return;
