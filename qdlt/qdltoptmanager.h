@@ -33,7 +33,12 @@ enum e_convertionmode
     e_DDLT = 4,
 };
 
-
+enum class e_inputmode
+{
+    DLT    = 0,
+    STREAM = 1,
+    SERIAL = 2,
+};
 
 class QDLT_EXPORT QDltOptManager
 {
@@ -50,6 +55,7 @@ public:
     bool isCommandlineMode();
 
     e_convertionmode get_convertionmode();
+    e_inputmode get_inputmode();
 
     QString getProjectFile();
     QStringList getLogFiles();
@@ -76,6 +82,7 @@ private:
     bool silent_mode;
     bool commandline_mode;
     e_convertionmode convertionmode;
+    e_inputmode inputmode{e_inputmode::DLT};
 
     QString projectFile;
     QStringList logFiles;
