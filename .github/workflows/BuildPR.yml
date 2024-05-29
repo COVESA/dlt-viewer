@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.macos }}
     strategy:
       matrix:
-        macos: [ macos-13 ]
+        macos: [ macos-13, macos-14 ]
         xcode: [ Xcode_15.2 ]
     steps:
       - name: Checkout
