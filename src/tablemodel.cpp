@@ -347,6 +347,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
         return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
     }
 
+    if ( role == Qt::ToolTipRole )
+    {
+        return msg.toStringPayload().simplified();
+    }
+
      return QVariant();
  }
 
