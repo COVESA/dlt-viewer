@@ -6,7 +6,7 @@ echo *** Setting up environment ***
 
 REM Currently tested combinations by Qt installation
 REM 5.15.2 msvc2019
-REM 6.6.2 msvc2019
+REM 6.7.1 msvc2019
 
 if "%QTNO%"=="" (
    set QTNO=6
@@ -16,7 +16,7 @@ if "%QTVER%"=="" (
    if "%QTNO%"=="5" (
 		set QTVER=5.15.2 
    )  else (
-		set QTVER=6.6.12
+		set QTVER=6.7.1
    )
 )
 
