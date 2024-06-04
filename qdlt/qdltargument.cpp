@@ -507,8 +507,7 @@ QString QDltArgument::toString(bool binary) const
             if(endianness == DltEndiannessLittleEndian)
                 text += QString("%1").arg((double)(*(double*)(data.constData())));
             else {
-                unsigned int tmp;
-                tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
+                unsigned int tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
                 void *buf = (void *) &tmp;
                 text += QString("%1").arg((double)(*((double*)buf)));
             }
@@ -616,8 +615,7 @@ QVariant QDltArgument::getValue() const
             if(endianness == DltEndiannessLittleEndian)
                 return QVariant((double)(*(double*)(data.constData())));
             else {
-                unsigned int tmp;
-                tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
+                unsigned int tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
                 void *buf = (void*) &tmp;
                 return QVariant((double)(*((double*)buf)));
             }

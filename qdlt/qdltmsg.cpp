@@ -154,11 +154,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
 quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
 {
     int sizeStorageHeader = 0;
-    quint32 storageHeaderTimestampNanoseconds = 0;
-    quint64 storageHeaderTimestampSeconds = 0;
     QString storageHeaderEcuId;
-    bool withStorageHeader=false;
-    const DltStorageHeader *storageheader = 0;
 
     /* empty message */
     clear();
@@ -171,7 +167,6 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
     }
     if(data[0]=='D' && data[1]=='L' && data[2]=='T')
     {
-        withStorageHeader = true;
         quint8 storageHeaderVersion = *((quint8*) (data + 3));
         if(storageHeaderVersion==1)
         {
@@ -181,12 +176,6 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
                 // length error
                 return 0;
             }
-
-            if(withStorageHeader)
-            {
-                storageheader = (DltStorageHeader*) data;
-            }
-
         }
         else if(storageHeaderVersion==2)
         {
@@ -195,12 +184,6 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
                 // length error
                 return 0;
             }
-            storageHeaderTimestampNanoseconds = *((quint32*) (data + 4)); // not in big endian format
-            storageHeaderTimestampSeconds = (((quint64)(*((quint8*) (data + 12))))<<32)|
-                               (((quint64)(*((quint8*) (data + 11))))<<24)|
-                               (((quint64)(*((quint8*) (data + 10))))<<16)|
-                               (((quint64)(*((quint8*) (data + 9))))<<8)|
-                               (((quint64)(*((quint8*) (data + 8)))));
             quint8 ecuIdLength = *((quint8*) (data + 13));
             if(size < (quint32)(14+ecuIdLength)) {
                 return 0; // length error

@@ -403,7 +403,7 @@ void DltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *p
       fileprogress.show();
      }
 
-    for(starting;starting<stoping;starting++)
+    for(;starting<stoping;starting++)
     {
         // Update progress dialog every 1000 lines
 
