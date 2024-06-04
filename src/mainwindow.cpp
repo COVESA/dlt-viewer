@@ -47,6 +47,7 @@
 #include <QProcess>
 #include <QStyleFactory>
 #include <QTextStream>
+#include <QTemporaryFile>
 #include <QtEndian>
 
 /**
@@ -1199,10 +1200,34 @@ bool MainWindow::openDltFile(QStringList fileNames)
         }
     }
 
+    /* if the input files are not in DLT format, convert them first */
+    if (QDltOptManager::getInstance()->get_inputmode() == e_inputmode::STREAM){
+        /* tempfile must be static to prevent deletion before application finishes */
+        static QTemporaryFile tempfile; 
+        DltFile importfile;
+
+        dlt_file_init(&importfile,0);
+
+        /* open DLT stream file */
+        dlt_file_open(&importfile,fileNames.last().toLatin1(),0);
+        if(!tempfile.open())
+        {
+            qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+            return false;
+        }
+        while (dlt_file_read_raw(&importfile,false,0)>=0)
+        {
+            tempfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+            tempfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        }
+        tempfile.flush();
+        tempfile.close();
+        fileNames.append(tempfile.fileName());
+    }
+
     /* open existing file and append new data */
     outputfile.setFileName(fileNames.last());
     setCurrentFile(fileNames.last());
-
     if( true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append) )
     {
         openFileNames = fileNames;
@@ -5619,6 +5644,7 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString(" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)\n")+
                              QString(" -h\t\t\tPrint usage\n")+
                              QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
+                             QString(" -stream\tTreat the input logfiles as DLT stream instead of DLT files.")+
                              QString(" -v\t\t\tShow version and buildtime information\n")+
                              QString(" -c <textfile>\tConvert logfile to ASCII textfile\n")+
                              QString(" -u \t\t\tExport logfile to UTF8 instead\n")+

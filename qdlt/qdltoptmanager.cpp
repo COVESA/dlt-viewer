@@ -101,6 +101,7 @@ void QDltOptManager::printUsage()
     qDebug()<<" -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
     qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
+    qDebug()<<" -stream\tTreat the input logfiles as DLT stream instead of DLT files.";
     qDebug()<<" -t or --terminate\tTerminate DLT Viewer after command line execution.";
     qDebug()<<" -v or --version\tOnly show version and buildtime information";
     qDebug()<<" -w workingdirectory\tSet the working directory";
@@ -108,7 +109,7 @@ void QDltOptManager::printUsage()
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -u -c output.dlt input.txt";
     qDebug()<<"  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -p decodeded.dlp -dd -c output.dlt input.dlt ";
+    qDebug()<<"  dlt-viewer.exe -t -s -p decoded.dlp -dd -c output.dlt input.dlt ";
     qDebug()<<"  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
     qDebug()<<"  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";
@@ -199,6 +200,10 @@ void QDltOptManager::parse(QStringList *opt)
          {
             convertionmode = e_DDLT;
          }
+        else if(str.compare("-stream")==0)
+         {
+            inputmode = e_inputmode::STREAM;
+         }
         else if(str.compare("-e")==0)
          {
             QString c = opt->value(i+1);
@@ -281,6 +286,11 @@ bool QDltOptManager::isCommandlineMode(){return commandline_mode;}
 e_convertionmode QDltOptManager::get_convertionmode()
 {
     return convertionmode;
+}
+
+e_inputmode QDltOptManager::get_inputmode()
+{
+    return inputmode;
 }
 
 QString QDltOptManager::getProjectFile(){return projectFile;}
