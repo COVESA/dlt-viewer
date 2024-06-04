@@ -349,6 +349,25 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
     if ( role == Qt::ToolTipRole )
     {
+        getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
+        if ( success == false )
+        {
+            return QString("!!CORRUPTED MESSAGE!!");
+        }
+        if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
+        {
+            if ( decodeflag == 1 )
+            {
+                decodeflag = 0;
+                last_decoded_msg = msg;
+                pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
+                last_decoded_msg = msg;
+            }
+            else
+            {
+                msg = last_decoded_msg;
+            }
+        }
         return msg.toStringPayload().simplified();
     }
 
