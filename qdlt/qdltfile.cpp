@@ -502,7 +502,7 @@ void QDltFile::addFilterIndex (int index)
  {
      if(!filterFlag)
      {
-         return QString(DEFAULT_COLOR);
+         return QString(""); // invalid colour
      }
 
      return filterList.checkMarker(msg);

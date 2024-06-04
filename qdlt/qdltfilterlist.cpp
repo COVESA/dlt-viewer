@@ -104,7 +104,7 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
 QString QDltFilterList::checkMarker(QDltMsg &msg)
 {
     QDltFilter *filter;
-    QString color=DEFAULT_COLOR;
+    QString color=""; // invalid colour
 
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
