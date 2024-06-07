@@ -5643,18 +5643,17 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString(" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)\n")+
                              QString(" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)\n")+
                              QString(" -h\t\t\tPrint usage\n")+
-                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
-                             QString(" -stream\tTreat the input logfiles as DLT stream instead of DLT files.")+
+                             QString(" -s\t\t\tEnable silent mode without any GUI. Ideal for commandline usage.\n")+
+                             QString(" -stream\tTreat the input logfiles as DLT stream instead of DLT files.\n")+
                              QString(" -v\t\t\tShow version and buildtime information\n")+
                              QString(" -c <textfile>\tConvert logfile to ASCII textfile\n")+
-                             QString(" -u \t\t\tExport logfile to UTF8 instead\n")+
-                             QString(" -csv \t\t\tExport logfile to csv ( Excel ) instead\n")+
-                             QString(" -d \t\t\tExport logfile to DLT format\n")+
-                             QString(" -dd \t\t\tExport logfile to  decoded DLT format\n")+
-                             QString(" -b <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters before loading log file\n")+
-                             QString(" -e <pluginname>|command|param1|..|param<n> \n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
-                             QString(" -s \t\t\tEnable silent mode - no message boxes\n")+
-                             QString(" -t \t\t\tTerminate DLT Viewer after command line execution\n")+
+                             QString(" -u\t\t\tExport logfile to UTF8 instead\n")+
+                             QString(" -csv\t\t\tExport logfile to csv ( Excel ) instead\n")+
+                             QString(" -d\t\t\tExport logfile to DLT format\n")+
+                             QString(" -dd\t\t\tExport logfile to  decoded DLT format\n")+
+                             QString(" -b <pluginname>|command|param1|..|param<n>\n\t\t\tExecute a command plugin with <n> parameters before loading log file\n")+
+                             QString(" -e <pluginname>|command|param1|..|param<n>\n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
+                             QString(" -t\t\t\tTerminate DLT Viewer after command line execution\n")+
                              QString(" -v\t\t\tShow version and buildtime information\n")+
                              QString(" -w workingdirectory\tSet the working directory\n")
                              );
