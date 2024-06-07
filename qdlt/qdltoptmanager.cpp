@@ -86,13 +86,13 @@ void QDltOptManager::printUsage()
     qDebug()<<"Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
 #endif
 
-    qDebug()<<"Options:";
+    qDebug()<<"\nOptions:";
     qDebug()<<" [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
     qDebug()<<" [projectfile]\tLoading project file on startup (must end with .dlp)";
     qDebug()<<" [filterfile]\tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
     qDebug()<<" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
-    qDebug()<<" -h \t Print usage";
+    qDebug()<<" -h or --help\tPrint usage";
     qDebug()<<" -c textfile\tConvert logfile file to textfile";
     qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv\tConversion will be done in CSV format";
@@ -100,12 +100,12 @@ void QDltOptManager::printUsage()
     qDebug()<<" -dd\tConversion will NOT be done, save as decoded messages in dlt format";
     qDebug()<<" -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
     qDebug()<<" -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
-    qDebug()<<" -s or --silent\tEnable silent mode without warning message boxes.";
+    qDebug()<<" -s or --silent\tEnable silent mode without any GUI. Ideal for commandline usage.";
     qDebug()<<" -stream\tTreat the input logfiles as DLT stream instead of DLT files.";
     qDebug()<<" -t or --terminate\tTerminate DLT Viewer after command line execution.";
     qDebug()<<" -v or --version\tOnly show version and buildtime information";
     qDebug()<<" -w workingdirectory\tSet the working directory";
-    qDebug()<<"Examples:";
+    qDebug()<<"\nExamples:";
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -u -c output.dlt input.txt";
     qDebug()<<"  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
