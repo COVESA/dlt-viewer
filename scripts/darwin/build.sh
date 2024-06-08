@@ -13,8 +13,8 @@ cd "${BUILD_DIR}"
 
 echo Build with QMake
 Qt5_DIR="/usr/local/opt/qt"
-qmake ../BuildDltViewer.pro
-make
+#qmake ../BuildDltViewer.pro
+#make
 
 echo Cleanup
 rm -rf "${INSTALL_DIR}"
