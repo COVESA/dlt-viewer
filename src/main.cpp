@@ -33,6 +33,17 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
+    // check if silent mode or help is requested
+    // if yes, activate offscreen mode to be able to run also without display
+    for(int i=0;i<argc;i++)
+    {
+        if(strcmp(argv[i],"-s")==0 || strcmp(argv[i],"--silent")==0 || strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0)
+        {
+            qputenv("QT_QPA_PLATFORM","offscreen");
+            break;
+        }
+    }
+
     QApplication a(argc, argv);
 
     QStringList arguments = a.arguments();
