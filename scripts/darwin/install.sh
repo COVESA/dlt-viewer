@@ -5,7 +5,8 @@ id
 env
 pwd
 
-brew install --ignore-dependencies qt@5
+brew update
+brew install qt@5
 brew link qt@5 --force --overwrite
 # https://github.com/Homebrew/homebrew-core/issues/8392
 # https://github.com/Homebrew/legacy-homebrew/issues/29938
