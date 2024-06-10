@@ -106,7 +106,11 @@ For MacOS, you can install Qt with Homebrew:
 brew install qt
 
 Then give the Qt directory to CMake and build:
+#### x86:
 * Qt5_DIR="/usr/local/opt/qt" cmake src_path/
+* make
+#### arm64:
+* Qt5_DIR="/opt/homebrew/opt/qt5" cmake src_path/
 * make
 
 The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
