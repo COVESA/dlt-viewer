@@ -13,6 +13,7 @@ jobs:
     name: Build macOS
     runs-on: ${{ matrix.macos }}
     strategy:
+      fail-fast: false
       matrix:
         macos: [ macos-13 ]
         xcode: [ Xcode_15.2 ]
