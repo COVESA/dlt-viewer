@@ -11,10 +11,20 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-Qt5_DIR="/usr/local/opt/qt"
-echo "Run on MacOS $(uname -m) Qt5_DIR=$Qt5_DIR"
-qmake ../BuildDltViewer.pro
-make
+if [[ $(uname -m) == 'arm64' ]]; then
+  Qt5_DIR="/opt/homebrew/opt/qt@5"
+#  # for an unknown reason, I was not able to make it work with qmake. Any help is welcome here TODO
+  echo "Build with cmake $(uname -m) $Qt5_DIR"
+  qmake ../BuildDltViewer.pro
+#  cmake ..
+else
+  Qt5_DIR="/usr/local/opt/qt"
+  echo "Build with qmake $(uname -m) $Qt5_DIR"
+  qmake ../BuildDltViewer.pro
+  make
+fi
+
+#make
 
 echo Cleanup
 rm -rf "${INSTALL_DIR}"
@@ -27,11 +37,11 @@ echo Build with CMake
 # https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
 cmake -G Ninja \
   -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-  -DCMAKE_PREFIX_PATH=/opt/qt512/lib/cmake \
+  -DCMAKE_PREFIX_PATH=${Qt5_DIR}/lib/cmake \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.7 \
   -DCMAKE_BUILD_TYPE=Release \
   -DDLT_USE_QT_RPATH=ON \
-  -DDLT_PARSER=ON \
+  -DDLT_PARSER=OFF \
   -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
   -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
   -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
