@@ -16,8 +16,8 @@ jobs:
         macos: [ macos-13 ]
         xcode: [ Xcode_15.2 ]
         include:
-          - xcode: Xcode
-            macos: macos-14
+          - macos: macos-14
+            xcode: Xcode
     steps:
       - name: Checkout
         uses: actions/checkout@v4
