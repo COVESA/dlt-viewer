@@ -13,7 +13,6 @@ cd "${BUILD_DIR}"
 
 if [[ $(uname -m) == 'arm64' ]]; then
   Qt5_DIR="/opt/homebrew/opt/qt@5"
-#  # for an unknown reason, I was not able to make it work with qmake. Any help is welcome here TODO
   echo "Build with cmake $(uname -m) $Qt5_DIR"
   qmake ../BuildDltViewer.pro
 #  cmake ..
