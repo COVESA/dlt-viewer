@@ -163,9 +163,6 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_VIEWER_SDK_DIR%\styles
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
 copy %BUILD_DIR%\dlt-viewer.exe %DLT_VIEWER_SDK_DIR%
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 

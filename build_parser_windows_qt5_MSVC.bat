@@ -140,10 +140,6 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_PARSER_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_PARSER_DIR%\styles
-if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
-
-
 xcopy %SOURCE_DIR%\parser\examples %DLT_PARSER_DIR%\examples /E
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
