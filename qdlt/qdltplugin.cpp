@@ -276,7 +276,14 @@ bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 bool QDltPlugin::command(QString cmd,QList<QString> params)
 {
     if(plugincommandinterface)
+    {
+        // enable plugin, if not enabled in command line mode
+        if(getMode()==ModeDisable)
+            setMode(ModeEnable);
+
+        // execute command
         return plugincommandinterface->command(cmd,params);
+    }
     else
         return false;
 }
