@@ -515,9 +515,9 @@ void FilterItem::update()
         QColor color(filter.filterColour);
         text += color.name();
 
-        setBackground(0,color);
+        //setBackground(0,color);
         setBackground(1,color);
-        setForeground(0,DltUiUtils::optimalTextColor(color));
+        //setForeground(0,DltUiUtils::optimalTextColor(color));
         setForeground(1,DltUiUtils::optimalTextColor(color));
     }
 
