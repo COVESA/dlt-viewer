@@ -585,7 +585,7 @@ private slots:
 
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
 
-    void on_comboBoxFilterSelection_textActivated(const QString &arg1);
+    void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
 
 public slots:
 

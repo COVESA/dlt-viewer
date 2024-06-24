@@ -732,7 +732,7 @@
             <string>Multifilter List</string>
            </property>
            <property name="editable">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="maxVisibleItems">
             <number>30</number>
