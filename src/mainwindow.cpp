@@ -8153,9 +8153,10 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 
 }
 
-void MainWindow::on_comboBoxFilterSelection_textActivated(const QString &arg1)
+void MainWindow::on_comboBoxFilterSelection_currentTextChanged(const QString &arg1)
+//void MainWindow::on_comboBoxFilterSelection_textActivated(const QString &arg1)
 {
-    qDebug() << "on_comboBoxFilterSelection_textActivated" << arg1;
+    qDebug() << "on_comboBoxFilterSelection_currentTextChanged" << arg1;
 
     /* load current selected filter */
     if(!arg1.isEmpty() && project.LoadFilter(arg1,!ui->checkBoxAppendDefaultFilter->isChecked()))
