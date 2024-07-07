@@ -99,7 +99,6 @@ private:
 
     QString payloadStart;
     QString payloadEnd;
-    QString tempPayLoad;
     QString stApid;
     QString stCtid;
 
@@ -133,8 +132,8 @@ private:
     bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
-    bool payLoadStartpatternCheck();
-    bool payLoadStoppatternCheck();
+    bool payLoadStartpatternCheck(const QString& tempPayload);
+    bool payLoadStoppatternCheck(const QString& tempPayload);
     QString getApIDText();
     QString getCtIDText();
     QString getTimeStampStart();

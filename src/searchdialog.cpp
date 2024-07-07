@@ -402,7 +402,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     }
 
 
-    tempPayLoad.clear();
+    QString tempPayLoad;
 
     is_PayloadStartFound = false;
     is_PayloadEndFound = false;
@@ -570,7 +570,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         {
             if ( true == is_payLoadSearchSelected )
             {
-              if ( true == payLoadStartpatternCheck() ) // if payload pattern search range is set we try to detect the ranges
+              if (payLoadStartpatternCheck(tempPayLoad) ) // if payload pattern search range is set we try to detect the ranges
                  {
                  //qDebug() << "Found start payload pattern in " << searchLine << __LINE__;
                  }
@@ -592,7 +592,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
                     }
                     else
                     {
-                        payLoadStoppatternCheck();
+                        payLoadStoppatternCheck(tempPayLoad);
                         continue;
                     }
                 }
@@ -612,7 +612,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
                     }
                     else
                     {
-                        payLoadStoppatternCheck();
+                        payLoadStoppatternCheck(tempPayLoad);
                         continue;
                     }
 
@@ -625,7 +625,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
                     }
                     else
                     {
-                        payLoadStoppatternCheck();
+                        payLoadStoppatternCheck(tempPayLoad);
                         continue;
                     }
                 }
@@ -641,10 +641,10 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
 }
 
 
-bool SearchDialog::payLoadStartpatternCheck()
+bool SearchDialog::payLoadStartpatternCheck(const QString& tempPayload)
 {
     // When the start payload patternn is found, consider range as valid
-    if((tempPayLoad.contains(payloadStart)) && (false == is_PayloadEndFound) && true == is_payLoadSearchSelected)
+    if((tempPayload.contains(payloadStart)) && (false == is_PayloadEndFound) && true == is_payLoadSearchSelected)
     {
         //qDebug() << "Found start payload pattern" << __LINE__;
         is_PayLoadRangeValid = true;
@@ -654,12 +654,12 @@ bool SearchDialog::payLoadStartpatternCheck()
 }
 
 
-bool SearchDialog::payLoadStoppatternCheck()
+bool SearchDialog::payLoadStoppatternCheck(const QString& tempPayload)
 {
     // When the stop payload patern is found, consider range as ivalid
     if(true == is_PayloadStartFound  &&  true == is_payLoadSearchSelected && true == is_payLoadSearchSelected)
     {
-       if(tempPayLoad.contains(payloadEnd))
+       if(tempPayload.contains(payloadEnd))
        {
         //qDebug() << "Found stop payload pattern" << __LINE__;
         is_PayloadEndFound = true;
