@@ -89,7 +89,6 @@ private:
     bool is_PayLoadRangeValid;
     bool is_payLoadSearchSelected;
     bool is_TimeStampSearchSelected;
-    bool is_TimeStampRangeValid;
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;

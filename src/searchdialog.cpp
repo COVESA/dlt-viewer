@@ -502,8 +502,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
               }
             }
 
-
-        is_TimeStampRangeValid = false;
         if(true == is_TimeStampSearchSelected) // set the flag to identify a valid time stamp range
         {
             /*Assuming that the timeStamp is the 3rd value always*/
@@ -511,7 +509,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             if( ( dTimeStampStart <= TargetTimeStamp.toDouble() ) && ( dTimeStampStop >= TargetTimeStamp.toDouble() ) )
             {
                     //qDebug() << "Within time stamp range" << dTimeStampStart <<  TargetTimeStamp.toDouble() << dTimeStampStop << __LINE__;
-                    is_TimeStampRangeValid = true;
             }
             else
                 continue;
@@ -675,24 +672,21 @@ bool SearchDialog::timeStampPayloadValidityCheck(long int searchLine)
    // qDebug() << "timeStampPayloadValidityCheck" << __LINE__;
     if(true == is_TimeStampSearchSelected)
     {
-        if(true == is_TimeStampRangeValid)
+        if(true == is_payLoadSearchSelected)
         {
-            if(true == is_payLoadSearchSelected)
+            if(is_PayLoadRangeValid == true)
             {
-                if(is_PayLoadRangeValid == true)
-                {
-                    if(foundLine(searchLine))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                if(foundLine(searchLine) == true)
+                if(foundLine(searchLine))
                 {
                     return true;
                 }
+            }
+        }
+        else
+        {
+            if(foundLine(searchLine) == true)
+            {
+                return true;
             }
         }
     }
