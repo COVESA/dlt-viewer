@@ -256,13 +256,18 @@ void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *par
                                     }
                                     char cnName[256];
                                     memset(cnName,0,256);
-                                    if((mdfTxHeader.length-sizeof(mdf_hdr_t))<256)
-                                    if(inputfile.read((char*)cnName,mdfTxHeader.length-sizeof(mdf_hdr_t)) != (mdfTxHeader.length-sizeof(mdf_hdr_t)) )
-                                    {
-                                        inputfile.close();
-                                        qDebug() << "fromMF4:" << "Size Error: Cannot reard cn name";
-                                        return;
+
+                                    const auto cnNameLength = mdfTxHeader.length-sizeof(mdf_hdr_t);
+                                    if(cnNameLength < 256) {
+                                        const quint64 cnNameReadLength = inputfile.read((char*)cnName, cnNameLength);
+                                        if(cnNameReadLength != cnNameLength )
+                                        {
+                                            inputfile.close();
+                                            qDebug() << "fromMF4:" << "Size Error: Cannot read cn name";
+                                            return;
+                                        }
                                     }
+                                    // FIXME: this is probably a bug if this line is reached because cnNameLength >= 256, since cnName is 0-initialized 256-bytes array
                                     channelGroupName[mdfCgBlockLinks.cg_record_id] = QString(cnName);
                                     //qDebug() << "fromMF4: cnName=" << cnName;
 
@@ -282,7 +287,7 @@ void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *par
         if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
         {
             //qDebug() << "DT:";
-            int posDt=0;
+            quint64 posDt=0;
             quint16 recordId;
             quint32 lengthVLSD;
             mdf_ethFrame ethFrame;
