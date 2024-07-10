@@ -22,6 +22,8 @@
 #include "mainwindow.h"
 #include "qdltoptmanager.h"
 
+#include <dltmessagematcher.h>
+
 #include <QMessageBox>
 #include <QProgressBar>
 #include <QProgressDialog>
@@ -418,6 +420,10 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     bool msgIdEnabled=QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
     QString msgIdFormat=QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
 
+    DltMessageMatcher matcher;
+    matcher.setCaseSentivity(is_Case_Sensitive);
+    matcher.setSearchAppId(stApid);
+    matcher.setSearchCtxId(stCtid);
     do
     {
         ctr++; // for file progress indication
@@ -477,31 +483,12 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             tempPayLoad = msg.toStringPayload();
 
         } // get the header text in case not empty
-        headerText = text;
-        if ( true == fIs_APID_CTID_requested )
-            {
-              QString APID = headerText.section(" ",5,5);
-              QString CTID = headerText.section(" ",6,6);
-              // and check if the condition is valid
-              if ( ( APID.compare(stApid,is_Case_Sensitive) == 0 ) && ( stCtid.size() == 0 ) )
-              {
-                 // qDebug() << "APID hit" << searchLine << __LINE__;
-              }
-              else if ( ( CTID.compare(stCtid,is_Case_Sensitive) == 0 ) && ( stApid.size() == 0 ) )
-              {
-                 // qDebug() << "CTID hit" << searchLine << __LINE__;
-              }
-              else if( ( CTID.compare(stCtid,is_Case_Sensitive) == 0) && ( APID.compare(stApid,is_Case_Sensitive) == 0 ) )
-              {
-                 // qDebug() << "CTID & APID hit" << searchLine << __LINE__;
-              }
-              else
-              {
-                 //qDebug() << APID << CTID << searchLine;
-                 continue; // because if APID or CTID  doesn not fit there is no need to search in any payload or header
-              }
-            }
+        if (!matcher.match(msg))
+        {
+             continue; // because if APID or CTID  doesn not fit there is no need to search in any payload or header
+        }
 
+        headerText = text;
         if(true == is_TimeStampSearchSelected) // set the flag to identify a valid time stamp range
         {
             /*Assuming that the timeStamp is the 3rd value always*/

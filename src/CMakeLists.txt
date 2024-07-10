@@ -53,6 +53,7 @@ add_executable(dlt-viewer
 
 target_link_libraries(dlt-viewer
     qdlt
+    tools
     ${QT_PREFIX}::Core
     ${QT_PREFIX}::Network
     ${QT_PREFIX}::Widgets
