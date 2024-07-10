@@ -538,13 +538,13 @@ void MainWindow::initView()
 
     /* Add shortcut to apply config */
     QAction *applyConfig = new QAction(this);
-    applyConfig->setShortcut(Qt::Key_C | Qt::SHIFT | Qt::CTRL);
+    applyConfig->setShortcut((Qt::SHIFT | Qt::CTRL) | Qt::Key_C);
     connect(applyConfig, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
     addAction(applyConfig);
 
     /* Add shortcut to add filter */
     QAction *addFilter = new QAction(this);
-    addFilter->setShortcut(Qt::Key_A | Qt::SHIFT | Qt::CTRL);
+    addFilter->setShortcut((Qt::SHIFT | Qt::CTRL) | Qt::Key_A);
     connect(addFilter, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Add_triggered()));
     addAction(addFilter);
 }

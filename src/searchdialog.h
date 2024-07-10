@@ -133,7 +133,6 @@ private:
     bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
-    bool payLoadValidityCheck();
     bool payLoadStartpatternCheck();
     bool payLoadStoppatternCheck();
     QString getApIDText();

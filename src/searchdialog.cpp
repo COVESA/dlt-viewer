@@ -670,30 +670,6 @@ bool SearchDialog::payLoadStoppatternCheck()
    return is_PayLoadRangeValid;
 }
 
-
-bool SearchDialog::payLoadValidityCheck()
-{
-    // When the start payload is found, consider range as valid
-    if((tempPayLoad.contains(payloadStart)) && (false == is_PayloadEndFound))
-    {
-        //qDebug() << "Found start payload pattern" << __LINE__;
-        is_PayLoadRangeValid = true;
-        is_PayloadStartFound = true;
-    }
-
-    if(true == is_PayloadStartFound)
-    {
-       if(tempPayLoad.contains(payloadEnd))
-       {
-        //qDebug() << "Found stop payload pattern" << __LINE__;
-        is_PayloadEndFound = true;
-        is_PayLoadRangeValid = false;
-       }
-    }
-
-    return is_PayLoadRangeValid;
-}
-
 bool SearchDialog::timeStampPayloadValidityCheck(long int searchLine)
 {
    // qDebug() << "timeStampPayloadValidityCheck" << __LINE__;
