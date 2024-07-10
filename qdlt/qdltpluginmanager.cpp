@@ -29,23 +29,6 @@ int QDltPluginManager::size() const
     return plugins.size();
 }
 
-int QDltPluginManager::sizeEnabled() const
-{
-    int count = 0;
-
-    pMutex_pluginList->lock();
-
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-        if(plugin->getMode()>=QDltPlugin::ModeEnable)
-            count++;
-    }
-
-    pMutex_pluginList->unlock();
-
-    return count;
-}
 QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
     QDir pluginsDir1;

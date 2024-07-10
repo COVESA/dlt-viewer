@@ -29,12 +29,6 @@ public:
     */
     int size() const;
 
-    //! The number of plugins that are enabled
-    /*!
-      \return the number of loaded plugins and enabled.
-    */
-    int sizeEnabled() const;
-
     //! Loads all plugins from three directories.current working sub directory /plugin
     /*!
       The three directories:
