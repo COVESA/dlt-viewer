@@ -428,7 +428,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return true;
     }
 
-    unsigned int modvalue = dltFile->size()/100;
+    unsigned int modvalue = dltFile->size()/20;
     if (modvalue == 0) // avoid divison by zero
     {
         modvalue = 1;
@@ -489,7 +489,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
          iPercent = ( (ix-start)*100 )/(end-start);
          if( ( true == QDltOptManager::getInstance()->issilentMode() ) )
          {
-             qDebug().noquote() << "IF Indexed:" << iPercent << "%";
+            // QDebug deb = qDebug();
+            // deb.noquote();
+            // deb << "\33[2K\rT IF Indexed:" << iPercent << "%";
+            qDebug().noquote() <<  "IF Indexed:" << iPercent << "%";
          }
          else
          {
