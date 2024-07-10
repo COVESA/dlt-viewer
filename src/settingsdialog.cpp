@@ -245,7 +245,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyFilteredMessages->setCheckState(settings->loggingOnlyFilteredMessages?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
     ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
 
@@ -369,7 +369,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMessageId->setChecked(settings->showMsgId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMessageId->setChecked(settings->showMsgId);
     ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
