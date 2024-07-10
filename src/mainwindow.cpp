@@ -3209,14 +3209,14 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     action = new QAction("Filter Delete", this);
-    if(list.size() != 1)
+    if(list.size() < 1)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Delete_triggered()));
     menu.addAction(action);
 
     action = new QAction("Filter Clear all", this);
-    if(list.size() != 1)
+    if(project.filter->topLevelItemCount()<1)
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Clear_all_triggered()));
@@ -3224,14 +3224,20 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
-    action = new QAction("Set Selected Active", this);
+    if(list.size()>=1)
+        action = new QAction("Set Selected Active", this);
+    else
+        action = new QAction("Set All Active", this);
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
         connect(action, SIGNAL(triggered()), this, SLOT(onactionmenuFilter_SetAllActiveTriggered()));
     menu.addAction(action);
 
-    action = new QAction("Set Selected Inactive", this);
+    if(list.size()>=1)
+        action = new QAction("Set Selected Inactive", this);
+    else
+        action = new QAction("Set All Inactive", this);
     if(!project.filter->topLevelItemCount())
         action->setEnabled(false);
     else
@@ -5703,15 +5709,9 @@ void MainWindow::on_filterWidget_itemSelectionChanged()
         ui->action_menuFilter_Clear_all->setEnabled(false);
     }
 
-    if((project.filter->selectedItems().count() >= 1) ) {
-        ui->action_menuFilter_Delete->setEnabled(true);
-        ui->action_menuFilter_Edit->setEnabled(true);
-        ui->action_menuFilter_Duplicate->setEnabled(true);
-    }else{
-        ui->action_menuFilter_Delete->setEnabled(false);
-        ui->action_menuFilter_Edit->setEnabled(false);
-        ui->action_menuFilter_Duplicate->setEnabled(false);
-    }
+    ui->action_menuFilter_Delete->setEnabled(project.filter->selectedItems().count() >= 1);
+    ui->action_menuFilter_Edit->setEnabled(project.filter->selectedItems().count()==1);
+    ui->action_menuFilter_Duplicate->setEnabled(project.filter->selectedItems().count()==1);
 }
 
 void MainWindow::on_configWidget_itemSelectionChanged()
