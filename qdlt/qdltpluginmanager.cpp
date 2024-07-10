@@ -255,16 +255,16 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
     return result;
 }
 
-bool QDltPluginManager::setPluginPriority(const QString name, unsigned int prio)
+bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
 {
     bool result = false;
 
-    //if prio is too large, put to the end of the list
-    if(prio >= (unsigned int) (plugins.size())) {
-        prio = plugins.size() - 1;
-    }
-
     if(plugins.size() > 1) {
+        //if prio is too large, put to the end of the list
+        if(prio >= plugins.size()) {
+            prio = plugins.size() - 1;
+        }
+
         pMutex_pluginList->lock();
         for (int num = 0; num < plugins.size(); ++num) {
             if (plugins[num]->name() == name) {
