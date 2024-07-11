@@ -1,11 +1,12 @@
 #ifndef FIELDNAMES_H
 #define FIELDNAMES_H
 
+#include "export_rules.h"
 #include "qdltsettingsmanager.h"
 #include <QObject>
 #include <QString>
 
-class FieldNames : public QObject
+class QDLT_EXPORT FieldNames : public QObject
 {
     Q_OBJECT
 public:

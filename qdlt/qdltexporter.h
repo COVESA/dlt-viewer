@@ -1,17 +1,16 @@
-#ifndef DLTEXPORTER_H
-#define DLTEXPORTER_H
+#ifndef QDLTEXPORTER_H
+#define QDLTEXPORTER_H
 
 #include <QObject>
 #include <QFile>
 #include <QModelIndexList>
-#include <QTreeWidget>
 
+#include "export_rules.h"
 #include "qdltfile.h"
 #include "qdltmsg.h"
 #include "qdltpluginmanager.h"
-#include "project.h"
 
-class DltExporter : public QObject
+class QDLT_EXPORT QDltExporter : public QObject
 {
     Q_OBJECT
 
@@ -54,7 +53,7 @@ public:
     /* Default QT constructor.
      * Please pass a window as a parameter to parent dialogs correctly.
      */
-    explicit DltExporter(Project *_project,QObject *parent = 0);
+    explicit QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,QObject *parent = 0);
 
     /* Export some messages from QDltFile to a CSV file.
      * \param from QDltFile to pull messages from
@@ -65,12 +64,15 @@ public:
      * \param selection Limit export to these messages. Leave to NULL to export everything,
      */
     void exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
-                        DltExporter::DltExportFormat exportFormat,
-                        DltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
+                        QDltExporter::DltExportFormat exportFormat,
+                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
 
     void exportMessageRange(unsigned long start, unsigned long stop);
 
 signals:
+
+    void clipboard(QString text);
+    void progress(QString name,int status, int progress);
 
 public slots:
 
@@ -84,9 +86,11 @@ private:
     QDltPluginManager *pluginManager;
     QModelIndexList *selection;
     QList<int> selectedRows;
-    DltExporter::DltExportFormat exportFormat;
-    DltExporter::DltExportSelection exportSelection;
-    Project *project;
+    QDltExporter::DltExportFormat exportFormat;
+    QDltExporter::DltExportSelection exportSelection;
+    int automaticTimeSettings; // project and local setting
+    qlonglong utcOffset; // project and local setting
+    int dst; // project and local setting
 };
 
-#endif // DLTEXPORTER_H
+#endif // QDLTEXPORTER_H

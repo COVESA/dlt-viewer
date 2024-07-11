@@ -62,6 +62,9 @@ SOURCES +=  \
     qdltoptmanager.cpp \
     qdltsegmentedmsg.cpp \
     qdltsettingsmanager.cpp \
+    qdltexporter.cpp \
+    fieldnames.cpp \
+    qdltimporter.cpp \
 
 HEADERS += qdlt.h \
     export_rules.h \
@@ -90,6 +93,9 @@ HEADERS += qdlt.h \
     qdltoptmanager.h \
     qdltsegmentedmsg.h \
     qdltsettingsmanager.h \
+    qdltexporter.h \
+    fieldnames.h \
+    qdltimporter.h \
 
 unix:VERSION            = 1.0.0
 

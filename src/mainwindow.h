@@ -257,8 +257,8 @@ private:
 
     void reloadLogFileDefaultFilter();
 
-    void exportSelection(bool ascii,bool file,DltExporter::DltExportFormat format);
-    void exportSelection_searchTable(DltExporter::DltExportFormat format);
+    void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
+    void exportSelection_searchTable(QDltExporter::DltExportFormat format);
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);
@@ -391,6 +391,8 @@ private slots:
     void reloadLogFileProgressMax(int num);
     void reloadLogFileProgress(int num);
     void reloadLogFileProgressText(QString text);
+    void progress(QString,int status,int progress);
+    void clipboard(QString);
     void reloadLogFileVersionString(QString ecuId, QString version);
     void reloadLogFileFinishIndex();
     void reloadLogFileFinishFilter();

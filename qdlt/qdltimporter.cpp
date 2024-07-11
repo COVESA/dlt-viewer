@@ -1,6 +1,4 @@
 #include <QFile>
-#include <QProgressDialog>
-#include <QLabel>
 #include <QDebug>
 #include <QtEndian>
 
@@ -24,19 +22,21 @@ extern "C" {
 #include <sys/time.h>	/* for gettimeofday() */
 #endif
 
-#include "dltimporter.h"
+#include "qdltmsg.h"
+#include "qdltimporter.h"
 
-DltImporter::DltImporter()
+QDltImporter::QDltImporter(QObject *parent) :
+    QObject(parent)
 {
 
 }
 
-DltImporter::~DltImporter()
+QDltImporter::~QDltImporter()
 {
 
 }
 
-void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
+void QDltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -49,20 +49,11 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
     if(!inputfile.open(QFile::ReadOnly))
        return;
 
-    QProgressDialog progress("Import DLT/IPC from PCAP...", "Abort Import", 0, inputfile.size()/1000, parent);
-    QLabel label(&progress);
-    if(!silent)
-    {
-        progress.setWindowTitle("Import DLT/IPC from PCAP");
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setLabel(&label);
-    }
-    quint64 progressCounter = 0;
+    int progressCounter = 1;
+    emit progress("PCAP",1,0);
 
     pcap_hdr_t globalHeader;
     pcaprec_hdr_t recordHeader;
-
-    QDltMsg qmsg;
 
     qDebug() << "Import DLT/IPC from PCAP file:" << fileName;
 
@@ -74,18 +65,16 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
     }
     while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
     {
-        progressCounter++;
-        if(!silent && progressCounter%1000==0)
+        int percent = inputfile.pos()*100/inputfile.size();
+        if(percent>=progressCounter)
         {
-            progress.setValue(inputfile.pos()/1000);
-            label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
+            progressCounter += 1;
+            emit progress("PCAP:",2,percent); // every 1%
+            if((percent>0) && ((percent%10)==0))
+                qDebug() << "Import PCAP:" << percent << "%"; // every 10%
         }
 
-        if (progress.wasCanceled())
-        {
-            qDebug() << "fromPCAP:" << "Import Stopped";
-            break;
-        }
+        // TODO: Handle cancel request
 
         QByteArray record = inputfile.read(recordHeader.incl_len);
          if(record.length() != recordHeader.incl_len)
@@ -121,6 +110,8 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
     }
     inputfile.close();
 
+    emit progress("",3,100);
+
     qDebug() << "fromPCAP: Counter Records:" << counterRecords;
     qDebug() << "fromPCAP: Counter Records DLT:" << counterRecordsDLT;
     qDebug() << "fromPCAP: Counter DLT Mesages:" << counterDLTMessages;
@@ -131,7 +122,7 @@ void DltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *par
 
 }
 
-void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
+void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
     counterRecords = 0;
     counterRecordsDLT = 0;
@@ -149,15 +140,8 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
        return;
     }
 
-    QProgressDialog progress("Import DLT/IPC from MF4...", "Abort Import", 0, inputfile.size()/1000, parent);
-    QLabel label(&progress);
-    if(!silent)
-    {
-        progress.setWindowTitle("Import DLT/IPC from MF4");
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setLabel(&label);
-    }
-    quint64 progressCounter = 0;
+    int progressCounter = 1;
+    emit progress("MF4",1,0);
 
     qDebug() << "Import DLT/IPC from MF4 file:" << fileName;
 
@@ -301,18 +285,16 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
             QByteArray recordData;
             while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
             {
-                progressCounter++;
-                if(!silent && progressCounter%1000==0)
+                int percent = inputfile.pos()*100/inputfile.size();
+                if(percent>=progressCounter)
                 {
-                    progress.setValue(inputfile.pos()/1000);
-                    label.setText(QString("Imported DLT %1 IPC %2").arg(counterDLTMessages).arg(counterIPCMessages));
+                    progressCounter += 1;
+                    emit progress("MF4:",2,percent); // every 1%
+                    if((percent>0) && ((percent%10)==0))
+                        qDebug() << "Import MF4:" << percent << "%"; // every 10%
                 }
 
-                if (progress.wasCanceled())
-                {
-                    qDebug() << "fromMF4:" << "Import Stopped";
-                    break;
-                }
+                // TODO: Handle cancel operation
 
                 //qDebug() << "posDt =" << posDt;
                 inputfile.seek(pos+sizeof(mdf_hdr_t)+posDt);
@@ -659,6 +641,8 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
 
     inputfile.close();
 
+    emit progress("",3,100);
+
     qDebug() << "fromMF4: counterRecords:" << counterRecords;
     qDebug() << "fromMF4: counterRecordsDLT:" << counterRecordsDLT;
     qDebug() << "fromMF4: counterDLTMessages:" << counterDLTMessages;
@@ -668,7 +652,7 @@ void DltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *pare
     qDebug() << "fromMF4: Import finished";
 }
 
-bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+bool QDltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
     {
@@ -806,7 +790,7 @@ bool DltImporter::ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec,quint32 usec)
+bool QDltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec,quint32 usec)
 {
        bool startOfSegment = plpRaw->probeFlags & 0x2;
        if(startOfSegment)
@@ -901,7 +885,7 @@ bool DltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArr
     return true;
 }
 
-bool DltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec,quint32 usec)
+bool QDltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec,quint32 usec)
 {
     counterRecordsDLT++;
     // Now read the DLT Messages
@@ -941,7 +925,7 @@ bool DltImporter::dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 
 }
 
 
-bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
+bool QDltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
     {
@@ -1081,7 +1065,7 @@ bool DltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int 
     return true;
 }
 
-void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)
+void QDltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec,quint32 usec)
 {
     DltStorageHeader str;
 
@@ -1113,8 +1097,7 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
         str.microseconds = (int32_t)tv.tv_usec; /* value is long */
 #endif
     }
-    if (ecuitem)
-        dlt_set_id(str.ecu, ecuitem->id.toLatin1());
+    dlt_set_id(str.ecu, ecuId.toLatin1());
 
     /* check if message is matching the filter */
     if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
@@ -1123,12 +1106,12 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
     }
 
     // write data into file
-    if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
+    //if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
     {
         // write version 1 storage header
         outputfile.write((char*)&str,sizeof(DltStorageHeader));
     }
-    else
+    /*else
     {
         // write version 2 storage header
         outputfile.write((char*)"DLT",3);
@@ -1142,7 +1125,7 @@ void DltImporter::writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHead
         length = ecuitem->id.length();
         outputfile.write((char*)&length,1);
         outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
-    }
+    }*/
     outputfile.write(bufferHeader);
     outputfile.write(bufferPayload,bufferPayloadSize);
     outputfile.flush();
