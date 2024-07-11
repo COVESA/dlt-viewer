@@ -424,6 +424,10 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     matcher.setCaseSentivity(is_Case_Sensitive);
     matcher.setSearchAppId(stApid);
     matcher.setSearchCtxId(stCtid);
+    if (is_TimeStampSearchSelected) {
+        matcher.setTimestapmRange(dTimeStampStart, dTimeStampStop);
+    }
+
     do
     {
         ctr++; // for file progress indication
@@ -489,18 +493,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         }
 
         headerText = text;
-        if(true == is_TimeStampSearchSelected) // set the flag to identify a valid time stamp range
-        {
-            /*Assuming that the timeStamp is the 3rd value always*/
-            QString TargetTimeStamp = headerText.section(" ",2,2);
-            if( ( dTimeStampStart <= TargetTimeStamp.toDouble() ) && ( dTimeStampStop >= TargetTimeStamp.toDouble() ) )
-            {
-                    //qDebug() << "Within time stamp range" << dTimeStampStart <<  TargetTimeStamp.toDouble() << dTimeStampStop << __LINE__;
-            }
-            else
-                continue;
-         }
-
 
         if(getHeader() == true) // header is search enabled
         {
