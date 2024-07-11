@@ -73,9 +73,9 @@ const QStringList &QDltOptManager::getPrePluginCommands() const
 
 void QDltOptManager::printVersion(QString appname)
 {
-  qDebug() << "Start" << appname << "\nBuild time" << __DATE__ << __TIME__;
-  qDebug() << "Version" << PACKAGE_VERSION << PACKAGE_VERSION_STATE;
-  qDebug() << "**********************************************************";
+    qDebug() << "Executable Name:" << appname;
+    qDebug() << "Build time:" << __DATE__ << __TIME__;
+    qDebug() << "Version:" << PACKAGE_VERSION << PACKAGE_VERSION_STATE;
 }
 
 void QDltOptManager::printUsage()
@@ -122,6 +122,12 @@ void QDltOptManager::parse(QStringList *opt)
 {
     QString str;
 
+    qDebug() << "### Starting DLT Viewer";
+
+    printVersion(opt->at(0));
+
+    qDebug() << "### Parsing Options";
+
      /* the default parameter - exactly one parameter - should either be
       * a dlt or a dlp file, so this enables the "doubleclick" feature
       */
@@ -132,14 +138,14 @@ void QDltOptManager::parse(QStringList *opt)
            {
                projectFile = QString("%1").arg(opt->at(1));
                project = true;
-               qDebug()<< "Loading projectfile " << projectFile;
+               qDebug()<< "Project filename:" << projectFile;
                return;
            }
            if(opt->at(1).endsWith(".dlt") || opt->at(1).endsWith(".DLT"))
            {
                const QString logFile = QString("%1").arg(opt->at(1));
                logFiles += logFile;
-               qDebug()<< "Loading logfile " << logFile;
+               qDebug()<< "DLT filename:" << logFile;
                return;
            }
        }
@@ -159,7 +165,7 @@ void QDltOptManager::parse(QStringList *opt)
             if ( silent_mode == false)
             {
             silent_mode = true;
-            qDebug() << "Enable silent mode";
+            qDebug() << "Silent mode enabled";
             }
          }
         else if(str.compare("-v") == 0 || str.compare("--version") == 0)
@@ -179,7 +185,7 @@ void QDltOptManager::parse(QStringList *opt)
             convertDestFile = QString("%1").arg(c1);
             // check here already if the selected file exists
 
-            qDebug() << "Converting to" << convertDestFile;
+            qDebug() << "Convert filename:" << convertDestFile;
             commandline_mode = true;
 
             i += 1;
@@ -228,7 +234,7 @@ void QDltOptManager::parse(QStringList *opt)
         {
             const QString logFile = QString("%1").arg(opt->at(i));
             logFiles += logFile;
-            qDebug()<< "Loading logfile " << logFile;
+            qDebug()<< "DLT filename:" << logFile;
         }
         else if(opt->at(i).endsWith(".dlp") || opt->at(i).endsWith(".DLP"))
         {
@@ -241,24 +247,24 @@ void QDltOptManager::parse(QStringList *opt)
 
             projectFile = QString("%1").arg(opt->at(i));
             project = true;
-            qDebug()<< "Loading projectfile " << projectFile;
+            qDebug()<< "Project filename:" << projectFile;
         }
         else if(opt->at(i).endsWith(".dlf") || opt->at(i).endsWith(".DLF"))
         {
             filterFiles += QString("%1").arg(opt->at(i));
-            qDebug()<< "Loading filterfile " << QString("%1").arg(opt->at(i));
+            qDebug()<< "Filter filename:" << QString("%1").arg(opt->at(i));
         }
         else if(opt->at(i).endsWith(".pcap") || opt->at(i).endsWith(".PCAP"))
         {
             const QString pcapFile = QString("%1").arg(opt->at(i));
             pcapFiles += pcapFile;
-            qDebug()<< "Importing pcapfile" << pcapFile;
+            qDebug()<< "Pcap filename:" << pcapFile;
         }
         else if(opt->at(i).endsWith(".mf4") || opt->at(i).endsWith(".MF4"))
         {
             const QString mf4File = QString("%1").arg(opt->at(i));
             mf4Files += mf4File;
-            qDebug()<< "Importing mf4file" << mf4File;
+            qDebug()<< "MF4 filename:" << mf4File;
         }
 
      } // end of for loop
@@ -274,8 +280,6 @@ void QDltOptManager::parse(QStringList *opt)
             FreeConsole();
         }
     #endif
-
-    printVersion(opt->at(0));
 }
 
 bool QDltOptManager::isProjectFile(){ return project;}

@@ -354,7 +354,7 @@ void DltDBusPlugin::initFileStart(QDltFile *file)
     plugin_is_active = true;
     dltFile = file;
     methods.clear();
-    qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_DBUS_PLUGIN_VERSION;
+    //qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_DBUS_PLUGIN_VERSION;
     // clear old map
     QMapIterator<uint32_t, QDltSegmentedMsg*> i(segmentedMessages);
     while (i.hasNext())
