@@ -415,7 +415,7 @@ private slots:
 
     void on_pluginWidget_itemExpanded(QTreeWidgetItem* item);
 
-    void on_pluginWidget_pluginPriorityChanged(const QString name, int prio);
+    void onPluginWidgetPluginPriorityChanged(const QString name, int prio);
 
 // File methods
 
@@ -489,7 +489,7 @@ private slots:
     void onActionMenuConfigSearchTableCopyJiraToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered();
 
-    void on_action_menuConfig_Save_All_ECUs_triggered();
+    void onActionMenuConfigSaveAllECUsTriggered();
 
     // DLT methods
     void on_action_menuDLT_Send_Injection_triggered();

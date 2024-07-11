@@ -269,7 +269,7 @@ bool QDltPluginManager::setPluginPriority(const QString name, unsigned int prio)
         for (int num = 0; num < plugins.size(); ++num) {
             if (plugins[num]->name() == name) {
                 if (prio != num) {
-                    qDebug() << "changing prio of" << name << "from" << num << "to" << prio;
+                    qDebug() << "Changing priority of plugin" << name << "from" << num << "to" << prio;
                     plugins.move(num, prio);
                 }
                 result = true;

@@ -301,7 +301,7 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
 void DltViewerPlugin::initFileStart(QDltFile *file)
 {
     dltFile = file;
-    qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_VIEWER_PLUGIN_VERSION;
+    //qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_VIEWER_PLUGIN_VERSION;
 }
 
 void DltViewerPlugin::initMsg(int /*index*/, QDltMsg & /*msg*/){

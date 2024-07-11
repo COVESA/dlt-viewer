@@ -124,7 +124,7 @@ bool DltFileIndexer::index(int num)
         return true; // because it is just empty, not an error ...
     }
 
-    int modulo = f.size()/2000; // seems to be the propper ratio ...
+    int modulo = f.size()/200; // seems to be the propper ratio ...
     if (modulo == 0) // avoid divison by zero ( very small files )
     {
          modulo = 1;
@@ -161,6 +161,7 @@ bool DltFileIndexer::index(int num)
     emit(progress(0));
 
 
+    qDebug() << "Create index: Start";
     do
     {
         pos = f.pos();
@@ -327,22 +328,21 @@ bool DltFileIndexer::index(int num)
 
             if( 0 == (abspos%modulo) && ( file_size > 0 ) )
             {
-             //qszPercent = QString("Indexed: %1 %").arg(pos, 0, 'f',2);
              iPercent = ( abspos*100 )/file_size;
             if( true == QDltOptManager::getInstance()->issilentMode() )
              {
-               qDebug() << "Create index file:" << iPercent << "%";// << currentRun;//<< pos << f.size() << __LINE__;
+               qDebug() << "Create index:" << iPercent << "%";
              }
             else
              {
               emit(progress((iPercent)));
-              //qDebug() << "Create index file:" << iPercent << "%";// << currentRun;//<< pos << f.size() << __LINE__;
              }
             }
 
         } // end of for loop to read within one segment accross "number"
     }
     while(length>0); // overall "do loop"
+    qDebug() << "Create index: Finish";
 
     if ( errors_in_file != 0 )
     {
@@ -465,6 +465,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         indexerThread.start(); // thread starts reading its queue
     }
 
+    qDebug() << "### Create filter index";
+    qDebug() << "Create filter index: Start";
+
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
@@ -492,7 +495,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
             // QDebug deb = qDebug();
             // deb.noquote();
             // deb << "\33[2K\rT IF Indexed:" << iPercent << "%";
-            qDebug().noquote() <<  "IF Indexed:" << iPercent << "%";
+            qDebug().noquote() <<  "Create filter index:" << iPercent << "%";
          }
          else
          {
@@ -534,8 +537,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         qDebug() << "Saved filter index cache for files" << filenames;
     }
 
-    qDebug() << "Indexed: 100.00 %";// << iPercent << __LINE__ ;
-    //qDebug() << "Dauer:" << time.elapsed()/1000 << __LINE__;
+    qDebug() << "Create filter index: Finish";
+
     return true;
 }
 
@@ -1037,6 +1040,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
         return false;
     }
 
+    qDebug() << "### Load index file";
     qDebug() << "Load index file " << filename;// << __FILE__ << "LINE" << __LINE__;
 
     index.reserve(static_cast<int>((file.size() - sizeof(version)) / sizeof(value))); // prevent memory issues through reallocation
@@ -1068,7 +1072,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
      }
    else
      {
-      qDebug().noquote() << "Loading index file: 0 %";
+      qDebug().noquote() << "Load index: Start";
      }
 
     do
@@ -1086,7 +1090,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
           }
         else
           {
-          qDebug().noquote() << "Loading index file:" << ( indexcount * 8 *100 )/file.size() << "%";
+          qDebug().noquote() << "Load index:" << ( indexcount * 8 *100 )/file.size() << "%";
          }
         }
         indexcount++;
@@ -1101,7 +1105,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
       }
     else
       {
-       qDebug().noquote() << "Loading index file:" << ( indexcount * 8 *100 )/file.size() << "%";// << length << indexcount << file.size(); //<< pos << f.size() << __LINE__;
+       qDebug().noquote() << "Load index: Finish";
       }
     // close cache file
     file.close();

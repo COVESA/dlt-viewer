@@ -119,13 +119,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initFileHandling();
 
+
     /* Commands plugin after loading log file */
+    qDebug() << "### Plugin commands after loading log file";
     if(!QDltOptManager::getInstance()->getPostPluginCommands().isEmpty())
     {
         QStringList commands = QDltOptManager::getInstance()->getPostPluginCommands();
 
         for(int num = 0; num< commands.size();num++)
         {
+            qDebug() << "Command:" << commands[num];
             QStringList args = commands[num].split("|");
             if(args.size() > 1)
              {
@@ -167,7 +170,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     if(QDltOptManager::getInstance()->isTerminate())
     {
-        qDebug() << "Terminated DLT Viewer by command line option -t";
+        qDebug() << "### Terminate DLT Viewer by option -t";
         exit(0);
     }
 
@@ -368,12 +371,13 @@ void MainWindow::initState()
     project.filter = ui->filterWidget;
     project.plugin = ui->pluginWidget;
 
-    connect(ui->pluginWidget, SIGNAL(pluginOrderChanged(QString, int)), this, SLOT(on_pluginWidget_pluginPriorityChanged(QString, int)));
+    connect(ui->pluginWidget, SIGNAL(pluginOrderChanged(QString, int)), this, SLOT(onPluginWidgetPluginPriorityChanged(QString, int)));
 
     //project.settings = settings;
     project.settings = QDltSettingsManager::getInstance();
 
     /* Load Plugins before loading default project */
+    qDebug() << "### Load Plugins";
     loadPlugins();
     pluginManager.autoscrollStateChanged(settings->autoScroll);
 
@@ -703,12 +707,14 @@ void MainWindow::initFileHandling()
     }
 
     /* Commands plugin before loading log file */
+    qDebug() << "### Plugin commands before loading log file";
     if(!QDltOptManager::getInstance()->getPrePluginCommands().isEmpty())
     {
         QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
 
         for(int num = 0; num< commands.size();num++)
         {
+            qDebug() << "Command:" << commands[num];
             QStringList args = commands[num].split("|");
             if(args.size() > 1)
              {
@@ -725,8 +731,10 @@ void MainWindow::initFileHandling()
     /* load filters by command line */
     if(!QDltOptManager::getInstance()->getFilterFiles().isEmpty())
     {
+        qDebug() << "### Load filter";
         for ( const auto& filter : QDltOptManager::getInstance()->getFilterFiles() )
         {
+            qDebug() << "Load filter:" << filter;
             if(project.LoadFilter(filter,false))
             {
                 // qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
@@ -752,6 +760,7 @@ void MainWindow::initFileHandling()
     outputfileIsTemporary = false;
     if(!QDltOptManager::getInstance()->getLogFiles().isEmpty())
     {
+        qDebug() << "### Load DLT files";
         QStringList logFiles = QDltOptManager::getInstance()->getLogFiles();
         logFiles.sort();
         openDltFile(logFiles);
@@ -806,6 +815,7 @@ void MainWindow::initFileHandling()
     // Import PCAP files from commandline
     if(!QDltOptManager::getInstance()->getPcapFiles().isEmpty())
     {
+        qDebug() << "### Import PCAP files";
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getPcapFiles() )
             importer.dltIpcFromPCAP(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
@@ -820,6 +830,7 @@ void MainWindow::initFileHandling()
     // Import mf4 files from commandline
     if(!QDltOptManager::getInstance()->getMf4Files().isEmpty())
     {
+        qDebug() << "### Import MF4 files";
         DltImporter importer;
         for ( const auto& filename : QDltOptManager::getInstance()->getMf4Files() )
             importer.dltIpcFromMF4(outputfile,filename,this,QDltOptManager::getInstance()->issilentMode());
@@ -837,6 +848,8 @@ void MainWindow::commandLineConvertToDLT()
 {
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
 
+    qDebug() << "### Convert to DLT";
+
     /* start exporter */
     DltExporter exporter(&project);
     qDebug() << "Commandline DLT convert to " << dltFile.fileName();
@@ -850,6 +863,8 @@ void MainWindow::commandLineConvertToASCII()
 {
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
+    qDebug() << "### Convert to ASCII";
+
     /* start exporter */
     DltExporter exporter(&project);
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
@@ -860,6 +875,8 @@ void MainWindow::commandLineConvertToASCII()
 void MainWindow::commandLineConvertToCSV()
 {
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
+
+    qDebug() << "### Convert to CSV";
 
     /* start exporter */
     DltExporter exporter(&project);
@@ -874,6 +891,8 @@ void MainWindow::commandLineConvertToUTF8()
     QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
 
     /* start exporter */
+    qDebug() << "### Convert to UTF8";
+
     DltExporter exporter(&project);
     qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,DltExporter::FormatUTF8,DltExporter::SelectionFiltered);
@@ -883,6 +902,8 @@ void MainWindow::commandLineConvertToUTF8()
 void MainWindow::commandLineConvertToDLTDecoded()
 {
     QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
+
+    qDebug() << "### Convert to DLT Decoded";
 
     /* start exporter */
     DltExporter exporter(&project);
@@ -3013,7 +3034,7 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
         menu.addAction(action);
 
         action = new QAction("Save IDs as csv", this);
-        connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Save_All_ECUs_triggered()));
+        connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigSaveAllECUsTriggered()));
         menu.addAction(action);
 
         menu.addSeparator();
@@ -5752,7 +5773,7 @@ void MainWindow::on_configWidget_itemSelectionChanged()
 
 }
 
-void MainWindow::on_pluginWidget_pluginPriorityChanged(const QString name, int prio)
+void MainWindow::onPluginWidgetPluginPriorityChanged(const QString name, int prio)
 {
     pluginManager.setPluginPriority(name, prio);
 }
@@ -6172,7 +6193,7 @@ void MainWindow::loadPlugins()
 
     // Update settings with current priorities (maybe some plugins are not available anymore)
     settings->pluginExecutionPrio = pluginManager.getPluginPriorities();
-    qDebug() << settings->pluginExecutionPrio;
+    //qDebug() << settings->pluginExecutionPrio;
 
     /* update plugin widgets */
     QList<QDltPlugin*> plugins = pluginManager.getPlugins();
@@ -6185,7 +6206,7 @@ void MainWindow::loadPlugins()
       PluginItem* item = new PluginItem(0,plugin);
 
       plugin->setMode((QDltPlugin::Mode) QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+plugin->name(),QVariant(QDltPlugin::ModeDisable)).toInt());
-      qDebug() << "Loading plugin" << plugin->name() << plugin->pluginVersion();
+      qDebug() << "Load plugin" << plugin->name() << plugin->pluginVersion();
       if(plugin->isViewer())
       {
         item->widget = plugin->initViewer();
@@ -7666,7 +7687,7 @@ void MainWindow::on_action_menuConfig_Collapse_All_ECUs_triggered()
 }
 
 
-void MainWindow::on_action_menuConfig_Save_All_ECUs_triggered()
+void MainWindow::onActionMenuConfigSaveAllECUsTriggered()
 {
     QString filename = QFileDialog::getSaveFileName(this, tr("Save DLT Filters"), workingDirectory.getDltDirectory(), tr("Save APID/CTID list (*.csv);;All files (*.*)"));
     QFile asciiFile(filename);
@@ -8227,10 +8248,10 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
         completerList << filterList->getFilename();
     }
-    QCompleter *completer = new QCompleter(completerList, this);
-    completer->setFilterMode(Qt::MatchContains);
-    completer->setCaseSensitivity(Qt::CaseInsensitive);
-    ui->comboBoxFilterSelection->setCompleter(completer);
+    //QCompleter *completer = new QCompleter(completerList, this);
+    //completer->setFilterMode(Qt::MatchContains);
+    //completer->setCaseSensitivity(Qt::CaseInsensitive);
+    //ui->comboBoxFilterSelection->setCompleter(completer);
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()

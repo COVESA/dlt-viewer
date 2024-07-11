@@ -202,7 +202,7 @@ void FiletransferPlugin::initFileStart(QDltFile *file)
 {
 	if (plugin_is_active == false )
 	{
-    qDebug() << "Activate plugin" << plugin_name_displayed <<  FILETRANSFER_PLUGIN_VERSION;
+    //qDebug() << "Activate plugin" << plugin_name_displayed <<  FILETRANSFER_PLUGIN_VERSION;
     plugin_is_active = true;
     }
     dltFile = file;
