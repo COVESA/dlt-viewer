@@ -166,7 +166,7 @@ void SettingsDialog::assertSettingsVersion()
         msg.append("Yes    - Reset settings to factory defaults.\n");
         msg.append("No     - Continue loading settings and risk crashing the application.\n");
         msg.append("Cancel - Exit the viewer now.\n");
-        QMessageBox dlg("Warning", msg, QMessageBox::Warning, QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+        QMessageBox dlg(QMessageBox::Warning, "Warning", msg, QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
         int btn = dlg.exec();
         if(btn == QMessageBox::Yes)
         {
@@ -193,7 +193,7 @@ void SettingsDialog::resetSettings()
         fh.close();
         if(false == fh.remove())
         {
-            QMessageBox err("Error", "Could not remove the settings file", QMessageBox::Critical, QMessageBox::Ok, 0, 0);
+            QMessageBox err(QMessageBox::Critical, "Error", "Could not remove the settings file", QMessageBox::Ok);
             err.exec();
         }
         else
