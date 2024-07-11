@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <QClipboard>
 #include <QDebug>
 #include <QFile>
 
