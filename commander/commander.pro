@@ -12,6 +12,10 @@ TARGET = dlt-commander
 # Local includes
 INCLUDEPATH = . ../qdlt
 
+# Unix executable install path
+target.path = $$PREFIX/usr/bin
+INSTALLS += target
+
 # Library definitions for debug and release builds
 CONFIG(debug, debug|release) {
     DESTDIR = ../debug
@@ -27,11 +31,6 @@ CONFIG(debug, debug|release) {
 SOURCES += \
         main.cpp \
         optmanager.cpp
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
     export_rules.h \
