@@ -1,7 +1,7 @@
 #
 TEMPLATE = subdirs
 CONFIG   += ordered
-SUBDIRS  += qdlt src plugin
+SUBDIRS  += qdlt src plugin commander
 CONFIG += c++11
 
 ICON = Project.icns

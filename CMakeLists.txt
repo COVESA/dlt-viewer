@@ -135,6 +135,7 @@ endif()
 add_subdirectory(qdlt)
 add_subdirectory(src)
 add_subdirectory(plugin)
+add_subdirectory(commander)
 
 message(STATUS "\n\t** DLT Viewer Build Summary **")
 message(STATUS "\tCMAKE_INSTALL_PREFIX:         ${CMAKE_INSTALL_PREFIX}")

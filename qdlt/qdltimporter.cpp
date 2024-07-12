@@ -38,6 +38,9 @@ QDltImporter::~QDltImporter()
 
 void QDltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
+    Q_UNUSED(silent)
+    Q_UNUSED(parent)
+
     counterRecords = 0;
     counterRecordsDLT = 0;
     counterRecordsIPC = 0;
@@ -124,6 +127,9 @@ void QDltImporter::dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *pa
 
 void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent)
 {
+    Q_UNUSED(silent)
+    Q_UNUSED(parent)
+
     counterRecords = 0;
     counterRecordsDLT = 0;
     counterRecordsIPC = 0;

@@ -419,7 +419,8 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         // decode message if needed
         if(exportFormat != QDltExporter::FormatDlt)
         {
-            pluginManager->decodeMsg(msg,silentMode);
+            if(pluginManager)
+                pluginManager->decodeMsg(msg,silentMode);
             if (exportFormat == QDltExporter::FormatDltDecoded)
             {
                 msg.setNumberOfArguments(msg.sizeArguments());

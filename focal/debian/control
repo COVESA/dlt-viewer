@@ -32,3 +32,16 @@ Description: COVESA DLT Viewer Development files
  More information can be found on the homepage of the project:
  https://github.com/COVESA/dlt-viewer 
 
+Package: covesa-dlt-commander
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: COVESA DLT Commander
+ DLT is a reusable open source software component for standardized
+ logging and tracing in infotainment ECUs based on the AUTOSAR 4.0
+ standard. The goal of DLT is the consolidation of the existing
+ variety of logging and tracing protocols on one format.
+ DLT Viewer is a graphical DLT Client written in C++/Qt to receive
+ and decode logs and traces from an infotainment ECU.
+ The Open Source Project is hosted by the COVESA organisation.
+ More information can be found on the homepage of the project:
+ https://github.com/COVESA/dlt-viewer 
