@@ -2,12 +2,15 @@
 #define DLTMESSAGEMATCHER_H
 
 #include <QString>
+#include <QRegularExpression>
 
 class QDltMsg;
 
 class DltMessageMatcher
 {
 public:
+    using Pattern = std::variant<QString, QRegularExpression>;
+
     DltMessageMatcher();
 
     void setCaseSentivity(Qt::CaseSensitivity caseSensitivity) {
@@ -26,7 +29,19 @@ public:
         m_timestampRange = {start, end};
     }
 
-    bool match(const QDltMsg& message) const;
+    void setHeaderSearchEnabled(bool enabled) {
+        m_headerSearchEnabled = enabled;
+    }
+
+    void setPayloadSearchEnabled(bool enabled) {
+        m_payloadSearchEnabled = enabled;
+    }
+
+    void setMessageIdFormat(const QString& msgIdFormat) {
+        m_messageIdFormat = msgIdFormat;
+    }
+
+    bool match(const QDltMsg& message, const Pattern& pattern) const;
 private:
     bool matchAppId(const QString& appId) const;
     bool matchCtxId(const QString& ctxId) const;
@@ -42,6 +57,11 @@ private:
     std::optional<TimestampRange> m_timestampRange;
 
     Qt::CaseSensitivity m_caseSensitivity{Qt::CaseInsensitive};
+
+    bool m_headerSearchEnabled{true};
+    bool m_payloadSearchEnabled{true};
+
+    std::optional<QString> m_messageIdFormat;
 };
 
 #endif // DLTMESSAGEMATCHER_H

@@ -391,8 +391,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
 
     QDltMsg msg;
     QByteArray buf;
-    QString text;
-    QString headerText;
     int ctr = 0;
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
@@ -402,9 +400,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     {
         is_Case_Sensitive = Qt::CaseSensitive;
     }
-
-
-    QString tempPayLoad;
 
     is_PayloadStartFound = false;
     is_PayloadEndFound = false;
@@ -427,12 +422,15 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     if (is_TimeStampSearchSelected) {
         matcher.setTimestapmRange(dTimeStampStart, dTimeStampStop);
     }
+    if (msgIdEnabled) {
+        matcher.setMessageIdFormat(msgIdFormat);
+    }
+    matcher.setHeaderSearchEnabled(getHeader());
+    matcher.setPayloadSearchEnabled(getPayload());
 
     do
     {
         ctr++; // for file progress indication
-
-        text.clear();
 
         if(getNextClicked() || searchtoIndex())
         {
@@ -474,143 +472,21 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             pluginManager->decodeMsg(msg, fSilentMode);
         }
 
-        headerText.clear();
-
-        /* search header */
-        if( text.isEmpty() )
+        const bool matchFound = getRegExp() ? matcher.match(msg, searchTextRegExp) : matcher.match(msg, getText());
+        if (!matchFound)
         {
-            text += msg.toStringHeader();
-            if ( msgIdEnabled==true )
-            {
-                text += " "+QString::asprintf(msgIdFormat.toUtf8(),msg.getMessageId());
-            }
-            tempPayLoad = msg.toStringPayload();
-
-        } // get the header text in case not empty
-        if (!matcher.match(msg))
-        {
-             continue; // because if APID or CTID  doesn not fit there is no need to search in any payload or header
+            match = false;
+            continue;
         }
 
-        headerText = text;
+        // TODO: implement functionality about payload start and end
+        // Note: This feature has been broken for some time before this refactoring:
+        // See https://github.com/COVESA/dlt-viewer/issues/502
 
-        if(getHeader() == true) // header is search enabled
-        {
-            if (getRegExp() == true) // regular expressions are selected
-            {
-                if(text.contains(searchTextRegExp))
-                {
-                    if ( foundLine(searchLine) )
-                        break;
-                    else
-                        continue;
-                }
-                else
-                {
-                    //setMatch(false);
-                    match = false;
-                }
-            }
-            else // no regular expressions search was requested
-            {
-                if(true == getText().isEmpty())
-                {
-                 if ( foundLine(searchLine) ) // so no pattern always fits
-                  {
-                   //qDebug() << "Header search hit in"<< __LINE__;
-                   break;
-                  }
-                 else
-                  continue;
-                 }
-                else if(true == headerText.contains(getText(),is_Case_Sensitive)) // header search
-                {
-                    {
-                        if(true == timeStampPayloadValidityCheck(searchLine))
-                            break;
-                        else
-                            continue;
-                    }
-                }
-                else // no fit, no display
-                {
-                    match = false;
-                }
-            }
-        } // end header search
-
-        /* search payload */
-        text.clear();
-
-        if(getPayload() == true) // if payload is selected in the search box
-        {
-            if ( true == is_payLoadSearchSelected )
-            {
-              if (payLoadStartpatternCheck(tempPayLoad) ) // if payload pattern search range is set we try to detect the ranges
-                 {
-                 //qDebug() << "Found start payload pattern in " << searchLine << __LINE__;
-                 }
-            }
-
-            if( text.isEmpty())
-            {
-                text += msg.toStringPayload();
-            }
-
-            if (getRegExp() == true)
-            {
-                if(tempPayLoad.contains(searchTextRegExp))
-                {
-                    if ( foundLine(searchLine) )
-                    {
-                        //qDebug() << "Search hit in"<< __LINE__;
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck(tempPayLoad);
-                        continue;
-                    }
-                }
-                else
-                {
-                    //setMatch(false);
-                    match = false;
-                }
-            }
-            else // search option without regular expressions
-            {
-                if(getText().isEmpty() == true) // no search text for payload given
-                {
-                    if(timeStampPayloadValidityCheck(searchLine))
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck(tempPayLoad);
-                        continue;
-                    }
-
-                }
-                else if(tempPayLoad.contains(getText(),is_Case_Sensitive))
-                {
-                    if(timeStampPayloadValidityCheck(searchLine))
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck(tempPayLoad);
-                        continue;
-                    }
-                }
-                else
-                {
-                    match = false;
-                }
-            }
-        }
+        if (foundLine(searchLine))
+            break;
+        else
+            continue;
     }
     while( searchBorder != searchLine );
     stoptime();
