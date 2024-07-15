@@ -248,7 +248,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
              /* display payload */
-             visu_data = msg.toStringPayload().simplified();
+             visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
 
              if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
              {
@@ -265,6 +265,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              {
                 visu_data = visu_data.mid(0,1000);
              }
+
              return visu_data;
          case FieldNames::MessageId:
              return QString::asprintf(project->settings->msgIdFormat.toUtf8() ,msg.getMessageId());
@@ -368,7 +369,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                 msg = last_decoded_msg;
             }
         }
-        return msg.toStringPayload().simplified();
+        return msg.toStringPayload().simplified().remove(QChar::Null);
     }
 
      return QVariant();

@@ -69,7 +69,7 @@ void DltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(",");
     text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(",");
-    text += escapeCSVValue(msg.toStringPayload().simplified());
+    text += escapeCSVValue(msg.toStringPayload().simplified().remove(QChar::Null));
     text += "\n";
 
     to->write(text.toLatin1().constData());
@@ -283,7 +283,7 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
 
             text += " ";
         }
-        text += msg.toStringPayload().simplified();
+        text += msg.toStringPayload().simplified().remove(QChar::Null);
         text += "\n";
         try
          {
@@ -333,7 +333,7 @@ bool DltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf
                 "|" + msg.getEcuid() +
                 "|" + msg.getApid() +
                 "|" + msg.getCtid() +
-                "|" + msg.toStringPayload().simplified().replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
+                "|" + msg.toStringPayload().simplified().remove(QChar::Null).replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
                 "| |\n";
         clipboardString += text;
     }
