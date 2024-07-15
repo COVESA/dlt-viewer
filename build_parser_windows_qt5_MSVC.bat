@@ -140,6 +140,15 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_PARSER_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
+if "%QTNO%"=="5" (
+	copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_VIEWER_SDK_DIR%\styles
+	if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+)
+if "%QTNO%"=="6" (
+	copy %QTDIR%\plugins\styles\qmodernwindowsstyle.dll %DLT_VIEWER_SDK_DIR%\styles
+	if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+)
+
 xcopy %SOURCE_DIR%\parser\examples %DLT_PARSER_DIR%\examples /E
 IF %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 

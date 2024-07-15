@@ -39,6 +39,20 @@ install(FILES
     COMPONENT qt_libraries)
 endif()
 
+if("${QT_PREFIX}" STREQUAL "Qt5")
+install(FILES
+    "${DLT_QT_LIB_DIR}/../plugins/styles/qwindowsvistastyle.dll"
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/styles"
+    COMPONENT qt_libraries)
+endif()
+
+if("${QT_PREFIX}" STREQUAL "Qt6")
+install(FILES
+    "${DLT_QT_LIB_DIR}/../plugins/styles/qmodernwindowsstyle.dll"
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/styles"
+    COMPONENT qt_libraries)
+endif()
+	
 option(INCLUDE_VC_REDIST "Add vc_redist.x64.exe cmake install command" OFF)
 if(INCLUDE_VC_REDIST)
   get_filename_component(MSVC_COMPILER_DIR "${CMAKE_CXX_COMPILER}" DIRECTORY )
