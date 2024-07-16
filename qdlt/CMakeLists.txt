@@ -36,7 +36,10 @@ add_library(qdlt SHARED
     qdltplugin.cpp
     qdltsegmentedmsg.cpp
     qdltoptmanager.cpp
-    qdltsettingsmanager.cpp)
+    qdltsettingsmanager.cpp
+    qdltexporter.cpp
+    qdltimporter.cpp
+    fieldnames.cpp)
 
 target_compile_definitions(qdlt PRIVATE
     BYTE_ORDER=LITTLE_ENDIAN

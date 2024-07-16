@@ -107,9 +107,9 @@ void QDltOptManager::printUsage()
     qDebug()<<" -w workingdirectory\tSet the working directory";
     qDebug()<<"\nExamples:";
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -u -c output.dlt input.txt";
+    qDebug()<<"  dlt-viewer.exe -t -s -u -c output.txt input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -p decoded.dlp -dd -c output.dlt input.dlt ";
+    qDebug()<<"  dlt-viewer.exe -t -s decoded.dlp -dd -c output.dlt input.dlt ";
     qDebug()<<"  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
     qDebug()<<"  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";

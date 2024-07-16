@@ -120,7 +120,6 @@ TEMPLATE = app
 
 # Compile these sources
 SOURCES += main.cpp \
-    dltimporter.cpp \
     mainwindow.cpp \
     project.cpp \
     ecudialog.cpp \
@@ -138,8 +137,6 @@ SOURCES += main.cpp \
     dltfileutils.cpp \
     dltfileindexer.cpp \
     dlttableview.cpp \
-    dltexporter.cpp \
-    fieldnames.cpp \
     dltuiutils.cpp \
     workingdirectory.cpp \
     jumptodialog.cpp\
@@ -154,7 +151,6 @@ SOURCES += main.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
-    dltimporter.h \
     project.h \
     ecudialog.h \
     applicationdialog.h \
@@ -172,8 +168,6 @@ HEADERS += mainwindow.h \
     dltfileutils.h \
     dltfileindexer.h \
     dlttableview.h \
-    dltexporter.h \
-    fieldnames.h \
     workingdirectory.h \
     dltuiutils.h \
     jumptodialog.h \

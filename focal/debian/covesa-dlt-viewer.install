@@ -1,4 +1,5 @@
 usr/bin/dlt-viewer
+usr/bin/dlt-commander
 usr/lib/*/libqdlt.so.*
 usr/share/applications/org.genivi.DLTViewer.desktop
 usr/share/pixmaps/org.genivi.DLTViewer.ico
