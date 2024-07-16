@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.25.0 RELEASE
+Version 2.26.0 RELEASE
 
 
 Known issues
@@ -16,6 +16,121 @@ Known issues
 
 Changes
 -------
+
+2.26.0
+
+    * Remove all zeros in every output of payload.
+    * Add status badge
+    * Cleanup commandline output. (#498)
+    * Fix filter menu. (#497)
+    * Reduce command line dlt file load progress update.
+    * Remove unused code and silence a deprecation warnings (#496)
+    * remove unused SearchDialog::payLoadValidityCheck
+    * silence warnings due to deprecated Qt settings
+    * silence Qt6 KeyCombination deprecation warning
+    * Fix filter active color. (#494)
+    * Fix Multifilter feature, expecially with older Qt version. (#493)
+    * Switch to Qt 6.7.2
+    * Enable Plugin when sending command line command to plugin. (#490)
+    * Remove Windows Vista support. (#489)
+    * Cosmetic to display OS in pipeline
+    * Remove pointless comment
+    * updated qt for arm64
+    * follow brew install suggestions
+    * Build on arm64
+    * Brew relink
+    * Run on MacOS arm64 runner
+    * Update Debian build script. (#486)
+    * Build any pullrequest
+    * MacOS build more verbose
+    * Fail fast in matrix CI jobs
+    * Enable Offscreen mode in silent mode. No display needed anymore in Linux. Runs now also on Servers without X Display. (#483)
+    * Corrections in command line usage help.
+    * Fixed some compilation warnings (#474)
+    * Allow conversion of input files in stream format (#475)
+    * Fix dark mode. (#481)
+    * Add tooltips to logs (#476)
+    * Update Windows Build script to Qt 6.7.1 (#480)
+    * Fix open and append dialog case sensitive endings. (#473)
+    * Filetransfer Plugin: - Default Save path (#471)
+    * Copy ID and filename in context menu
+    * Update Plugin version number.
+    * Fix DLTv2 support. (#472)
+    * Add getDLTv2Support function.
+    * Remove Reset Default Filter. (#466)
+    * Fix baudrate disabled. (#462)
+    * Allow loading multiple configuration files in one plugin separated by |.
+    * Change Export to simplified payload. (#459)
+    * Added Baudrate 1000000 to serial port.
+    * Update debian build package to focal. (#458)
+    * Further Cleanup Open and Append commands. (#456)
+    * Integration of PCAP/MF4 Import into Open/Append command.
+    * Filetransfer Plugin: Fix crash with Qt6 (#455)
+    * Support DLTv2 decoding as an option in the settings (#454)
+    * Fix Filetransfer Plugin Qt6 issue. (#452)
+    * Update build script to Qt6.6.2.
+    * Update version info.
+    * Fix crash in cache by using Mutex (#451)
+    * Clean up convert command line command. (#450)
+    * Explicit terminal command in command line.
+    * Terminate command line only when terminate command used.
+    * Multiple Filter per command line.
+    * Combination of Import and Convert now possible.
+    * Reorder command line commands.
+    * macOS: Skip installation of QT5 dependencies (#449)
+    * Remove Qt Gui/Widgets dependency from qdlt library. (#447)
+    * QT 5.15.2
+    * Fix commandline (#441)
+    * Fix compiler warnings
+    * Fix commandline pre plugin command
+    * Fix compiler warnings (#439)
+    * Fix import from pcap file dialog. (#438)
+    * Fix import from pcap file dialog.
+    * Import DLT from PLP in pcap.
+    * Fix DLT Import from IP Segmentation.
+    * Import DLT messages from further MF4 files.
+    * Fix Max File Size Checkbox in the settings.
+    * Remove null characters when exporting to clipboard (#435)
+    * New DLT Message Cache. (#437)
+    * Cache size can be changed in the settings.
+    * Improves GUI Response speed already with small cache size.
+    * Improves filter and search speed, when cache size is set to bigger value.
+    * Pcap and mf4 import improved Explorer widget support. (#436)
+    * Multiple files in open dialog now possible.
+    * Single import command for pcap and mf4.
+    * Support IP segmentation in pcap and mf4 import (#434)
+    * Improve pcap and mf4 import. (#432)
+    * Mf4 Import: Check record ids.
+    * Drag and Drop multiple pcap and mf4 files.
+    * Explorer tab pcap and mf4 lading support.
+    * pcap and mf4 import: Commandline and silent mode support.
+    * Limit table model output to 1000 characters.
+    * Add MF4 import PLP Raw support.
+    * Fixed MF4 import timestamp calculation.
+    * Prevent MF4 import duplicate messages.
+    * First MF4 import support. (#431)
+    * New file/class for import functions.
+    * Add Visual Studio Professional support.
+    * Add further EtherTypes to pcap import (#429)
+    * Separate installation directories. (#424)
+    * Fix Qt6 issues (#423)
+    * Logging only filtered messages feature (#418)
+    * Open DLT file writable only when needed. (#417)
+    * Fix new plugin commands from command line. (#415)
+    * Log files, project file and filter file can now be loaded in commandline without option. (#413)
+    * Allow mixing project and dlt files directly (#403)
+    * Set working directory from cli (#402)
+    * Improve non verbose mode plugin: (#412)
+    * Prepare Qt6 build. (#411)
+    * Remove Qwt support.
+    * Remove dlt-speed example.
+    * Dot matches newlines in regexps (#401)
+    * Show XCode version
+    * MacOS 13; XCode 15.2
+    * XCode 15.2 on CI
+    * MacOS 13 on CI
+    * Support Qt6
+
 2.25.0
 
     * Experimental IPC import from PCAP file

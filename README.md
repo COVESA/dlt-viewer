@@ -1,3 +1,5 @@
+[![PullRequest](https://github.com/COVESA/dlt-viewer/actions/workflows/BuildPR.yml/badge.svg)](https://github.com/COVESA/dlt-viewer/actions/workflows/BuildPR.yml)
+
 # Diagnostic Log and Trace Viewer
 
 ## Overview

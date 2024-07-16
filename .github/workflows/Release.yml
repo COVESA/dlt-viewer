@@ -80,16 +80,20 @@ jobs:
         with:
           mirror: http://ftp.fau.de/qtproject/
           version: 5.15.2
-      - name: Build ${{ matrix.task }}
+      - name: Build with CMake ${{ matrix.task }}
         run: >
-          $env:WORKSPACE=$env:GITHUB_WORKSPACE; $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
-          ./build_${{ matrix.task }}_windows_qt5_MSVC.bat
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE;
+          $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
+          $env:CPACK_7Z="true";
+          $env:CPACK_NSIS="true";
+          ./build_sdk_windows_qt5_MSVC_cmake.bat
       - name: Archive artifact
         run: >
           Compress-Archive -Path .\build\dist -DestinationPath
           DLT-Windows-${{ matrix.task }}.zip
       - name: Upload DLT artifact
         uses: actions/upload-artifact@v4
+        if: ${{ success() }}
         with:
           name: DLT-Windows-${{ matrix.task }}
           path: DLT-*.zip

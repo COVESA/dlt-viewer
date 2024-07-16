@@ -95,7 +95,7 @@ void File::setFilename(QString f){
 }
 
 void File::setFileCreationDate(QString f){
-    fileCreationDate = f;
+    fileCreationDate = f.simplified().remove(QChar::Null);
     this->setText(COLUMN_FILEDATE, fileCreationDate);
 }
 
