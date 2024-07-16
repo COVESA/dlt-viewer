@@ -22,9 +22,6 @@
  * -d -c c:/_test/output.dlt c:/_test/filter.dlf c:/_test/input.dlt
  * -csv -c c:/_test/output.csv c:/_test/input1.mf4 c:/_test/input2.mf4 c:/_test/filter.dlf c:/_test/output.dlt
  *
- *
- *
- *
  */
 
 int main(int argc, char *argv[])
@@ -56,7 +53,7 @@ int main(int argc, char *argv[])
         {
             // open outputfile
             outputfile.setFileName(opt.getLogFiles()[0]);
-            outputfile.open(QIODeviceBase::WriteOnly|QIODeviceBase::Truncate);
+            outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate);
             outputfile.close();
         }
     }
