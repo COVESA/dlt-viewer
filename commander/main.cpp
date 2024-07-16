@@ -20,6 +20,13 @@ int main(int argc, char *argv[])
     QStringList arguments = a.arguments();
     opt.parse(&arguments);
 
+    // Perform some checks
+    if(opt.getFilterFiles().size()<1)
+    {
+        qDebug() << "ERROR: No DLT file used. At least one DLT file must be provided.";
+        return -1;
+    }
+
     // Load dlt files
     qDebug() << "### Load DLT files";
     QStringList logFiles = opt.getLogFiles();
@@ -126,4 +133,5 @@ int main(int argc, char *argv[])
     qDebug() << "### Terminate DLT Commander";
 
     //return a.exec();
+    return 0;
 }
