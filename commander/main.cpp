@@ -8,6 +8,25 @@
 #include <qdltexporter.h>
 #include <optmanager.h>
 
+/*
+ * Examples:
+ *
+ * -v
+ * c:/_test/input1.mf4 c:/_test/output.dlt
+ * c:/_test/input1.pcap output.dlt
+ * c:/_test/input1.mf4 c:/_test/input2.mf4 c:/_test/output.dlt
+ * c:/_test/input1.pcap c:/_test/input2.pcap c:/_test/output.dlt
+ * -c c:/_test/output.txt c:/_test/input.txt
+ * -csv -c c:/_test/output.csv c:/_test/input.dlt
+ * -csv -c c:/_test/output.csv c:/_test/filter.dlf c:/_test/input.dlt
+ * -d -c c:/_test/output.dlt c:/_test/filter.dlf c:/_test/input.dlt
+ * -csv -c c:/_test/output.csv c:/_test/input1.mf4 c:/_test/input2.mf4 c:/_test/filter.dlf c:/_test/output.dlt
+ *
+ *
+ *
+ *
+ */
+
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
@@ -21,33 +40,25 @@ int main(int argc, char *argv[])
     opt.parse(&arguments);
 
     // Perform some checks
-    if(opt.getFilterFiles().size()<1)
+    if(opt.getLogFiles().size()<1)
     {
         qDebug() << "ERROR: No DLT file used. At least one DLT file must be provided.";
         return -1;
     }
-
-    // Load dlt files
-    qDebug() << "### Load DLT files";
-    QStringList logFiles = opt.getLogFiles();
-    for ( const auto& i : logFiles )
+    if(opt.getMf4Files().size()>0 || opt.getPcapFiles().size()>0)
     {
-        qDebug() << "Load DLT File:" << i;
-        if(!dltFile.open(i))
-            qDebug() << "ERROR: Failed loading file:" << i;
-        outputfile.setFileName(i);
-    }
-
-    // Load filter
-    qDebug() << "### Load filters";
-    QStringList filterFiles = opt.getFilterFiles();
-    for ( const auto& i : filterFiles )
-    {
-        qDebug() << "Load DLT Filter:" << i;
-        if(!filterList.LoadFilter(i,true))
-            qDebug() << "ERROR: Failed loading filter:" << i;
-        dltFile.setFilterList(filterList);
-        dltFile.enableFilter(true);
+        if(opt.getLogFiles().size()>1)
+        {
+            qDebug() << "ERROR: When importing from MF4 or PCAP files only one DLT file is allowed.";
+            return -1;
+        }
+        else
+        {
+            // open outputfile
+            outputfile.setFileName(opt.getLogFiles()[0]);
+            outputfile.open(QIODeviceBase::WriteOnly|QIODeviceBase::Truncate);
+            outputfile.close();
+        }
     }
 
     // Import
@@ -75,20 +86,43 @@ int main(int argc, char *argv[])
         }
     }
 
-    // Create index
-    qDebug() << "### Create index";
-    dltFile.createIndex();
-    qDebug() << "Number of messages:" << dltFile.size();
-
-    // Create filter index
-    qDebug() << "### Create filter index";
-    dltFile.setFilterList(filterList);
-    dltFile.createIndexFilter();
-    qDebug() << "Number of messages matching filter:" << dltFile.sizeFilter();
-
     // Export
     if(!opt.getConvertDestFile().isEmpty())
-    {
+    {       
+        // Load dlt files
+        qDebug() << "### Load DLT files";
+        QStringList logFiles = opt.getLogFiles();
+        for ( const auto& i : logFiles )
+        {
+            qDebug() << "Load DLT File:" << i;
+            if(!dltFile.open(i))
+                qDebug() << "ERROR: Failed loading file:" << i;
+            outputfile.setFileName(i);
+        }
+
+        // Load filter
+        qDebug() << "### Load filters";
+        QStringList filterFiles = opt.getFilterFiles();
+        for ( const auto& i : filterFiles )
+        {
+            qDebug() << "Load DLT Filter:" << i;
+            if(!filterList.LoadFilter(i,true))
+                qDebug() << "ERROR: Failed loading filter:" << i;
+            dltFile.setFilterList(filterList);
+            dltFile.enableFilter(true);
+        }
+
+        // Create index
+        qDebug() << "### Create index";
+        dltFile.createIndex();
+        qDebug() << "Number of messages:" << dltFile.size();
+
+        // Create filter index
+        qDebug() << "### Create filter index";
+        dltFile.setFilterList(filterList);
+        dltFile.createIndexFilter();
+        qDebug() << "Number of messages matching filter:" << dltFile.sizeFilter();
+
         if(opt.get_convertionmode()==e_DLT)
         {
             QFile output(opt.getConvertDestFile());
@@ -126,8 +160,6 @@ int main(int argc, char *argv[])
             qDebug() << "DLT export UTF8 done";
         }
     }
-    else
-        qDebug() << "ERROR: Export not possible, no DLT file provided";
 
     // Terminate
     qDebug() << "### Terminate DLT Commander";

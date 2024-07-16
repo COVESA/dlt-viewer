@@ -70,39 +70,36 @@ void OptManager::printVersion(QString appname)
 
 void OptManager::printUsage()
 {
+    QString executable;
 #if (WIN32)
-    qDebug()<<"Usage: dlt-commander.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    qDebug()<<"\nUsage:\n\n dlt-commander.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    executable = " dlt-commander.exe";
 #else
-    qDebug()<<"Usage: dlt-commander [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    qDebug()<<"\nUsage:\n\n dlt-commander [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    executable = " dlt-commander";
 #endif
 
-    qDebug()<<"Options:";
+    qDebug()<<"\nOptions:\n";
     qDebug()<<" [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
     qDebug()<<" [filterfile]\tLoading filterfile on startup (must end with .dlf)";
     qDebug()<<" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
     qDebug()<<" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
     qDebug()<<" -h \t Print usage";
     qDebug()<<" -v or --version\tOnly show version and buildtime information";
-    qDebug()<<" -c logfile textfile\tConvert logfile file to textfile (logfile must end with .dlt)";
+    qDebug()<<" -c textfile\tConvert logfile file to textfile (logfile must end with .dlt)";
     qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv\tConversion will be done in CSV format";
     qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
-    qDebug()<<"Examples:";
-    #if (WIN32)
-    qDebug()<<"  dlt-commander.exe -c c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt-commander.exe -c -u c:\\trace\\trace.dlt .\\trace.txt";
-    qDebug()<<"  dlt-commander.exe -d -c c:\\trace\\trace.dlt .\\trace.dlt";
-    qDebug()<<"  dlt-commander.exe -csv -c c:\\trace\\trace.dlt .\\trace.csv";
-    qDebug()<<"  dlt-commander.exe -d -f c:\\filter\\filter.dlf -c c:\\trace\\trace.dlt .\\filteredtrace.dlt";
-    qDebug()<<"  dlt-commander.exe trace_1.dlt trace_2.dlt";
-    #else
-    qDebug()<<"  dlt-commander -c ./traces/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt-commander -c -u ./trace/trace.dlt ./trace.txt";
-    qDebug()<<"  dlt-commander -d -c ./trace/trace.dlt ./trace.dlt";
-    qDebug()<<"  dlt-commander -csv -c ./trace/trace.dlt ./trace.csv";
-    qDebug()<<"  dlt-commander -d -f ./filter/filter.dlf -c ./trace/trace.dlt ./filteredtrace.dlt";
-    qDebug()<<"  dlt-commander trace_1.dlt trace_2.dlt";
-    #endif
+    qDebug()<<"\nExamples:\n";
+    qDebug().noquote() << executable << "-c .\\trace.txt c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-c -u .\\trace.txt c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-d -c .\\trace.dlt c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-csv -c .\\trace.csv c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-d -c .\\filteredtrace.dlt c:\\filter\\filter.dlf c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "trace_1.dlt trace_2.dlt";
+    qDebug().noquote() << executable << "input.pcap output.dlt";
+    qDebug().noquote() << executable << "-c output.txt input.pcap";
+    qDebug().noquote() << executable << "-c output.txt input1.mf4 input2.mf4\n";
 }
 
 void OptManager::parse(QStringList *opt)
