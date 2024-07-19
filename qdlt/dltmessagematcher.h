@@ -1,12 +1,17 @@
 #ifndef DLTMESSAGEMATCHER_H
 #define DLTMESSAGEMATCHER_H
 
+#include "export_rules.h"
+
 #include <QString>
 #include <QRegularExpression>
 
+#include <optional>
+#include <variant>
+
 class QDltMsg;
 
-class DltMessageMatcher
+class QDLT_EXPORT DltMessageMatcher
 {
 public:
     using Pattern = std::variant<QString, QRegularExpression>;

@@ -31,7 +31,7 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     set(LINUX TRUE)
 endif()
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -136,7 +136,6 @@ add_subdirectory(qdlt)
 add_subdirectory(src)
 add_subdirectory(plugin)
 add_subdirectory(commander)
-add_subdirectory(tools)
 
 message(STATUS "\n\t** DLT Viewer Build Summary **")
 message(STATUS "\tCMAKE_INSTALL_PREFIX:         ${CMAKE_INSTALL_PREFIX}")
