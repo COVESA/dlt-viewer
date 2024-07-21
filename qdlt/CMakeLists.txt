@@ -16,7 +16,7 @@
 #
 
 add_library(qdlt SHARED
-    dlt_common.c
+    dlt_common.cpp
     qdltipconnection.cpp
     qdlttcpconnection.cpp
     qdltudpconnection.cpp
