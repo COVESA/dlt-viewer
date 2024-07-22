@@ -85,6 +85,11 @@ void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEd
 
 QString SearchDialog::getText() { return ui->lineEditText->text(); }
 
+void SearchDialog::abortSearch()
+{
+    isSearchCancelled = true;
+}
+
 bool SearchDialog::getHeader()
 {
     return (ui->checkBoxHeader->checkState() == Qt::Checked);
@@ -203,6 +208,8 @@ void SearchDialog::focusRow(long int searchLine)
 
 int SearchDialog::find()
 {
+    isSearchCancelled = false;
+
     emit addActionHistory();
     QRegularExpression searchTextRegExpression;
     is_TimeStampSearchSelected = false;
@@ -410,11 +417,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
 
     m_searchtablemodel->clear_SearchResults();
 
-    QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::NonModal);
-    fileprogress.show();
-
     bool msgIdEnabled=QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
     QString msgIdFormat=QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
 
@@ -441,15 +443,14 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             }
         }
 
-        /* Update progress every 0.5% */
-        if(searchLine%1000==0)
+        // Update progress every 0.5%
+        if(searchLine%1000 == 0)
         {
-            fileprogress.setValue(ctr);
-            if(fileprogress.wasCanceled())
-            {
+            QApplication::processEvents();
+            if (isSearchCancelled) {
                 break;
             }
-            QApplication::processEvents();
+            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / file->sizeFilter()));
         }
 
         /* get the message with the selected item id */
