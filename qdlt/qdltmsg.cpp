@@ -153,7 +153,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
 
 quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
 {
-    int sizeStorageHeader = 0;
+    quint32 sizeStorageHeader = 0;
     QString storageHeaderEcuId;
 
     /* empty message */
@@ -171,7 +171,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         if(storageHeaderVersion==1)
         {
             sizeStorageHeader = sizeof(DltStorageHeader);
-            if(size < (quint32)(sizeStorageHeader))
+            if(size < sizeStorageHeader)
             {
                 // length error
                 return 0;
@@ -179,7 +179,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         }
         else if(storageHeaderVersion==2)
         {
-            if(size < (int)(14))
+            if(size < 14)
             {
                 // length error
                 return 0;
@@ -199,7 +199,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
     }
 
     /* get DLT protocol version */
-    if(size < (quint32)(sizeStorageHeader+4)) {
+    if(size < sizeStorageHeader+4) {
         return 0;
     }
     quint32 htyp2 = *((quint32*) (data + sizeStorageHeader));
@@ -211,7 +211,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         const DltStandardHeader *standardheader = 0;
         unsigned int extra_size,headersize;
 
-        if(size < (int)(sizeStorageHeader+sizeof(DltStandardHeader))) {
+        if(size < (sizeStorageHeader+sizeof(DltStandardHeader))) {
             return 0;
         }
 
@@ -228,7 +228,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         }
         else
         {
-            if(size < (quint32)(DLT_SWAP_16(standardheader->len) + sizeStorageHeader))
+            if(size < (sizeStorageHeader + DLT_SWAP_16(standardheader->len)))
             {
                 // whole message does not fit
                 return 0;
@@ -239,8 +239,8 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
     }
     else if(versionNumber==2)
     {
-        quint32 headerLength = 7;
-        if(size < (int)(sizeStorageHeader+headerLength))
+        constexpr quint32 headerLength = 7;
+        if(size < (sizeStorageHeader+headerLength))
         {
             // length error
             return 0;
@@ -283,9 +283,9 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         messageCounter = *((quint8*) (data + 4 + sizeStorageHeader));
 
         /* get Message Length */
-        quint16 messageLength = messageLength = qFromBigEndian(*((quint16*) (data + 5 + sizeStorageHeader)));
+        quint16 messageLength = qFromBigEndian(*((quint16*) (data + 5 + sizeStorageHeader)));
 
-        if(size < (quint32)(messageLength+sizeStorageHeader))
+        if(size < (sizeStorageHeader + messageLength))
         {
             // whole message does not fit
             return 0;
@@ -618,7 +618,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         messageCounter = *((quint8*) (buf.constData() + 4 + sizeStorageHeader));
 
         /* get Message Length : always*/
-        quint16 messageLength = messageLength = qFromBigEndian(*((quint16*) (buf.constData() + 5 + sizeStorageHeader)));
+        quint16 messageLength = qFromBigEndian(*((quint16*) (buf.constData() + 5 + sizeStorageHeader)));
 
         /* get Message Info : conditional */
         quint8 messageInfo = 0;

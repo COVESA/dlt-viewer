@@ -166,7 +166,7 @@ void SettingsDialog::assertSettingsVersion()
         msg.append("Yes    - Reset settings to factory defaults.\n");
         msg.append("No     - Continue loading settings and risk crashing the application.\n");
         msg.append("Cancel - Exit the viewer now.\n");
-        QMessageBox dlg("Warning", msg, QMessageBox::Warning, QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+        QMessageBox dlg(QMessageBox::Warning, "Warning", msg, QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
         int btn = dlg.exec();
         if(btn == QMessageBox::Yes)
         {
@@ -193,7 +193,7 @@ void SettingsDialog::resetSettings()
         fh.close();
         if(false == fh.remove())
         {
-            QMessageBox err("Error", "Could not remove the settings file", QMessageBox::Critical, QMessageBox::Ok, 0, 0);
+            QMessageBox err(QMessageBox::Critical, "Error", "Could not remove the settings file", QMessageBox::Ok);
             err.exec();
         }
         else
@@ -245,7 +245,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyFilteredMessages->setCheckState(settings->loggingOnlyFilteredMessages?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
     ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
 
@@ -369,7 +369,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMessageId->setChecked(settings->showMsgId?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMessageId->setChecked(settings->showMsgId);
     ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */

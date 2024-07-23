@@ -29,23 +29,6 @@ int QDltPluginManager::size() const
     return plugins.size();
 }
 
-int QDltPluginManager::sizeEnabled() const
-{
-    int count = 0;
-
-    pMutex_pluginList->lock();
-
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-        if(plugin->getMode()>=QDltPlugin::ModeEnable)
-            count++;
-    }
-
-    pMutex_pluginList->unlock();
-
-    return count;
-}
 QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
     QDir pluginsDir1;
@@ -255,16 +238,16 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
     return result;
 }
 
-bool QDltPluginManager::setPluginPriority(const QString name, unsigned int prio)
+bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
 {
     bool result = false;
 
-    //if prio is too large, put to the end of the list
-    if(prio >= (unsigned int) (plugins.size())) {
-        prio = plugins.size() - 1;
-    }
-
     if(plugins.size() > 1) {
+        //if prio is too large, put to the end of the list
+        if(prio >= plugins.size()) {
+            prio = plugins.size() - 1;
+        }
+
         pMutex_pluginList->lock();
         for (int num = 0; num < plugins.size(); ++num) {
             if (plugins[num]->name() == name) {
