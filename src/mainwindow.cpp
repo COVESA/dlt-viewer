@@ -3532,7 +3532,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
                 disconnect(ecuitem->socket,0,0,0);
                 connect(ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
                 connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-                connect(ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+                connect(ecuitem->socket, &QAbstractSocket::errorOccurred, this, &MainWindow::error);
                 connect(ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
                 connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedIP(QAbstractSocket::SocketState)));
                 ecuitem->socket->connectToHost(ecuitem->getHostname(),ecuitem->getIpport());
@@ -3615,7 +3615,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
 
                  connect(ecuitem->socket,SIGNAL(connected()),this,SLOT(connected()));
                  connect(ecuitem->socket,SIGNAL(disconnected()),this,SLOT(disconnected()));
-                 connect(ecuitem->socket,SIGNAL(error(QAbstractSocket::SocketError)),this,SLOT(error(QAbstractSocket::SocketError)));
+                 connect(ecuitem->socket,&QAbstractSocket::errorOccurred, this, &MainWindow::error);
                  connect(ecuitem->socket,SIGNAL(readyRead()),this,SLOT(readyRead()));
                  connect(ecuitem->socket,SIGNAL(stateChanged(QAbstractSocket::SocketState)),this,SLOT(stateChangedIP(QAbstractSocket::SocketState)));
                  ecuitem->update();
