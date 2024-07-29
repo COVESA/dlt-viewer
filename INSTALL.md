@@ -102,8 +102,8 @@ Various solutions exist for cmake configuration to be informed about
 non-standard installation paths for required components.  See CMake
 documentation for details. (hint: QTDIR)
 
-For MacOS, you can install Qt with Homebrew:
-brew install qt
+For macOS, you can install Qt with Homebrew:
+brew install qt@5
 
 Then give the Qt directory to CMake and build:
 #### x86:
@@ -116,7 +116,7 @@ Then give the Qt directory to CMake and build:
 The application is built in "bin/DLT Viewer.app", it can be launched from Finder or the command line:
 open -a $DLT_BUILD_DIR/bin/DLT\ Viewer.app
 
-## Building DLT Viewer release version with Qmake on MacOs
+## Building DLT Viewer release version with Qmake on macOS
 
 Sometimes building with Cmake or in Qt Creator leads to Plugins not working in  DLT Viewer.
 Building with qmake in release version gets rid of this problem.
