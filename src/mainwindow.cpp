@@ -712,6 +712,14 @@ void MainWindow::initFileHandling()
     {
         QStringList commands = QDltOptManager::getInstance()->getPrePluginCommands();
 
+        // Enable plugins, if they are not enabled
+        if(!pluginsEnabled)
+        {
+            qDebug() << "Enable plugins, because they were disabled!";
+            pluginsEnabled = true;
+            dltIndexer->setPluginsEnabled(pluginsEnabled);
+        }
+
         for(int num = 0; num< commands.size();num++)
         {
             qDebug() << "Command:" << commands[num];
