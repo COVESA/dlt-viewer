@@ -41,7 +41,7 @@ UI_DIR      = build/ui
 INCLUDEPATH = . ../src
 
 SOURCES +=  \
-    dlt_common.c \
+    dlt_common.cpp \
     qdltipconnection.cpp \
     qdltmessagedecoder.cpp \
     qdlttcpconnection.cpp \

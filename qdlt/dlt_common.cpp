@@ -14,14 +14,14 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  * 
- * \file dlt_common.c
+ * \file dlt_common.cpp
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 /*******************************************************************************
 **                                                                            **
-**  SRC-MODULE: dlt_common.c                                                  **
+**  SRC-MODULE: dlt_common.cpp                                                **
 **                                                                            **
 **  TARGET    : linux                                                         **
 **                                                                            **
