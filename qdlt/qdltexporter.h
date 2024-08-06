@@ -53,7 +53,7 @@ public:
     /* Default QT constructor.
      * Please pass a window as a parameter to parent dialogs correctly.
      */
-    explicit QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,QObject *parent = 0);
+    explicit QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent = 0);
 
     /* Export some messages from QDltFile to a CSV file.
      * \param from QDltFile to pull messages from
@@ -91,6 +91,7 @@ private:
     int automaticTimeSettings; // project and local setting
     qlonglong utcOffset; // project and local setting
     int dst; // project and local setting
+    char delimiter;
 };
 
 #endif // QDLTEXPORTER_H

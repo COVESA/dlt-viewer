@@ -6,7 +6,7 @@
 #include "fieldnames.h"
 #include "qdltoptmanager.h"
 
-QDltExporter::QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,QObject *parent) :
+QDltExporter::QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent) :
     QObject(parent)
 {
     size = 0;
@@ -21,6 +21,7 @@ QDltExporter::QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _
     automaticTimeSettings=_automaticTimeSettings;
     utcOffset=_utcOffset;
     dst=_dst;
+    delimiter=_delimiter;
 }
 
 QString QDltExporter::escapeCSVValue(QString arg)
@@ -32,7 +33,7 @@ QString QDltExporter::escapeCSVValue(QString arg)
 
 bool QDltExporter::writeCSVHeader(QFile *file)
 {
-    QString header("\"%1\",\"%2\",\"%3\",\"%4\",\"%5\",\"%6\",\"%7\",\"%8\",\"%9\",\"%10\",\"%11\",\"%12\",\"%13\"\n");
+    QString header = QString("\"%1\"")+delimiter+QString("\"%2\"")+delimiter+QString("\"%3\"")+delimiter+QString("\"%4\"")+delimiter+QString("\"%5\"")+delimiter+QString("\"%6\"")+delimiter+QString("\"%7\"")+delimiter+QString("\"%8\"")+delimiter+QString("\"%9\"")+delimiter+QString("\"%10\"")+delimiter+QString("\"%11\"")+delimiter+QString("\"%12\"")+delimiter+QString("\"%13\"\n");
     header = header.arg(FieldNames::getName(FieldNames::Index))
                     .arg(FieldNames::getName(FieldNames::Time))
                     .arg(FieldNames::getName(FieldNames::TimeStamp))
@@ -53,21 +54,21 @@ void QDltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
 {
     QString text("");
 
-    text += escapeCSVValue(QString("%1").arg(index)).append(",");
+    text += escapeCSVValue(QString("%1").arg(index)).append(delimiter);
     if( automaticTimeSettings == 0 )
-       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
+       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(delimiter);
     else
-       text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(",");
-    text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getEcuid().simplified())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getApid().simplified())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getCtid().simplified())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getSessionid())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getTypeString())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(",");
-    text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(",");
+       text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(delimiter);
+    text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getEcuid().simplified())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getApid().simplified())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getCtid().simplified())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getSessionid())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getTypeString())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(delimiter);
+    text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(delimiter);
     text += escapeCSVValue(msg.toStringPayload().simplified().remove(QChar::Null));
     text += "\n";
 

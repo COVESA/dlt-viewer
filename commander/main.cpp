@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
         {
             QFile output(opt.getConvertDestFile());
             qDebug() << "### Convert to DLT";
-            QDltExporter exporter(0,0,0);
+            QDltExporter exporter(1,0,0,opt.getDelimiter());
             qDebug() << "Commandline DLT convert to " << opt.getConvertDestFile();
             exporter.exportMessages(&dltFile,&output,0,QDltExporter::FormatDlt,QDltExporter::SelectionFiltered);
             qDebug() << "DLT export to DLT file format done";
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
         {
             QFile output(opt.getConvertDestFile());
             qDebug() << "### Convert to ASCII";
-            QDltExporter exporter(0,0,0);
+            QDltExporter exporter(1,0,0,opt.getDelimiter());
             qDebug() << "Commandline ASCII convert to " << opt.getConvertDestFile();
             exporter.exportMessages(&dltFile,&output,0,QDltExporter::FormatAscii,QDltExporter::SelectionFiltered);
             qDebug() << "DLT export ASCII done";
@@ -142,7 +142,7 @@ int main(int argc, char *argv[])
         {
             QFile output(opt.getConvertDestFile());
             qDebug() << "### Convert to CSV";
-            QDltExporter exporter(0,0,0);
+            QDltExporter exporter(1,0,0,opt.getDelimiter());
             qDebug() << "Commandline ASCII convert to " << opt.getConvertDestFile();
             exporter.exportMessages(&dltFile,&output,0,QDltExporter::FormatCsv,QDltExporter::SelectionFiltered);
             qDebug() << "DLT export CSV done";
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
         {
             QFile output(opt.getConvertDestFile());
             qDebug() << "### Convert to UTF8";
-            QDltExporter exporter(0,0,0);
+            QDltExporter exporter(1,0,0,opt.getDelimiter());
             qDebug() << "Commandline UTF8 convert to " << opt.getConvertDestFile();
             exporter.exportMessages(&dltFile,&output,0,QDltExporter::FormatUTF8,QDltExporter::SelectionFiltered);
             qDebug() << "DLT export UTF8 done";

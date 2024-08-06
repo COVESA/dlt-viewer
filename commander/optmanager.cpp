@@ -37,6 +37,7 @@ OptManager::OptManager()
     convert = false;
     filter = false;
     convertionmode = e_ASCI;
+    delimiter = ',';
 }
 
 /*OptManager* OptManager::getInstance()
@@ -90,6 +91,7 @@ void OptManager::printUsage()
     qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv\tConversion will be done in CSV format";
     qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
+    qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
     qDebug()<<"\nExamples:\n";
     qDebug().noquote() << executable << "-c .\\trace.txt c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "-c -u .\\trace.txt c:\\trace\\trace.dlt";
@@ -138,16 +140,32 @@ void OptManager::parse(QStringList *opt)
 
             i += 1;
         }
+        else if(str.compare("-delimiter")==0)
+        {
+            QString c1 = opt->value(i+1);
+
+            delimiter = QString("%1").arg(c1).front().toLatin1();
+
+            qDebug() << "Delimiter:" << delimiter;
+
+            i += 1;
+        }
         else if(str.compare("-u")==0)
         {
+            qDebug() << "Convert to UTF8";
+
             convertionmode = e_UTF8;
         }
         else if(str.compare("-csv")==0)
         {
+            qDebug() << "Convert to CSV";
+
             convertionmode = e_CSV;
         }
         else if(str.compare("-d")==0)
         {
+            qDebug() << "Convert to DLT";
+
             convertionmode = e_DLT;
         }
         else if(opt->at(i).endsWith(".dlt") || opt->at(i).endsWith(".DLT"))
@@ -180,13 +198,9 @@ void OptManager::parse(QStringList *opt)
 bool OptManager::isLogFile(){return log;}
 bool OptManager::isFilterFile(){return filter;}
 bool OptManager::isConvert(){return convert;}
-
-e_convertionmode OptManager::get_convertionmode()
-{
-    return convertionmode;
-}
-
+e_convertionmode OptManager::get_convertionmode(){return convertionmode;}
 QStringList OptManager::getLogFiles(){return logFiles;}
 QStringList OptManager::getFilterFiles(){return filterFiles;}
 QString OptManager::getConvertSourceFile(){return convertSourceFile;}
 QString OptManager::getConvertDestFile(){return convertDestFile;}
+char OptManager::getDelimiter(){return delimiter;}
