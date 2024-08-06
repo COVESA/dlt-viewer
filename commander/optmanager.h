@@ -54,6 +54,7 @@ public:
     QStringList getFilterFiles();
     QString getConvertSourceFile();
     QString getConvertDestFile();
+    char getDelimiter();
 
     const QStringList &getPcapFiles() const;
     const QStringList &getMf4Files() const;
@@ -71,6 +72,7 @@ private:
     QStringList filterFiles;
     QString convertSourceFile;
     QString convertDestFile;
+    char delimiter;
 };
 
 #endif // OPTMANAGER_H

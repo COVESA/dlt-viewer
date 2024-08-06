@@ -67,10 +67,9 @@ public:
     QString getWorkingDirectory() const;
     const QStringList &getPrePluginCommands() const;
     const QStringList &getPostPluginCommands() const;
-
     const QStringList &getPcapFiles() const;
-
     const QStringList &getMf4Files() const;
+    char getDelimiter();
 
 private:
     QDltOptManager();
@@ -98,6 +97,7 @@ private:
     QStringList postPluginCommands; // command after loading log file
 
     QString  workingDirectory;
+    char delimiter;
 };
 
 #endif //QDLTOPTMANAGER_H

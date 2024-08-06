@@ -36,6 +36,7 @@ QDltOptManager::QDltOptManager()
     terminate=false;
     convertionmode = e_ASCI;
     commandline_mode = false;
+    delimiter=',';
 }
 
 QDltOptManager* QDltOptManager::getInstance()
@@ -105,6 +106,7 @@ void QDltOptManager::printUsage()
     qDebug()<<" -t or --terminate\tTerminate DLT Viewer after command line execution.";
     qDebug()<<" -v or --version\tOnly show version and buildtime information";
     qDebug()<<" -w workingdirectory\tSet the working directory";
+    qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
     qDebug()<<"\nExamples:";
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -u -c output.txt input.dlt";
@@ -189,6 +191,16 @@ void QDltOptManager::parse(QStringList *opt)
             commandline_mode = true;
 
             i += 1;
+         }
+         else if(str.compare("-delimiter")==0)
+         {
+             QString c1 = opt->value(i+1);
+
+             delimiter = QString("%1").arg(c1).front().toLatin1();
+
+             qDebug() << "Delimiter:" << delimiter;
+
+             i += 1;
          }
         else if(str.compare("-u")==0)
          {
@@ -286,17 +298,8 @@ bool QDltOptManager::isProjectFile(){ return project;}
 bool QDltOptManager::isTerminate(){return terminate;}
 bool QDltOptManager::issilentMode(){return silent_mode;}
 bool QDltOptManager::isCommandlineMode(){return commandline_mode;}
-
-e_convertionmode QDltOptManager::get_convertionmode()
-{
-    return convertionmode;
-}
-
-e_inputmode QDltOptManager::get_inputmode()
-{
-    return inputmode;
-}
-
+e_convertionmode QDltOptManager::get_convertionmode(){return convertionmode;}
+e_inputmode QDltOptManager::get_inputmode(){return inputmode;}
 QString QDltOptManager::getProjectFile(){return projectFile;}
 QStringList QDltOptManager::getLogFiles(){return logFiles;}
 QStringList QDltOptManager::getFilterFiles(){return filterFiles;}
@@ -305,3 +308,4 @@ QString QDltOptManager::getPluginName(){return pluginName;}
 QString QDltOptManager::getCommandName(){return commandName;}
 QStringList QDltOptManager::getCommandParams(){return commandParams;}
 QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
+char QDltOptManager::getDelimiter(){return delimiter;}

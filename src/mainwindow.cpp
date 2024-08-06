@@ -859,7 +859,7 @@ void MainWindow::commandLineConvertToDLT()
     qDebug() << "### Convert to DLT";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     qDebug() << "Commandline DLT convert to " << dltFile.fileName();
      //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatAsciiQ,QDltExporter::SelectionFiltered);
     exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDlt,QDltExporter::SelectionFiltered);
@@ -874,7 +874,7 @@ void MainWindow::commandLineConvertToASCII()
     qDebug() << "### Convert to ASCII";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatAscii,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export ASCII done";
@@ -887,7 +887,7 @@ void MainWindow::commandLineConvertToCSV()
     qDebug() << "### Convert to CSV";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatCsv,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export CSV done";
@@ -901,7 +901,7 @@ void MainWindow::commandLineConvertToUTF8()
     /* start exporter */
     qDebug() << "### Convert to UTF8";
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
     exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatUTF8,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export UTF8 done";
@@ -914,7 +914,7 @@ void MainWindow::commandLineConvertToDLTDecoded()
     qDebug() << "### Convert to DLT Decoded";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     qDebug() << "Commandline decoding to dlt formated file" << dltFile.fileName();
     exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDltDecoded,QDltExporter::SelectionFiltered);
     qDebug() << "DLT export DLT decoded done";
@@ -1553,7 +1553,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
     exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&list);
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
@@ -1589,7 +1589,7 @@ void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat forma
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
     exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&finallist);
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
@@ -1689,7 +1689,7 @@ void MainWindow::on_actionExport_triggered()
 
     /* change last export directory */
     workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,this);
+    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),this);
     QFile outfile(fileName);
 
     unsigned long int startix, stopix;
@@ -5736,7 +5736,8 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered()
                              QString(" -e <pluginname>|command|param1|..|param<n>\n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
                              QString(" -t\t\t\tTerminate DLT Viewer after command line execution\n")+
                              QString(" -v\t\t\tShow version and buildtime information\n")+
-                             QString(" -w workingdirectory\tSet the working directory\n")
+                             QString(" -w workingdirectory\tSet the working directory\n")+
+                             QString(" -delimiter <character>\tThe used delimiter for CSV export (Default: ,)\n")
                              );
 }
 
