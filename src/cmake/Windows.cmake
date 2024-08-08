@@ -26,6 +26,7 @@ install(FILES
     COMPONENT qt_libraries)
 install(FILES
     "${DLT_QT_LIB_DIR}/../plugins/platforms/qwindows.dll"
+    "${DLT_QT_LIB_DIR}/../plugins/platforms/qoffscreen.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/platforms"
     COMPONENT qt_libraries)
 install(FILES

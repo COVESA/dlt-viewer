@@ -163,6 +163,9 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 copy %QTDIR%\plugins\platforms\qwindows.dll %DLT_VIEWER_SDK_DIR%\platforms
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
+copy %QTDIR%\plugins\platforms\qoffscreen.dll %DLT_VIEWER_SDK_DIR%\platforms
+if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
+
 if "%QTNO%"=="5" (
 	copy %QTDIR%\plugins\styles\qwindowsvistastyle.dll %DLT_VIEWER_SDK_DIR%\styles
 	if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
