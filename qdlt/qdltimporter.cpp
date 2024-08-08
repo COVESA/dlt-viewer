@@ -160,14 +160,17 @@ void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *par
 
     mdf_hdr_t mdfHeader,mdfDgHeader,mdfCgHeader,mdfCnHeader,mdfTxHeader;
     memset((char*)&mdfHeader,0,sizeof(mdf_hdr_t));
-    quint64 pos;
+    quint64 pos=0,hd_pos=0,dt_pos=0;
+
 
     while(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))==sizeof(mdf_hdr_t))
     {
-        pos = inputfile.pos() - sizeof(mdf_hdr_t);
-        if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='H' && mdfHeader.id[3]=='D')
+        //qDebug() << "pos" << pos;
+        if(!hd_pos && mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='H' && mdfHeader.id[3]=='D')
         {
+            pos = inputfile.pos() - sizeof(mdf_hdr_t);
             //qDebug() << "HD:";
+            hd_pos=pos;
             if(inputfile.read((char*)&hdBlockLinks,sizeof(mdf_hdblocklinks_t))!=sizeof(mdf_hdblocklinks_t))
             {
                 inputfile.close();
@@ -284,9 +287,11 @@ void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *par
                     ptrDg=0;
             }
         }
-        if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
+        else if(!dt_pos && mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
         {
+            pos = inputfile.pos() - sizeof(mdf_hdr_t);
             //qDebug() << "DT:";
+            dt_pos=pos;
             quint64 posDt=0;
             quint16 recordId;
             quint32 lengthVLSD;
@@ -641,11 +646,21 @@ void QDltImporter::dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *par
             }
 
         }
-        if(mdfHeader.id[0]==0 && mdfHeader.id[1]==0 && mdfHeader.id[2]==0 && mdfHeader.id[3]==0)
+        else if(mdfHeader.id[0]==0 && mdfHeader.id[1]==0 && mdfHeader.id[2]==0 && mdfHeader.id[3]==0)
         {
             // end reached
             break;
-
+        }
+        if(dt_pos && hd_pos)
+        {
+            // all blocks found end reading
+            break;
+        }
+        //qDebug() << "pos+mdfHeader.length" << pos+mdfHeader.length;
+        if(inputfile.size()< (pos+mdfHeader.length))
+        {
+            qDebug() << "fromMF4: ERROR: Header length size error.";
+            break;
         }
         inputfile.seek(pos+mdfHeader.length);
     }
