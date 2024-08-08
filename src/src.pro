@@ -4,6 +4,7 @@ QT_VERSION = $$split(QT_VERSION, ".")
 QT_VER_MAJ = $$member(QT_VERSION, 0)
 QT_VER_MIN = $$member(QT_VERSION, 1)
 
+CONFIG += c++1z
 *-gcc* {
     QMAKE_CFLAGS += -std=gnu99
     QMAKE_CFLAGS += -Wall
@@ -12,7 +13,7 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
 }
 
 *-g++* {
-    QMAKE_CXXFLAGS += -std=gnu++0x
+    QMAKE_CXXFLAGS += -std=c++17
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
     #QMAKE_CXXFLAGS += -pedantic
