@@ -509,25 +509,24 @@ void MainWindow::initView()
     statusBar()->addWidget(statusProgressBar);
 
     /* Create search text box */
-    searchTextbox = new QLineEdit();
-    searchDlg->appendLineEdit(searchTextbox);
+    searchInput = new SearchForm;
+    connect(searchInput, &SearchForm::abortSearch, searchDlg, &SearchDialog::abortSearch);
+    searchDlg->appendLineEdit(searchInput->input());
 
-    connect(searchTextbox, SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
-    connect(searchTextbox, SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
-    connect(searchTextbox, SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
+    connect(searchInput->input(), SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
+    connect(searchInput->input(), SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
+    connect(searchInput->input(), SIGNAL(returnPressed()),searchDlg,SLOT(findNextClicked()));
     connect(searchDlg, SIGNAL(searchProgressChanged(bool)), this, SLOT(onSearchProgressChanged(bool)));
+    connect(searchDlg, &SearchDialog::searchProgressValueChanged, this, [this](int progress){
+        searchInput->setProgress(progress);
+    });
     connect(settingsDlg, SIGNAL(FilterPathChanged()), this, SLOT(on_actionDefault_Filter_Reload_triggered()));
     connect(settingsDlg, SIGNAL(PluginsAutoloadChanged()), this, SLOT(triggerPluginsAutoload()));
 
     QAction *focusSearchTextbox = new QAction(this);
     focusSearchTextbox->setShortcut(Qt::Key_L | Qt::CTRL);
-    connect(focusSearchTextbox, SIGNAL(triggered()), searchTextbox, SLOT(setFocus()));
+    connect(focusSearchTextbox, SIGNAL(triggered()), searchInput->input(), SLOT(setFocus()));
     addAction(focusSearchTextbox);
-
-    searchComboBox = new QComboBox();
-    searchComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    searchComboBox->setLineEdit(searchTextbox);
-    searchComboBox->setInsertPolicy(QComboBox::InsertAtTop);
 
     /* Initialize toolbars. Most of the construction and connection is done via the
      * UI file. See mainwindow.ui, ActionEditor and Signal & Slots editor */
@@ -581,8 +580,9 @@ void MainWindow::initSignalConnections()
     connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
 
     /* Insert search text box to search toolbar, before previous button */
+
     QAction *before = m_searchActions.at(ToolbarPosition::FindPrevious);
-    ui->searchToolbar->insertWidget(before, searchComboBox);
+    ui->searchToolbar->insertWidget(before, searchInput);
 
     /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
     m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);
@@ -2372,9 +2372,9 @@ void MainWindow::on_action_menuFile_Quit_triggered()
 void MainWindow::on_actionFindNext()
 {
     //qDebug() << "on_actionFindNext" << __LINE__;
-    if(!searchTextbox->text().isEmpty() && !list.contains(searchTextbox->text()))
+    if(!searchInput->input()->text().isEmpty() && !list.contains(searchInput->input()->text()))
        {
-           list.append(searchTextbox->text());
+           list.append(searchInput->input()->text());
        }
     QString title = "Search Results";
 
@@ -2385,7 +2385,7 @@ void MainWindow::on_actionFindNext()
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     ui->dockWidgetSearchIndex->show();
     m_CompleterModel.setStringList(list);
-    searchTextbox->setCompleter(newCompleter);
+    searchInput->input()->setCompleter(newCompleter);
 }
 
 void MainWindow::on_action_menuProject_New_triggered()
@@ -8411,7 +8411,15 @@ void MainWindow::onSearchProgressChanged(bool isInProgress)
     isSearchOngoing = isInProgress;
     ui->menuBar->setEnabled(!isInProgress);
     ui->mainToolBar->setEnabled(!isInProgress);
-    ui->searchToolbar->setEnabled(!isInProgress);
+    if(!isInProgress)
+        searchInput->resetProgress();
+
+    ui->actionFindNext->setEnabled(!isInProgress);
+    ui->actionFindPrevious->setEnabled(!isInProgress);
+    ui->actionFind->setEnabled(!isInProgress);
+    ui->actionRegExp->setEnabled(!isInProgress);
+    searchInput->setState(isInProgress ? SearchForm::State::PROGRESS : SearchForm::State::INPUT);
+
     ui->dockWidgetProject->setEnabled(!isInProgress);
 }
 
