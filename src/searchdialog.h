@@ -84,10 +84,6 @@ private:
     bool match;
     bool onceClicked;
     bool fSilentMode;
-    bool is_PayloadStartFound;
-    bool is_PayloadEndFound;
-    bool is_PayLoadRangeValid;
-    bool is_payLoadSearchSelected;
     bool is_TimeStampSearchSelected;
     bool fIs_APID_CTID_requested;
 
@@ -96,8 +92,6 @@ private:
     double  dTimeStampStart;
     double  dTimeStampStop;
 
-    QString payloadStart;
-    QString payloadEnd;
     QString stApid;
     QString stCtid;
 
@@ -121,7 +115,6 @@ private:
     int find();
 
     bool getSearchFromBeginning();
-    bool timeStampPayloadValidityCheck(long int searchLine);
     bool getHeader();
     bool getPayload();
     bool getCaseSensitive();
@@ -131,8 +124,6 @@ private:
     bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
-    bool payLoadStartpatternCheck(const QString& tempPayload);
-    bool payLoadStoppatternCheck(const QString& tempPayload);
     QString getApIDText();
     QString getCtIDText();
     QString getTimeStampStart();

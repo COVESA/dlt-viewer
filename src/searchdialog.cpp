@@ -41,9 +41,6 @@ SearchDialog::SearchDialog(QWidget *parent) :
     match = false;
     onceClicked = false;
     startLine = -1;
-    is_PayloadStartFound = false;
-    is_PayloadEndFound = false;
-    is_PayLoadRangeValid = false;
 
     lineEdits = new QList<QLineEdit*>();
     lineEdits->append(ui->lineEditText);
@@ -107,19 +104,6 @@ bool SearchDialog::getOnceClicked(){return onceClicked;}
 
 QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
 QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
-
-
-QString SearchDialog::getPayLoadStampStart()
-{
-    //qDebug() << "content of payload start" << ui->payloadStartlineEdit->text()<< __LINE__;
-    return ui->payloadStartlineEdit->text();
-}
-
-QString SearchDialog::getPayLoadStampEnd()
-{
-    //qDebug() << "content of payload end" << ui->payloadEndlineEdit->text()<< __LINE__;
-    return ui->payloadEndlineEdit->text();
-}
 
 QString SearchDialog::getTimeStampStart()
 {
@@ -324,22 +308,6 @@ int SearchDialog::find()
         }
     }
 
-
-    // check payload search pattern
-    payloadStart = getPayLoadStampStart();
-    payloadEnd = getPayLoadStampEnd();
-
-    if( (false == payloadStart.isEmpty() ) && ( false == payloadEnd.isEmpty() ) )
-    {
-        //qDebug() << "Payload search enabled" << __LINE__;
-        is_payLoadSearchSelected = true;
-    }
-    else
-    {
-        is_payLoadSearchSelected = false;
-        //qDebug() << "Payload search is disabled" << payloadStart.isEmpty() << payloadEnd.isEmpty()  << __LINE__;
-    }
-
     //check APID and CTID search
     stApid = getApIDText();
     stCtid = getCtIDText();
@@ -400,10 +368,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     {
         is_Case_Sensitive = Qt::CaseSensitive;
     }
-
-    is_PayloadStartFound = false;
-    is_PayloadEndFound = false;
-    is_PayLoadRangeValid = false;
 
     m_searchtablemodel->clear_SearchResults();
 
@@ -479,10 +443,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             continue;
         }
 
-        // TODO: implement functionality about payload start and end
-        // Note: This feature has been broken for some time before this refactoring:
-        // See https://github.com/COVESA/dlt-viewer/issues/502
-
         if (foundLine(searchLine))
             break;
         else
@@ -491,78 +451,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     while( searchBorder != searchLine );
     stoptime();
 }
-
-
-bool SearchDialog::payLoadStartpatternCheck(const QString& tempPayload)
-{
-    // When the start payload patternn is found, consider range as valid
-    if((tempPayload.contains(payloadStart)) && (false == is_PayloadEndFound) && true == is_payLoadSearchSelected)
-    {
-        //qDebug() << "Found start payload pattern" << __LINE__;
-        is_PayLoadRangeValid = true;
-        is_PayloadStartFound = true;
-    }
-   return is_PayLoadRangeValid;
-}
-
-
-bool SearchDialog::payLoadStoppatternCheck(const QString& tempPayload)
-{
-    // When the stop payload patern is found, consider range as ivalid
-    if(true == is_PayloadStartFound  &&  true == is_payLoadSearchSelected && true == is_payLoadSearchSelected)
-    {
-       if(tempPayload.contains(payloadEnd))
-       {
-        //qDebug() << "Found stop payload pattern" << __LINE__;
-        is_PayloadEndFound = true;
-        is_PayLoadRangeValid = false;
-       }
-       //else qDebug() << "No stop payload pattern" << __LINE__;
-    }
-   return is_PayLoadRangeValid;
-}
-
-bool SearchDialog::timeStampPayloadValidityCheck(long int searchLine)
-{
-   // qDebug() << "timeStampPayloadValidityCheck" << __LINE__;
-    if(true == is_TimeStampSearchSelected)
-    {
-        if(true == is_payLoadSearchSelected)
-        {
-            if(is_PayLoadRangeValid == true)
-            {
-                if(foundLine(searchLine))
-                {
-                    return true;
-                }
-            }
-        }
-        else
-        {
-            if(foundLine(searchLine) == true)
-            {
-                return true;
-            }
-        }
-    }
-    else if(true == is_payLoadSearchSelected)
-    {
-        if(true == is_PayLoadRangeValid)
-            if(foundLine(searchLine))
-            {
-                return true;
-            }
-    }
-    else // all the other cases
-    {
-        if(foundLine(searchLine) == true)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 
 bool SearchDialog::foundLine(long int searchLine)
 {
