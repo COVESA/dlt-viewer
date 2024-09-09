@@ -3041,19 +3041,19 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
     if(list.count() > 1 && (list.at(0)->type() == context_type))
     {
-        action = new QAction("&Edit All Log Levels...", this);
+        action = new QAction("&Edit All Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Edit_All_Log_Levels_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("DLT &Set Log Levels...", this);
+        action = new QAction("DLT &Set Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Set_Log_Level_triggered()));
         menu.addAction(action);
     }
     else if((list.count() > 1) && (list.at(0)->type() == ecu_type))
     {
-        action = new QAction("&Edit All Log Levels...", this);
+        action = new QAction("&Edit All Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Edit_All_Log_Levels_triggered()));
         menu.addAction(action);
     }
@@ -3061,107 +3061,107 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
     {
         /* ECU is selected */
 
-        action = new QAction("ECU Add...", this);
+        action = new QAction("ECU Add...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_ECU_Add_triggered()));
         menu.addAction(action);
 
-        action = new QAction("ECU Edit...", this);
+        action = new QAction("ECU Edit...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_ECU_Edit_triggered()));
         menu.addAction(action);
 
-        action = new QAction("ECU Delete", this);
+        action = new QAction("ECU Delete", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_ECU_Delete_triggered()));
         menu.addAction(action);
 
-        action = new QAction("&ECU Edit All Log Levels...", this);
+        action = new QAction("&ECU Edit All Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Edit_All_Log_Levels_triggered()));
         menu.addAction(action);
 
-        action = new QAction("ECU Delete All Contexts", this);
+        action = new QAction("ECU Delete All Contexts", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Delete_All_Contexts_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("Application Add...", this);
+        action = new QAction("Application Add...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Application_Add_triggered()));
         menu.addAction(action);
 
-        action = new QAction("Save IDs as csv", this);
+        action = new QAction("Save IDs as csv", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigSaveAllECUsTriggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("ECU Connect", this);
+        action = new QAction("ECU Connect", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Connect_triggered()));
         menu.addAction(action);
 
-        action = new QAction("ECU Disconnect", this);
+        action = new QAction("ECU Disconnect", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Disconnect_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("Expand All ECUs", this);
+        action = new QAction("Expand All ECUs", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Expand_All_ECUs_triggered()));
         menu.addAction(action);
 
-        action = new QAction("Collapse All ECUs", this);
+        action = new QAction("Collapse All ECUs", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Collapse_All_ECUs_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("DLT Get Log Info", this);
+        action = new QAction("DLT Get Log Info", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Log_Info_triggered()));
         menu.addAction(action);
 
-        action = new QAction("DLT Set All Log Levels", this);
+        action = new QAction("DLT Set All Log Levels", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Set_All_Log_Levels_triggered()));
         menu.addAction(action);
 
-        action = new QAction("DLT Get Default Log Level", this);
+        action = new QAction("DLT Get Default Log Level", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Default_Log_Level_triggered()));
         menu.addAction(action);
 
-        action = new QAction("DLT Set Default Log Level", this);
+        action = new QAction("DLT Set Default Log Level", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Set_Default_Log_Level_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("Store Config", this);
+        action = new QAction("Store Config", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Store_Config_triggered()));
         menu.addAction(action);
 
-        action = new QAction("Reset to Factory Default", this);
+        action = new QAction("Reset to Factory Default", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Reset_to_Factory_Default_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("Send Injection...", this);
+        action = new QAction("Send Injection...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Send_Injection_triggered()));
         menu.addAction(action);
 
-        action = new QAction("Get Software Version", this);
+        action = new QAction("Get Software Version", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Software_Version_triggered()));
         menu.addAction(action);
 
-        action = new QAction("Get Local Time", this);
+        action = new QAction("Get Local Time", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Get_Local_Time_2_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("&Filter Add", this);
+        action = new QAction("&Filter Add", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
     }
     else if((list.count() > 1) && (list.at(0)->type() == application_type))
     {
-        action = new QAction("&Edit All Log Levels...", this);
+        action = new QAction("&Edit All Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Edit_All_Log_Levels_triggered()));
         menu.addAction(action);
     }
@@ -3169,27 +3169,27 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
     {
         /* Application is selected */
 
-        action = new QAction("&Application Edit...", this);
+        action = new QAction("&Application Edit...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Application_Edit_triggered()));
         menu.addAction(action);
 
-        action = new QAction("A&pplication Delete...", this);
+        action = new QAction("A&pplication Delete...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Application_Delete_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("&Context Add...", this);
+        action = new QAction("&Context Add...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Context_Add_triggered()));
         menu.addAction(action);
 
-        action = new QAction("&Edit All Log Levels...", this);
+        action = new QAction("&Edit All Log Levels...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Edit_All_Log_Levels_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("&Filter Add", this);
+        action = new QAction("&Filter Add", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
     }
@@ -3197,36 +3197,36 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
     {
         /* Context is selected */
 
-        action = new QAction("&Context Edit...", this);
+        action = new QAction("&Context Edit...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Context_Edit_triggered()));
         menu.addAction(action);
 
-        action = new QAction("C&ontext Delete...", this);
+        action = new QAction("C&ontext Delete...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Context_Delete_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("DLT &Set Log Level...", this);
+        action = new QAction("DLT &Set Log Level...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Set_Log_Level_triggered()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("&Filter Add", this);
+        action = new QAction("&Filter Add", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(filterAdd()));
         menu.addAction(action);
 
         menu.addSeparator();
 
-        action = new QAction("Send Injection...", this);
+        action = new QAction("Send Injection...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuDLT_Send_Injection_triggered()));
         menu.addAction(action);
     }
     else
     {
         /* nothing is selected */
-        action = new QAction("ECU Add...", this);
+        action = new QAction("ECU Add...", &menu);
         connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_ECU_Add_triggered()));
         menu.addAction(action);
 
