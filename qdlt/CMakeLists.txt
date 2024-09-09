@@ -39,7 +39,9 @@ add_library(qdlt SHARED
     qdltsettingsmanager.cpp
     qdltexporter.cpp
     qdltimporter.cpp
-    fieldnames.cpp)
+    fieldnames.cpp
+    dltmessagematcher.cpp
+    dltmessagematcher.h)
 
 target_compile_definitions(qdlt PRIVATE
     BYTE_ORDER=LITTLE_ENDIAN
@@ -116,3 +118,11 @@ foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
         DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/src"
         COMPONENT qdlt_sdk)
 endforeach()
+
+
+find_package(GTest)
+# configure unit tests only if gtest found on the system
+if (GTest_FOUND)
+    enable_testing()
+    add_subdirectory(tests)
+endif()

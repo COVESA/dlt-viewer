@@ -89,7 +89,6 @@ private:
     bool is_PayLoadRangeValid;
     bool is_payLoadSearchSelected;
     bool is_TimeStampSearchSelected;
-    bool is_TimeStampRangeValid;
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;
@@ -99,7 +98,6 @@ private:
 
     QString payloadStart;
     QString payloadEnd;
-    QString tempPayLoad;
     QString stApid;
     QString stCtid;
 
@@ -133,8 +131,8 @@ private:
     bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
-    bool payLoadStartpatternCheck();
-    bool payLoadStoppatternCheck();
+    bool payLoadStartpatternCheck(const QString& tempPayload);
+    bool payLoadStoppatternCheck(const QString& tempPayload);
     QString getApIDText();
     QString getCtIDText();
     QString getTimeStampStart();
