@@ -25,6 +25,11 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 * sudo ldconfig
 * Optional: set the library path: LD_LIBRARY_PATH = .
 
+## Instructions for installing DLT Viewer (macOS)
+
+* Download and install DLTViewer from the Mac AppStore
+* https://apps.apple.com/us/app/dlt-viewer/id6648796931?mt=12
+
 ## Build DLT Viewer in Windows
 
 * Install Qt5 SDK or Qt6 SDK and Microsoft Visual Studio Build Tools 2019
