@@ -14,9 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         macos: [ macos-13 ]
+        abi: [ x86 ]
         xcode: [ Xcode_15.2 ]
         include:
           - macos: macos-14
+            abi: arm64
             xcode: Xcode
     steps:
       - name: Checkout
@@ -41,7 +43,7 @@ jobs:
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: DLTViewer-${{ matrix.macos }}-x86_64
+          name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
           path: build/dist/DLTViewer*.tgz
 
   buildLinux:
