@@ -78,6 +78,8 @@ private:
     Ui::SearchDialog *ui;
     SearchTableModel *m_searchtablemodel;
 
+    bool isSearchCancelled{false};
+
     long int startLine;
     long searchseconds;
     bool nextClicked;
@@ -155,11 +157,13 @@ public slots:
     void findNextClicked();
     void findPreviousClicked();
     void loadSearchHistory();
+    void abortSearch();
 
 signals:
     void refreshedSearchIndex();
     void addActionHistory();
     void searchProgressChanged(bool isInProgress);
+    void searchProgressValueChanged(int progress);
 };
 
 #endif // SEARCHDIALOG_H

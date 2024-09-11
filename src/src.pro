@@ -131,6 +131,7 @@ SOURCES += main.cpp \
     settingsdialog.cpp \
     injectiondialog.cpp \
     searchdialog.cpp \
+    searchform.cpp \
     multiplecontextdialog.cpp \
     sortfilterproxymodel.cpp \
     tablemodel.cpp \
@@ -161,6 +162,7 @@ HEADERS += mainwindow.h \
     settingsdialog.h \
     injectiondialog.h \
     searchdialog.h \
+    searchform.h \
     sortfilterproxymodel.h \
     version.h \
     multiplecontextdialog.h \
@@ -189,6 +191,7 @@ FORMS += mainwindow.ui \
     contextdialog.ui \
     filterdialog.ui \
     plugindialog.ui \
+    searchform.ui \
     settingsdialog.ui \
     injectiondialog.ui \
     searchdialog.ui \

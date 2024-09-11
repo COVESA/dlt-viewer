@@ -41,6 +41,7 @@
 #include "searchtablemodel.h"
 #include "sortfilterproxymodel.h"
 #include "ui_mainwindow.h"
+#include "searchform.h"
 
 
 /**
@@ -148,6 +149,7 @@ private:
     SearchDialog *searchDlg;
     QShortcut *m_shortcut_searchnext;
     QShortcut *m_shortcut_searchprev;
+    SearchForm* searchInput;
 
     /* Export */
     ExporterDialog exporterDialog;
@@ -155,8 +157,6 @@ private:
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
-    QLineEdit *searchTextbox;
-    QComboBox *searchComboBox;
 
     /* injections */
     QString injectionAplicationId;
