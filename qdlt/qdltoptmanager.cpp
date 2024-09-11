@@ -226,7 +226,6 @@ void QDltOptManager::parse(QStringList *opt)
          {
             QString c = opt->value(i+1);
             postPluginCommands += c;
-            QStringList args = c.split("|");
             commandline_mode = true;
             ++i;
          }
@@ -287,9 +286,16 @@ void QDltOptManager::parse(QStringList *opt)
       * So we have to close it in this case
      */
     #if (WIN32)
-        if ( !commandline_mode)
+        if (!commandline_mode)
         {
-            FreeConsole();
+            HWND consoleWnd = GetConsoleWindow();
+            DWORD dwProcessId;
+            GetWindowThreadProcessId(consoleWnd, &dwProcessId);
+            if (GetCurrentProcessId() == dwProcessId)
+            {
+                // user launched the application with a double click from explorer: we do not need console
+                FreeConsole();
+            }
         }
     #endif
 }
