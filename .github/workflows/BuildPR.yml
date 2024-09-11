@@ -92,13 +92,20 @@ jobs:
           echo "Attach staple"
           xcrun stapler staple "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app"
           rm -r /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.zip
+      - name: Artifact Creation 
+        run: |
+          cd /Users/runner/work/dlt-viewer/dlt-viewer/build
+          mkdir -p dist
+          cp ../scripts/darwin/install.md dist
+          tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
           name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
           path: build/dist/DLTViewer*.tgz
-
+      
+      
   buildLinux:
     name: Build ${{ matrix.ubuntu }}
     strategy:
