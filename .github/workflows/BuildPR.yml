@@ -41,7 +41,7 @@ jobs:
         run: scripts/darwin/build.sh
       - name: Codesign app bundle
         # Extract the secrets we defined earlier as environment variables
-        env: 
+        env:
           MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
           MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
           MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
@@ -59,7 +59,7 @@ jobs:
           security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
           security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
-     
+          
           # We finally codesign our app bundle, specifying the Hardened runtime option
           /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/Frameworks/* 
           /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/Resources/* 
@@ -92,7 +92,7 @@ jobs:
           echo "Attach staple"
           xcrun stapler staple "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app"
           rm -r /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.zip
-      - name: Artifact Creation 
+      - name: Artifact Creation
         run: |
           cd /Users/runner/work/dlt-viewer/dlt-viewer/build
           mkdir -p dist
@@ -104,8 +104,8 @@ jobs:
         with:
           name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
           path: build/dist/DLTViewer*.tgz
-      
-      
+
+
   buildLinux:
     name: Build ${{ matrix.ubuntu }}
     strategy:
