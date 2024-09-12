@@ -494,21 +494,21 @@ QString QDltArgument::toString(bool binary) const
         {
         case 4:
             if(endianness == DltEndiannessLittleEndian)
-                text += QString("%1").arg((double)(*(float*)(data.constData())));
+                text += QString("%1").arg((double)(*(float*)(data.constData())), 0, 'f', 8);
             else
             {
                 const auto tmp = DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData())));
                 void *buf = (void *) &tmp;
-                text += QString("%1").arg((double)(*((float*)buf)));
+                text += QString("%1").arg((double)(*((float*)buf)), 0, 'f', 8);
             }
             break;
         case 8:
             if(endianness == DltEndiannessLittleEndian)
-                text += QString("%1").arg((double)(*(double*)(data.constData())));
+                text += QString("%1").arg((double)(*(double*)(data.constData())), 0, 'f', 8);
             else {
                 const auto tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
                 void *buf = (void *) &tmp;
-                text += QString("%1").arg((double)(*((double*)buf)));
+                text += QString("%1").arg((double)(*((double*)buf)), 0, 'f', 8);
             }
             break;
         default:
