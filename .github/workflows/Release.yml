@@ -118,12 +118,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: DLT-Linux
-      - name: Download DLT macOS artifacts
+      - name: Download DLT macOS artifacts arm64
         uses: actions/download-artifact@v4
         with:
-          name: |
-            DLT-Mac-x86
-            DLT-Mac-arm64
+          name: DLT-Mac-arm64
+      - name: Download DLT macOS artifacts x86
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Mac-x86
       - name: Download DLT Windows parser artifacts
         uses: actions/download-artifact@v4
         with:
