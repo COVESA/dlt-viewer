@@ -68,4 +68,4 @@ echo "FULL_VERSION=${FULL_VERSION}"
 
 mkdir -p dist
 cp ../scripts/darwin/install.md dist
-tar -czvf "dist/DLTViewer-${FULL_VERSION}.tgz" -C ${INSTALL_DIR} .
+# tar -czvf "dist/DLTViewer-${FULL_VERSION}.tgz" -C ${INSTALL_DIR} .
