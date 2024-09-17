@@ -40,6 +40,7 @@ jobs:
       - name: Build project
         run: scripts/darwin/build.sh
       - name: Codesign app bundle
+        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
         # Extract the secrets we defined earlier as environment variables
         env:
           MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
@@ -76,6 +77,7 @@ jobs:
           /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer 
           /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app
       - name: Notarize app bundle
+        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
         env:
           PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
           PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
