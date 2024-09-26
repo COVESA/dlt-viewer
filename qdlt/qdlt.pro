@@ -32,6 +32,8 @@ CONFIG                 += warn_on qt
 QT                     += network
 QT                     += serialport
 
+win32:LIBS += User32.lib
+
 # Put intermediate files in the build directory
 MOC_DIR     = build/moc
 OBJECTS_DIR = build/obj
