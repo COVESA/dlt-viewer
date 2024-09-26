@@ -123,6 +123,7 @@ endforeach()
 find_package(GTest)
 # configure unit tests only if gtest found on the system
 if (GTest_FOUND)
+    message(STATUS "Tests enabled")
     enable_testing()
     add_subdirectory(tests)
 endif()

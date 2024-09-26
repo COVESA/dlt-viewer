@@ -8,3 +8,8 @@ target_link_libraries(
     qdlt
 )
 
+add_test(
+  NAME test_tools
+  COMMAND $<TARGET_FILE:test_tools>
+)
+

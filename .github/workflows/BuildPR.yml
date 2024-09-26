@@ -124,6 +124,8 @@ jobs:
         run: scripts/linux/install.sh
       - name: Build project
         run: scripts/linux/build.sh
+      - name: Run tests
+        run: ctest --test-dir build/qdlt
       - name: Make artifact executable
         run: chmod -R +x build/dist
       - name: Archive artifact
