@@ -26,7 +26,6 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
-#include "regex_search_replace.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
@@ -255,7 +254,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                  for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                      FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
                      if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                         apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                      }
                  }
              }
@@ -376,7 +375,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
             for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                 FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
                 if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                    apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                    visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                 }
             }
         }

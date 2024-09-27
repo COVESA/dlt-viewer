@@ -135,9 +135,7 @@ bool QDltFilterList::applyRegExString(QString &text)
 
         if(filter->enableFilter && filter->enableRegexSearchReplace)
         {
-            std::regex regex(filter->regex_search.toStdString());
-            std::string payload_str = std::regex_replace(text.toStdString(), regex, filter->regex_replace.toStdString());
-            text = QString::fromStdString(payload_str);
+            text.replace(QRegularExpression(filter->regex_search), filter->regex_replace);
             result = true;
         }
     }
