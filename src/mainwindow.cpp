@@ -143,6 +143,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     }
 
+    filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
+
     if(!QDltOptManager::getInstance()->getConvertDestFile().isEmpty())
     {
         switch ( QDltOptManager::getInstance()->get_convertionmode() )
@@ -1552,6 +1554,7 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
 
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
 
+    filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
     QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
@@ -1588,6 +1591,8 @@ void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat forma
     }
 
     QModelIndexList finallist = ui->tableView->selectionModel()->selection().indexes();
+
+    filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
     QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
@@ -1694,6 +1699,8 @@ void MainWindow::on_actionExport_triggered()
 
     unsigned long int startix, stopix;
     exporterDialog.getRange(&startix,&stopix);
+
+    filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
     connect(&exporter,SIGNAL(progress(QString,int,int)),this,SLOT(progress(QString,int,int)));
     if(exportSelection == QDltExporter::SelectionSelected) // marked messages

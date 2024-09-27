@@ -369,7 +369,19 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                 msg = last_decoded_msg;
             }
         }
-        return msg.toStringPayload().simplified().remove(QChar::Null);
+
+        QString visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
+        if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+        {
+            for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                    apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                }
+            }
+        }
+
+        return visu_data;
     }
 
      return QVariant();

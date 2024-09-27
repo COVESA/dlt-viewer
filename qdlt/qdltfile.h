@@ -299,6 +299,11 @@ public:
      **/
     bool getDLTv2Support() const;
 
+    //! Apply RegEx Replace to the string, if any active in the filters
+    /*!
+    */
+    bool applyRegExString(QString &text);
+
 protected:
 
 private:

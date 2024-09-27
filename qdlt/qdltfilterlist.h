@@ -122,6 +122,11 @@ public:
     */
     void updateSortedFilter();
 
+    //! Apply RegEx Replace to the string, if any active in the filters.
+    /*!
+    */
+    bool applyRegExString(QString &text);
+
 protected:
 private:
 

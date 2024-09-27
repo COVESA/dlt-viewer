@@ -69,7 +69,9 @@ void QDltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(delimiter);
     text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(delimiter);
     text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(delimiter);
-    text += escapeCSVValue(msg.toStringPayload().simplified().remove(QChar::Null));
+    QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+    if(from) from->applyRegExString(payload);
+    text += escapeCSVValue(payload);
     text += "\n";
 
     to->write(text.toLatin1().constData());
@@ -280,7 +282,9 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
 
             text += " ";
         }
-        text += msg.toStringPayload().simplified().remove(QChar::Null);
+        QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+        if(from) from->applyRegExString(payload);
+        text += payload;
         text += "\n";
         try
          {
@@ -326,11 +330,13 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
            text += "|" + QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
         else
            text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+        QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+        if(from) from->applyRegExString(payload);
         text += "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
                 "|" + msg.getEcuid() +
                 "|" + msg.getApid() +
                 "|" + msg.getCtid() +
-                "|" + msg.toStringPayload().simplified().remove(QChar::Null).replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
+                "|" + payload.replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
                 "| |\n";
         clipboardString += text;
     }
@@ -373,7 +379,6 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         startFinishError++;
         return;
     }
-
 
     bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
