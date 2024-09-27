@@ -21,7 +21,6 @@
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
-#include "regex_search_replace.h"
 #include "qdltoptmanager.h"
 
 
@@ -169,7 +168,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                        apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                        visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                     }
                 }
             }

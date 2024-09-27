@@ -181,8 +181,7 @@ HEADERS += mainwindow.h \
     dltmsgqueue.h \
     dltfileindexerthread.h \
     dltfileindexerdefaultfilterthread.h \
-    mcudpsocket.h \
-    regex_search_replace.h
+    mcudpsocket.h
 
 # Compile these UI files
 FORMS += mainwindow.ui \
