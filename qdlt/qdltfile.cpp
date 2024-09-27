@@ -754,3 +754,8 @@ void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
     indexFilter = _indexFilter;
 }
+
+bool QDltFile::applyRegExString(QString &text)
+{
+    return filterList.applyRegExString(text);
+}

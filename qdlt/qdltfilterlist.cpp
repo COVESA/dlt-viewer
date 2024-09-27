@@ -19,6 +19,9 @@
  * @licence end@
  */
 
+#include <regex>
+#include <stdlib.h>
+
 #include <QtDebug>
 #include <QCryptographicHash>
 
@@ -120,6 +123,26 @@ QString QDltFilterList::checkMarker(QDltMsg &msg)
 }
 
 #endif
+
+bool QDltFilterList::applyRegExString(QString &text)
+{
+    QDltFilter *filter;
+    bool result = false;
+
+    for(int numfilter=0;numfilter<pfilters.size();numfilter++)
+    {
+        filter = pfilters[numfilter];
+
+        if(filter->enableFilter && filter->enableRegexSearchReplace)
+        {
+            std::regex regex(filter->regex_search.toStdString());
+            std::string payload_str = std::regex_replace(text.toStdString(), regex, filter->regex_replace.toStdString());
+            text = QString::fromStdString(payload_str);
+            result = true;
+        }
+    }
+    return result;
+}
 
 bool QDltFilterList::checkFilter(QDltMsg &msg)
 {
