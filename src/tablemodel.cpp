@@ -28,29 +28,21 @@
 #include "qdltoptmanager.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
-char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
 
-
-void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
+void getmessage(int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
 {
- if ( indexrow == lastrow)
- {
-  *msg = *lastmsg;
- }
- else
- {
-  *success = qfile->getMsg(filterposindex, *msg);
-  *lastmsg = *msg;
-  *decodeflag = 1;
- }
- if ( indexrow == 0)
- {
-  lastrow = 0;
- }
- else
- {
-  lastrow = indexrow;
- }
+    if (indexrow == lastrow)
+    {
+        *msg = *lastmsg;
+    }
+    else
+    {
+        *success = qfile->getMsg(filterposindex, *msg);
+        *lastmsg = *msg;
+        *decodeflag = 1;
+    }
+
+    lastrow = indexrow;
 }
 
 
@@ -67,10 +59,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      lastrow = -1;
  }
 
- TableModel::~TableModel()
- {
-
- }
+TableModel::~TableModel() = default;
 
 
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
