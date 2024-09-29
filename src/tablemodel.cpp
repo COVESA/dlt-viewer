@@ -29,7 +29,7 @@
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 
-void getmessage(int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
+void getMessage(int indexrow, long int filterposindex, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
 {
     if (indexrow == lastrow)
     {
@@ -39,7 +39,6 @@ void getmessage(int indexrow, long int filterposindex, unsigned int* decodeflag,
     {
         *success = qfile->getMsg(filterposindex, *msg);
         *lastmsg = *msg;
-        *decodeflag = 1;
     }
 
     lastrow = indexrow;
@@ -70,7 +69,6 @@ TableModel::~TableModel() = default;
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
-     QByteArray buf;
      static QDltMsg msg;
      static QDltMsg lastmsg;
      static QDltMsg last_decoded_msg;
@@ -110,27 +108,27 @@ TableModel::~TableModel() = default;
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
-         if(true == loggingOnlyMode)
+         if(loggingOnlyMode)
          {
              msg = QDltMsg();
          }
          else
          {
-           getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
+             decodeflag = (index.row() != lastrow);
+             getMessage(index.row(), filterposindex, &msg, &lastmsg, qfile, &success);
 
-           if ( success == false )
-           {
-             if(index.column() == FieldNames::Index)
+             if ( success == false )
              {
-                 return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
+                 if(index.column() == FieldNames::Index)
+                 {
+                     return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
+                 }
+                 else if(index.column() == FieldNames::Payload)
+                 {
+                     return QString("!!CORRUPTED MESSAGE!!");
+                 }
+                 return QVariant();
              }
-             else if(index.column() == FieldNames::Payload)
-             {
-                 qDebug() << "Corrupted message at index" << index.row();
-                 return QString("!!CORRUPTED MESSAGE!!");
-             }
-             return QVariant();
-          }
          }
 
          decodeMessageWithPlugin();
@@ -265,8 +263,9 @@ TableModel::~TableModel() = default;
 
      if ( role == Qt::ForegroundRole )
      {
+         decodeflag = (index.row() != lastrow);
          /* get message at current row */
-         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
+         getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
          decodeMessageWithPlugin();
@@ -277,8 +276,9 @@ TableModel::~TableModel() = default;
 
      if ( role == Qt::BackgroundRole )
      {
+         decodeflag = (index.row() != lastrow);
          /* get message at current row */
-         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
+         getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
          decodeMessageWithPlugin();
@@ -300,7 +300,8 @@ TableModel::~TableModel() = default;
 
     if ( role == Qt::ToolTipRole )
     {
-        getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
+        decodeflag = (index.row() != lastrow);
+        getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success);
         if ( success == false )
         {
             return QString("!!CORRUPTED MESSAGE!!");
