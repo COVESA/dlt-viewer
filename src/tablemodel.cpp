@@ -90,6 +90,21 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      long int filterposindex = 0;
 
+     auto decodeMessageWithPlugin = [&] {
+         if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+         {
+             if ( decodeflag == 1 )
+             {
+                 decodeflag = 0;
+                 pluginManager->decodeMsg(msg, !QDltOptManager::getInstance()->issilentMode());
+                 last_decoded_msg = msg;
+             }
+             else
+             {
+                 msg = last_decoded_msg;
+             }
+         }
+     };
 
      if (index.isValid() == false)
      {
@@ -129,20 +144,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
           }
          }
 
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
+         decodeMessageWithPlugin();
 
          switch(index.column())
          {
@@ -278,20 +280,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
+         decodeMessageWithPlugin();
 
          /* Calculate background color and find optimal forground color */
          return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg,index.row(),filterposindex))));
@@ -303,20 +292,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
+         decodeMessageWithPlugin();
 
          /* Calculate background color */
          return QVariant(QBrush(getMsgBackgroundColor(msg,index.row(),filterposindex)));
@@ -340,20 +316,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
         {
             return QString("!!CORRUPTED MESSAGE!!");
         }
-        if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-        {
-            if ( decodeflag == 1 )
-            {
-                decodeflag = 0;
-                last_decoded_msg = msg;
-                pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-                last_decoded_msg = msg;
-            }
-            else
-            {
-                msg = last_decoded_msg;
-            }
-        }
+        decodeMessageWithPlugin();
 
         return toStringPayload(msg);
     }
