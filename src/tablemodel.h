@@ -72,6 +72,8 @@ private:
     QColor manualMarkerColor;
     QList<unsigned long int> selectedMarkerRows;
     QColor getMsgBackgroundColor(QDltMsg &msg,int index,long int filterposindex) const;
+
+    QString toStringPayload(const QDltMsg&) const;
 };
 
 class HtmlDelegate : public QStyledItemDelegate

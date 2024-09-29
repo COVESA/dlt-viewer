@@ -144,7 +144,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
               }
          }
 
-         QString visu_data;
          switch(index.column())
          {
          case FieldNames::Index:
@@ -242,30 +241,17 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          case FieldNames::ArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
          case FieldNames::Payload:
-             if( true == loggingOnlyMode)
+         {
+             if(loggingOnlyMode)
              {
                  return QString("Logging only Mode! Disable in Project Settings!");
              }
+
              /* display payload */
-             visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
-
-             if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
-             {
-                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
-                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
-                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
-                     }
-                 }
-             }
-
+             QString payloadStr = toStringPayload(msg);
              /* limit size of string to 1000 characters to speed up scrolling */
-             if(visu_data.size()>1000)
-             {
-                visu_data = visu_data.mid(0,1000);
-             }
-
-             return visu_data;
+             return payloadStr.mid(0, 1000);
+         }
          case FieldNames::MessageId:
              return QString::asprintf(project->settings->msgIdFormat.toUtf8() ,msg.getMessageId());
          default:
@@ -369,18 +355,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
             }
         }
 
-        QString visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
-        if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
-        {
-            for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
-                FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
-                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                    visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
-                }
-            }
-        }
-
-        return visu_data;
+        return toStringPayload(msg);
     }
 
      return QVariant();
@@ -557,4 +532,20 @@ QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterp
     }
 
     return brushColor; // this is the default background color
+}
+
+QString TableModel::toStringPayload(const QDltMsg& msg) const
+{
+    QString result = msg.toStringPayload().simplified().remove(QChar::Null);
+    if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+    {
+        for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+           FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+           if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                result.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
+           }
+        }
+    }
+
+    return result;
 }
