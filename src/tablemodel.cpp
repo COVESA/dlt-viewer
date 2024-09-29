@@ -29,7 +29,7 @@
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 
-void getMessage(int indexrow, long int filterposindex, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
+void getMessage(int indexrow, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
 {
     if (indexrow == lastrow)
     {
@@ -37,6 +37,7 @@ void getMessage(int indexrow, long int filterposindex, QDltMsg* msg, QDltMsg* la
     }
     else
     {
+        auto filterposindex = qfile->getMsgFilterPos(indexrow);
         *success = qfile->getMsg(filterposindex, *msg);
         *lastmsg = *msg;
     }
@@ -75,8 +76,6 @@ TableModel::~TableModel() = default;
      static unsigned int decodeflag = 0;
      static bool success = true;
 
-     long int filterposindex = 0;
-
      auto decodeMessageWithPlugin = [&] {
          if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
          {
@@ -103,8 +102,6 @@ TableModel::~TableModel() = default;
          return QVariant();
      }
 
-     filterposindex = qfile->getMsgFilterPos(index.row());
-
      if (role == Qt::DisplayRole)
      {
          /* get the message with the selected item id */
@@ -115,7 +112,7 @@ TableModel::~TableModel() = default;
          else
          {
              decodeflag = (index.row() != lastrow);
-             getMessage(index.row(), filterposindex, &msg, &lastmsg, qfile, &success);
+             getMessage(index.row(), &msg, &lastmsg, qfile, &success);
 
              if ( success == false )
              {
@@ -261,16 +258,19 @@ TableModel::~TableModel() = default;
          }
      }
 
+     long int filterposindex = qfile->getMsgFilterPos(index.row());
+
      if ( role == Qt::ForegroundRole )
      {
          decodeflag = (index.row() != lastrow);
          /* get message at current row */
-         getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success); // version2
+         getMessage( index.row(), &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
          decodeMessageWithPlugin();
 
          /* Calculate background color and find optimal forground color */
+
          return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg,index.row(),filterposindex))));
      }
 
@@ -278,7 +278,7 @@ TableModel::~TableModel() = default;
      {
          decodeflag = (index.row() != lastrow);
          /* get message at current row */
-         getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success); // version2
+         getMessage( index.row(), &msg, &lastmsg, qfile, &success); // version2
 
          /* decode message if not already decoded */
          decodeMessageWithPlugin();
@@ -301,7 +301,7 @@ TableModel::~TableModel() = default;
     if ( role == Qt::ToolTipRole )
     {
         decodeflag = (index.row() != lastrow);
-        getMessage( index.row(), filterposindex, &msg, &lastmsg, qfile, &success);
+        getMessage(index.row(), &msg, &lastmsg, qfile, &success);
         if ( success == false )
         {
             return QString("!!CORRUPTED MESSAGE!!");
