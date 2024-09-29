@@ -103,7 +103,7 @@ jobs:
         if: ${{ success() }}
         with:
           name: DLT-Mac-${{ matrix.abi }}
-          path: build/dist/DLTViewer*.tgz
+          path: DLT-macOS*.zip
 
   buildLinux:
     name: Build ${{ matrix.ubuntu }}
