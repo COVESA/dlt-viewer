@@ -27,6 +27,9 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
+// this is done to have a basic caching mechanism in the table for the cases when the same dlt
+// message is accessed multiple times in the TableModel::data function several times in a row
+// TODO: replace with some kind of LRU cache to make it explicit
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 
 void getMessage(int indexrow, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
@@ -45,30 +48,27 @@ void getMessage(int indexrow, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, b
     lastrow = indexrow;
 }
 
-
 TableModel::TableModel(const QString & /*data*/, QObject *parent)
-     : QAbstractTableModel(parent)
- {
-     qfile = NULL;
-     project = NULL;
-     pluginManager = NULL;
-     lastSearchIndex = -1;
-     emptyForceFlag = false;
-     loggingOnlyMode = false;
-     searchhit = -1;
-     lastrow = -1;
- }
+    : QAbstractTableModel(parent)
+{
+    qfile = NULL;
+    project = NULL;
+    pluginManager = NULL;
+    lastSearchIndex = -1;
+    emptyForceFlag = false;
+    loggingOnlyMode = false;
+    searchhit = -1;
+    lastrow = -1;
+}
 
 TableModel::~TableModel() = default;
 
+int TableModel::columnCount(const QModelIndex & /*parent*/) const
+{
+    return DLT_VIEWER_COLUMN_COUNT + project->settings->showArguments;
+}
 
- int TableModel::columnCount(const QModelIndex & /*parent*/) const
- {
-     return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
- }
-
-
- QVariant TableModel::data(const QModelIndex &index, int role) const
+QVariant TableModel::data(const QModelIndex &index, int role) const
  {
      static QDltMsg msg;
      static QDltMsg lastmsg;
