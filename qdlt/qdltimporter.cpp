@@ -1052,7 +1052,7 @@ bool QDltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int
                    return false;
                }
                quint16 destPort = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
-               if(destPort==3490)
+               if(destPort==3490||destPort==3489)
                {
                    pos+=6;
                    dltFrame(outputfile,record,pos,sec,usec);
@@ -1073,7 +1073,7 @@ bool QDltImporter::dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int
                        return false;
                    }
                    quint16 destPort = (((quint16)segmentBufferUDP.at(pos))<<8)|((quint16)(segmentBufferUDP.at(pos+1)&0xff));
-                   if(destPort==3490)
+                   if(destPort==3490||destPort==3489)
                    {
                        pos+=6;
                        dltFrame(outputfile,segmentBufferUDP,pos,sec,usec);
