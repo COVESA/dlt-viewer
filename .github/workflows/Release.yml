@@ -12,12 +12,12 @@ jobs:
     runs-on: ${{ matrix.macos }}
     strategy:
       matrix:
-        abi: [ x86 ]
         macos: [ macos-13 ]
+        abi: [ x86 ]
         xcode: [ Xcode_15.2 ]
         include:
-          - abi: arm64
-            macos: macos-14
+          - macos: macos-14
+            abi: arm64
             xcode: Xcode
     steps:
       - name: Checkout
