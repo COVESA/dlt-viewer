@@ -75,6 +75,12 @@ typedef struct mdf_dgblocklinks {
         quint64 dg_md_comment;
 } PACKED mdf_dgblocklinks_t;
 
+typedef struct mdf_dlblocklinks {
+    quint8 dl_flags;
+    quint8 reserved[3];
+    quint32 dl_count;
+} PACKED mdf_dlblocklinks_t;
+
 typedef struct mdf_cgblocklinks {
         quint64 cg_cg_next;
         quint64 cg_cn_first;
