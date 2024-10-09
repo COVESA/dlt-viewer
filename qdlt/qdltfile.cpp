@@ -759,3 +759,8 @@ bool QDltFile::applyRegExString(QString &text)
 {
     return filterList.applyRegExString(text);
 }
+
+bool QDltFile::applyRegExStringMsg(QDltMsg &msg)
+{
+    return filterList.applyRegExStringMsg(msg);
+}

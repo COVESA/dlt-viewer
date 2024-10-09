@@ -127,6 +127,11 @@ public:
     */
     bool applyRegExString(QString &text);
 
+    //! Apply RegEx Replace to the argumnets of a message, if any active in the filters.
+    /*!
+    */
+    bool applyRegExStringMsg(QDltMsg &msg);
+
 protected:
 private:
 
