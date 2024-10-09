@@ -281,7 +281,6 @@ MainWindow::~MainWindow()
     delete sortProxyModel;
 }
 
-
 void MainWindow::initState()
 {
     /* Settings */
@@ -5720,40 +5719,10 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                              QString("(C) 2016,2024 BMW AG\n"));
 }
 
-
-void MainWindow::on_action_menuHelp_Command_Line_triggered()
-{
-    // Please copy changes to QDltOptManager::getInstance().cpp - printUsage()
-
-    QMessageBox::information(0, QString("DLT Viewer - Command line usage\t\t\t\t\t"), // tabs used to expand mesage box !
-                         #ifdef WIN32
-                             QString("Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]\n\n")+
-                             QString("Options:\n")+
-                         #else
-                             QString("Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]\n\n")+
-                             QString("Options:\n")+
-                         #endif
-                             QString(" [logfile]\t\t\tLoading one or more logfiles on startup (must end with .dlt)\n")+
-                             QString(" [projectfile]\t\tLoading project file on startup (must end with .dlp)\n")+
-                             QString(" [filterfile]\t\tLoading filterfile on startup (must end with .dlf)\n")+
-                             QString(" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)\n")+
-                             QString(" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)\n")+
-                             QString(" -h\t\t\tPrint usage\n")+
-                             QString(" -s\t\t\tEnable silent mode without any GUI. Ideal for commandline usage.\n")+
-                             QString(" -stream\tTreat the input logfiles as DLT stream instead of DLT files.\n")+
-                             QString(" -v\t\t\tShow version and buildtime information\n")+
-                             QString(" -c <textfile>\tConvert logfile to ASCII textfile\n")+
-                             QString(" -u\t\t\tExport logfile to UTF8 instead\n")+
-                             QString(" -csv\t\t\tExport logfile to csv ( Excel ) instead\n")+
-                             QString(" -d\t\t\tExport logfile to DLT format\n")+
-                             QString(" -dd\t\t\tExport logfile to  decoded DLT format\n")+
-                             QString(" -b <pluginname>|command|param1|..|param<n>\n\t\t\tExecute a command plugin with <n> parameters before loading log file\n")+
-                             QString(" -e <pluginname>|command|param1|..|param<n>\n\t\t\tExecute a command plugin with <n> parameters after loading log file\n")+
-                             QString(" -t\t\t\tTerminate DLT Viewer after command line execution\n")+
-                             QString(" -v\t\t\tShow version and buildtime information\n")+
-                             QString(" -w workingdirectory\tSet the working directory\n")+
-                             QString(" -delimiter <character>\tThe used delimiter for CSV export (Default: ,)\n")
-                             );
+void MainWindow::on_action_menuHelp_Command_Line_triggered() {
+    QMessageBox::information(
+                0, "DLT Viewer - Command line usage\t\t\t\t\t", // tabs used to expand message box !
+                QDltOptManager::getInstance()->getHelpText());
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
