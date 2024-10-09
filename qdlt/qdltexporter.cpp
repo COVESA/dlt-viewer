@@ -434,6 +434,14 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
             }
         }
 
+        // apply Regex if needed
+        if(exportFormat == QDltExporter::FormatDlt || exportFormat == QDltExporter::FormatDltDecoded)
+        {
+            msg.setNumberOfArguments(msg.sizeArguments());
+            if(from) from->applyRegExStringMsg(msg);
+            msg.getMsg(buf,true);
+        }
+
         // export message
         if(!exportMsg(starting,msg,buf))
         {
