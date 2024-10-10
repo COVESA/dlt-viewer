@@ -6693,7 +6693,8 @@ void MainWindow::filterIndexStart()
         }
     }
 
-    ui->lineEditFilterStart->setText(QString("%1").arg(index.row()));
+    quint64 pos = qfile.getMsgFilterPos(index.row());
+    ui->lineEditFilterStart->setText(QString("%1").arg(pos));
 }
 
 void MainWindow::filterIndexEnd()
@@ -6717,8 +6718,8 @@ void MainWindow::filterIndexEnd()
         }
     }
 
-    ui->lineEditFilterEnd->setText(QString("%1").arg(index.row()));
-
+    quint64 pos = qfile.getMsgFilterPos(index.row());
+    ui->lineEditFilterEnd->setText(QString("%1").arg(pos));
 }
 
 void MainWindow::filterAddTable() {
