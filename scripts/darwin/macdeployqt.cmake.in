@@ -1,4 +1,3 @@
-set(MACDEPLOYQT_EXECUTABLE "@MACDEPLOYQT_EXECUTABLE@")
 set(CMAKE_BINARY_DIR "@CMAKE_BINARY_DIR@")
 set(CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@")
 set(DLT_APP_DIR_NAME "@DLT_APP_DIR_NAME@")
@@ -14,6 +13,14 @@ if(STATUS AND NOT STATUS EQUAL 0)
 else()
     message(STATUS "Success.")
 endif()
+
+#hardcoding path for qt6 macdeployqt
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
+  set(MACDEPLOYQT_EXECUTABLE "/opt/homebrew/opt/qt@6/bin/macdeployqt")
+else()
+  set(MACDEPLOYQT_EXECUTABLE "/usr/local/bin/macdeployqt")
+endif()
+
 
 # execute_process(COMMAND ls -l
 #     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
