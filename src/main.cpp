@@ -46,8 +46,9 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
+    QStringList arguments = a.arguments();
     QDltOptManager *opt = QDltOptManager::getInstance();
-    opt->parse(a.arguments());
+    opt->parse(&arguments);
 
     MainWindow w;
     w.show();
