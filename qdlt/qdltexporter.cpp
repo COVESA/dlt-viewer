@@ -425,6 +425,7 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         // decode message if needed
         if(exportFormat != QDltExporter::FormatDlt)
         {
+            //FIXME: The following does not work for non verbose messages, must be fixed
             if(pluginManager)
                 pluginManager->decodeMsg(msg,silentMode);
             if (exportFormat == QDltExporter::FormatDltDecoded)
@@ -437,9 +438,10 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         // apply Regex if needed
         if(exportFormat == QDltExporter::FormatDlt || exportFormat == QDltExporter::FormatDltDecoded)
         {
-            msg.setNumberOfArguments(msg.sizeArguments());
-            if(from) from->applyRegExStringMsg(msg);
-            msg.getMsg(buf,true);
+            //FIXME: The following does not work for non verbose messages, must be fixed to enable RegEx for DLT Export again
+            //msg.setNumberOfArguments(msg.sizeArguments());
+            //if(from) from->applyRegExStringMsg(msg);
+            //msg.getMsg(buf,true);
         }
 
         // export message
