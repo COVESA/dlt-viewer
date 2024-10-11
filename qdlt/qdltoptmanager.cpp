@@ -23,8 +23,37 @@
 
 #include "qdltoptmanager.h"
 #include "version.h"
+
 #include <QDebug>
 #include <QFileInfo>
+
+QDltOptManager::QDltOptManager()
+{
+    m_parser.setSingleDashWordOptionMode(QCommandLineParser::ParseAsLongOptions);
+
+    m_parser.addPositionalArgument("logfile", "Loading one or more logfiles on startup (must end with .dlt)");
+    m_parser.addPositionalArgument("projectfile", "Loading project file on startup (must end with .dlp)");
+    m_parser.addPositionalArgument("filterfile", "Loading filterfile on startup (must end with .dlf)");
+    m_parser.addPositionalArgument("pcapfile", "Importing DLT/IPC from pcap file on startup (must end with .pcap)");
+    m_parser.addPositionalArgument("mf4file", "Importing DLT/IPC from mf4 file on startup (must end with .mf4)");
+    m_parser.addOptions({
+        {"c", "Convert logfile file to <textfile>", "textfile"},
+        {"u", "Conversion will be done in UTF8 instead of ASCII"},
+        {"csv", "Conversion will be done in CSV format"},
+        {"d", "Conversion will NOT be done, save in dlt file format again instead"},
+        {"dd", "Conversion will NOT be done, save as decoded messages in dlt format"},
+        {"b", "Execute a plugin command with <n> parameters before loading log file.", "plugin|command|param1|..|param<n>"},
+        {"e", "Execute a plugin command with <n> parameters after loading log file.", "plugin|command|param1|..|param<n>"},
+        {QStringList() << "s" << "silent", "Enable silent mode without any GUI. Ideal for commandline usage."},
+        {"stream", "Treat the input logfiles as DLT stream instead of DLT files."},
+        {QStringList() << "t" << "terminate", "Terminate DLT Viewer after command line execution."},
+        {"w", "Set the working directory", "workingdirectory"},
+        {"delimiter", "The used delimiter for CSV export (Default: ,).", "character"},
+        {QStringList() << "h" << "help", "Print this help message."},
+        {QStringList() << "v" << "version", "Print the version."}
+    });
+
+}
 
 QDltOptManager* QDltOptManager::getInstance()
 {
@@ -60,177 +89,157 @@ void QDltOptManager::printVersion(QString appname)
     qDebug() << "Version:" << PACKAGE_VERSION << PACKAGE_VERSION_STATE;
 }
 
-void QDltOptManager::printUsage()
+void QDltOptManager::printUsage(const QString& helpText)
 {
-    qDebug().noquote() << getHelpText();
-
-    qDebug()<<"\nExamples:";
-    qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -u -c output.txt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s decoded.dlp -dd -c output.dlt input.dlt ";
-    qDebug()<<"  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
-    qDebug()<<"  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";
-    qDebug()<<"  dlt-viewer.exe input1.dlt input2.dlt";
-    qDebug()<<"  dlt-viewer.exe -t -c output.txt input.pcap";
-    qDebug()<<"  dlt-viewer.exe -t -c output.txt input1.mf4 input2.mf4";
+    qDebug().noquote() << helpText;
+    qDebug() << "\nExamples:";
+    qDebug() << "  dlt-viewer.exe -t -c output.txt input.dlt";
+    qDebug() << "  dlt-viewer.exe -t -s -u -c output.txt input.dlt";
+    qDebug() << "  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
+    qDebug() << "  dlt-viewer.exe -t -s decoded.dlp -dd -c output.dlt input.dlt ";
+    qDebug() << "  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
+    qDebug() << "  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
+    qDebug() << "  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";
+    qDebug() << "  dlt-viewer.exe input1.dlt input2.dlt";
+    qDebug() << "  dlt-viewer.exe -t -c output.txt input.pcap";
+    qDebug() << "  dlt-viewer.exe -t -c output.txt input1.mf4 input2.mf4";
 }
 
-void QDltOptManager::parse(QStringList&& opt)
+void QDltOptManager::parse(const QStringList& args)
 {
+    m_parser.parse(args);
+
     qDebug() << "### Starting DLT Viewer";
 
-    printVersion(opt.at(0));
-
-    qDebug() << "### Parsing Options";
+    printVersion(args.at(0));
 
      /* the default parameter - exactly one parameter - should either be
       * a dlt or a dlp file, so this enables the "doubleclick" feature
       */
-     //str = opt.at(0); && ( str.compare("-h)") != 0 || str.compare("-v") !=0  )
-    if (opt.size() == 2) {
-        if (opt.at(1).endsWith(".dlp") || opt.at(1).endsWith(".DLP")) {
-            projectFile = QString("%1").arg(opt.at(1));
+
+    if (m_parser.optionNames().isEmpty() && m_parser.positionalArguments().size() == 1)
+    {
+        const QString& arg = m_parser.positionalArguments().at(0);
+        if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))
+        {
+            projectFile = arg;
             project = true;
-            qDebug() << "Project filename:" << projectFile;
+            qDebug()<< "Project filename:" << projectFile;
             return;
         }
-        if (opt.at(1).endsWith(".dlt") || opt.at(1).endsWith(".DLT")) {
-            const QString logFile = QString("%1").arg(opt.at(1));
+        if (arg.endsWith(".dlt") || arg.endsWith(".DLT"))
+        {
+            const QString logFile = arg;
             logFiles += logFile;
-            qDebug() << "DLT filename:" << logFile;
+            qDebug()<< "DLT filename:" << logFile;
             return;
         }
     }
 
-    // 0==Binary 1==First Argument
-    for (int i = 0; i < opt.size(); ++i)
-     {
-        QString str = opt.at(i);
+    if (m_parser.isSet("help")) {
+        printUsage(m_parser.helpText());
+        exit(0);
+    }
 
-        if(str.compare("-h") == 0 || str.compare("--help") == 0)
-          {
-            printUsage();
-            exit(0);
-          }
-        else if(str.compare("-s") == 0 || str.compare("--silent") == 0)
-         {
-            if ( silent_mode == false)
-            {
-            silent_mode = true;
-            qDebug() << "Silent mode enabled";
-            }
-         }
-        else if(str.compare("-v") == 0 || str.compare("--version") == 0)
-         {
-            // version has already been printed above, just exit
-            exit(0);
-         }
-         else if(str.compare("-t") == 0 || str.compare("--terminate") == 0)
-         {
-             terminate = true;
-             commandline_mode = true;
-         }
-        else if(str.compare("-c")==0)
-         {
-            QString c1 = opt.value(i+1);
+    if (m_parser.isSet("silent")) {
+        silent_mode = true;
+        qDebug() << "Silent mode enabled";
+    }
 
-            convertDestFile = QString("%1").arg(c1);
-            // check here already if the selected file exists
+    if (m_parser.isSet("version")) {
+        // version is already printed above
+        exit(0);
+    }
 
-            qDebug() << "Convert filename:" << convertDestFile;
-            commandline_mode = true;
+    if (m_parser.isSet("terminate")) {
+        terminate = true;
+        commandline_mode = true;
+    }
 
-            i += 1;
-         }
-         else if(str.compare("-delimiter")==0)
-         {
-             QString c1 = opt.value(i+1);
+    if (m_parser.isSet("c")) {
+        convertDestFile = m_parser.value("c");
+        qDebug() << "Convert filename:" << convertDestFile;
+        commandline_mode = true;
+    }
 
-             delimiter = QString("%1").arg(c1).front().toLatin1();
+    if (m_parser.isSet("delimiter")) {
+        delimiter = m_parser.value("delimiter").front().toLatin1();
+        qDebug() << "Delimiter:" << delimiter;
+    }
 
-             qDebug() << "Delimiter:" << delimiter;
+    if (m_parser.isSet("u")) {
+        convertionmode = e_UTF8;
+    }
 
-             i += 1;
-         }
-        else if(str.compare("-u")==0)
-         {
-            convertionmode = e_UTF8;
-         }
-        else if(str.compare("-csv")==0)
-         {
-            convertionmode = e_CSV;
-         }
-        else if(str.compare("-d")==0)
-         {
-            convertionmode = e_DLT;
-         }
-        else if(str.compare("-dd")==0)
-         {
-            convertionmode = e_DDLT;
-         }
-        else if(str.compare("-stream")==0)
-         {
-            inputmode = e_inputmode::STREAM;
-         }
-        else if(str.compare("-e")==0)
-         {
-            QString c = opt.value(i+1);
-            postPluginCommands += c;
-            commandline_mode = true;
-            ++i;
-         }
-        else if(str.compare("-b")==0)
-         {
-            QString c = opt.value(i+1);
-            prePluginCommands += c;
-            commandline_mode = true;
-            ++i;
-         }
-        else if (str.compare("-w") == 0)
+    if (m_parser.isSet("csv")) {
+        convertionmode = e_CSV;
+    }
+
+    if (m_parser.isSet("d")) {
+        convertionmode = e_DLT;
+    }
+
+    if (m_parser.isSet("dd")) {
+        convertionmode = e_DDLT;
+    }
+
+    if (m_parser.isSet("stream")) {
+        inputmode = e_inputmode::STREAM;
+    }
+
+    if (m_parser.isSet("e")) {
+        postPluginCommands += m_parser.value("e");
+        commandline_mode = true;
+    }
+
+    if (m_parser.isSet("b")) {
+        prePluginCommands += m_parser.value("b");
+        commandline_mode = true;
+    }
+
+    if (m_parser.isSet("w")) {
+        workingDirectory = m_parser.value("w");
+    }
+
+    QStringList positionalArguments = m_parser.positionalArguments();
+    for (const QString &arg : positionalArguments)
+    {
+        if(arg.endsWith(".dlt") || arg.endsWith(".DLT"))
         {
-            workingDirectory = opt.value(i+1);
-            ++i;
-        }
-        else if(opt.at(i).endsWith(".dlt") || opt.at(i).endsWith(".DLT"))
-        {
-            const QString logFile = QString("%1").arg(opt.at(i));
+            const QString logFile = arg;
             logFiles += logFile;
             qDebug()<< "DLT filename:" << logFile;
         }
-        else if(opt.at(i).endsWith(".dlp") || opt.at(i).endsWith(".DLP"))
-        {
+        else if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))        {
             if (project == true)
             {
                 qDebug() << "\nError: Can only load one project file\n";
-                printUsage();
+                printUsage(m_parser.helpText());
                 exit(-1);
             }
 
-            projectFile = QString("%1").arg(opt.at(i));
+            projectFile = arg;
             project = true;
             qDebug()<< "Project filename:" << projectFile;
         }
-        else if(opt.at(i).endsWith(".dlf") || opt.at(i).endsWith(".DLF"))
+        else if(arg.endsWith(".dlf") || arg.endsWith(".DLF"))
         {
-            filterFiles += QString("%1").arg(opt.at(i));
-            qDebug()<< "Filter filename:" << QString("%1").arg(opt.at(i));
+            filterFiles += arg;
+            qDebug()<< "Filter filename:" << arg;
         }
-        else if(opt.at(i).endsWith(".pcap") || opt.at(i).endsWith(".PCAP"))
+        else if(arg.endsWith(".pcap") || arg.endsWith(".PCAP"))
         {
-            const QString pcapFile = QString("%1").arg(opt.at(i));
+            const QString pcapFile = arg;
             pcapFiles += pcapFile;
             qDebug()<< "Pcap filename:" << pcapFile;
         }
-        else if(opt.at(i).endsWith(".mf4") || opt.at(i).endsWith(".MF4"))
+        else if(arg.endsWith(".mf4") || arg.endsWith(".MF4"))
         {
-            const QString mf4File = QString("%1").arg(opt.at(i));
+            const QString mf4File = arg;
             mf4Files += mf4File;
             qDebug()<< "MF4 filename:" << mf4File;
         }
-
-     } // end of for loop
+    }
 
     /* On Windows we do not want to open a console in case
       * we start the application e.g. from file explorer.
@@ -268,39 +277,13 @@ QStringList QDltOptManager::getCommandParams(){return commandParams;}
 QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
 char QDltOptManager::getDelimiter(){return delimiter;}
 
-QString QDltOptManager::getHelpText() const {
-    QStringList helpText;
-#if (WIN32)
-    helpText << "Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
-#else
-    helpText << "Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
-#endif
-
-    helpText << "\nOptions:";
-    helpText << " [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
-    helpText << " [projectfile]\tLoading project file on startup (must end with .dlp)";
-    helpText << " [filterfile]\tLoading filterfile on startup (must end with .dlf)";
-    helpText << " [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
-    helpText << " [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
-    helpText << " -h or --help\tPrint usage";
-    helpText << " -c textfile\tConvert logfile file to textfile";
-    helpText << " -u\tConversion will be done in UTF8 instead of ASCII";
-    helpText << " -csv\tConversion will be done in CSV format";
-    helpText << " -d\tConversion will NOT be done, save in dlt file format again instead";
-    helpText << " -dd\tConversion will NOT be done, save as decoded messages in dlt format";
-    helpText << " -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
-    helpText << " -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
-    helpText << " -s or --silent\tEnable silent mode without any GUI. Ideal for commandline usage.";
-    helpText << " -stream\tTreat the input logfiles as DLT stream instead of DLT files.";
-    helpText << " -t or --terminate\tTerminate DLT Viewer after command line execution.";
-    helpText << " -v or --version\tOnly show version and buildtime information";
-    helpText << " -w workingdirectory\tSet the working directory";
-    helpText << " -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
-
-    return helpText.join('\n');
+QString QDltOptManager::getHelpText() const
+{
+    return m_parser.helpText();
 }
 
-void QDltOptManager::reset() {
+void QDltOptManager::reset()
+{
     project = false;
     terminate = false;
     silent_mode = false;
@@ -317,7 +300,7 @@ void QDltOptManager::reset() {
     prePluginCommands.clear();
     postPluginCommands.clear();
     workingDirectory.clear();
-    delimiter = ',';
+    delimiter=',';
     pcapFiles.clear();
     mf4Files.clear();
 }
