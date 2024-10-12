@@ -120,42 +120,39 @@ void QDltOptManager::printUsage()
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input1.mf4 input2.mf4";
 }
 
-void QDltOptManager::parse(QStringList *opt)
+void QDltOptManager::parse(QStringList&& opt)
 {
     QString str;
 
     qDebug() << "### Starting DLT Viewer";
 
-    printVersion(opt->at(0));
+    printVersion(opt.at(0));
 
     qDebug() << "### Parsing Options";
 
      /* the default parameter - exactly one parameter - should either be
       * a dlt or a dlp file, so this enables the "doubleclick" feature
       */
-     //str = opt->at(0); && ( str.compare("-h)") != 0 || str.compare("-v") !=0  )
-     if(opt->size()==2  )
-       {
-           if(opt->at(1).endsWith(".dlp") || opt->at(1).endsWith(".DLP"))
-           {
-               projectFile = QString("%1").arg(opt->at(1));
-               project = true;
-               qDebug()<< "Project filename:" << projectFile;
-               return;
-           }
-           if(opt->at(1).endsWith(".dlt") || opt->at(1).endsWith(".DLT"))
-           {
-               const QString logFile = QString("%1").arg(opt->at(1));
-               logFiles += logFile;
-               qDebug()<< "DLT filename:" << logFile;
-               return;
-           }
-       }
+     //str = opt.at(0); && ( str.compare("-h)") != 0 || str.compare("-v") !=0  )
+    if (opt.size() == 2) {
+        if (opt.at(1).endsWith(".dlp") || opt.at(1).endsWith(".DLP")) {
+            projectFile = QString("%1").arg(opt.at(1));
+            project = true;
+            qDebug() << "Project filename:" << projectFile;
+            return;
+        }
+        if (opt.at(1).endsWith(".dlt") || opt.at(1).endsWith(".DLT")) {
+            const QString logFile = QString("%1").arg(opt.at(1));
+            logFiles += logFile;
+            qDebug() << "DLT filename:" << logFile;
+            return;
+        }
+    }
 
     // 0==Binary 1==First Argument
-    for (int i = 0; i < opt->size(); ++i)
+    for (int i = 0; i < opt.size(); ++i)
      {
-        str = opt->at(i);
+        str = opt.at(i);
 
         if(str.compare("-h") == 0 || str.compare("--help") == 0)
           {
@@ -172,7 +169,7 @@ void QDltOptManager::parse(QStringList *opt)
          }
         else if(str.compare("-v") == 0 || str.compare("--version") == 0)
          {
-            printVersion(opt->at(0));
+            printVersion(opt.at(0));
             exit(0);
          }
          else if(str.compare("-t") == 0 || str.compare("--terminate") == 0)
@@ -182,7 +179,7 @@ void QDltOptManager::parse(QStringList *opt)
          }
         else if(str.compare("-c")==0)
          {
-            QString c1 = opt->value(i+1);
+            QString c1 = opt.value(i+1);
 
             convertDestFile = QString("%1").arg(c1);
             // check here already if the selected file exists
@@ -194,7 +191,7 @@ void QDltOptManager::parse(QStringList *opt)
          }
          else if(str.compare("-delimiter")==0)
          {
-             QString c1 = opt->value(i+1);
+             QString c1 = opt.value(i+1);
 
              delimiter = QString("%1").arg(c1).front().toLatin1();
 
@@ -224,30 +221,30 @@ void QDltOptManager::parse(QStringList *opt)
          }
         else if(str.compare("-e")==0)
          {
-            QString c = opt->value(i+1);
+            QString c = opt.value(i+1);
             postPluginCommands += c;
             commandline_mode = true;
             ++i;
          }
         else if(str.compare("-b")==0)
          {
-            QString c = opt->value(i+1);
+            QString c = opt.value(i+1);
             prePluginCommands += c;
             commandline_mode = true;
             ++i;
          }
         else if (str.compare("-w") == 0)
         {
-            workingDirectory = opt->value(i+1);
+            workingDirectory = opt.value(i+1);
             ++i;
         }
-        else if(opt->at(i).endsWith(".dlt") || opt->at(i).endsWith(".DLT"))
+        else if(opt.at(i).endsWith(".dlt") || opt.at(i).endsWith(".DLT"))
         {
-            const QString logFile = QString("%1").arg(opt->at(i));
+            const QString logFile = QString("%1").arg(opt.at(i));
             logFiles += logFile;
             qDebug()<< "DLT filename:" << logFile;
         }
-        else if(opt->at(i).endsWith(".dlp") || opt->at(i).endsWith(".DLP"))
+        else if(opt.at(i).endsWith(".dlp") || opt.at(i).endsWith(".DLP"))
         {
             if (project == true)
             {
@@ -256,24 +253,24 @@ void QDltOptManager::parse(QStringList *opt)
                 exit(-1);
             }
 
-            projectFile = QString("%1").arg(opt->at(i));
+            projectFile = QString("%1").arg(opt.at(i));
             project = true;
             qDebug()<< "Project filename:" << projectFile;
         }
-        else if(opt->at(i).endsWith(".dlf") || opt->at(i).endsWith(".DLF"))
+        else if(opt.at(i).endsWith(".dlf") || opt.at(i).endsWith(".DLF"))
         {
-            filterFiles += QString("%1").arg(opt->at(i));
-            qDebug()<< "Filter filename:" << QString("%1").arg(opt->at(i));
+            filterFiles += QString("%1").arg(opt.at(i));
+            qDebug()<< "Filter filename:" << QString("%1").arg(opt.at(i));
         }
-        else if(opt->at(i).endsWith(".pcap") || opt->at(i).endsWith(".PCAP"))
+        else if(opt.at(i).endsWith(".pcap") || opt.at(i).endsWith(".PCAP"))
         {
-            const QString pcapFile = QString("%1").arg(opt->at(i));
+            const QString pcapFile = QString("%1").arg(opt.at(i));
             pcapFiles += pcapFile;
             qDebug()<< "Pcap filename:" << pcapFile;
         }
-        else if(opt->at(i).endsWith(".mf4") || opt->at(i).endsWith(".MF4"))
+        else if(opt.at(i).endsWith(".mf4") || opt.at(i).endsWith(".MF4"))
         {
-            const QString mf4File = QString("%1").arg(opt->at(i));
+            const QString mf4File = QString("%1").arg(opt.at(i));
             mf4Files += mf4File;
             qDebug()<< "MF4 filename:" << mf4File;
         }
@@ -315,3 +312,25 @@ QString QDltOptManager::getCommandName(){return commandName;}
 QStringList QDltOptManager::getCommandParams(){return commandParams;}
 QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
 char QDltOptManager::getDelimiter(){return delimiter;}
+
+void QDltOptManager::reset() {
+    project = false;
+    terminate = false;
+    silent_mode = false;
+    commandline_mode = false;
+    convertionmode = e_ASCI;
+    inputmode = e_inputmode::DLT;
+    projectFile.clear();
+    logFiles.clear();
+    filterFiles.clear();
+    convertDestFile.clear();
+    pluginName.clear();
+    commandName.clear();
+    commandParams.clear();
+    prePluginCommands.clear();
+    postPluginCommands.clear();
+    workingDirectory.clear();
+    delimiter = ',';
+    pcapFiles.clear();
+    mf4Files.clear();
+}

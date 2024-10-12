@@ -46,7 +46,7 @@ public:
     static QDltOptManager* getInstance();
     void printUsage();
     void printVersion(QString appname);
-    void parse(QStringList *opt);
+    void parse(QStringList&& opt);
 
     bool isProjectFile();
     bool isTerminate();
@@ -70,6 +70,9 @@ public:
     const QStringList &getPcapFiles() const;
     const QStringList &getMf4Files() const;
     char getDelimiter();
+
+    // only testing relevant
+    void reset();
 
 private:
     QDltOptManager();
