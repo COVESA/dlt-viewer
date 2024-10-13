@@ -143,7 +143,7 @@ void QDltOptManager::parse(QStringList&& opt)
          }
         else if(str.compare("-v") == 0 || str.compare("--version") == 0)
          {
-            printVersion(opt.at(0));
+            // version has already been printed above, just exit
             exit(0);
          }
          else if(str.compare("-t") == 0 || str.compare("--terminate") == 0)
