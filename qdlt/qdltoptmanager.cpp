@@ -26,30 +26,11 @@
 #include <QDebug>
 #include <QFileInfo>
 
-// Global static pointer used to ensure a single instance of the class.
-QDltOptManager* QDltOptManager::instance;
-
-QDltOptManager::QDltOptManager()
-{
-    project = false;
-    silent_mode = false;
-    terminate=false;
-    convertionmode = e_ASCI;
-    commandline_mode = false;
-    delimiter=',';
-}
-
 QDltOptManager* QDltOptManager::getInstance()
 {
-    if (!instance)
-        instance = new QDltOptManager;
+    static QDltOptManager instance;
 
-    return instance;
-}
-
-QDltOptManager::QDltOptManager(QDltOptManager const&)
-{
-
+    return &instance;
 }
 
 const QStringList &QDltOptManager::getMf4Files() const

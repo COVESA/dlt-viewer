@@ -17,7 +17,6 @@
  * @licence end@
  */
 
-#include <iostream>
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
