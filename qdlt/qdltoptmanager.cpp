@@ -81,32 +81,8 @@ void QDltOptManager::printVersion(QString appname)
 
 void QDltOptManager::printUsage()
 {
-#if (WIN32)
-    qDebug()<<"Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
-#else
-    qDebug()<<"Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
-#endif
+    qDebug().noquote() << getHelpText();
 
-    qDebug()<<"\nOptions:";
-    qDebug()<<" [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
-    qDebug()<<" [projectfile]\tLoading project file on startup (must end with .dlp)";
-    qDebug()<<" [filterfile]\tLoading filterfile on startup (must end with .dlf)";
-    qDebug()<<" [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
-    qDebug()<<" [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
-    qDebug()<<" -h or --help\tPrint usage";
-    qDebug()<<" -c textfile\tConvert logfile file to textfile";
-    qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
-    qDebug()<<" -csv\tConversion will be done in CSV format";
-    qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
-    qDebug()<<" -dd\tConversion will NOT be done, save as decoded messages in dlt format";
-    qDebug()<<" -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
-    qDebug()<<" -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
-    qDebug()<<" -s or --silent\tEnable silent mode without any GUI. Ideal for commandline usage.";
-    qDebug()<<" -stream\tTreat the input logfiles as DLT stream instead of DLT files.";
-    qDebug()<<" -t or --terminate\tTerminate DLT Viewer after command line execution.";
-    qDebug()<<" -v or --version\tOnly show version and buildtime information";
-    qDebug()<<" -w workingdirectory\tSet the working directory";
-    qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
     qDebug()<<"\nExamples:";
     qDebug()<<"  dlt-viewer.exe -t -c output.txt input.dlt";
     qDebug()<<"  dlt-viewer.exe -t -s -u -c output.txt input.dlt";
@@ -122,8 +98,6 @@ void QDltOptManager::printUsage()
 
 void QDltOptManager::parse(QStringList&& opt)
 {
-    QString str;
-
     qDebug() << "### Starting DLT Viewer";
 
     printVersion(opt.at(0));
@@ -152,7 +126,7 @@ void QDltOptManager::parse(QStringList&& opt)
     // 0==Binary 1==First Argument
     for (int i = 0; i < opt.size(); ++i)
      {
-        str = opt.at(i);
+        QString str = opt.at(i);
 
         if(str.compare("-h") == 0 || str.compare("--help") == 0)
           {
@@ -312,6 +286,38 @@ QString QDltOptManager::getCommandName(){return commandName;}
 QStringList QDltOptManager::getCommandParams(){return commandParams;}
 QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
 char QDltOptManager::getDelimiter(){return delimiter;}
+
+QString QDltOptManager::getHelpText() const {
+    QStringList helpText;
+#if (WIN32)
+    helpText << "Usage: dlt-viewer.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+#else
+    helpText << "Usage: dlt-viewer [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+#endif
+
+    helpText << "\nOptions:";
+    helpText << " [logfile]\tLoading one or more logfiles on startup (must end with .dlt)";
+    helpText << " [projectfile]\tLoading project file on startup (must end with .dlp)";
+    helpText << " [filterfile]\tLoading filterfile on startup (must end with .dlf)";
+    helpText << " [pcapfile]\tImporting DLT/IPC from pcap file on startup (must end with .pcap)";
+    helpText << " [mf4file]\tImporting DLT/IPC from mf4 file on startup (must end with .mf4)";
+    helpText << " -h or --help\tPrint usage";
+    helpText << " -c textfile\tConvert logfile file to textfile";
+    helpText << " -u\tConversion will be done in UTF8 instead of ASCII";
+    helpText << " -csv\tConversion will be done in CSV format";
+    helpText << " -d\tConversion will NOT be done, save in dlt file format again instead";
+    helpText << " -dd\tConversion will NOT be done, save as decoded messages in dlt format";
+    helpText << " -b \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters before loading log file.";
+    helpText << " -e \"plugin|command|param1|..|param<n>\"\tExecute a plugin command with <n> parameters after loading log file.";
+    helpText << " -s or --silent\tEnable silent mode without any GUI. Ideal for commandline usage.";
+    helpText << " -stream\tTreat the input logfiles as DLT stream instead of DLT files.";
+    helpText << " -t or --terminate\tTerminate DLT Viewer after command line execution.";
+    helpText << " -v or --version\tOnly show version and buildtime information";
+    helpText << " -w workingdirectory\tSet the working directory";
+    helpText << " -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
+
+    return helpText.join('\n');
+}
 
 void QDltOptManager::reset() {
     project = false;

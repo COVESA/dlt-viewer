@@ -71,6 +71,8 @@ public:
     const QStringList &getMf4Files() const;
     char getDelimiter();
 
+    QString getHelpText() const;
+
     // only testing relevant
     void reset();
 
