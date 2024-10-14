@@ -99,12 +99,12 @@ bool QDltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if (QDltOptManager::getInstance()->issilentMode())
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
@@ -113,12 +113,12 @@ bool QDltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if (QDltOptManager::getInstance()->issilentMode() )
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
@@ -130,12 +130,12 @@ bool QDltExporter::start()
         /* Write the first line of CSV file */
         if(!writeCSVHeader(to))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if(QDltOptManager::getInstance()->issilentMode())
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
