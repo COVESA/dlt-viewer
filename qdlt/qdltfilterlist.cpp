@@ -124,7 +124,7 @@ QString QDltFilterList::checkMarker(QDltMsg &msg)
 
 #endif
 
-bool QDltFilterList::applyRegExString(QString &text)
+bool QDltFilterList::applyRegExString(QDltMsg &msg,QString &text)
 {
     QDltFilter *filter;
     bool result = false;
@@ -133,7 +133,7 @@ bool QDltFilterList::applyRegExString(QString &text)
     {
         filter = pfilters[numfilter];
 
-        if(filter->enableFilter && filter->enableRegexSearchReplace)
+        if(filter->enableFilter && filter->enableRegexSearchReplace && filter->match(msg))
         {
             text.replace(QRegularExpression(filter->regex_search), filter->regex_replace);
             result = true;
@@ -151,7 +151,7 @@ bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg)
     {
         filter = pfilters[numfilter];
 
-        if(filter->enableFilter && filter->enableRegexSearchReplace)
+        if(filter->enableFilter && filter->enableRegexSearchReplace  && filter->match(msg))
         {
             for(int num=0;num<msg.getNumberOfArguments();num++)
             {

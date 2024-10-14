@@ -163,7 +163,8 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         case FieldNames::Payload:
             /* display payload */
             visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
-            if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+            if(qfile) qfile->applyRegExString(msg,visu_data);
+            /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
             {
                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
@@ -171,7 +172,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                     }
                 }
-            }
+            }*/
             return visu_data;
         case FieldNames::MessageId:
             return QString::asprintf(project->settings->msgIdFormat.toUtf8(),msg.getMessageId());
