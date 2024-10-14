@@ -248,8 +248,8 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              }
              /* display payload */
              visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
-
-             if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+             if(qfile) qfile->applyRegExString(msg,visu_data);
+             /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
              {
                  for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                      FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
@@ -257,7 +257,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                          visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                      }
                  }
-             }
+             }*/
 
              /* limit size of string to 1000 characters to speed up scrolling */
              if(visu_data.size()>1000)

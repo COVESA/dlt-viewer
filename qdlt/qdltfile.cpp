@@ -755,12 +755,13 @@ void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
     indexFilter = _indexFilter;
 }
 
-bool QDltFile::applyRegExString(QString &text)
+bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 {
-    return filterList.applyRegExString(text);
+
+    return filterList.applyRegExString(msg,text);
 }
 
 bool QDltFile::applyRegExStringMsg(QDltMsg &msg)
-{
+{    
     return filterList.applyRegExStringMsg(msg);
 }

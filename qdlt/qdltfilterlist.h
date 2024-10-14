@@ -125,7 +125,7 @@ public:
     //! Apply RegEx Replace to the string, if any active in the filters.
     /*!
     */
-    bool applyRegExString(QString &text);
+    bool applyRegExString(QDltMsg &msg,QString &text);
 
     //! Apply RegEx Replace to the argumnets of a message, if any active in the filters.
     /*!
