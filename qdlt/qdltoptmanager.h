@@ -46,7 +46,7 @@ public:
     static QDltOptManager* getInstance();
     void printUsage();
     void printVersion(QString appname);
-    void parse(QStringList *opt);
+    void parse(QStringList&& opt);
 
     bool isProjectFile();
     bool isTerminate();
@@ -71,16 +71,17 @@ public:
     const QStringList &getMf4Files() const;
     char getDelimiter();
 
-private:
-    QDltOptManager();
-    QDltOptManager(QDltOptManager const&);
-    static QDltOptManager *instance;
+    QString getHelpText() const;
 
-    bool project;
-    bool terminate;
-    bool silent_mode;
-    bool commandline_mode;
-    e_convertionmode convertionmode;
+    // only testing relevant
+    void reset();
+
+private:
+    bool project{false};
+    bool terminate{false};
+    bool silent_mode{false};
+    bool commandline_mode{false};
+    e_convertionmode convertionmode{e_ASCI};
     e_inputmode inputmode{e_inputmode::DLT};
 
     QString projectFile;
@@ -97,7 +98,7 @@ private:
     QStringList postPluginCommands; // command after loading log file
 
     QString  workingDirectory;
-    char delimiter;
+    char delimiter{','};
 };
 
 #endif //QDLTOPTMANAGER_H

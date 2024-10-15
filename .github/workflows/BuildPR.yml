@@ -38,7 +38,7 @@ jobs:
       - name: Show cmake version
         run: cmake --version
       - name: Build project
-        run: scripts/darwin/build.sh
+        run: scripts/darwin/build_cmake.sh
       - name: Codesign app bundle
         if: "! github.event.pull_request.head.repo.fork " # not running on a fork
         # Extract the secrets we defined earlier as environment variables
@@ -124,6 +124,8 @@ jobs:
         run: scripts/linux/install.sh
       - name: Build project
         run: scripts/linux/build.sh
+      - name: Run tests
+        run: ctest --test-dir build/qdlt
       - name: Make artifact executable
         run: chmod -R +x build/dist
       - name: Archive artifact

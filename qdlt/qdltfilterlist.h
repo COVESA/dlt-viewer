@@ -122,6 +122,16 @@ public:
     */
     void updateSortedFilter();
 
+    //! Apply RegEx Replace to the string, if any active in the filters.
+    /*!
+    */
+    bool applyRegExString(QDltMsg &msg,QString &text);
+
+    //! Apply RegEx Replace to the argumnets of a message, if any active in the filters.
+    /*!
+    */
+    bool applyRegExStringMsg(QDltMsg &msg);
+
 protected:
 private:
 

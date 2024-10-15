@@ -69,7 +69,9 @@ void QDltExporter::writeCSVLine(int index, QFile *to, QDltMsg msg)
     text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(delimiter);
     text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(delimiter);
     text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(delimiter);
-    text += escapeCSVValue(msg.toStringPayload().simplified().remove(QChar::Null));
+    QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+    if(from) from->applyRegExString(msg,payload);
+    text += escapeCSVValue(payload);
     text += "\n";
 
     to->write(text.toLatin1().constData());
@@ -97,12 +99,12 @@ bool QDltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly | QIODevice::Text))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if (QDltOptManager::getInstance()->issilentMode())
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
@@ -111,12 +113,12 @@ bool QDltExporter::start()
     {
         if(!to->open(QIODevice::WriteOnly))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if (QDltOptManager::getInstance()->issilentMode() )
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
@@ -128,12 +130,12 @@ bool QDltExporter::start()
         /* Write the first line of CSV file */
         if(!writeCSVHeader(to))
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-             qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
-             }
-            else
-                ;//QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
+            if(QDltOptManager::getInstance()->issilentMode())
+            {
+                qDebug() << QString("ERROR - cannot open the export file %1").arg(to->fileName());
+            }
+            //else
+                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
                  //                 QString("Cannot open the export file %1").arg(to->fileName()));
             return false;
         }
@@ -280,7 +282,9 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
 
             text += " ";
         }
-        text += msg.toStringPayload().simplified().remove(QChar::Null);
+        QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+        if(from) from->applyRegExString(msg,payload);
+        text += payload;
         text += "\n";
         try
          {
@@ -326,11 +330,13 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
            text += "|" + QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
         else
            text += "|" + QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+        QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+        if(from) from->applyRegExString(msg,payload);
         text += "|" + QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')) +
                 "|" + msg.getEcuid() +
                 "|" + msg.getApid() +
                 "|" + msg.getCtid() +
-                "|" + msg.toStringPayload().simplified().remove(QChar::Null).replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
+                "|" + payload.replace('|', "\\|").replace('#', "\\#").replace('*', "\\*") +
                 "| |\n";
         clipboardString += text;
     }
@@ -373,7 +379,6 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         startFinishError++;
         return;
     }
-
 
     bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
@@ -420,6 +425,7 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
         // decode message if needed
         if(exportFormat != QDltExporter::FormatDlt)
         {
+            //FIXME: The following does not work for non verbose messages, must be fixed
             if(pluginManager)
                 pluginManager->decodeMsg(msg,silentMode);
             if (exportFormat == QDltExporter::FormatDltDecoded)
@@ -427,6 +433,16 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
                 msg.setNumberOfArguments(msg.sizeArguments());
                 msg.getMsg(buf,true);
             }
+        }
+
+        // apply Regex if needed
+        if(exportFormat == QDltExporter::FormatDlt || exportFormat == QDltExporter::FormatDltDecoded)
+        {
+            //FIXME: The following does not work for non verbose messages, must be fixed to enable RegEx for DLT Export again
+            //msg.setNumberOfArguments(msg.sizeArguments());
+            bool isApplied = false;
+            if(from) isApplied = from->applyRegExStringMsg(msg);
+            if(isApplied) msg.getMsg(buf,true);
         }
 
         // export message

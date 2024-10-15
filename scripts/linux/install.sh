@@ -23,7 +23,7 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 sudo apt update
 sudo apt install -y git cmake build-essential ninja-build \
     qt515declarative qt515serialport qt515charts-no-lgpl qt515svg \
-    libgtk2.0-dev libgl-dev gcc-11 g++-11
+    libgtk2.0-dev libgl-dev gcc-11 g++-11 libgtest-dev
 
 sudo update-alternatives --remove-all cpp
 sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 110 --slave /usr/bin/g++ g++ /usr/bin/g++-11 --slave /usr/bin/gcov gcov /usr/bin/gcov-11 --slave /usr/bin/gcc-ar gcc-ar /usr/bin/gcc-ar-11 --slave /usr/bin/gcc-ranlib gcc-ranlib /usr/bin/gcc-ranlib-11 --slave /usr/bin/cpp cpp /usr/bin/cpp-11

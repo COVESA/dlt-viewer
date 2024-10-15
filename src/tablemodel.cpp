@@ -26,7 +26,6 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
-#include "regex_search_replace.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
 char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
@@ -249,16 +248,16 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              }
              /* display payload */
              visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
-
-             if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+             if(qfile) qfile->applyRegExString(msg,visu_data);
+             /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
              {
                  for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                      FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
                      if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                         apply_regex_string(visu_data, item->filter.regex_search, item->filter.regex_replace);
+                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                      }
                  }
-             }
+             }*/
 
              /* limit size of string to 1000 characters to speed up scrolling */
              if(visu_data.size()>1000)
@@ -369,7 +368,19 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                 msg = last_decoded_msg;
             }
         }
-        return msg.toStringPayload().simplified().remove(QChar::Null);
+
+        QString visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
+        if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+        {
+            for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                    visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
+                }
+            }
+        }
+
+        return visu_data;
     }
 
      return QVariant();

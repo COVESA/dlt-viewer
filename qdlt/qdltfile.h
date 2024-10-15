@@ -299,6 +299,16 @@ public:
      **/
     bool getDLTv2Support() const;
 
+    //! Apply RegEx Replace to the string, if any active in the filters
+    /*!
+    */
+    bool applyRegExString(QDltMsg &msg,QString &text);
+
+    //! Apply RegEx Replace to the arguments of a message, if any active in the filters
+    /*!
+    */
+    bool applyRegExStringMsg(QDltMsg &msg);
+
 protected:
 
 private:
