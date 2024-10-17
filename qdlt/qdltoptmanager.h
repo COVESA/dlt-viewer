@@ -21,6 +21,7 @@
 #define QDLTOPTMANAGER_H
 
 #include <QStringList>
+#include <QCommandLineParser>
 
 #include "export_rules.h"
 
@@ -44,9 +45,9 @@ class QDLT_EXPORT QDltOptManager
 {
 public:
     static QDltOptManager* getInstance();
-    void printUsage();
+    void printUsage(const QString& helpText);
     void printVersion(QString appname);
-    void parse(QStringList&& opt);
+    void parse(const QStringList& opt);
 
     bool isProjectFile();
     bool isTerminate();
@@ -77,6 +78,9 @@ public:
     void reset();
 
 private:
+    QDltOptManager();
+
+private:
     bool project{false};
     bool terminate{false};
     bool silent_mode{false};
@@ -99,6 +103,8 @@ private:
 
     QString  workingDirectory;
     char delimiter{','};
+
+    QCommandLineParser m_parser;
 };
 
 #endif //QDLTOPTMANAGER_H
