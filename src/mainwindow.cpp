@@ -6795,16 +6795,24 @@ void MainWindow::filterAdd()
 
 void MainWindow::on_action_menuFilter_Save_As_triggered()
 {
-
     QString fileName = QFileDialog::getSaveFileName(this,
         tr("Save DLT Filters"), workingDirectory.getDlfDirectory(), tr("DLT Filter File (*.dlf);;All files (*.*)"));
 
-    if(!fileName.isEmpty())
-    {
-        workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
-        if(!project.SaveFilter(fileName))
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Save DLT Filter file failed!"));
+    if(fileName.isEmpty())
+        return;
+
+    const QFileInfo fileInfo(fileName);
+
+    workingDirectory.setDlfDirectory(fileInfo.absolutePath());
+
+    if (const auto extension = fileInfo.suffix(); extension.isEmpty()) {
+        fileName.append(".dlf");
+    }
+
+    if(project.SaveFilter(fileName)) {
         setCurrentFilters(fileName);
+    } else {
+        QMessageBox::critical(0, "DLT Viewer", "Save DLT Filter file failed!");
     }
 }
 
