@@ -32,7 +32,6 @@
 #include <QFile>
 
 typedef int pid_t;
-typedef unsigned int speed_t;
 
 typedef float  float32_t;
 typedef double float64_t;
