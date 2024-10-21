@@ -28,8 +28,6 @@
 #include "qdltoptmanager.h"
 
 static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
-char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
-
 
 void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
 {
@@ -72,7 +70,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
  }
 
-
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
@@ -101,33 +98,32 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          return QVariant();
      }
 
+     if (loggingOnlyMode) {
+         if ((role == Qt::DisplayRole) && (index.column() == FieldNames::Payload))
+            return QString("Logging only Mode! Disable in Project Settings!");
+         else
+            return QVariant();
+     }
+
      filterposindex = qfile->getMsgFilterPos(index.row());
 
      if (role == Qt::DisplayRole)
      {
-         /* get the message with the selected item id */
-         if(true == loggingOnlyMode)
-         {
-             msg = QDltMsg();
-         }
-         else
-         {
-           getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
 
-           if ( success == false )
-           {
-             if(index.column() == FieldNames::Index)
-             {
-                 return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
-             }
-             else if(index.column() == FieldNames::Payload)
-             {
-                 qDebug() << "Corrupted message at index" << index.row();
-                 return QString("!!CORRUPTED MESSAGE!!");
-             }
-             return QVariant();
-          }
+       getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
+       if ( success == false )
+       {
+         if(index.column() == FieldNames::Index)
+         {
+             return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
          }
+         else if(index.column() == FieldNames::Payload)
+         {
+             qDebug() << "Corrupted message at index" << index.row();
+             return QString("!!CORRUPTED MESSAGE!!");
+         }
+         return QVariant();
+       }
 
          if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
          {
@@ -242,10 +238,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          case FieldNames::ArgCount:
              return QString("%1").arg(msg.getNumberOfArguments());
          case FieldNames::Payload:
-             if( true == loggingOnlyMode)
-             {
-                 return QString("Logging only Mode! Disable in Project Settings!");
-             }
              /* display payload */
              visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
              if(qfile) qfile->applyRegExString(msg,visu_data);
