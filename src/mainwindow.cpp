@@ -741,6 +741,14 @@ void MainWindow::initFileHandling()
     if(!QDltOptManager::getInstance()->getFilterFiles().isEmpty())
     {
         qDebug() << "### Load filter";
+
+        // enable filters if they are not enabled
+        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()==false)
+        {
+            qDebug("Enable filters, as they were disabled and at least one filter is provided by the commandline!");
+            QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", true);
+        }
+
         for ( const auto& filter : QDltOptManager::getInstance()->getFilterFiles() )
         {
             qDebug() << "Load filter:" << filter;

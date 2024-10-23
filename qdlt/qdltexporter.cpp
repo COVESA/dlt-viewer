@@ -459,6 +459,7 @@ void QDltExporter::exportMessages(QDltFile *from, QFile *to, QDltPluginManager *
     } // for loop
 
     emit progress("",3,100);
+    qDebug() << "Exported:" << 100 << "%";
 
     if (!finish())
     {
