@@ -34,7 +34,6 @@ private:
     QString tagFLFI;
     QString tagFLER;
     QString tagFLIF;
-    QString tagFLCtId;
     QString AutoSavePath;
     QString StandardSavePath;
 };
