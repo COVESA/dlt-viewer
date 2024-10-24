@@ -38,7 +38,7 @@ QDltOptManager* OptManagerTest::m_manager = nullptr;
 TEST_F(OptManagerTest, txtConversion) {
     auto args = QStringList() << "executable" << "-t" << "-c" << "output.txt" << "input.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_EQ(m_manager->getConvertDestFile(), "output.txt");
@@ -49,7 +49,7 @@ TEST_F(OptManagerTest, txtConversion) {
 TEST_F(OptManagerTest, txtConversionSilentUtf8Mode) {
     auto args = QStringList() << "executable" << "-t" << "-s" << "-u" << "-c" << "output.txt" << "input.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_TRUE(m_manager->issilentMode());
@@ -62,7 +62,7 @@ TEST_F(OptManagerTest, txtConversionSilentUtf8Mode) {
 TEST_F(OptManagerTest, txtConversionSilentAsciiMode) {
     auto args = QStringList() << "executable" << "-t" << "-s" << "-d" << "-c" << "output.txt" << "input.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_TRUE(m_manager->issilentMode());
@@ -75,7 +75,7 @@ TEST_F(OptManagerTest, txtConversionSilentAsciiMode) {
 TEST_F(OptManagerTest, csvConversionSilentMode) {
     auto args = QStringList() << "executable" << "-t" << "-s" << "-csv" << "-c" << "output.csv" << "input.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_TRUE(m_manager->issilentMode());
@@ -88,7 +88,7 @@ TEST_F(OptManagerTest, csvConversionSilentMode) {
 TEST_F(OptManagerTest, txtConversionSilentDdlMode) {
     auto args = QStringList() << "executable" << "-t" << "-s" << "decoded.dlp" << "-dd" << "-c" << "output.dlt" << "input.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_TRUE(m_manager->issilentMode());
@@ -106,7 +106,7 @@ TEST_F(OptManagerTest, pluginPostCommands) {
                               << "-e"
                               << "\"Filetransfer Plugin|export|ftransferdir\""
                               << "input.dlt";
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_EQ(m_manager->getProjectFile(), "export.dlp");
     EXPECT_TRUE(m_manager->getLogFiles().contains("input.dlt"));
@@ -119,7 +119,7 @@ TEST_F(OptManagerTest, pluginPreCommands) {
                               << "-b"
                               << "\"Filetransfer Plugin|export|ftransferdir\""
                               << "input.dlt";
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->getLogFiles().contains("input.dlt"));
     EXPECT_TRUE(m_manager->getPrePluginCommands().contains("\"Filetransfer Plugin|export|ftransferdir\""));
@@ -129,7 +129,7 @@ TEST_F(OptManagerTest, pluginPreCommands) {
 TEST_F(OptManagerTest, multipleLogFiles) {
     auto args = QStringList() << "executable" << "input1.dlt" << "input2.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->getLogFiles().contains("input1.dlt"));
     EXPECT_TRUE(m_manager->getLogFiles().contains("input2.dlt"));
@@ -138,7 +138,7 @@ TEST_F(OptManagerTest, multipleLogFiles) {
 TEST_F(OptManagerTest, pcapFile) {
     auto args = QStringList() << "executable" << "-t" << "-c" << "output.txt" << "input.pcap";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_EQ(m_manager->getConvertDestFile(), "output.txt");
@@ -149,7 +149,7 @@ TEST_F(OptManagerTest, pcapFile) {
 TEST_F(OptManagerTest, mf4Files) {
     auto args = QStringList() << "executable" << "-t" << "-c" << "output.txt" << "input1.mf4" << "input2.mf4";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->isTerminate());
     EXPECT_EQ(m_manager->getConvertDestFile(), "output.txt");
@@ -168,7 +168,7 @@ TEST_F(OptManagerTest, filterFile) {
                               << "-s"
                               << "-t";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(m_manager->getLogFiles().contains("input.dlt"));
     EXPECT_TRUE(m_manager->getFilterFiles().contains("filter.dlf"));
@@ -183,7 +183,7 @@ TEST_F(OptManagerTest, version) {
     // but any output will be enough to check the version call because it is always printed
     auto args = QStringList() << "executable" << "some.dlt";
 
-    m_manager->parse(std::move(args));
+    m_manager->parse(args);
 
     EXPECT_TRUE(logMessageSink.contains("Executable Name:"));
     EXPECT_TRUE(logMessageSink.contains("Build time:"));

@@ -280,7 +280,6 @@ MainWindow::~MainWindow()
     delete sortProxyModel;
 }
 
-
 void MainWindow::initState()
 {
     /* Settings */
@@ -5726,7 +5725,6 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #endif
                              QString("(C) 2016,2024 BMW AG\n"));
 }
-
 
 void MainWindow::on_action_menuHelp_Command_Line_triggered() {
     QMessageBox::information(
