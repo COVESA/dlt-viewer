@@ -97,7 +97,7 @@ jobs:
           cp ../scripts/darwin/install.md dist
           tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
       - name: Archive artifact
-        run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/dist
+        run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/install -i 'DLTViewer*'
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
