@@ -112,7 +112,7 @@ jobs:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: [ ubuntu-20.04 ]
+        ubuntu: [ ubuntu-22.04 ]
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
