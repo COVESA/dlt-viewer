@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
         for ( const auto& i : filterFiles )
         {
             qDebug() << "Load DLT Filter:" << i;
-            if(!filterList.LoadFilter(i,true))
+            if(!filterList.LoadFilter(i,false))
                 qDebug() << "ERROR: Failed loading filter:" << i;
             dltFile.setFilterList(filterList);
             dltFile.enableFilter(true);
