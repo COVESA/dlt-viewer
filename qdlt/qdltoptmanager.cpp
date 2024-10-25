@@ -188,12 +188,12 @@ void QDltOptManager::parse(const QStringList& args)
     }
 
     if (m_parser.isSet("e")) {
-        postPluginCommands += m_parser.value("e");
+        postPluginCommands += m_parser.values("e");
         commandline_mode = true;
     }
 
     if (m_parser.isSet("b")) {
-        prePluginCommands += m_parser.value("b");
+        prePluginCommands += m_parser.values("b");
         commandline_mode = true;
     }
 
