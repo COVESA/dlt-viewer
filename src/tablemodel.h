@@ -30,12 +30,9 @@
 #include "qdltpluginmanager.h"
 #include <qdltlrucache.hpp>
 
-#define DLT_VIEWER_LIST_BUFFER_SIZE 100024
-#define DLT_VIEWER_COLUMN_COUNT FieldNames::Arg0
+#include <optional>
 
-extern "C"
-{
-}
+#define DLT_VIEWER_COLUMN_COUNT FieldNames::Arg0
 
 class TableModel : public QAbstractTableModel
 {
@@ -69,7 +66,7 @@ private:
 
     // cache is used in data()-method to avoid decoding of the same message multiple times
     // key is a message index in the qdltfile; message can fail to decode, in that case value is empty optional
-    QDltLruCache<int, std::optional<QDltMsg>> m_cache{1};
+    mutable QDltLruCache<int, std::optional<QDltMsg>> m_cache{1};
 
     long int searchhit;
     QColor searchBackgroundColor() const;
