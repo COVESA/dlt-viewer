@@ -86,7 +86,7 @@ void QDltFilterList::addFilter(QDltFilter *_filter)
 
 
 #ifdef USECOLOR
-QColor QDltFilterList::checkMarker(QDltMsg &msg)
+QColor QDltFilterList::checkMarker(const QDltMsg &msg)
 {
     QDltFilter *filter;
     QColor color;
@@ -104,7 +104,7 @@ QColor QDltFilterList::checkMarker(QDltMsg &msg)
     return color;
 }
 #else
-QString QDltFilterList::checkMarker(QDltMsg &msg)
+QString QDltFilterList::checkMarker(const QDltMsg &msg)
 {
     QDltFilter *filter;
     QString color=""; // invalid colour

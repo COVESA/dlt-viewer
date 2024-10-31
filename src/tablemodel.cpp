@@ -69,6 +69,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
             return QVariant();
      }
 
+     if (role == Qt::TextAlignmentRole)
+     {
+         return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
+     }
+
      long int filterposindex = qfile->getMsgFilterPos(index.row());
 
      std::optional<QDltMsg> msg;
@@ -242,23 +247,15 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::ForegroundRole )
      {
-         // FIXME: handle case of msg being nullopt
-         /* Calculate background color and find optimal forground color */
-         return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(*msg,index.row(),filterposindex))));
+         /* Calculate background color and find optimal foreground color */
+         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(),filterposindex)));
      }
 
      if ( role == Qt::BackgroundRole )
      {
-         // FIXME: handle case of msg being nullopt
          /* Calculate background color */
-         return QVariant(QBrush(getMsgBackgroundColor(*msg,index.row(),filterposindex)));
+         return QBrush(getMsgBackgroundColor(msg, index.row(),filterposindex));
      }
-
-     // FIXME: this does not depend on msg, so can be moved up
-     if ( role == Qt::TextAlignmentRole )
-     {
-        return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
-    }
 
     if ( role == Qt::ToolTipRole )
     {
@@ -402,7 +399,7 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
     return QSize(doc.idealWidth(), doc.size().height());
 }
 
-QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterposindex) const
+QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
 {
     /* first check manual markers with highest priority */
     if ( selectedMarkerRows.contains(index) )
@@ -410,40 +407,43 @@ QColor TableModel::getMsgBackgroundColor(QDltMsg &msg,int index,long int filterp
       return manualMarkerColor;
     }
 
+    if (!msg.has_value())
+    {
+        return QColor(1, 2, 3);
+    }
+
     /* get check marker color */
-    QColor color = qfile->checkMarker(msg);
-    if(color.isValid())
+    if(QColor color = qfile->checkMarker(*msg); color.isValid())
     {
        /* Valid marker found, use background color as defined in marker */
        return color;
     }
-    else
+
+    if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
     {
-        if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
-        {
-            return searchBackgroundColor();
-        }
-        if ( searchhit > -1 && searchhit == index )
-        {
-          return searchhit_higlightColor;
-        }
-        if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
-        {
-           /* If automark error is enabled, set red as background color */
-           return QColor(255,0,0);
-        }
-        if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn")
-        {
-           /* If automark warning is enabled, set red as background color */
-           return QColor(255,255,0);
-        }
-        if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
-           msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
-        {
-            /* If automark marker is enabled, set green as background color */
-           return QColor(0,255,0);
-        }
+        return searchBackgroundColor();
     }
+    if ( searchhit > -1 && searchhit == index )
+    {
+      return searchhit_higlightColor;
+    }
+    if(project->settings->autoMarkFatalError && ( msg->getSubtypeString() == "error" || msg->getSubtypeString() == "fatal") )
+    {
+       /* If automark error is enabled, set red as background color */
+       return QColor(255,0,0);
+    }
+    if(project->settings->autoMarkWarn && msg->getSubtypeString() == "warn")
+    {
+       /* If automark warning is enabled, set red as background color */
+       return QColor(255,255,0);
+    }
+    if(project->settings->autoMarkMarker && msg->getType()==QDltMsg::DltTypeControl &&
+        msg->getSubtype()==QDltMsg::DltControlResponse && msg->getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+    {
+        /* If automark marker is enabled, set green as background color */
+       return QColor(0,255,0);
+    }
+
 
     /* default return white background color */
     QColor brushColor = QColor(255,255,255);
