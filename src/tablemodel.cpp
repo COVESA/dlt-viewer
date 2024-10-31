@@ -27,31 +27,6 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
-static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
-
-void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
-{
- if ( indexrow == lastrow)
- {
-  *msg = *lastmsg;
- }
- else
- {
-  *success = qfile->getMsg(filterposindex, *msg);
-  *lastmsg = *msg;
-  *decodeflag = 1;
- }
- if ( indexrow == 0)
- {
-  lastrow = 0;
- }
- else
- {
-  lastrow = indexrow;
- }
-}
-
-
 TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
@@ -62,7 +37,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      emptyForceFlag = false;
      loggingOnlyMode = false;
      searchhit = -1;
-     lastrow = -1;
  }
 
  TableModel::~TableModel()
@@ -78,15 +52,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
-     QByteArray buf;
-     static QDltMsg lastmsg;
-     static QDltMsg last_decoded_msg;
-     static unsigned int decodeflag = 0;
-
-     long int filterposindex = 0;
-
-
-     if (index.isValid() == false)
+     if (!index.isValid())
      {
          return QVariant();
      }
@@ -103,19 +69,21 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
             return QVariant();
      }
 
-     filterposindex = qfile->getMsgFilterPos(index.row());
+     long int filterposindex = qfile->getMsgFilterPos(index.row());
 
      std::optional<QDltMsg> msg;
      if (m_cache.exists(index.row())) {
          msg = m_cache.get(index.row());
      } else {
          QDltMsg omsg;
-         bool success = false;
-         getmessage(index.row(), filterposindex, &decodeflag, &omsg, &lastmsg,
-                    qfile, &success);
-         msg = success ? std::make_optional(omsg) : std::nullopt;
-         // TODO: populate cache if success == true
-         // TODO: decode if success == true
+         if (bool success = qfile->getMsg(filterposindex, omsg); success) {
+            msg = std::make_optional(omsg);
+            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
+                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
+            }
+         }
+
+         m_cache.put(index.row(), msg);
      }
 
      if (role == Qt::DisplayRole)
@@ -133,21 +101,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          }
          return QVariant();
        }
-
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = *msg;
-               pluginManager->decodeMsg(*msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = *msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
 
          QString visu_data;
          switch(index.column())
@@ -289,22 +242,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::ForegroundRole )
      {
-         /* decode message if not already decoded */
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = *msg;
-               pluginManager->decodeMsg(*msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = *msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
-
          // FIXME: handle case of msg being nullopt
          /* Calculate background color and find optimal forground color */
          return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(*msg,index.row(),filterposindex))));
@@ -312,23 +249,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::BackgroundRole )
      {
-
-         /* decode message if not already decoded */
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = *msg;
-               pluginManager->decodeMsg(*msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = *msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
-
          // FIXME: handle case of msg being nullopt
          /* Calculate background color */
          return QVariant(QBrush(getMsgBackgroundColor(*msg,index.row(),filterposindex)));
@@ -337,12 +257,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      // FIXME: this does not depend on msg, so can be moved up
      if ( role == Qt::TextAlignmentRole )
      {
-        /*switch(index.column())
-        {
-            //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            default:
-
-        }*/
         return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
     }
 
@@ -351,20 +265,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
         if (!msg.has_value())
         {
             return QString("!!CORRUPTED MESSAGE!!");
-        }
-        if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-        {
-            if ( decodeflag == 1 )
-            {
-                decodeflag = 0;
-                last_decoded_msg = *msg;
-                pluginManager->decodeMsg(*msg,!QDltOptManager::getInstance()->issilentMode());
-                last_decoded_msg = *msg;
-            }
-            else
-            {
-                msg = last_decoded_msg;
-            }
         }
 
         QString visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
@@ -434,7 +334,6 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          index(0, 0);
          index(0, columnCount() - 1);
      }
-     lastrow = -1;
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
