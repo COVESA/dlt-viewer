@@ -17,11 +17,15 @@ public:
     explicit DltTableView(QWidget *parent = 0);
     void lock();
     void unlock();
+
+signals:
+    void changeFontSize(int delta);
 private:
     QMutex paintMutex;
 
 protected:
-    void paintEvent(QPaintEvent *e);
+    void paintEvent(QPaintEvent *e) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 signals:
     

@@ -608,6 +608,15 @@ void MainWindow::initSignalConnections()
         ui->exploreView->scrollTo(
                     proxyModel->mapFromSource(fsModel->index(recentFiles[0])));
     });
+
+    connect(ui->tableView, &DltTableView::changeFontSize, this, [this](int direction){
+        QFont font;
+        font.fromString(settings->fontName);
+        int fontSize = font.pointSize() + direction;
+        font.setPointSize(fontSize);
+        settings->fontName = font.toString();
+        ui->tableView->setFont(font);
+    });
 }
 
 void MainWindow::initSearchTable()
@@ -2066,6 +2075,7 @@ void MainWindow::reloadLogFileFinishFilter()
         QList<int> list = dltIndexer->getGetLogInfoList();
         QDltMsg msg;
 
+        // FIXME: this is slow operation running in the main loop
         for(int num=0;num<list.size();num++)
         {
             if(qfile.getMsg(list[num],msg))
@@ -2082,7 +2092,6 @@ void MainWindow::reloadLogFileFinishFilter()
     // hide progress bar when finished
     statusProgressBar->reset();
     statusProgressBar->hide();
-
 }
 
 void MainWindow::reloadLogFileFinishDefaultFilter()
