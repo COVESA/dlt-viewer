@@ -487,7 +487,7 @@ void QDltFile::addFilterIndex (int index)
 }
 
 #ifdef USECOLOR
-    QColor QDltFile::checkMarker(QDltMsg &msg)
+    QColor QDltFile::checkMarker(const QDltMsg &msg)
     {
         if(!filterFlag)
         {
@@ -498,7 +498,7 @@ void QDltFile::addFilterIndex (int index)
     }
 
 #else
- QString QDltFile::checkMarker(QDltMsg &msg)
+ QString QDltFile::checkMarker(const QDltMsg &msg)
  {
      if(!filterFlag)
      {

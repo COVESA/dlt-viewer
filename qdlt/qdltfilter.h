@@ -130,7 +130,7 @@ public:
     /*!
       \return true if filter matches the message, else false
     */
-    bool match(QDltMsg &msg) const;
+    bool match(const QDltMsg &msg) const;
 
     //! Save filter parameters in XML file.
     /*!

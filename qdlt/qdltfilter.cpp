@@ -161,7 +161,7 @@ bool QDltFilter::compileRegexps()
             appidRegularExpression.isValid());
 }
 
-bool QDltFilter::match(QDltMsg &msg) const
+bool QDltFilter::match(const QDltMsg &msg) const
 {
 
     if( (true == enableEcuid) && (msg.getEcuid() != ecuid))
