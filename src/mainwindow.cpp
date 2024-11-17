@@ -685,8 +685,8 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     ui->checkBoxFilterRange->setEnabled(ui->filtersEnabled->isChecked());
-    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
-    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
 
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
@@ -1895,7 +1895,7 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     return;
 }
 
-void MainWindow::contextLoadingFile(QDltMsg &msg)
+void MainWindow::contextLoadingFile(const QDltMsg &msg)
 {
     /* analyse message, check if DLT control message response */
     if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
@@ -1931,7 +1931,7 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
 
         }
 
-        controlMessage_ReceiveControlMessage(ecuitemFound,msg);
+        controlMessage_ReceiveControlMessage(ecuitemFound, msg);
     }
 }
 
@@ -2058,15 +2058,14 @@ void MainWindow::reloadLogFileFinishFilter()
     m_searchtableModel->modelChanged();
 
     // process getLogInfoMessages
-    if(( dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
-    {
-        QList<int> list = dltIndexer->getGetLogInfoList();
-        QDltMsg msg;
+    if ((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) &&
+            settings->updateContextLoadingFile) {
+        const QList<int> &msgIndexList = dltIndexer->getGetLogInfoList();
 
         // FIXME: this is slow operation running in the main loop
-        for(int num=0;num<list.size();num++)
-        {
-            if(qfile.getMsg(list[num],msg))
+        QDltMsg msg;
+        for (const auto msgIndex : msgIndexList) {
+            if (qfile.getMsg(msgIndex, msg))
                 contextLoadingFile(msg);
         }
     }
@@ -4461,7 +4460,7 @@ void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & sel
     }
 }
 
-void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg &msg)
+void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QDltMsg &msg)
 {
     const char *ptr;
     int32_t length;
@@ -6399,7 +6398,7 @@ void MainWindow::updatePlugin(PluginItem *item)
     }
 }
 
-void MainWindow::versionString(QDltMsg &msg)
+void MainWindow::versionString(const QDltMsg &msg)
 {
     // get the version string from the version message
     // Skip the ServiceID, Status and Length bytes and start from the String containing the ECU Software Version

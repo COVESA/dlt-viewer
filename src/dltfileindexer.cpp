@@ -151,7 +151,6 @@ bool DltFileIndexer::index(int num)
     quint8 version=1;
     qint64 lengthOffset=2;
     qint64 storageLength=0;
-    int iPercent =0;
     errors_in_file  = 0;
     char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
 
@@ -378,7 +377,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 {
     QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
-    QTime time;
     quint64 ix = 0;
     unsigned int iPercent = 0;
 
@@ -429,12 +427,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return true;
     }
 
-    unsigned int modvalue = dltFile->size()/20;
-    if (modvalue == 0) // avoid divison by zero
-    {
-        modvalue = 1;
-    }
-
     // Initialise progress bar
     emit(progressText(QString("CFI %1/%2").arg(currentRun).arg(maxRun)));
     emit(progressMax(100));
@@ -470,7 +462,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     qDebug() << "Create filter index: Start";
 
     /* init fileprogress */
-    int progressCounter = 1;
+    unsigned int progressCounter = 1;
     emit progress(0);
 
     // Start reading messages
