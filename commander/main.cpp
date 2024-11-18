@@ -68,8 +68,8 @@ int main(int argc, char *argv[])
         for ( const auto& i : mf4Files )
         {
             qDebug() << "Import MF4 File:" << i;
-            QDltImporter importer;
-            importer.dltIpcFromMF4(outputfile,i,0,false);
+            QDltImporter importer(&outputfile);
+            importer.dltIpcFromMF4(i);
         }
         // load PCAP files
         QStringList pcapFiles = opt.getPcapFiles();
@@ -78,8 +78,8 @@ int main(int argc, char *argv[])
         for ( const auto& i : pcapFiles )
         {
             qDebug() << "Import PCAP File:" << i;
-            QDltImporter importer;
-            importer.dltIpcFromPCAP(outputfile,i,0,false);
+            QDltImporter importer(&outputfile);
+            importer.dltIpcFromPCAP(i);
         }
     }
 

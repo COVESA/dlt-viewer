@@ -2,6 +2,8 @@
 #define QDLTIMPORTER_H
 
 #include <QMap>
+#include <QThread>
+#include <QObject>
 
 #include "export_rules.h"
 #include "qfile.h"
@@ -152,26 +154,31 @@ typedef struct mdf_hdr {
         quint64 link_count;     /* number of links in link section */
 } PACKED mdf_hdr_t;
 
-class QDLT_EXPORT QDltImporter : public QObject
+class QDLT_EXPORT QDltImporter : public QThread
 {
     Q_OBJECT
 
 public:
 
-    explicit QDltImporter(QObject *parent=0);
+    explicit QDltImporter(QFile *outputfile, QStringList fileNames ,QObject *parent=0);
+    explicit QDltImporter(QFile *outputfile, QString fileName = "",QObject *parent=0);
     ~QDltImporter();
 
-    void dltIpcFromPCAP(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
-    void dltIpcFromMF4(QFile &outputfile,QString fileName,QWidget *parent,bool silent);
+    void run() override;
 
-private:
+    void dltIpcFromPCAP(QString fileName);
+    void dltIpcFromMF4(QString fileName);
 
-    bool dltFrame(QFile &outputfile,QByteArray &record,int pos,quint32 sec = 0,quint32 usec = 0);
-    bool dltFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
-    bool ipcFromEthernetFrame(QFile &outputfile,QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
-    bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QFile &outputfile,QByteArray &record,quint32 sec = 0,quint32 usec = 0);
+    void setOutputfile(QFile *newOutputfile);
 
-    void writeDLTMessageToFile(QFile &outputfile,QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec = 0,quint32 usec = 0);
+  private:
+
+    bool dltFrame(QByteArray &record,int pos,quint32 sec = 0,quint32 usec = 0);
+    bool dltFromEthernetFrame(QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
+    bool ipcFromEthernetFrame(QByteArray &record,int pos,quint16 etherType,quint32 sec = 0,quint32 usec = 0);
+    bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QByteArray &record,quint32 sec = 0,quint32 usec = 0);
+
+    void writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec = 0,quint32 usec = 0);
 
     mdf_idblock_t mdfIdblock;
     mdf_hdblocklinks_t hdBlockLinks;
@@ -189,9 +196,13 @@ private:
     QMap<quint16,int> channelGroupLength;
     QMap<quint16,QString> channelGroupName;
 
+    QFile *outputfile;
+    QStringList fileNames;
+
 signals:
 
     void progress(QString name,int status, int progress);
+    void resultReady(const QString &s);
 
 };
 
