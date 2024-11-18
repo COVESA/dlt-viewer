@@ -26,6 +26,8 @@ void DltTableView::wheelEvent(QWheelEvent *event)
         auto val = event->angleDelta().y();
         emit changeFontSize((0 < val) - (val < 0));
         event->accept();
+    } else {
+        QTableView::wheelEvent(event);
     }
 }
 
