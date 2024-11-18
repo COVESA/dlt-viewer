@@ -262,8 +262,14 @@ bool QDltFile::updateIndex()
         qint64 file_size = files[numFile]->infile.size();
         qint64 errors_in_file  = 0;
 
+        quint8 progressNextCmdOutput=10;
         while(true)
         {
+            if( (file_size>0) && ((pos*100/file_size)>=progressNextCmdOutput))
+            {
+                qDebug() << "CI:" << pos*100/file_size << "%";
+                progressNextCmdOutput+=10;
+            }
 
             /* read buffer from file */
             buf = files[numFile]->infile.read(READ_BUF_SZ);
@@ -438,7 +444,15 @@ bool QDltFile::updateIndexFilter()
         index = 0;
     }
 
+    quint8 progressNextCmdOutput=10;
     for(int num=index;num<size();num++) {
+
+        if( (size()>0) && ((num*100/size())>=progressNextCmdOutput))
+        {
+            qDebug() << "CFI:" << num*100/size() << "%";
+            progressNextCmdOutput+=10;
+        }
+
         buf = getMsg(num);
         if(!buf.isEmpty()) {
             msg.setMsg(buf,true,dltv2Support);
