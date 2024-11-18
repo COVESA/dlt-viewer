@@ -149,7 +149,6 @@ SOURCES += main.cpp \
     dltmsgqueue.cpp \
     dltfileindexerthread.cpp \
     dltfileindexerdefaultfilterthread.cpp \
-    mcudpsocket.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \

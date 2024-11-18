@@ -21,13 +21,11 @@
 #define PROJECT_H
 
 
-#include "qdlt.h"
 #include "plugintreewidget.h"
 #include "qdltipconnection.h"
 #include "qdltserialconnection.h"
 #include "qdltplugin.h"
 #include "qdltsettingsmanager.h"
-
 
 #include <QTreeWidget>
 #include <QDockWidget>
@@ -38,28 +36,9 @@
 #include <QSerialPort>
 #include <QPluginLoader>
 
-#if defined(_MSC_VER)
 #include <cstdint>
-#else
-#include <stdint.h>
-#endif
 
-#include "settingsdialog.h"
-#include "mcudpsocket.h"
-
-extern "C"
-{
-
-}
-
-#include "plugininterface.h"
-
-#define DLT_VIEWER_BUFFER_SIZE 256000
-#define RCVBUFSIZE 128000   /* Size of receive buffer */
 #define RECONNECT_TIMEOUT 3
-
-
-
 
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
 

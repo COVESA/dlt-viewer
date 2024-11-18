@@ -46,7 +46,6 @@ add_executable(dlt-viewer
     dltmsgqueue.cpp
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.cpp
-    mcudpsocket.cpp
     sortfilterproxymodel.cpp
     searchform.h
     searchform.cpp
