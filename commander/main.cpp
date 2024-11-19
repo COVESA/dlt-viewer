@@ -1,6 +1,7 @@
 #include <QCoreApplication>
 #include <QDebug>
 #include <QFile>
+#include <QTime>
 
 #include <qdltfile.h>
 #include <qdltfilter.h>
@@ -67,9 +68,11 @@ int main(int argc, char *argv[])
             qDebug() << "### Load MF4 files";
         for ( const auto& i : mf4Files )
         {
-            qDebug() << "Import MF4 File:" << i;
+            qDebug() << "Import MF4 File:" << i << "ms";
             QDltImporter importer(&outputfile);
+            //QTime timeStart = QTime::currentTime();
             importer.dltIpcFromMF4(i);
+            //qDebug() << "Duration:" << timeStart.msecsTo(QTime::currentTime());
         }
         // load PCAP files
         QStringList pcapFiles = opt.getPcapFiles();

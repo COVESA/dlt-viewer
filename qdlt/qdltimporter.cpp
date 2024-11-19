@@ -91,9 +91,10 @@ void QDltImporter::dltIpcFromPCAP(QString fileName)
         qDebug() << "fromPCAP:" << "Cannot open file" << fileName;
         return;
     }
+    quint64 fileSize = inputfile.size();
     while(inputfile.read((char*)&recordHeader,sizeof(pcaprec_hdr_t))==sizeof(pcaprec_hdr_t))
     {
-        int percent = inputfile.pos()*100/inputfile.size();
+        int percent = inputfile.pos()*100/fileSize;
         if(percent>=progressCounter)
         {
             progressCounter += 1;
@@ -373,9 +374,10 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
             mdf_plpRaw_t plpRaw;
             mdf_dltFrame_t dltFrameBlock;
             QByteArray recordData;
+            quint64 fileSize = inputfile.size();
             while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
             {
-                int percent = inputfile.pos()*100/inputfile.size();
+                int percent = inputfile.pos()*100/fileSize;
                 if(percent>=progressCounter)
                 {
                     progressCounter += 1;
@@ -1228,27 +1230,7 @@ void QDltImporter::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPa
     }
     dlt_set_id(str.ecu, ecuId.toLatin1());
 
-    // write data into file
-    //if(!ecuitem || !ecuitem->getWriteDLTv2StorageHeader())
-    {
-        // write version 1 storage header
-        outputfile->write((char*)&str,sizeof(DltStorageHeader));
-    }
-    /*else
-    {
-        // write version 2 storage header
-        outputfile->write((char*)"DLT",3);
-        quint8 version = 2;
-        outputfile->write((char*)&version,1);
-        quint32 nanoseconds = str.microseconds * 1000ul; // not in big endian format
-        outputfile->write((char*)&nanoseconds,4);
-        quint64 seconds = (quint64) str.seconds; // not in big endian format
-        outputfile->write(((char*)&seconds),5);
-        quint8 length;
-        length = ecuitem->id.length();
-        outputfile->write((char*)&length,1);
-        outputfile->write(ecuitem->id.toLatin1(),ecuitem->id.length());
-    }*/
+    outputfile->write((char*)&str,sizeof(DltStorageHeader));
     outputfile->write(bufferHeader);
     outputfile->write(bufferPayload,bufferPayloadSize);
 
