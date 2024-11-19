@@ -2,6 +2,7 @@
 #define QDLTEXPORTER_H
 
 #include <QObject>
+#include <QThread>
 #include <QFile>
 #include <QModelIndexList>
 
@@ -10,7 +11,7 @@
 #include "qdltmsg.h"
 #include "qdltpluginmanager.h"
 
-class QDLT_EXPORT QDltExporter : public QObject
+class QDLT_EXPORT QDltExporter : public QThread
 {
     Q_OBJECT
 
@@ -34,16 +35,16 @@ private:
      * \param file outputfile to write to
      * \return True if writing was succesfull, false if error occured
      */
-    bool writeCSVHeader(QFile *file);
+    bool writeCSVHeader();
 
     /* Write the message out to an open file
      * \param index True index to QDltFile of the message
      * \param to File to write to
      * \param msg msg to get the data from
      */
-    void writeCSVLine(int index, QFile *to, QDltMsg msg);
+    void writeCSVLine(int index, QDltMsg msg);
 
-    bool start();
+    bool startExport();
     bool finish();
     bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
     bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf);
@@ -53,7 +54,11 @@ public:
     /* Default QT constructor.
      * Please pass a window as a parameter to parent dialogs correctly.
      */
-    explicit QDltExporter(int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent = 0);
+    explicit QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
+                        QDltExporter::DltExportFormat exportFormat,
+                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent = 0);
+
+    void run() override;
 
     /* Export some messages from QDltFile to a CSV file.
      * \param from QDltFile to pull messages from
@@ -63,9 +68,7 @@ public:
      * \param exportSelection
      * \param selection Limit export to these messages. Leave to NULL to export everything,
      */
-    void exportMessages(QDltFile *from, QFile *to, QDltPluginManager *pluginManager,
-                        QDltExporter::DltExportFormat exportFormat,
-                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection = 0);
+    void exportMessages();
 
     void exportMessageRange(unsigned long start, unsigned long stop);
 
@@ -73,6 +76,7 @@ signals:
 
     void clipboard(QString text);
     void progress(QString name,int status, int progress);
+    void resultReady(const QString &s);
 
 public slots:
 
@@ -81,7 +85,7 @@ private:
     unsigned long int starting_index;
     unsigned long int stoping_index;
     QDltFile *from;
-    QFile *to;
+    QFile to;
     QString clipboardString;
     QDltPluginManager *pluginManager;
     QModelIndexList *selection;

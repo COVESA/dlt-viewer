@@ -875,69 +875,58 @@ void MainWindow::initFileHandling()
 
 void MainWindow::commandLineConvertToDLT()
 {
-    QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
-
     qDebug() << "### Convert to DLT";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
-    qDebug() << "Commandline DLT convert to " << dltFile.fileName();
-     //exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatAsciiQ,QDltExporter::SelectionFiltered);
-    exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDlt,QDltExporter::SelectionFiltered);
+    QDltExporter exporter(&qfile,QDltOptManager::getInstance()->getConvertDestFile(),&pluginManager,QDltExporter::FormatDlt,QDltExporter::SelectionFiltered,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    qDebug() << "Commandline DLT convert to " << QDltOptManager::getInstance()->getConvertDestFile();
+    exporter.exportMessages();
     qDebug() << "DLT export to DLT file format done";
 }
 
 
 void MainWindow::commandLineConvertToASCII()
 {
-    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
-
     qDebug() << "### Convert to ASCII";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
-    qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatAscii,QDltExporter::SelectionFiltered);
+    QDltExporter exporter(&qfile,QDltOptManager::getInstance()->getConvertDestFile(),&pluginManager,QDltExporter::FormatAscii,QDltExporter::SelectionFiltered,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    qDebug() << "Commandline ASCII convert to " << QDltOptManager::getInstance()->getConvertDestFile();
+    exporter.exportMessages();
     qDebug() << "DLT export ASCII done";
 }
 
 void MainWindow::commandLineConvertToCSV()
 {
-    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
-
     qDebug() << "### Convert to CSV";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
-    qDebug() << "Commandline ASCII convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatCsv,QDltExporter::SelectionFiltered);
+    QDltExporter exporter(&qfile,QDltOptManager::getInstance()->getConvertDestFile(),&pluginManager,QDltExporter::FormatCsv,QDltExporter::SelectionFiltered,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    qDebug() << "Commandline ASCII convert to " << QDltOptManager::getInstance()->getConvertDestFile();
+    exporter.exportMessages();
     qDebug() << "DLT export CSV done";
 }
 
 
 void MainWindow::commandLineConvertToUTF8()
 {
-    QFile asciiFile(QDltOptManager::getInstance()->getConvertDestFile());
-
     /* start exporter */
     qDebug() << "### Convert to UTF8";
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
-    qDebug() << "Commandline UTF8 convert to " << asciiFile.fileName();
-    exporter.exportMessages(&qfile,&asciiFile,&pluginManager,QDltExporter::FormatUTF8,QDltExporter::SelectionFiltered);
+    QDltExporter exporter(&qfile,QDltOptManager::getInstance()->getConvertDestFile(),&pluginManager,QDltExporter::FormatUTF8,QDltExporter::SelectionFiltered,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    qDebug() << "Commandline UTF8 convert to " << QDltOptManager::getInstance()->getConvertDestFile();
+    exporter.exportMessages();
     qDebug() << "DLT export UTF8 done";
 }
 
 void MainWindow::commandLineConvertToDLTDecoded()
 {
-    QFile dltFile(QDltOptManager::getInstance()->getConvertDestFile());
-
     qDebug() << "### Convert to DLT Decoded";
 
     /* start exporter */
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
-    qDebug() << "Commandline decoding to dlt formated file" << dltFile.fileName();
-    exporter.exportMessages(&qfile,&dltFile,&pluginManager,QDltExporter::FormatDltDecoded,QDltExporter::SelectionFiltered);
+    QDltExporter exporter(&qfile,QDltOptManager::getInstance()->getConvertDestFile(),&pluginManager,QDltExporter::FormatDltDecoded,QDltExporter::SelectionFiltered,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    qDebug() << "Commandline decoding to dlt formated file" << QDltOptManager::getInstance()->getConvertDestFile();
+    exporter.exportMessages();
     qDebug() << "DLT export DLT decoded done";
 }
 
@@ -1570,9 +1559,9 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
 
     filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    QDltExporter exporter(&qfile,"",&pluginManager,format,QDltExporter::SelectionSelected,&list,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
-    exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&list);
+    exporter.exportMessages();
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
 }
 
@@ -1608,9 +1597,9 @@ void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat forma
 
     filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
+    QDltExporter exporter(&qfile,"",&pluginManager,format,QDltExporter::SelectionSelected,&finallist,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
-    exporter.exportMessages(&qfile,0,&pluginManager,format,QDltExporter::SelectionSelected,&finallist);
+    exporter.exportMessages();
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
 }
 
@@ -1708,27 +1697,27 @@ void MainWindow::on_actionExport_triggered()
 
     /* change last export directory */
     workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
-    QDltExporter exporter(project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),this);
-    QFile outfile(fileName);
+    QDltExporter *exporterThread;
 
     unsigned long int startix, stopix;
     exporterDialog.getRange(&startix,&stopix);
 
     filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
-    connect(&exporter,SIGNAL(progress(QString,int,int)),this,SLOT(progress(QString,int,int)));
     if(exportSelection == QDltExporter::SelectionSelected) // marked messages
     {
-        //qDebug() << "Selection" << __LINE__;
-        exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection,&list);
+        exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,&list,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),this);
     }
     else
     {
-        //qDebug() << "No selection" << __LINE__;
-        exporter.exportMessageRange(startix,stopix);
-        exporter.exportMessages(&qfile, &outfile, &pluginManager,exportFormat,exportSelection);
+        exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),this);
+        exporterThread->exportMessageRange(startix,stopix);
     }
-    disconnect(&exporter,SIGNAL(progress(QString,int,int)),this,SLOT(progress(QString,int,int)));
+    connect(exporterThread, &QDltExporter::progress,    this, &MainWindow::progress);
+    connect(exporterThread, &QDltExporter::resultReady, this, &MainWindow::handleExportResults);
+    connect(exporterThread, &QDltExporter::finished,    exporterThread, &QObject::deleteLater);
+    statusProgressBar->show();
+    exporterThread->start();
 }
 
 void MainWindow::on_action_menuFile_SaveAs_triggered()
@@ -8556,4 +8545,9 @@ void MainWindow::handleImportResults(const QString &)
 {
     statusProgressBar->hide();
     reloadLogFile();
+}
+
+void MainWindow::handleExportResults(const QString &)
+{
+    statusProgressBar->hide();
 }
