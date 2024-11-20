@@ -4,7 +4,9 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
-	<key>CFBundleExecutable</key>
+ 	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+ 	<key>CFBundleExecutable</key>
 	<string>@MACOSX_BUNDLE_EXECUTABLE_NAME@</string>
 	<key>CFBundleGetInfoString</key>
 	<string>@MACOSX_BUNDLE_INFO_STRING@</string>
@@ -26,6 +28,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>@MACOSX_BUNDLE_BUNDLE_VERSION@</string>
+ 	<key>LSMinimumSystemVersion</key>
+  	<string>10.15</string>
 	<key>CSResourcesFileMapped</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
