@@ -443,10 +443,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // get silent mode
     bool silentMode = !QDltOptManager::getInstance()->issilentMode();
 
-    bool hasPlugins = (activeDecoderPlugins.size() + activeViewerPlugins.size()) > 0;
-    bool hasFilters = filterList.filters.size() > 0;
+    //bool hasPlugins = (activeDecoderPlugins.size() + activeViewerPlugins.size()) > 0;
+    //bool hasFilters = filterList.filters.size() > 0;
 
-    bool useIndexerThread = hasPlugins || hasFilters;
+    //bool useIndexerThread = hasPlugins || hasFilters;
 
     DltFileIndexerThread indexerThread
             (
@@ -461,10 +461,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 silentMode
             );
 
-    if(useIndexerThread)
+    /*if(useIndexerThread)
     {
         indexerThread.start(); // thread starts reading its queue
-    }
+    }*/
 
     qDebug() << "### Create filter index";
     qDebug() << "Create filter index: Start";
@@ -481,14 +481,14 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         if(!dltFile->getMsg(ix, *msg))
             continue; // Skip broken messages
 
-        if(true == useIndexerThread)
+        /*if(true == useIndexerThread)
         {
             indexerThread.enqueueMessage(msg, ix);
         }
         else
-        {
+        {*/
             indexerThread.processMessage(msg, ix);
-        }
+        //}
 
         if((end-start)!=0)
             iPercent = ( (ix-start)*100 )/(end-start);
@@ -503,23 +503,23 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         // stop if requested
         if(stopFlag)
         {
-            if(useIndexerThread)
+            /*if(useIndexerThread)
             {
                 indexerThread.requestStop();
                 indexerThread.wait();
-            }
+            }*/
 
             return false;
         }
     }
     emit(progress(100));
-    qDebug() << "IF:" << 100 << "%";
+    qDebug() << "CFI:" << 100 << "%";
     // destroy threads
-    if(true == useIndexerThread)
+    /*if(true == useIndexerThread)
     {
         indexerThread.requestStop();
         indexerThread.wait();
-    }
+    }*/
 
     // update performance counter
     //msecsFilterCounter = time.elapsed();
