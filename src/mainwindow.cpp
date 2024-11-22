@@ -4466,21 +4466,21 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
     length = payload.size();
 
     /* control message was received */
-    uint32_t service_id=0, service_id_tmp=0;
+    uint32_t service_id_tmp=0;
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-    service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
-
-    /* check if plugin autoload enabled and
-     * it is a version message and
-       version string not already parsed */
-    if(service_id == DLT_SERVICE_ID_GET_SOFTWARE_VERSION && (false == autoloadPluginsVersionEcus.contains(msg.getEcuid())))
-    {
-        versionString(msg);
-        autoloadPluginsVersionEcus.append(msg.getEcuid());
-    }
+    uint32_t service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
 
     switch (service_id)
     {
+    case DLT_SERVICE_ID_GET_SOFTWARE_VERSION:
+    {
+        // check if plugin autoload enabled and version string not already parsed
+        if(!autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+        {
+            versionString(msg);
+            autoloadPluginsVersionEcus.append(msg.getEcuid());
+        }
+    }
     case DLT_SERVICE_ID_GET_LOG_INFO:
     {
         /* Only status 1,2,6,7,8 is supported yet! */
@@ -4559,14 +4559,6 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
             }
         }
 
-        char com_interface[DLT_ID_SIZE];
-        DLT_MSG_READ_ID(com_interface,ptr,length);
-
-        if (length<0)
-        {
-            // wxMessageBox(_("Control Message corrupted!"),_("Receive Control Message"));
-        }
-
         break;
     }
     case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
@@ -4603,31 +4595,6 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
     }
     case DLT_SERVICE_ID_SET_LOG_LEVEL:
     {
-        uint8_t status=0;
-        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-        switch (status)
-        {
-        case 0: /* OK */
-        {
-            //conitem->status = EcuItem::valid;
-        }
-            break;
-        case 1: /* NOT_SUPPORTED */
-        {
-            //conitem->status = EcuItem::unknown;
-        }
-            break;
-        case 2: /* ERROR */
-        {
-            //conitem->status = EcuItem::invalid;
-        }
-            break;
-        }
-
-        /* update status*/
-        //conitem->update();
-
         break;
     }
     case DLT_SERVICE_ID_TIMEZONE:
