@@ -133,11 +133,11 @@ bool QDltExporter::startExport()
                 info.baseName();
                 QFile *file;
                 if(exportFormat == QDltExporter::FormatAscii)
-                    file = new QFile(to.fileName()+"\\"+info.baseName()+".txt");
+                    file = new QFile(to.fileName()+"/"+info.baseName()+".txt");
                 else if(exportFormat == QDltExporter::FormatUTF8)
-                    file = new QFile(to.fileName()+"\\"+info.baseName()+".txt");
+                    file = new QFile(to.fileName()+"/"+info.baseName()+".txt");
                 else if(exportFormat == QDltExporter::FormatCsv)
-                    file = new QFile(to.fileName()+"\\"+info.baseName()+".csv");
+                    file = new QFile(to.fileName()+"/"+info.baseName()+".csv");
                 QDltFilterList *filterList = new QDltFilterList();
                 if(!filterList->LoadFilter(filename,true))
                     qDebug() << "Export: Open filter file " << filename << " failed!";
@@ -175,7 +175,7 @@ bool QDltExporter::startExport()
                 QFileInfo info(filename);
                 info.baseName();
                 QFile *file;
-                file = new QFile(to.fileName()+"\\"+info.baseName()+".dlt");
+                file = new QFile(to.fileName()+"/"+info.baseName()+".dlt");
                 QDltFilterList *filterList = new QDltFilterList();
                 if(!filterList->LoadFilter(filename,true))
                     qDebug() << "Export: Open filter file " << filename << " failed!";
