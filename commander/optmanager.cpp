@@ -38,6 +38,7 @@ OptManager::OptManager()
     filter = false;
     convertionmode = e_ASCI;
     delimiter = ',';
+    multifilter = false;
 }
 
 /*OptManager* OptManager::getInstance()
@@ -92,6 +93,8 @@ void OptManager::printUsage()
     qDebug()<<" -csv\tConversion will be done in CSV format";
     qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
     qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
+    qDebug()<<" -multifilter\tMultifilter will generate a separate export file with the name of the filter.";
+    qDebug()<<"             \t-c will define the folder name, not the filename.";
     qDebug()<<"\nExamples:\n";
     qDebug().noquote() << executable << "-c .\\trace.txt c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "-c -u .\\trace.txt c:\\trace\\trace.dlt";
@@ -162,6 +165,12 @@ void OptManager::parse(QStringList *opt)
 
             convertionmode = e_CSV;
         }
+        else if(str.compare("-multifilter")==0)
+        {
+            qDebug() << "Multifilter export selected.";
+
+            multifilter = true;
+        }
         else if(str.compare("-d")==0)
         {
             qDebug() << "Convert to DLT";
@@ -198,6 +207,7 @@ void OptManager::parse(QStringList *opt)
 bool OptManager::isLogFile(){return log;}
 bool OptManager::isFilterFile(){return filter;}
 bool OptManager::isConvert(){return convert;}
+bool OptManager::isMultifilter(){return multifilter;}
 e_convertionmode OptManager::get_convertionmode(){return convertionmode;}
 QStringList OptManager::getLogFiles(){return logFiles;}
 QStringList OptManager::getFilterFiles(){return filterFiles;}

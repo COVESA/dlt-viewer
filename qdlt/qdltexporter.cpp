@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <QDebug>
 #include <QFile>
+#include <QFileInfo>
 
 #include "qdltexporter.h"
 #include "fieldnames.h"
@@ -58,10 +59,17 @@ bool QDltExporter::writeCSVHeader()
                     .arg(FieldNames::getName(FieldNames::Mode))
                     .arg(FieldNames::getName(FieldNames::ArgCount))
                     .arg(FieldNames::getName(FieldNames::Payload));
-    return to.write(header.toLatin1().constData()) < 0 ? false : true;
+    if(multifilterFilenames.isEmpty())
+        to.write(header.toLatin1().constData());
+    else
+    {
+        for(auto file: multifilterFilesList)
+            file->write(header.toLatin1().constData());
+    }
+    return true;
 }
 
-void QDltExporter::writeCSVLine(int index, QDltMsg msg)
+void QDltExporter::writeCSVLine(int index, QDltMsg msg,QFile &to)
 {
     QString text("");
 
@@ -108,30 +116,83 @@ bool QDltExporter::startExport()
        exportFormat == QDltExporter::FormatUTF8 ||
        exportFormat == QDltExporter::FormatCsv)
     {
-        if(!to.open(QIODevice::WriteOnly | QIODevice::Text))
+        if(multifilterFilenames.isEmpty())
         {
-            if (QDltOptManager::getInstance()->issilentMode())
+            if(!to.open(QIODevice::WriteOnly | QIODevice::Text))
             {
-                qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
+                if (QDltOptManager::getInstance()->issilentMode())
+                    qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
+                return false;
             }
-            //else
-                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                 //                 QString("Cannot open the export file %1").arg(to->fileName()));
-            return false;
+        }
+        else
+        {
+            for(auto filename : multifilterFilenames)
+            {
+                QFileInfo info(filename);
+                info.baseName();
+                QFile *file;
+                if(exportFormat == QDltExporter::FormatAscii)
+                    file = new QFile(to.fileName()+"\\"+info.baseName()+".txt");
+                else if(exportFormat == QDltExporter::FormatUTF8)
+                    file = new QFile(to.fileName()+"\\"+info.baseName()+".txt");
+                else if(exportFormat == QDltExporter::FormatCsv)
+                    file = new QFile(to.fileName()+"\\"+info.baseName()+".csv");
+                QDltFilterList *filterList = new QDltFilterList();
+                if(!filterList->LoadFilter(filename,true))
+                    qDebug() << "Export: Open filter file " << filename << " failed!";
+                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly | QIODevice::Text))
+                {
+                    qDebug() << "Multifilter export filename: " << file->fileName();
+                    multifilterFilesList.append(file);
+                    multifilterFilterList.append(filterList);
+                }
+                else
+                {
+                    qDebug() << "Export: Export multifilter file " << file->fileName() << " failed!";
+                    delete file;
+                    delete filterList;
+                }
+            }
+
         }
     }
     else if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
     {
-        if(!to.open(QIODevice::WriteOnly))
+        if(multifilterFilenames.isEmpty())
         {
-            if (QDltOptManager::getInstance()->issilentMode() )
+            if(!to.open(QIODevice::WriteOnly))
             {
-                qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
+                if (QDltOptManager::getInstance()->issilentMode())
+                    qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
+                return false;
             }
-            //else
-                //QMessageBox::critical(qobject_cast<QWidget *>(parent()), QString("DLT Viewer"),
-                 //                 QString("Cannot open the export file %1").arg(to->fileName()));
-            return false;
+        }
+        else
+        {
+            for(auto filename : multifilterFilenames)
+            {
+                QFileInfo info(filename);
+                info.baseName();
+                QFile *file;
+                file = new QFile(to.fileName()+"\\"+info.baseName()+".dlt");
+                QDltFilterList *filterList = new QDltFilterList();
+                if(!filterList->LoadFilter(filename,true))
+                    qDebug() << "Export: Open filter file " << filename << " failed!";
+                qDebug() << "Multifilter export filename: " << file->fileName();
+                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly))
+                {
+                    multifilterFilesList.append(file);
+                    multifilterFilterList.append(filterList);
+                }
+                else
+                {
+                    delete file;
+                    delete filterList;
+                    qDebug() << "Export: Export multifilter file " << filename << " failed!";
+                }
+            }
+
         }
     }
 
@@ -185,8 +246,22 @@ bool QDltExporter::finish()
        exportFormat == QDltExporter::FormatDlt ||
        exportFormat == QDltExporter::FormatDltDecoded)
     {
-        /* close output file */
-        to.close();
+        if(multifilterFilenames.isEmpty())
+            to.close();
+        else
+        {
+            for(auto file : multifilterFilesList)
+            {
+                file->close();
+                delete file;
+            }
+            for(auto filterList : multifilterFilterList)
+            {
+                delete filterList;
+            }
+            multifilterFilterList.clear();
+            multifilterFilesList.clear();
+        }
     }
     else if (exportFormat == QDltExporter::FormatClipboard ||
              exportFormat == QDltExporter::FormatClipboardPayloadOnly ||
@@ -252,7 +327,7 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
     return result;
 }
 
-bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf)
+bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf,QFile &to)
 {
     if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
     {
@@ -315,11 +390,11 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
     else if(exportFormat == QDltExporter::FormatCsv)
     {
         if(exportSelection == QDltExporter::SelectionAll)
-            writeCSVLine(num, msg);
+            writeCSVLine(num, msg,to);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            writeCSVLine(from->getMsgFilterPos(num), msg);
+            writeCSVLine(from->getMsgFilterPos(num), msg,to);
         else if(exportSelection == QDltExporter::SelectionSelected)
-            writeCSVLine(from->getMsgFilterPos(selectedRows[num]), msg);
+            writeCSVLine(from->getMsgFilterPos(selectedRows[num]), msg,to);
         else
             return false;
     }
@@ -364,6 +439,11 @@ void QDltExporter::exportMessageRange(unsigned long start, unsigned long stop)
 void QDltExporter::setFilterList(QDltFilterList &filterList)
 {
     this->filterList = filterList;
+}
+
+void QDltExporter::setMultifilterFilenames(QStringList multifilterFilenames)
+{
+    this->multifilterFilenames=multifilterFilenames;
 }
 
 void QDltExporter::exportMessages()
@@ -457,15 +537,31 @@ void QDltExporter::exportMessages()
         if(filterList.isEmpty() || filterList.checkFilter(msg))
         {
             // export message
-            if(!exportMsg(starting,msg,buf))
+            if(multifilterFilenames.isEmpty())
             {
-                // finish();
-              //qDebug() << "DLT Export exportMsg() failed";
-              exportErrors++;
-              continue;
+                if(!exportMsg(starting,msg,buf,to))
+                {
+                    // finish();
+                  //qDebug() << "DLT Export exportMsg() failed";
+                  exportErrors++;
+                  continue;
+                }
+                else
+                   exportCounter++;
             }
             else
-               exportCounter++;
+            {
+                for(int num=0;num<multifilterFilterList.size();num++)
+                {
+                    if(multifilterFilterList[num]->checkFilter(msg))
+                    {
+                        if(!exportMsg(starting,msg,buf,*multifilterFilesList[num]))
+                            exportErrors++;
+                        else
+                            exportCounter++;
+                    }
+                }
+            }
         }
 
     } // for loop

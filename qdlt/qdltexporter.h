@@ -42,12 +42,12 @@ private:
      * \param to File to write to
      * \param msg msg to get the data from
      */
-    void writeCSVLine(int index, QDltMsg msg);
+    void writeCSVLine(int index, QDltMsg msg,QFile &to);
 
     bool startExport();
     bool finish();
     bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
-    bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf);
+    bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf,QFile &to);
 
 public:
 
@@ -77,6 +77,11 @@ public:
      */
     void setFilterList(QDltFilterList &filterList);
 
+    /* Multifilter will be used if set to export to separate file for each Filter
+     * \param filterListmultifilterNames All filenames of the filters
+     */
+    void setMultifilterFilenames(QStringList multifilterFilenames);
+
   signals:
 
     void clipboard(QString text);
@@ -102,6 +107,9 @@ private:
     int dst; // project and local setting
     char delimiter;
     QDltFilterList filterList;
+    QStringList multifilterFilenames;
+    QList<QFile*> multifilterFilesList;
+    QList<QDltFilterList*> multifilterFilterList;
 };
 
 #endif // QDLTEXPORTER_H

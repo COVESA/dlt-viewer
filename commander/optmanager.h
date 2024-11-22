@@ -47,6 +47,7 @@ public:
     bool isFilterFile();
     bool isConvert();
     bool isConvertUTF8();
+    bool isMultifilter();
 
     e_convertionmode get_convertionmode();
 
@@ -64,6 +65,7 @@ private:
     bool log;
     bool filter;
     bool convert;
+    bool multifilter;
     e_convertionmode convertionmode;
 
     QStringList logFiles;

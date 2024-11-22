@@ -127,7 +127,10 @@ int main(int argc, char *argv[])
         {
             qDebug() << "### Convert to DLT";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
-            exporter.setFilterList(filterList);
+            if(opt.isMultifilter())
+                exporter.setMultifilterFilenames(opt.getFilterFiles());
+            else
+                exporter.setFilterList(filterList);
             qDebug() << "Commandline DLT convert to " << opt.getConvertDestFile();
             exporter.exportMessages();
             qDebug() << "DLT export to DLT file format done";
@@ -136,7 +139,10 @@ int main(int argc, char *argv[])
         {
             qDebug() << "### Convert to ASCII";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
-            exporter.setFilterList(filterList);
+            if(opt.isMultifilter())
+                exporter.setMultifilterFilenames(opt.getFilterFiles());
+            else
+                exporter.setFilterList(filterList);
             qDebug() << "Commandline ASCII convert to " << opt.getConvertDestFile();
             exporter.exportMessages();
             qDebug() << "DLT export ASCII done";
@@ -145,7 +151,10 @@ int main(int argc, char *argv[])
         {
             qDebug() << "### Convert to CSV";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
-            exporter.setFilterList(filterList);
+            if(opt.isMultifilter())
+                exporter.setMultifilterFilenames(opt.getFilterFiles());
+            else
+                exporter.setFilterList(filterList);
             qDebug() << "Commandline CSV convert to " << opt.getConvertDestFile();
             exporter.exportMessages();
             qDebug() << "DLT export CSV done";
@@ -154,7 +163,10 @@ int main(int argc, char *argv[])
         {
             qDebug() << "### Convert to UTF8";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
-            exporter.setFilterList(filterList);
+            if(opt.isMultifilter())
+                exporter.setMultifilterFilenames(opt.getFilterFiles());
+            else
+                exporter.setFilterList(filterList);
             qDebug() << "Commandline UTF8 convert to " << opt.getConvertDestFile();
             exporter.exportMessages();
             qDebug() << "DLT export UTF8 done";
