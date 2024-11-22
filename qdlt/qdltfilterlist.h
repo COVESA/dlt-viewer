@@ -64,6 +64,12 @@ public:
     */
     void clearFilter();
 
+    //! Return true if Filter list is empty
+    /*!
+      This includes all positive and negative filters and markers.
+    */
+    bool isEmpty();
+
     //! Add a filter to the filter list.
     /*!
       \param filter the filter configuration

@@ -72,7 +72,12 @@ public:
 
     void exportMessageRange(unsigned long start, unsigned long stop);
 
-signals:
+    /* If a filter list is set, an additional filter is applied when exporting
+     * \param filterList Copy of filter list
+     */
+    void setFilterList(QDltFilterList &filterList);
+
+  signals:
 
     void clipboard(QString text);
     void progress(QString name,int status, int progress);
@@ -96,6 +101,7 @@ private:
     qlonglong utcOffset; // project and local setting
     int dst; // project and local setting
     char delimiter;
+    QDltFilterList filterList;
 };
 
 #endif // QDLTEXPORTER_H

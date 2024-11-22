@@ -78,6 +78,11 @@ void QDltFilterList::clearFilter()
     //qDebug() << "clearFilter: Clear filter";
 }
 
+bool QDltFilterList::isEmpty()
+{
+    return filters.isEmpty();
+}
+
 void QDltFilterList::addFilter(QDltFilter *_filter)
 {
     filters.append(_filter);
