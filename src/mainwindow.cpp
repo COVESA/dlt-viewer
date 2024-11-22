@@ -1897,42 +1897,38 @@ void MainWindow::on_action_menuFile_Clear_triggered()
 
 void MainWindow::contextLoadingFile(const QDltMsg &msg)
 {
-    /* analyse message, check if DLT control message response */
-    if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
+    /* find ecu item */
+    EcuItem *ecuitemFound = 0;
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
-        /* find ecu item */
-        EcuItem *ecuitemFound = 0;
-        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem->id == msg.getEcuid())
         {
-            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if(ecuitem->id == msg.getEcuid())
-            {
-                ecuitemFound = ecuitem;
-                break;
-            }
+            ecuitemFound = ecuitem;
+            break;
         }
-
-        if(!ecuitemFound)
-        {
-            /* no Ecuitem found, create a new one */
-            ecuitemFound = new EcuItem(0);
-
-            /* update ECU item */
-            ecuitemFound->id = msg.getEcuid();
-            ecuitemFound->update();
-
-            /* add ECU to configuration */
-            project.ecu->addTopLevelItem(ecuitemFound);
-
-            /* Update the ECU list in control plugins */
-            updatePluginsECUList();
-
-            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-
-        }
-
-        controlMessage_ReceiveControlMessage(ecuitemFound, msg);
     }
+
+    if(!ecuitemFound)
+    {
+        /* no Ecuitem found, create a new one */
+        ecuitemFound = new EcuItem(0);
+
+        /* update ECU item */
+        ecuitemFound->id = msg.getEcuid();
+        ecuitemFound->update();
+
+        /* add ECU to configuration */
+        project.ecu->addTopLevelItem(ecuitemFound);
+
+        /* Update the ECU list in control plugins */
+        updatePluginsECUList();
+
+        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
+
+    }
+
+    controlMessage_ReceiveControlMessage(ecuitemFound, msg);
 }
 
 void MainWindow::reloadLogFileStop()
