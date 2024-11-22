@@ -361,6 +361,11 @@ void QDltExporter::exportMessageRange(unsigned long start, unsigned long stop)
     this->stoping_index=stop;
 }
 
+void QDltExporter::setFilterList(QDltFilterList &filterList)
+{
+    this->filterList = filterList;
+}
+
 void QDltExporter::exportMessages()
 {
     QDltMsg msg;
@@ -375,6 +380,7 @@ void QDltExporter::exportMessages()
     clipboardString.clear();
     unsigned long int starting = 0;
     unsigned long int stoping = this->size;
+
     /* start export */
     if(false == startExport())
     {
@@ -448,17 +454,20 @@ void QDltExporter::exportMessages()
             if(isApplied) msg.getMsg(buf,true);
         }
 
-        // export message
-        if(!exportMsg(starting,msg,buf))
+        if(filterList.isEmpty() || filterList.checkFilter(msg))
         {
-            // finish();
-          //qDebug() << "DLT Export exportMsg() failed";
-          exportErrors++;
-          continue;
+            // export message
+            if(!exportMsg(starting,msg,buf))
+            {
+                // finish();
+              //qDebug() << "DLT Export exportMsg() failed";
+              exportErrors++;
+              continue;
+            }
+            else
+               exportCounter++;
         }
 
-     else
-        exportCounter++;
     } // for loop
 
     emit progress("",3,100);
