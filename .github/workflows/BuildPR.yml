@@ -135,6 +135,23 @@ jobs:
           name: DLTViewer-linux-x86_64
           path: build/dist/DLTViewer*.tgz
 
+  buildUbuntu22and24:
+    name: Build ${{ matrix.ubuntu }}
+    strategy:
+      matrix:
+        ubuntu: [ ubuntu-22.04, ubuntu-24.04 ]
+    runs-on: ${{ matrix.ubuntu }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: install build environment
+        run: scripts/linux/installUbuntu22and24.sh
+      - name: Build project
+        run: scripts/linux/buildUbuntu22and24.sh
+
   buildWindows:
     name: Build Windows
     strategy:
