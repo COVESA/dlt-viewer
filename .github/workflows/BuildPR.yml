@@ -108,7 +108,7 @@ jobs:
           path: build/dist/DLTViewer*.tgz
 
 
-  buildLinux:
+  buildUbuntu20:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
@@ -121,9 +121,9 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/linux/install.sh
+        run: scripts/linux/installUbuntu20.sh
       - name: Build project
-        run: scripts/linux/build.sh
+        run: scripts/linux/buildUbuntu20.sh
       - name: Run tests
         run: ctest --test-dir build/qdlt
       - name: Make artifact executable

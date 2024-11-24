@@ -7,7 +7,7 @@ For DLT Viewer development on **MS Windows** please see [Windows development env
 Configuration:
 - Modern desktop Linux, Ubuntu LTS is recommended.
 - Administrator rights `sudo`
-- Build environment [install.sh](./install.sh)
+- Build environment [install.sh](./installUbuntu20.sh)
     - `sudo dlt-viewer/scripts/linux/install.sh`
 - QT 5.15.2
     - Default QT version published with each Ubuntu version is different. Good one is installed by `install.sh`
@@ -36,7 +36,7 @@ sudo apt install code
 - If you still need to install DLT Viewer system wide, please use `DLT_USE_STANDARD_INSTALLATION_LOCATION` or provide other installation configuration CMake variables.
 - Build Release configuration and do `cmake --install .` for system wide install, or `cmake --install . --prefix DLTViewer` for local install.
     - Set CMake variable `DLT_USE_STANDARD_INSTALLATION_LOCATION=ON`, see [CMakeLists.txt](../CMakeLists.txt)
-    - OR set `DLT_USE_STANDARD_INSTALLATION_LOCATION=OFF` and use `DLT_XXX_INSTALLATION_PATH` variables, see [build.sh](./build.sh)
+    - OR set `DLT_USE_STANDARD_INSTALLATION_LOCATION=OFF` and use `DLT_XXX_INSTALLATION_PATH` variables, see [build.sh](./buildUbuntu20.sh)
 
 # Build release package
 - DLT Viewer for Linux is distributed as AppImage.
@@ -48,5 +48,5 @@ sudo apt install code
         - DT_RUNPATH documentation https://linux.die.net/man/1/ld
 
 - `linuxdeploy` utility is wrapped into CPack External generator.
-- [build.sh](./build.sh) script generates DLT Viewer AppImage and also produces TGZ file.
+- [build.sh](./buildUbuntu20.sh) script generates DLT Viewer AppImage and also produces TGZ file.
 - Please use oldest supported Ubuntu LTS, currently Ubuntu 18.04, to create AppImage package compatible with most of desktop Linux installations.
