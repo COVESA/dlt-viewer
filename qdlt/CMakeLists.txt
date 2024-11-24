@@ -42,7 +42,10 @@ add_library(qdlt SHARED
     fieldnames.cpp
     dltmessagematcher.cpp
     dltmessagematcher.h
-    qdltlrucache.hpp)
+    qdltlrucache.hpp
+    qdltctrlmsg.cpp
+    qdltctrlmsg.h
+)
 
 target_compile_definitions(qdlt PRIVATE
     BYTE_ORDER=LITTLE_ENDIAN

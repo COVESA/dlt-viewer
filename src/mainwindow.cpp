@@ -2066,8 +2066,9 @@ void MainWindow::reloadLogFileFinishFilter()
         // FIXME: this is slow operation running in the main loop
         for(int num=0;num<list.size();num++)
         {
-            if(qfile.getMsg(list[num],msg))
+            if(qfile.getMsg(list[num],msg)) {
                 contextLoadingFile(msg);
+            }
         }
     }
 
@@ -4463,10 +4464,15 @@ void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & sel
 
 void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg &msg)
 {
+    static bool printed = false;
+
     const char *ptr;
     int32_t length;
 
     QByteArray payload = msg.getPayload();
+    if (!printed)
+        qDebug() << "Hex payload" << payload.toHex();
+
     ptr = payload.constData();
     length = payload.size();
 
@@ -4511,6 +4517,8 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
                 apid[DLT_ID_SIZE] = 0;
 
                 DLT_MSG_READ_ID(apid,ptr,length);
+                if (!printed)
+                    qDebug() << apid;
 
                 uint16_t count_context_ids=0,count_context_ids_tmp=0;
                 DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
@@ -4530,6 +4538,9 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
                     int8_t trace_status=0;
                     DLT_MSG_READ_VALUE(trace_status,ptr,length,int8_t); /* No endian conversion necessary */
 
+                    if (!printed)
+                        qDebug() << "\t" << ctid << log_level << trace_status;
+
                     if (status==7)
                     {
                         uint16_t context_description_length=0,context_description_length_tmp=0;
@@ -4545,6 +4556,8 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
                             contextDescription = QString(QByteArray((char*)ptr,context_description_length));
                             ptr+=context_description_length;
                             length-=context_description_length;
+                            if (!printed)
+                                qDebug() << "\t" << contextDescription;
                         }
                     }
 
@@ -4560,8 +4573,12 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
                     applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
                     controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
                     ptr+=application_description_length;
+
+                    if (!printed)
+                        qDebug() << applicationDescription;
                 }
             }
+            printed = true;
         }
 
         char com_interface[DLT_ID_SIZE];
