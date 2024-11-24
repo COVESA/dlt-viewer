@@ -7139,14 +7139,10 @@ void MainWindow::filterUpdate()
 
         if(filter->enableRegexp_Appid || filter->enableRegexp_Context || filter->enableRegexp_Header || filter->enableRegexp_Payload)
         {
-            if(false == filter->compileRegexps())
+            if(!filter->compileRegexps())
             {
                 // This is also validated in the UI part
-#if QT_5_SUPPORTED_VERSION
-                qDebug() << "Error compiling a regexp" << Qt::endl << "in" << __FILE__ << __LINE__;
-#else
-                qDebug() << "Error compiling a regexp" << endl << "in" << __FILE__ << __LINE__;
-#endif
+                qDebug() << "Error compiling a regexp\nin" << __FILE__ << __LINE__;
             }
         }
 
@@ -7154,8 +7150,6 @@ void MainWindow::filterUpdate()
     }
     qfile.updateSortedFilter();
 }
-
-
 
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {

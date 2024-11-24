@@ -71,7 +71,6 @@
   \{
 */
 
-#include "dlt_types.h"
 #include "dlt_common.h"
 
 #ifdef __cplusplus
