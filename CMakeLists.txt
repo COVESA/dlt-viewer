@@ -61,7 +61,7 @@ endif()
 # Injection of the GCC-specific compilation flags
 if(CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "GCC detected, adding compile flags")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-variadic-macros -Wno-strict-aliasing -fPIC -std=c++17")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-variadic-macros -Wno-strict-aliasing -fPIC")
 endif()
 
 add_compile_definitions(QT5)
