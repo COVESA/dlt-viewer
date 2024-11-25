@@ -14,8 +14,8 @@ class EcuTree {
 
     struct App {
         struct Context {
-            uint8_t logLevel;
-            uint8_t traceStatus;
+            int8_t logLevel;
+            int8_t traceStatus;
             QString description;
         };
 

@@ -17,8 +17,8 @@ struct GetLogInfo {
     struct App {
         struct Ctx {
             IdType id;
-            uint8_t logLevel;
-            uint8_t traceStatus;
+            int8_t logLevel;
+            int8_t traceStatus;
             std::string description;
         };
 
