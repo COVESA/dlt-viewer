@@ -2119,6 +2119,9 @@ void MainWindow::reloadLogFileFinishFilter()
                     controlMessage_SetContext(ecuitemFound, appid, ctxid, ctxdata.description,
                                               ctxdata.logLevel, ctxdata.traceStatus);
                 }
+                if (!appdata.description.isEmpty()) {
+                    controlMessage_SetApplication(ecuitemFound, appid, appdata.description);
+                }
             }
         }
 
