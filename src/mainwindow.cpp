@@ -5499,89 +5499,56 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
 
 void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription)
 {
-    /* Try to find App */
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        if(appitem->id == apid)
-        {
-            appitem->description = appdescription;
-            appitem->update();
-            return;
-        }
+    if (auto appitem = ecuitem->find(apid); appitem) {
+        appitem->description = appdescription;
+        appitem->update();
+    } else {
+        appitem = new ApplicationItem(ecuitem);
+        appitem->id = apid;
+        appitem->description = appdescription;
+        appitem->update();
+        ecuitem->addChild(appitem);
     }
-
-    /* No app and no con found */
-    ApplicationItem* appitem = new ApplicationItem(ecuitem);
-    appitem->id = apid;
-    appitem->description = appdescription;
-    appitem->update();
-    ecuitem->addChild(appitem);
-
 }
 
 void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status)
 {
-    /* First try to find existing context */
-    //qDebug() << "New CTX for" << apid << ctid << ctdescription;
+    if (auto appitem = ecuitem->find(apid); appitem) {
 
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
-        {
-            ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-
-            if(appitem->id == apid && conitem->id == ctid)
-            {
-                /* set new log level and trace status */
-                conitem->loglevel = log_level;
-                conitem->tracestatus = trace_status;
-                conitem->description = ctdescription;
-                conitem->status = ContextItem::valid;
-                conitem->update();
-                return;
+        ContextItem *conitem = nullptr;
+        for (int numcontext = 0; numcontext < appitem->childCount(); numcontext++) {
+            ContextItem *currconitem = (ContextItem *)appitem->child(numcontext);
+            if (currconitem->id == ctid) {
+                conitem = currconitem;
             }
         }
-    }
 
-    /* Try to find App */
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        if(appitem->id == apid)
-        {
-            /* Add new context */
-            ContextItem* conitem = new ContextItem(appitem);
-            conitem->id = ctid;
-            conitem->loglevel = log_level;
-            conitem->tracestatus = trace_status;
-            conitem->description = ctdescription;
-            conitem->status = ContextItem::valid;
-            conitem->update();
+        if (!conitem) {
+            conitem = new ContextItem(appitem);
             appitem->addChild(conitem);
-
-            return;
         }
-    }
+        conitem->id = ctid;
+        conitem->loglevel = log_level;
+        conitem->tracestatus = trace_status;
+        conitem->description = ctdescription;
+        conitem->status = ContextItem::valid;
+        conitem->update();
+    } else {
+        appitem = new ApplicationItem(ecuitem);
+        appitem->id = apid;
+        appitem->description = "";
+        appitem->update();
+        ecuitem->addChild(appitem);
 
-    /* No app and no con found */
-    ApplicationItem* appitem = new ApplicationItem(ecuitem);
-    appitem->id = apid;
-    appitem->description = QString("");
-    appitem->update();
-    ecuitem->addChild(appitem);
-    ContextItem* conitem = new ContextItem(appitem);
-    conitem->id = ctid;
-    conitem->loglevel = log_level;
-    conitem->tracestatus = trace_status;
-    conitem->description = ctdescription;
-    conitem->status = ContextItem::valid;
-    conitem->update();
-    appitem->addChild(conitem);
+        ContextItem* conitem = new ContextItem(appitem);
+        conitem->id = ctid;
+        conitem->loglevel = log_level;
+        conitem->tracestatus = trace_status;
+        conitem->description = ctdescription;
+        conitem->status = ContextItem::valid;
+        conitem->update();
+        appitem->addChild(conitem);
+    }
 }
 
 void MainWindow::controlMessage_Timezone(int timezone, unsigned char dst)
@@ -5614,15 +5581,12 @@ void MainWindow::controlMessage_UnregisterContext(QString ecuId,QString appId,QS
         return;
 
     /* First try to find existing context */
-    for(int numapp = 0; numapp < ecuitemFound->childCount(); numapp++)
+    if(auto appitem = ecuitemFound->find(appId); appitem)
     {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitemFound->child(numapp);
-
         for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
         {
             ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-
-            if(appitem->id == appId && conitem->id == ctId)
+            if(conitem->id == ctId)
             {
                 /* remove context */
                 delete conitem->parent()->takeChild(conitem->parent()->indexOfChild(conitem));
