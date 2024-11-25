@@ -49,6 +49,8 @@
 #include <QTemporaryFile>
 #include <QtEndian>
 
+#include <set>
+
 /**
  * From QDlt.
  * Must be a "C" include to interpret the imports correctly
@@ -87,6 +89,7 @@ extern "C" {
 #include "tablemodel.h"
 #include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
+#include "qdltctrlmsg.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -2057,19 +2060,110 @@ void MainWindow::reloadLogFileFinishFilter()
     restoreSelection();
     m_searchtableModel->modelChanged();
 
+    struct Ecu {
+        struct Ctx {
+            std::string id;
+            uint8_t logLevel;
+            uint8_t traceStatus;
+            std::string description;
+
+            bool operator<(const Ctx& rhs) const {
+                return id < rhs.id;
+            }
+        };
+
+        using Ctxs = std::set<Ctx>;
+        using App = std::map<std::string, Ctxs>;
+
+        std::map<std::string, App> apps;
+
+        void add(const std::string& ecu, const std::string& app, const Ctx& ctx) {
+            apps[ecu][app].insert(ctx);
+        }
+
+        void print() const {
+            for (const auto& ecu : apps) {
+                qDebug() << ecu.first.c_str();
+                for (const auto& app : ecu.second) {
+                    qDebug() << "\t" << app.first.c_str();
+                    for (const auto& ctx : app.second) {
+                        qDebug() << "\t\t" << ctx.id.c_str() << ctx.description.c_str();
+                    }
+                }
+            }
+        }
+    };
+
     // process getLogInfoMessages
     if(( dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
     {
         QList<int> list = dltIndexer->getGetLogInfoList();
         QDltMsg msg;
-
+        Ecu ecus;
         // FIXME: this is slow operation running in the main loop
         for(int num=0;num<list.size();num++)
         {
-            if(qfile.getMsg(list[num],msg)) {
-                contextLoadingFile(msg);
+            using namespace qdlt::msg::payload;
+            if (qfile.getMsg(list[num], msg)) {
+                //contextLoadingFile(msg);
+                const auto payload = parse(
+                            {msg.getPayload().constData(), (unsigned long)msg.getPayload().size()},
+                            msg.getEndianness() == QDltMsg::DltEndiannessBigEndian);
+                const auto info = std::get<GetLogInfo>(payload);
+
+                for (const auto& app : info.apps) {
+                    for (const auto& ctx : app.ctxs) {
+                        ecus.add(
+                                    msg.getEcuid().toStdString(), asString(app.id),
+                                    {asString(ctx.id), ctx.logLevel, ctx.traceStatus, ctx.description});
+                    }
+                }
             }
         }
+        ecus.print();
+
+        // populate ECUs tree view
+        for (const auto& [ecuid, apps] : ecus.apps) {
+            /* find ecu item */
+            EcuItem *ecuitemFound = 0;
+            for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+            {
+                EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+                if(ecuitem->id == ecuid.c_str())
+                {
+                    ecuitemFound = ecuitem;
+                    break;
+                }
+            }
+
+            if(!ecuitemFound)
+            {
+                /* no Ecuitem found, create a new one */
+                ecuitemFound = new EcuItem(0);
+
+                /* update ECU item */
+                ecuitemFound->id = ecuid.c_str();
+                ecuitemFound->update();
+
+                /* add ECU to configuration */
+                project.ecu->addTopLevelItem(ecuitemFound);
+
+                /* Update the ECU list in control plugins */
+                updatePluginsECUList();
+
+                pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
+            }
+
+            for(const auto& [appid, ctxs] : apps) {
+                for(const auto& ctx : ctxs) {
+                    controlMessage_SetContext(ecuitemFound, QString::fromStdString(appid),
+                                              QString::fromStdString(ctx.id),
+                                              QString::fromStdString(ctx.description), ctx.logLevel,
+                                              ctx.traceStatus);
+                }
+            }
+        }
+
     }
 
     // reconnect ecus again
