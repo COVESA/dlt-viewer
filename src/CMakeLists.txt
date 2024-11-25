@@ -51,6 +51,8 @@ add_executable(dlt-viewer
     searchform.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc
+    ecutree.h
+    ecutree.cpp
     )
 
 target_link_libraries(dlt-viewer

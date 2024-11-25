@@ -50,6 +50,7 @@
 #include <QtEndian>
 
 #include <set>
+#include <ecutree.h>
 
 /**
  * From QDlt.
@@ -2060,46 +2061,12 @@ void MainWindow::reloadLogFileFinishFilter()
     restoreSelection();
     m_searchtableModel->modelChanged();
 
-    struct Ecu {
-        struct Ctx {
-            std::string id;
-            uint8_t logLevel;
-            uint8_t traceStatus;
-            std::string description;
-
-            bool operator<(const Ctx& rhs) const {
-                return id < rhs.id;
-            }
-        };
-
-        using Ctxs = std::set<Ctx>;
-        using App = std::map<std::string, Ctxs>;
-
-        std::map<std::string, App> apps;
-
-        void add(const std::string& ecu, const std::string& app, const Ctx& ctx) {
-            apps[ecu][app].insert(ctx);
-        }
-
-        void print() const {
-            for (const auto& ecu : apps) {
-                qDebug() << ecu.first.c_str();
-                for (const auto& app : ecu.second) {
-                    qDebug() << "\t" << app.first.c_str();
-                    for (const auto& ctx : app.second) {
-                        qDebug() << "\t\t" << ctx.id.c_str() << ctx.description.c_str();
-                    }
-                }
-            }
-        }
-    };
-
     // process getLogInfoMessages
     if(( dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
     {
         QList<int> list = dltIndexer->getGetLogInfoList();
         QDltMsg msg;
-        Ecu ecus;
+        EcuTree ecuTree;
         // FIXME: this is slow operation running in the main loop
         for(int num=0;num<list.size();num++)
         {
@@ -2111,25 +2078,18 @@ void MainWindow::reloadLogFileFinishFilter()
                             msg.getEndianness() == QDltMsg::DltEndiannessBigEndian);
                 const auto info = std::get<GetLogInfo>(payload);
 
-                for (const auto& app : info.apps) {
-                    for (const auto& ctx : app.ctxs) {
-                        ecus.add(
-                                    msg.getEcuid().toStdString(), asString(app.id),
-                                    {asString(ctx.id), ctx.logLevel, ctx.traceStatus, ctx.description});
-                    }
-                }
+                ecuTree.add(msg.getEcuid(), info);
             }
         }
-        ecus.print();
 
         // populate ECUs tree view
-        for (const auto& [ecuid, apps] : ecus.apps) {
+        for (auto& [ecuid, apps] : ecuTree.ecus) {
             /* find ecu item */
             EcuItem *ecuitemFound = 0;
             for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
             {
                 EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-                if(ecuitem->id == ecuid.c_str())
+                if(ecuitem->id == ecuid)
                 {
                     ecuitemFound = ecuitem;
                     break;
@@ -2142,7 +2102,7 @@ void MainWindow::reloadLogFileFinishFilter()
                 ecuitemFound = new EcuItem(0);
 
                 /* update ECU item */
-                ecuitemFound->id = ecuid.c_str();
+                ecuitemFound->id = ecuid;
                 ecuitemFound->update();
 
                 /* add ECU to configuration */
@@ -2154,12 +2114,10 @@ void MainWindow::reloadLogFileFinishFilter()
                 pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
             }
 
-            for(const auto& [appid, ctxs] : apps) {
-                for(const auto& ctx : ctxs) {
-                    controlMessage_SetContext(ecuitemFound, QString::fromStdString(appid),
-                                              QString::fromStdString(ctx.id),
-                                              QString::fromStdString(ctx.description), ctx.logLevel,
-                                              ctx.traceStatus);
+            for(const auto& [appid, appdata] : apps) {
+                for(const auto& [ctxid, ctxdata] : appdata.contexts) {
+                    controlMessage_SetContext(ecuitemFound, appid, ctxid, ctxdata.description,
+                                              ctxdata.logLevel, ctxdata.traceStatus);
                 }
             }
         }
