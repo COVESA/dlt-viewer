@@ -106,6 +106,8 @@ namespace Ui {
     class MainWindow;
 }
 
+class EcuTree;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -286,7 +288,6 @@ private:
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
-    void contextLoadingFile(QDltMsg &msg);
     void versionString(QDltMsg &msg);
     void pluginsAutoload(QString version);
 
@@ -386,6 +387,10 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
+
+private:
+    void contextLoadingFile(QDltMsg &msg);
+    void populateEcusTree(EcuTree &&);
 
 private slots:
     void reloadLogFileProgressMax(int num);

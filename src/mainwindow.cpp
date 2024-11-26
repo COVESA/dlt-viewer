@@ -1939,6 +1939,52 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
     }
 }
 
+void MainWindow::populateEcusTree(EcuTree&& ecuTree)
+{
+    // populate ECUs tree view
+    for (auto& [ecuid, apps] : ecuTree.ecus) {
+        /* find ecu item */
+        EcuItem *ecuitemFound = 0;
+        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+        {
+            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+            if(ecuitem->id == ecuid)
+            {
+                ecuitemFound = ecuitem;
+                break;
+            }
+        }
+
+        if(!ecuitemFound)
+        {
+            /* no Ecuitem found, create a new one */
+            ecuitemFound = new EcuItem(0);
+
+            /* update ECU item */
+            ecuitemFound->id = ecuid;
+            ecuitemFound->update();
+
+            /* add ECU to configuration */
+            project.ecu->addTopLevelItem(ecuitemFound);
+
+            /* Update the ECU list in control plugins */
+            updatePluginsECUList();
+
+            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
+        }
+
+        for(const auto& [appid, appdata] : apps) {
+            for(const auto& [ctxid, ctxdata] : appdata.contexts) {
+                controlMessage_SetContext(ecuitemFound, appid, ctxid, ctxdata.description,
+                                          ctxdata.logLevel, ctxdata.traceStatus);
+            }
+            if (!appdata.description.isEmpty()) {
+                controlMessage_SetApplication(ecuitemFound, appid, appdata.description);
+            }
+        }
+    }
+}
+
 void MainWindow::reloadLogFileStop()
 {
 
@@ -2072,63 +2118,17 @@ void MainWindow::reloadLogFileFinishFilter()
         {
             using namespace qdlt::msg::payload;
             if (qfile.getMsg(list[num], msg)) {
-                //contextLoadingFile(msg);
                 const auto payload = parse(
                             {msg.getPayload().constData(), (unsigned long)msg.getPayload().size()},
                             msg.getEndianness() == QDltMsg::DltEndiannessBigEndian);
+                // TODO: handle all types of messages
                 const auto info = std::get<GetLogInfo>(payload);
-
                 ecuTree.add(msg.getEcuid(), info);
             }
         }
 
-        // populate ECUs tree view
-        for (auto& [ecuid, apps] : ecuTree.ecus) {
-            /* find ecu item */
-            EcuItem *ecuitemFound = 0;
-            for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-            {
-                EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-                if(ecuitem->id == ecuid)
-                {
-                    ecuitemFound = ecuitem;
-                    break;
-                }
-            }
-
-            if(!ecuitemFound)
-            {
-                /* no Ecuitem found, create a new one */
-                ecuitemFound = new EcuItem(0);
-
-                /* update ECU item */
-                ecuitemFound->id = ecuid;
-                ecuitemFound->update();
-
-                /* add ECU to configuration */
-                project.ecu->addTopLevelItem(ecuitemFound);
-
-                /* Update the ECU list in control plugins */
-                updatePluginsECUList();
-
-                pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-            }
-
-            for(const auto& [appid, appdata] : apps) {
-                for(const auto& [ctxid, ctxdata] : appdata.contexts) {
-                    controlMessage_SetContext(ecuitemFound, appid, ctxid, ctxdata.description,
-                                              ctxdata.logLevel, ctxdata.traceStatus);
-                }
-                if (!appdata.description.isEmpty()) {
-                    controlMessage_SetApplication(ecuitemFound, appid, appdata.description);
-                }
-            }
-        }
-
+        populateEcusTree(std::move(ecuTree));
     }
-
-    // reconnect ecus again
-    //connectPreviouslyConnectedECUs();
 
     // We might have had readyRead events, which we missed
     readyRead();
