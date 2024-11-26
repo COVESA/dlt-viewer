@@ -2112,22 +2112,22 @@ void MainWindow::reloadLogFileFinishFilter()
     {
         QList<int> list = dltIndexer->getGetLogInfoList();
         QDltMsg msg;
-        EcuTree ecuTree;
+        CtrlMsgData ctrlMsgData;
         // FIXME: this is slow operation running in the main loop
         for(int num=0;num<list.size();num++)
         {
             using namespace qdlt::msg::payload;
             if (qfile.getMsg(list[num], msg)) {
-                const auto payload = parse(
+                auto payload = parse(
                             {msg.getPayload().constData(), (unsigned long)msg.getPayload().size()},
                             msg.getEndianness() == QDltMsg::DltEndiannessBigEndian);
-                // TODO: handle all types of messages
-                const auto info = std::get<GetLogInfo>(payload);
-                ecuTree.add(msg.getEcuid(), info);
+
+                ctrlMsgData.setEcuId(msg.getEcuid());
+                std::visit(ctrlMsgData, std::move(payload));
             }
         }
 
-        populateEcusTree(std::move(ecuTree));
+        populateEcusTree(std::move(ctrlMsgData.ecuTree));
     }
 
     // We might have had readyRead events, which we missed
