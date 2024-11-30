@@ -1941,48 +1941,52 @@ void MainWindow::contextLoadingFile(QDltMsg &msg)
 
 void MainWindow::populateEcusTree(EcuTree&& ecuTree)
 {
+    QList<QTreeWidgetItem*> ecus;
     // populate ECUs tree view
     for (auto& [ecuid, apps] : ecuTree.ecus) {
-        /* find ecu item */
-        EcuItem *ecuitemFound = 0;
-        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-        {
-            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if(ecuitem->id == ecuid)
-            {
-                ecuitemFound = ecuitem;
-                break;
-            }
-        }
+        /* no Ecuitem found, create a new one */
+        EcuItem* ecuItem = new EcuItem(nullptr);
 
-        if(!ecuitemFound)
-        {
-            /* no Ecuitem found, create a new one */
-            ecuitemFound = new EcuItem(0);
+        /* update ECU item */
+        ecuItem->id = ecuid;
 
-            /* update ECU item */
-            ecuitemFound->id = ecuid;
-            ecuitemFound->update();
-
-            /* add ECU to configuration */
-            project.ecu->addTopLevelItem(ecuitemFound);
-
-            /* Update the ECU list in control plugins */
-            updatePluginsECUList();
-
-            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-        }
-
+        QList<QTreeWidgetItem*> appsItems;
         for(const auto& [appid, appdata] : apps) {
+            ApplicationItem* appItem = new ApplicationItem(ecuItem);
+            appItem->id = appid;
+            appItem->description = appdata.description;
+            appItem->update();
+
+            QList<QTreeWidgetItem*> contextsItems;
             for(const auto& [ctxid, ctxdata] : appdata.contexts) {
-                controlMessage_SetContext(ecuitemFound, appid, ctxid, ctxdata.description,
-                                          ctxdata.logLevel, ctxdata.traceStatus);
+                ContextItem* conItem = new ContextItem(appItem);
+                conItem->id = ctxid;
+                conItem->loglevel = ctxdata.logLevel;
+                conItem->tracestatus = ctxdata.traceStatus;
+                conItem->description = ctxdata.description;
+                conItem->status = ContextItem::valid;
+                conItem->update();
+
+                contextsItems.append(conItem);
             }
-            if (!appdata.description.isEmpty()) {
-                controlMessage_SetApplication(ecuitemFound, appid, appdata.description);
-            }
+
+            appItem->addChildren(contextsItems);
+            appsItems.append(appItem);
         }
+
+        ecuItem->addChildren(appsItems);
+        ecuItem->update();
+
+        pluginManager.stateChanged(ecus.size(), QDltConnection::QDltConnectionOffline,
+                                   ecuItem->getHostname());
+
+        ecus.append(ecuItem);
     }
+
+    project.ecu->addTopLevelItems(ecus);
+
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
 }
 
 void MainWindow::reloadLogFileStop()
