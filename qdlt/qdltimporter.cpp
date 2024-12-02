@@ -342,25 +342,49 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
         qDebug() << "fromMF4: Cannot read datalist header";
         return;
     }
-    int numberOfLinks = mdfHeader.link_count;
+    int numberOfLinks = 0;
+    bool isDataBlock = false;
+    if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='L')
+    {
+        // Datalist detected, get number of datablocks
+        numberOfLinks = mdfHeader.link_count;
+        qDebug() << "fromMF4: Datalist detected";
+    }
+    else if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
+    {
+        // Only one Datalblock detected
+        numberOfLinks = 2;
+        isDataBlock = true;
+        qDebug() << "fromMF4: Datablock detected";
+    }
+    else
+    {
+        inputfile.close();
+        outputfile->close();
+        qDebug() << "fromMF4: Cannot find Datalist or Datablock";
+        return;
+    }
     for(int num=1;num<numberOfLinks;num++)
     {
-        quint64 addressOfDataBlock;
-        inputfile.seek(mdfDgBlockLinks.dg_data+sizeof(mdf_hdr_t)+num*sizeof(quint64));
-        if(inputfile.read((char*)&addressOfDataBlock,sizeof(quint64))!=sizeof(quint64))
+        if(!isDataBlock)
         {
-            inputfile.close();
-            outputfile->close();
-            qDebug() << "fromMF4: Cannot read datablock address";
-            return;
-        }
-        inputfile.seek(addressOfDataBlock);
-        if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
-        {
-            inputfile.close();
-            outputfile->close();
-            qDebug() << "fromMF4: Cannot read datablock header";
-            return;
+            quint64 addressOfDataBlock;
+            inputfile.seek(mdfDgBlockLinks.dg_data+sizeof(mdf_hdr_t)+num*sizeof(quint64));
+            if(inputfile.read((char*)&addressOfDataBlock,sizeof(quint64))!=sizeof(quint64))
+            {
+                inputfile.close();
+                outputfile->close();
+                qDebug() << "fromMF4: Cannot read datablock address";
+                return;
+            }
+            inputfile.seek(addressOfDataBlock);
+            if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
+            {
+                inputfile.close();
+                outputfile->close();
+                qDebug() << "fromMF4: Cannot read datablock header";
+                return;
+            }
         }
         if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
         {
