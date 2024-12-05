@@ -5,17 +5,194 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.26.0 RELEASE
-
+Version 2.27.0 RELEASE
 
 Known issues
 ------------
 
   * none
 
-
 Changes
 -------
+
+2.27.0
+
+* Fix MF4 import with only one datablock. (#596)
+* Build app for ubuntu 22 and 24
+  Rename Linux build
+* Rename Linux build
+* Fix multifilter export filepath
+* Multifilter export feature for dlt-commander (-multifilter) (#591)
+* DLT Commander remove creation of Filter index when exporting to speed up. (#590)
+* Remove extra thread for filter index to improve performance. (#589)
+* Updated Info.plist.in
+  Added minimum macOS version and category of application
+* Updated icon to meet Apple signing requirements
+* Improve speed MF4 import. (#585)
+* Background thread for export. (#584)
+* Background thread for import. (#582)
+* Progress output in dlt-commander. (#581)
+* Remove unused mcudpsocket class (#579)
+* rm unused mcudpsocket
+* add clang-format settings file
+  No enforcement, just as a tool and reference for
+  those who want to have convenient and consistent way
+  to format their code.
+* Fix wheel scrolling of the main tableview (#580)
+* LRU for main table model (#575)
+* Add generic lrucache structure
+* Use LRU cache
+* Handle color of corrupted messages
+* Change table view font on Ctrl + Wheel combination (#578)
+* Fix for command line parser issue with multiple arguments with same type. (#574)
+* Reapply "Use QCommandLineParser instead of custom cmd args parsing (#543)" (#566)
+* Simplify handling of logging only mode in log table view (#569)
+* Improve progress output. (#571)
+  Fix add multiple filter to dlt commander.
+  Enable filter when providing a filter file by the commandline.
+* Remove CtxId check from Filetransfer Plugin. (#570)
+* Add dlf file extension when saving filter (#567)
+* Windows update Script to use Qt 6.7.3. (#568)
+  Windows Multicore build for qmake.
+* Add QDltOptmanager unit tests and minor cleanup (#564)
+* Add unit tests for qdltoptmanager
+* Avoid double work when adding cmd argument
+  Reuse help text in main window
+* Avoid duplicate text on --version call
+* Remove redundant code in QDltOptmanager singleton
+* Avoid -Wempty-body compiler warnings
+* Fix and Improve RegEx Replace feature. (#565)
+  RegEx Replace will only be executed when filter matches.
+  Re enable RegEx Replace for DLT Export, no influence on non verbose messages anymore.
+* Linux build only with cmake in CI
+* Rename qmake build file for Windows
+* Rename build file for Darwin
+* Revert/Remove Regex Replace feature for DLT Export. (#556)
+  This causes currently issues with non verbose messages.
+* Fix setting filter index range start and stop when filter are active. (#555)
+* Revert "Use QCommandLineParser instead of custom cmd args parsing (#543)"
+* Enable Filter Regex Replacement also for exporting into DLT format. (#554)
+* Use QCommandLineParser instead of custom cmd args parsing (#543)
+  - avoid code duplication by reusing help text in main window
+  - add tests
+  Add QDltOptManager::reset method to have possibility
+  to test the singleton
+* Improve speed of MF4 and PCAP import. (#553)
+  Enable MF4 import of multiple data frames.
+* Additional port 3489 for DLT MF4 Import. (#552)
+* Reorder label in MacOS release job
+* Include MacOS artifacts to release action
+* MacOS release with codesign and notarization
+* Fix MAcOS release artifacts
+* Change regex replace func from std to qt internal. (#546)
+  CAUTION: Replacement placeholder changes from %1 to \1 .
+* Extend regex replace filter operation to all functionalities. (#545)
+* Fix qmake build (#544)
+* Run unit tests for Linux on CI (#538)
+* Build unit tests on CI
+* Run tests upon Linux build on CI
+* Accelerate linux build
+* Enable Debian build for noble. (#542)
+* Skip notarization on a fork
+  https://github.com/orgs/community/discussions/25217#discussioncomment-3246904
+* Removed creating tar from build
+  removed tar command from build as after notarization, binaries are tar'ed
+* Download on release MacOS x86 and arm64 artifacts separately
+   Notarization (copy)
+* Format yaml file
+* Notarization
+  Adding signing of macOS apps
+  Notarization
+  Syntax fixed
+* Make code backward compatible with Qt 5.12 (#531)
+  Names of the signals changed between Qt 5.12 and 5.15,
+  while we still need to maintain compatibility with 5.12
+* Keep console logging if app is launched from cmd (#528)
+* Increase precision of float ouput to 8 digits (#530)
+* Bump action
+* Abi in MacOS artifacts
+* Replace search progress dialog with an in-place progress bar (#509)
+* replace progress dialog with built-in progress bar
+* Adjust search input margins
+* Remove dead code related to payload range search functionality (#525)
+* remove functionality of payload search range
+  It was broken for long time and most probably
+  unused
+* Adjust layout of search dialog
+  Compensate gap due to removed payload-range
+  input fields
+* fix signal for socket error (#519)
+  The QAbstractSocket::error signal existed in Qt<5.15, but was renamed to
+  QAbstractSocket::errorOccured probably to avoid
+  https://stackoverflow.com/a/48250710
+  Since the codebase still uses the old style of connections
+  the compiler could not detect that signal does not exist anymore
+  and error was reported only on runtime:
+  "qt.core.qobject.connect: QObject::connect:
+  No such signal QTcpSocket::error(QAbstractSocket::SocketError)"
+* Testable search (#505)
+* Make tempPayload a local var
+* establish tools lib and tests infra
+* rm redundant SearchDialog::is_TimeStampRangeValid state var
+  If timestamp range search is selected
+  the loop will only continue if range is valid. It does not make sense
+  to check in functions below if range is valid since otherwise
+  that code cannot be even reached
+* implement matching for ctx and app Ids
+* use ctxid and appid match functionality in app
+* TimestampRange
+* use new timestamp filtering
+* text search using dltmessagematcher
+* fix build
+  move matcher to qdlt lib
+  enable c++17 in qmake config
+  The new code uses variant and optional
+  added in c++17 standard while qmake config was
+  setup restricted to c++11
+  enable tests only if gtest package found
+  Set c++17 standard in cmake
+  export class for windows linker
+* change parent of actions in config context menu (#522)
+  MainWindow was set as a parent of the context menu actions
+  as a result all actions ever created (upon each ctx menu open)
+  in one program session remained on heap until program is closed.
+  Assigning local menu variable as a parent deallocates actions
+  when menu is closed
+* Mac app store (#521)
+* Update README.md
+* Update INSTALL.md
+* Fix MF4 Import. (#518)
+* install qoffscreen plugin on windows (#510)
+* New command line option delimiter for CSV export. (#515)
+  Set dlt-commander export timezone to default.
+* Revert Rename of dlt_common. (#512)
+  Enable plugins if disabled when pre command called.
+* Rename dlt_common.c into dlt_common.cpp. (#506)
+  This makes sure c++ compiler is used and not plain c, failing with some error.
+  macOS Catalina
+* Update INSTALL.md
+* Update README.md
+* Update build.sh
+* Fix more compilation warnings (#499)
+* fix warning in PluginTreeWidget
+  due to comaprison of ints with different signedness
+* fix warnings in DltImporter::dltIpcFromMF4
+  comparison of integer expressions of different signedness
+* fix warnings in QDltMsg::checkMsgSize
+  comparison of integer expressions of different signedness
+* fix warnings in SettingsDialog::writeDlg
+   using integer constants in boolean context
+* fix warning in QDltPluginManager::setPluginPriority
+  + additional minor fixes
+* rm unused QDltPluginManager::sizeEnabled
+* replace deprecated constructor of QMessageBox
+* fix cast warnings in QDltArgument
+* DLT Commander Tool (#500)
+* Move Export, Import and Fieldname classes to qdlt.
+* Current limitation that progress bar is not updated.
+* First DLT Commander tool.
+* Command line only tool for environments without Qt GUI.
+* Finish first commander version.
 
 2.26.0
 
