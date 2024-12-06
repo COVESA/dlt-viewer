@@ -1,4 +1,6 @@
+#if defined (__WIN32__) || defined(_MSC_VER)
 #include <QtGlobal>
+#endif
 
 #ifndef EXPORT_RULES_H
 #define EXPORT_RULES_H
