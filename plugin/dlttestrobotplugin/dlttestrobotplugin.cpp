@@ -108,16 +108,7 @@ bool DltTestRobotPlugin::controlMsg(int , QDltMsg &)
     return false;
 }
 
-bool DltTestRobotPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
-    Q_UNUSED(index)
-    Q_UNUSED(connectionState)
-    Q_UNUSED(hostname)
-
-#if QT_5_SUPPORTED_VERSION
-    //qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
-#else
-    //qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
-#endif
+bool DltTestRobotPlugin::stateChanged(int, QDltConnection::QDltConnectionState, QString) {
     return true;
 }
 
