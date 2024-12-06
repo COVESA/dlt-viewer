@@ -42,6 +42,8 @@
 
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
 
+class ApplicationItem;
+
 class EcuItem  : public QTreeWidgetItem
 {
 public:
@@ -98,6 +100,8 @@ public:
     int32_t totalBytesRcvdLastTimeout;
     bool isAutoReconnectTimeoutPassed();
     void updateAutoReconnectTimestamp();
+
+    ApplicationItem* find(const QString& apid) const;
 
 private:
     QDateTime autoReconnectTimestamp;

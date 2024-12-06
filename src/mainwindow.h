@@ -273,7 +273,7 @@ private:
     void controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable);
     void controlMessage_GetSoftwareVersion(EcuItem* ecuitem);
     void controlMessage_GetLogInfo(EcuItem* ecuitem);
-    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem,QDltMsg &msg);
+    void controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QDltMsg &msg);
     void controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status);
     void controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription);
     void controlMessage_Marker();
@@ -286,8 +286,8 @@ private:
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
-    void contextLoadingFile(QDltMsg &msg);
-    void versionString(QDltMsg &msg);
+    void contextLoadingFile(const QDltMsg &msg);
+    void versionString(const QDltMsg &msg);
     void pluginsAutoload(QString version);
 
     void connectECU(EcuItem *ecuitem,bool force = false);
@@ -633,7 +633,6 @@ public:
 
 signals:
     void dltFileLoaded(const QStringList& paths);
-
 };
 
 #endif // MAINWINDOW_H

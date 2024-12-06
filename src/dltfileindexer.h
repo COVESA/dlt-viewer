@@ -128,7 +128,7 @@ public:
     // get index of all messages
     QVector<qint64> getIndexAll() { return indexAllList; }
     QVector<qint64> getIndexFilters() { return indexFilterList; }
-    QList<int> getGetLogInfoList() { return getLogInfoList; }
+    const QList<int>& getGetLogInfoList() { return getLogInfoList; }
 
     // let worker thread append to getLogInfoList
     void appendToGetLogInfoList(int value);
