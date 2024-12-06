@@ -48,6 +48,8 @@
 #include <QTextStream>
 #include <QTemporaryFile>
 #include <QtEndian>
+#include <QDir>
+#include <QDirIterator>
 
 /**
  * From QDlt.

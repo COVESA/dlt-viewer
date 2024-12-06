@@ -6,7 +6,7 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
 
 CONFIG += c++1z
 *-gcc* {
-    QMAKE_CFLAGS += -std=gnu99
+    QMAKE_CFLAGS += -std=c11
     QMAKE_CFLAGS += -Wall
     QMAKE_CFLAGS += -Wextra
     #QMAKE_CXXFLAGS += -pedantic
