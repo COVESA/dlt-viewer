@@ -120,18 +120,34 @@ void QDltOptManager::parse(const QStringList& args)
     if (m_parser.optionNames().isEmpty() && m_parser.positionalArguments().size() == 1)
     {
         const QString& arg = m_parser.positionalArguments().at(0);
+        bool closeConsole = false;
         if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))
         {
             projectFile = arg;
             project = true;
             qDebug()<< "Project filename:" << projectFile;
-            return;
+            closeConsole = true;
         }
         if (arg.endsWith(".dlt") || arg.endsWith(".DLT"))
         {
             const QString logFile = arg;
             logFiles += logFile;
             qDebug()<< "DLT filename:" << logFile;
+            closeConsole = true;
+        }
+
+        if(closeConsole)
+        {
+#if (WIN32 || WIN64)
+            HWND consoleWnd = GetConsoleWindow();
+            DWORD dwProcessId;
+            GetWindowThreadProcessId(consoleWnd, &dwProcessId);
+            if (GetCurrentProcessId() == dwProcessId)
+            {
+                // user launched the application with a double click on a dlt/project file: we do not need console
+                FreeConsole();
+            }
+#endif
             return;
         }
     }
