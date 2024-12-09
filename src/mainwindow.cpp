@@ -1315,8 +1315,8 @@ bool MainWindow::openDltFile(QStringList fileNames)
 
     // clear index filter
     ui->checkBoxFilterRange->setChecked(false);
-    ui->lineEditFilterStart->setText(QString("0"));
-    ui->lineEditFilterEnd->setText(QString("0"));
+    //ui->lineEditFilterStart->setText(QString("0"));
+    //ui->lineEditFilterEnd->setText(QString("%1").arg(qfile.size()));
 
     if (ret)
         emit dltFileLoaded(fileNames);
@@ -2022,6 +2022,12 @@ void MainWindow::reloadLogFileFinishIndex()
         statusProgressBar->reset();
         statusProgressBar->hide();
     }
+
+    ui->lineEditFilterStart->setText(QString("0"));
+    if(qfile.size()>0)
+        ui->lineEditFilterEnd->setText(QString("%1").arg(qfile.size()-1));
+    else
+        ui->lineEditFilterEnd->setText(QString("0"));
 }
 
 void MainWindow::reloadLogFileFinishFilter()
