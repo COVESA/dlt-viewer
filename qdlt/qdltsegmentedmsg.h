@@ -25,7 +25,6 @@
 #include "export_rules.h"
 
 #include <qdltmsg.h>
-#include <dlt_types.h>
 
 //! Combine segmented network messages
 /*!
