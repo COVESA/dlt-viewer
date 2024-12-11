@@ -59,7 +59,7 @@
 typedef int pid_t;
 #endif
 
-#ifdef TARGET_OS_MAC
+#ifdef __APPLE__
 typedef unsigned long speed_t;
 #else
 typedef unsigned int speed_t;

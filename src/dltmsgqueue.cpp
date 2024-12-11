@@ -1,6 +1,8 @@
 #include "dltmsgqueue.h"
 #include <QThread>
 
+#define QT_5_SUPPORTED_VERSION (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14) || (QT_VERSION_MAJOR >= 6)
+
 DltMsgQueue::DltMsgQueue(int size)
     : bufferSize(size),
       buffer(new QPair<QSharedPointer<QDltMsg>, int> [size]),
