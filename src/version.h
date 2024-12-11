@@ -23,12 +23,12 @@
 /* changing minor & major when layout of settings file config.ini changes */
 /* this kind of change is tracked in the settings dialogr */
 /* for other bugfixes and not major feature enhancement just use patch level */
-#define PACKAGE_VERSION_STATE "stable"
+#define PACKAGE_VERSION_STATE "unstable"
 #define PACKAGE_MAJOR_VERSION 2
-#define PACKAGE_MINOR_VERSION 27
+#define PACKAGE_MINOR_VERSION 28
 #define PACKAGE_PATCH_LEVEL 0
-#define PACKAGE_VERSION "2.27.0"
-#define PACKAGE_REVISION "stable"
+#define PACKAGE_VERSION "2.28.0"
+#define PACKAGE_REVISION "unstable"
 #define PACKAGE_DESCRIPTION "DLT Viewer"
 #define DLT_SUPPORT_MAIL_ADDRESS ""
 #define DLT_SUPPORT_NAME "COVESA"
