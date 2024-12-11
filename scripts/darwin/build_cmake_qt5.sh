@@ -11,17 +11,13 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-#if [[ $(uname -m) == 'arm64' ]]; then
-#  Qt5_DIR="/opt/homebrew/opt/qt@5"
-#  echo "Build with cmake $(uname -m) $Qt5_DIR"
-#  qmake ../BuildDltViewer.pro
-#  cmake ..
-#else
-#  Qt5_DIR="/usr/local/opt/qt"
-#  echo "Build with qmake $(uname -m) $Qt5_DIR"
-#  qmake ../BuildDltViewer.pro
-#  make
-#fi
+if [[ $(uname -m) == 'arm64' ]]; then
+  Qt5_DIR="/opt/homebrew/opt/qt@5"
+  echo "Build with cmake $(uname -m) $Qt5_DIR"
+else
+  Qt5_DIR="/usr/local/opt/qt"
+  echo "Build with qmake $(uname -m) $Qt5_DIR"
+fi
 
 #make
 

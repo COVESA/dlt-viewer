@@ -50,8 +50,3 @@ copy %BUILD_DIR%\libqdlt.a %TARGET_DIR%\sdk\lib
 copy %SOURCE_DIR%\plugin\dummyviewerplugin %TARGET_DIR%\sdk\src\dummyviewerplugin
 copy %SOURCE_DIR%\plugin\dummydecoderplugin %TARGET_DIR%\sdk\src\dummydecoderplugin
 copy %SOURCE_DIR%\plugin\dummycontrolplugin %TARGET_DIR%\sdk\src\dummycontrolplugin
-
-copy %SOURCE_DIR%\sdk\BuildPlugins.pro %TARGET_DIR%\sdk\src
-copy %SOURCE_DIR%\sdk\dummydecoderplugin.pro %TARGET_DIR%\sdk\src\dummydecoderplugin
-copy %SOURCE_DIR%\sdk\dummyviewerplugin.pro %TARGET_DIR%\sdk\src\dummyviewerplugin
-copy %SOURCE_DIR%\sdk\dummycontrolplugin.pro %TARGET_DIR%\sdk\src\dummycontrolplugin
