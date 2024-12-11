@@ -146,6 +146,7 @@ Q_EXPORT_PLUGIN2(dummyplugin, DummyPlugin);
 #endif
 ----
 
+TODO: Use cmake file instead.
 .dummyplugin.pro
 ----
 # include global settings for all DLT Viewer Plugins

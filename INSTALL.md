@@ -6,7 +6,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 * Install Qt5 SDK and Qt6 SDK including Qt Creator and Microsoft Visual Studio Build Tools 2019
 * Tested with QT 5.15.2 (Windows), QT 6.7.3 (Windows), and Qt 5.15.13 (Ubuntu 24.04LTS Linux)
-* Open project BuildDltViewer.pro in Qt Creator.
+* Open project CMakeLists.txt in Qt Creator.
 * Ensure that build options point to correct QT and MSVC.
 * Build Release in Qt Creator or via CMake (see last).
 * Optional Linux: set the library path in Qt Creator: Add variable to Projects/Build Settings/Build Environment: LD_LIBRARY_PATH = .
@@ -19,7 +19,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 * sudo apt install libqt5serialport5-dev
 * mkdir build
 * cd build
-* qmake ../BuildDltViewer.pro
+* cmake ..
 * make
 * sudo make install
 * sudo ldconfig
@@ -129,6 +129,7 @@ Steps to follow:
 
 * mkdir build
 * cd build
+* TODO: Change to cmake
 * <path to Qt folder>/Qt/5.X/gcc_64/bin/qmake <path to BuildDltViewer.pro>/BuildDltViewer.pro -r
 * make
 
