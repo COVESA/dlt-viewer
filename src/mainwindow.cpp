@@ -685,8 +685,8 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     ui->checkBoxFilterRange->setEnabled(ui->filtersEnabled->isChecked());
-    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
-    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & ui->filtersEnabled->isChecked());
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
 
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
@@ -1895,44 +1895,40 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     return;
 }
 
-void MainWindow::contextLoadingFile(QDltMsg &msg)
+void MainWindow::contextLoadingFile(const QDltMsg &msg)
 {
-    /* analyse message, check if DLT control message response */
-    if ( (msg.getType()==QDltMsg::DltTypeControl) && (msg.getSubtype()==QDltMsg::DltControlResponse))
+    /* find ecu item */
+    EcuItem *ecuitemFound = 0;
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
-        /* find ecu item */
-        EcuItem *ecuitemFound = 0;
-        for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem->id == msg.getEcuid())
         {
-            EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-            if(ecuitem->id == msg.getEcuid())
-            {
-                ecuitemFound = ecuitem;
-                break;
-            }
+            ecuitemFound = ecuitem;
+            break;
         }
-
-        if(!ecuitemFound)
-        {
-            /* no Ecuitem found, create a new one */
-            ecuitemFound = new EcuItem(0);
-
-            /* update ECU item */
-            ecuitemFound->id = msg.getEcuid();
-            ecuitemFound->update();
-
-            /* add ECU to configuration */
-            project.ecu->addTopLevelItem(ecuitemFound);
-
-            /* Update the ECU list in control plugins */
-            updatePluginsECUList();
-
-            pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-
-        }
-
-        controlMessage_ReceiveControlMessage(ecuitemFound,msg);
     }
+
+    if(!ecuitemFound)
+    {
+        /* no Ecuitem found, create a new one */
+        ecuitemFound = new EcuItem(0);
+
+        /* update ECU item */
+        ecuitemFound->id = msg.getEcuid();
+        ecuitemFound->update();
+
+        /* add ECU to configuration */
+        project.ecu->addTopLevelItem(ecuitemFound);
+
+        /* Update the ECU list in control plugins */
+        updatePluginsECUList();
+
+        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
+
+    }
+
+    controlMessage_ReceiveControlMessage(ecuitemFound, msg);
 }
 
 void MainWindow::reloadLogFileStop()
@@ -2064,15 +2060,14 @@ void MainWindow::reloadLogFileFinishFilter()
     m_searchtableModel->modelChanged();
 
     // process getLogInfoMessages
-    if(( dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) && settings->updateContextLoadingFile)
-    {
-        QList<int> list = dltIndexer->getGetLogInfoList();
-        QDltMsg msg;
+    if ((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) &&
+            settings->updateContextLoadingFile) {
+        const QList<int> &msgIndexList = dltIndexer->getGetLogInfoList();
 
         // FIXME: this is slow operation running in the main loop
-        for(int num=0;num<list.size();num++)
-        {
-            if(qfile.getMsg(list[num],msg))
+        QDltMsg msg;
+        for (const auto msgIndex : msgIndexList) {
+            if (qfile.getMsg(msgIndex, msg))
                 contextLoadingFile(msg);
         }
     }
@@ -4467,7 +4462,7 @@ void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & sel
     }
 }
 
-void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg &msg)
+void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QDltMsg &msg)
 {
     const char *ptr;
     int32_t length;
@@ -4477,21 +4472,21 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
     length = payload.size();
 
     /* control message was received */
-    uint32_t service_id=0, service_id_tmp=0;
+    uint32_t service_id_tmp=0;
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-    service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
-
-    /* check if plugin autoload enabled and
-     * it is a version message and
-       version string not already parsed */
-    if(service_id == DLT_SERVICE_ID_GET_SOFTWARE_VERSION && (false == autoloadPluginsVersionEcus.contains(msg.getEcuid())))
-    {
-        versionString(msg);
-        autoloadPluginsVersionEcus.append(msg.getEcuid());
-    }
+    uint32_t service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
 
     switch (service_id)
     {
+    case DLT_SERVICE_ID_GET_SOFTWARE_VERSION:
+    {
+        // check if plugin autoload enabled and version string not already parsed
+        if(!autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+        {
+            versionString(msg);
+            autoloadPluginsVersionEcus.append(msg.getEcuid());
+        }
+    }
     case DLT_SERVICE_ID_GET_LOG_INFO:
     {
         /* Only status 1,2,6,7,8 is supported yet! */
@@ -4570,14 +4565,6 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
             }
         }
 
-        char com_interface[DLT_ID_SIZE];
-        DLT_MSG_READ_ID(com_interface,ptr,length);
-
-        if (length<0)
-        {
-            // wxMessageBox(_("Control Message corrupted!"),_("Receive Control Message"));
-        }
-
         break;
     }
     case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
@@ -4614,31 +4601,6 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, QDltMsg 
     }
     case DLT_SERVICE_ID_SET_LOG_LEVEL:
     {
-        uint8_t status=0;
-        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-        switch (status)
-        {
-        case 0: /* OK */
-        {
-            //conitem->status = EcuItem::valid;
-        }
-            break;
-        case 1: /* NOT_SUPPORTED */
-        {
-            //conitem->status = EcuItem::unknown;
-        }
-            break;
-        case 2: /* ERROR */
-        {
-            //conitem->status = EcuItem::invalid;
-        }
-            break;
-        }
-
-        /* update status*/
-        //conitem->update();
-
         break;
     }
     case DLT_SERVICE_ID_TIMEZONE:
@@ -5543,89 +5505,56 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
 
 void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription)
 {
-    /* Try to find App */
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        if(appitem->id == apid)
-        {
-            appitem->description = appdescription;
-            appitem->update();
-            return;
-        }
+    if (auto appitem = ecuitem->find(apid); appitem) {
+        appitem->description = appdescription;
+        appitem->update();
+    } else {
+        appitem = new ApplicationItem(ecuitem);
+        appitem->id = apid;
+        appitem->description = appdescription;
+        appitem->update();
+        ecuitem->addChild(appitem);
     }
-
-    /* No app and no con found */
-    ApplicationItem* appitem = new ApplicationItem(ecuitem);
-    appitem->id = apid;
-    appitem->description = appdescription;
-    appitem->update();
-    ecuitem->addChild(appitem);
-
 }
 
 void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QString ctid,QString ctdescription,int log_level,int trace_status)
 {
-    /* First try to find existing context */
-    //qDebug() << "New CTX for" << apid << ctid << ctdescription;
+    if (auto appitem = ecuitem->find(apid); appitem) {
 
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
-        {
-            ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-
-            if(appitem->id == apid && conitem->id == ctid)
-            {
-                /* set new log level and trace status */
-                conitem->loglevel = log_level;
-                conitem->tracestatus = trace_status;
-                conitem->description = ctdescription;
-                conitem->status = ContextItem::valid;
-                conitem->update();
-                return;
+        ContextItem *conitem = nullptr;
+        for (int numcontext = 0; numcontext < appitem->childCount(); numcontext++) {
+            ContextItem *currconitem = (ContextItem *)appitem->child(numcontext);
+            if (currconitem->id == ctid) {
+                conitem = currconitem;
             }
         }
-    }
 
-    /* Try to find App */
-    for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-    {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-
-        if(appitem->id == apid)
-        {
-            /* Add new context */
-            ContextItem* conitem = new ContextItem(appitem);
-            conitem->id = ctid;
-            conitem->loglevel = log_level;
-            conitem->tracestatus = trace_status;
-            conitem->description = ctdescription;
-            conitem->status = ContextItem::valid;
-            conitem->update();
+        if (!conitem) {
+            conitem = new ContextItem(appitem);
             appitem->addChild(conitem);
-
-            return;
         }
-    }
+        conitem->id = ctid;
+        conitem->loglevel = log_level;
+        conitem->tracestatus = trace_status;
+        conitem->description = ctdescription;
+        conitem->status = ContextItem::valid;
+        conitem->update();
+    } else {
+        appitem = new ApplicationItem(ecuitem);
+        appitem->id = apid;
+        appitem->description = "";
+        appitem->update();
+        ecuitem->addChild(appitem);
 
-    /* No app and no con found */
-    ApplicationItem* appitem = new ApplicationItem(ecuitem);
-    appitem->id = apid;
-    appitem->description = QString("");
-    appitem->update();
-    ecuitem->addChild(appitem);
-    ContextItem* conitem = new ContextItem(appitem);
-    conitem->id = ctid;
-    conitem->loglevel = log_level;
-    conitem->tracestatus = trace_status;
-    conitem->description = ctdescription;
-    conitem->status = ContextItem::valid;
-    conitem->update();
-    appitem->addChild(conitem);
+        ContextItem* conitem = new ContextItem(appitem);
+        conitem->id = ctid;
+        conitem->loglevel = log_level;
+        conitem->tracestatus = trace_status;
+        conitem->description = ctdescription;
+        conitem->status = ContextItem::valid;
+        conitem->update();
+        appitem->addChild(conitem);
+    }
 }
 
 void MainWindow::controlMessage_Timezone(int timezone, unsigned char dst)
@@ -5658,15 +5587,12 @@ void MainWindow::controlMessage_UnregisterContext(QString ecuId,QString appId,QS
         return;
 
     /* First try to find existing context */
-    for(int numapp = 0; numapp < ecuitemFound->childCount(); numapp++)
+    if(auto appitem = ecuitemFound->find(appId); appitem)
     {
-        ApplicationItem * appitem = (ApplicationItem *) ecuitemFound->child(numapp);
-
         for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
         {
             ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-
-            if(appitem->id == appId && conitem->id == ctId)
+            if(conitem->id == ctId)
             {
                 /* remove context */
                 delete conitem->parent()->takeChild(conitem->parent()->indexOfChild(conitem));
@@ -6405,7 +6331,7 @@ void MainWindow::updatePlugin(PluginItem *item)
     }
 }
 
-void MainWindow::versionString(QDltMsg &msg)
+void MainWindow::versionString(const QDltMsg &msg)
 {
     // get the version string from the version message
     // Skip the ServiceID, Status and Length bytes and start from the String containing the ECU Software Version

@@ -250,6 +250,15 @@ void EcuItem::updateAutoReconnectTimestamp()
     //qDebug() << "updateAutoReconnectTimestamp" << autoReconnectTimestamp;
 }
 
+ApplicationItem *EcuItem::find(const QString &apid) const {
+    for (int numapp = 0; numapp < childCount(); numapp++) {
+        ApplicationItem *appitem = static_cast<ApplicationItem *>(child(numapp));
+        if (appitem->id == apid)
+            return appitem;
+    }
+    return nullptr;
+}
+
 ApplicationItem::ApplicationItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,application_type)
 {
