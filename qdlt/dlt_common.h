@@ -81,6 +81,8 @@
 
 #if !defined (__WIN32__) && !defined(_MSC_VER)
 #include <termios.h>
+#else
+typedef unsigned int speed_t;
 #endif
 
 #include "dlt_types.h"
