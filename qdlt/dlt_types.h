@@ -59,11 +59,6 @@
 typedef int pid_t;
 #endif
 
-#ifdef __APPLE__
-typedef unsigned long speed_t;
-#else
-typedef unsigned int speed_t;
-#endif
 typedef float  float32_t;
 typedef double float64_t;
 
