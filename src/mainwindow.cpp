@@ -84,6 +84,7 @@ extern "C" {
 #include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
 #include "qdltctrlmsg.h"
+#include "ecutree.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -1889,45 +1890,52 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     return;
 }
 
-void MainWindow::contextLoadingFile(const QDltMsg &msg)
+void MainWindow::populateEcusTree(EcuTree&& ecuTree)
 {
-    /* find ecu item */
-    EcuItem *ecuitemFound = 0;
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if(ecuitem->id == msg.getEcuid())
-        {
-            ecuitemFound = ecuitem;
-            break;
+    QList<QTreeWidgetItem*> ecus;
+    // populate ECUs tree view
+    for (auto& [ecuid, apps] : ecuTree.ecus) {
+        EcuItem* ecuItem = new EcuItem(nullptr);
+
+        ecuItem->id = ecuid;
+
+        QList<QTreeWidgetItem*> appsItems;
+        for(const auto& [appid, appdata] : apps) {
+            ApplicationItem* appItem = new ApplicationItem(ecuItem);
+            appItem->id = appid;
+            appItem->description = appdata.description;
+            appItem->update();
+
+            QList<QTreeWidgetItem*> contextsItems;
+            for(const auto& [ctxid, ctxdata] : appdata.contexts) {
+                ContextItem* conItem = new ContextItem(appItem);
+                conItem->id = ctxid;
+                conItem->loglevel = ctxdata.logLevel;
+                conItem->tracestatus = ctxdata.traceStatus;
+                conItem->description = ctxdata.description;
+                conItem->status = ContextItem::valid;
+                conItem->update();
+
+                contextsItems.append(conItem);
+            }
+
+            appItem->addChildren(contextsItems);
+            appsItems.append(appItem);
         }
+
+        ecuItem->addChildren(appsItems);
+        ecuItem->update();
+
+        pluginManager.stateChanged(ecus.size(), QDltConnection::QDltConnectionOffline,
+                                   ecuItem->getHostname());
+
+        ecus.append(ecuItem);
     }
 
-    if(!ecuitemFound)
-    {
-        /* no Ecuitem found, create a new one */
-        ecuitemFound = new EcuItem(0);
+    project.ecu->addTopLevelItems(ecus);
 
-        /* update ECU item */
-        ecuitemFound->id = msg.getEcuid();
-        ecuitemFound->update();
-
-        /* add ECU to configuration */
-        project.ecu->addTopLevelItem(ecuitemFound);
-
-        /* Update the ECU list in control plugins */
-        updatePluginsECUList();
-
-        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-
-    }
-
-    controlMessage_ReceiveControlMessage(ecuitemFound, msg);
-}
-
-void MainWindow::reloadLogFileStop()
-{
-
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
 }
 
 void MainWindow::reloadLogFileProgressMax(int num)
@@ -2058,13 +2066,21 @@ void MainWindow::reloadLogFileFinishFilter()
             settings->updateContextLoadingFile) {
         const QList<int> &msgIndexList = dltIndexer->getGetLogInfoList();
 
-        // FIXME: this is slow operation running in the main loop
         QDltMsg msg;
+        EcuTree ecuTree;
         for (const auto msgIndex : msgIndexList) {
             if (qfile.getMsg(msgIndex, msg)) {
-                contextLoadingFile(msg);
+                auto ctrlMsg = qdlt::msg::payload::parse(msg.getPayload(), msg.getEndianness() == QDlt::DltEndiannessBigEndian);
+                std::visit([&ecuTree, ecuId = msg.getEcuid()](auto&& payload) {
+                    using T = std::decay_t<decltype(payload)>;
+                    if constexpr (std::is_same_v<T, qdlt::msg::payload::GetLogInfo>) {
+                        ecuTree.add(ecuId, payload);
+                    }
+                }, ctrlMsg);
             }
         }
+        project.ecu->clear();
+        populateEcusTree(std::move(ecuTree));
     }
 
     // reconnect ecus again
