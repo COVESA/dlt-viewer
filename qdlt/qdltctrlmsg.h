@@ -1,6 +1,8 @@
 #ifndef QDLTCTRLMSG_H
 #define QDLTCTRLMSG_H
 
+#include "export_rules.h"
+
 #include <vector>
 #include <variant>
 
@@ -57,7 +59,7 @@ struct UnregisterContext {
 using Type = std::variant<GetLogInfo, GetSoftwareVersion, GetDefaultLogLevel, SetLogLevel, Timezone,
                           UnregisterContext>;
 
-Type parse(const QByteArray&, bool isBigEndian);
+QDLT_EXPORT Type parse(const QByteArray&, bool isBigEndian);
 
 } // namespace qdlt::msg::payload
 
