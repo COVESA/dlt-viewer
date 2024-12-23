@@ -28,8 +28,6 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
-#include <QCompleter>
-#include <QStringListModel>
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
@@ -42,14 +40,6 @@
 #include "sortfilterproxymodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
-
-
-/**
- * When ecu items buffer size exceeds this while using
- * serial connection, it will be considered corrupted.
- **/
-
-#define DLT_BUFFER_CORRUPT_TRESHOLD 4* 1024
 
 /**
  * @brief Namespace to contain the toolbar positions.
@@ -116,7 +106,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QCompleter *newCompleter;
     /* Timer for connecting to ECUs */
     QTimer timer;
 
@@ -374,8 +363,6 @@ private:
     /* default filters */
     void resetDefaultFilter();
 
-    QStringListModel m_CompleterModel;
-
     /* Get path from explorerView model index */
     QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
 
@@ -626,7 +613,6 @@ public:
     QDltDefaultFilter defaultFilter;
 
     QStringList openFileNames;
-    QStringList list;
 
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;

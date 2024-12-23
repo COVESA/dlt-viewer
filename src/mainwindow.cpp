@@ -200,8 +200,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
     ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
-    newCompleter = new QCompleter(&m_CompleterModel,this);
-
     /* what for do we need the next 2 lines ? */
     draw_timer.setSingleShot (true);
     connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
@@ -278,7 +276,6 @@ MainWindow::~MainWindow()
     delete dltIndexer;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
-    delete newCompleter;
     delete sortProxyModel;
 }
 
@@ -2384,21 +2381,15 @@ void MainWindow::on_action_menuFile_Quit_triggered()
 
 void MainWindow::on_actionFindNext()
 {
-    //qDebug() << "on_actionFindNext" << __LINE__;
-    if(!searchInput->input()->text().isEmpty() && !list.contains(searchInput->input()->text()))
-       {
-           list.append(searchInput->input()->text());
-       }
-    QString title = "Search Results";
+    searchInput->updateHistory();
 
+    QString title = "Search Results";
     if ( 0 < m_searchtableModel->get_SearchResultListSize())
     {
-        title = QString("Search Results: %L1").arg(m_searchtableModel->get_SearchResultListSize());
+        title += QStringLiteral(": %L1").arg(m_searchtableModel->get_SearchResultListSize());
     }
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     ui->dockWidgetSearchIndex->show();
-    m_CompleterModel.setStringList(list);
-    searchInput->input()->setCompleter(newCompleter);
 }
 
 void MainWindow::on_action_menuProject_New_triggered()
@@ -4488,6 +4479,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
             versionString(msg);
             autoloadPluginsVersionEcus.append(msg.getEcuid());
         }
+        break;
     }
     case DLT_SERVICE_ID_GET_LOG_INFO:
     {
