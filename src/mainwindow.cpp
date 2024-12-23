@@ -56,9 +56,7 @@
  * Must be a "C" include to interpret the imports correctly
  * for MSVC compilers.
  **/
-#include "dlt_common.h"
 extern "C" {
-
     #include "dlt_user.h"
 }
 
@@ -7863,8 +7861,6 @@ void MainWindow::on_actionJump_To_triggered()
     }
 
     jump_to_line(dlg.getIndex());
-
-
 }
 
 
@@ -8227,18 +8223,10 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
 
-    QStringList completerList;
-
-    /* default filter list update combobox */
-    QDltFilterList *filterList;
-    foreach(filterList,defaultFilter.defaultFilterList){
+    // default filter list update combobox
+    for (const auto *filterList : defaultFilter.defaultFilterList) {
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
-        completerList << filterList->getFilename();
     }
-    //QCompleter *completer = new QCompleter(completerList, this);
-    //completer->setFilterMode(Qt::MatchContains);
-    //completer->setCaseSensitivity(Qt::CaseInsensitive);
-    //ui->comboBoxFilterSelection->setCompleter(completer);
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()
