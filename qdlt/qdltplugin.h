@@ -71,7 +71,7 @@ public:
     bool isCommand();
 
     // generic plugin interfaces
-    QString name();
+    QString name() const;
     QString pluginVersion();
     QString pluginInterfaceVersion();
     QString error();
