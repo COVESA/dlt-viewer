@@ -666,10 +666,8 @@ bool NonverbosePlugin::initControl(QDltControl *control)
     return true;
 }
 
-bool NonverbosePlugin::initConnections(QStringList list)
+bool NonverbosePlugin::initConnections(QStringList)
 {
-    Q_UNUSED(list);
-
     return false;
 }
 

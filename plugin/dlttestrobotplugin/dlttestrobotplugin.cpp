@@ -30,16 +30,10 @@ DltTestRobotPlugin::DltTestRobotPlugin()
     counterVerboseMessages = 0;
     dltFile = 0;
     dltControl = 0;
-    ecuList = 0;
 
     tcpSocket = 0;
 
     port = 4490;
-}
-
-DltTestRobotPlugin::~DltTestRobotPlugin()
-{
-
 }
 
 QString DltTestRobotPlugin::name()
@@ -98,7 +92,7 @@ bool DltTestRobotPlugin::initControl(QDltControl *control)
 
 bool DltTestRobotPlugin::initConnections(QStringList list)
 {
-    ecuList = new QStringList(list);
+    ecuList = std::move(list);
 
     return false;
 }
@@ -196,12 +190,12 @@ void DltTestRobotPlugin::readyRead()
 
             QStringList list = text.split(' ');
 
-            if(list[0]=="injection" && ecuList)
+            if(list[0]=="injection")
             {
                 QString ecuId = list[1];
-                for(int num=0;num<ecuList->length();num++)
+                for(int num=0;num<ecuList.length();num++)
                 {
-                    if(ecuList->at(num).contains(ecuId) && dltControl)
+                    if(ecuList.at(num).contains(ecuId) && dltControl)
                     {
                         list.removeAt(0);
                         list.removeAt(0);
@@ -296,7 +290,6 @@ void DltTestRobotPlugin::newConnection()
 
 void DltTestRobotPlugin::connected()
 {
-
 }
 
 void DltTestRobotPlugin::disconnected()
