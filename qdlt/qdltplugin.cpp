@@ -96,7 +96,7 @@ bool QDltPlugin::isCommand()
 }
 
 // generic plugin interfaces
-QString QDltPlugin::name()
+QString QDltPlugin::name() const
 {
     if(plugininterface)
         return plugininterface->name();

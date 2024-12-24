@@ -52,13 +52,13 @@ public:
     void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
 
     //! Get the list of pointers to all loaded plugins
-    QList<QDltPlugin*> getPlugins() { return plugins; }
+    QList<QDltPlugin*> getPlugins() const { return plugins; }
 
     //! Get the list of pointers to all enabled decoder plugins
-    QList<QDltPlugin*> getDecoderPlugins();
+    QList<QDltPlugin*> getDecoderPlugins() const;
 
     //! Get the list of pointers to all enabled viewer plugins
-    QList<QDltPlugin*> getViewerPlugins();
+    QList<QDltPlugin*> getViewerPlugins() const;
 
     //! Find a plugin with the specific name
     /*!
@@ -81,14 +81,6 @@ public:
     QStringList getPluginPriorities() const;
 
 private:
-    template <typename F>
-    void forEachPlugin(F&& f) {
-        QMutexLocker mutexLocker(&pluginListMutex);
-        for (QDltPlugin* plugin : plugins) {
-          f(plugin);
-        }
-    }
-
     mutable QMutex pluginListMutex;
 
     //! The list of pointers to all loaded plugins
