@@ -62,11 +62,9 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 {
     /* set filter for plugin files */
-    QStringList filters, errorStrings;
-    QString errorString;
-    filters << "*.dll" << "*.so" << "*.dylib";
-    dir.setNameFilters(filters);
+    QStringList errorStrings;
 
+    dir.setNameFilters(QStringList{} << "*.dll" << "*.so" << "*.dylib");
     /* iterate through all plugins */
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
@@ -138,8 +136,7 @@ void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
     pluginListMutex.unlock();
 }
 
-QDltPlugin* QDltPluginManager::findPlugin(QString &name)
-{
+QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {
     QDltPlugin* result = nullptr;
     pluginListMutex.lock();
     for (auto* plugin : plugins) {
