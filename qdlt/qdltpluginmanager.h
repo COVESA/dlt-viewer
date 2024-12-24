@@ -63,9 +63,9 @@ public:
     //! Find a plugin with the specific name
     /*!
       \param name The name of the plugin to be searched for.
-      \return pinter to plugin or zero if no plugin with the name is found
+      \return pointer to plugin or nullptr if no plugin with the name is found
     */
-    QDltPlugin* findPlugin(QString &name);
+    QDltPlugin* findPlugin(const QString &name) const;
 
     //control plugin interface
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
