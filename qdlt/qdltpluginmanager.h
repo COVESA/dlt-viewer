@@ -1,11 +1,13 @@
 #ifndef QDLTPLUGINMANAGER_H
 #define QDLTPLUGINMANAGER_H
 
-#include "plugininterface.h"
-
-#include <QDir>
+#include "qdltconnection.h"
+#include "qdltcontrol.h"
+#include "qdltmessagedecoder.h"
 
 #include "export_rules.h"
+
+#include <QDir>
 
 //! Manage all DLT Plugins
 /*!
@@ -18,11 +20,6 @@ class QMutex;
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
-
-    //! Constructor
-    QDltPluginManager();
-    ~QDltPluginManager();
-
     //! The number of plugins
     /*!
       \return the number of loaded plugins.
@@ -84,7 +81,16 @@ public:
     QStringList getPluginPriorities() const;
 
 private:
-    mutable QMutex* pMutex_pluginList;
+    template<typename F>
+    void forEachPlugin(F&& f) {
+        pluginListMutex.lock();
+        for (QDltPlugin* plugin : plugins) {
+            f(plugin);
+        }
+        pluginListMutex.unlock();
+    }
+
+    mutable QMutex pluginListMutex;
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;
