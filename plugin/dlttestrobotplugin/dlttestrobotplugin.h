@@ -41,7 +41,7 @@ class DltTestRobotPlugin : public QObject, QDLTPluginInterface, QDltPluginViewer
 
 public:
     DltTestRobotPlugin();
-    ~DltTestRobotPlugin();
+    ~DltTestRobotPlugin() = default;
 
     /* QDLTPluginInterface interface */
     QString name();
@@ -101,7 +101,7 @@ private slots:
 private:
     QDltFile *dltFile;
     QString errorText;
-    QStringList *ecuList;
+    QStringList ecuList;
 
     QTcpServer tcpServer;
     QTcpSocket *tcpSocket;

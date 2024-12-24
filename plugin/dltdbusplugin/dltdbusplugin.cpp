@@ -787,9 +787,8 @@ bool DltDBusPlugin::initControl(QDltControl *control)
 }
 
 
-bool DltDBusPlugin::initConnections(QStringList list)
+bool DltDBusPlugin::initConnections(QStringList)
 {
-	Q_UNUSED(list);
     return true;
 }
 

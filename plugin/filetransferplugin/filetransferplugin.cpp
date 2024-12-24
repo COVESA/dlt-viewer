@@ -448,9 +448,8 @@ bool FiletransferPlugin::initControl(QDltControl *control)
 }
 
 
-bool FiletransferPlugin::initConnections(QStringList list)
+bool FiletransferPlugin::initConnections(QStringList)
 {
-    Q_UNUSED(list);
     return true;
 }
 
