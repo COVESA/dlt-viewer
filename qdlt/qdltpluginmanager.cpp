@@ -127,25 +127,23 @@ void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
 
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    pluginListMutex.lock();
+    QMutexLocker mutexLocker(&pluginListMutex);
     for(auto* plugin : plugins)
     {
         if(plugin->decodeMsg(msg,triggeredByUser))
             break;
     }
-    pluginListMutex.unlock();
 }
 
 QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {
     QDltPlugin* result = nullptr;
-    pluginListMutex.lock();
+    QMutexLocker mutexLocker(&pluginListMutex);
     for (auto* plugin : plugins) {
         if (plugin->name() == name) {
             result = plugin;
             break;
         }
     }
-    pluginListMutex.unlock();
 
     return result;
 }
@@ -171,7 +169,7 @@ bool QDltPluginManager::decreasePluginPriority(const QString &name)
 
     if(plugins.size() > 1)
     {
-        pluginListMutex.lock();
+        QMutexLocker mutexLocker(&pluginListMutex);
         for(int num=0; num < plugins.size()-1; ++num)
         {
             if(plugins[num]->name() == name)
@@ -182,7 +180,6 @@ bool QDltPluginManager::decreasePluginPriority(const QString &name)
                 break;
             }
         }
-        pluginListMutex.unlock();
     }
 
     return result;
@@ -194,7 +191,7 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
 
     if(plugins.size() > 1)
     {
-        pluginListMutex.lock();
+        QMutexLocker mutexLocker(&pluginListMutex);
         for(int num=1; num < plugins.size(); ++num)
         {
             if( plugins[num]->name() == name)
@@ -205,7 +202,6 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
                 break;
             }
         }
-        pluginListMutex.unlock();
     }
 
     return result;
@@ -221,7 +217,7 @@ bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
             prio = plugins.size() - 1;
         }
 
-        pluginListMutex.lock();
+        QMutexLocker mutexLocker(&pluginListMutex);
         for (int num = 0; num < plugins.size(); ++num) {
             if (plugins[num]->name() == name) {
                 if (prio != num) {
@@ -232,7 +228,6 @@ bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
                 break;
             }
         }
-        pluginListMutex.unlock();
     }
 
     return result;
@@ -241,11 +236,10 @@ bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
 QStringList QDltPluginManager::getPluginPriorities() const
 {
     QStringList finalPrio;
-    pluginListMutex.lock();
+    QMutexLocker mutexLocker(&pluginListMutex);
     for (auto* plugin: plugins) {
         finalPrio << plugin->name();
     }
-    pluginListMutex.unlock();
 
     return finalPrio;
 }

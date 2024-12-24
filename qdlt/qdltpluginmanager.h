@@ -81,13 +81,12 @@ public:
     QStringList getPluginPriorities() const;
 
 private:
-    template<typename F>
+    template <typename F>
     void forEachPlugin(F&& f) {
-        pluginListMutex.lock();
+        QMutexLocker mutexLocker(&pluginListMutex);
         for (QDltPlugin* plugin : plugins) {
-            f(plugin);
+          f(plugin);
         }
-        pluginListMutex.unlock();
     }
 
     mutable QMutex pluginListMutex;
