@@ -62,11 +62,7 @@ extern "C" {
 
 #if defined(_MSC_VER)
 #include <io.h>
-#include <time.h>
 #include <WinSock.h>
-#else
-#include <unistd.h>     /* for read(), close() */
-#include <sys/time.h>	/* for gettimeofday() */
 #endif
 
 #include "mainwindow.h"
@@ -3929,36 +3925,10 @@ void MainWindow::readyRead()
 
 void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)
 {
-    DltStorageHeader str;
+    const auto timestamp =
+        (sec || usec) ? std::optional<QDltImporter::DltStorageHeaderTimestamp>({sec, usec}) : std::nullopt;
+    DltStorageHeader str = QDltImporter::makeDltStorageHeader(timestamp);
 
-    str.pattern[0]='D';
-    str.pattern[1]='L';
-    str.pattern[2]='T';
-    str.pattern[3]=0x01;
-    str.ecu[0]=0;
-    str.ecu[1]=0;
-    str.ecu[2]=0;
-    str.ecu[3]=0;
-
-    if (sec || usec)
-    { // todo should better use ptrs and not != 0
-        str.seconds = (time_t)sec;
-        str.microseconds = (int32_t)usec;
-    }
-    else
-    {
-#if defined(_MSC_VER)
-        struct timespec ts;
-        (void)timespec_get(&ts, TIME_UTC);
-        str.seconds = (time_t)ts.tv_sec;
-        str.microseconds = (int32_t)(ts.tv_nsec / 1000);
-#else
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        str.seconds = (time_t)tv.tv_sec;        /* value is long */
-        str.microseconds = (int32_t)tv.tv_usec; /* value is long */
-#endif
-    }
     if (ecuitem)
         dlt_set_id(str.ecu, ecuitem->id.toLatin1());
 

@@ -186,7 +186,7 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
     }
 
     mdf_hdr_t mdfHeader,mdfDgHeader,mdfCgHeader,mdfCnHeader,mdfTxHeader;
-    mdf_dgblocklinks_t mdfDgBlockLinks;
+    mdf_dgblocklinks_t mdfDgBlockLinks = {};
     memset((char*)&mdfHeader,0,sizeof(mdf_hdr_t));
 
     if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
@@ -792,6 +792,40 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
     qDebug() << "fromMF4: Import finished";
 }
 
+DltStorageHeader QDltImporter::makeDltStorageHeader(std::optional<DltStorageHeaderTimestamp> ts)
+{
+    DltStorageHeader result;
+
+    result.pattern[0] = 'D';
+    result.pattern[1] = 'L';
+    result.pattern[2] = 'T';
+    result.pattern[3] = 0x01;
+
+    result.ecu[0] = 0;
+    result.ecu[1] = 0;
+    result.ecu[2] = 0;
+    result.ecu[3] = 0;
+
+    if (ts) {
+        result.seconds = static_cast<time_t>(ts->sec);
+        result.microseconds = static_cast<int32_t>(ts->usec);
+    } else {
+#if defined(_MSC_VER)
+        struct timespec ts;
+        (void)timespec_get(&ts, TIME_UTC);
+        result.seconds = (time_t)ts.tv_sec;
+        result.microseconds = (int32_t)(ts.tv_nsec / 1000);
+#else
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        result.seconds = (time_t)tv.tv_sec;        /* value is long */
+        result.microseconds = (int32_t)tv.tv_usec; /* value is long */
+#endif
+    }
+
+    return result;
+}
+
 bool QDltImporter::ipcFromEthernetFrame(QByteArray &record,int pos,quint16 etherType,quint32 sec,quint32 usec)
 {
     if(etherType==0x9100 || etherType==0x88a8)
@@ -1207,40 +1241,13 @@ bool QDltImporter::dltFromEthernetFrame(QByteArray &record,int pos,quint16 ether
 
 void QDltImporter::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec,quint32 usec)
 {
-    DltStorageHeader str;
+    const auto timestamp =
+        (sec || usec) ? std::optional<DltStorageHeaderTimestamp>({sec, usec}) : std::nullopt;
+    DltStorageHeader str = makeDltStorageHeader(timestamp);
 
-    str.pattern[0]='D';
-    str.pattern[1]='L';
-    str.pattern[2]='T';
-    str.pattern[3]=0x01;
-    str.ecu[0]=0;
-    str.ecu[1]=0;
-    str.ecu[2]=0;
-    str.ecu[3]=0;
-
-    if (sec || usec)
-    { // todo should better use ptrs and not != 0
-        str.seconds = (time_t)sec;
-        str.microseconds = (int32_t)usec;
-    }
-    else
-    {
-#if defined(_MSC_VER)
-        struct timespec ts;
-        (void)timespec_get(&ts, TIME_UTC);
-        str.seconds = (time_t)ts.tv_sec;
-        str.microseconds = (int32_t)(ts.tv_nsec / 1000);
-#else
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        str.seconds = (time_t)tv.tv_sec;        /* value is long */
-        str.microseconds = (int32_t)tv.tv_usec; /* value is long */
-#endif
-    }
     dlt_set_id(str.ecu, ecuId.toLatin1());
 
     outputfile->write((char*)&str,sizeof(DltStorageHeader));
     outputfile->write(bufferHeader);
     outputfile->write(bufferPayload,bufferPayloadSize);
-
 }
