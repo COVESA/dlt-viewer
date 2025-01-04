@@ -188,7 +188,6 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
     mdf_hdr_t mdfHeader,mdfDgHeader,mdfCgHeader,mdfCnHeader,mdfTxHeader;
     mdf_dgblocklinks_t mdfDgBlockLinks;
     memset((char*)&mdfHeader,0,sizeof(mdf_hdr_t));
-    quint64 pos=0,hd_pos=0,dt_pos=0;
 
     if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
     {
@@ -197,11 +196,8 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
         qDebug() << "fromMF4:" << "Size Error: Cannot read mdf header";
         return;
     }
-    if(!hd_pos && mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='H' && mdfHeader.id[3]=='D')
+    if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='H' && mdfHeader.id[3]=='D')
     {
-        pos = inputfile.pos() - sizeof(mdf_hdr_t);
-        //qDebug() << "HD:";
-        hd_pos=pos;
         if(inputfile.read((char*)&hdBlockLinks,sizeof(mdf_hdblocklinks_t))!=sizeof(mdf_hdblocklinks_t))
         {
             inputfile.close();
@@ -381,9 +377,7 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
         }
         if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
         {
-            pos = inputfile.pos() - sizeof(mdf_hdr_t);
-            //qDebug() << "DT:";
-            dt_pos=pos;
+            const auto pos = inputfile.pos() - sizeof(mdf_hdr_t);
             quint64 posDt=0;
             quint16 recordId;
             quint32 lengthVLSD;
@@ -506,17 +500,15 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         }
                         if(!recordData.isEmpty())
                         {
-                            int pos = 0;
                             quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!dltFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            if(!dltFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000,time%1000000000/1000))
                             {
                                 inputfile.close();
                                 outputfile->close();
                                 qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
                                 return;
                             }
-                            pos = 0;
-                            if(!ipcFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            if(!ipcFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000,time%1000000000/1000))
                             {
                                 inputfile.close();
                                 outputfile->close();
