@@ -889,7 +889,7 @@ bool QDltImporter::ipcFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                    // add PLP Header Data
                    QDltArgument arg1;
                    arg1.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg1.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg1.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg1.setOffsetPayload(0);
                    arg1.setData(record.mid(pos-sizeof(plp_header_data_t),sizeof(plp_header_data_t)));
                    msg.addArgument(arg1);
@@ -897,7 +897,7 @@ bool QDltImporter::ipcFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                    // add IPC Header
                    QDltArgument arg2;
                    arg2.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg2.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg2.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg2.setOffsetPayload(0);
                    if(endOfSegment)
                    {
@@ -912,7 +912,7 @@ bool QDltImporter::ipcFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                    // add IPC Data
                    QDltArgument arg3;
                    arg3.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg3.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg3.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg3.setOffsetPayload(0);
                    if(endOfSegment)
                    {
@@ -981,7 +981,7 @@ bool QDltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw,QByteArray &record,quint32
                    // add PLP Header Data
                    QDltArgument arg1;
                    arg1.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg1.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg1.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg1.setOffsetPayload(0);
                    plp_header_data_t  plpHeaderData;
                    plpHeaderData.busSpecId=0;
@@ -995,7 +995,7 @@ bool QDltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw,QByteArray &record,quint32
                    // add IPC Header
                    QDltArgument arg2;
                    arg2.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg2.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg2.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg2.setOffsetPayload(0);
                    if(endOfSegment)
                    {
@@ -1010,7 +1010,7 @@ bool QDltImporter::ipcFromPlpRaw(mdf_plpRaw_t *plpRaw,QByteArray &record,quint32
                    // add IPC Data
                    QDltArgument arg3;
                    arg3.setTypeInfo(QDltArgument::DltTypeInfoRawd);
-                   arg3.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                   arg3.setEndianness(QDlt::DltEndiannessLittleEndian);
                    arg3.setOffsetPayload(0);
                    if(endOfSegment)
                    {
