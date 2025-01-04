@@ -30,21 +30,6 @@
 #include <time.h>
 
 #include "export_rules.h"
-#include "export_c_rules.h"
-
-// FIXME: check if this is actually needed
-extern "C" {
-    QDLT_C_EXPORT extern const char *qDltMessageType[];
-    QDLT_C_EXPORT extern const char *qDltLogInfo[];
-    QDLT_C_EXPORT extern const char *qDltTraceType[];
-    QDLT_C_EXPORT extern const char *qDltNwTraceType[];
-    QDLT_C_EXPORT extern const char *qDltControlType[];
-    QDLT_C_EXPORT extern const char *qDltMode[];
-    QDLT_C_EXPORT extern const char *qDltEndianness[];
-    QDLT_C_EXPORT extern const char *qDltTypeInfo[];
-    QDLT_C_EXPORT extern const char *qDltCtrlServiceId[];
-    QDLT_C_EXPORT extern const char *qDltCtrlReturnType[];
-}
 
 #define DLT_MAX_MESSAGE_LEN 1024*64
 #define DEFAULT_COLOR "#FFFFFF"

@@ -28,6 +28,11 @@ extern "C"
 #include "dlt_common.h"
 }
 
+namespace {
+constexpr const char * const qDltTypeInfo[] = {"String", "Bool",    "SignedInteger", "UnsignedInteger",
+                              "Float",  "RawData", "TraceInfo",     "Utf8String"};
+}
+
 QDltArgument::QDltArgument()
 {
     // clear content of argument
