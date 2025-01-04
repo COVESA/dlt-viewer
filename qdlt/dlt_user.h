@@ -350,7 +350,7 @@ int dlt_user_trace_network(DltContext *handle, DltNetworkTraceType nw_trace_type
  * This function has to be called first, before using any DLT user lib functions.
  * @return negative value if there was an error
  */
-int dlt_init();
+int dlt_init(void);
 
 /**
  * Initialise the user lib writing only to file.

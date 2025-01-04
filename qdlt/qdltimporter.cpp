@@ -2,15 +2,8 @@
 #include <QDebug>
 #include <QtEndian>
 
-/**
- * From QDlt.
- * Must be a "C" include to interpret the imports correctly
- * for MSVC compilers.
- **/
-#include "dlt_common.h"
 extern "C" {
-
-    #include "dlt_user.h"
+    #include "dlt_common.h"
 }
 
 #if defined(_MSC_VER)
