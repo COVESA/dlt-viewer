@@ -4488,6 +4488,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
             versionString(msg);
             autoloadPluginsVersionEcus.append(msg.getEcuid());
         }
+        break;
     }
     case DLT_SERVICE_ID_GET_LOG_INFO:
     {
