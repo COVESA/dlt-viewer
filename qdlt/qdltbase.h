@@ -30,7 +30,9 @@
 #include <time.h>
 
 #include "export_rules.h"
+#include "export_c_rules.h"
 
+// FIXME: check if this is actually needed
 extern "C" {
     QDLT_C_EXPORT extern const char *qDltMessageType[];
     QDLT_C_EXPORT extern const char *qDltLogInfo[];

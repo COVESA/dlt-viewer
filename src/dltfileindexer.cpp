@@ -15,7 +15,6 @@
 
 extern "C" {
     #include "dlt_common.h"
-    #include "dlt_user.h"
 }
 
 DltFileIndexerKey::DltFileIndexerKey(time_t time, unsigned int microseconds, int index)

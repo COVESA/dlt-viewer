@@ -71,6 +71,7 @@ SOURCES +=  \
 
 HEADERS += qdlt.h \
     export_rules.h \
+    export_c_rules.h \
     dlt_common.h \
     dlt_user.h \
     qdltipconnection.h \
