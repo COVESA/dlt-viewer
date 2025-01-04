@@ -19,49 +19,11 @@
  * @licence end@
  */
 
-#include <QtDebug>
-
 #include "qdltbase.h"
 
-extern "C"
-{
-#include "dlt_common.h"
-}
+#include <vector>
 
-QDlt::QDlt()
-{
-
-}
-
-QDlt::~QDlt()
-{
-
-}
-
-bool QDlt::swap(QByteArray &bytes,int size, int offset)
-{
-    char tmp;
-
-    if( (offset < 0)  || (offset >= bytes.size()) )
-        return false;
-
-    if(size == -1)
-        size = bytes.size()-offset;
-
-    if((size+offset) > bytes.size())
-        return false;
-
-    for(int num = 0;num<(size/2);num++)
-    {
-        tmp = bytes[offset+num];
-        bytes[offset+num] = bytes[offset+size-1-num];
-        bytes[offset+size-1-num] = tmp;
-    }
-
-    return true;
-}
-
-QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml) const
+QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
 {
     QString text;
     text.reserve(1024+bytes.size());
@@ -142,9 +104,8 @@ QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool wi
     return text;
 }
 
-QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes) const
+QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes)
 {
-    static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     if (type==1)
     {
         // ascii
@@ -217,6 +178,7 @@ QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes) const
 
             char* strData = &str[0];
             const char* byteData = bytes.data();
+            static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
             for(int num=0;num<size;++num)
             {
                 *strData = hexmap[ (*byteData & 0xF0) >> 4 ];

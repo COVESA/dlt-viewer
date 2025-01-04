@@ -379,7 +379,7 @@ void QDltArgument::clear()
     data.clear();
     name.clear();
     unit.clear();
-    endianness = QDltArgument::DltEndiannessUnknown;
+    endianness = QDlt::DltEndiannessUnknown;
     dltType = 0;
 }
 
