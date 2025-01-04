@@ -227,7 +227,7 @@ bool QDltConnection::parseAscii(QDltMsg &msg)
                 // add one argument as String
                 QDltArgument arg;
                 arg.setTypeInfo(QDltArgument::DltTypeInfoStrg);
-                arg.setEndianness(QDltArgument::DltEndiannessLittleEndian);
+                arg.setEndianness(QDlt::DltEndiannessLittleEndian);
                 arg.setOffsetPayload(0);
                 arg.setData(QByteArray(cbuf,num)+QByteArray("",1));
                 msg.addArgument(arg);
