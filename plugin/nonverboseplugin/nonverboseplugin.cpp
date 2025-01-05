@@ -636,7 +636,7 @@ bool NonverbosePlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
                 {
                     if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
                         break;
-                    if(argument.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
+                    if(argument.getEndianness() == QDlt::DltEndiannessLittleEndian)
                         length = *((unsigned short*) (payload.constData()+offset));
                     else
                         length = DLT_SWAP_16(*((unsigned short*) (payload.constData()+offset)));

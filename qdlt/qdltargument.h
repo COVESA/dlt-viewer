@@ -23,6 +23,7 @@
 #define QDLT_ARGUMENT_H
 
 #include <QString>
+#include <QVariant>
 
 #include "qdltbase.h"
 #include "export_rules.h"

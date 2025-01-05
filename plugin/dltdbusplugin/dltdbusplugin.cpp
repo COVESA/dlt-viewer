@@ -305,7 +305,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg)
     text += QString("<tr><td>Destination</td><td>%1</td></tr>").arg(dbusMsg.getDestination());
     text += QString("<tr><td>Sender</td><td>%1</td></tr>").arg(dbusMsg.getSender());
     QByteArray signature = dbusMsg.getSignature();
-    text += QString("<tr><td>Signature</td><td>%1</td></tr>").arg(msg.toAsciiTable(signature,false,false,true,256,256,false));
+    text += QString("<tr><td>Signature</td><td>%1</td></tr>").arg(QDlt::toAsciiTable(signature,false,false,true,256,256,false));
     text += QString("<tr><td>UnixFds</td><td>%1</td></tr>").arg(dbusMsg.getUnixFds());
 
     text += QString("</table>");
@@ -315,7 +315,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg)
     /* DBus message payload Hex*/
     QByteArray payload = dbusMsg.getPayload();
     text = QString("<h3>Size: %1</h3>").arg(payload.size());
-    text += msg.toAsciiTable(payload,true,true,false);
+    text += QDlt::toAsciiTable(payload,true,true,false);
     form->setTextBrowserPayloadHex(text);
 
     /* decode DBus payload */
