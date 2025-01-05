@@ -19,10 +19,7 @@
  * @licence end@
  */
 
-#include <QByteArray>
-
 #include "qdltsegmentedmsg.h"
-
 
 QDltSegmentedMsg::QDltSegmentedMsg()
 {

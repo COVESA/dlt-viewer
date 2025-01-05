@@ -19,8 +19,6 @@
  * @licence end@
  */
 
-#include <QVariant>
-
 #include "qdltargument.h"
 
 extern "C"
