@@ -105,6 +105,19 @@ void QDltOptManager::printUsage(const QString& helpText)
     qDebug() << "  dlt-viewer.exe -t -c output.txt input1.mf4 input2.mf4";
 }
 
+void QDltOptManager::freeWindowsConsole()
+{
+#if (WIN32 || WIN64)
+    HWND consoleWnd = GetConsoleWindow();
+    DWORD dwProcessId;
+    GetWindowThreadProcessId(consoleWnd, &dwProcessId);
+    if (GetCurrentProcessId() == dwProcessId)
+    {
+        FreeConsole();
+    }
+#endif
+}
+
 void QDltOptManager::parse(const QStringList& args)
 {
     m_parser.parse(args);
@@ -138,16 +151,8 @@ void QDltOptManager::parse(const QStringList& args)
 
         if(closeConsole)
         {
-#if (WIN32 || WIN64)
-            HWND consoleWnd = GetConsoleWindow();
-            DWORD dwProcessId;
-            GetWindowThreadProcessId(consoleWnd, &dwProcessId);
-            if (GetCurrentProcessId() == dwProcessId)
-            {
-                // user launched the application with a double click on a dlt/project file: we do not need console
-                FreeConsole();
-            }
-#endif
+            // user launched the application with a double click on a dlt/project file: we do not need console
+            freeWindowsConsole();
             return;
         }
     }
@@ -262,19 +267,11 @@ void QDltOptManager::parse(const QStringList& args)
       * Unfortunateley Windows opens a console anyway.
       * So we have to close it in this case
      */
-    #if (WIN32)
-        if (!commandline_mode)
-        {
-            HWND consoleWnd = GetConsoleWindow();
-            DWORD dwProcessId;
-            GetWindowThreadProcessId(consoleWnd, &dwProcessId);
-            if (GetCurrentProcessId() == dwProcessId)
-            {
-                // user launched the application with a double click from explorer: we do not need console
-                FreeConsole();
-            }
-        }
-    #endif
+    if (!commandline_mode)
+    {
+        // user launched the application with a double click from explorer: we do not need console
+        freeWindowsConsole();
+    }
 }
 
 bool QDltOptManager::isProjectFile(){ return project;}

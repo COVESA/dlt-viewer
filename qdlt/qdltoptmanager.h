@@ -48,6 +48,7 @@ public:
     void printUsage(const QString& helpText);
     void printVersion(QString appname);
     void parse(const QStringList& opt);
+    void freeWindowsConsole();
 
     bool isProjectFile();
     bool isTerminate();
