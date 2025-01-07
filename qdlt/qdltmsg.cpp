@@ -19,9 +19,6 @@
  * @licence end@
  */
 
-#include <QtDebug>
-#include <QtEndian>
-
 #include "qdltmsg.h"
 
 extern "C"
@@ -29,14 +26,27 @@ extern "C"
 #include "dlt_common.h"
 }
 
+#include <QtEndian>
+#include <QDateTime>
+
+namespace {
+    constexpr const char * const qDltMessageType[] = {"log","app_trace","nw_trace","control","","","",""};
+    constexpr const char * const qDltLogInfo[] = {"","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
+    constexpr const char * const qDltTraceType[] = {"","variable","func_in","func_out","state","vfb","","","","","","","","","",""};
+    constexpr const char * const qDltNwTraceType[] = {"","ipc","can","flexray","most","vfb","","","","","","","","","",""};
+    constexpr const char * const qDltControlType[] = {"","request","response","time","","","","","","","","","","","",""};
+    constexpr const char * const qDltMode[] = {"non-verbose","verbose"};
+    constexpr const char * const qDltEndianness[] = {"little-endian","big-endian"};
+    constexpr const char * const qDltCtrlServiceId[] = {"","set_log_level","set_trace_status","get_log_info","get_default_log_level","store_config","reset_to_factory_default",
+                                       "set_com_interface_status","set_com_interface_max_bandwidth","set_verbose_mode","set_message_filtering","set_timing_packets",
+                                       "get_local_time","use_ecu_id","use_session_id","use_timestamp","use_extended_header","set_default_log_level","set_default_trace_status",
+                                       "get_software_version","message_buffer_overflow"};
+    constexpr const char * const qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
+}
+
 QDltMsg::QDltMsg()
 {
     clear();
-}
-
-QDltMsg::~QDltMsg()
-{
-
 }
 
 QString QDltMsg::getStringFromId(const char *text)
@@ -54,7 +64,7 @@ QString QDltMsg::getStringFromId(const char *text)
 
 QString QDltMsg::getTypeString() const
 {
-    return QString((type>=0 && type<=7)?qDltMessageType[type]:"");
+    return (type >= 0 && type <= 7) ? qDltMessageType[type] : "";
 }
 
 QString QDltMsg::getSubtypeString() const
@@ -277,7 +287,7 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
         withTags = htyp2 & 0x0200;
         withSourceFileNameLineNumber = htyp2 & 0x0100;
         /* TODO: Endianess of payload not defined in DLTv2, undefined, set to LittleEndian by default */
-        endianness = DltEndiannessLittleEndian;
+        endianness = QDlt::DltEndiannessLittleEndian;
 
         /* get Message Counter */
         messageCounter = *((quint8*) (data + 4 + sizeStorageHeader));
@@ -486,10 +496,10 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
 
         /* extract endianness */
         if(DLT_IS_HTYP_MSBF(standardheader->htyp)) {
-            endianness = DltEndiannessBigEndian;
+            endianness = QDlt::DltEndiannessBigEndian;
         }
         else {
-            endianness = DltEndiannessLittleEndian;
+            endianness = QDlt::DltEndiannessLittleEndian;
         }
 
         /* extract time */
@@ -528,7 +538,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         /* set messageid if non verbose */
         if((mode == DltModeNonVerbose) && payload.size()>=4) {
             /* message id is always in big endian format */
-            if(endianness == DltEndiannessLittleEndian) {
+            if(endianness == QDlt::DltEndiannessLittleEndian) {
                 messageId = (*((unsigned int*) payload.constData()));
             }
             else {
@@ -538,7 +548,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
 
         /* set service id if message of type control */
         if((type == DltTypeControl) && payload.size()>=4) {
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 ctrlServiceId = *((unsigned int*) payload.constData());
             else
                 ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
@@ -612,7 +622,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         withTags = htyp2 & 0x0200;
         withSourceFileNameLineNumber = htyp2 & 0x0100;
         /* TODO: Endianess of payload not defined in DLTv2, undefined, set to LittleEndian by default */
-        endianness = DltEndiannessLittleEndian;
+        endianness = QDlt::DltEndiannessLittleEndian;
 
         /* get Message Counter : always*/
         messageCounter = *((quint8*) (buf.constData() + 4 + sizeStorageHeader));
@@ -861,7 +871,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
 
         /* set service id if message of type control */
         if((type == DltTypeControl) && payload.size()>=4) {
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 ctrlServiceId = *((unsigned int*) payload.constData());
             else
                 ctrlServiceId = DLT_SWAP_32(*((unsigned int*) payload.constData()));
@@ -946,7 +956,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
     /* write standardheader */
     standardheader.htyp = 0x01 << 5; /* intialise with version number 0x1 */
-    if(endianness == DltEndiannessBigEndian) {
+    if(endianness == QDlt::DltEndiannessBigEndian) {
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
     if(mode == DltModeVerbose) {
@@ -1002,7 +1012,7 @@ void QDltMsg::clear()
     type = DltTypeUnknown;
     subtype = DltLogUnknown;
     mode = DltModeUnknown;
-    endianness = DltEndiannessUnknown;
+    endianness = QDlt::DltEndiannessUnknown;
     time = 0;
     microseconds = 0;
     timestamp = 0;
@@ -1121,9 +1131,9 @@ QString QDltMsg::toStringPayload() const
             data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         if(!data.isEmpty())
         {
-            text += toAsciiTable(data,false,false,true,1024,1024,false);
+            text += QDlt::toAsciiTable(data,false,false,true,1024,1024,false);
             text += "|";
-            text += toAscii(data, false);
+            text += QDlt::toAscii(data, false);
         }
         return text;
     }
@@ -1142,7 +1152,7 @@ QString QDltMsg::toStringPayload() const
         {
             // Skip the ServiceID, Status and Lenght bytes and start from the String containing the ECU Software Version
             data = payload.mid(9,(payload.size()>265)?256:(payload.size()-9));
-            text += toAscii(data,true);
+            text += QDlt::toAscii(data,true);
         }
         else if(getCtrlServiceId() == DLT_SERVICE_ID_CONNECTION_INFO)
         {
@@ -1166,7 +1176,7 @@ QString QDltMsg::toStringPayload() const
             else
             {
                 data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
-                text += toAscii(data);
+                text += QDlt::toAscii(data);
             }
         }
         else if(getCtrlServiceId() == DLT_SERVICE_ID_TIMEZONE)
@@ -1176,7 +1186,7 @@ QString QDltMsg::toStringPayload() const
                 DltServiceTimezone *service;
                 service = (DltServiceTimezone*) payload.constData();
 
-                if(endianness == DltEndiannessLittleEndian)
+                if(endianness == QDlt::DltEndiannessLittleEndian)
                     text += QString("%1 s").arg(service->timezone);
                 else
                     text += QString("%1 s").arg(DLT_SWAP_32(service->timezone));
@@ -1185,13 +1195,13 @@ QString QDltMsg::toStringPayload() const
             else
             {
                 data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
-                text += toAscii(data);
+                text += QDlt::toAscii(data);
             }
         }
         else
         {
             data = payload.mid(5,(payload.size()>261)?256:(payload.size()-5));
-            text += toAscii(data);
+            text += QDlt::toAscii(data);
         }
 
         return text;
@@ -1200,7 +1210,7 @@ QString QDltMsg::toStringPayload() const
     if( getType()==QDltMsg::DltTypeControl) {
         text += QString("[%1] ").arg(getCtrlServiceIdString());
         data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
-        text += toAscii(data);
+        text += QDlt::toAscii(data);
 
         return text;
     }
@@ -1505,7 +1515,7 @@ void QDltMsg::genMsg()
 
     // write standardheader
     standardheader.htyp = 0x01 << 5; /* intialise with version number 0x1 */
-    if(endianness == DltEndiannessBigEndian) {
+    if(endianness == QDlt::DltEndiannessBigEndian) {
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
     if(mode == DltModeVerbose) {

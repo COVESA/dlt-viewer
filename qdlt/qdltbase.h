@@ -22,37 +22,11 @@
 #ifndef QDLT_BASE_H
 #define QDLT_BASE_H
 
-#include <QObject>
 #include <QString>
-#include <QFile>
-#include <QDateTime>
-#include <QMutex>
-#include <time.h>
 
 #include "export_rules.h"
 
-extern "C" {
-    QDLT_C_EXPORT extern const char *qDltMessageType[];
-    QDLT_C_EXPORT extern const char *qDltLogInfo[];
-    QDLT_C_EXPORT extern const char *qDltTraceType[];
-    QDLT_C_EXPORT extern const char *qDltNwTraceType[];
-    QDLT_C_EXPORT extern const char *qDltControlType[];
-    QDLT_C_EXPORT extern const char *qDltMode[];
-    QDLT_C_EXPORT extern const char *qDltEndianness[];
-    QDLT_C_EXPORT extern const char *qDltTypeInfo[];
-    QDLT_C_EXPORT extern const char *qDltCtrlServiceId[];
-    QDLT_C_EXPORT extern const char *qDltCtrlReturnType[];
-}
-
-#define DLT_MAX_MESSAGE_LEN 1024*64
-#define DEFAULT_COLOR "#FFFFFF"
-
-struct sDltFile;
-struct sDltMessage;
-
-class QSerialPort;
-class QTcpSocket;
-class QUdpSocket;
+inline constexpr const auto DLT_MAX_MESSAGE_LEN = 1024*64;
 
 //! Base class for all DLT classes.
 /*!
@@ -60,26 +34,7 @@ class QUdpSocket;
 */
 class QDLT_EXPORT QDlt
 {
-
 public:
-    //! Constructor.
-    /*!
-    */
-    QDlt();
-
-    //! Destructor.
-    /*!
-    */
-    ~QDlt();
-
-    //! Byte swap some bytes.
-    /*!
-      \param bytes The data to be swapped
-      \param size The number of bytes to be swapped, -1 if all bytes of teh byte array
-      \param offset Offset in the byte array where to begin to byte swap
-    */
-     bool swap(QByteArray &bytes,int size = -1, int offset = 0);
-
     //! Convert byte array to text or HTML output.
     /*!
       \param bytes The data to be converted
@@ -91,7 +46,7 @@ public:
       \param toHtml true output is don in HTML, false output in text only
       \return The string with ASCII or html output.
     */
-    QString toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize = 8, int linesize = 16, bool toHtml = true) const;
+    static QString toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize = 8, int linesize = 16, bool toHtml = true);
 
     //! Convert byte array to text output.
     /*!
@@ -100,17 +55,10 @@ public:
       \param size_bytes grouping of bytes together (0xff for raw format)
       \return The string with ASCII output.
     */
-    QString toAscii(const QByteArray &bytes, int type = false, int size_bytes = 0xff) const;
+    static QString toAscii(const QByteArray &bytes, int type = false, int size_bytes = 0xff);
 
     //! The endianness of the message.
-    typedef enum { DltEndiannessUnknown = -2, DltEndiannessLittleEndian = 0, DltEndiannessBigEndian = 1 } DltEndiannessDef;
-
-protected:
-
-
-private:
-
-
+    enum DltEndiannessDef { DltEndiannessUnknown = -2, DltEndiannessLittleEndian = 0, DltEndiannessBigEndian = 1 };
 };
 
 

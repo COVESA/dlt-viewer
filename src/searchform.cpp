@@ -2,6 +2,7 @@
 #include "ui_searchform.h"
 
 #include <QLineEdit>
+#include <QCompleter>
 
 SearchForm::SearchForm(QWidget *parent)
     : QWidget(parent)
@@ -11,6 +12,9 @@ SearchForm::SearchForm(QWidget *parent)
 
     ui->comboBox->setLineEdit(new QLineEdit);
     ui->comboBox->setInsertPolicy(QComboBox::InsertAtTop);
+
+    m_completer = new QCompleter(&m_historyModel, this);
+    input()->setCompleter(m_completer);
 
     connect (ui->abortButton, &QPushButton::clicked, this, &SearchForm::abortSearch);
 }
@@ -45,4 +49,12 @@ void SearchForm::setProgress(int val)
 void SearchForm::resetProgress()
 {
     setProgress(0);
+}
+
+void SearchForm::updateHistory() {
+    if (auto list = m_historyModel.stringList();
+        !input()->text().isEmpty() && !list.contains(input()->text())) {
+        list.append(input()->text());
+        m_historyModel.setStringList(std::move(list));
+    }
 }

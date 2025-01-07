@@ -19,8 +19,6 @@
  * @licence end@
  */
 
-#include <QtDebug>
-
 #include "qdltargument.h"
 
 extern "C"
@@ -28,15 +26,15 @@ extern "C"
 #include "dlt_common.h"
 }
 
+namespace {
+constexpr const char * const qDltTypeInfo[] = {"String", "Bool",    "SignedInteger", "UnsignedInteger",
+                              "Float",  "RawData", "TraceInfo",     "Utf8String"};
+}
+
 QDltArgument::QDltArgument()
 {
     // clear content of argument
     clear();
-}
-
-QDltArgument::~QDltArgument()
-{
-
 }
 
 int QDltArgument::getOffsetPayload() const
@@ -72,12 +70,12 @@ QDltArgument::DltTypeInfoDef QDltArgument::getTypeInfo() const
 QString QDltArgument::getTypeInfoString() const
 {
     if(typeInfo<0)
-        return QString("");
+        return "";
 
-    return QString(qDltTypeInfo[typeInfo]);
+    return qDltTypeInfo[typeInfo];
 }
 
-bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndiannessDef _endianess)
+bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset, QDlt::DltEndiannessDef _endianess)
 {
     unsigned short length=0,length2=0,length3=0;
 
@@ -93,7 +91,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     /* get type info */
     if((unsigned int)payload.size()<(offset+sizeof(unsigned int)))
         return false;
-    if(endianness == DltEndiannessLittleEndian)
+    if(endianness == QDlt::DltEndiannessLittleEndian)
         dltType = *((unsigned int*) (payload.constData()+offset));
     else
         dltType = DLT_SWAP_32((*((unsigned int*) (payload.constData()+offset))));
@@ -145,7 +143,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     {
         if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
             return false;
-        if(endianness == DltEndiannessLittleEndian)
+        if(endianness == QDlt::DltEndiannessLittleEndian)
             length = *((unsigned short*) (payload.constData()+offset));
         else
             length = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
@@ -158,7 +156,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
     {
         if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
             return false;
-        if(endianness == DltEndiannessLittleEndian)
+        if(endianness == QDlt::DltEndiannessLittleEndian)
             length2 = *((unsigned short*) (payload.constData()+offset));
         else
             length2 = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
@@ -167,7 +165,7 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset,DltEndia
         {
             if((unsigned int)payload.size()<(offset+sizeof(unsigned short)))
                 return false;
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 length3 = *((unsigned short*) (payload.constData()+offset));
             else
                 length3 = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
@@ -374,7 +372,7 @@ void QDltArgument::clear()
     data.clear();
     name.clear();
     unit.clear();
-    endianness = QDltArgument::DltEndiannessUnknown;
+    endianness = QDlt::DltEndiannessUnknown;
     dltType = 0;
 }
 
@@ -384,7 +382,7 @@ QString QDltArgument::toString(bool binary) const
     text.reserve(1024);
 
     if(binary) {
-        return toAscii(data);
+        return QDlt::toAscii(data);
     }
 
     switch(getTypeInfo()) {
@@ -418,19 +416,19 @@ QString QDltArgument::toString(bool binary) const
             text += QString("%1").arg((short)(*(char*)(data.constData())));
             break;
         case 2:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 text += QString("%1").arg((short)(*(short*)(data.constData())));
             else
                 text += QString("%1").arg((short)DLT_SWAP_16((short)(*(short*)(data.constData()))));
             break;
         case 4:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 text += QString("%1").arg((int)(*(int*)(data.constData())));
             else
                 text += QString("%1").arg((int)DLT_SWAP_32((int)(*(int*)(data.constData()))));
             break;
         case 8:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 text += QString("%1").arg((long long)(*(long long*)(data.constData())));
             else
                 text += QString("%1").arg((long long)DLT_SWAP_64((long long)(*(long long*)(data.constData()))));
@@ -444,20 +442,20 @@ QString QDltArgument::toString(bool binary) const
         if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_BIN)
         {
             if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_8BIT)
-                text += toAscii(data,2,1); // show binary
+                text += QDlt::toAscii(data,2,1); // show binary
             else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
-                text += toAscii(data,2,2); // show binary
+                text += QDlt::toAscii(data,2,2); // show binary
         }
         else if ((dltType & DLT_TYPE_INFO_SCOD)==DLT_SCOD_HEX)
         {
             if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_8BIT)
-                text += toAscii(data,0,1); // show 8 bit hex
+                text += QDlt::toAscii(data,0,1); // show 8 bit hex
             else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_16BIT)
-                text += toAscii(data,0,2); // show 16 bit hex
+                text += QDlt::toAscii(data,0,2); // show 16 bit hex
             else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_32BIT)
-                text += toAscii(data,0,4); // show 32 bit hex
+                text += QDlt::toAscii(data,0,4); // show 32 bit hex
             else if((dltType & DLT_TYPE_INFO_TYLE)==DLT_TYLE_64BIT)
-                text += toAscii(data,0,8); // show 64 bit hex
+                text += QDlt::toAscii(data,0,8); // show 64 bit hex
         }
         else
         {
@@ -467,19 +465,19 @@ QString QDltArgument::toString(bool binary) const
                 text += QString("%1").arg((unsigned short)(*(unsigned char*)(data.constData())));
                 break;
             case 2:
-                if(endianness == DltEndiannessLittleEndian)
+                if(endianness == QDlt::DltEndiannessLittleEndian)
                     text += QString("%1").arg((unsigned short)(*(unsigned short*)(data.constData())));
                 else
                     text += QString("%1").arg((unsigned short)DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
                 break;
             case 4:
-                if(endianness == DltEndiannessLittleEndian)
+                if(endianness == QDlt::DltEndiannessLittleEndian)
                     text += QString("%1").arg((unsigned int)(*(unsigned int*)(data.constData())));
                 else
                     text += QString("%1").arg((unsigned int)DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
                 break;
             case 8:
-                if(endianness == DltEndiannessLittleEndian)
+                if(endianness == QDlt::DltEndiannessLittleEndian)
                     text += QString("%1").arg((unsigned long long)(*(unsigned long long*)(data.constData())));
                 else
                     text += QString("%1").arg((unsigned long long)DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
@@ -493,7 +491,7 @@ QString QDltArgument::toString(bool binary) const
         switch(data.size())
         {
         case 4:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 text += QString("%1").arg((double)(*(float*)(data.constData())), 0, 'f', 8);
             else
             {
@@ -503,7 +501,7 @@ QString QDltArgument::toString(bool binary) const
             }
             break;
         case 8:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 text += QString("%1").arg((double)(*(double*)(data.constData())), 0, 'f', 8);
             else {
                 const auto tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
@@ -516,7 +514,7 @@ QString QDltArgument::toString(bool binary) const
         }
         break;
     case DltTypeInfoRawd:
-        text += toAscii(data,0); // show raw format (no leading 0x)
+        text += QDlt::toAscii(data,0); // show raw format (no leading 0x)
         break;
     case DltTypeInfoTrai:
         text += QString("?");
@@ -554,17 +552,17 @@ QVariant QDltArgument::getValue() const
         case 1:
             return QVariant((short)(*(char*)(data.constData())));
         case 2:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((short)(*(short*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_16((short)(*(short*)(data.constData()))));
         case 4:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((int)(*(int*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_32((int)(*(int*)(data.constData()))));
         case 8:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((long long)(*(long long*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_64((long long)(*(long long*)(data.constData()))));
@@ -578,17 +576,17 @@ QVariant QDltArgument::getValue() const
         case 1:
             return QVariant((unsigned short)(*(unsigned char*)(data.constData())));
         case 2:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((unsigned short)(*(unsigned short*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_16((unsigned short)(*(unsigned short*)(data.constData()))));
         case 4:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((unsigned int)(*(unsigned int*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_32((unsigned int)(*(unsigned int*)(data.constData()))));
         case 8:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((unsigned long long)(*(unsigned long long*)(data.constData())));
             else
                 return QVariant(DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData()))));
@@ -601,7 +599,7 @@ QVariant QDltArgument::getValue() const
         switch(data.size())
         {
         case 4:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((double)(*(float*)(data.constData())));
             else
             {
@@ -611,7 +609,7 @@ QVariant QDltArgument::getValue() const
                 return QVariant((double)(*((float*)buf)));
             }
         case 8:
-            if(endianness == DltEndiannessLittleEndian)
+            if(endianness == QDlt::DltEndiannessLittleEndian)
                 return QVariant((double)(*(double*)(data.constData())));
             else {
                 const auto tmp = DLT_SWAP_64((unsigned long long)(*(unsigned long long*)(data.constData())));
@@ -638,7 +636,7 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
 {
     Q_UNUSED(verboseMode);
 
-    endianness = QDltArgument::DltEndiannessLittleEndian;
+    endianness = QDlt::DltEndiannessLittleEndian;
 
     switch(value.type())
     {

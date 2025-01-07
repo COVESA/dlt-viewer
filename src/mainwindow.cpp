@@ -56,9 +56,7 @@
  * Must be a "C" include to interpret the imports correctly
  * for MSVC compilers.
  **/
-#include "dlt_common.h"
 extern "C" {
-
     #include "dlt_user.h"
 }
 
@@ -200,8 +198,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
     ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
-    newCompleter = new QCompleter(&m_CompleterModel,this);
-
     /* what for do we need the next 2 lines ? */
     draw_timer.setSingleShot (true);
     connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
@@ -278,7 +274,6 @@ MainWindow::~MainWindow()
     delete dltIndexer;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
-    delete newCompleter;
     delete sortProxyModel;
 }
 
@@ -2384,21 +2379,15 @@ void MainWindow::on_action_menuFile_Quit_triggered()
 
 void MainWindow::on_actionFindNext()
 {
-    //qDebug() << "on_actionFindNext" << __LINE__;
-    if(!searchInput->input()->text().isEmpty() && !list.contains(searchInput->input()->text()))
-       {
-           list.append(searchInput->input()->text());
-       }
-    QString title = "Search Results";
+    searchInput->updateHistory();
 
+    QString title = "Search Results";
     if ( 0 < m_searchtableModel->get_SearchResultListSize())
     {
-        title = QString("Search Results: %L1").arg(m_searchtableModel->get_SearchResultListSize());
+        title += QStringLiteral(": %L1").arg(m_searchtableModel->get_SearchResultListSize());
     }
     ui->dockWidgetSearchIndex->setWindowTitle(title);
     ui->dockWidgetSearchIndex->show();
-    m_CompleterModel.setStringList(list);
-    searchInput->input()->setCompleter(newCompleter);
 }
 
 void MainWindow::on_action_menuProject_New_triggered()
@@ -4476,7 +4465,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
     /* control message was received */
     uint32_t service_id_tmp=0;
     DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-    uint32_t service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
+    uint32_t service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
 
     switch (service_id)
     {
@@ -4488,6 +4477,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
             versionString(msg);
             autoloadPluginsVersionEcus.append(msg.getEcuid());
         }
+        break;
     }
     case DLT_SERVICE_ID_GET_LOG_INFO:
     {
@@ -4507,7 +4497,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
         {
             uint16_t count_app_ids=0,count_app_ids_tmp=0;
             DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
-            count_app_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_app_ids_tmp);
+            count_app_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_app_ids_tmp);
             for (int32_t num=0;num<count_app_ids;num++)
             {
                 char apid[DLT_ID_SIZE+1];
@@ -4517,7 +4507,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
 
                 uint16_t count_context_ids=0,count_context_ids_tmp=0;
                 DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
-                count_context_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_context_ids_tmp);
+                count_context_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_context_ids_tmp);
 
                 for (int32_t num2=0;num2<count_context_ids;num2++)
                 {
@@ -4537,7 +4527,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
                     {
                         uint16_t context_description_length=0,context_description_length_tmp=0;
                         DLT_MSG_READ_VALUE(context_description_length_tmp,ptr,length,uint16_t);
-                        context_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),context_description_length_tmp);
+                        context_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),context_description_length_tmp);
 
                         if (length<context_description_length)
                         {
@@ -4559,7 +4549,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
                     QString applicationDescription;
                     uint16_t application_description_length=0,application_description_length_tmp=0;
                     DLT_MSG_READ_VALUE(application_description_length_tmp,ptr,length,uint16_t);
-                    application_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDltMsg::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),application_description_length_tmp);
+                    application_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),application_description_length_tmp);
                     applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
                     controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
                     ptr+=application_description_length;
@@ -4612,7 +4602,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
             DltServiceTimezone *service;
             service = (DltServiceTimezone*) payload.constData();
 
-            if(msg.getEndianness() == QDltMsg::DltEndiannessLittleEndian)
+            if(msg.getEndianness() == QDlt::DltEndiannessLittleEndian)
                 controlMessage_Timezone(service->timezone, service->isdst);
             else
                 controlMessage_Timezone(DLT_SWAP_32(service->timezone), service->isdst);
@@ -6340,7 +6330,7 @@ void MainWindow::versionString(const QDltMsg &msg)
     QByteArray payload = msg.getPayload();
     QByteArray data = payload.mid(9,(payload.size()>262)?256:(payload.size()-9));
 
-    target_version_string = msg.toAscii(data,true);
+    target_version_string = QDlt::toAscii(data,true);
     target_version_string = target_version_string.trimmed(); // remove all white spaces at beginning and end
 
     //qDebug() << "Versionstring"<< target_version_string << __LINE__ ;
@@ -7871,8 +7861,6 @@ void MainWindow::on_actionJump_To_triggered()
     }
 
     jump_to_line(dlg.getIndex());
-
-
 }
 
 
@@ -8235,18 +8223,10 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
 
-    QStringList completerList;
-
-    /* default filter list update combobox */
-    QDltFilterList *filterList;
-    foreach(filterList,defaultFilter.defaultFilterList){
+    // default filter list update combobox
+    for (const auto *filterList : defaultFilter.defaultFilterList) {
         ui->comboBoxFilterSelection->addItem(filterList->getFilename());
-        completerList << filterList->getFilename();
     }
-    //QCompleter *completer = new QCompleter(completerList, this);
-    //completer->setFilterMode(Qt::MatchContains);
-    //completer->setCaseSensitivity(Qt::CaseInsensitive);
-    //ui->comboBoxFilterSelection->setCompleter(completer);
 }
 
 void MainWindow::on_actionDefault_Filter_Create_Index_triggered()

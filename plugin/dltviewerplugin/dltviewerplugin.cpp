@@ -288,13 +288,13 @@ void DltViewerPlugin::selectedIdxMsg(int index, QDltMsg &msg) {
     QByteArray bytes_payload = msg.getPayload();
 
     /* Show Ascii output */
-    form->setTextBrowserAscii(msg.toAsciiTable(bytes_header,false,false,true,8,64)+msg.toAsciiTable(bytes_payload,false,false,true,8,64));
+    form->setTextBrowserAscii(QDlt::toAsciiTable(bytes_header,false,false,true,8,64)+QDlt::toAsciiTable(bytes_payload,false,false,true,8,64));
 
     /* Show Binary output */
-    form->setTextBrowserBinary(msg.toAsciiTable(bytes_header,true,true,false)+msg.toAsciiTable(bytes_payload,true,true,false));
+    form->setTextBrowserBinary(QDlt::toAsciiTable(bytes_header,true,true,false)+QDlt::toAsciiTable(bytes_payload,true,true,false));
 
     /* Show Mixed output */
-    form->setTextBrowserMixed(msg.toAsciiTable(bytes_header,true,true,true)+msg.toAsciiTable(bytes_payload,true,true,true));
+    form->setTextBrowserMixed(QDlt::toAsciiTable(bytes_header,true,true,true)+QDlt::toAsciiTable(bytes_payload,true,true,true));
 }
 
 

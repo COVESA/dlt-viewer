@@ -64,7 +64,7 @@
 #ifndef DLT_COMMON_H
 #define DLT_COMMON_H
 
-#include "export_rules.h"
+#include "export_c_rules.h"
 
 /**
   \defgroup commonapi DLT Common API
