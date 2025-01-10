@@ -26,7 +26,7 @@
 
 #include "export_rules.h"
 
-inline constexpr const auto DLT_MAX_MESSAGE_LEN = 1024*64;
+constexpr const auto DLT_MAX_MESSAGE_LEN = 1024*64;
 
 //! Base class for all DLT classes.
 /*!
