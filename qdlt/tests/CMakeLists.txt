@@ -1,5 +1,6 @@
 add_executable(test_dltmessagematcher
     test_dltmessagematcher.cpp
+    test_dltctrlmsg.cpp
 )
 target_link_libraries(
   test_dltmessagematcher
@@ -16,6 +17,7 @@ add_test(
 
 add_executable(test_dltoptmanager
     test_dltoptmanager.cpp
+    test_dltctrlmsg.cpp
 )
 
 target_link_libraries(
