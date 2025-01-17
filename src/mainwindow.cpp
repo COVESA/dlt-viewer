@@ -3923,12 +3923,9 @@ void MainWindow::readyRead()
 
 }
 
-void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec,quint32 usec)
-{
-    const auto timestamp =
-        (sec || usec) ? std::optional<QDltImporter::DltStorageHeaderTimestamp>({sec, usec}) : std::nullopt;
-    DltStorageHeader str = QDltImporter::makeDltStorageHeader(timestamp);
-
+void MainWindow::writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
+                                       const EcuItem* ecuitem) {
+    DltStorageHeader str = QDltImporter::makeDltStorageHeader();
     if (ecuitem)
         dlt_set_id(str.ecu, ecuitem->id.toLatin1());
 
@@ -3946,7 +3943,7 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
     if( settings->splitlogfile != 0) // only in case the file size limit checking is active ...
      {
      // check if files size limit reached ( see Settings->Project Other->Maximum File Size )
-     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+bufferPayloadSize)) > settings->fmaxFileSizeMB *1000*1000) )
+     if( ( ((outputfile.size()+sizeof(DltStorageHeader)+bufferHeader.size()+ payload.size())) > settings->fmaxFileSizeMB *1000*1000) )
       {
         createsplitfile();
       }
@@ -3974,10 +3971,9 @@ void MainWindow::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayl
         outputfile.write(ecuitem->id.toLatin1(),ecuitem->id.length());
     }
     outputfile.write(bufferHeader);
-    outputfile.write(bufferPayload,bufferPayloadSize);
+    outputfile.write(payload.data(), payload.size());
     outputfile.flush();
     outputfile.close();
-
 }
 
 void MainWindow::read(EcuItem* ecuitem)
@@ -4010,8 +4006,8 @@ void MainWindow::read(EcuItem* ecuitem)
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
             //qDebug() << "bytes received" << bytesRcvd;
             unsigned int dataSize = data.size();
-            char* dataPtr = data.data();
-            // Find one ore more DLT messages in the UDP message
+            const char* dataPtr = data.data();
+            // Find one or more DLT messages in the UDP message
             while(dataSize>0)
             {
                 quint32 sizeMsg = qmsg.checkMsgSize(dataPtr,dataSize,settings->supportDLTv2Decoding);
@@ -4031,13 +4027,13 @@ void MainWindow::read(EcuItem* ecuitem)
                         }
                         if(qfile.checkFilter(qmsg))
                         {
-                            writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                            writeDLTMessageToFile(empty,{dataPtr,sizeMsg}, ecuitem);
                         }
                     }
                     else
                     {
                         // write all messages
-                        writeDLTMessageToFile(empty,dataPtr,sizeMsg,ecuitem);
+                        writeDLTMessageToFile(empty, {dataPtr,sizeMsg}, ecuitem);
                     }
                     totalBytesRcvd+=sizeMsg;
                     if(sizeMsg<=dataSize)
@@ -4102,10 +4098,8 @@ void MainWindow::read(EcuItem* ecuitem)
             }
 
             /* write message to file */
-            QByteArray bufferHeader;
-            QByteArray bufferPayload;
-            bufferHeader = qmsg.getHeader();
-            bufferPayload = qmsg.getPayload();
+            const QByteArray bufferHeader = qmsg.getHeader();
+            const QByteArray bufferPayload = qmsg.getPayload();
             if(settings->loggingOnlyFilteredMessages)
             {
                 // write only messages which match filter
@@ -4116,13 +4110,21 @@ void MainWindow::read(EcuItem* ecuitem)
                 }
                 if(qfile.checkFilter(qmsg))
                 {
-                    writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
+                    writeDLTMessageToFile(
+                                bufferHeader,
+                                {bufferPayload.data(),
+                                 static_cast<std::string_view::size_type>(bufferPayload.size())},
+                                ecuitem);
                 }
             }
             else
             {
                 // write all messages
-                writeDLTMessageToFile(bufferHeader,bufferPayload.data(),bufferPayload.size(),ecuitem);
+                writeDLTMessageToFile(
+                            bufferHeader,
+                            {bufferPayload.data(),
+                             static_cast<std::string_view::size_type>(bufferPayload.size())},
+                            ecuitem);
             }
 
         } //end while
