@@ -6,17 +6,10 @@ extern "C" {
     #include "dlt_common.h"
 }
 
-#if defined(_MSC_VER)
-#include <io.h>
-#include <time.h>
-#include <WinSock.h>
-#else
-#include <unistd.h>     /* for read(), close() */
-#include <sys/time.h>	/* for gettimeofday() */
-#endif
-
 #include "qdltmsg.h"
 #include "qdltimporter.h"
+
+#include <time.h>
 
 QDltImporter::QDltImporter(QFile *outputfile, QStringList fileNames, QObject *parent) :
     QThread(parent)
@@ -810,17 +803,13 @@ DltStorageHeader QDltImporter::makeDltStorageHeader(std::optional<DltStorageHead
         result.seconds = static_cast<time_t>(ts->sec);
         result.microseconds = static_cast<int32_t>(ts->usec);
     } else {
-#if defined(_MSC_VER)
-        struct timespec ts;
-        (void)timespec_get(&ts, TIME_UTC);
-        result.seconds = (time_t)ts.tv_sec;
-        result.microseconds = (int32_t)(ts.tv_nsec / 1000);
-#else
-        struct timeval tv;
-        gettimeofday(&tv, NULL);
-        result.seconds = (time_t)tv.tv_sec;        /* value is long */
-        result.microseconds = (int32_t)tv.tv_usec; /* value is long */
-#endif
+        if (struct timespec ts; timespec_get(&ts, TIME_UTC)) {
+            result.seconds = static_cast<uint32_t>(ts.tv_sec);
+            result.microseconds = static_cast<int32_t>(ts.tv_nsec / 1000);
+        } else {
+            result.seconds = 0;
+            result.microseconds = 0;
+        }
     }
 
     return result;
