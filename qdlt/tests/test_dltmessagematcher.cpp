@@ -120,3 +120,18 @@ TEST(DltMessageMatcher, matchMessagePayload) {
     // actual regexp, match string "[0]  abcd|61 62 63 64"
     EXPECT_TRUE(matcher.match(msg, QRegularExpression("^\\[\\d\\]\\s+\\w+|[\\d\\s]+$")));
 }
+
+TEST(DltMessageMatcher, doNotMatchEmptyMessagePayload) {
+    QDltMsg msg;
+    msg.setApid("abc");
+    msg.setCtid("def");
+    auto ba = QString{}.toUtf8();
+    msg.setPayload(ba);
+
+    DltMessageMatcher matcher;
+    matcher.setHeaderSearchEnabled(true);
+    matcher.setPayloadSearchEnabled(true);
+
+    // simple text does not match empty payload
+    EXPECT_FALSE(matcher.match(msg, "efgh"));
+}

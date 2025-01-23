@@ -35,7 +35,7 @@ bool DltMessageMatcher::match(const QDltMsg &msg, const Pattern& pattern) const
             matchFound = payload.contains(std::get<QRegularExpression>(pattern));
         } else {
             const auto& searchText = std::get<QString>(pattern);
-            matchFound = payload.isEmpty() || payload.contains(searchText, m_caseSensitivity);
+            matchFound = payload.contains(searchText, m_caseSensitivity);
         }
     }
 
