@@ -45,6 +45,8 @@ add_library(qdlt SHARED
     qdltlrucache.hpp
     export_c_rules.h
     export_rules.h
+    qdltctrlmsg.cpp
+    qdltctrlmsg.h
 )
 
 target_compile_definitions(qdlt PRIVATE
