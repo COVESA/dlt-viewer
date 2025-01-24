@@ -4,10 +4,12 @@
 #include <QMap>
 #include <QThread>
 #include <QObject>
+#include <QFile>
 
 #include "export_rules.h"
-#include "qfile.h"
 #include "dlt_common.h"
+
+#include <optional>
 
 typedef struct pcap_hdr_s {
         quint32 magic_number;   /* magic number */
@@ -170,6 +172,12 @@ public:
     void dltIpcFromMF4(QString fileName);
 
     void setOutputfile(QFile *newOutputfile);
+
+    struct DltStorageHeaderTimestamp {
+        quint32 sec;
+        quint32 usec;
+    };
+    static DltStorageHeader makeDltStorageHeader(std::optional<DltStorageHeaderTimestamp> timestamp = std::nullopt);
 
   private:
 

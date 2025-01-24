@@ -366,7 +366,8 @@ private:
     /* Get path from explorerView model index */
     QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
 
-    void writeDLTMessageToFile(QByteArray &bufferHeader,char*bufferPayload,quint32 bufferPayloadSize,EcuItem* ecuitem,quint32 sec=0,quint32 use=0);
+    void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
+                               const EcuItem* ecuitem);
 
 protected:
     void keyPressEvent ( QKeyEvent * event ) override;
