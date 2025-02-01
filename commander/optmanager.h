@@ -22,6 +22,8 @@
 
 #include <QStringList>
 
+#include <optional>
+
 enum e_convertionmode
 {
     e_ASCI = 0,
@@ -30,7 +32,16 @@ enum e_convertionmode
     e_CSV  = 3,
 };
 
+enum class Units {
+    KB, // kilobytes
+    MB, // megabytes
+    GB  // gigabytes
+};
 
+struct Split {
+    std::size_t size;
+    Units unit;
+};
 
 class OptManager
 {
@@ -67,6 +78,9 @@ private:
     bool filter;
     bool convert;
     bool multifilter;
+    //split size
+    std::optional<Split> split;
+
     e_convertionmode convertionmode;
 
     QStringList logFiles;
