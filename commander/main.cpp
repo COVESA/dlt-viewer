@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
         //dltFile.createIndexFilter();
         //qDebug() << "Number of messages matching filter:" << dltFile.sizeFilter();
 
-        if(opt.get_convertionmode()==e_DLT)
+        if(opt.getConvertionMode()==e_DLT)
         {
             qDebug() << "### Convert to DLT";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
             exporter.exportMessages();
             qDebug() << "DLT export to DLT file format done";
         }
-        if(opt.get_convertionmode()==e_ASCI)
+        if(opt.getConvertionMode()==e_ASCI)
         {
             qDebug() << "### Convert to ASCII";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
             exporter.exportMessages();
             qDebug() << "DLT export ASCII done";
         }
-        if(opt.get_convertionmode()==e_CSV)
+        if(opt.getConvertionMode()==e_CSV)
         {
             qDebug() << "### Convert to CSV";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
             exporter.exportMessages();
             qDebug() << "DLT export CSV done";
         }
-        if(opt.get_convertionmode()==e_UTF8)
+        if(opt.getConvertionMode()==e_UTF8)
         {
             qDebug() << "### Convert to UTF8";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
