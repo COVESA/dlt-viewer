@@ -245,14 +245,19 @@ void OptManager::parse(QStringList *opt)
     } // end of for loop
 }
 
-bool OptManager::isLogFile(){return log;}
-bool OptManager::isFilterFile(){return filter;}
-bool OptManager::isConvert(){return convert;}
-bool OptManager::isMultifilter(){return multifilter;}
-e_convertionmode OptManager::get_convertionmode(){return convertionmode;}
-QStringList OptManager::getLogFiles(){return logFiles;}
-QStringList OptManager::getFilterFiles(){return filterFiles;}
-QString OptManager::getConvertSourceFile(){return convertSourceFile;}
-QString OptManager::getConvertDestFile(){return convertDestFile;}
-char OptManager::getDelimiter(){return delimiter;}
-QString OptManager::getSignature(){return signature;}
+bool OptManager::isLogFile() const {return log;}
+bool OptManager::isFilterFile() const {return filter;}
+bool OptManager::isConvert()const {return convert;}
+bool OptManager::isMultifilter() const {return multifilter;}
+e_convertionmode OptManager::getConvertionMode() const {return convertionmode;}
+QStringList OptManager::getLogFiles()const {return logFiles;}
+QStringList OptManager::getFilterFiles() const {return filterFiles;}
+QString OptManager::getConvertSourceFile() const {return convertSourceFile;}
+QString OptManager::getConvertDestFile()const {return convertDestFile;}
+char OptManager::getDelimiter() const {return delimiter;}
+QString OptManager::getSignature() const {return signature;}
+
+const std::optional<Split> &OptManager::getSplit() const
+{
+    return split;
+}
