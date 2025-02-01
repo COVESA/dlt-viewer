@@ -41,6 +41,8 @@ enum class Units {
 struct Split {
     std::size_t size;
     Units unit;
+
+    std::size_t toBytesCount() const;
 };
 
 class OptManager

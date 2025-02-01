@@ -307,7 +307,7 @@ public:
     //! Apply RegEx Replace to the arguments of a message, if any active in the filters
     /*!
     */
-    bool applyRegExStringMsg(QDltMsg &msg);
+    bool applyRegExStringMsg(QDltMsg &msg) const;
 
 protected:
 
