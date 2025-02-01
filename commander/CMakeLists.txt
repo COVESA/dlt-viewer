@@ -14,7 +14,9 @@
 
 add_executable(dlt-commander
     main.cpp
-    optmanager.cpp)
+    optmanager.cpp
+    dltfileexporter.h
+    dltfileexporter.cpp)
 
 target_link_libraries(dlt-commander
     qdlt
