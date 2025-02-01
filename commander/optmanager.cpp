@@ -261,3 +261,17 @@ const std::optional<Split> &OptManager::getSplit() const
 {
     return split;
 }
+
+std::size_t Split::toBytesCount() const
+{
+    switch (unit) {
+    case Units::KB:
+        return size * 1024;
+    case Units::MB:
+        return size * 1024 * 1024;
+    case Units::GB:
+        return size * 1024 * 1024 * 1024;
+    default:
+        return size;
+    }
+}
