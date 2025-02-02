@@ -64,15 +64,26 @@ void DltFileExporter::exportMessages(const QString& outputName)
             }
         }
 
-        // TODO: should we break and create a new file
-        QFile output(outputName);
-        if (!output.open(QIODevice::WriteOnly))
-        {
-            qDebug() << "ERROR: Couldn't open output file: " << outputName;
-            return;
-        }
+        std::size_t fileCounter = 1;
+        const QFileInfo info(outputName);
+        std::size_t bytesCount = m_maxOutputSize.value_or(0);
 
+        QFile output;
         for (int i = 0; i < m_input.size(); ++i) {
+            if (m_maxOutputSize && (bytesCount >= *m_maxOutputSize)) {
+                output.close();
+
+                const auto outputName = info.absolutePath() + "/" + info.baseName() + "_" + QString::number(fileCounter) + ".dlt";
+                output.setFileName(outputName);
+                if (!output.open(QIODevice::WriteOnly))
+                {
+                    qDebug() << "ERROR: Couldn't open output file: " << outputName;
+                    return;
+                }
+                bytesCount = 0;
+                ++fileCounter;
+            }
+
             QByteArray buf = m_input.getMsg(i);
             if(buf.isEmpty())
             {
@@ -85,8 +96,10 @@ void DltFileExporter::exportMessages(const QString& outputName)
             bool isApplied = m_input.applyRegExStringMsg(msg);
             if(isApplied) msg.getMsg(buf,true);
 
-            if (filterList.isEmpty() || filterList.checkFilter(msg))
+            if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                bytesCount += buf.size();
                 output.write(buf);
+            }
         }
     }
 }
