@@ -133,8 +133,8 @@ void OptManager::printUsage()
     qDebug().noquote() << executable << "trace_1.dlt trace_2.dlt";
     qDebug().noquote() << executable << "input.pcap output.dlt";
     qDebug().noquote() << executable << "-c output.txt input.pcap";
-    qDebug().noquote() << executable << "-c output.txt input1.mf4 input2.mf4\n";
-    qDebug().noquote() << executable << "-split 100K c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-c output.txt input1.mf4 input2.mf4";
+    qDebug().noquote() << executable << "-split 100K c:\\trace\\trace.dlt\n";
 }
 
 void OptManager::parse(QStringList *opt)

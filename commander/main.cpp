@@ -9,6 +9,8 @@
 #include <qdltexporter.h>
 #include <optmanager.h>
 
+#include "dltfileexporter.h"
+
 /*
  * Examples:
  *
@@ -126,13 +128,14 @@ int main(int argc, char *argv[])
         if(opt.getConvertionMode()==e_DLT)
         {
             qDebug() << "### Convert to DLT";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
-            if(opt.isMultifilter())
-                exporter.setMultifilterFilenames(opt.getFilterFiles());
-            else
-                exporter.setFilterList(filterList);
+            DltFileExporter exporter(dltFile);
+            exporter.setFilterList(opt.getFilterFiles(), opt.isMultifilter());
+
+            if (const auto& split = opt.getSplit(); split)
+                exporter.setMaxOutputSize(split->toBytesCount());
+
             qDebug() << "Commandline DLT convert to " << opt.getConvertDestFile();
-            exporter.exportMessages();
+            exporter.exportMessages(opt.getConvertDestFile());
             qDebug() << "DLT export to DLT file format done";
         }
         if(opt.getConvertionMode()==e_ASCI)
