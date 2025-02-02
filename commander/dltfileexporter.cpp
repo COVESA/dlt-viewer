@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QFileInfo>
+#include <QDir>
 
 DltFileExporter::DltFileExporter(const QDltFile& input) : m_input(input) {}
 
@@ -23,22 +24,40 @@ void DltFileExporter::setMaxOutputSize(std::size_t sz)
 void DltFileExporter::exportMessages(const QString& outputName)
 {
     if (m_splitByFilter) {
+        const QFileInfo outputInfo(outputName);
+        const auto outputDir = outputInfo.absolutePath() + "/" + outputInfo.baseName();
+        if (!QDir(outputDir).exists() && !QDir().mkpath(outputDir)) {
+            qDebug() << "Couldn't create output directory: " << outputDir;
+            return;
+        }
         for (const auto& filterFilepath : m_filters) {
-            QFileInfo info(filterFilepath);
             QDltFilterList filterList;
             if(!filterList.LoadFilter(filterFilepath, true)) {
                 qDebug() << "Export: Open filter file " << filterFilepath << " failed!";
                 continue;
             }
 
-            QFile file(outputName + "/" + info.baseName() + ".dlt");
-            if (!file.open(QIODevice::WriteOnly))
-            {
-                qDebug() << "ERROR: Couldn't open output file: " << outputName;
-                continue;
-            }
+            const QFileInfo filterInfo(filterFilepath);
 
+            std::size_t fileCounter = 1;
+            std::size_t bytesCount = m_maxOutputSize.value_or(0);
+
+            QFile output;
             for (int i = 0; i < m_input.size(); ++i) {
+                if (m_maxOutputSize && (bytesCount >= *m_maxOutputSize)) {
+                    output.close();
+
+                    const auto outputName = outputDir + "/" + filterInfo.baseName() + "_" + QString::number(fileCounter) + ".dlt";
+                    output.setFileName(outputName);
+                    if (!output.open(QIODevice::WriteOnly))
+                    {
+                        qDebug() << "ERROR: Couldn't open output file: " << outputName;
+                        return;
+                    }
+                    bytesCount = 0;
+                    ++fileCounter;
+                }
+
                 QByteArray buf = m_input.getMsg(i);
                 if(buf.isEmpty())
                 {
@@ -51,8 +70,10 @@ void DltFileExporter::exportMessages(const QString& outputName)
                 bool isApplied = m_input.applyRegExStringMsg(msg);
                 if(isApplied) msg.getMsg(buf,true);
 
-                if (filterList.isEmpty() || filterList.checkFilter(msg))
-                    file.write(buf);
+                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                    bytesCount += buf.size();
+                    output.write(buf);
+                }
             }
         }
     } else {
