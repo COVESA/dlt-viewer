@@ -22,7 +22,7 @@ private:
     const QDltFile& m_input;
     QStringList m_filters;
     bool m_splitByFilter{false};
-    std::size_t m_maxOutputSize;
+    std::optional<std::size_t> m_maxOutputSize;
 };
 
 #endif // DLTFILEEXPORTER_H
