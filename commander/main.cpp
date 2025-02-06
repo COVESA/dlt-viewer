@@ -126,7 +126,7 @@ int main(int argc, char *argv[])
         if(opt.get_convertionmode()==e_DLT)
         {
             qDebug() << "### Convert to DLT";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
         if(opt.get_convertionmode()==e_ASCI)
         {
             qDebug() << "### Convert to ASCII";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -150,7 +150,7 @@ int main(int argc, char *argv[])
         if(opt.get_convertionmode()==e_CSV)
         {
             qDebug() << "### Convert to CSV";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
         if(opt.get_convertionmode()==e_UTF8)
         {
             qDebug() << "### Convert to UTF8";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else

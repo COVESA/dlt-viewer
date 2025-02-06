@@ -72,6 +72,7 @@ public:
     const QStringList &getPcapFiles() const;
     const QStringList &getMf4Files() const;
     char getDelimiter();
+    QString getSignature();
 
     QString getHelpText() const;
 
@@ -103,7 +104,8 @@ private:
     QStringList postPluginCommands; // command after loading log file
 
     QString  workingDirectory;
-    char delimiter{','};
+    char delimiter;
+    QString signature;
 
     QCommandLineParser m_parser;
 };

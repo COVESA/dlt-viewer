@@ -9,7 +9,7 @@
 
 QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                            QDltExporter::DltExportFormat exportFormat,
-                           QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent) :
+                           QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char delimiter,QString signature,QObject *parent) :
     QThread(parent)
 {
     size = 0;
@@ -18,7 +18,7 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     automaticTimeSettings=_automaticTimeSettings;
     utcOffset=_utcOffset;
     dst=_dst;
-    delimiter=_delimiter;
+    this->delimiter=delimiter;
 
     this->from = from;
     to.setFileName(outputfileName);
@@ -27,6 +27,8 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     this->exportFormat = exportFormat;
     this->exportSelection = exportSelection;
     this->selection = selection;
+
+    this->signature = signature;
 }
 
 void QDltExporter::run()
@@ -45,20 +47,78 @@ QString QDltExporter::escapeCSVValue(QString arg)
 
 bool QDltExporter::writeCSVHeader()
 {
-    QString header = QString("\"%1\"")+delimiter+QString("\"%2\"")+delimiter+QString("\"%3\"")+delimiter+QString("\"%4\"")+delimiter+QString("\"%5\"")+delimiter+QString("\"%6\"")+delimiter+QString("\"%7\"")+delimiter+QString("\"%8\"")+delimiter+QString("\"%9\"")+delimiter+QString("\"%10\"")+delimiter+QString("\"%11\"")+delimiter+QString("\"%12\"")+delimiter+QString("\"%13\"\n");
-    header = header.arg(FieldNames::getName(FieldNames::Index))
-                    .arg(FieldNames::getName(FieldNames::Time))
-                    .arg(FieldNames::getName(FieldNames::TimeStamp))
-                    .arg(FieldNames::getName(FieldNames::Counter))
-                    .arg(FieldNames::getName(FieldNames::EcuId))
-                    .arg(FieldNames::getName(FieldNames::AppId))
-                    .arg(FieldNames::getName(FieldNames::ContextId))
-                    .arg(FieldNames::getName(FieldNames::SessionId))
-                    .arg(FieldNames::getName(FieldNames::Type))
-                    .arg(FieldNames::getName(FieldNames::Subtype))
-                    .arg(FieldNames::getName(FieldNames::Mode))
-                    .arg(FieldNames::getName(FieldNames::ArgCount))
-                    .arg(FieldNames::getName(FieldNames::Payload));
+
+    /*
+
+    Used Signature:
+
+    I Index
+    T Time
+    S Timestamp
+    O Count
+    E Ecuid
+    A Apid
+    C Ctid
+    N SessionId
+    Y Type
+    U Subtype
+    M Mode
+    R #Args
+    P Payload
+
+    Default: ITSOEACNYUMRP
+    */
+
+    QString header;
+    for(int num = 0; num < signature.size();num++)
+    {
+        if(num!=0)
+            header += delimiter;
+        switch(signature[num].toLatin1())
+        {
+        case 'I':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Index));
+            break;
+        case 'T':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Time));
+            break;
+        case 'S':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::TimeStamp));
+            break;
+        case 'O':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Counter));
+            break;
+        case 'E':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::EcuId));
+            break;
+        case 'A':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::AppId));
+            break;
+        case 'C':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::ContextId));
+            break;
+        case 'N':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::SessionId));
+            break;
+        case 'Y':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Type));
+            break;
+        case 'U':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Subtype));
+            break;
+        case 'M':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Mode));
+            break;
+        case 'R':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::ArgCount));
+            break;
+        case 'P':
+            header += QString("\"%1\"").arg(FieldNames::getName(FieldNames::Payload));
+            break;
+        }
+    }
+    header += "\n";
+
     if(multifilterFilenames.isEmpty())
         to.write(header.toLatin1().constData());
     else
@@ -73,24 +133,58 @@ void QDltExporter::writeCSVLine(int index, QDltMsg msg,QFile &to)
 {
     QString text("");
 
-    text += escapeCSVValue(QString("%1").arg(index)).append(delimiter);
-    if( automaticTimeSettings == 0 )
-       text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(delimiter);
-    else
-       text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'))).append(delimiter);
-    text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'))).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getEcuid().simplified())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getApid().simplified())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getCtid().simplified())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getSessionid())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getTypeString())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getModeString())).append(delimiter);
-    text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments())).append(delimiter);
-    QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
-    if(from) from->applyRegExString(msg,payload);
-    text += escapeCSVValue(payload);
+    for(int num = 0; num < signature.size();num++)
+    {
+        if(num!=0)
+            text += delimiter;
+        switch(signature[num].toLatin1())
+        {
+        case 'I':
+            text += escapeCSVValue(QString("%1").arg(index));
+            break;
+        case 'T':
+            if( automaticTimeSettings == 0 )
+                text += escapeCSVValue(QString("%1.%2").arg(msg.getGmTimeWithOffsetString(utcOffset,dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0')));
+            else
+                text += escapeCSVValue(QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0')));
+            break;
+        case 'S':
+            text += escapeCSVValue(QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0')));
+            break;
+        case 'O':
+            text += escapeCSVValue(QString("%1").arg(msg.getMessageCounter()));
+            break;
+        case 'E':
+            text += escapeCSVValue(QString("%1").arg(msg.getEcuid().simplified()));
+            break;
+        case 'A':
+            text += escapeCSVValue(QString("%1").arg(msg.getApid().simplified()));
+            break;
+        case 'C':
+            text += escapeCSVValue(QString("%1").arg(msg.getCtid().simplified()));
+            break;
+        case 'N':
+            text += escapeCSVValue(QString("%1").arg(msg.getSessionid()));
+            break;
+        case 'Y':
+            text += escapeCSVValue(QString("%1").arg(msg.getTypeString()));
+            break;
+        case 'U':
+            text += escapeCSVValue(QString("%1").arg(msg.getSubtypeString()));
+            break;
+        case 'M':
+            text += escapeCSVValue(QString("%1").arg(msg.getModeString()));
+            break;
+        case 'R':
+            text += escapeCSVValue(QString("%1").arg(msg.getNumberOfArguments()));
+            break;
+        case 'P':
+            QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+            if(from) from->applyRegExString(msg,payload);
+            text += escapeCSVValue(payload);
+            break;
+        }
+    }
     text += "\n";
 
     to.write(text.toLatin1().constData());

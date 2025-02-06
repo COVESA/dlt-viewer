@@ -23,6 +23,8 @@
 
 #include "optmanager.h"
 #include "../src/version.h"
+#include "qdltexporter.h"
+
 #include <QDebug>
 #include <QFileInfo>
 #include <iostream>
@@ -37,7 +39,8 @@ OptManager::OptManager()
     convert = false;
     filter = false;
     convertionmode = e_ASCI;
-    delimiter = ',';
+    delimiter = QDLT_DEFAULT_EXPORT_DELIMITER;
+    signature = QDLT_DEFAULT_EXPORT_SIGNATURE;
     multifilter = false;
 }
 
@@ -92,7 +95,8 @@ void OptManager::printUsage()
     qDebug()<<" -u\tConversion will be done in UTF8 instead of ASCII";
     qDebug()<<" -csv\tConversion will be done in CSV format";
     qDebug()<<" -d\tConversion will NOT be done, save in dlt file format again instead";
-    qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: ,).";
+    qDebug()<<" -delimiter <character>\tThe used delimiter for CSV export (Default: "+QString(QDLT_DEFAULT_EXPORT_DELIMITER)+").";
+    qDebug()<<" -signature <string>\tThe used signature for CSV export, which columns are exported (Default: "+QString(QDLT_DEFAULT_EXPORT_SIGNATURE)+").  I=Index,T=Time,S=Timestamp,O=Count,E=Ecuid,A=Apid,C=Ctid,N=SessionId,Y=Type,U=Subtype,M=Mode,R=#Args,P=Payload";
     qDebug()<<" -multifilter\tMultifilter will generate a separate export file with the name of the filter.";
     qDebug()<<"             \t-c will define the folder name, not the filename.";
     qDebug()<<"\nExamples:\n";
@@ -100,6 +104,7 @@ void OptManager::printUsage()
     qDebug().noquote() << executable << "-c -u .\\trace.txt c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "-d -c .\\trace.dlt c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "-csv -c .\\trace.csv c:\\trace\\trace.dlt";
+    qDebug().noquote() << executable << "-csv -delimiter ; -signature TSEACP -c c:\\trace\\trace.csv c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "-d -c .\\filteredtrace.dlt c:\\filter\\filter.dlf c:\\trace\\trace.dlt";
     qDebug().noquote() << executable << "trace_1.dlt trace_2.dlt";
     qDebug().noquote() << executable << "input.pcap output.dlt";
@@ -150,6 +155,16 @@ void OptManager::parse(QStringList *opt)
             delimiter = QString("%1").arg(c1).front().toLatin1();
 
             qDebug() << "Delimiter:" << delimiter;
+
+            i += 1;
+        }
+        else if(str.compare("-signature")==0)
+        {
+            QString c1 = opt->value(i+1);
+
+            signature = QString("%1").arg(c1).toLatin1();
+
+            qDebug() << "Signature:" << signature;
 
             i += 1;
         }
@@ -214,3 +229,4 @@ QStringList OptManager::getFilterFiles(){return filterFiles;}
 QString OptManager::getConvertSourceFile(){return convertSourceFile;}
 QString OptManager::getConvertDestFile(){return convertDestFile;}
 char OptManager::getDelimiter(){return delimiter;}
+QString OptManager::getSignature(){return signature;}

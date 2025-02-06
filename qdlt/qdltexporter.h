@@ -11,6 +11,10 @@
 #include "qdltmsg.h"
 #include "qdltpluginmanager.h"
 
+
+#define QDLT_DEFAULT_EXPORT_SIGNATURE "ITSOEACNYUMRP"
+#define QDLT_DEFAULT_EXPORT_DELIMITER ','
+
 class QDLT_EXPORT QDltExporter : public QThread
 {
     Q_OBJECT
@@ -56,7 +60,7 @@ public:
      */
     explicit QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                         QDltExporter::DltExportFormat exportFormat,
-                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char _delimiter,QObject *parent = 0);
+                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char delimiter=QDLT_DEFAULT_EXPORT_DELIMITER,QString signature=QDLT_DEFAULT_EXPORT_SIGNATURE,QObject *parent = 0);
 
     void run() override;
 
@@ -110,6 +114,7 @@ private:
     QStringList multifilterFilenames;
     QList<QFile*> multifilterFilesList;
     QList<QDltFilterList*> multifilterFilterList;
+    QString signature;
 };
 
 #endif // QDLTEXPORTER_H
