@@ -23,6 +23,7 @@
 
 #include "qdltoptmanager.h"
 #include "version.h"
+#include "qdltexporter.h"
 
 #include <QDebug>
 #include <QFileInfo>
@@ -48,11 +49,14 @@ QDltOptManager::QDltOptManager()
         {"stream", "Treat the input logfiles as DLT stream instead of DLT files."},
         {QStringList() << "t" << "terminate", "Terminate DLT Viewer after command line execution."},
         {"w", "Set the working directory", "workingdirectory"},
-        {"delimiter", "The used delimiter for CSV export (Default: ,).", "character"},
+        {"delimiter", "The used delimiter for CSV export (Default: "+QString(QDLT_DEFAULT_EXPORT_DELIMITER)+").", "string"},
+        {"signature", "The used signature for CSV export, which columns are exported (Default: "+QString(QDLT_DEFAULT_EXPORT_SIGNATURE)+"). I=Index,T=Time,S=Timestamp,O=Count,E=Ecuid,A=Apid,C=Ctid,N=SessionId,Y=Type,U=Subtype,M=Mode,R=#Args,P=Payload", "character"},
         {QStringList() << "h" << "help", "Print this help message."},
         {QStringList() << "v" << "version", "Print the version."}
     });
 
+    delimiter = QDLT_DEFAULT_EXPORT_DELIMITER;
+    signature = QDLT_DEFAULT_EXPORT_SIGNATURE;
 }
 
 QDltOptManager* QDltOptManager::getInstance()
@@ -98,6 +102,7 @@ void QDltOptManager::printUsage(const QString& helpText)
     qDebug() << "  dlt-viewer.exe -t -s -d -c output.dlt input.dlt";
     qDebug() << "  dlt-viewer.exe -t -s decoded.dlp -dd -c output.dlt input.dlt ";
     qDebug() << "  dlt-viewer.exe -t -s -csv -c output.csv input.dlt";
+    qDebug() << "  dlt-viewer.exe -t -s -csv -delimiter ; -signature TSEACP -c output.csv input.dlt";
     qDebug() << "  dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt";
     qDebug() << "  dlt-viewer.exe -p export.dlp -e \"Filetransfer Plugin|export|ftransferdir\" input.dlt";
     qDebug() << "  dlt-viewer.exe input1.dlt input2.dlt";
@@ -186,6 +191,11 @@ void QDltOptManager::parse(const QStringList& args)
     if (m_parser.isSet("delimiter")) {
         delimiter = m_parser.value("delimiter").front().toLatin1();
         qDebug() << "Delimiter:" << delimiter;
+    }
+
+    if (m_parser.isSet("signature")) {
+        signature = m_parser.value("signature").toLatin1();
+        qDebug() << "Signature:" << signature;
     }
 
     if (m_parser.isSet("u")) {
@@ -289,6 +299,7 @@ QString QDltOptManager::getCommandName(){return commandName;}
 QStringList QDltOptManager::getCommandParams(){return commandParams;}
 QString QDltOptManager::getWorkingDirectory() const { return workingDirectory; }
 char QDltOptManager::getDelimiter(){return delimiter;}
+QString QDltOptManager::getSignature(){return signature;}
 
 QString QDltOptManager::getHelpText() const
 {
@@ -313,7 +324,8 @@ void QDltOptManager::reset()
     prePluginCommands.clear();
     postPluginCommands.clear();
     workingDirectory.clear();
-    delimiter=',';
+    delimiter=QDLT_DEFAULT_EXPORT_DELIMITER;
+    signature=QDLT_DEFAULT_EXPORT_SIGNATURE;
     pcapFiles.clear();
     mf4Files.clear();
 }

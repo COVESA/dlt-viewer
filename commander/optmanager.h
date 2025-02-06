@@ -56,6 +56,7 @@ public:
     QString getConvertSourceFile();
     QString getConvertDestFile();
     char getDelimiter();
+    QString getSignature();
 
     const QStringList &getPcapFiles() const;
     const QStringList &getMf4Files() const;
@@ -75,6 +76,7 @@ private:
     QString convertSourceFile;
     QString convertDestFile;
     char delimiter;
+    QString signature;
 };
 
 #endif // OPTMANAGER_H
