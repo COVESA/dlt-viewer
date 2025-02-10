@@ -83,6 +83,8 @@ extern "C" {
 #include "tablemodel.h"
 #include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
+#include "qdltctrlmsg.h"
+#include "ecutree.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -1888,45 +1890,52 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     return;
 }
 
-void MainWindow::contextLoadingFile(const QDltMsg &msg)
+void MainWindow::populateEcusTree(EcuTree&& ecuTree)
 {
-    /* find ecu item */
-    EcuItem *ecuitemFound = 0;
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if(ecuitem->id == msg.getEcuid())
-        {
-            ecuitemFound = ecuitem;
-            break;
+    QList<QTreeWidgetItem*> ecus;
+    // populate ECUs tree view
+    for (auto& [ecuid, apps] : ecuTree.ecus) {
+        EcuItem* ecuItem = new EcuItem(nullptr);
+
+        ecuItem->id = ecuid;
+
+        QList<QTreeWidgetItem*> appsItems;
+        for(const auto& [appid, appdata] : apps) {
+            ApplicationItem* appItem = new ApplicationItem(ecuItem);
+            appItem->id = appid;
+            appItem->description = appdata.description;
+            appItem->update();
+
+            QList<QTreeWidgetItem*> contextsItems;
+            for(const auto& [ctxid, ctxdata] : appdata.contexts) {
+                ContextItem* conItem = new ContextItem(appItem);
+                conItem->id = ctxid;
+                conItem->loglevel = ctxdata.logLevel;
+                conItem->tracestatus = ctxdata.traceStatus;
+                conItem->description = ctxdata.description;
+                conItem->status = ContextItem::valid;
+                conItem->update();
+
+                contextsItems.append(conItem);
+            }
+
+            appItem->addChildren(contextsItems);
+            appsItems.append(appItem);
         }
+
+        ecuItem->addChildren(appsItems);
+        ecuItem->update();
+
+        pluginManager.stateChanged(ecus.size(), QDltConnection::QDltConnectionOffline,
+                                   ecuItem->getHostname());
+
+        ecus.append(ecuItem);
     }
 
-    if(!ecuitemFound)
-    {
-        /* no Ecuitem found, create a new one */
-        ecuitemFound = new EcuItem(0);
+    project.ecu->addTopLevelItems(ecus);
 
-        /* update ECU item */
-        ecuitemFound->id = msg.getEcuid();
-        ecuitemFound->update();
-
-        /* add ECU to configuration */
-        project.ecu->addTopLevelItem(ecuitemFound);
-
-        /* Update the ECU list in control plugins */
-        updatePluginsECUList();
-
-        pluginManager.stateChanged(project.ecu->indexOfTopLevelItem(ecuitemFound), QDltConnection::QDltConnectionOffline,ecuitemFound->getHostname());
-
-    }
-
-    controlMessage_ReceiveControlMessage(ecuitemFound, msg);
-}
-
-void MainWindow::reloadLogFileStop()
-{
-
+    /* Update the ECU list in control plugins */
+    updatePluginsECUList();
 }
 
 void MainWindow::reloadLogFileProgressMax(int num)
@@ -2057,12 +2066,21 @@ void MainWindow::reloadLogFileFinishFilter()
             settings->updateContextLoadingFile) {
         const QList<int> &msgIndexList = dltIndexer->getGetLogInfoList();
 
-        // FIXME: this is slow operation running in the main loop
         QDltMsg msg;
+        EcuTree ecuTree;
         for (const auto msgIndex : msgIndexList) {
-            if (qfile.getMsg(msgIndex, msg))
-                contextLoadingFile(msg);
+            if (qfile.getMsg(msgIndex, msg)) {
+                auto ctrlMsg = qdlt::msg::payload::parse(msg.getPayload(), msg.getEndianness() == QDlt::DltEndiannessBigEndian);
+                std::visit([&ecuTree, ecuId = msg.getEcuid()](auto&& payload) {
+                    using T = std::decay_t<decltype(payload)>;
+                    if constexpr (std::is_same_v<T, qdlt::msg::payload::GetLogInfo>) {
+                        ecuTree.add(ecuId, payload);
+                    }
+                }, ctrlMsg);
+            }
         }
+        project.ecu->clear();
+        populateEcusTree(std::move(ecuTree));
     }
 
     // reconnect ecus again
@@ -4427,172 +4445,62 @@ void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & sel
 
 void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QDltMsg &msg)
 {
-    const char *ptr;
-    int32_t length;
+    auto ctrlMsg = qdlt::msg::payload::parse(msg.getPayload(), msg.getEndianness() == QDlt::DltEndiannessBigEndian);
+    std::visit(overloaded{[&](const qdlt::msg::payload::GetSoftwareVersion &) {
+                              // TODO: use parsed payload
+                              // check if plugin autoload enabled and version string not already parsed
+                              if(!autoloadPluginsVersionEcus.contains(msg.getEcuid()))
+                              {
+                                  versionString(msg);
+                                  autoloadPluginsVersionEcus.append(msg.getEcuid());
+                              }
+                          },
+                          [&](const qdlt::msg::payload::GetLogInfo &payload) {
+                              if (payload.status == 8)
+                              {
+                                  ecuitem->InvalidAll();
+                              }
 
-    QByteArray payload = msg.getPayload();
-    ptr = payload.constData();
-    length = payload.size();
-
-    /* control message was received */
-    uint32_t service_id_tmp=0;
-    DLT_MSG_READ_VALUE(service_id_tmp,ptr,length,uint32_t);
-    uint32_t service_id=DLT_ENDIAN_GET_32( ((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), service_id_tmp);
-
-    switch (service_id)
-    {
-    case DLT_SERVICE_ID_GET_SOFTWARE_VERSION:
-    {
-        // check if plugin autoload enabled and version string not already parsed
-        if(!autoloadPluginsVersionEcus.contains(msg.getEcuid()))
-        {
-            versionString(msg);
-            autoloadPluginsVersionEcus.append(msg.getEcuid());
-        }
-        break;
-    }
-    case DLT_SERVICE_ID_GET_LOG_INFO:
-    {
-        /* Only status 1,2,6,7,8 is supported yet! */
-
-        uint8_t status=0;
-        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-        /* Support for status=8 */
-        if (status==8)
-        {
-            ecuitem->InvalidAll();
-        }
-
-        /* Support for status=6 and status=7 */
-        if ((status==6) || (status==7))
-        {
-            uint16_t count_app_ids=0,count_app_ids_tmp=0;
-            DLT_MSG_READ_VALUE(count_app_ids_tmp,ptr,length,uint16_t);
-            count_app_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_app_ids_tmp);
-            for (int32_t num=0;num<count_app_ids;num++)
-            {
-                char apid[DLT_ID_SIZE+1];
-                apid[DLT_ID_SIZE] = 0;
-
-                DLT_MSG_READ_ID(apid,ptr,length);
-
-                uint16_t count_context_ids=0,count_context_ids_tmp=0;
-                DLT_MSG_READ_VALUE(count_context_ids_tmp,ptr,length,uint16_t);
-                count_context_ids=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0), count_context_ids_tmp);
-
-                for (int32_t num2=0;num2<count_context_ids;num2++)
-                {
-                    QString contextDescription;
-                    char ctid[DLT_ID_SIZE+1];
-                    ctid[DLT_ID_SIZE] = 0;
-
-                    DLT_MSG_READ_ID(ctid,ptr,length);
-
-                    int8_t log_level=0;
-                    DLT_MSG_READ_VALUE(log_level,ptr,length,int8_t); /* No endian conversion necessary */
-
-                    int8_t trace_status=0;
-                    DLT_MSG_READ_VALUE(trace_status,ptr,length,int8_t); /* No endian conversion necessary */
-
-                    if (status==7)
-                    {
-                        uint16_t context_description_length=0,context_description_length_tmp=0;
-                        DLT_MSG_READ_VALUE(context_description_length_tmp,ptr,length,uint16_t);
-                        context_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),context_description_length_tmp);
-
-                        if (length<context_description_length)
-                        {
-                            length = -1;
-                        }
-                        else
-                        {
-                            contextDescription = QString(QByteArray((char*)ptr,context_description_length));
-                            ptr+=context_description_length;
-                            length-=context_description_length;
-                        }
-                    }
-
-                    controlMessage_SetContext(ecuitem,QString(apid),QString(ctid),contextDescription,log_level,trace_status);
-                }
-
-                if (status==7)
-                {
-                    QString applicationDescription;
-                    uint16_t application_description_length=0,application_description_length_tmp=0;
-                    DLT_MSG_READ_VALUE(application_description_length_tmp,ptr,length,uint16_t);
-                    application_description_length=DLT_ENDIAN_GET_16(((msg.getEndianness()==QDlt::DltEndiannessBigEndian)?DLT_HTYP_MSBF:0),application_description_length_tmp);
-                    applicationDescription = QString(QByteArray((char*)ptr,application_description_length));
-                    controlMessage_SetApplication(ecuitem,QString(apid),applicationDescription);
-                    ptr+=application_description_length;
-                }
-            }
-        }
-
-        break;
-    }
-    case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
-    {
-        uint8_t status=0;
-        DLT_MSG_READ_VALUE(status,ptr,length,uint8_t); /* No endian conversion necessary */
-
-        uint8_t loglevel=0;
-        DLT_MSG_READ_VALUE(loglevel,ptr,length,uint8_t); /* No endian conversion necessary */
-
-        switch (status)
-        {
-        case 0: /* OK */
-        {
-            ecuitem->loglevel = loglevel;
-            ecuitem->status = EcuItem::valid;
-        }
-            break;
-        case 1: /* NOT_SUPPORTED */
-        {
-            ecuitem->status = EcuItem::unknown;
-        }
-            break;
-        case 2: /* ERROR */
-        {
-            ecuitem->status = EcuItem::invalid;
-        }
-            break;
-        }
-        /* update status */
-        ecuitem->update();
-
-        break;
-    }
-    case DLT_SERVICE_ID_SET_LOG_LEVEL:
-    {
-        break;
-    }
-    case DLT_SERVICE_ID_TIMEZONE:
-    {
-        if(payload.size() == sizeof(DltServiceTimezone))
-        {
-            DltServiceTimezone *service;
-            service = (DltServiceTimezone*) payload.constData();
-
-            if(msg.getEndianness() == QDlt::DltEndiannessLittleEndian)
-                controlMessage_Timezone(service->timezone, service->isdst);
-            else
-                controlMessage_Timezone(DLT_SWAP_32(service->timezone), service->isdst);
-        }
-        break;
-    }
-    case DLT_SERVICE_ID_UNREGISTER_CONTEXT:
-    {
-        if(payload.size() == sizeof(DltServiceUnregisterContext))
-        {
-            DltServiceUnregisterContext *service;
-            service = (DltServiceUnregisterContext*) payload.constData();
-
-            controlMessage_UnregisterContext(msg.getEcuid(),QDltMsg::getStringFromId(service->apid),QDltMsg::getStringFromId(service->ctid));
-        }
-        break;
-    }
-    } // switch
+                              if (payload.status == 6 || payload.status == 7) {
+                                  for (const auto &app : payload.apps) {
+                                      for (const auto& ctx : app.ctxs) {
+                                          controlMessage_SetContext(ecuitem, app.id, ctx.id,
+                                          ctx.description, ctx.logLevel,
+                                          ctx.traceStatus);
+                                      }
+                                      if (payload.status == 7) {
+                                          controlMessage_SetApplication(ecuitem, app.id,
+                                          app.description);
+                                      }
+                                  }
+                              }
+                          },
+                          [&](const qdlt::msg::payload::GetDefaultLogLevel &payload) {
+                              switch (payload.status) {
+                              case 0: /* OK */
+                                  ecuitem->loglevel = payload.logLevel;
+                                  ecuitem->status = EcuItem::valid;
+                                  break;
+                              case 1: /* NOT_SUPPORTED */
+                                  ecuitem->status = EcuItem::unknown;
+                                  break;
+                              case 2: /* ERROR */
+                                  ecuitem->status = EcuItem::invalid;
+                                  break;
+                              }
+                              ecuitem->update();
+                          },
+                          [&](const qdlt::msg::payload::Timezone &payload) {
+                              controlMessage_Timezone(payload.timezone, payload.isDst);
+                          },
+                          [&](const qdlt::msg::payload::UnregisterContext &payload) {
+                              controlMessage_UnregisterContext(msg.getEcuid(), payload.appid,
+                              payload.ctxid);
+                          },
+                          [&](const qdlt::msg::payload::SetLogLevel &) {
+                              // nothing to do
+                          }},
+               ctrlMsg);
 }
 
 void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid)
