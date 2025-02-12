@@ -1236,7 +1236,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
     /* if the input files are not in DLT format, convert them first */
     if (QDltOptManager::getInstance()->get_inputmode() == e_inputmode::STREAM){
         /* tempfile must be static to prevent deletion before application finishes */
-        static QTemporaryFile tempfile; 
+        static QTemporaryFile tempfile;
         DltFile importfile;
 
         dlt_file_init(&importfile,0);
@@ -1358,11 +1358,6 @@ void MainWindow::appendDltFile(const QString &fileName)
     }
 
     /* read DLT messages and append to current output file */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
-    {
-        qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
-        return;
-    }
     for(int pos = 0 ; pos<num ; pos++)
     {
         if ( 0 == (pos % 1000))
@@ -1375,7 +1370,6 @@ void MainWindow::appendDltFile(const QString &fileName)
         {
             dlt_file_free(&importfile,0);
             reloadLogFile();
-            outputfile.close();
             return;
         }
         dlt_file_message(&importfile,pos,0);
@@ -1383,7 +1377,6 @@ void MainWindow::appendDltFile(const QString &fileName)
         outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
     }
     outputfile.flush();
-    outputfile.close();
 
     dlt_file_free(&importfile,0);
 
