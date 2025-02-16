@@ -1,4 +1,5 @@
 #include "dltfileexporter.h"
+#include "qdltmsg.h"
 
 #include <qdltfilterlist.h>
 #include <qdltfile.h>
@@ -7,6 +8,25 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+
+namespace {
+
+std::optional<std::pair<QDltMsg, QByteArray>> getMessage(const QDltFile& file, int index) {
+    QByteArray buf = file.getMsg(index);
+    if(buf.isEmpty())
+    {
+        qDebug() << "Message buffer empty in for msg with index" << index;
+        return std::nullopt;
+    }
+    QDltMsg msg;
+    msg.setMsg(buf);
+    msg.setIndex(index);
+    bool isApplied = file.applyRegExStringMsg(msg);
+    if(isApplied) msg.getMsg(buf,true);
+
+    return std::make_pair(std::move(msg), buf);
+}
+}
 
 DltFileExporter::DltFileExporter(const QDltFile& input) : m_input(input) {}
 
@@ -58,17 +78,11 @@ void DltFileExporter::exportMessages(const QString& outputName)
                     ++fileCounter;
                 }
 
-                QByteArray buf = m_input.getMsg(i);
-                if(buf.isEmpty())
-                {
-                    qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+                auto res = getMessage(m_input, i);
+                if (!res) {
                     continue;
                 }
-                QDltMsg msg;
-                msg.setMsg(buf);
-                msg.setIndex(i);
-                bool isApplied = m_input.applyRegExStringMsg(msg);
-                if(isApplied) msg.getMsg(buf,true);
+                auto [msg, buf] = *res;
 
                 if (filterList.isEmpty() || filterList.checkFilter(msg)) {
                     bytesCount += buf.size();
@@ -105,17 +119,11 @@ void DltFileExporter::exportMessages(const QString& outputName)
                 ++fileCounter;
             }
 
-            QByteArray buf = m_input.getMsg(i);
-            if(buf.isEmpty())
-            {
-                qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            auto res = getMessage(m_input, i);
+            if (!res) {
                 continue;
             }
-            QDltMsg msg;
-            msg.setMsg(buf);
-            msg.setIndex(i);
-            bool isApplied = m_input.applyRegExStringMsg(msg);
-            if(isApplied) msg.getMsg(buf,true);
+            auto [msg, buf] = *res;
 
             if (filterList.isEmpty() || filterList.checkFilter(msg)) {
                 bytesCount += buf.size();
