@@ -1,6 +1,7 @@
 #include "dltfileexporter.h"
 #include "qdltmsg.h"
 
+#include <cstddef>
 #include <qdltfilterlist.h>
 #include <qdltfile.h>
 
@@ -8,6 +9,8 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QDir>
+#include <stdexcept>
+#include <variant>
 
 namespace {
 
@@ -26,6 +29,47 @@ std::optional<std::pair<QDltMsg, QByteArray>> getMessage(const QDltFile& file, i
 
     return std::make_pair(std::move(msg), buf);
 }
+
+class SimpleWriter {
+public:
+    SimpleWriter(const QString& outputPath) {
+        m_output.setFileName(outputPath);
+    }
+
+    void write(const QByteArray& buf) {
+        m_output.write(buf);
+    }
+
+private:
+    QFile m_output;
+};
+
+class SplitWriter {
+public:
+    SplitWriter(const QString& basePath, std::size_t maxOutputSize)
+      : m_basePath(basePath), m_bytesWritten{maxOutputSize}, m_maxOutputSize{maxOutputSize} {}
+
+    void write(const QByteArray& buf) {
+        if (m_bytesWritten >= m_maxOutputSize) {
+            m_output.close();
+            m_output.setFileName(m_basePath + QString::number(m_fileCounter) + ".dlt");
+            if (!m_output.open(QIODevice::WriteOnly)) {
+                qDebug() << "Couldn't open output file: " << m_output.fileName();
+                throw std::runtime_error("File couldn't be opened for writing");
+            }
+            m_bytesWritten = 0;
+            ++m_fileCounter;
+        }
+        m_output.write(buf);
+        m_bytesWritten += buf.size();
+    }
+private:
+    QFile m_output;
+    QString m_basePath;
+    std::size_t m_bytesWritten;
+    std::size_t m_fileCounter{1};
+    std::size_t m_maxOutputSize;
+};
 }
 
 DltFileExporter::DltFileExporter(const QDltFile& input) : m_input(input) {}
@@ -58,35 +102,30 @@ void DltFileExporter::exportMessages(const QString& outputName)
             }
 
             const QFileInfo filterInfo(filterFilepath);
-
-            std::size_t fileCounter = 1;
-            std::size_t bytesCount = m_maxOutputSize.value_or(0);
-
-            QFile output;
-            for (int i = 0; i < m_input.size(); ++i) {
-                if (m_maxOutputSize && (bytesCount >= *m_maxOutputSize)) {
-                    output.close();
-
-                    const auto outputName = outputDir + "/" + filterInfo.baseName() + "_" + QString::number(fileCounter) + ".dlt";
-                    output.setFileName(outputName);
-                    if (!output.open(QIODevice::WriteOnly))
-                    {
-                        qDebug() << "ERROR: Couldn't open output file: " << outputName;
-                        return;
+            if (m_maxOutputSize) {
+                auto writer =
+                    SplitWriter(outputDir + "/" + filterInfo.baseName() + "_", *m_maxOutputSize);
+                for (int i = 0; i < m_input.size(); ++i) {
+                    auto res = getMessage(m_input, i);
+                    if (!res) {
+                        continue;
                     }
-                    bytesCount = 0;
-                    ++fileCounter;
+                    auto [msg, buf] = *res;
+                    if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                        writer.write(buf);
+                    }
                 }
-
-                auto res = getMessage(m_input, i);
-                if (!res) {
-                    continue;
-                }
-                auto [msg, buf] = *res;
-
-                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                    bytesCount += buf.size();
-                    output.write(buf);
+            } else {
+                auto writer = SimpleWriter(outputDir + "/" + filterInfo.baseName() + ".dlt");
+                for (int i = 0; i < m_input.size(); ++i) {
+                    auto res = getMessage(m_input, i);
+                    if (!res) {
+                        continue;
+                    }
+                    auto [msg, buf] = *res;
+                    if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                        writer.write(buf);
+                    }
                 }
             }
         }
@@ -99,35 +138,33 @@ void DltFileExporter::exportMessages(const QString& outputName)
             }
         }
 
-        std::size_t fileCounter = 1;
         const QFileInfo info(outputName);
-        std::size_t bytesCount = m_maxOutputSize.value_or(0);
-
-        QFile output;
-        for (int i = 0; i < m_input.size(); ++i) {
-            if (m_maxOutputSize && (bytesCount >= *m_maxOutputSize)) {
-                output.close();
-
-                const auto outputName = info.absolutePath() + "/" + info.baseName() + "_" + QString::number(fileCounter) + ".dlt";
-                output.setFileName(outputName);
-                if (!output.open(QIODevice::WriteOnly))
-                {
-                    qDebug() << "ERROR: Couldn't open output file: " << outputName;
-                    return;
+        if (m_maxOutputSize) {
+            SplitWriter writer(info.absolutePath() + "/" + info.baseName() + "_", *m_maxOutputSize);
+            for (int i = 0; i < m_input.size(); ++i) {
+                auto res = getMessage(m_input, i);
+                if (!res) {
+                    continue;
                 }
-                bytesCount = 0;
-                ++fileCounter;
+                auto [msg, buf] = *res;
+
+                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                    writer.write(buf);
+                }
             }
 
-            auto res = getMessage(m_input, i);
-            if (!res) {
-                continue;
-            }
-            auto [msg, buf] = *res;
+        } else {
+            SimpleWriter writer(outputName);
+            for (int i = 0; i < m_input.size(); ++i) {
+                auto res = getMessage(m_input, i);
+                if (!res) {
+                    continue;
+                }
+                auto [msg, buf] = *res;
 
-            if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                bytesCount += buf.size();
-                output.write(buf);
+                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+                    writer.write(buf);
+                }
             }
         }
     }
