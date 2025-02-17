@@ -420,8 +420,8 @@ private slots:
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
 
-    void on_pushButtonMovePluginUp_clicked();
-    void on_pushButtonMovePluginDown_clicked();
+    //void on_pushButtonMovePluginUp_clicked();
+    //void on_pushButtonMovePluginDown_clicked();
 
 public slots:
 
