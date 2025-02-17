@@ -271,10 +271,15 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
     delete sortProxyModel;
+    delete markShortcut;
 }
 
 void MainWindow::initState()
 {
+    /* Shortcut for Mark/Unmark lines */
+    markShortcut = new QShortcut(QKeySequence("Ctrl+M"), this);
+    connect(markShortcut, SIGNAL(activated()), this, SLOT(mark_unmark_lines()));
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
