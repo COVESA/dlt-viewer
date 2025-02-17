@@ -70,6 +70,20 @@ private:
     std::size_t m_fileCounter{1};
     std::size_t m_maxOutputSize;
 };
+
+template <typename Writer>
+void processMessages(const QDltFile& m_input, QDltFilterList& filterList, Writer& writer) {
+    for (int i = 0; i < m_input.size(); ++i) {
+        auto res = getMessage(m_input, i);
+        if (!res) {
+            continue;
+        }
+        auto [msg, buf] = *res;
+        if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+            writer.write(buf);
+        }
+    }
+}
 }
 
 DltFileExporter::DltFileExporter(const QDltFile& input) : m_input(input) {}
@@ -103,34 +117,14 @@ void DltFileExporter::exportMessages(const QString& outputName)
 
             const QFileInfo filterInfo(filterFilepath);
             if (m_maxOutputSize) {
-                auto writer =
-                    SplitWriter(outputDir + "/" + filterInfo.baseName() + "_", *m_maxOutputSize);
-                for (int i = 0; i < m_input.size(); ++i) {
-                    auto res = getMessage(m_input, i);
-                    if (!res) {
-                        continue;
-                    }
-                    auto [msg, buf] = *res;
-                    if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                        writer.write(buf);
-                    }
-                }
+                SplitWriter writer(outputDir + "/" + filterInfo.baseName() + "_", *m_maxOutputSize);
+                processMessages(m_input, filterList, writer);
             } else {
-                auto writer = SimpleWriter(outputDir + "/" + filterInfo.baseName() + ".dlt");
-                for (int i = 0; i < m_input.size(); ++i) {
-                    auto res = getMessage(m_input, i);
-                    if (!res) {
-                        continue;
-                    }
-                    auto [msg, buf] = *res;
-                    if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                        writer.write(buf);
-                    }
-                }
+                SimpleWriter writer(outputDir + "/" + filterInfo.baseName() + ".dlt");
+                processMessages(m_input, filterList, writer);
             }
         }
     } else {
-
         QDltFilterList filterList;
         for (const auto& filterFilepath : m_filters) {
             if(!filterList.LoadFilter(filterFilepath, false)) {
@@ -141,31 +135,10 @@ void DltFileExporter::exportMessages(const QString& outputName)
         const QFileInfo info(outputName);
         if (m_maxOutputSize) {
             SplitWriter writer(info.absolutePath() + "/" + info.baseName() + "_", *m_maxOutputSize);
-            for (int i = 0; i < m_input.size(); ++i) {
-                auto res = getMessage(m_input, i);
-                if (!res) {
-                    continue;
-                }
-                auto [msg, buf] = *res;
-
-                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                    writer.write(buf);
-                }
-            }
-
+            processMessages(m_input, filterList, writer);
         } else {
             SimpleWriter writer(outputName);
-            for (int i = 0; i < m_input.size(); ++i) {
-                auto res = getMessage(m_input, i);
-                if (!res) {
-                    continue;
-                }
-                auto [msg, buf] = *res;
-
-                if (filterList.isEmpty() || filterList.checkFilter(msg)) {
-                    writer.write(buf);
-                }
-            }
+            processMessages(m_input, filterList, writer);
         }
     }
 }
