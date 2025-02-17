@@ -3373,7 +3373,7 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
                 menu.addAction(action);
             }
 
-            menu.addSeparator();
+            /*menu.addSeparator();
 
             if(project.plugin->indexOfTopLevelItem(item) > 0)
             {
@@ -3387,7 +3387,7 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
                 action = new QAction(tr("Move Down..."), this);
                 connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginDown_clicked()));
                 menu.addAction(action);
-            }
+            }*/
 
             /* show popup menu */
             menu.exec(globalPos);
@@ -5638,7 +5638,7 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
         ui->action_menuPlugin_Show->setEnabled(true);
         ui->action_menuPlugin_Disable->setEnabled(true);
 
-        if((last_selected_item_index > 0) && (project.plugin->topLevelItemCount() > 1)) {
+        /*if((last_selected_item_index > 0) && (project.plugin->topLevelItemCount() > 1)) {
             ui->pushButtonMovePluginUp->setEnabled(true);
         }
         else {
@@ -5650,12 +5650,12 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
         }
         else {
             ui->pushButtonMovePluginDown->setEnabled(false);
-        }
+        }*/
     }
-    else {
+    /*else {
         ui->pushButtonMovePluginUp->setEnabled(false);
         ui->pushButtonMovePluginDown->setEnabled(false);
-    }
+    }*/
 }
 void MainWindow::on_filterWidget_itemSelectionChanged()
 {
@@ -7871,7 +7871,7 @@ void MainWindow::on_actionAutoScroll_triggered(bool checked)
     pluginManager.autoscrollStateChanged(settings->autoScroll);
 }
 
-void MainWindow::on_pushButtonMovePluginUp_clicked()
+/*void MainWindow::on_pushButtonMovePluginUp_clicked()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
@@ -7891,7 +7891,7 @@ void MainWindow::on_pushButtonMovePluginDown_clicked()
         //PluginWidget emits a signal that will trigger the Plugin Manager
         project.plugin->decreasePluginPriority(index);
     }
-}
+}*/
 
 void MainWindow::on_actionConnectAll_triggered()
 {
