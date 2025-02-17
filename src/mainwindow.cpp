@@ -1210,6 +1210,12 @@ bool MainWindow::openDltFile(QStringList fileNames)
         qDebug() << "Open filename error in " << __FILE__ << __LINE__;
         return false;
     }
+    /* Color of the scrollbar when dark mode is enabled */
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        ui->tableView->setStyleSheet("QTableView QScrollBar::vertical { background-color :#646568; }"
+                                            "QScrollBar::horizontal  { background-color :#646568; }");
+    }
     //clear search history list
     //searchHistory.clear();
     //clear all the action buttons from history
