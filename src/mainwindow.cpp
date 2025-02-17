@@ -271,10 +271,15 @@ MainWindow::~MainWindow()
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
     delete sortProxyModel;
+    delete copyPayloadShortcut;
 }
 
 void MainWindow::initState()
 {
+    /* Shortcut for Copy Selection Payload to Clipboard */
+    copyPayloadShortcut = new QShortcut(QKeySequence("Ctrl+P"), this);
+    connect(copyPayloadShortcut, SIGNAL(activated()), this, SLOT(onActionAenuConfigCopyPayloadToClipboardTriggered()));
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
