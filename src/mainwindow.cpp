@@ -275,6 +275,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initState()
 {
+    /* Shortcut for Copy Selection Payload to Clipboard */
+    copyPayloadShortcut = new QShortcut(QKeySequence("Ctrl+P"), this);
+    connect(copyPayloadShortcut, &QShortcut::activated, this, &MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered);
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
