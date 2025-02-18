@@ -25,9 +25,13 @@
 #include <QVariant>
 #include <QMutex>
 #include <QStyledItemDelegate>
+#include <QHeaderView>
+#include <QEvent>
+#include <Qtooltip>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
+#include "fieldnames.h"
 #include <qdltlrucache.hpp>
 
 #include <optional>
@@ -58,6 +62,7 @@ public:
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
     void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
+    QString getToolTipForFields(FieldNames::Fields cn);
 
 private:
     long int lastSearchIndex;
@@ -74,6 +79,7 @@ private:
     QColor manualMarkerColor;
     QList<unsigned long int> selectedMarkerRows;
     QColor getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const;
+    bool eventFilter(QObject *obj, QEvent *event);
 };
 
 class HtmlDelegate : public QStyledItemDelegate

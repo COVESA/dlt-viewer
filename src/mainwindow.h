@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QHeaderView>
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
