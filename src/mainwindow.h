@@ -166,10 +166,12 @@ private:
     QStringList autoloadPluginsVersionStrings;
 
     /* String List Containing Search History */
-    enum { MaxSearchHistory = 50 };
+    enum { MaxSearchHistory = 20 };
     QAction *searchHistoryActs[MaxSearchHistory];
     QStringList searchHistory;
-
+    QLineEdit* searchLineEdit;
+    QComboBox* searchComboBox;
+    QCompleter* searchCompleter;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
@@ -596,6 +598,7 @@ public slots:
     //History Slots
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
+    void loadSearchHistoryList(QStringList &searchHistory);
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);

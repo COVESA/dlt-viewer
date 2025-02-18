@@ -618,6 +618,18 @@ void SearchDialog::clearCacheHistory()
     cachedHistoryKey.clear();
 }
 
+void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
+    //To save the search history
+    QSettings settings("MyApp", "SearchHistory");
+    settings.beginWriteArray("history");
+    int count = qMin(searchHistory.size(), 20);
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("entry", searchHistory.at(i));
+    }
+    settings.endArray();
+}
+
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);

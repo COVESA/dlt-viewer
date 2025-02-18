@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QStringListModel>
+#include <QComboBox>
 
 namespace Ui {
 class SearchForm;
@@ -30,6 +31,7 @@ public:
     void setProgress(int val);
     void resetProgress();
     void updateHistory();
+    QComboBox* getComboBox() const;
 
 signals:
     void abortSearch();

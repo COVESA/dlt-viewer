@@ -29,6 +29,11 @@ QLineEdit *SearchForm::input() const
     return ui->comboBox->lineEdit();
 }
 
+QComboBox *SearchForm::getComboBox() const
+{
+    return ui->comboBox;
+}
+
 void SearchForm::setState(State state)
 {
     switch(state) {
