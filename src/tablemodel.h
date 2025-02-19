@@ -27,7 +27,7 @@
 #include <QStyledItemDelegate>
 #include <QHeaderView>
 #include <QEvent>
-#include <QTooltip>
+#include <QToolTip>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
