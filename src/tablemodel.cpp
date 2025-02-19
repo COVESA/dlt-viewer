@@ -455,3 +455,41 @@ QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int 
 
     return brushColor; // this is the default background color
 }
+
+QString TableModel::getToolTipForFields(FieldNames::Fields cn)
+{
+    switch(cn){
+    case(FieldNames::Time): return "Detailed representation of time and date when the log entry was recorded";
+    case(FieldNames::TimeStamp): return "Displays the time when the log message was generated";
+    default: return "";
+    }
+}
+
+bool TableModel::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::Enter || event->type() == QEvent::Leave){
+        QHeaderView *header = qobject_cast<QHeaderView*>(obj);
+        if(header){
+            QPoint pos = QCursor::pos();
+            pos = header->mapFromGlobal(pos);
+            header->setMouseTracking(true);
+            int index = header->logicalIndexAt(pos);
+            QString toolTipText;
+            switch(index){
+            case 1:
+                toolTipText = getToolTipForFields(FieldNames::Time);
+                break;
+            case 2:
+                toolTipText = getToolTipForFields(FieldNames::TimeStamp);
+                break;
+            default:
+                toolTipText = "";
+            }
+            if(!toolTipText.isEmpty()){
+                QToolTip::showText(QCursor::pos(), toolTipText, header);
+            } else {
+                QToolTip::hideText();
+            }
+        }
+    }
+    return QObject::eventFilter(obj,event);
+}
