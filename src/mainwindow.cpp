@@ -5625,6 +5625,78 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered() {
                 QDltOptManager::getInstance()->getHelpText());
 }
 
+void MainWindow::on_actionShortcuts_List_triggered(){
+    qDebug() <<"Shortcuts Triggered";
+
+    QDialog *shortcutDialog = new QDialog(this);
+    shortcutDialog->setWindowTitle("Shortcuts List");
+    shortcutDialog->resize(600, 400);
+
+    // Create a table view
+    QTableView *table = new QTableView(shortcutDialog);
+    table->setObjectName("Summarise Table");
+
+    // Create and set up the model
+    QStandardItemModel *model = new QStandardItemModel(0, 2, this);
+
+    QFont BoldFont;
+    BoldFont.setBold(true);
+
+    QStandardItem *headerName = new QStandardItem("Name");
+    headerName->setFont(BoldFont);
+    model->setHorizontalHeaderItem(0, headerName);
+
+    QStandardItem *headerFeature = new QStandardItem("Shortcuts");
+    headerFeature->setFont(BoldFont);
+    model->setHorizontalHeaderItem(1, headerFeature);
+
+    // Fill the model with data (unchanged)
+    QStringList names = {"New", "Open", "Save As", "Clear", "Import DLT Stream",
+                         "Import DLT Stream with serial header", "Find", "Jump To",
+                         "New Project", "Open Project", "Save Project", "Expand All ECU",
+                         "Collapse All ECU", "Copy Payload", "Info", "Quit"};
+    QStringList shortcuts = {"Ctrl + N", "Ctrl + O", "Ctrl + S", "Ctrl + E", "Ctrl + I",
+                             "Ctrl + J", "Ctrl + F", "Ctrl + G", "Ctrl + Shift + G",
+                             "Ctrl + Shift + O", "Ctrl + Shift + S", "Ctrl++", "Ctrl+",
+                             "Ctrl + P", "F1", "Ctrl + Q"};
+
+    for (int i = 0; i < names.size(); ++i) {
+        model->insertRow(i);
+        model->setData(model->index(i, 0), names[i]);
+        model->setData(model->index(i, 1), shortcuts[i]);
+
+        // Make the items non-editable
+        for (int j = 0; j < 2; ++j) {
+            QStandardItem *item = model->item(i, j);
+            if (item) {
+                item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            }
+        }
+    }
+
+    // Center-align the data
+    for (int row = 0; row < model->rowCount(); ++row) {
+        for (int col = 0; col < model->columnCount(); ++col) {
+            QModelIndex index = model->index(row, col);
+            model->setData(index, Qt::AlignCenter, Qt::TextAlignmentRole);
+        }
+    }
+
+    // Set the model in the table
+    table->setModel(model);
+
+    // Set column widths
+    table->setColumnWidth(0, 275);
+    table->setColumnWidth(1, 275);
+
+    // Create a layout and add the table to it
+    QVBoxLayout *layout = new QVBoxLayout(shortcutDialog);
+    layout->addWidget(table);
+
+    shortcutDialog->setLayout(layout);
+    shortcutDialog->exec();
+}
+
 void MainWindow::on_pluginWidget_itemSelectionChanged()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();

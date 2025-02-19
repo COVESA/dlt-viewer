@@ -81,7 +81,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
-       <number>23</number>
+       <number>27</number>
       </attribute>
      </widget>
     </item>
@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -211,6 +211,7 @@
     <addaction name="action_menuHelp_Support"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
+    <addaction name="actionShortcuts_List"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
@@ -1689,6 +1690,11 @@
   <action name="actionAppend">
    <property name="text">
     <string>Append...</string>
+   </property>
+  </action>
+  <action name="actionShortcuts_List">
+   <property name="text">
+    <string>Shortcuts List</string>
    </property>
   </action>
  </widget>
