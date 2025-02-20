@@ -275,6 +275,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initState()
 {
+    /* Shortcut for Mark/Unmark lines */
+    markShortcut = new QShortcut(QKeySequence("Ctrl+M"), this);
+    connect(markShortcut, &QShortcut::activated, this, &MainWindow::mark_unmark_lines);
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
