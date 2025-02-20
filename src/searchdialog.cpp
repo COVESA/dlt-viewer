@@ -630,6 +630,19 @@ void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
     settings.endArray();
 }
 
+void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
+{
+  //To retrive the search history once DLT Viewer restarts
+    QSettings settings("MyApp", "SearchHistory");
+    searchHistory.clear();
+    int size = settings.beginReadArray("history");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        searchHistory.append(settings.value("entry").toString());
+    }
+    settings.endArray();
+}
+
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);

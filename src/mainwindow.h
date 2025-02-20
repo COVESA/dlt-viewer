@@ -598,7 +598,6 @@ public slots:
     //History Slots
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
-    void loadSearchHistoryList(QStringList &searchHistory);
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);

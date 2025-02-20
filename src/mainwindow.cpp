@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     target_version_string = "";
 
-    loadSearchHistoryList(searchHistory);
+    searchDlg->loadSearchHistoryList(searchHistory);
 
     initState();
 
@@ -8303,19 +8303,6 @@ void MainWindow::onSearchProgressChanged(bool isInProgress)
     searchInput->setState(isInProgress ? SearchForm::State::PROGRESS : SearchForm::State::INPUT);
 
     ui->dockWidgetProject->setEnabled(!isInProgress);
-}
-
-void MainWindow::loadSearchHistoryList(QStringList& searchHistory)
-{
-    //To load the search history back into the application once app restarts
-        QSettings settings("MyApp", "SearchHistory");
-        searchHistory.clear();
-        int size = settings.beginReadArray("history");
-        for (int i = 0; i < size; ++i) {
-            settings.setArrayIndex(i);
-            searchHistory.append(settings.value("entry").toString());
-        }
-        settings.endArray();
 }
 
 QString MainWindow::GetConnectionType(int iTypeNumber)
