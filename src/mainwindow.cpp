@@ -50,6 +50,7 @@
 #include <QtEndian>
 #include <QDir>
 #include <QDirIterator>
+#include <QCompleter>
 
 /**
  * From QDlt.
@@ -102,6 +103,8 @@ MainWindow::MainWindow(QWidget *parent) :
     setAcceptDrops(true);
 
     target_version_string = "";
+
+    searchDlg->loadSearchHistoryList(searchHistory);
 
     initState();
 
@@ -507,6 +510,10 @@ void MainWindow::initView()
     searchInput = new SearchForm;
     connect(searchInput, &SearchForm::abortSearch, searchDlg, &SearchDialog::abortSearch);
     searchDlg->appendLineEdit(searchInput->input());
+    searchLineEdit = searchInput->input();
+    searchComboBox = searchInput->getComboBox();
+    searchComboBox->addItems(searchHistory);
+    searchLineEdit->clear();
 
     connect(searchInput->input(), SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
     connect(searchInput->input(), SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
@@ -1036,6 +1043,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         QMainWindow::closeEvent(event);
     }
+    if(searchDlg){
+            searchDlg->saveSearchHistory(searchHistory);
+        }
 }
 
 
@@ -1222,7 +1232,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
 
     // clear the cache stored for the history
     searchDlg->clearCacheHistory();
-
+    onAddActionToHistory();
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
@@ -8174,6 +8184,9 @@ void MainWindow::onAddActionToHistory()
     {
         searchHistory.prepend(searchText);
     }
+    searchCompleter = new QCompleter(searchHistory, this);
+    searchCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    searchLineEdit->setCompleter(searchCompleter);
 
     int searchHistorySize = searchHistory.size();
     for (int i = 0;i < searchHistorySize && i < MaxSearchHistory; i++)
