@@ -149,6 +149,7 @@ SOURCES += main.cpp \
     dltmsgqueue.cpp \
     dltfileindexerthread.cpp \
     dltfileindexerdefaultfilterthread.cpp \
+    ecutree.cpp \
 
 # Show these headers in the project
 HEADERS += mainwindow.h \
@@ -180,7 +181,8 @@ HEADERS += mainwindow.h \
     dltmsgqueue.h \
     dltfileindexerthread.h \
     dltfileindexerdefaultfilterthread.h \
-    mcudpsocket.h
+    mcudpsocket.h \
+    ecutree.h \
 
 # Compile these UI files
 FORMS += mainwindow.ui \
