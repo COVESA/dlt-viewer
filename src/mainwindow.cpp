@@ -409,6 +409,9 @@ void MainWindow::initView()
     /* set table size and en */
     ui->tableView->setModel(tableModel);
 
+    QHeaderView *header = ui->tableView->horizontalHeader();
+    header->installEventFilter(tableModel);
+
     /* For future use enable HTML View in Table */
     //HtmlDelegate* delegate = new HtmlDelegate();
     //ui->tableView->setItemDelegate(delegate);
