@@ -1,11 +1,11 @@
 # Installation of DLT Viewer on Linux
 # Requirements
 - Supported platforms
-    - Ubuntu 18.04 x86_64 and later.
-    - Most of modern desktop Linux distributions with **glibc >= 2.27**.
+    - Ubuntu 20.04 x86_64 and later.
+    - Most of modern desktop Linux distributions with **glibc >= 2.30**.
         - `ldd --version`
 - Administrator rights `sudo` are **not needed**
-- No need to download and install C++ build tools, QT framework **or any other dependencies**, they are included in AppImage.
+- `libfuse2`, `libharfbuzz0b` and `libsm6` must be installed. Other dependencies like Qt framework are included in the AppImage.
 
 # AppImage
 - AppImage files are simpler than installing an application. No extraction tools are needed, nor is it necessary to modify the operating system or user environment. Regular users on the common Linux distributions can download it, make it executable, and run it. [Wikipedia](https://en.wikipedia.org/wiki/AppImage)
