@@ -68,6 +68,7 @@ SOURCES +=  \
     fieldnames.cpp \
     qdltimporter.cpp \
     dltmessagematcher.cpp \
+    qdltctrlmsg.cpp \
 
 HEADERS += qdlt.h \
     export_rules.h \
@@ -101,6 +102,7 @@ HEADERS += qdlt.h \
     fieldnames.h \
     qdltimporter.h \
     dltmessagematcher.h \
+    qdltctrlmsg.h \
 
 unix:VERSION            = 1.0.0
 
