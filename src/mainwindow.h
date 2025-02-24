@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QHeaderView>
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
@@ -95,6 +96,8 @@ extern "C"
 namespace Ui {
     class MainWindow;
 }
+
+struct EcuTree;
 
 class MainWindow : public QMainWindow
 {
@@ -236,13 +239,8 @@ private:
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
-    /**
-        * @brief Reload the complete log file
-        * @param update if this parameter is false, the file is loaded the first time, if true the reload is performed because of a changed configuration
-        *
-        */
-    void reloadLogFileStop();
     void reloadLogFile(bool update=false, bool multithreaded = true);
+    void populateEcusTree(EcuTree&& ecuTree);
 
     void reloadLogFileDefaultFilter();
 
@@ -275,7 +273,6 @@ private:
     void updatePluginsECUList();
     void updatePlugins();
     void updatePlugin(PluginItem *item);
-    void contextLoadingFile(const QDltMsg &msg);
     void versionString(const QDltMsg &msg);
     void pluginsAutoload(QString version);
 
