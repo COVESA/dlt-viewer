@@ -81,7 +81,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
-       <number>23</number>
+       <number>27</number>
       </attribute>
      </widget>
     </item>
@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>22</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -447,7 +447,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideNone</enum>
@@ -637,30 +637,6 @@
          <property name="bottomMargin">
           <number>2</number>
          </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_2">
-           <item>
-            <widget class="QPushButton" name="pushButtonMovePluginUp">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Up</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonMovePluginDown">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Down</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
          <item>
           <widget class="PluginTreeWidget" name="pluginWidget">
            <property name="contextMenuPolicy">
