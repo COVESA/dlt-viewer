@@ -1219,6 +1219,12 @@ bool MainWindow::openDltFile(QStringList fileNames)
         qDebug() << "Open filename error in " << __FILE__ << __LINE__;
         return false;
     }
+    /* Color of the scrollbar when dark mode is enabled */
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        ui->tableView->setStyleSheet("QTableView QScrollBar::vertical { background-color :#646568; }"
+                                            "QScrollBar::horizontal  { background-color :#646568; }");
+    }
     //clear search history list
     //searchHistory.clear();
     //clear all the action buttons from history
@@ -1367,7 +1373,7 @@ void MainWindow::appendDltFile(const QString &fileName)
     }
 
     /* read DLT messages and append to current output file */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
@@ -1419,7 +1425,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
@@ -1462,7 +1468,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     dlt_file_open(&importfile,fileName.toLatin1(),0);
 
     /* parse and build index of complete log file and show progress */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
@@ -3955,7 +3961,8 @@ void MainWindow::writeDLTMessageToFile(const QByteArray& bufferHeader, std::stri
         dlt_set_id(str.ecu, ecuitem->id.toLatin1());
 
     /* check if message is matching the filter */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    // open the outputfile, if it is not open yet
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
     }
@@ -3998,7 +4005,7 @@ void MainWindow::writeDLTMessageToFile(const QByteArray& bufferHeader, std::stri
     outputfile.write(bufferHeader);
     outputfile.write(payload.data(), payload.size());
     outputfile.flush();
-    outputfile.close();
+    //outputfile.close();  // This slows down online tracing, keep open while online tracing
 }
 
 void MainWindow::read(EcuItem* ecuitem)
@@ -4606,7 +4613,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     }
 
     /* Skip the file handling, if indexer is working on the file */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
@@ -4625,7 +4632,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
         dltIndexer->unlock();
     }
-    outputfile.close();
+    //outputfile.close();  // This slows down online tracing, keep open while online tracing
 
 }
 
@@ -4681,7 +4688,7 @@ void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString app
     msg.standardheader->len = DLT_HTOBE_16(msg.headersize - sizeof(DltStorageHeader) + msg.datasize);
 
     /* Skip the file handling, if indexer is working on the file */
-    if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
+    if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
@@ -4702,7 +4709,7 @@ void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString app
 
         dltIndexer->unlock();
     }
-    outputfile.close();
+    //outputfile.close();  // This slows down online tracing, keep open while online tracing
 }
 
 void MainWindow::on_action_menuDLT_Get_Default_Log_Level_triggered()
