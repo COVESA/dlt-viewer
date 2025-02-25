@@ -470,7 +470,7 @@ private slots:
     void on_action_menuConfig_Disconnect_triggered();
     void on_action_menuConfig_Connect_triggered();
     void on_action_menuConfig_Delete_All_Contexts_triggered();
-    void onActionAenuConfigCopyPayloadToClipboardTriggered();
+    void onActionMenuConfigCopyPayloadToClipboardTriggered();
     void on_action_menuConfig_Copy_to_clipboard_triggered();
     void onActionMenuConfigCopyJiraToClipboardTriggered();
     void onActionMenuConfigCopyJiraHeadToClipboardTriggered();

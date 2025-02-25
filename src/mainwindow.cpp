@@ -279,7 +279,7 @@ void MainWindow::initState()
 {
     /* Shortcut for Copy Selection Payload to Clipboard */
     copyPayloadShortcut = new QShortcut(QKeySequence("Ctrl+P"), this);
-    connect(copyPayloadShortcut, &QShortcut::activated, this, &MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered);
+    connect(copyPayloadShortcut, &QShortcut::activated, this, &MainWindow::onActionMenuConfigCopyPayloadToClipboardTriggered);
 
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
@@ -6974,7 +6974,8 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     action = new QAction("C&opy Selection Payload to Clipboard", this);
-    connect(action, SIGNAL(triggered()), this, SLOT(onActionAenuConfigCopyPayloadToClipboardTriggered()));
+    action->setShortcut(QKeySequence("Ctrl+P"));
+    connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyPayloadToClipboardTriggered()));
     menu.addAction(action);
 
     menu.addSeparator();
@@ -7602,7 +7603,7 @@ void MainWindow::on_action_menuConfig_Copy_to_clipboard_triggered()
     exportSelection(true,false);
 }
 
-void MainWindow::onActionAenuConfigCopyPayloadToClipboardTriggered()
+void MainWindow::onActionMenuConfigCopyPayloadToClipboardTriggered()
 {
     exportSelection(true,false,QDltExporter::FormatClipboardPayloadOnly);
 }
