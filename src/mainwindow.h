@@ -145,6 +145,7 @@ private:
 
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
+    QShortcut *markShortcut;
 
     /* Export */
     ExporterDialog exporterDialog;
