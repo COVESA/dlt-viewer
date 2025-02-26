@@ -143,6 +143,8 @@ private:
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
+    QShortcut *markShortcut;
+
     /* Export */
     ExporterDialog exporterDialog;
 

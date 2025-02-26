@@ -280,6 +280,10 @@ MainWindow::~MainWindow()
 
 void MainWindow::initState()
 {
+    /* Shortcut for Mark/Unmark lines */
+    markShortcut = new QShortcut(QKeySequence("Ctrl+M"), this);
+    connect(markShortcut, &QShortcut::activated, this, &MainWindow::mark_unmark_lines);
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
@@ -7035,6 +7039,7 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     menu.addSeparator();
 
     action = new QAction("Mark/Unmark line(s)", this);
+    action->setShortcut(QKeySequence("Ctrl+M"));
     connect(action, SIGNAL(triggered()), this, SLOT(mark_unmark_lines()));
     menu.addAction(action);
 
