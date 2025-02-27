@@ -93,7 +93,8 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false)
+    isSearchOngoing(false),
+    shortcutDialog(this)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
@@ -5550,15 +5551,11 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered() {
 void MainWindow::on_actionShortcuts_List_triggered(){
     qDebug() <<"Shortcuts Triggered";
 
-    QDialog *shortcutDialog = new QDialog(this);
-    shortcutDialog->setWindowTitle("Shortcuts List");
-    shortcutDialog->resize(600, 400);
+    shortcutDialog.setWindowTitle("Shortcuts List");
+    shortcutDialog.resize(600, 400);
 
-    // Create a table view
-    QTableView *table = new QTableView(shortcutDialog);
-    table->setObjectName("Summarise Table");
-
-    // Create and set up the model
+    QTableView *table = new QTableView(&shortcutDialog);
+    table->setObjectName("Shortcuts Summarise Table");
     QStandardItemModel *model = new QStandardItemModel(0, 2, this);
 
     QFont BoldFont;
@@ -5572,20 +5569,21 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     headerFeature->setFont(BoldFont);
     model->setHorizontalHeaderItem(1, headerFeature);
 
-    // Fill the model with data (unchanged)
-    QStringList names = {"New", "Open", "Save As", "Clear", "Import DLT Stream",
-                         "Import DLT Stream with serial header", "Find", "Jump To",
-                         "New Project", "Open Project", "Save Project", "Expand All ECU",
-                         "Collapse All ECU", "Copy Payload", "Info", "Quit"};
-    QStringList shortcuts = {"Ctrl + N", "Ctrl + O", "Ctrl + S", "Ctrl + E", "Ctrl + I",
-                             "Ctrl + J", "Ctrl + F", "Ctrl + G", "Ctrl + Shift + G",
-                             "Ctrl + Shift + O", "Ctrl + Shift + S", "Ctrl++", "Ctrl+",
-                             "Ctrl + P", "F1", "Ctrl + Q"};
+    // Define shortcut list using QPair
+    QList<QPair<QString, QString>> shortcutsList = {
+        {"New", "Ctrl + N"}, {"Open", "Ctrl + O"}, {"Save As", "Ctrl + S"},
+        {"Clear", "Ctrl + E"}, {"Import DLT Stream", "Ctrl + I"},
+        {"Import DLT Stream with serial header", "Ctrl + J"}, {"Find", "Ctrl + F"},
+        {"Jump To", "Ctrl + G"}, {"New Project", "Ctrl + Shift + G"},
+        {"Open Project", "Ctrl + Shift + O"}, {"Save Project", "Ctrl + Shift + S"},
+        {"Expand All ECU", "Ctrl++"}, {"Collapse All ECU", "Ctrl+"},
+        {"Copy Payload", "Ctrl + P"}, {"Info", "F1"}, {"Quit", "Ctrl + Q"}
+    };
 
-    for (int i = 0; i < names.size(); ++i) {
+    for (int i = 0; i < shortcutsList.size(); ++i) {
         model->insertRow(i);
-        model->setData(model->index(i, 0), names[i]);
-        model->setData(model->index(i, 1), shortcuts[i]);
+        model->setData(model->index(i, 0), shortcutsList[i].first);
+        model->setData(model->index(i, 1), shortcutsList[i].second);
 
         // Make the items non-editable
         for (int j = 0; j < 2; ++j) {
@@ -5596,27 +5594,21 @@ void MainWindow::on_actionShortcuts_List_triggered(){
         }
     }
 
-    // Center-align the data
+    // Center-align
     for (int row = 0; row < model->rowCount(); ++row) {
         for (int col = 0; col < model->columnCount(); ++col) {
             QModelIndex index = model->index(row, col);
             model->setData(index, Qt::AlignCenter, Qt::TextAlignmentRole);
         }
     }
-
-    // Set the model in the table
     table->setModel(model);
-
-    // Set column widths
     table->setColumnWidth(0, 275);
     table->setColumnWidth(1, 275);
-
-    // Create a layout and add the table to it
-    QVBoxLayout *layout = new QVBoxLayout(shortcutDialog);
+    QVBoxLayout *layout = new QVBoxLayout(&shortcutDialog);
     layout->addWidget(table);
 
-    shortcutDialog->setLayout(layout);
-    shortcutDialog->exec();
+    shortcutDialog.setLayout(layout);
+    shortcutDialog.show();
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
