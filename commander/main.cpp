@@ -9,6 +9,8 @@
 #include <qdltexporter.h>
 #include <optmanager.h>
 
+#include "dltfileexporter.h"
+
 /*
  * Examples:
  *
@@ -123,19 +125,20 @@ int main(int argc, char *argv[])
         //dltFile.createIndexFilter();
         //qDebug() << "Number of messages matching filter:" << dltFile.sizeFilter();
 
-        if(opt.get_convertionmode()==e_DLT)
+        if(opt.getConvertionMode()==e_DLT)
         {
             qDebug() << "### Convert to DLT";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatDlt,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
-            if(opt.isMultifilter())
-                exporter.setMultifilterFilenames(opt.getFilterFiles());
-            else
-                exporter.setFilterList(filterList);
+            DltFileExporter exporter(dltFile);
+            exporter.setFilterList(opt.getFilterFiles(), opt.isMultifilter());
+
+            if (const auto& split = opt.getSplit(); split)
+                exporter.setMaxOutputSize(split->toBytesCount());
+
             qDebug() << "Commandline DLT convert to " << opt.getConvertDestFile();
-            exporter.exportMessages();
+            exporter.exportMessages(opt.getConvertDestFile());
             qDebug() << "DLT export to DLT file format done";
         }
-        if(opt.get_convertionmode()==e_ASCI)
+        if(opt.getConvertionMode()==e_ASCI)
         {
             qDebug() << "### Convert to ASCII";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
@@ -147,7 +150,7 @@ int main(int argc, char *argv[])
             exporter.exportMessages();
             qDebug() << "DLT export ASCII done";
         }
-        if(opt.get_convertionmode()==e_CSV)
+        if(opt.getConvertionMode()==e_CSV)
         {
             qDebug() << "### Convert to CSV";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
@@ -159,7 +162,7 @@ int main(int argc, char *argv[])
             exporter.exportMessages();
             qDebug() << "DLT export CSV done";
         }
-        if(opt.get_convertionmode()==e_UTF8)
+        if(opt.getConvertionMode()==e_UTF8)
         {
             qDebug() << "### Convert to UTF8";
             QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
