@@ -93,7 +93,8 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false)
+    isSearchOngoing(false),
+    shortcutDialog(this)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
@@ -5549,6 +5550,69 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered() {
     QMessageBox::information(
                 0, "DLT Viewer - Command line usage\t\t\t\t\t", // tabs used to expand message box !
                 QDltOptManager::getInstance()->getHelpText());
+}
+
+void MainWindow::on_actionShortcuts_List_triggered(){
+    qDebug() <<"Shortcuts Triggered";
+
+    shortcutDialog.setWindowTitle("Shortcuts List");
+    shortcutDialog.resize(600, 400);
+
+    QTableView *table = new QTableView(&shortcutDialog);
+    table->setObjectName("Shortcuts Summarise Table");
+    QStandardItemModel *model = new QStandardItemModel(0, 2, this);
+
+    QFont BoldFont;
+    BoldFont.setBold(true);
+
+    QStandardItem *headerName = new QStandardItem("Name");
+    headerName->setFont(BoldFont);
+    model->setHorizontalHeaderItem(0, headerName);
+
+    QStandardItem *headerFeature = new QStandardItem("Shortcuts");
+    headerFeature->setFont(BoldFont);
+    model->setHorizontalHeaderItem(1, headerFeature);
+
+    // Define shortcut list using QPair
+    QList<QPair<QString, QString>> shortcutsList = {
+        {"New", "Ctrl + N"}, {"Open", "Ctrl + O"}, {"Save As", "Ctrl + S"},
+        {"Clear", "Ctrl + E"}, {"Import DLT Stream", "Ctrl + I"},
+        {"Import DLT Stream with serial header", "Ctrl + J"}, {"Find", "Ctrl + F"},
+        {"Jump To", "Ctrl + G"}, {"New Project", "Ctrl + Shift + G"},
+        {"Open Project", "Ctrl + Shift + O"}, {"Save Project", "Ctrl + Shift + S"},
+        {"Expand All ECU", "Ctrl++"}, {"Collapse All ECU", "Ctrl+"},
+        {"Copy Payload", "Ctrl + P"}, {"Info", "F1"}, {"Quit", "Ctrl + Q"}
+    };
+
+    for (int i = 0; i < shortcutsList.size(); ++i) {
+        model->insertRow(i);
+        model->setData(model->index(i, 0), shortcutsList[i].first);
+        model->setData(model->index(i, 1), shortcutsList[i].second);
+
+        // Make the items non-editable
+        for (int j = 0; j < 2; ++j) {
+            QStandardItem *item = model->item(i, j);
+            if (item) {
+                item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            }
+        }
+    }
+
+    // Center-align
+    for (int row = 0; row < model->rowCount(); ++row) {
+        for (int col = 0; col < model->columnCount(); ++col) {
+            QModelIndex index = model->index(row, col);
+            model->setData(index, Qt::AlignCenter, Qt::TextAlignmentRole);
+        }
+    }
+    table->setModel(model);
+    table->setColumnWidth(0, 275);
+    table->setColumnWidth(1, 275);
+    QVBoxLayout *layout = new QVBoxLayout(&shortcutDialog);
+    layout->addWidget(table);
+
+    shortcutDialog.setLayout(layout);
+    shortcutDialog.show();
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
