@@ -391,7 +391,7 @@ QString QDltArgument::toString(bool binary) const
         break;
     case DltTypeInfoStrg:
         if(data.size()) {
-            text += QString("%1").arg(QString(getData()));
+            text += QString::fromLatin1(data.data());
         }
         break;
     case DltTypeInfoUtf8:
