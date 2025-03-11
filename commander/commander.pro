@@ -30,8 +30,9 @@ CONFIG(debug, debug|release) {
 
 SOURCES += \
         main.cpp \
-        optmanager.cpp
+        optmanager.cpp \
+        dltfileexporter.cpp
 
 HEADERS += \
-    export_rules.h \
     optmanager.h
+    dltfileexporter.h
