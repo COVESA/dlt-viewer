@@ -775,7 +775,7 @@ bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
     return filterList.applyRegExString(msg,text);
 }
 
-bool QDltFile::applyRegExStringMsg(QDltMsg &msg)
+bool QDltFile::applyRegExStringMsg(QDltMsg &msg) const
 {    
     return filterList.applyRegExStringMsg(msg);
 }
