@@ -147,7 +147,7 @@ bool QDltFilterList::applyRegExString(QDltMsg &msg,QString &text)
     return result;
 }
 
-bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg)
+bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg) const
 {
     QDltFilter *filter;
     bool result = false;
