@@ -22,6 +22,8 @@
 
 #include <QStringList>
 
+#include <optional>
+
 enum e_convertionmode
 {
     e_ASCI = 0,
@@ -30,7 +32,18 @@ enum e_convertionmode
     e_CSV  = 3,
 };
 
+enum class Units {
+    KB, // kilobytes
+    MB, // megabytes
+    GB  // gigabytes
+};
 
+struct Split {
+    std::size_t size;
+    Units unit;
+
+    std::size_t toBytesCount() const;
+};
 
 class OptManager
 {
@@ -43,20 +56,20 @@ public:
     void printVersion(QString appname);
     void parse(QStringList *opt);
 
-    bool isLogFile();
-    bool isFilterFile();
-    bool isConvert();
-    bool isConvertUTF8();
-    bool isMultifilter();
+    bool isLogFile() const;
+    bool isFilterFile() const;
+    bool isConvert() const;
+    bool isConvertUTF8() const;
+    bool isMultifilter() const;
 
-    e_convertionmode get_convertionmode();
-
-    QStringList getLogFiles();
-    QStringList getFilterFiles();
-    QString getConvertSourceFile();
-    QString getConvertDestFile();
-    char getDelimiter();
-    QString getSignature();
+    e_convertionmode getConvertionMode() const;
+    QStringList getLogFiles()const ;
+    QStringList getFilterFiles() const;
+    QString getConvertSourceFile() const;
+    QString getConvertDestFile() const;
+    char getDelimiter() const;
+    const std::optional<Split>& getSplit() const;
+    QString getSignature() const;
 
     const QStringList &getPcapFiles() const;
     const QStringList &getMf4Files() const;
@@ -67,6 +80,9 @@ private:
     bool filter;
     bool convert;
     bool multifilter;
+    //split size
+    std::optional<Split> split;
+
     e_convertionmode convertionmode;
 
     QStringList logFiles;
