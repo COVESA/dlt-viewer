@@ -7001,6 +7001,36 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     menu.addSeparator();
 
+    action = new QAction("Copy Selection as image to Clipboard", this);
+    connect(action, &QAction::triggered, this, [this](){
+        // save and clear selection for clean screenshot
+        auto selectionIndexes = ui->tableView->selectionModel()->selection().indexes();
+        ui->tableView->selectionModel()->clearSelection();
+
+        // TODO: to calculate the screenshot rect, we first selected row has to be removed
+        // and last row has to be appended, i.e shift by one down
+        QRect res;
+        for (qsizetype i = 0; i < selectionIndexes.size(); ++i)
+        {
+            res |= ui->tableView->visualRect(selectionIndexes[i]);
+        }
+        auto tableViewRect = ui->tableView->visibleRegion().boundingRect();
+
+        auto pixmap = ui->tableView->grab(res & tableViewRect);
+
+        QApplication::clipboard()->setPixmap(pixmap);
+
+        // restore selection
+        for (const auto& index : selectionIndexes)
+        {
+            ui->tableView->selectionModel()->select(index, QItemSelectionModel::Select);
+        }
+
+    });
+    menu.addAction(action);
+
+    menu.addSeparator();
+
     action = new QAction("&Export...", this);
     if(qfile.sizeFilter() <= 0)
     {
