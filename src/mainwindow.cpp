@@ -4608,6 +4608,95 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
 }
 
+void MainWindow::getModel()
+{
+    qDebug() << "Signal received from qDltcontrol to mainwindow";
+
+    ui->tableView->showColumn(3);
+    QMap<QString, QSet<int>> ctidCounterMap;
+    QAbstractItemModel* model = ui->tableView->model();
+
+    // Populate the map with data from the model
+    for (int row = 0; row < model->rowCount(); ++row) {
+        // QString ctid = model->item(row, 1)->text();
+        QString ctid = model->data(model->index(row, 6)).toString();
+        // int counter = model->item(row, 0)->text().toInt();
+        int counter = model->data(model->index(row, 3)).toInt();
+
+        ctidCounterMap[ctid].insert(counter);
+    }
+
+    // Iterate through the map and remove entries with an empty key
+    auto it = ctidCounterMap.begin();
+    while (it != ctidCounterMap.end()) {
+        if (it.key().isEmpty()) { // Check if the key is empty
+            it = ctidCounterMap.erase(it); // Remove the entry and update the iterator
+        } else {
+            ++it; // Move to the next entry
+        }
+    }
+
+    missingDataModel->setColumnCount(2);
+    missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
+
+    for (auto it = ctidCounterMap.cbegin(); it != ctidCounterMap.cend(); ++it) {
+        QString ctid = it.key();
+        QList<int> counters = it.value().values();
+
+        // Sort the counter values
+        std::sort(counters.begin(), counters.end());
+
+        // Ensure that 1 is the starting point and 255 is the max value
+        int expectedValue = 1;
+
+        for (int counter : counters) {
+            // If expectedValue is less than the current counter, those values are missing
+            while (expectedValue < counter) {
+                // Add missing values to the model
+                QList<QStandardItem*> rowItems;
+                rowItems.append(new QStandardItem(ctid));
+                rowItems.append(new QStandardItem(QString::number(expectedValue)));
+                missingDataModel->appendRow(rowItems);
+
+                expectedValue++;  // Move to the next expected value
+            }
+            expectedValue = counter + 1;  // Move to the next expected value after the current counter
+        }
+
+        // Check for any missing values till 255
+        while (expectedValue <= 255) {
+            QList<QStandardItem*> rowItems;
+            rowItems.append(new QStandardItem(ctid));
+            rowItems.append(new QStandardItem(QString::number(expectedValue)));
+            missingDataModel->appendRow(rowItems);
+            expectedValue++;
+        }
+    }
+
+    QTableView *sortedTableview = new QTableView();
+    sortedTableview->setModel(missingDataModel);
+
+    // // Adjust the table view to be responsive
+
+    sortedTableview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); // Stretch columns
+    sortedTableview->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents); // Resize rows to content
+    sortedTableview->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents); // Adjust table to contents
+
+
+    // sortedTableview->resize(600, 400);  // Adjust width and height
+
+    // // Resize columns to fit contents
+    // sortedTableview->setColumnWidth(0, 200);  // Increase Ctid column width
+    // sortedTableview->setColumnWidth(1, 200);  // Increase Missing Counter column width
+
+    //   // Ensure headers auto-adjust
+    // sortedTableview->horizontalHeader()->setStretchLastSection(true);
+
+    sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
+    sortedTableview->show();
+    qDebug() << "Data added to model";
+}
+
 void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
 {
     QByteArray data;
