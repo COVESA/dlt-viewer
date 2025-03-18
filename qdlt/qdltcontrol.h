@@ -75,6 +75,7 @@ signals:
     void ControlgetModel();
     void ExportSignal();
 
+
 protected:
 private:
     QObject *server;

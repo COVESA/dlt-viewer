@@ -485,6 +485,9 @@ private slots:
 
 
 
+
+
+
 public slots:
 
     void onNewTriggered(QString fileName);
