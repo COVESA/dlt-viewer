@@ -58,6 +58,8 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(on_action_menuFile_Quit_triggered()));
     connect(this, SIGNAL(reopenFileSignal()),
             server, SLOT(reopenFileSignal()));
+    connect(this, SIGNAL(ControlgetModel()),
+            server, SLOT(getModel()));
 }
 
 QDltControl::~QDltControl()
@@ -128,4 +130,9 @@ void QDltControl::disconnectAllEcu()
 void QDltControl::reopenFile()
 {
     emit reopenFileSignal();
+}
+void QDltControl::CounterPluginCall()
+{
+    qDebug() << "Call from counter plugin to qdltcontrol";
+    emit ControlgetModel();
 }
