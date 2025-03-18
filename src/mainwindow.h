@@ -434,7 +434,6 @@ private slots:
     void getModel();
     void exportCounterData();
 
-
 public slots:
 
     void onNewTriggered(QString fileName);

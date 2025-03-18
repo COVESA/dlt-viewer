@@ -4615,6 +4615,11 @@ void MainWindow::getModel()
     QAbstractItemModel* model = ui->tableView->model();
     QStandardItemModel *missingDataModel = new QStandardItemModel();
 
+    qDebug() << "Signal received from qDltcontrol to mainwindow";
+
+    ui->tableView->showColumn(3);
+    QMap<QString, QSet<int>> ctidCounterMap;
+    QAbstractItemModel* model = ui->tableView->model();
     // Populate the map with data from the model
     for (int row = 0; row < model->rowCount(); ++row) {
         // QString ctid = model->item(row, 1)->text();
@@ -4651,6 +4656,8 @@ void MainWindow::getModel()
         for (int counter : counters) {
             // If expectedValue is less than the current counter, those values are missing
             while (expectedValue < counter) {
+
+                // Add missing values to the model
                 QList<QStandardItem*> rowItems;
                 rowItems.append(new QStandardItem(ctid));
                 rowItems.append(new QStandardItem(QString::number(expectedValue)));
@@ -4660,6 +4667,9 @@ void MainWindow::getModel()
             }
             expectedValue = counter + 1;  // Move to the next expected value after the current counter
         }
+
+
+        // Check for any missing values till 255
         while (expectedValue <= 255) {
             QList<QStandardItem*> rowItems;
             rowItems.append(new QStandardItem(ctid));
@@ -4677,6 +4687,25 @@ void MainWindow::getModel()
 
     sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
     sortedTableview->show();
+    // // Adjust the table view to be responsive
+
+    sortedTableview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); // Stretch columns
+    sortedTableview->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents); // Resize rows to content
+    sortedTableview->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents); // Adjust table to contents
+
+
+    // sortedTableview->resize(600, 400);  // Adjust width and height
+
+    // // Resize columns to fit contents
+    // sortedTableview->setColumnWidth(0, 200);  // Increase Ctid column width
+    // sortedTableview->setColumnWidth(1, 200);  // Increase Missing Counter column width
+
+    //   // Ensure headers auto-adjust
+    // sortedTableview->horizontalHeader()->setStretchLastSection(true);
+
+    sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
+    sortedTableview->show();
+    qDebug() << "Data added to model";
 }
 
 void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
