@@ -421,6 +421,7 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
+    void getModel();
 
     void on_pushButtonMovePluginUp_clicked();
     void on_pushButtonMovePluginDown_clicked();
