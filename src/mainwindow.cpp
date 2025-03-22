@@ -4515,9 +4515,13 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
                               controlMessage_UnregisterContext(msg.getEcuid(), payload.appid,
                               payload.ctxid);
                           },
-                          [&](const qdlt::msg::payload::SetLogLevel &) {
+                          [](const qdlt::msg::payload::SetLogLevel &) {
                               // nothing to do
-                          }},
+                          },
+                          [](const qdlt::msg::payload::Uninteresting& payload) {
+                              qDebug() << "Received control message with id: " << payload.serviceId;
+                          }
+               },
                ctrlMsg);
 }
 
