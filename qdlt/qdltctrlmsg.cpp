@@ -77,9 +77,9 @@ Type parse(const QByteArray& data, bool isBigEndian)
     int32_t length = data.length();
     const char *dataPtr = data.data();
 
-    auto service_id = dltPayloadRead<uint32_t>(dataPtr, length, isBigEndian);
+    auto serviceId = dltPayloadRead<uint32_t>(dataPtr, length, isBigEndian);
 
-    switch (service_id) {
+    switch (serviceId) {
         case DLT_SERVICE_ID_GET_LOG_INFO:
         {
             GetLogInfo msg;
@@ -145,7 +145,7 @@ Type parse(const QByteArray& data, bool isBigEndian)
         }
     }
 
-    throw std::runtime_error("Unknown service type");
+    return Uninteresting{serviceId};
 }
 
 }
