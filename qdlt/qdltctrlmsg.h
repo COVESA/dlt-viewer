@@ -56,8 +56,12 @@ struct UnregisterContext {
     QString ctxid;
 };
 
+struct Uninteresting {
+    uint32_t serviceId;
+};
+
 using Type = std::variant<GetLogInfo, GetSoftwareVersion, GetDefaultLogLevel, SetLogLevel, Timezone,
-                          UnregisterContext>;
+                          UnregisterContext, Uninteresting>;
 
 QDLT_EXPORT Type parse(const QByteArray&, bool isBigEndian);
 
