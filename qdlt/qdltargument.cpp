@@ -20,6 +20,7 @@
  */
 
 #include "qdltargument.h"
+#include <qvariant.h>
 
 extern "C"
 {
@@ -638,17 +639,17 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
 
     endianness = QDlt::DltEndiannessLittleEndian;
 
-    switch(value.type())
+    switch(value.typeId())
     {
-    case QVariant::ByteArray:
+    case QMetaType::QByteArray:
         data = value.toByteArray();
         typeInfo = QDltArgument::DltTypeInfoRawd;
         return true;
-    case QVariant::String:
+    case QMetaType::QString:
         data = value.toByteArray();
         typeInfo = QDltArgument::DltTypeInfoUtf8;
         return true;
-    case QVariant::Bool:
+    case QMetaType::Bool:
         {
         bool bvalue = value.toBool();
         unsigned char cvalue = bvalue;
@@ -657,35 +658,35 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
         return true;
         }
         break;
-    case QVariant::Int:
+    case QMetaType::Int:
         {
         int bvalue = value.toInt();
         data = QByteArray((const char*)&bvalue,sizeof(int));
         typeInfo = QDltArgument::DltTypeInfoSInt;
         return true;
         }
-    case QVariant::LongLong:
+    case QMetaType::LongLong:
         {
         long long bvalue = value.toLongLong();
         data = QByteArray((const char*)&bvalue,sizeof(long long));
         typeInfo = QDltArgument::DltTypeInfoSInt;
         return true;
         }
-    case QVariant::UInt:
+    case QMetaType::UInt:
         {
         unsigned int bvalue = value.toUInt();
         data = QByteArray((const char*)&bvalue,sizeof(int));
         typeInfo = QDltArgument::DltTypeInfoUInt;
         return true;
         }
-    case QVariant::ULongLong:
+    case QMetaType::ULongLong:
         {
         unsigned long long bvalue = value.toULongLong();
         data = QByteArray((const char*)&bvalue,sizeof(unsigned long long));
         typeInfo = QDltArgument::DltTypeInfoUInt;
         return true;
         }
-    case QVariant::Double:
+    case QMetaType::Double:
         {
         double bvalue = value.toInt();
         data = QByteArray((const char*)&bvalue,sizeof(double));

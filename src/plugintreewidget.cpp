@@ -63,7 +63,7 @@ void PluginTreeWidget::decreasePluginPriority(int index)
 void PluginTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
     const QTreeWidgetItem* dragged_item = this->currentItem();
-    const QTreeWidgetItem* target_item = this->itemAt(event->pos());
+    const QTreeWidgetItem* target_item = this->itemAt(event->position().toPoint());
 
     // Ignore event if moving over a child item
     if(dragged_item == nullptr || dragged_item->parent() != nullptr || (target_item != nullptr && target_item->parent() != nullptr)){
@@ -78,7 +78,7 @@ void PluginTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 void PluginTreeWidget::dropEvent(QDropEvent *event)
 {
     QTreeWidgetItem* dragged_item = this->currentItem();
-    const QTreeWidgetItem* target_item = this->itemAt(event->pos());
+    const QTreeWidgetItem* target_item = this->itemAt(event->position().toPoint());
 
     // Avoid dropping children
     // Allow drop only over top level items (or at the end)
