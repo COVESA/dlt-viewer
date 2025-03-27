@@ -42,6 +42,10 @@
 #include "ui_mainwindow.h"
 #include "searchform.h"
 
+#include <QTableWidget>
+#include <QAbstractItemModel>
+#include <QStandardItemModel>
+
 /**
  * @brief Namespace to contain the toolbar positions.
  * You should always remember to update these enums if you
@@ -123,6 +127,8 @@ private:
     TableModel *tableModel;
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
+
+    QStandardItemModel* missingDataModel;
 
     /* Status line items */
     QLabel *statusFilename;
@@ -421,6 +427,7 @@ private slots:
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
     void getModel();
+    void exportCounterData();
 
     void on_pushButtonMovePluginUp_clicked();
     void on_pushButtonMovePluginDown_clicked();
