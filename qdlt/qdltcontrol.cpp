@@ -141,3 +141,4 @@ void QDltControl::ExportPluginCall()
 {
     emit ExportSignal();
 }
+    

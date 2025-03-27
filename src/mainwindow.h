@@ -144,6 +144,8 @@ private:
     int totalMessages;
     QStandardItemModel* missingDataModel;
 
+    QStandardItemModel* missingDataModel;
+
     /* Status line items */
     QLabel *statusFilename;
     QLabel *statusFileError;
@@ -480,8 +482,13 @@ private slots:
 
     void on_action_menuFile_DLTFilesize_triggered();
 
-    void getModel();
-    void exportCounterData();
+    
+
+
+
+
+
+
 
 
 
