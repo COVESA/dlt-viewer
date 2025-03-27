@@ -4615,6 +4615,7 @@ void MainWindow::getModel()
     ui->tableView->showColumn(3);
     QMap<QString, QSet<int>> ctidCounterMap;
     QAbstractItemModel* model = ui->tableView->model();
+    QStandardItemModel *missingDataModel = new QStandardItemModel();
 
     // Populate the map with data from the model
     for (int row = 0; row < model->rowCount(); ++row) {
@@ -4635,6 +4636,8 @@ void MainWindow::getModel()
             ++it; // Move to the next entry
         }
     }
+
+    // QStandardItemModel *missingDataModel = new QStandardItemModel();
 
     missingDataModel->setColumnCount(2);
     missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
@@ -4676,21 +4679,8 @@ void MainWindow::getModel()
     QTableView *sortedTableview = new QTableView();
     sortedTableview->setModel(missingDataModel);
 
-    // // Adjust the table view to be responsive
-
-    sortedTableview->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch); // Stretch columns
-    sortedTableview->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents); // Resize rows to content
+    // Adjust the table view to be responsive
     sortedTableview->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents); // Adjust table to contents
-
-
-    // sortedTableview->resize(600, 400);  // Adjust width and height
-
-    // // Resize columns to fit contents
-    // sortedTableview->setColumnWidth(0, 200);  // Increase Ctid column width
-    // sortedTableview->setColumnWidth(1, 200);  // Increase Missing Counter column width
-
-    //   // Ensure headers auto-adjust
-    // sortedTableview->horizontalHeader()->setStretchLastSection(true);
 
     sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
     sortedTableview->show();
@@ -8474,4 +8464,100 @@ void MainWindow::handleImportResults(const QString &)
 void MainWindow::handleExportResults(const QString &)
 {
     statusProgressBar->hide();
+}
+
+void MainWindow::exportCounterData()
+{
+    qDebug() << "Export Button clicked in Mainwindow";
+
+    ui->tableView->showColumn(3);
+    QMap<QString, QSet<int>> ctidCounterMap;
+    QAbstractItemModel* model = ui->tableView->model();
+    QStandardItemModel *missingDataModel = new QStandardItemModel();
+
+    // Populate the map with data from the model
+    for (int row = 0; row < model->rowCount(); ++row) {
+        // QString ctid = model->item(row, 1)->text();
+        QString ctid = model->data(model->index(row, 6)).toString();
+        // int counter = model->item(row, 0)->text().toInt();
+        int counter = model->data(model->index(row, 3)).toInt();
+
+        ctidCounterMap[ctid].insert(counter);
+    }
+
+    // Iterate through the map and remove entries with an empty key
+    auto it = ctidCounterMap.begin();
+    while (it != ctidCounterMap.end()) {
+        if (it.key().isEmpty()) { // Check if the key is empty
+            it = ctidCounterMap.erase(it); // Remove the entry and update the iterator
+        } else {
+            ++it; // Move to the next entry
+        }
+    }
+
+    // QStandardItemModel *missingDataModel = new QStandardItemModel();
+
+    missingDataModel->setColumnCount(2);
+    missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
+
+    for (auto it = ctidCounterMap.cbegin(); it != ctidCounterMap.cend(); ++it) {
+        QString ctid = it.key();
+        QList<int> counters = it.value().values();
+
+        // Sort the counter values
+        std::sort(counters.begin(), counters.end());
+
+        // Ensure that 1 is the starting point and 255 is the max value
+        int expectedValue = 1;
+
+        for (int counter : counters) {
+            // If expectedValue is less than the current counter, those values are missing
+            while (expectedValue < counter) {
+                // Add missing values to the model
+                QList<QStandardItem*> rowItems;
+                rowItems.append(new QStandardItem(ctid));
+                rowItems.append(new QStandardItem(QString::number(expectedValue)));
+                missingDataModel->appendRow(rowItems);
+
+                expectedValue++;  // Move to the next expected value
+            }
+            expectedValue = counter + 1;  // Move to the next expected value after the current counter
+        }
+
+        // Check for any missing values till 255
+        while (expectedValue <= 255) {
+            QList<QStandardItem*> rowItems;
+            rowItems.append(new QStandardItem(ctid));
+            rowItems.append(new QStandardItem(QString::number(expectedValue)));
+            missingDataModel->appendRow(rowItems);
+            expectedValue++;
+        }
+    }
+
+
+    // Get the current directory and create file path
+    QString filePath = QDir::currentPath() + "/" + "MissingCounter.csv";
+
+    QFile file(filePath);
+
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+      qWarning() << "Failed to open file for writing:" << filePath;
+    }
+    QTextStream stream(&file);
+
+    // Write CSV headers
+    stream << "Ctid,Missing Counter\n";
+
+    // Write data to CSV
+    for (int row = 0; row < missingDataModel->rowCount(); ++row) {
+        QString ctid = missingDataModel->item(row, 0)->text();
+        QString missingCounter = missingDataModel->item(row, 1)->text();
+
+        // Write data in CSV format
+        stream << ctid << "," << missingCounter << "\n";
+    }
+
+    file.close();
+    qDebug() << "CSV file successfully exported to:" << filePath;
+
 }
