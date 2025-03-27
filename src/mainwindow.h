@@ -140,6 +140,8 @@ private:
 
     QStandardItemModel* missingDataModel;
 
+    QStandardItemModel* missingDataModel;
+
     /* Status line items */
     QLabel *statusFilename;
     QLabel *statusFileError;
@@ -433,6 +435,9 @@ private slots:
     void on_actionExport_triggered();
     void getModel();
     void exportCounterData();
+
+    void on_pushButtonMovePluginUp_clicked();
+    void on_pushButtonMovePluginDown_clicked();
 
 public slots:
 
