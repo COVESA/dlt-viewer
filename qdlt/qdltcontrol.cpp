@@ -60,6 +60,8 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(reopenFileSignal()));
     connect(this, SIGNAL(ControlgetModel()),
             server, SLOT(getModel()));
+    connect(this, SIGNAL(ExportSignal()),
+            server, SLOT(exportCounterData()));
 }
 
 QDltControl::~QDltControl()
@@ -135,4 +137,9 @@ void QDltControl::CounterPluginCall()
 {
     qDebug() << "Call from counter plugin to qdltcontrol";
     emit ControlgetModel();
+}
+void QDltControl::ExportPluginCall()
+{
+    qDebug() << "Export Call from Dlt counter Plugin";
+    emit ExportSignal();
 }

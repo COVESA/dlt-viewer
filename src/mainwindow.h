@@ -53,6 +53,10 @@
 #include "updatechecker.h"
 #include "crlffilterwindow.h"
 
+#include <QTableWidget>
+#include <QAbstractItemModel>
+#include <QStandardItemModel>
+
 /**
  * @brief Namespace to contain the toolbar positions.
  * You should always remember to update these enums if you
@@ -138,6 +142,7 @@ private:
     //Maps to hold the filter values - findFilteredLines() & MarkedMessages
     QMap<QString, int> filterCountMap;
     int totalMessages;
+    QStandardItemModel* missingDataModel;
 
     /* Status line items */
     QLabel *statusFilename;
@@ -476,6 +481,7 @@ private slots:
     void on_action_menuFile_DLTFilesize_triggered();
 
     void getModel();
+    void exportCounterData();
 
 
 
