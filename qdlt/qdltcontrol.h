@@ -56,6 +56,7 @@ public:
     bool silentmode;
     bool commandlinemode;
     void CounterPluginCall();
+    void ExportPluginCall();
 
 signals:
     void sendInjectionSignal(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
@@ -72,6 +73,7 @@ signals:
     void disconnectAllEcuSignal();
     void reopenFileSignal();
     void ControlgetModel();
+    void ExportSignal();
 
 protected:
 private:
