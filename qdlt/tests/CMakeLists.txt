@@ -31,3 +31,19 @@ add_test(
   NAME test_dltoptmanager
   COMMAND $<TARGET_FILE:test_dltoptmanager>
 )
+
+add_executable(test_qdltargument
+    test_qdltargument.cpp
+)
+
+target_link_libraries(
+  test_qdltargument
+  PRIVATE
+    GTest::gtest_main
+    qdlt
+)
+
+add_test(
+  NAME test_qdltargument
+  COMMAND $<TARGET_FILE:test_qdltargument>
+)
