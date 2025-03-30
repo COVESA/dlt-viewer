@@ -61,7 +61,7 @@ std::string dltPayloadReadString(const char *&dataPtr, int32_t &length, bool isB
 {
     uint16_t strLength = dltPayloadRead<uint16_t>(dataPtr, length, isBigEndian);
     if (strLength > length) {
-        throw std::runtime_error("Invalid string length");
+        throw std::runtime_error(QString("Invalid string length %1 > %2").arg(strLength).arg(length).toStdString());
     }
     std::string str;
     str.assign(dataPtr, strLength);
@@ -78,7 +78,6 @@ Type parse(const QByteArray& data, bool isBigEndian)
     const char *dataPtr = data.data();
 
     auto serviceId = dltPayloadRead<uint32_t>(dataPtr, length, isBigEndian);
-
     switch (serviceId) {
         case DLT_SERVICE_ID_GET_LOG_INFO:
         {
@@ -110,9 +109,7 @@ Type parse(const QByteArray& data, bool isBigEndian)
         }
         case DLT_SERVICE_ID_GET_SOFTWARE_VERSION:
         {
-            GetSoftwareVersion msg;
-            msg.version = dltPayloadReadString(dataPtr, length, isBigEndian);
-            return msg;
+            return GetSoftwareVersion{};
         }
         case DLT_SERVICE_ID_GET_DEFAULT_LOG_LEVEL:
         {
