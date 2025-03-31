@@ -4473,66 +4473,66 @@ void MainWindow::onSearchresultsTableSelectionChanged(const QItemSelection & sel
 
 void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QDltMsg &msg)
 {
-    auto ctrlMsg = qdlt::msg::payload::parse(msg.getPayload(), msg.getEndianness() == QDlt::DltEndiannessBigEndian);
-    std::visit(overloaded{[&](const qdlt::msg::payload::GetSoftwareVersion &) {
-                              // TODO: use parsed payload
-                              // check if plugin autoload enabled and version string not already parsed
-                              if(!autoloadPluginsVersionEcus.contains(msg.getEcuid()))
-                              {
-                                  versionString(msg);
-                                  autoloadPluginsVersionEcus.append(msg.getEcuid());
-                              }
-                          },
-                          [&](const qdlt::msg::payload::GetLogInfo &payload) {
-                              if (payload.status == 8)
-                              {
-                                  ecuitem->InvalidAll();
-                              }
+    try {
+        auto ctrlMsg = qdlt::msg::payload::parse(
+                    msg.getPayload(), msg.getEndianness() == QDlt::DltEndiannessBigEndian);
+        std::visit(
+                    overloaded{
+                        [&](const qdlt::msg::payload::GetSoftwareVersion&) {
+                            // check if plugin autoload enabled and version string not already parsed
+                            if (!autoloadPluginsVersionEcus.contains(msg.getEcuid())) {
+                                versionString(msg);
+                                autoloadPluginsVersionEcus.append(msg.getEcuid());
+                            }
+                        },
+                        [&](const qdlt::msg::payload::GetLogInfo& payload) {
+                            if (payload.status == 8) {
+                                ecuitem->InvalidAll();
+                            }
 
-                              if (payload.status == 6 || payload.status == 7) {
-                                  for (const auto &app : payload.apps) {
-                                      for (const auto& ctx : app.ctxs) {
-                                          controlMessage_SetContext(ecuitem, app.id, ctx.id,
-                                          ctx.description, ctx.logLevel,
-                                          ctx.traceStatus);
-                                      }
-                                      if (payload.status == 7) {
-                                          controlMessage_SetApplication(ecuitem, app.id,
-                                          app.description);
-                                      }
-                                  }
-                              }
-                          },
-                          [&](const qdlt::msg::payload::GetDefaultLogLevel &payload) {
-                              switch (payload.status) {
-                              case 0: /* OK */
-                                  ecuitem->loglevel = payload.logLevel;
-                                  ecuitem->status = EcuItem::valid;
-                                  break;
-                              case 1: /* NOT_SUPPORTED */
-                                  ecuitem->status = EcuItem::unknown;
-                                  break;
-                              case 2: /* ERROR */
-                                  ecuitem->status = EcuItem::invalid;
-                                  break;
-                              }
-                              ecuitem->update();
-                          },
-                          [&](const qdlt::msg::payload::Timezone &payload) {
-                              controlMessage_Timezone(payload.timezone, payload.isDst);
-                          },
-                          [&](const qdlt::msg::payload::UnregisterContext &payload) {
-                              controlMessage_UnregisterContext(msg.getEcuid(), payload.appid,
-                              payload.ctxid);
-                          },
-                          [](const qdlt::msg::payload::SetLogLevel &) {
-                              // nothing to do
-                          },
-                          [](const qdlt::msg::payload::Uninteresting& payload) {
-                              qDebug() << "Received control message with id: " << payload.serviceId;
-                          }
-               },
-               ctrlMsg);
+                            if (payload.status == 6 || payload.status == 7) {
+                                for (const auto& app : payload.apps) {
+                                    for (const auto& ctx : app.ctxs) {
+                                        controlMessage_SetContext(ecuitem, app.id, ctx.id, ctx.description,
+                                        ctx.logLevel, ctx.traceStatus);
+                                    }
+                                    if (payload.status == 7) {
+                                        controlMessage_SetApplication(ecuitem, app.id, app.description);
+                                    }
+                                }
+                            }
+                        },
+                        [&](const qdlt::msg::payload::GetDefaultLogLevel& payload) {
+                            switch (payload.status) {
+                                case 0: /* OK */
+                                ecuitem->loglevel = payload.logLevel;
+                                ecuitem->status = EcuItem::valid;
+                                break;
+                                case 1: /* NOT_SUPPORTED */
+                                ecuitem->status = EcuItem::unknown;
+                                break;
+                                case 2: /* ERROR */
+                                ecuitem->status = EcuItem::invalid;
+                                break;
+                            }
+                            ecuitem->update();
+                        },
+                        [&](const qdlt::msg::payload::Timezone& payload) {
+                            controlMessage_Timezone(payload.timezone, payload.isDst);
+                        },
+                        [&](const qdlt::msg::payload::UnregisterContext& payload) {
+                            controlMessage_UnregisterContext(msg.getEcuid(), payload.appid, payload.ctxid);
+                        },
+                        [](const qdlt::msg::payload::SetLogLevel&) {
+                            // nothing to do
+                        },
+                        [](const qdlt::msg::payload::Uninteresting& payload) {
+                            qDebug() << "Received control message with id: " << payload.serviceId;
+                        }},
+                    ctrlMsg);
+    } catch (const std::exception& e) {
+        qDebug() << "Error parsing control message: " << e.what();
+    }
 }
 
 void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid)
