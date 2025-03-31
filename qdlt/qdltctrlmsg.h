@@ -31,7 +31,6 @@ struct GetLogInfo {
 };
 
 struct GetSoftwareVersion {
-    std::string version;
 };
 
 struct GetDefaultLogLevel
