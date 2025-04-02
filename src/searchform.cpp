@@ -3,6 +3,7 @@
 
 #include <QLineEdit>
 #include <QCompleter>
+#include <QSettings>
 
 SearchForm::SearchForm(QWidget *parent)
     : QWidget(parent)
@@ -14,6 +15,7 @@ SearchForm::SearchForm(QWidget *parent)
     ui->comboBox->setInsertPolicy(QComboBox::InsertAtTop);
 
     m_completer = new QCompleter(&m_historyModel, this);
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
     input()->setCompleter(m_completer);
 
     connect (ui->abortButton, &QPushButton::clicked, this, &SearchForm::abortSearch);
@@ -27,11 +29,6 @@ SearchForm::~SearchForm()
 QLineEdit *SearchForm::input() const
 {
     return ui->comboBox->lineEdit();
-}
-
-QComboBox *SearchForm::getComboBox() const
-{
-    return ui->comboBox;
 }
 
 void SearchForm::setState(State state)
@@ -61,5 +58,42 @@ void SearchForm::updateHistory() {
         !input()->text().isEmpty() && !list.contains(input()->text())) {
         list.append(input()->text());
         m_historyModel.setStringList(std::move(list));
+        if(list.size() > MaxComboBoxHistorySize){
+        list.removeFirst();
+        m_historyModel.setStringList(std::move(list));
+        }
     }
 }
+
+void SearchForm::saveComboBoxSearchHistory() {
+    //To save the search history of QCombobox
+    QStringList saveList = m_historyModel.stringList();
+    QSettings settings("MyData", "SearchList");
+    settings.beginWriteArray("HistoryList");
+    int count = qMin(saveList.size(), 20);
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("entryList", saveList.at(i));
+    }
+    settings.endArray();
+}
+
+void SearchForm::loadComboBoxSearchHistory()
+{
+    //To retrive the search history once DLT Viewer restarts
+    QStringList loadList = m_historyModel.stringList();
+    QSettings settings("MyData", "SearchList");
+    loadList.clear();
+    int size = settings.beginReadArray("HistoryList");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        loadList.append(settings.value("entryList").toString());
+    }
+    settings.endArray();
+    m_historyModel.setStringList(loadList);
+    QStringList revLoadList = loadList;
+    std::reverse(revLoadList.begin(), revLoadList.end());
+    ui->comboBox->addItems(revLoadList);
+    input()->clear();
+}
+

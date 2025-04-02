@@ -176,9 +176,6 @@ private:
     enum { MaxSearchHistory = 20 };
     QAction *searchHistoryActs[MaxSearchHistory];
     QStringList searchHistory;
-    QLineEdit* searchLineEdit;
-    QComboBox* searchComboBox;
-    QCompleter* searchCompleter;
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
