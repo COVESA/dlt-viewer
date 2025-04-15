@@ -6952,28 +6952,28 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     QMenu menu(ui->tableView);
     QAction *action;
 
-    action = new QAction("&Copy Selection to Clipboard", this);
+    action = new QAction("&Copy Selection to Clipboard", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuConfig_Copy_to_clipboard_triggered()));
     menu.addAction(action);
 
-    action = new QAction("C&opy Selection Payload to Clipboard", this);
+    action = new QAction("C&opy Selection Payload to Clipboard", &menu);
     action->setShortcut(QKeySequence("Ctrl+P"));
     connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyPayloadToClipboardTriggered()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("Copy Selection for &Jira to Clipboard", this);
+    action = new QAction("Copy Selection for &Jira to Clipboard", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyJiraToClipboardTriggered()));
     menu.addAction(action);
 
-    action = new QAction("Copy Selection for J&ira (+Head) to Clipboard", this);
+    action = new QAction("Copy Selection for J&ira (+Head) to Clipboard", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyJiraHeadToClipboardTriggered()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("&Export...", this);
+    action = new QAction("&Export...", &menu);
     if(qfile.sizeFilter() <= 0)
     {
         action->setEnabled(false);
@@ -6982,45 +6982,44 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     {
         connect(action, SIGNAL(triggered()), this, SLOT(on_actionExport_triggered()));
     }
-
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("&Filter Add", this);
+    action = new QAction("&Filter Add", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterAddTable()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("Load Filter(s)...", this);
+    action = new QAction("Load Filter(s)...", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Load_triggered()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("Resize columns to fit", this);
+    action = new QAction("Resize columns to fit", &menu);
     connect(action, SIGNAL(triggered()), ui->tableView, SLOT(resizeColumnsToContents()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("Mark/Unmark line(s)", this);
+    action = new QAction("Mark/Unmark line(s)", &menu);
     action->setShortcut(QKeySequence("Ctrl+M"));
     connect(action, SIGNAL(triggered()), this, SLOT(mark_unmark_lines()));
     menu.addAction(action);
 
-    action = new QAction("Unmark all lines", this);
+    action = new QAction("Unmark all lines", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(unmark_all_lines()));
     menu.addAction(action);
 
     menu.addSeparator();
 
-    action = new QAction("Filter Index Start", this);
+    action = new QAction("Filter Index Start", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexStart()));
     menu.addAction(action);
 
-    action = new QAction("Filter Index End", this);
+    action = new QAction("Filter Index End", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
     menu.addAction(action);
 
