@@ -103,6 +103,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     target_version_string = "";
 
+    searchDlg->loadSearchHistoryList(searchHistory);
+
     initState();
 
     /* Apply loaded settings */
@@ -518,6 +520,7 @@ void MainWindow::initView()
     searchInput = new SearchForm;
     connect(searchInput, &SearchForm::abortSearch, searchDlg, &SearchDialog::abortSearch);
     searchDlg->appendLineEdit(searchInput->input());
+    searchInput->loadComboBoxSearchHistory();
 
     connect(searchInput->input(), SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
     connect(searchInput->input(), SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
@@ -1047,6 +1050,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         QMainWindow::closeEvent(event);
     }
+    if(searchDlg){
+            searchDlg->saveSearchHistory(searchHistory);
+    }
+    if(searchInput){
+                searchInput->saveComboBoxSearchHistory();
+    }
 }
 
 
@@ -1239,7 +1248,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
 
     // clear the cache stored for the history
     searchDlg->clearCacheHistory();
-
+    onAddActionToHistory();
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
