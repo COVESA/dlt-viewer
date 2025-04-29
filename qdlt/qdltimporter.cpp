@@ -588,8 +588,8 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         if(!recordData.isEmpty())
                         {
                             int pos = 0;
-                            quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!dltFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp;
+                            if(!dltFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
@@ -597,7 +597,7 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                                 return;
                             }
                             pos = 0;
-                            if(!ipcFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            if(!ipcFromEthernetFrame(recordData,pos,ethFrame.etherType,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
@@ -663,8 +663,8 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         if(!recordData.isEmpty())
                         {
                             int pos = 0;
-                            quint64 time = hdBlockLinks.start_time_ns+dltFrameBlock.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!dltFrame(recordData,pos,time/1000000000,time%1000000000/1000))
+                            quint64 time = hdBlockLinks.start_time_ns+dltFrameBlock.timeStamp;
+                            if(!dltFrame(recordData,pos,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
@@ -743,8 +743,8 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         }
                         if(!recordData.isEmpty())
                         {
-                            quint64 time = hdBlockLinks.start_time_ns+plpRaw.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!ipcFromPlpRaw(&plpRaw,recordData,time/1000000000,time%1000000000/1000))
+                            quint64 time = hdBlockLinks.start_time_ns+plpRaw.timeStamp;
+                            if(!ipcFromPlpRaw(&plpRaw,recordData,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
