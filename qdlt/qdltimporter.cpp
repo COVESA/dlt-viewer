@@ -493,15 +493,15 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         }
                         if(!recordData.isEmpty())
                         {
-                            quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp+(hdBlockLinks.hd_tz_offset_min+hdBlockLinks.hd_dst_offset_min)*60*1000000000;
-                            if(!dltFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            quint64 time = hdBlockLinks.start_time_ns+ethFrame.timeStamp;
+                            if(!dltFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
                                 qDebug() << "fromMF4: ERROR:" << "Size Error: Cannot read Ethernet Frame";
                                 return;
                             }
-                            if(!ipcFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000,time%1000000000/1000))
+                            if(!ipcFromEthernetFrame(recordData,0,ethFrame.etherType,time/1000000000ul,time%1000000000ul/1000ul))
                             {
                                 inputfile.close();
                                 outputfile->close();
