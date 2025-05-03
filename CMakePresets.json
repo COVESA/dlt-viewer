@@ -1,0 +1,79 @@
+{
+  "version": 7,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "common",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/build/${presetName}/install",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "DLT_APP_DIR_NAME": "DLTViewer",
+        "DLT_EXECUTABLE_INSTALLATION_PATH": "DLTViewer/usr/bin",
+        "DLT_LIBRARY_INSTALLATION_PATH": "DLTViewer/usr/lib",
+        "DLT_PARSER": "OFF",
+        "DLT_PLUGIN_INSTALLATION_PATH": "DLTViewer/usr/bin/plugins",
+        "DLT_RESOURCE_INSTALLATION_PATH": "DLTViewer/usr/share",
+        "DLT_USE_QT_RPATH": "ON"
+      }
+    },
+    {
+      "name": "debug-gcc",
+      "inherits": "common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "release-gcc",
+      "inherits": "common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "relwithdebinfo-gcc",
+      "inherits": "common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "gcc",
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
+      "name": "relwithdebinfo-clang",
+      "inherits": "common",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "build-debug-gcc",
+      "description": "",
+      "displayName": "",
+      "configurePreset": "debug-gcc"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "test-debug-gcc",
+      "description": "",
+      "displayName": "",
+      "configurePreset": "debug-gcc"
+    }
+  ]
+}
