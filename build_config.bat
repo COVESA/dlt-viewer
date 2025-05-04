@@ -14,7 +14,7 @@ if "%QTNO%"=="" (
 
 if "%QTVER%"=="" (
    if "%QTNO%"=="5" (
-		set QTVER=5.15.2 
+		set QTVER=5.15.2
    )  else (
 		set QTVER=6.7.3
    )
