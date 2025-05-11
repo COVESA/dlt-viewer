@@ -12,4 +12,5 @@ release/
 *.orig
 *~
 .idea
-
+.cache
+compile_commands.json
