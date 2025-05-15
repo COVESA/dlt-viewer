@@ -7525,6 +7525,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         }
         if(!importFilenames.isEmpty())
         {
+            on_action_menuFile_Clear_triggered();
             QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
             connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
             connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
