@@ -127,6 +127,7 @@ private:
     TableModel *tableModel;
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
+    bool filterIsChanged;
 
     QStandardItemModel* missingDataModel;
 
