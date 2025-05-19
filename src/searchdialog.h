@@ -158,6 +158,8 @@ public slots:
     void findPreviousClicked();
     void loadSearchHistory();
     void abortSearch();
+    void saveSearchHistory(QStringList& searchHistory);
+    void loadSearchHistoryList(QStringList& searchHistory);
 
 signals:
     void refreshedSearchIndex();

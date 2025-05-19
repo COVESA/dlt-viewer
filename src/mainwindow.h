@@ -174,10 +174,9 @@ private:
     QStringList autoloadPluginsVersionStrings;
 
     /* String List Containing Search History */
-    enum { MaxSearchHistory = 50 };
+    enum { MaxSearchHistory = 20 };
     QAction *searchHistoryActs[MaxSearchHistory];
     QStringList searchHistory;
-
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
