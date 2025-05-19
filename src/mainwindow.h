@@ -123,6 +123,7 @@ private:
     TableModel *tableModel;
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
+    bool filterIsChanged;
 
     /* Status line items */
     QLabel *statusFilename;
