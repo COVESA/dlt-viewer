@@ -28,7 +28,12 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+
+#include <QTableWidget>
+#include <QAbstractItemModel>
+#include <QStandardItemModel>
 #include <QHeaderView>
+
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
@@ -371,6 +376,8 @@ private:
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
 
+    QDialog shortcutDialog;
+
 protected:
     void keyPressEvent ( QKeyEvent * event ) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -456,6 +463,7 @@ private slots:
     void on_action_menuHelp_Support_triggered();
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
+    void on_actionShortcuts_List_triggered();
 
     // Config methods
     void on_action_menuConfig_Context_Delete_triggered();
