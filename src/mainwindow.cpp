@@ -104,6 +104,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     target_version_string = "";
 
+    filterIsChanged = false;
+
     initState();
 
     /* Apply loaded settings */
@@ -1017,6 +1019,15 @@ void MainWindow::closeEvent(QCloseEvent *event)
     // Shall we save the updated plugin execution priorities??
 
     settingsDlg->writeSettings(this);
+    if(filterIsChanged)
+    {
+        if(QMessageBox::information(this, "DLT Viewer",
+           "You have changed the filter. Do you want to save the filter configuration?",
+           QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+        {
+            on_action_menuFilter_Save_As_triggered();
+        }
+    }
     if(true == isSearchOngoing)
     {
         event->ignore();
@@ -6659,6 +6670,7 @@ void MainWindow::filterAddTable() {
         FilterItem* item = new FilterItem(0);
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
+        filterIsChanged = true;
     }
 }
 
@@ -6712,6 +6724,7 @@ void MainWindow::filterAdd()
         FilterItem* item = new FilterItem(0);
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
+        filterIsChanged = true;
     }
 }
 
@@ -6736,6 +6749,7 @@ void MainWindow::on_action_menuFilter_Save_As_triggered()
     } else {
         QMessageBox::critical(0, "DLT Viewer", "Save DLT Filter file failed!");
     }
+    filterIsChanged = false;
 }
 
 
@@ -6747,6 +6761,7 @@ void MainWindow::on_action_menuFilter_Load_triggered()
     if(!fileName.isEmpty())
     {
         openDlfFile(fileName,true);
+        filterIsChanged = false;
     }
 }
 
@@ -6758,6 +6773,7 @@ void MainWindow::on_action_menuFilter_Add_triggered() {
         FilterItem* item = new FilterItem(0);
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
+        filterIsChanged = true;
     }
 }
 
@@ -6887,6 +6903,7 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
             FilterItem* newitem = new FilterItem(0);
             project.filter->addTopLevelItem(newitem);
             filterDialogRead(dlg,newitem);
+            filterIsChanged = true;
         }
     }
     else {
@@ -6917,6 +6934,7 @@ void MainWindow::on_action_menuFilter_Edit_triggered()
         if(dlg.exec())
         {
             filterDialogRead(dlg,item);
+            filterIsChanged = true;
         }
     }
     else {
@@ -6934,6 +6952,7 @@ void MainWindow::on_action_menuFilter_Delete_triggered()
 
     FilterTreeWidget* filterWidget = static_cast<FilterTreeWidget*>(project.filter);
     filterWidget->deleteSelected();
+    filterIsChanged = true;
 }
 
 void MainWindow::onactionmenuFilter_SetAllActiveTriggered()
@@ -7011,6 +7030,7 @@ void MainWindow::on_action_menuFilter_Clear_all_triggered()
     /* delete complete filter list */
     project.filter->clear();
     applyConfigEnabled(true);
+    filterIsChanged = false;
 }
 
 void MainWindow::filterUpdate()
@@ -7598,6 +7618,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         }
         if(!importFilenames.isEmpty())
         {
+            on_action_menuFile_Clear_triggered();
             QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
             connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
             connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
@@ -7732,6 +7753,7 @@ void MainWindow::on_action_menuFilter_Append_Filters_triggered()
         tr("Load DLT Filter file"), workingDirectory.getDlfDirectory(), tr("DLT Filter Files (*.dlf);;All files (*.*)"));
 
     openDlfFile(fileName,false);
+    filterIsChanged = true;
 }
 
 int MainWindow::nearest_line(int line)
