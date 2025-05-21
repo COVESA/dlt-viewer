@@ -23,6 +23,8 @@
 #include <QDialog>
 #include <QMainWindow>
 #include <QColorDialog>
+#include <QGroupBox>
+#include <QRadioButton>
 
 #include "qdltfile.h"
 
@@ -57,9 +59,26 @@ public:
     QStringList getRecentFilters();
     QString getWorkingDirectory();
 
+    void initializeFeatureStateMap();
+    void syncAllColumnCheckboxes();
+
+    static bool columnBoolean;
+    static bool checked;
+
+    struct GroupRadioState {
+        QGroupBox* groupBox;
+        QRadioButton* radioBtn1;
+        QRadioButton* radioBtn2;
+        bool wasFirstRadioSelected = true; // default
+    };
+
+    QMap<int, GroupRadioState> featureStateMap;
+
 Q_SIGNALS:
     void FilterPathChanged();
     void PluginsAutoloadChanged();
+    void columnVisibilityChanged(int column, bool checked);
+
 
 protected:
     void changeEvent(QEvent *e);
@@ -87,6 +106,9 @@ private slots:
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
     void on_pushButtonMarkerColor_clicked();
     void on_pushButtonSelectFont_clicked();
+
+public slots:
+    void updateCheckboxState(int column, bool checked);
 };
 
 #endif // SETTINGSDIALOG_H

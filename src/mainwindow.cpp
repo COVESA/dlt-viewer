@@ -87,6 +87,9 @@ extern "C" {
 #include "ecutree.h"
 
 
+//Global Variable for visible column
+bool columnMenuInitialized = false;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -207,6 +210,13 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
     }
+
+    fillColumnActions();
+    connect(qobject_cast<SettingsDialog*>(settingsDlg), &SettingsDialog::columnVisibilityChanged,
+            this, &MainWindow::callForCustomMenu);
+
+    connect(this, &MainWindow::columnToggledFromMainWindow,
+            settingsDlg, &SettingsDialog::updateCheckboxState,Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -6997,6 +7007,77 @@ void MainWindow::filterUpdate()
     qfile.updateSortedFilter();
 }
 
+void MainWindow::fillColumnActions()
+{
+    if (!columnActions.isEmpty()) return; // Already created
+
+    QAction *indexAction = new QAction("Index",this);
+    indexAction->setCheckable(true);
+    columnActions.insert(indexAction,0);
+    setupColumnCheckBox(indexAction,0);
+
+    QAction *timeAction = new QAction("Time",this);
+    timeAction->setCheckable(true);
+    columnActions.insert(timeAction,1);
+    setupColumnCheckBox(timeAction,1);
+
+    QAction *timestampAction = new QAction("TimeStamp",this);
+    timestampAction->setCheckable(true);
+    columnActions.insert(timestampAction,2);
+    setupColumnCheckBox(timestampAction,2);
+
+    QAction *counterAction = new QAction("Counter",this);
+    counterAction->setCheckable(true);
+    columnActions.insert(counterAction,3);
+    setupColumnCheckBox(counterAction,3);
+
+    QAction *ecuidAction = new QAction("ECU ID", this);
+    ecuidAction->setCheckable(true);
+    columnActions.insert(ecuidAction,4);
+    setupColumnCheckBox(ecuidAction,4);
+
+    QAction *apidAction = new QAction("AP ID", this);
+    apidAction->setCheckable(true);
+    columnActions.insert(apidAction,5);
+    setupColumnCheckBox(apidAction,5);
+
+    QAction *ctidAction = new QAction("Ct ID", this);
+    ctidAction->setCheckable(true);
+    columnActions.insert(ctidAction,6);
+    setupColumnCheckBox(ctidAction,6);
+
+    QAction *sessionIDAction = new QAction("Session ID", this);
+    sessionIDAction->setCheckable(true);
+    columnActions.insert(sessionIDAction,7);
+    setupColumnCheckBox(sessionIDAction,7);
+
+    QAction *typeAction = new QAction("Type",this);
+    typeAction->setCheckable(true);
+    columnActions.insert(typeAction,8);
+    setupColumnCheckBox(typeAction,8);
+
+    QAction *subTypeAction = new QAction("SubType",this);
+    subTypeAction->setCheckable(true);
+    columnActions.insert(subTypeAction,9);
+    setupColumnCheckBox(subTypeAction,9);
+
+    QAction *modeAction = new QAction("Mode",this);
+    modeAction->setCheckable(true);
+    columnActions.insert(modeAction,10);
+    setupColumnCheckBox(modeAction,10);
+
+    QAction *argCountAction = new QAction("Msg ID", this);
+    argCountAction->setCheckable(true);
+    columnActions.insert(argCountAction,11);
+    setupColumnCheckBox(argCountAction,11);
+
+    QAction* payloadAction = new QAction("Payload", this);
+    payloadAction->setCheckable(true);
+    columnActions.insert(payloadAction,13);
+    setupColumnCheckBox(payloadAction,13);
+
+}
+
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
     /* show custom pop menu  for configuration */
@@ -7075,8 +7156,116 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
     menu.addAction(action);
 
+//Adding the QActions to Sub Menu.
+
+    QMenu *subMenu = menu.addMenu("Customise Column Visibility");
+    fillColumnActions();
+
+    for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+        QAction* action = it.key();
+
+        // Add to submenu
+        subMenu->addAction(action);
+    }
+
+    // Connect action toggled -> setUpColumn
+    connect(action, &QAction::toggled, this, [=](bool checked){
+        setupColumnCheckBox(action, columnActions.value(action));
+        settingsDlg->columnBoolean = true;
+        if(settingsDlg->columnBoolean == true){
+            if(checked){
+                settingsDlg->checked = true;
+            }
+            else{
+                settingsDlg->checked = false;
+            }
+            emit columnToggledFromMainWindow(columnActions.value(action), checked);
+        }
+    });
+
+    menu.addSeparator();
     /* show popup menu */
     menu.exec(globalPos);
+}
+
+// Function to save checkbox state persistently
+void MainWindow::saveColumnState(int column, bool isChecked) {
+    QSettings settings("BMW", "DLTViewer");
+    settings.setValue(QString("Column%1State").arg(column), isChecked);
+}
+
+bool MainWindow::loadColumnState(int column) {
+
+    QSettings settings("BMW", "DLTViewer");
+
+    const QSet<int> defaultVisibleColumns = {0,1,2,4,5,6,8,13};
+    bool isDefaultVisible = defaultVisibleColumns.contains(column);
+    return isDefaultVisible;
+
+}
+
+void MainWindow::updateColumnVisibility(int column, bool isChecked) {
+
+    ui->tableView->setColumnHidden(column, !isChecked);
+    if(isChecked){
+        settingsDlg->columnBoolean = true;
+    }
+    else if(!isChecked){
+        settingsDlg->columnBoolean = false;
+    }
+}
+
+void MainWindow::setupColumnCheckBox(QAction *Action, int column) {
+
+    bool defaulValueCheck = loadColumnState(column);
+
+    //Apply the stored state
+    Action->setCheckable(true);
+    Action->setChecked(defaulValueCheck);
+    updateColumnVisibility(column, defaulValueCheck); // Apply visibility
+
+    // Connect checkbox action to update visibility and save state
+    QObject::connect(Action, &QAction::toggled, [=](bool checked) {
+        updateColumnVisibility(column, checked);
+        saveColumnState(column, checked);
+        settingsDlg->columnBoolean =true;
+        emit columnToggledFromMainWindow(column,checked);
+
+    });
+
+    if(settingsDlg->columnBoolean == true){
+        settingsDlg->columnBoolean = false;
+    }
+}
+
+void MainWindow::callForCustomMenu(int column, bool checked)
+{
+
+    if (!columnMenuInitialized) {
+         fillColumnActions();  // This fills your QMap<int, QAction*>
+         columnMenuInitialized = true;
+     }
+
+     // Now update the correct QAction checkbox state
+     for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+         int columnValue = it.value();
+         bool visible = loadColumnState(columnValue);  // Or however you get current state
+         it.key()->setChecked(visible);         // Update QAction
+     }
+
+    for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+        if (it.value() == column) {
+            // QAction* action = it.value();
+            if (it.value() == column) {
+                QAction* action = it.key();
+                setupColumnCheckBox(action,column);
+                action->blockSignals(true);              // Avoid triggering QAction's toggled signal
+                action->setChecked(checked);             // Reflect checkbox state
+                action->blockSignals(false);
+                break;  // Found the correct action, no need to loop further
+            }
+        }
+    }
 }
 
 void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
