@@ -7066,11 +7066,6 @@ void MainWindow::fillColumnActions()
     columnActions.insert(modeAction,10);
     setupColumnCheckBox(modeAction,10);
 
-    QAction *argCountAction = new QAction("Msg ID", this);
-    argCountAction->setCheckable(true);
-    columnActions.insert(argCountAction,11);
-    setupColumnCheckBox(argCountAction,11);
-
     QAction* payloadAction = new QAction("Payload", this);
     payloadAction->setCheckable(true);
     columnActions.insert(payloadAction,13);

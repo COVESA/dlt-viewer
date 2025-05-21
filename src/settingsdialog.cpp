@@ -265,7 +265,6 @@ void SettingsDialog::updateCheckboxState(int column, bool checked) {
     columnGroupboxMap[5] = ui->groupBoxAppId;
     columnGroupboxMap[6] = ui->groupBoxConId;
     columnGroupboxMap[7] = ui->groupBoxSessionId;
-    columnGroupboxMap[11] = ui->groupBoxMessageId;
 
     if (columnCheckboxMap.contains(column) && columnBoolean == true) {
         QCheckBox* checkbox = columnCheckboxMap[column];
