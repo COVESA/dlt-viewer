@@ -5055,8 +5055,6 @@ void MainWindow::getModel()
         }
     }
 
-    // QStandardItemModel *missingDataModel = new QStandardItemModel();
-
     missingDataModel->setColumnCount(2);
     missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
 
@@ -5075,7 +5073,7 @@ void MainWindow::getModel()
             while (expectedValue < counter) {
 
                 // Add missing values to the model
-                QList<QStandardItem*> rowItems;
+\                QList<QStandardItem*> rowItems;
                 rowItems.append(new QStandardItem(ctid));
                 rowItems.append(new QStandardItem(QString::number(expectedValue)));
                 missingDataModel->appendRow(rowItems);
@@ -5084,8 +5082,6 @@ void MainWindow::getModel()
             }
             expectedValue = counter + 1;  // Move to the next expected value after the current counter
         }
-
-
         // Check for any missing values till 255
         while (expectedValue <= 255) {
             QList<QStandardItem*> rowItems;
@@ -8644,7 +8640,6 @@ void MainWindow::exportCounterData()
         QString ctid = model->data(model->index(row, 6)).toString();
         // QString ctid = model->item(row, 1)->text();
         QString ctid = model->data(model->index(row, 6)).toString();
-        // int counter = model->item(row, 0)->text().toInt();
         int counter = model->data(model->index(row, 3)).toInt();
 
         ctidCounterMap[ctid].insert(counter);
@@ -8674,7 +8669,6 @@ void MainWindow::exportCounterData()
         int expectedValue = 1;
 
         for (int counter : counters) {
-            // If expectedValue is less than the current counter, those values are missing
             while (expectedValue < counter) {
                 // Add missing values to the model
                 QList<QStandardItem*> rowItems;
@@ -8714,6 +8708,7 @@ void MainWindow::exportCounterData()
     for (int row = 0; row < missingDataModel->rowCount(); ++row) {
         QString ctid = missingDataModel->item(row, 0)->text();
         QString missingCounter = missingDataModel->item(row, 1)->text();
+
         // Write data in CSV format
         stream << ctid << "," << missingCounter << "\n";
     }
