@@ -4657,8 +4657,6 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
 void MainWindow::getModel()
 {
-    qDebug() << "Signal received from qDltcontrol to mainwindow";
-
     ui->tableView->showColumn(3);
     QMap<QString, QSet<int>> ctidCounterMap;
     QAbstractItemModel* model = ui->tableView->model();
@@ -4684,8 +4682,6 @@ void MainWindow::getModel()
         }
     }
 
-    // QStandardItemModel *missingDataModel = new QStandardItemModel();
-
     missingDataModel->setColumnCount(2);
     missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
 
@@ -4702,7 +4698,6 @@ void MainWindow::getModel()
         for (int counter : counters) {
             // If expectedValue is less than the current counter, those values are missing
             while (expectedValue < counter) {
-                // Add missing values to the model
                 QList<QStandardItem*> rowItems;
                 rowItems.append(new QStandardItem(ctid));
                 rowItems.append(new QStandardItem(QString::number(expectedValue)));
@@ -4712,8 +4707,6 @@ void MainWindow::getModel()
             }
             expectedValue = counter + 1;  // Move to the next expected value after the current counter
         }
-
-        // Check for any missing values till 255
         while (expectedValue <= 255) {
             QList<QStandardItem*> rowItems;
             rowItems.append(new QStandardItem(ctid));
@@ -4731,7 +4724,6 @@ void MainWindow::getModel()
 
     sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
     sortedTableview->show();
-    qDebug() << "Data added to model";
 }
 
 void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
@@ -8475,9 +8467,7 @@ void MainWindow::exportCounterData()
 
     // Populate the map with data from the model
     for (int row = 0; row < model->rowCount(); ++row) {
-        // QString ctid = model->item(row, 1)->text();
         QString ctid = model->data(model->index(row, 6)).toString();
-        // int counter = model->item(row, 0)->text().toInt();
         int counter = model->data(model->index(row, 3)).toInt();
 
         ctidCounterMap[ctid].insert(counter);
@@ -8492,9 +8482,6 @@ void MainWindow::exportCounterData()
             ++it; // Move to the next entry
         }
     }
-
-    // QStandardItemModel *missingDataModel = new QStandardItemModel();
-
     missingDataModel->setColumnCount(2);
     missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
 
@@ -8509,7 +8496,6 @@ void MainWindow::exportCounterData()
         int expectedValue = 1;
 
         for (int counter : counters) {
-            // If expectedValue is less than the current counter, those values are missing
             while (expectedValue < counter) {
                 // Add missing values to the model
                 QList<QStandardItem*> rowItems;
@@ -8542,16 +8528,12 @@ void MainWindow::exportCounterData()
       qWarning() << "Failed to open file for writing:" << filePath;
     }
     QTextStream stream(&file);
-
-    // Write CSV headers
     stream << "Ctid,Missing Counter\n";
 
     // Write data to CSV
     for (int row = 0; row < missingDataModel->rowCount(); ++row) {
         QString ctid = missingDataModel->item(row, 0)->text();
         QString missingCounter = missingDataModel->item(row, 1)->text();
-
-        // Write data in CSV format
         stream << ctid << "," << missingCounter << "\n";
     }
 

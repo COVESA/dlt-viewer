@@ -135,11 +135,9 @@ void QDltControl::reopenFile()
 }
 void QDltControl::CounterPluginCall()
 {
-    qDebug() << "Call from counter plugin to qdltcontrol";
     emit ControlgetModel();
 }
 void QDltControl::ExportPluginCall()
 {
-    qDebug() << "Export Call from Dlt counter Plugin";
     emit ExportSignal();
 }
