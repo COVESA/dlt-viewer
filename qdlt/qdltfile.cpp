@@ -132,7 +132,7 @@ int QDltFile::sizeFilter() const
 
 bool QDltFile::open(QString _filename, bool append)
 {
-    qDebug() << "Open file" << _filename << "started";
+    // qDebug() << "Open file" << _filename << "started";
 
     /* check if file is already opened */
     if(!append)
