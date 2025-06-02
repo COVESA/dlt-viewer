@@ -40,12 +40,10 @@ Form::~Form()
 
 void Form::on_CounterpushButton_clicked()
 {
-    qDebug() << "Counter button clicked";
     plugin->dltControl->CounterPluginCall();
 }
+
 void Form::on_ExportpushButton_clicked()
 {
-    qDebug() << "Export Button Clicked";
     plugin->dltControl->ExportPluginCall();
 }
-
