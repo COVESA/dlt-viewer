@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QStringListModel>
+#include <QComboBox>
 
 namespace Ui {
 class SearchForm;
@@ -30,6 +31,8 @@ public:
     void setProgress(int val);
     void resetProgress();
     void updateHistory();
+    void saveComboBoxSearchHistory();
+    void loadComboBoxSearchHistory();
 
 signals:
     void abortSearch();
@@ -39,6 +42,7 @@ private:
 
     QCompleter *m_completer{nullptr};
     QStringListModel m_historyModel;
+    enum { MaxComboBoxHistorySize = 20 };
 };
 
 #endif // SEARCHFORM_H

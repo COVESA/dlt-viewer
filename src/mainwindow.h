@@ -179,10 +179,9 @@ private:
     QStringList autoloadPluginsVersionStrings;
 
     /* String List Containing Search History */
-    enum { MaxSearchHistory = 50 };
+    enum { MaxSearchHistory = 20 };
     QAction *searchHistoryActs[MaxSearchHistory];
     QStringList searchHistory;
-
 
     /* Recent files */
     enum { MaxRecentFiles = 5 };
@@ -429,8 +428,6 @@ private slots:
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
 
-    void on_pushButtonMovePluginUp_clicked();
-    void on_pushButtonMovePluginDown_clicked();
 
 public slots:
 
