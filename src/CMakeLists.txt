@@ -18,8 +18,7 @@ else()
     QT5_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
 endif()
 
-add_executable(dlt-viewer
-    main.cpp
+add_library(dlt_common
     mainwindow.cpp
     project.cpp
     ecudialog.cpp
@@ -55,12 +54,22 @@ add_executable(dlt-viewer
     ecutree.cpp
 )
 
-target_link_libraries(dlt-viewer
+target_link_libraries(dlt_common
     qdlt
     ${QT_PREFIX}::Core
     ${QT_PREFIX}::Network
     ${QT_PREFIX}::Widgets
     ${QT_PREFIX}::SerialPort)
+
+target_include_directories(dlt_common
+  PUBLIC
+    .
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dlt_common_autogen/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+add_executable(dlt-viewer main.cpp)
+target_link_libraries(dlt-viewer PRIVATE dlt_common)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
@@ -108,3 +117,13 @@ install(DIRECTORY
     COMPONENT dlt_viewer)
 
 include(cmake/${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)
+
+find_package(GTest)
+# configure unit tests only if gtest found on the system
+if (GTest_FOUND)
+  message(STATUS "Tests enabled")
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
+add_subdirectory(benchmark)
