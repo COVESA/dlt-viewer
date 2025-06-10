@@ -106,6 +106,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     target_version_string = "";
 
+    searchDlg->loadSearchHistoryList(searchHistory);
     filterIsChanged = false;
 
     initState();
@@ -530,6 +531,7 @@ void MainWindow::initView()
     searchInput = new SearchForm;
     connect(searchInput, &SearchForm::abortSearch, searchDlg, &SearchDialog::abortSearch);
     searchDlg->appendLineEdit(searchInput->input());
+    searchInput->loadComboBoxSearchHistory();
 
     connect(searchInput->input(), SIGNAL(textChanged(QString)),searchDlg,SLOT(textEditedFromToolbar(QString)));
     connect(searchInput->input(), SIGNAL(returnPressed()), this, SLOT(on_actionFindNext()));
@@ -1068,6 +1070,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
     {
         QMainWindow::closeEvent(event);
     }
+    if(searchDlg){
+            searchDlg->saveSearchHistory(searchHistory);
+    }
+    if(searchInput){
+                searchInput->saveComboBoxSearchHistory();
+    }
 }
 
 
@@ -1260,7 +1268,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
 
     // clear the cache stored for the history
     searchDlg->clearCacheHistory();
-
+    onAddActionToHistory();
     if(outputfile.isOpen())
     {
         if (outputfile.size() == 0)
@@ -3429,21 +3437,6 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
                 menu.addAction(action);
             }
 
-            menu.addSeparator();
-
-            if(project.plugin->indexOfTopLevelItem(item) > 0)
-            {
-                action = new QAction(tr("Move Up..."), this);
-                connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginUp_clicked()));
-                menu.addAction(action);
-            }
-
-            if(project.plugin->indexOfTopLevelItem(item) < (project.plugin->topLevelItemCount() - 1))
-            {
-                action = new QAction(tr("Move Down..."), this);
-                connect(action, SIGNAL(triggered()), this, SLOT(on_pushButtonMovePluginDown_clicked()));
-                menu.addAction(action);
-            }
 
             /* show popup menu */
             menu.exec(globalPos);
@@ -5589,23 +5582,6 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
         ui->action_menuPlugin_Show->setEnabled(true);
         ui->action_menuPlugin_Disable->setEnabled(true);
 
-        if((last_selected_item_index > 0) && (project.plugin->topLevelItemCount() > 1)) {
-            ui->pushButtonMovePluginUp->setEnabled(true);
-        }
-        else {
-            ui->pushButtonMovePluginUp->setEnabled(false);
-        }
-
-        if((first_selected_item_index < (project.plugin->topLevelItemCount() - 1)) && (project.plugin->topLevelItemCount() > 1)) {
-            ui->pushButtonMovePluginDown->setEnabled(true);
-        }
-        else {
-            ui->pushButtonMovePluginDown->setEnabled(false);
-        }
-    }
-    else {
-        ui->pushButtonMovePluginUp->setEnabled(false);
-        ui->pushButtonMovePluginDown->setEnabled(false);
     }
 }
 void MainWindow::on_filterWidget_itemSelectionChanged()
@@ -8006,28 +7982,6 @@ void MainWindow::on_actionAutoScroll_triggered(bool checked)
 
     // inform plugins about changed autoscroll status
     pluginManager.autoscrollStateChanged(settings->autoScroll);
-}
-
-void MainWindow::on_pushButtonMovePluginUp_clicked()
-{
-    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
-
-    for(auto it = list.cbegin(); it != list.cend(); it++) {
-        const int index = project.plugin->indexOfTopLevelItem((*it));
-        //PluginWidget emits a signal that will trigger the Plugin Manager
-        project.plugin->raisePluginPriority(index);
-    }
-}
-
-void MainWindow::on_pushButtonMovePluginDown_clicked()
-{
-    QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
-
-    for(auto it = list.cbegin(); it != list.cend(); it++) {
-        const int index = project.plugin->indexOfTopLevelItem((*it));
-        //PluginWidget emits a signal that will trigger the Plugin Manager
-        project.plugin->decreasePluginPriority(index);
-    }
 }
 
 void MainWindow::on_actionConnectAll_triggered()
