@@ -5602,8 +5602,7 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     }
 
     table->setModel(model);
-    table->setColumnWidth(0, 275);
-    table->setColumnWidth(1, 275);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     QVBoxLayout *layout = new QVBoxLayout(&shortcutDialog);
     layout->addWidget(table);
 
