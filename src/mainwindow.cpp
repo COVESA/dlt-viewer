@@ -50,6 +50,7 @@
 #include <QtEndian>
 #include <QDir>
 #include <QDirIterator>
+#include <QTableWidget>
 
 /**
  * From QDlt.
@@ -3347,6 +3348,13 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     menu.addSeparator();
+
+    action = new QAction("Marked Message Count", this);
+    if(list.size() != 1)
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionFiltered_Message_Count_triggered()));
+    menu.addAction(action);
 
     if(list.size()>=1)
         action = new QAction("Set Selected Active", this);
@@ -6758,7 +6766,110 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     {
         tableModel->modelChanged();
     }
+
+    //Collects all the filter names and the colors used for highlighting for finding the marked message count.
+
+    filterCollectionMap[item->filter.name] = item->filter.filterColour;
 }
+
+//findFiltered Lines is used for segregating the number of lines filtered per filter.
+//filterCollectionMap collects the filter name and their respective colors.
+//previousFilterMap is used for checking if the same color is used for the same filter.
+//If same color is used it will not be counted else, it will check the count again.
+
+void MainWindow::findFilteredLines()
+{
+
+  QAbstractItemModel *model = ui->tableView->model();
+  int count = 0;
+  int rowCount = model->rowCount();
+  totalMessages = rowCount;
+
+  QProgressDialog progress("Counting highlighted rows...", "Cancel", 0, rowCount, this);
+  progress.setWindowModality(Qt::ApplicationModal);
+  progress.setMinimumDuration(0); // show immediately
+  progress.setAutoClose(true);
+
+  for (auto it = filterCollectionMap.constBegin(); it != filterCollectionMap.constEnd(); ++it) {
+      const QString& filterName = it.key();
+      const QColor& currentColor = it.value();
+
+      // Check if already counted with same color
+      if (previousFilterStateMap.contains(filterName)) {
+          const QColor& previousColor = previousFilterStateMap[filterName].first;
+
+          if (previousColor == currentColor) {
+              // Same color used before → skip recount
+              filterCountMap[filterName] = previousFilterStateMap[filterName].second;
+              continue;
+          }
+      }
+
+      for (int row = 0; row < rowCount; ++row) {
+          QModelIndex index = model->index(row, 0);  // Check only column 0
+          QVariant bgVariant = model->data(index, Qt::BackgroundRole);
+
+          if (bgVariant.canConvert<QBrush>()) {
+              QColor bgColor = qvariant_cast<QBrush>(bgVariant).color();
+              if (bgColor == currentColor)
+                  ++count;
+          }
+
+          // Update progress bar
+          if (it == filterCollectionMap.constBegin())
+             progress.setValue(row);
+
+          if (progress.wasCanceled())
+             return;
+      }
+
+      // Save in result and state map
+      filterCountMap[filterName] = count;
+      previousFilterStateMap[filterName] = qMakePair(currentColor, count);
+  }
+
+  progress.setValue(rowCount);
+}
+
+//The function is triggered when "Marked Message Count" is clicked in the filter's custom menu.
+//It checked the number of filtered message using findFilteredLines function and then
+//generates a dialog for displaying the marked messages count.
+
+void MainWindow::on_actionFiltered_Message_Count_triggered(){
+
+  findFilteredLines();
+
+  QDialog *dialog = new QDialog(this);
+     dialog->setWindowTitle("Filtered Message Counts");
+     dialog->resize(400, 300);
+
+     // Create layout and table widget
+     QVBoxLayout *layout = new QVBoxLayout(dialog);
+     QTableWidget *table = new QTableWidget(dialog);
+     table->setColumnCount(3);
+     table->setHorizontalHeaderLabels(QStringList() << "Filter Term" << "Marked Messages" << "Total Number of Messages");
+     table->horizontalHeader()->setStretchLastSection(true);
+     table->verticalHeader()->setVisible(false);
+     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+     // Set row count based on your map
+     table->setRowCount(filterCountMap.size());
+
+     // Fill the table with data
+     int row = 0;
+     for (auto it = filterCountMap.constBegin(); it != filterCountMap.constEnd(); ++it, ++row) {
+         table->setItem(row, 0, new QTableWidgetItem(it.key()));
+         table->setItem(row, 1, new QTableWidgetItem(QString::number(it.value())));
+         table->setItem(row, 2, new QTableWidgetItem(QString::number(totalMessages)));
+     }
+
+     layout->addWidget(table);
+     dialog->setLayout(layout);
+
+     dialog->exec();
+
+}
+
 
 void MainWindow::on_action_menuFilter_Duplicate_triggered() {
     QTreeWidget *widget;
