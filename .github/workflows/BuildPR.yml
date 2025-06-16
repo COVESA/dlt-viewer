@@ -124,6 +124,8 @@ jobs:
         run: scripts/linux/installUbuntu22and24.sh
       - name: Build project
         run: scripts/linux/buildUbuntu22and24.sh
+      - name: Run tests
+        run: ctest --test-dir build/qdlt
 
   buildWindows:
     name: Build Windows
