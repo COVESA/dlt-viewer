@@ -15,6 +15,6 @@ else
 fi
 
 sudo apt update
-sudo apt-get install -y --no-install-recommends ninja-build ${QT_PACKAGES}
+sudo apt-get install -y --no-install-recommends ninja-build ${QT_PACKAGES} libgtest-dev
 
 g++ --version
