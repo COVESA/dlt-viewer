@@ -22,6 +22,10 @@ jobs:
             abi: arm64
             xcode: Xcode
             qt: 5
+          - macos: macos-15
+            abi: arm64
+            xcode: Xcode
+            qt: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
