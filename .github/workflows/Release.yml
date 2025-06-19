@@ -139,7 +139,7 @@ jobs:
       matrix:
         task: [ parser, sdk ]
         qt: [ 5 ]
-    runs-on: windows-2019
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
