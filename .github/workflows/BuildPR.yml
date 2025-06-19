@@ -108,7 +108,7 @@ jobs:
           path: build/dist/DLTViewer*.tgz
 
 
-  buildUbuntu22and24:
+  buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
