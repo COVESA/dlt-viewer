@@ -8,7 +8,7 @@ For DLT Viewer development on **Linux** please see [Linux development environmen
 Configuration:
 - macOS Catalina 10.15+
 - Administrator rights `sudo`
-- Build environment [install.sh](./install.sh)
+- Build environment [install.sh](install_qt5.sh)
     - `sudo dlt-viewer/scripts/linux/install.sh`
 - MS Visual Studio Code
     - https://code.visualstudio.com/docs/setup/mac
