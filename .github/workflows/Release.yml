@@ -150,7 +150,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           mirror: http://ftp.fau.de/qtproject/
-          version: 5.15.2
+          version: 6.7.1
       - name: Build with CMake ${{ matrix.task }}
         run: >
           $env:WORKSPACE=$env:GITHUB_WORKSPACE;
