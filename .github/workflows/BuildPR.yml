@@ -112,35 +112,6 @@ jobs:
         with:
           name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
           path: build/dist/DLTViewer*.tgz
-  
-  buildMacOS15:
-    name: Build macOS 15
-    runs-on: macos-15
-    strategy:
-      fail-fast: false
-      matrix:
-        abi: [ arm64 ]
-        xcode: [ Xcode ]
-      
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-      - name: Investigate available XCode versions
-        run: ls -n /Applications/ | grep Xcode*
-      - name: Set XCode Version
-        run: |
-          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-          xcodebuild -version
-          xcode-select --print-path
-      - name: Install build environment
-        run: scripts/darwin/install_qt6.sh
-      - name: Show cmake version
-        run: cmake --version
-      - name: Build project
-        run: scripts/darwin/build_cmake_qt6.sh
 
 
   buildUbuntu:
