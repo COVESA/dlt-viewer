@@ -166,3 +166,57 @@ jobs:
             build/dist/DLTViewer*.7z
             build/dist/DLTViewer*.exe
             build/dist/*.md
+
+  buildMacOS15Qt6:
+    name: "Build MacOS 15 with Qt 6"
+    runs-on: macos-15
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Install Qt 6 (Framework build)
+      uses: jurplel/install-qt-action@v4
+      with:
+        host: 'mac'
+        target: 'desktop'
+        arch: 'clang_64'
+        modules: 'qtserialport'
+
+    - name: Configure project with CMake
+      run: |
+        mkdir build
+        cd build
+        echo "QT_ROOT_DIR=$QT_ROOT_DIR"
+        APP_DIR_NAME="DLTViewer.app"
+        cmake -G Ninja -DCMAKE_PREFIX_PATH=$QT_ROOT_DIR/lib/cmake \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DDLT_USE_QT_RPATH=OFF \
+        -DDLT_PARSER=OFF \
+        -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
+        -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
+        -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
+        -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
+        -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
+        ..
+
+    - name: Build project
+      run: |
+        cmake --build build --parallel 4
+
+    - name: Install and deploy with macdeployqt
+      run: |
+        cmake --install build --prefix $(pwd)/build/install
+        ls -l build/install/DLTViewer.app
+        otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+        otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
+        echo "Deploying DLTViewer.app with macdeployqt"
+        $QT_ROOT_DIR/bin/macdeployqt build/install/DLTViewer.app -verbose=1 -dmg \
+            -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
+            -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+
+    - name: Misc
+      run: |
+        brew install tree
+        tree build/install/DLTViewer.app
