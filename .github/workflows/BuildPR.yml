@@ -227,6 +227,8 @@ jobs:
         mkdir -p dist
         tar -czvf "dist/DLTViewer-qt6-macos15.tgz" -C $(pwd)/install .
 
+    - name: Smoke test
+      run: /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer -v
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       if: ${{ success() }}
