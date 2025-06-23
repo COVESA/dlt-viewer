@@ -389,14 +389,13 @@ QString QDltArgument::toString(bool binary) const
     case DltTypeInfoUnknown:
         text += QString("?");
         break;
+    // for legacy reasons dlt-viewer does not make a difference between formally ASCII-only and UTF8 strings
+    // both are handled as UTF8-encoded
+    // see https://github.com/COVESA/dlt-viewer/issues/657
     case DltTypeInfoStrg:
-        if(data.size()) {
-            text += QString("%1").arg(QString(getData()));
-        }
-        break;
     case DltTypeInfoUtf8:
         if(data.size()) {
-            text += QString::fromUtf8(data.data());
+            text += QString::fromUtf8(data);
         }
         break;
     case DltTypeInfoBool:
@@ -532,13 +531,9 @@ QVariant QDltArgument::getValue() const
     case DltTypeInfoUnknown:
         break;
     case DltTypeInfoStrg:
-        if(data.size()) {
-            return QVariant(QString(getData()));
-        }
-        break;
     case DltTypeInfoUtf8:
         if(data.size()) {
-            return QVariant(QString::fromUtf8(data.data()));
+            return QVariant(QString::fromUtf8(data));
         }
         break;
     case DltTypeInfoBool:
@@ -646,7 +641,7 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
         return true;
     case QVariant::String:
         data = value.toByteArray();
-        typeInfo = QDltArgument::DltTypeInfoStrg;
+        typeInfo = QDltArgument::DltTypeInfoUtf8; // treat all strings as UTF-8 encoded
         return true;
     case QVariant::Bool:
         {
