@@ -391,12 +391,12 @@ QString QDltArgument::toString(bool binary) const
         break;
     case DltTypeInfoStrg:
         if(data.size()) {
-            text += QString::fromLatin1(data);
+            text += QString::fromLatin1(data.data());
         }
         break;
     case DltTypeInfoUtf8:
         if(data.size()) {
-            text += QString::fromUtf8(data);
+            text += QString::fromUtf8(data.data());
         }
         break;
     case DltTypeInfoBool:
@@ -533,12 +533,12 @@ QVariant QDltArgument::getValue() const
         break;
     case DltTypeInfoStrg:
         if(data.size()) {
-            return QVariant(QString::fromLatin1(data));
+            return QVariant(QString(getData()));
         }
         break;
     case DltTypeInfoUtf8:
         if(data.size()) {
-            return QVariant(QString::fromUtf8(data));
+            return QVariant(QString::fromUtf8(data.data()));
         }
         break;
     case DltTypeInfoBool:
@@ -646,7 +646,7 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
         return true;
     case QVariant::String:
         data = value.toByteArray();
-        typeInfo = QDltArgument::DltTypeInfoUtf8;
+        typeInfo = QDltArgument::DltTypeInfoStrg;
         return true;
     case QVariant::Bool:
         {
