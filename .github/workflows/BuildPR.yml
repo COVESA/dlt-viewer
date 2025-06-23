@@ -106,6 +106,8 @@ jobs:
           mkdir -p dist
           cp ../scripts/darwin/install.md dist
           tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
+      - name: Smoke test
+        run: /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer -v
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
