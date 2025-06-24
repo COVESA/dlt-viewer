@@ -2106,7 +2106,7 @@ void MainWindow::reloadLogFileFinishFilter()
                 }, ctrlMsg);
             }
         }
-        project.ecu->clear();
+
         populateEcusTree(std::move(ecuTree));
     }
 
