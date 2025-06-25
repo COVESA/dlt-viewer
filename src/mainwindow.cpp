@@ -93,8 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false),
-    shortcutDialog(this)
+    isSearchOngoing(false)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
@@ -5561,14 +5560,14 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered() {
 }
 
 void MainWindow::on_actionShortcuts_List_triggered(){
-    qDebug() <<"Shortcuts Triggered";
 
-    shortcutDialog.setWindowTitle("Shortcuts List");
-    shortcutDialog.resize(600, 400);
+    QDialog *shortcutDialog = new QDialog(this);
+    shortcutDialog->setWindowTitle("Shortcuts List");
+    shortcutDialog->resize(600, 400);
 
-    QTableView *table = new QTableView(&shortcutDialog);
+    QTableView *table = new QTableView(shortcutDialog);
     table->setObjectName("Shortcuts Summarise Table");
-    QStandardItemModel *model = new QStandardItemModel(0, 2, &shortcutDialog);
+    QStandardItemModel *model = new QStandardItemModel(0, 2, shortcutDialog);
 
     QFont headerFont;
     headerFont.setBold(true);
@@ -5644,11 +5643,12 @@ void MainWindow::on_actionShortcuts_List_triggered(){
 
     table->setModel(model);
     table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    QVBoxLayout *layout = new QVBoxLayout(&shortcutDialog);
+    QVBoxLayout *layout = new QVBoxLayout(shortcutDialog);
     layout->addWidget(table);
 
-    shortcutDialog.setLayout(layout);
-    shortcutDialog.exec();
+    shortcutDialog->setLayout(layout);
+    shortcutDialog->exec();
+    delete shortcutDialog;
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
