@@ -28,12 +28,16 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
-#include <QHeaderView>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
 #include <QStandardItemModel>
+#include <QHeaderView>
 
+
+#include <QTableWidget>
+#include <QAbstractItemModel>
+#include <QStandardItemModel>
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
