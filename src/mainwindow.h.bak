@@ -34,10 +34,13 @@
 #include <QStandardItemModel>
 #include <QHeaderView>
 
-
+<<<<<<< HEAD
 #include <QTableWidget>
 #include <QAbstractItemModel>
 #include <QStandardItemModel>
+
+=======
+>>>>>>> 7a68b651eea954c9fe1e283818e3611284cac81e
 
 #include "tablemodel.h"
 #include "settingsdialog.h"
