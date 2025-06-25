@@ -16,10 +16,16 @@ jobs:
         macos: [ macos-13 ]
         abi: [ x86 ]
         xcode: [ Xcode_15.2 ]
+        qt: [ 5 ]
         include:
           - macos: macos-14
             abi: arm64
             xcode: Xcode
+            qt: 5
+          - macos: macos-15
+            abi: arm64
+            xcode: Xcode
+            qt: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,11 +40,11 @@ jobs:
           xcodebuild -version
           xcode-select --print-path
       - name: Install build environment
-        run: scripts/darwin/install.sh
+        run: scripts/darwin/install_qt${{ matrix.qt }}.sh
       - name: Show cmake version
         run: cmake --version
       - name: Build project
-        run: scripts/darwin/build_cmake.sh
+        run: scripts/darwin/build_cmake_qt${{ matrix.qt }}.sh
       - name: Codesign app bundle
         if: "! github.event.pull_request.head.repo.fork " # not running on a fork
         # Extract the secrets we defined earlier as environment variables
@@ -108,7 +114,7 @@ jobs:
           path: build/dist/DLTViewer*.tgz
 
 
-  buildUbuntu22and24:
+  buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
@@ -124,13 +130,16 @@ jobs:
         run: scripts/linux/installUbuntu22and24.sh
       - name: Build project
         run: scripts/linux/buildUbuntu22and24.sh
+      - name: Run tests
+        run: ctest --test-dir build/qdlt
 
   buildWindows:
     name: Build Windows
     strategy:
       matrix:
         task: [ sdk ]
-    runs-on: windows-2019
+        qt: [ 5 ]
+    runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -147,7 +156,7 @@ jobs:
           $env:QTDIR=$env:Qt5_DIR.Replace('/','\');
           $env:CPACK_7Z="true";
           $env:CPACK_NSIS="true";
-          ./build_sdk_windows_qt5_MSVC_cmake.bat
+          ./build_sdk_windows_qt${{ matrix.qt }}_MSVC_cmake.bat
       - name: Archive artifact
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
