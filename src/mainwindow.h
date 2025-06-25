@@ -370,7 +370,6 @@ private:
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
 
-    QDialog shortcutDialog;
 
 protected:
     void keyPressEvent ( QKeyEvent * event ) override;
