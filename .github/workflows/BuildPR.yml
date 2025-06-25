@@ -220,6 +220,60 @@ jobs:
         brew install tree
         tree build/install/DLTViewer.app
 
+    - name: Codesign app bundle
+      if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+       # Extract the secrets we defined earlier as environment variables
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
+        MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
+        MACOS_CI_KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      run: |
+        # Turn our base64-encoded certificate back to a regular .p12 file
+          
+        echo $MACOS_CERTIFICATE | base64 --decode > certificate.p12
+        # We need to create a new keychain, otherwise using the certificate will prompt
+        # with a UI dialog asking for the certificate password, which we can't
+        # use in a headless CI environment
+          
+        security create-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain 
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+        security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
+
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/Frameworks/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/Resources/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/PlugIns/networkinformation/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents//PlugIns/iconengines/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/PlugIns/imageformats/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/PlugIns/platforms/*
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/PlugIns/styles/*
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/PlugIns/tls/* 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/plugins/*
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/dlt-commander 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer 
+        /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app
+
+    - name: Notarize app bundle
+      if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+      env:
+        PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
+        PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
+        PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.APP_PASSWORD }}
+      run: |
+        echo "Create keychain profile"
+        xcrun notarytool store-credentials "notarytool-profile" --apple-id "$PROD_MACOS_NOTARIZATION_APPLE_ID" --team-id "$PROD_MACOS_NOTARIZATION_TEAM_ID" --password "$PROD_MACOS_NOTARIZATION_PWD"
+        echo "Creating temp notarization archive"
+        ditto -c -k --keepParent "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app" "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.zip"
+          
+        echo "Notarize app"
+        xcrun notarytool submit "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.zip" --keychain-profile "notarytool-profile" --wait
+          
+        echo "Attach staple"
+        xcrun stapler staple "/Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.app"
+        rm -r /Users/runner/work/dlt-viewer/dlt-viewer/build/install/DLTViewer.zip
+  
     - name: Compress artifacts
       run: |
         cd $(pwd)/build
