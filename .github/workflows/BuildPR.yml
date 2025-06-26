@@ -39,8 +39,14 @@ jobs:
           sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
           xcodebuild -version
           xcode-select --print-path
-      - name: Install build environment
-        run: scripts/darwin/install_qt${{ matrix.qt }}.sh
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.qt }}
+          host: 'mac'
+          target: 'desktop'
+          arch: 'clang_64'
+#          modules: 'qtserialport'
       - name: Show cmake version
         run: cmake --version
       - name: Build project
