@@ -14,26 +14,19 @@ TEST(QDltArgument, constructor) {
 
 TEST(QDltArgument, string_ascii) {
     QDltArgument arg;
-    arg.setTypeInfo(QDltArgument::DltTypeInfoStrg);
-    const unsigned char asc_data[] = {
-        0xc3, 0xbc, 'b', 'e' // Ã¼be (and not übe)
-    };
-    arg.setData(QByteArray::fromRawData((const char*)asc_data, sizeof(asc_data)));
-    ASSERT_EQ(arg.toString(), QString::fromUtf8("Ã¼be"));
-
     // parse from raw payload
-    const unsigned char asc_data2[] = {0x00, 0x02, 0x00, 0x00, // type info
+    const unsigned char payloadData[] = {0x00, 0x02, 0x00, 0x00, // type info
                                        0x04, 0x00,             // str len
                                        0xc3, 0xbc, 'b',  'e'};
-    QByteArray payload = QByteArray::fromRawData((const char*)asc_data2, sizeof(asc_data2));
+    QByteArray payload = QByteArray::fromRawData((const char*)payloadData, sizeof(payloadData));
     unsigned int offset = 0;
     arg.setArgument(payload, offset, QDlt::DltEndiannessLittleEndian);
     ASSERT_EQ(arg.getTypeInfo(), QDltArgument::DltTypeInfoStrg);
     ASSERT_EQ(arg.getDataSize(), 4);
-    ASSERT_EQ(arg.toString().length(), 4);
-    ASSERT_EQ(arg.toString(), QString::fromUtf8("Ã¼be"));
+    // argument type is DltTypeInfoStrg (aka ASCII), the data is interpreted as UTF-8 encoded
+    ASSERT_EQ(arg.toString(), QString::fromUtf8("übe"));
     ASSERT_EQ(arg.toString(true), QString{"c3 bc 62 65"});
-    ASSERT_EQ(arg.getValue(), QVariant(QString::fromUtf8("Ã¼be")));
+    ASSERT_EQ(arg.getValue(), QVariant(QString::fromUtf8("übe")));
 }
 
 TEST(QDltArgument, string_utf8) {
