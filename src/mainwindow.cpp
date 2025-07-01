@@ -54,6 +54,15 @@
 #include <QThread>
 #include <QTableWidget>
 
+/**
+ * From QDlt.
+ * Must be a "C" include to interpret the imports correctly
+ * for MSVC compilers.
+ **/
+extern "C" {
+    #include "dlt_user.h"
+}
+
 #if defined(_MSC_VER)
 #include <io.h>
 #include <WinSock.h>
@@ -2383,9 +2392,12 @@ void MainWindow::reloadLogFileFinishFilter()
                 }, ctrlMsg);
             }
         }
-
+        project.ecu->clear();
         populateEcusTree(std::move(ecuTree));
     }
+
+    // reconnect ecus again
+    //connectPreviouslyConnectedECUs();
 
     // We might have had readyRead events, which we missed
     readyRead();
@@ -2467,6 +2479,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         dltIndexer->setFilterIndexStart(0);
         dltIndexer->setFilterIndexEnd(0);
     }
+
+    // prevent further receiving any new messages
+    // saveAndDisconnectCurrentlyConnectedSerialECUs();
 
     // clear all tables
     ui->tableView->selectionModel()->clear();
@@ -3801,6 +3816,29 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
     }
 }
 
+void MainWindow::saveAndDisconnectCurrentlyConnectedSerialECUs()
+{
+    m_previouslyConnectedSerialECUs.clear();
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem &&  ecuitem->connected && (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT || ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII))
+        {
+            m_previouslyConnectedSerialECUs.append(num);
+            disconnectECU(ecuitem);
+        }
+    }
+}
+
+void MainWindow::connectPreviouslyConnectedECUs()
+{
+    for(int i=0;i<m_previouslyConnectedSerialECUs.size();i++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(m_previouslyConnectedSerialECUs.at(i));
+        connectECU(ecuitem);
+    }
+}
+
 void MainWindow::connectAll()
 {
     if(project.ecu->topLevelItemCount() == 0)
@@ -5020,6 +5058,7 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
 }
 
+
 void MainWindow::getModel()
 {
     ui->tableView->showColumn(3);
@@ -5918,10 +5957,14 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     if((list.count() >= 1) ) {
+        const int first_selected_item_index = project.plugin->indexOfTopLevelItem((PluginItem*) list.at(0));
+        const int last_selected_item_index = project.plugin->indexOfTopLevelItem(list[list.count()-1]);
+
         ui->action_menuPlugin_Edit->setEnabled(true);
         ui->action_menuPlugin_Hide->setEnabled(true);
         ui->action_menuPlugin_Show->setEnabled(true);
         ui->action_menuPlugin_Disable->setEnabled(true);
+
     }
 }
 void MainWindow::on_filterWidget_itemSelectionChanged()
@@ -8625,6 +8668,7 @@ void MainWindow::handleExportResults(const QString &)
 {
     statusProgressBar->hide();
 }
+
 
 void MainWindow::exportCounterData()
 {
