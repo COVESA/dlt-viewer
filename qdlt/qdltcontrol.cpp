@@ -129,3 +129,4 @@ void QDltControl::reopenFile()
 {
     emit reopenFileSignal();
 }
+

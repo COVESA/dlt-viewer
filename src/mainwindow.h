@@ -42,6 +42,10 @@
 #include "ui_mainwindow.h"
 #include "searchform.h"
 
+#include <QTableWidget>
+#include <QAbstractItemModel>
+#include <QStandardItemModel>
+
 /**
  * @brief Namespace to contain the toolbar positions.
  * You should always remember to update these enums if you
@@ -124,6 +128,8 @@ private:
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
+
+    QStandardItemModel* missingDataModel;
 
     /* Status line items */
     QLabel *statusFilename;
@@ -356,6 +362,11 @@ private:
     void restoreSelection();
     QList<int> previousSelection;
 
+    /* Disconnect and Reconnect serial connections */
+    QList<int> m_previouslyConnectedSerialECUs;
+    void saveAndDisconnectCurrentlyConnectedSerialECUs();
+    void connectPreviouslyConnectedECUs();
+
     /* default filters */
     void resetDefaultFilter();
 
@@ -415,7 +426,6 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
-
 
 public slots:
 
