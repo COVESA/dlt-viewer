@@ -51,6 +51,15 @@
 #include <QDir>
 #include <QDirIterator>
 
+/**
+ * From QDlt.
+ * Must be a "C" include to interpret the imports correctly
+ * for MSVC compilers.
+ **/
+extern "C" {
+    #include "dlt_user.h"
+}
+
 #if defined(_MSC_VER)
 #include <io.h>
 #include <WinSock.h>
@@ -2106,9 +2115,12 @@ void MainWindow::reloadLogFileFinishFilter()
                 }, ctrlMsg);
             }
         }
-
+        project.ecu->clear();
         populateEcusTree(std::move(ecuTree));
     }
+
+    // reconnect ecus again
+    //connectPreviouslyConnectedECUs();
 
     // We might have had readyRead events, which we missed
     readyRead();
@@ -2190,6 +2202,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         dltIndexer->setFilterIndexStart(0);
         dltIndexer->setFilterIndexEnd(0);
     }
+
+    // prevent further receiving any new messages
+    // saveAndDisconnectCurrentlyConnectedSerialECUs();
 
     // clear all tables
     ui->tableView->selectionModel()->clear();
@@ -3416,6 +3431,29 @@ void MainWindow::on_pluginWidget_customContextMenuRequested(QPoint pos)
     }
 }
 
+void MainWindow::saveAndDisconnectCurrentlyConnectedSerialECUs()
+{
+    m_previouslyConnectedSerialECUs.clear();
+    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
+        if(ecuitem &&  ecuitem->connected && (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT || ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII))
+        {
+            m_previouslyConnectedSerialECUs.append(num);
+            disconnectECU(ecuitem);
+        }
+    }
+}
+
+void MainWindow::connectPreviouslyConnectedECUs()
+{
+    for(int i=0;i<m_previouslyConnectedSerialECUs.size();i++)
+    {
+        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(m_previouslyConnectedSerialECUs.at(i));
+        connectECU(ecuitem);
+    }
+}
+
 void MainWindow::connectAll()
 {
     if(project.ecu->topLevelItemCount() == 0)
@@ -4607,77 +4645,6 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
 
 }
 
-void MainWindow::getModel()
-{
-    ui->tableView->showColumn(3);
-    QMap<QString, QSet<int>> ctidCounterMap;
-    QAbstractItemModel* model = ui->tableView->model();
-    QStandardItemModel *missingDataModel = new QStandardItemModel();
-
-    // Populate the map with data from the model
-    for (int row = 0; row < model->rowCount(); ++row) {
-        // QString ctid = model->item(row, 1)->text();
-        QString ctid = model->data(model->index(row, 6)).toString();
-        // int counter = model->item(row, 0)->text().toInt();
-        int counter = model->data(model->index(row, 3)).toInt();
-
-        ctidCounterMap[ctid].insert(counter);
-    }
-
-    // Iterate through the map and remove entries with an empty key
-    auto it = ctidCounterMap.begin();
-    while (it != ctidCounterMap.end()) {
-        if (it.key().isEmpty()) { // Check if the key is empty
-            it = ctidCounterMap.erase(it); // Remove the entry and update the iterator
-        } else {
-            ++it; // Move to the next entry
-        }
-    }
-
-    missingDataModel->setColumnCount(2);
-    missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
-
-    for (auto it = ctidCounterMap.cbegin(); it != ctidCounterMap.cend(); ++it) {
-        QString ctid = it.key();
-        QList<int> counters = it.value().values();
-
-        // Sort the counter values
-        std::sort(counters.begin(), counters.end());
-
-        // Ensure that 1 is the starting point and 255 is the max value
-        int expectedValue = 1;
-
-        for (int counter : counters) {
-            // If expectedValue is less than the current counter, those values are missing
-            while (expectedValue < counter) {
-                QList<QStandardItem*> rowItems;
-                rowItems.append(new QStandardItem(ctid));
-                rowItems.append(new QStandardItem(QString::number(expectedValue)));
-                missingDataModel->appendRow(rowItems);
-
-                expectedValue++;  // Move to the next expected value
-            }
-            expectedValue = counter + 1;  // Move to the next expected value after the current counter
-        }
-        while (expectedValue <= 255) {
-            QList<QStandardItem*> rowItems;
-            rowItems.append(new QStandardItem(ctid));
-            rowItems.append(new QStandardItem(QString::number(expectedValue)));
-            missingDataModel->appendRow(rowItems);
-            expectedValue++;
-        }
-    }
-
-    QTableView *sortedTableview = new QTableView();
-    sortedTableview->setModel(missingDataModel);
-
-    // Adjust the table view to be responsive
-    sortedTableview->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents); // Adjust table to contents
-
-    sortedTableview->setWindowTitle("Sorted Counter and Ctid Columns");
-    sortedTableview->show();
-}
-
 void MainWindow::controlMessage_WriteControlMessage(DltMessage &msg, QString appid, QString contid)
 {
     QByteArray data;
@@ -5594,10 +5561,14 @@ void MainWindow::on_pluginWidget_itemSelectionChanged()
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
 
     if((list.count() >= 1) ) {
+        const int first_selected_item_index = project.plugin->indexOfTopLevelItem((PluginItem*) list.at(0));
+        const int last_selected_item_index = project.plugin->indexOfTopLevelItem(list[list.count()-1]);
+
         ui->action_menuPlugin_Edit->setEnabled(true);
         ui->action_menuPlugin_Hide->setEnabled(true);
         ui->action_menuPlugin_Show->setEnabled(true);
         ui->action_menuPlugin_Disable->setEnabled(true);
+
     }
 }
 void MainWindow::on_filterWidget_itemSelectionChanged()
@@ -8363,90 +8334,4 @@ void MainWindow::handleImportResults(const QString &)
 void MainWindow::handleExportResults(const QString &)
 {
     statusProgressBar->hide();
-}
-
-void MainWindow::exportCounterData()
-{
-    qDebug() << "Export Button clicked in Mainwindow";
-
-    ui->tableView->showColumn(3);
-    QMap<QString, QSet<int>> ctidCounterMap;
-    QAbstractItemModel* model = ui->tableView->model();
-    QStandardItemModel *missingDataModel = new QStandardItemModel();
-
-    // Populate the map with data from the model
-    for (int row = 0; row < model->rowCount(); ++row) {
-        QString ctid = model->data(model->index(row, 6)).toString();
-        int counter = model->data(model->index(row, 3)).toInt();
-
-        ctidCounterMap[ctid].insert(counter);
-    }
-
-    // Iterate through the map and remove entries with an empty key
-    auto it = ctidCounterMap.begin();
-    while (it != ctidCounterMap.end()) {
-        if (it.key().isEmpty()) { // Check if the key is empty
-            it = ctidCounterMap.erase(it); // Remove the entry and update the iterator
-        } else {
-            ++it; // Move to the next entry
-        }
-    }
-    missingDataModel->setColumnCount(2);
-    missingDataModel->setHorizontalHeaderLabels({"Ctid", "Missing Counter"});
-
-    for (auto it = ctidCounterMap.cbegin(); it != ctidCounterMap.cend(); ++it) {
-        QString ctid = it.key();
-        QList<int> counters = it.value().values();
-
-        // Sort the counter values
-        std::sort(counters.begin(), counters.end());
-
-        // Ensure that 1 is the starting point and 255 is the max value
-        int expectedValue = 1;
-
-        for (int counter : counters) {
-            while (expectedValue < counter) {
-                // Add missing values to the model
-                QList<QStandardItem*> rowItems;
-                rowItems.append(new QStandardItem(ctid));
-                rowItems.append(new QStandardItem(QString::number(expectedValue)));
-                missingDataModel->appendRow(rowItems);
-
-                expectedValue++;  // Move to the next expected value
-            }
-            expectedValue = counter + 1;  // Move to the next expected value after the current counter
-        }
-
-        // Check for any missing values till 255
-        while (expectedValue <= 255) {
-            QList<QStandardItem*> rowItems;
-            rowItems.append(new QStandardItem(ctid));
-            rowItems.append(new QStandardItem(QString::number(expectedValue)));
-            missingDataModel->appendRow(rowItems);
-            expectedValue++;
-        }
-    }
-
-
-    // Get the current directory and create file path
-    QString filePath = QDir::currentPath() + "/" + "MissingCounter.csv";
-
-    QFile file(filePath);
-
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-      qWarning() << "Failed to open file for writing:" << filePath;
-    }
-    QTextStream stream(&file);
-    stream << "Ctid,Missing Counter\n";
-
-    // Write data to CSV
-    for (int row = 0; row < missingDataModel->rowCount(); ++row) {
-        QString ctid = missingDataModel->item(row, 0)->text();
-        QString missingCounter = missingDataModel->item(row, 1)->text();
-        stream << ctid << "," << missingCounter << "\n";
-    }
-
-    file.close();
-    qDebug() << "CSV file successfully exported to:" << filePath;
-
 }

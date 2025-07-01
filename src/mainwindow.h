@@ -362,6 +362,11 @@ private:
     void restoreSelection();
     QList<int> previousSelection;
 
+    /* Disconnect and Reconnect serial connections */
+    QList<int> m_previouslyConnectedSerialECUs;
+    void saveAndDisconnectCurrentlyConnectedSerialECUs();
+    void connectPreviouslyConnectedECUs();
+
     /* default filters */
     void resetDefaultFilter();
 
@@ -421,9 +426,6 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
-    void getModel();
-    void exportCounterData();
-
 
 public slots:
 

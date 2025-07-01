@@ -58,10 +58,6 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(on_action_menuFile_Quit_triggered()));
     connect(this, SIGNAL(reopenFileSignal()),
             server, SLOT(reopenFileSignal()));
-    connect(this, SIGNAL(ControlgetModel()),
-            server, SLOT(getModel()));
-    connect(this, SIGNAL(ExportSignal()),
-            server, SLOT(exportCounterData()));
 }
 
 QDltControl::~QDltControl()
@@ -133,11 +129,4 @@ void QDltControl::reopenFile()
 {
     emit reopenFileSignal();
 }
-void QDltControl::CounterPluginCall()
-{
-    emit ControlgetModel();
-}
-void QDltControl::ExportPluginCall()
-{
-    emit ExportSignal();
-}
+
