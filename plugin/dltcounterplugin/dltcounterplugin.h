@@ -40,6 +40,20 @@ public:
     DltCounterPlugin();
     ~DltCounterPlugin();
 
+
+    QMap<QString, QSet<int>> consolidatedMap;
+    void dataConsolidatedMap();
+    QList<QString> nameList;
+    QList<unsigned char> countList;
+
+    //For clearing the list and map before initMsg, so that old data will not
+    //carried forward for next log file.
+    void clearAll() {
+        nameList.clear();
+        countList.clear();
+        consolidatedMap.clear();
+    }
+
     /* QDLTPluginInterface interface */
     QString name();
     QString pluginVersion();
@@ -54,7 +68,7 @@ public:
     QWidget* initViewer();
     void initFileStart(QDltFile *file);
     void initFileFinish();
-    void initMsg(int index, QDltMsg &msg);
+    void initMsg(int, QDltMsg &msg);
     void initMsgDecoded(int index, QDltMsg &msg);
     void updateFileStart();
     void updateMsg(int index, QDltMsg &msg);
@@ -84,7 +98,6 @@ public:
     void updateCounters(int start,int end);
 
     QDltControl *dltControl;
-
 private:
     QDltFile *dltFile;
     QString errorText;

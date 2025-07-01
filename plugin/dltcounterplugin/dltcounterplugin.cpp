@@ -61,7 +61,7 @@ QString DltCounterPlugin::error()
     return QString();
 }
 
-bool DltCounterPlugin::loadConfig(QString /* filename */)
+bool DltCounterPlugin::loadConfig(QString /*filename */ )
 {
     return true;
 }
@@ -149,12 +149,35 @@ void DltCounterPlugin::selectedIdxMsgDecoded(int , QDltMsg &){
 }
 
 void DltCounterPlugin::initFileStart(QDltFile *file){
+
+    clearAll();
     dltFile = file;
 }
 
-void DltCounterPlugin::initMsg(int , QDltMsg &){
+// The counter data and the context IDs in the log file are accessed
+// The data is saved to QList
+void DltCounterPlugin::initMsg(int, QDltMsg &msg){
+
+    QString name = msg.getCtid();
+    nameList.append(name);
+
+    unsigned char count = msg.getMessageCounter();
+    countList.append(count);
+}
+
+// The data which are separated as QList, it will be merged to a QMap.
+// The consolidatedMap will be accessed by counter push button and export push button.
+void DltCounterPlugin::dataConsolidatedMap() {
+
+    for (int i = 0; i < nameList.size() && i < countList.size(); ++i) {
+        QString name = nameList[i];
+        int count = static_cast<int>(countList[i]);  // Ensure conversion if needed
+
+        consolidatedMap[name].insert(count);  // QSet ensures uniqueness automatically
+    }
 
 }
+
 void DltCounterPlugin::initMsgDecoded(int , QDltMsg &){
 
 }
