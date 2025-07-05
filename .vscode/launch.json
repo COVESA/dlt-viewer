@@ -1,0 +1,74 @@
+{
+  "configurations": [
+    {
+      "name": "CPPDBG: Debug cmake launch target",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${command:cmake.getLaunchTargetPath}",
+      "stopAtEntry": false,
+      "cwd": "${command:cmake.getLaunchTargetDirectory}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "CMake: build"
+    },
+    {
+      "name": "CPPDBG: Debug dtl-viewer",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/${command:cmake.activeConfigurePresetName}/bin/dlt-viewer",
+      "args": [
+        "${input:dltFile}"
+      ],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}",
+      "environment": [],
+      "externalConsole": false,
+      "MIMode": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        },
+        {
+          "description": "Set Disassembly Flavor to Intel",
+          "text": "-gdb-set disassembly-flavor intel",
+          "ignoreFailures": true
+        }
+      ],
+      "miDebuggerPath": "/usr/bin/gdb",
+      "preLaunchTask": "Delete dlt index folder"
+    },
+  ],
+  "inputs": [
+    {
+      "type": "pickString",
+      "id": "dltFile",
+      "description": "Choose dlt file",
+      "options": [
+        "${env:HOME}/dlt/medium.dlt",
+        "${env:HOME}/dlt/big.dlt",
+        "${env:HOME}/dlt/test.dlt",
+        "${command:cmake.buildDirectory}/qdlt/tests/testfile_10.dlt",
+        "${command:cmake.buildDirectory}/src/benchmark/testfile.dlt",
+        "${command:cmake.buildDirectory}/src/benchmark/big.dlt",
+      ],
+      "default": "component"
+    },
+  ],
+  "version": "2.0.0"
+}

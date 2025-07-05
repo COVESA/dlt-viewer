@@ -1,5 +1,5 @@
 {
-  "version": 7,
+  "version": 6,
   "cmakeMinimumRequired": {
     "major": 3,
     "minor": 23,
@@ -13,7 +13,6 @@
       "binaryDir": "${sourceDir}/build/${presetName}",
       "installDir": "${sourceDir}/build/${presetName}/install",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
         "DLT_APP_DIR_NAME": "DLTViewer",
         "DLT_EXECUTABLE_INSTALLATION_PATH": "DLTViewer/usr/bin",
         "DLT_LIBRARY_INSTALLATION_PATH": "DLTViewer/usr/lib",

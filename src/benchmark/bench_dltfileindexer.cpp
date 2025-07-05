@@ -7,9 +7,9 @@
 
 static void DoSetup(const benchmark::State& /*state*/) { std::filesystem::remove_all("index/"); }
 
-
 static void BN_dltfileindexer_run(benchmark::State& state) {
     QString filename = "testfile.dlt";
+    // QString filename = "test.dlt";
     for (auto _ : state) {
         QDltFile dltFile{};
         dltFile.open(filename);
