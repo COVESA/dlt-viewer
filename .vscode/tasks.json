@@ -1,0 +1,44 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Delete dlt index folder",
+      "type": "shell",
+      "command": "rm",
+      "args": [
+        "-f",
+        "~/dlt/index/*",
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Delete index folder",
+      "type": "shell",
+      "command": "rm",
+      "args": [
+        "-rf",
+        "${command:cmake.buildDirectory}/index",
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "CMake: build",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "${command:cmake.buildDirectory}",
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Delete Index and Build",
+      "dependsOn": [
+        "Delete index folder",
+        "CMake: build"
+      ],
+      "problemMatcher": [],
+      "dependsOrder": "sequence"
+    }
+  ]
+}
