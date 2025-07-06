@@ -20,7 +20,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	qmake6 BuildDltViewer.pro
+	cmake . -DCMAKE_INSTALL_PREFIX=$(shell pwd)/debian/tmp
 	make -j $(shell grep -c processor /proc/cpuinfo)
 	# --- end custom part for compiling
 
@@ -59,7 +59,7 @@ binary-arch: build install
 	dh_testroot
 #	dh_installdebconf
 	dh_installdocs
-	dh_install
+	dh_install --sourcedir=$(shell pwd)/debian/tmp/DLTViewer
 #	dh_installmenu
 #	dh_installlogrotate
 #	dh_installemacsen
@@ -70,7 +70,7 @@ binary-arch: build install
 	dh_installman
 	dh_installinfo
 #	dh_install --sourcedir=$(shell pwd)/debian/tmp --fail-missing
-	dh_install --sourcedir=$(shell pwd)/debian/tmp --list-missing
+	dh_install --sourcedir=$(shell pwd)/debian/tmp/DLTViewer --list-missing
 	dh_makeshlibs -a -n
 #	dh_undocumented
 	dh_installchangelogs
