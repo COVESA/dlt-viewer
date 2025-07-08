@@ -132,6 +132,16 @@ jobs:
         run: scripts/linux/buildUbuntu22and24.sh
       - name: Run tests
         run: ctest --test-dir build/qdlt
+      - name: Create package
+        if: ${{ matrix.ubuntu == 'ubuntu-24.04' }}
+        run: ./build_viewer_debs_noble.sh
+      - name: Archive artifact
+        if: ${{ matrix.ubuntu == 'ubuntu-24.04' && success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: DLTViewer-Ubuntu-24.04
+          path: debtmp/covesa-dlt-viewer_*.deb
+  
 
   buildWindows:
     name: Build Windows
