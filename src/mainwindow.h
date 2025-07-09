@@ -416,6 +416,7 @@ private slots:
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
 
+
 public slots:
 
     void onNewTriggered(QString fileName);
