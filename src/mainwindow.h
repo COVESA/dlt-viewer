@@ -435,6 +435,7 @@ private slots:
     void on_pushButtonMovePluginUp_clicked();
     void on_pushButtonMovePluginDown_clicked();
 
+
 public slots:
 
     void onNewTriggered(QString fileName);
