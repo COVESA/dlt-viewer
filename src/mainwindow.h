@@ -42,10 +42,6 @@
 #include "ui_mainwindow.h"
 #include "searchform.h"
 
-#include <QTableWidget>
-#include <QAbstractItemModel>
-#include <QStandardItemModel>
-
 /**
  * @brief Namespace to contain the toolbar positions.
  * You should always remember to update these enums if you
@@ -128,8 +124,6 @@ private:
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
-
-    QStandardItemModel* missingDataModel;
 
     /* Status line items */
     QLabel *statusFilename;
