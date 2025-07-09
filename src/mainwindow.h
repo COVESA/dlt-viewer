@@ -51,10 +51,6 @@
 #include "ui_mainwindow.h"
 #include "searchform.h"
 
-#include <QTableWidget>
-#include <QAbstractItemModel>
-#include <QStandardItemModel>
-
 /**
  * @brief Namespace to contain the toolbar positions.
  * You should always remember to update these enums if you
