@@ -6,3 +6,4 @@ Exec=dlt-viewer %u
 Icon=org.genivi.DLTViewer
 Terminal=false
 Categories=Development;
+StartupWMClass=dlt-viewer
