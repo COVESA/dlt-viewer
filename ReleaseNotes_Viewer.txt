@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
 Version
 -------
-Version 2.27.0 RELEASE
+Version 2.28.0 RELEASE
 
 Known issues
 ------------
@@ -14,6 +14,94 @@ Known issues
 
 Changes
 -------
+
+2.28.0
+
+* Configure Keyboard Shortcuts (#637)
+* Add StartupWMClass to .desktop launcher (#686)
+* Restore string arg encoding  (#684)
+* Revert "fix: use full qbytearray and not char* conversion"
+* Revert "fix: use fromLatin1 for string args with ascii encoding"
+* Simplify string arg encoding code
+* Adjust test_qdltargument.cpp
+* Do not clear ecu tree on log on clearing logs (#680)
+* Merge pull request #681 from COVESA/rm-unused-functions
+* Remove obsolete unused code
+* Merge pull request #679 from COVESA/windows-2025
+* Build cosmetic
+* msvc 2022
+* windows-latest
+* MacOS 15
+* Prepare CI for qt6
+* Rename action job
+* Fix ECUs config tree when importing dlp (#668)
+* Restore build of the unit tests on CI (#669)
+* Persist Search History (#635)
+* Remove Unnecessary Plugin Pane Controls (#632)
+* Create new DLt file when drag and drop pcap and mf4 files. (#664)
+* Request user to save filter, if filter was changed. (#663)
+* fix README.md (#661)
+* Remove Ubuntu 20
+* Fix MF4 Import time calculation. (#656)
+* Fixed further occurrences.
+* prevent memory leak on each table view context menu open
+* fix crash due to wrongly parsed ctrl message (#646)
+* tests: add unit test for QDltArgument
+* Avoid exception when parsing uninteresting control message
+* fix: use full qbytearray and not char* conversion
+* fix: use fromLatin1 for string args with ascii encoding
+* Add timestamps to split parts
+* Implement dlt split feature in commander
+* Mark and Jump To Messages (#629)
+* Improve Dark Mode Visibility of Scrollbar (#631)
+* Fixe performance issue with only tracing. (#633)
+* Included the shortcut to the context menu
+* Improve Settings Organisation
+* Update tablemodel.h
+* Distinguish Log Generation and Storage Timestamps
+* Document dependencies for executing AppImage
+* install required offscreen plugin into appimage
+* populate ecus tree efficiently
+* Control message payload parsing
+* Update mainwindow.cpp
+* Copy Message Payload
+* Select by commandline signature, which columns are exported in CSV. (#623)
+* Remove code duplication when writing dlt message (#615)
+* Introduce QDltImporter::makeDltStorageHeader to avoid code duplication
+* Improve MainWindow::writeDLTMessageToFile signature
+* Use single C-func to get msg timestamp
+* Fix incorrect matching algo
+* qdltparser.h: drop some more old unused typedefs
+* simplify the definition of speed_t across all the different OSes (MAC/WIN/LINUX)
+* use std algos
+* Use QMutexLocker instead of explicit lock/unlock
+* additional minor code improvements
+* clang-format ref and ptr to the left
+* rm code duplication in plugin manager
+* Simplify initConnections
+* improve mingw compatibility and free the console in additional places (#588)
+* add fixes for mingw compatibility and free the console in additional places
+* c++17 flag not needed
+* add the freeWindowsConsole function
+* Remove inheritence of QDltMsg from QDlt
+* Remove unused vars from qdltimporter
+* Remove inheritence of QDltArgument from QDlt
+* Simplify code in qdltbase
+* Move constants from qdltbase to where they are needed
+* introduce separate header for C export rules
+* rm dead code
+* move search form specific vars from mainwindow
+* Merge pull request #602 from COVESA/remove_qmake_1
+* Remove qmake windows build scripts.
+* No use of QtGlobal in c-code
+* Add missing includes
+* Set C standard to c11
+* Add missing includes
+* Introduce EcuItem::find method to accelerate search
+* Prettify a bit controlMessage_ReceiveControlMessage method
+* Remove redundant check
+* Various code fixes
+* Set filter range end automatically to end of file. (#600)
 
 2.27.0
 
