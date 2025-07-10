@@ -24,6 +24,7 @@
 #include <qfiledialog.h>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QDebug>
 
 using namespace DltCounter;
 
