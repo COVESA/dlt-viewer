@@ -212,6 +212,7 @@
     <addaction name="action_menuHelp_Support"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
+    <addaction name="actionShortcuts_List"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
@@ -1671,6 +1672,9 @@
   <action name="actionFiltered_Message_Count">
    <property name="text">
     <string>Marked Message Count</string>
+  <action name="actionShortcuts_List">
+   <property name="text">
+    <string>Shortcuts List</string>
    </property>
   </action>
  </widget>
