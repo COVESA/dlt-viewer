@@ -212,6 +212,7 @@
     <addaction name="action_menuHelp_Support"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
+    <addaction name="actionShortcuts_List"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
@@ -1671,6 +1672,9 @@
   <action name="action_menuFile_DLTFilesize">
    <property name="text">
     <string>DLT File size</string>
+  <action name="actionShortcuts_List">
+   <property name="text">
+    <string>Shortcuts List</string>
    </property>
   </action>
  </widget>
