@@ -5528,6 +5528,98 @@ void MainWindow::on_action_menuHelp_Command_Line_triggered() {
                 QDltOptManager::getInstance()->getHelpText());
 }
 
+void MainWindow::on_actionShortcuts_List_triggered(){
+
+    QDialog *shortcutDialog = new QDialog(this);
+    shortcutDialog->setWindowTitle("Shortcuts List");
+    shortcutDialog->resize(600, 400);
+
+    QTableView *table = new QTableView(shortcutDialog);
+    table->setObjectName("Shortcuts Summarise Table");
+    QStandardItemModel *model = new QStandardItemModel(0, 2, shortcutDialog);
+
+    QFont headerFont;
+    headerFont.setBold(true);
+
+    QStandardItem *headerName = new QStandardItem("Action Name");
+    headerName->setFont(headerFont);
+    model->setHorizontalHeaderItem(0, headerName);
+
+    QStandardItem *headerFeature = new QStandardItem("Shortcuts");
+    headerFeature->setFont(headerFont);
+    model->setHorizontalHeaderItem(1, headerFeature);
+
+    // Define shortcut variables
+    const QString shortcutNew = "Ctrl + N";
+    const QString shortcutOpen = "Ctrl + O";
+    const QString shortcutSave = "Ctrl + S";
+    const QString shortcutClear = "Ctrl + E";
+    const QString shortcutimportDLT = "Ctrl + I";
+    const QString shortcutimportSerialHeader = "Ctrl + J";
+    const QString shortcutFind = "Ctrl + F";
+    const QString shortcutJumpTo = "Ctrl + G";
+    const QString shortcutNewProject = "Ctrl + Shift + G";
+    const QString shortcutOpenProject = "Ctrl + Shift + O";
+    const QString shortcutSaveProject = "Ctrl + Shift + S";
+    const QString shortcutExpandAllECU = "Ctrl++";
+    const QString shortcutCollapseAllECU = "Ctrl+";
+    const QString shortcutCopyPayload = "Ctrl + P";
+    const QString shortcutInfo = "F1";
+    const QString shortcutQuit = "Ctrl +- Q";
+
+    // Store shortcuts dynamically using a list of pairs
+    QList<QPair<QString, QString>> shortcutsList = {
+
+        {"New", shortcutNew},
+        {"Open", shortcutOpen},
+        {"Save As", shortcutSave},
+        {"Clear", shortcutClear},
+        {"Import DLT Stream", shortcutimportDLT},
+        {"Import DLT Stream with serial header", shortcutimportSerialHeader},
+        {"Find", shortcutFind},
+        {"Jump To", shortcutJumpTo},
+        {"New Project", shortcutNewProject},
+        {"Open Project", shortcutOpenProject},
+        {"Save Project", shortcutSaveProject},
+        {"Expand All ECU", shortcutExpandAllECU},
+        {"Collapse All ECU", shortcutCollapseAllECU},
+        {"Copy Payload", shortcutCopyPayload},
+        {"Info", shortcutInfo},
+        {"Quit", shortcutQuit},
+    };
+
+    for (int i = 0; i < shortcutsList.size(); ++i) {
+        model->insertRow(i);
+        model->setData(model->index(i, 0), shortcutsList[i].first);
+        model->setData(model->index(i, 1), shortcutsList[i].second);
+
+        // Make the items non-editable
+        for (int j = 0; j < 2; ++j) {
+            QStandardItem *item = model->item(i, j);
+            if (item) {
+                item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+            }
+        }
+    }
+
+    // Center-align
+    for (int row = 0; row < model->rowCount(); ++row) {
+        for (int col = 0; col < model->columnCount(); ++col) {
+            QModelIndex index = model->index(row, col);
+            model->setData(index, Qt::AlignCenter, Qt::TextAlignmentRole);
+        }
+    }
+
+    table->setModel(model);
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    QVBoxLayout *layout = new QVBoxLayout(shortcutDialog);
+    layout->addWidget(table);
+
+    shortcutDialog->setLayout(layout);
+    shortcutDialog->exec();
+    delete shortcutDialog;
+}
+
 void MainWindow::on_pluginWidget_itemSelectionChanged()
 {
     QList<QTreeWidgetItem *> list = project.plugin->selectedItems();
