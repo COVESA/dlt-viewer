@@ -8,7 +8,7 @@ on:
 
 jobs:
   buildMac:
-    name: Build macOS
+    name: Build ${{ matrix.macos }} (${{ matrix.abi }}) with Qt${{ matrix.qt }}
     runs-on: ${{ matrix.macos }}
     strategy:
       fail-fast: false
@@ -17,15 +17,6 @@ jobs:
         abi: [ x86 ]
         xcode: [ Xcode_15.2 ]
         qt: [ 5 ]
-        include:
-          - macos: macos-14
-            abi: arm64
-            xcode: Xcode
-            qt: 5
-          - macos: macos-15
-            abi: arm64
-            xcode: Xcode
-            qt: 5
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -129,9 +120,13 @@ jobs:
             build/dist/DLTViewer*.exe
             build/dist/*.md
 
-  buildMacOS15Qt6:
-    name: "Build MacOS 15 with Qt 6"
-    runs-on: macos-15
+  buildMacOSQt6:
+    name: "Build MacOS ${{ matrix.osversion }} with Qt 6"
+    runs-on: macos-${{ matrix.osversion }}
+    strategy:
+      fail-fast: false
+      matrix:
+        osversion: [ 14, 15 ]
 
     steps:
     - name: Checkout source
@@ -200,13 +195,13 @@ jobs:
       run: |
         cd $(pwd)/build
         mkdir -p dist
-        tar -czvf "dist/DLTViewer-qt6-macos15.tgz" -C $(pwd)/install .
+        tar -czvf "dist/DLTViewer-qt6-macos${{ matrix.osversion }}.tgz" -C $(pwd)/install .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       if: ${{ success() }}
       with:
-        name: DLTViewer-macos15-qt6
+        name: DLTViewer-macos${{ matrix.osversion }}-qt6
         path: build/dist/DLTViewer*.tgz
 
 
