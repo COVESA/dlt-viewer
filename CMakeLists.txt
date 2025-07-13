@@ -49,7 +49,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 get_target_property(DLT_QT_LIBRARY_PATH ${QT_PREFIX}::Core LOCATION)
 get_filename_component(DLT_QT_LIB_DIR ${DLT_QT_LIBRARY_PATH} DIRECTORY)
-message(STATUS "DLT_QT_LIBRARY_PATH: ${DLT_QT_LIBRARY_PATH}, DLT_QT_LIB_DIR: ${DLT_QT_LIB_DIR}")
 
 if(NOT WIN32)
     option(DLT_USE_QT_RPATH "Use RPATH for QT_LIBRARY_PATH to support non-standard QT install locations" ON)
