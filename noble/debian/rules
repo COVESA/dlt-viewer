@@ -20,7 +20,7 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	qmake BuildDltViewer.pro
+	qmake6 BuildDltViewer.pro
 	make -j $(shell grep -c processor /proc/cpuinfo)
 	# --- end custom part for compiling
 
