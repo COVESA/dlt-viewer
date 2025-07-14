@@ -5,7 +5,7 @@ echo ************************************
 echo *** Setting up environment ***
 
 REM Currently tested combinations by Qt installation
-REM 5.15.2 msvc2022
+REM 5.15.2 msvc2019
 REM 6.7.3 msvc2022
 
 if "%QTNO%"=="" (
@@ -25,11 +25,14 @@ if "%MSVC_VER%"=="" (
 )
 
 if exist "C:\Program Files\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build" (
-    REM Visual Studio Community Edition 2019
+    REM Visual Studio Community Edition
 	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files\Microsoft Visual Studio\%MSVC_VER%\Enterprise\VC\Auxiliary\Build"
+) else if exist "C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Professional\VC\Auxiliary\Build" (
+    REM Visual Studio Professional
+	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files (x86)\Microsoft Visual Studio\%MSVC_VER%\Professional\VC\Auxiliary\Build"
 ) else (
-    REM Vidual Studio Professional 2019
-	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build"
+    REM Visual Studio Professional
+	if "%MSVC_DIR%"=="" set "MSVC_DIR=C:\Program Files\Microsoft Visual Studio\%MSVC_VER%\Professional\VC\Auxiliary\Build"
 )
 
 echo Set QT directory for %QTVER% and %MSVC_VER%
