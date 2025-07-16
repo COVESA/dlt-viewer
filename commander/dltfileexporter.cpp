@@ -24,8 +24,6 @@ std::optional<std::pair<QDltMsg, QByteArray>> getMessage(const QDltFile& file, i
     QDltMsg msg;
     msg.setMsg(buf);
     msg.setIndex(index);
-    bool isApplied = file.applyRegExStringMsg(msg);
-    if(isApplied) msg.getMsg(buf,true);
 
     return std::make_pair(std::move(msg), buf);
 }
@@ -34,6 +32,10 @@ class SimpleWriter {
 public:
     SimpleWriter(const QString& outputPath) {
         m_output.setFileName(outputPath);
+        if (!m_output.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            qDebug() << "Couldn't open output file: " << m_output.fileName();
+            throw std::runtime_error("File couldn't be opened for writing");
+        }
     }
 
     void write(const QByteArray& buf, const time_t&) {
@@ -110,6 +112,8 @@ void processMessages(const QDltFile& m_input, QDltFilterList& filterList, Writer
         }
         auto [msg, buf] = *res;
         if (filterList.isEmpty() || filterList.checkFilter(msg)) {
+            bool isApplied = m_input.applyRegExStringMsg(msg);
+            if(isApplied) msg.getMsg(buf,true);
             writer.write(buf, msg.getTime());
         }
     }
