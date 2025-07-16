@@ -1549,6 +1549,7 @@ void MainWindow::mark_unmark_lines()
     {
 
      line = ui->tableView->selectionModel()->selectedRows().at(i).row();
+     line = qfile.getMsgFilterPos(line);
      if ( true == selectedMarkerRows.contains(line) )// so we remove it
       {
        //qDebug() << "Remove selected line" << line;
