@@ -1559,6 +1559,7 @@ void MainWindow::mark_unmark_lines()
     {
 
      line = ui->tableView->selectionModel()->selectedRows().at(i).row();
+     line = qfile.getMsgFilterPos(line);
      if ( true == selectedMarkerRows.contains(line) )// so we remove it
       {
        //qDebug() << "Remove selected line" << line;
@@ -5519,7 +5520,7 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                          #else
                              QString("Architecture: Little Endian\n\n")+
                          #endif
-                             QString("(C) 2016,2024 BMW AG\n"));
+                             QString("(C) 2016,2025 BMW AG\n"));
 }
 
 void MainWindow::on_action_menuHelp_Command_Line_triggered() {
