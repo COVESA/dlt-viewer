@@ -402,7 +402,7 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
 QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
 {
     /* first check manual markers with highest priority */
-    if ( selectedMarkerRows.contains(index) )
+    if ( selectedMarkerRows.contains(filterposindex) )
     {
       return manualMarkerColor;
     }
