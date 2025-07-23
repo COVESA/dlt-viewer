@@ -34,7 +34,7 @@ Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 
 * Install Qt6 SDK and Microsoft Visual Studio Build Tools 2022
 * If needed adapt you configuration in build_config.bat
-* Run build_sdk_windows_qt5_MSVC_interactive.bat
+* Run build_sdk_windows_qt6_MSVC_interactive.bat
 
 The DLT Viewer will be installed by default in C:\DltViewerSDK
 

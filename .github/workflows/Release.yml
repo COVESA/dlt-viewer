@@ -138,7 +138,7 @@ jobs:
     strategy:
       matrix:
         task: [ parser, sdk ]
-        qt: [ 5 ]
+        qt: [ 6 ]
     runs-on: windows-2022
     steps:
       - name: Checkout
@@ -150,7 +150,7 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           mirror: http://ftp.fau.de/qtproject/
-          version: 5.15.2
+          version: 5.8.3
       - name: Build with CMake ${{ matrix.task }}
         run: >
           $env:WORKSPACE=$env:GITHUB_WORKSPACE;
