@@ -115,9 +115,8 @@ See INSTALL.txt regarding doxygen API documentation generation.
 
 ## Software/Hardware
 
-Developed with QT5 and Qt6 (<http://qt-project.org/>)
-Tested with Windows 11 + Qt 5.15.2 + Microsoft Visual Studio Build Tools 2019
-Tested with Windows 11 + Qt 6.7.3 + Microsoft Visual Studio Build Tools 2019
+Developed with Qt6 (<http://qt-project.org/>)
+Tested with Windows 11 + Qt 6.8.3 + Microsoft Visual Studio Build Tools 2022
 Tested with Ubuntu Linux 24.04 + Qt 5.15.13
 Tested with macOS Catalina + Qt 5.15.13
 Dynamically linked open source software
