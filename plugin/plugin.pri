@@ -18,7 +18,6 @@ QT_VER_MIN = $$member(QT_VERSION, 1)
 }
 
 *-g++* {
-    QMAKE_CXXFLAGS += -std=gnu++0x
     QMAKE_CXXFLAGS += -Wall
     QMAKE_CXXFLAGS += -Wextra
     # Limit symbol visibility to avoid symbol clashes between different
