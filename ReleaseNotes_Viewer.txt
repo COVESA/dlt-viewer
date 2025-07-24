@@ -17,6 +17,10 @@ Changes
 
 2.28.0
 
+* Fix marker when changing filter (#691)
+* add cmake presets and update gitignore
+* Fix regexp replace functionality in commander (#690)
+* Additionally fix the SimpleWriter by opening a file
 * Configure Keyboard Shortcuts (#637)
 * Add StartupWMClass to .desktop launcher (#686)
 * Restore string arg encoding  (#684)
