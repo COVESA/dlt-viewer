@@ -132,6 +132,7 @@ jobs:
         with:
           name: DLT-Linux-${{ matrix.abi }}
           path: DLT-Linux*.zip
+    continue-on-error: true
 
   buildWindows:
     name: Build Windows
@@ -171,7 +172,7 @@ jobs:
 
   createRelease:
     name: Create release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [ buildMac, buildLinux, buildWindows ]
     steps:
       - name: Checkout
@@ -183,6 +184,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: DLT-Linux
+        continue-on-error: true
+        
       - name: Download DLT macOS artifacts arm64
         uses: actions/download-artifact@v4
         with:
