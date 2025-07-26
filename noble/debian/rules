@@ -5,9 +5,6 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This is the debhelper compatibility version to use.
-export DH_COMPAT=9
-
 CFLAGS = -g
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
 CFLAGS += -O0
@@ -20,8 +17,10 @@ build-stamp:
 	dh_testdir
 
 	# Add here commands to compile the package.
-	cmake . -DCMAKE_INSTALL_PREFIX=$(shell pwd)/debian/tmp
-	make -j $(shell grep -c processor /proc/cpuinfo)
+	cmake . -G Ninja \
+		-DCMAKE_INSTALL_PREFIX=$(shell pwd)/debian/tmp \
+		-DDLT_ADDITIONAL_FILES_INSTALLATION_PATH=DLTViewer/usr
+	cmake --build . --parallel $(shell grep -c processor /proc/cpuinfo)
 	# --- end custom part for compiling
 
 	touch build-stamp
@@ -46,7 +45,7 @@ install: build
 
 	# Add here commands to install the package
 	# The DESTDIR Has To Be Exactly  /usr/src/packages/BUILD/debian/<nameOfPackage>
-	make install INSTALL_ROOT=$(shell pwd)/debian/tmp
+	cmake --install .
 	# --- end custom part for installing
 
 # Build architecture-independent files here.

@@ -1,2 +1,2 @@
-usr/lib/*/libqdlt.so
+usr/lib/libqdlt.so
 usr/include/qdlt/*.h
