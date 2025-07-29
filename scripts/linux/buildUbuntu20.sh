@@ -17,10 +17,6 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-#echo Build with QMake
-#qmake ../BuildDltViewer.pro
-#make -j ${NPROC}
-
 echo Cleanup
 rm -rf "${INSTALL_DIR}"
 rm -rf "${SRC_DIR}/build"
