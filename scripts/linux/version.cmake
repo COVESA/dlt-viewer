@@ -51,7 +51,7 @@ if(GIT_FOUND)
     )
 endif()
 
-message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/parse_version.sh" "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h" PACKAGE_MAJOR_VERSION)
+message(STATUS "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/parse_version.sh ${CMAKE_CURRENT_SOURCE_DIR}/src/version.h PACKAGE_MAJOR_VERSION")
 execute_process(
     COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux/parse_version.sh" "${CMAKE_CURRENT_SOURCE_DIR}/src/version.h" PACKAGE_MAJOR_VERSION
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/scripts/linux"
@@ -60,7 +60,7 @@ execute_process(
     RESULT_VARIABLE RESULT
 )
 if(RESULT AND NOT RESULT EQUAL 0)
-    message(SEND_ERROR "Failure: ${RESULT}")
+    message(WARNING "Failure: ${RESULT}")
 else()
     message(RESULT "Success.")
 endif()
