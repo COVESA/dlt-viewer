@@ -120,9 +120,9 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/linux/buildUbuntu22and24.sh
-      - name: Build project
         run: scripts/linux/installUbuntu22and24.sh
+      - name: Build project
+        run: scripts/linux/buildUbuntu22and24.sh
       - name: Make artifact executable
         run: chmod -R +x build/dist
       - name: Archive artifact
