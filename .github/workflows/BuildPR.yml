@@ -95,7 +95,6 @@ jobs:
         with:
           name: DLTViewer-Ubuntu-24.04
           path: debtmp/covesa-dlt-viewer_*.deb
-  
 
   buildWindows:
     name: Build Windows
