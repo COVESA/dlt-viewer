@@ -111,7 +111,7 @@ jobs:
     name: Build ${{ matrix.ubuntu }}
     strategy:
       matrix:
-        ubuntu: [ ubuntu-22.04, ubuntu-24.04 ]
+        ubuntu: [ ubuntu-24.04 ]
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
@@ -120,18 +120,18 @@ jobs:
           fetch-depth: 0
           submodules: true
       - name: install build environment
-        run: scripts/linux/installUbuntu20.sh
+        run: scripts/linux/installUbuntu22and24.sh
       - name: Build project
-        run: scripts/linux/buildUbuntu20.sh
-      - name: Make artifact executable
-        run: chmod -R +x build/dist
+        run: scripts/linux/buildUbuntu22and24.sh
+      - name: Create package
+        run: ./build_viewer_debs_noble.sh
       - name: Archive artifact
-        run: zip DLT-Linux-${{ matrix.abi }} -r build/dist
-      - name: Upload DLT artifact
+        if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: DLT-Linux-${{ matrix.abi }}
-          path: DLT-Linux*.zip
+          name: DLTViewer-${{ matrix.ubuntu }}
+          path: debtmp/covesa-dlt-viewer_*.deb
+    continue-on-error: true
 
   buildWindows:
     name: Build Windows
@@ -169,7 +169,7 @@ jobs:
 
   createRelease:
     name: Create release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     needs: [ buildMac, buildLinux, buildWindows ]
     steps:
       - name: Checkout
@@ -181,6 +181,8 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: DLT-Linux
+        continue-on-error: true
+        
       - name: Download DLT macOS artifacts arm64
         uses: actions/download-artifact@v4
         with:
