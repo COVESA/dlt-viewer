@@ -65,7 +65,7 @@ jobs:
         if: ${{ success() }}
         with:
           name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
-          path: build/dist/DLTViewer*.tgz
+          path: build/install/DLTViewer.*
 
   buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
