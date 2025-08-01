@@ -67,7 +67,6 @@ jobs:
           name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
           path: build/dist/DLTViewer*.tgz
 
-
   buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
     strategy:
