@@ -1,2 +1,2 @@
-DLTViewer/DLTViewer/usr/lib/libqdlt.so usr/lib/qdlt
-DLTViewer/include/qdlt/*.h usr/include/qdlt
+usr/include/qdlt/*.h usr/include/qdlt
+
