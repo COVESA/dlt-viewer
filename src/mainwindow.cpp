@@ -17,6 +17,8 @@
  * @licence end@
  */
 
+#include "qabstractitemmodel.h"
+#include "qdebug.h"
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
@@ -7045,6 +7047,38 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Copy Selection for J&ira (+Head) to Clipboard", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(onActionMenuConfigCopyJiraHeadToClipboardTriggered()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Copy Selection as image to Clipboard", &menu);
+    connect(action, &QAction::triggered, this, [this](){
+        // save and clear selection for clean screenshot
+        auto selectionIndexes = ui->tableView->selectionModel()->selection().indexes();
+
+        auto headerRect = ui->tableView->horizontalHeader()->rect();
+
+        ui->tableView->selectionModel()->clearSelection();
+
+        QRect res;
+        for (qsizetype i = 0; i < selectionIndexes.size(); ++i)
+        {
+            res |= ui->tableView->visualRect(selectionIndexes[i]);
+        }
+        // take into account height of the table header
+        res.translate(0, headerRect.height());
+
+        auto tableViewRect = ui->tableView->contentsRect();
+        auto pixmap = ui->tableView->grab(res & tableViewRect);
+
+        QApplication::clipboard()->setPixmap(pixmap);
+
+        // restore selection
+        for (const auto& index : selectionIndexes)
+        {
+            ui->tableView->selectionModel()->select(index, QItemSelectionModel::Select);
+        }
+    });
     menu.addAction(action);
 
     menu.addSeparator();
