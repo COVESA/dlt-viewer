@@ -1,11 +1,9 @@
 usr/bin/dlt-viewer
 usr/bin/dlt-commander
-usr/lib/libqdlt.so
-usr/share/applications/org.genivi.DLTViewer.desktop
-usr/share//dlt-viewer/icon/org.genivi.DLTViewer.ico
-usr/share/dlt-viewer/icon/*/org.genivi.DLTViewer.png
-usr/share/dlt-viewer/icon/symbolic/org.genivi.DLTViewer-symbolic.svg
-usr/bin/plugins/libfile*.so
-usr/bin/plugins/libdltdbus*.so
-usr/bin/plugins/libdltview*.so
-usr/bin/plugins/libnonv*.so
+usr/lib/libqdlt.so usr/lib/x86_64-linux-gnu
+usr/share/applications/org.genivi.DLTViewer.desktop usr/share/applications
+usr/share/dlt-viewer/icon/org.genivi.DLTViewer.ico usr/share/pixmaps
+usr/bin/plugins/libfile*.so usr/share/dlt-viewer/plugins
+usr/bin/plugins/libdltdbus*.so usr/share/dlt-viewer/plugins
+usr/bin/plugins/libdltview*.so usr/share/dlt-viewer/plugins
+usr/bin/plugins/libnonv*.so usr/share/dlt-viewer/plugins
