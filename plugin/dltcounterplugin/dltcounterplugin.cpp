@@ -19,6 +19,9 @@
 
 #include <QtGui>
 #include <QTextStream>
+#include <QTableView>
+#include <QAbstractItemModel>
+#include <QMessageBox>
 
 #include "dltcounterplugin.h"
 
@@ -31,6 +34,10 @@ DltCounterPlugin::DltCounterPlugin()
     dltFile = 0;
     dltControl = 0;
     ecuList = 0;
+
+    loadingCompleteTimer = new QTimer(this);
+    loadingCompleteTimer->setSingleShot(true);
+    connect(loadingCompleteTimer, &QTimer::timeout, this, &DltCounterPlugin::dataConsolidatedMap);
 }
 
 DltCounterPlugin::~DltCounterPlugin()
@@ -132,9 +139,60 @@ void DltCounterPlugin::initMessageDecoder(QDltMessageDecoder* pMessageDecoder)
     Q_UNUSED(pMessageDecoder);
 }
 
+// The tableview has been parsed to another global variable to access for pre-indexing
 void DltCounterPlugin::initMainTableView(QTableView* pTableView)
 {
-    Q_UNUSED(pTableView);
+    // Q_UNUSED(pTableView);
+    if (!pTableView) {
+        qWarning() << "Main TableView pointer is null!";
+        return;
+    }
+
+    m_mainTableView = pTableView;
+
+}
+
+// The index has been collected in the QHash map in prior for faster scroll back
+// to the mainwindow to find the previous or next message to the missing message.
+void DltCounterPlugin::buildTableIndex()
+{
+    if (!m_mainTableView || !m_mainTableView->model()) return;
+
+    QAbstractItemModel *model = m_mainTableView->model();
+    const int ctidColumn = 6;
+    const int counterColumn = 3;
+
+    ctidCounterRowMap.clear();
+
+    for (int row = 0; row < model->rowCount(); ++row) {
+        QString ctid = model->index(row, ctidColumn).data().toString();
+        int counter = model->index(row, counterColumn).data().toInt();
+        ctidCounterRowMap[ctid][counter] = row;
+    }
+}
+
+// The function will scroll back in the mainWindow to either previous or next message
+// The function access the tableview as model and then match to the context id and counter
+// value received. It utilises the QHash map which has been filled in buildTableIndex
+void DltCounterPlugin::scrollToCounterInMainTable(const QString &ctid, int counter){
+
+    if (!m_mainTableView) return;
+
+    QAbstractItemModel* model = m_mainTableView->model();
+    if(!model) return;
+
+    const QHash<int, int> &counterMap = ctidCounterRowMap.value(ctid);
+    int row = counterMap.value(counter);
+    QModelIndex index = model->index(row, 0);
+    if (!index.isValid()) {
+        QMessageBox::warning(nullptr, "Invalid Index", "Index is not valid.");
+        return;
+    }
+
+    m_mainTableView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+    m_mainTableView->clearSelection();
+    m_mainTableView->selectRow(row);
+    m_mainTableView->setFocus();
 }
 
 void DltCounterPlugin::configurationChanged()
@@ -171,19 +229,21 @@ void DltCounterPlugin::dataConsolidatedMap() {
 
     for (int i = 0; i < nameList.size() && i < countList.size(); ++i) {
         QString name = nameList[i];
-        int count = static_cast<int>(countList[i]);  // Ensure conversion if needed
+        int count = static_cast<int>(countList[i]);
 
-        consolidatedMap[name].insert(count);  // QSet ensures uniqueness automatically
+        consolidatedMap[name].insert(count);
     }
-
 }
 
 void DltCounterPlugin::initMsgDecoded(int , QDltMsg &){
 
 }
 
+//Consolidated data and pre collection of index occurs after the file has been
+// completed finished initialising.
 void DltCounterPlugin::initFileFinish(){
-
+    dataConsolidatedMap();
+    buildTableIndex();
 }
 
 void DltCounterPlugin::updateFileStart(){
@@ -197,7 +257,12 @@ void DltCounterPlugin::updateMsg(int , QDltMsg &){
 void DltCounterPlugin::updateMsgDecoded(int , QDltMsg &){
 
 }
+
+//Consolidated data and pre collection of index occurs after the file has been
+// completed finished initialising.
 void DltCounterPlugin::updateFileFinish(){
+    dataConsolidatedMap();
+    buildTableIndex();
 
 }
 

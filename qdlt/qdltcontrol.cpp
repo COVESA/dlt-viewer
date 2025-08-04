@@ -129,13 +129,3 @@ void QDltControl::reopenFile()
 {
     emit reopenFileSignal();
 }
-
-void QDltControl::CounterPluginCall()
-{
-    emit ControlgetModel();
-}
-void QDltControl::ExportPluginCall()
-{
-    emit ExportSignal();
-}
-    

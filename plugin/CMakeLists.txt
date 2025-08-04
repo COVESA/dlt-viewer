@@ -37,6 +37,7 @@ add_subdirectory(dltviewerplugin)
 add_subdirectory(filetransferplugin)
 add_subdirectory(nonverboseplugin)
 add_subdirectory(dltsegmentationplugin)
+add_subdirectory(dltcounterplugin)
 
 option(DLT_DUMMY_PLUGINS "Build Dummy plugins" OFF)
 if(DLT_DUMMY_PLUGINS)

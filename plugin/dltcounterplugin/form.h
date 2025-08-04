@@ -37,6 +37,11 @@ public:
     explicit Form(DltCounterPlugin *_plugin, QWidget *parent = 0);
     ~Form();
 
+    void handlePrevious(const QString &ctid, int missingCounter);
+    void handleNext(const QString &ctid, int missingCounter);
+    int findPreviousCounter(const QString &ctid, int counter);
+    int findNextCounter(const QString &ctid, int counter);
+
 private:
     Ui::Form *ui;
     DltCounterPlugin *plugin;
