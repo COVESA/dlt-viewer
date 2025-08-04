@@ -11,7 +11,7 @@
 # For further information see http://www.covesa.global/.
 #
 # List of changes:
-# 01.Oct.2016, Jack Smith <jack.smith@elektrobit.com>, Original Author
+# 02.Jun.2025, Renu Priya Krishnamoorthy <RenuPriya.KA.Krishnamoorthy@bti.bmwgroup.com>, Original Author
 #
 
 add_library(dltcounterplugin MODULE dltcounterplugin.cpp

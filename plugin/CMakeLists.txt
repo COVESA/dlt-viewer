@@ -43,6 +43,9 @@ if(DLT_NON_FUNCTIONAL_PLUGINS)
    add_subdirectory(dltsystemviewerplugin)
 endif()
 
+add_subdirectory(dltsegmentationplugin)
+add_subdirectory(dltcounterplugin)
+
 option(DLT_DUMMY_PLUGINS "Build Dummy plugins" OFF)
 if(DLT_DUMMY_PLUGINS)
     add_subdirectory(dummycontrolplugin)
