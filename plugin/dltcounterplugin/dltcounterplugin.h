@@ -43,8 +43,13 @@ public:
 
     QMap<QString, QSet<int>> consolidatedMap;
     void dataConsolidatedMap();
+    void scrollToCounterInMainTable(const QString &ctid, int counter);
+    void buildTableIndex();
     QList<QString> nameList;
     QList<unsigned char> countList;
+    QHash<QString, QHash<int, int>> ctidCounterRowMap;
+
+    QTimer *loadingCompleteTimer = nullptr;
 
     //For clearing the list and map before initMsg, so that old data will not
     //carried forward for next log file.
@@ -98,6 +103,7 @@ public:
     void updateCounters(int start,int end);
 
     QDltControl *dltControl;
+    QTableView* m_mainTableView = nullptr;
 private:
     QDltFile *dltFile;
     QString errorText;

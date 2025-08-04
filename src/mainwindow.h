@@ -461,21 +461,7 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
-
     void on_action_menuFile_DLTFilesize_triggered();
-
-    
-
-
-
-
-
-
-
-
-
-
-
 
 
 public slots:
