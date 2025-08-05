@@ -19,7 +19,8 @@ build-stamp:
 	# Add here commands to compile the package.
 	cmake . -G Ninja \
 		-DCMAKE_INSTALL_PREFIX=$(shell pwd)/debian/tmp \
-		-DDLT_ADDITIONAL_FILES_INSTALLATION_PATH=DLTViewer/usr
+		-DDLT_ADDITIONAL_FILES_INSTALLATION_PATH=DLTViewer/usr \
+		-DDLT_PLUGIN_INSTALLATION_PATH=/usr/share/dlt-viewer/plugins
 	cmake --build . --parallel $(shell grep -c processor /proc/cpuinfo)
 	# --- end custom part for compiling
 
