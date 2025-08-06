@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - "*"
   pull_request:
 
 jobs:
@@ -211,5 +213,68 @@ jobs:
       with:
         name: DLTViewer-macos${{ matrix.osversion }}-qt6
         path: build/dist/DLTViewer*.tgz
+  
+  createRelease:
+    name: Create release
+    runs-on: ubuntu-24.04
+    needs: [ buildMac, buildUbuntu, buildWindows ]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
 
+      - name: Download DLT Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Linux
+        continue-on-error: true
+        
+      - name: Download DLT macOS artifacts arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Mac-arm64
+      - name: Download DLT macOS artifacts x86
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Mac-x86
+      - name: Download DLT Windows parser artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Windows-parser
+      - name: Download DLT Windows sdk artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Windows-sdk
 
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v2.2
+        with:
+          skip-unshallow: 'true'
+          abbrev: false
+          commit-ish: HEAD
+      - name: Check pre-release
+        run: |
+          echo "tag=${{steps.tagger.outputs.tag}}"
+          if [[ ${{ steps.tagger.outputs.tag }} == *alpha* || ${{ steps.tagger.outputs.tag }} == *beta* ]]
+          then
+             prerelease=true
+          else
+             prerelease=false
+          fi
+          echo "PRE_RELEASE=$prerelease" >> $GITHUB_ENV
+          echo "prerelease=$prerelease"
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{steps.tagger.outputs.tag}}
+          generate_release_notes: true
+          prerelease: ${{ env.PRE_RELEASE }}
+          name: ${{steps.tagger.outputs.tag}}
+          files: |
+            DLT-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
