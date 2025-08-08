@@ -63,11 +63,13 @@ jobs:
           cp ../scripts/darwin/install.md dist
           tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
       - name: Archive artifact
+        run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/dist
+      - name: Archive upload
         uses: actions/upload-artifact@v4
         if: ${{ success() }}
         with:
-          name: DLTViewer-${{ matrix.macos }}-${{ matrix.abi }}
-          path: build/dist/DLTViewer*.tgz
+          name: DLT-Mac-${{ matrix.abi }}
+          path: DLT-macOS*.zip
 
   buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
@@ -241,7 +243,7 @@ jobs:
       - name: Download DLT macOS artifacts x86
         uses: actions/download-artifact@v4
         with:
-          name: DLTViewer-macos-13-x86
+          name: DLT-Mac-x86
 
       - name: Download DLT Windows artifacts
         uses: actions/download-artifact@v4
@@ -274,6 +276,6 @@ jobs:
           prerelease: ${{ env.PRE_RELEASE }}
           name: ${{steps.tagger.outputs.tag}}
           files: |
-            DLTViewer-*
+            DLT*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
