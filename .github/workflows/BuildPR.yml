@@ -274,6 +274,6 @@ jobs:
           prerelease: ${{ env.PRE_RELEASE }}
           name: ${{steps.tagger.outputs.tag}}
           files: |
-            DLTViewer-*
+            DLT*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
