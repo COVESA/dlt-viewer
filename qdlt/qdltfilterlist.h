@@ -26,15 +26,8 @@
 #include "qdltfilter.h"
 #include "qdltmsg.h"
 
-#include <QObject>
 #include <QString>
-#include <QFile>
-#include <QDateTime>
-#include <QMutex>
-#include <time.h>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
-
+#include <QList>
 
 class QDLT_EXPORT QDltFilterList
 {

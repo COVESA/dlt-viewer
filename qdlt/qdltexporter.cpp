@@ -225,7 +225,7 @@ bool QDltExporter::startExport()
             {
                 QFileInfo info(filename);
                 info.baseName();
-                QFile *file;
+                QFile *file = nullptr;
                 if(exportFormat == QDltExporter::FormatAscii)
                     file = new QFile(to.fileName()+"/"+info.baseName()+".txt");
                 else if(exportFormat == QDltExporter::FormatUTF8)
@@ -235,7 +235,7 @@ bool QDltExporter::startExport()
                 QDltFilterList *filterList = new QDltFilterList();
                 if(!filterList->LoadFilter(filename,true))
                     qDebug() << "Export: Open filter file " << filename << " failed!";
-                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly | QIODevice::Text))
+                if(!filterList->isEmpty() && (file && file->open(QIODevice::WriteOnly | QIODevice::Text)))
                 {
                     qDebug() << "Multifilter export filename: " << file->fileName();
                     multifilterFilesList.append(file);
@@ -243,7 +243,7 @@ bool QDltExporter::startExport()
                 }
                 else
                 {
-                    qDebug() << "Export: Export multifilter file " << file->fileName() << " failed!";
+                    qDebug() << "Export: Export multifilter file failed!";
                     delete file;
                     delete filterList;
                 }
