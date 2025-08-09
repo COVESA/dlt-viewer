@@ -134,10 +134,10 @@ void QDltOptManager::parse(const QStringList& args)
      /* the default parameter - exactly one parameter - should either be
       * a dlt or a dlp file, so this enables the "doubleclick" feature
       */
-
-    if (m_parser.optionNames().isEmpty() && m_parser.positionalArguments().size() == 1)
+    const QStringList positionalArguments = m_parser.positionalArguments();
+    if (m_parser.optionNames().isEmpty() && positionalArguments.size() == 1)
     {
-        const QString& arg = m_parser.positionalArguments().at(0);
+        const QString& arg = positionalArguments.at(0);
         bool closeConsole = false;
         if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))
         {
@@ -232,14 +232,12 @@ void QDltOptManager::parse(const QStringList& args)
         workingDirectory = m_parser.value("w");
     }
 
-    QStringList positionalArguments = m_parser.positionalArguments();
     for (const QString &arg : positionalArguments)
     {
         if(arg.endsWith(".dlt") || arg.endsWith(".DLT"))
         {
-            const QString logFile = arg;
-            logFiles += logFile;
-            qDebug()<< "DLT filename:" << logFile;
+            logFiles.append(arg);
+            qDebug()<< "DLT filename:" << arg;
         }
         else if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))        {
             if (project == true)
