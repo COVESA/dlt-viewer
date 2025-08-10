@@ -1672,6 +1672,8 @@
   <action name="action_menuFile_DLTFilesize">
    <property name="text">
     <string>DLT File size</string>
+    </property>
+   </action>
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
