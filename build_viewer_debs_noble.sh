@@ -22,7 +22,7 @@ echo "DLT_VERSION_STATE: ${DLT_VERSION_STATE}"
 echo "PACKAGE_NAME: ${PACKAGE_NAME}"
 
 mkdir -p ./debtmp/${PACKAGE_NAME}-${DLT_VERSION}-${DEBIAN_REVISION}
-rsync -a --exclude=debtmp --exclude=*.sh --exclude=*.bat --exclude=cache --exclude=parser --exclude=bionic * debtmp/${PACKAGE_NAME}-${DLT_VERSION}
+rsync -a --exclude=debtmp --include=scripts/linux/parse_version.sh --exclude=*.sh --exclude=*.bat --exclude=cache --exclude=parser --exclude=bionic * debtmp/${PACKAGE_NAME}-${DLT_VERSION}
 
 cd debtmp/${PACKAGE_NAME}-${DLT_VERSION}
 echo "#############################################"
