@@ -3254,6 +3254,63 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
 }
 
+void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
+{
+    qDebug() << "on_tabExplore_fileOpenRequested" << path;
+    if (path.endsWith(".dlt", Qt::CaseInsensitive)) {
+        onOpenTriggered(QStringList() << path);
+    } else if (path.endsWith(".pcap", Qt::CaseInsensitive)) {
+        on_action_menuFile_Clear_triggered();
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".mf4", Qt::CaseInsensitive)) {
+        on_action_menuFile_Clear_triggered();
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".dlf", Qt::CaseInsensitive)) {
+        openDlfFile(path, true);
+        reloadLogFile();
+    }
+}
+
+void MainWindow::on_tabExplore_fileAppendRequested(const QString& path) {
+    qDebug() << "on_tabExplore_fileAppendRequested" << path;
+
+    if (path.endsWith(".dlt", Qt::CaseInsensitive))
+        appendDltFile(path);
+    else if (path.endsWith(".pcap", Qt::CaseInsensitive) ||
+             path.endsWith(".mf4", Qt::CaseInsensitive)) {
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".dlf", Qt::CaseInsensitive))
+        openDlfFile(path, false);
+}
+
+void MainWindow::on_tabExplore_filesOpenRequest(const QStringList& dltPaths) {
+    openDltFile(dltPaths);
+    outputfileIsTemporary = true;
+}
+
+void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& mf4AndPcapPaths) {
+    QDltImporter* importerThread = new QDltImporter(&outputfile, mf4AndPcapPaths);
+    connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+    connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+    statusProgressBar->show();
+    importerThread->start();
+}
 
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {

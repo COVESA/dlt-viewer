@@ -397,6 +397,12 @@ private slots:
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_customContextMenuRequested(QPoint pos);
 
+    // file explorer tab slots
+    void on_tabExplore_fileOpenRequested(const QString &path);
+    void on_tabExplore_fileAppendRequested(const QString &path);
+    void on_tabExplore_filesOpenRequest(const QStringList &dltPaths);
+    void on_tabExplore_filesAppendRequest(const QStringList &mf4AndPcapPaths);
+
     void on_configWidget_itemSelectionChanged();
     void on_pluginWidget_itemSelectionChanged();
     void on_filterWidget_itemSelectionChanged();
