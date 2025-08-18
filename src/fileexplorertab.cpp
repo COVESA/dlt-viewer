@@ -63,25 +63,8 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
     auto path = getPathFromModelIndex(indexes[0]);
     if (QFileInfo(path).isFile()) {
         action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
-        connect(action, &QAction::triggered, this, [this, indexes]() {
-            auto selectedIndexes = indexes;
+        connect(action, &QAction::triggered, this, [this, path]() {
             QStringList dltFileNames, pcapFileNames, mf4FileNames, dlfFileNames;
-
-            for (auto& index : selectedIndexes) {
-                if (0 == index.column()) {
-                    QString path = getPathFromModelIndex(index);
-                    qDebug() << "Selected file path: " << path;
-
-                    if (path.endsWith(".dlt", Qt::CaseInsensitive))
-                        dltFileNames += path;
-                    else if (path.endsWith(".pcap", Qt::CaseInsensitive))
-                        pcapFileNames += path;
-                    else if (path.endsWith(".mf4", Qt::CaseInsensitive))
-                        mf4FileNames += path;
-                    else if (path.endsWith(".dlf", Qt::CaseInsensitive))
-                        dlfFileNames += path;
-                }
-            }
 
             if (!dltFileNames.isEmpty() && pcapFileNames.isEmpty() && mf4FileNames.isEmpty() &&
                 dlfFileNames.isEmpty()) {
@@ -119,12 +102,8 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
                 //         openDlfFile(i, false);
                 // }
                 // reloadLogFile();
-            } else {
-                QMessageBox msgBox(QMessageBox::Warning, "Open DLT/PCAP/MF4/DLF files",
-                                   "Mixing opening different file types not allowed!",
-                                   QMessageBox::Close);
-                qDebug() << "ERROR: Mixing opening different file types not allowed!";
             }
+            emit fileOpenRequested(path);
         });
         menu.addAction(action);
 

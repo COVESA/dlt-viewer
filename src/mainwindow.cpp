@@ -3254,6 +3254,11 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
 }
 
+void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
+{
+    qDebug() << "on_tabExplore_fileOpenRequested" << path;
+}
+
 
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {
