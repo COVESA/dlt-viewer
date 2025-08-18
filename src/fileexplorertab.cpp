@@ -30,6 +30,9 @@ FileExplorerTab::FileExplorerTab(QWidget* parent)
     ui->exploreView->hideColumn(1);
     ui->exploreView->hideColumn(2);
     ui->exploreView->hideColumn(3);
+
+    // disable multiple selection
+    ui->exploreView->setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 FileExplorerTab::~FileExplorerTab() {
@@ -57,11 +60,8 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
 
     QMenu menu(ui->exploreView);
     QAction* action;
-    auto index = indexes[0];
-    auto path = getPathFromModelIndex(index);
-    bool is_file = !QDir(path).exists();
-
-    if (is_file) {
+    auto path = getPathFromModelIndex(indexes[0]);
+    if (QFileInfo(path).isFile()) {
         action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
         connect(action, &QAction::triggered, this, [this, indexes]() {
             auto selectedIndexes = indexes;
@@ -70,6 +70,7 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
             for (auto& index : selectedIndexes) {
                 if (0 == index.column()) {
                     QString path = getPathFromModelIndex(index);
+                    qDebug() << "Selected file path: " << path;
 
                     if (path.endsWith(".dlt", Qt::CaseInsensitive))
                         dltFileNames += path;

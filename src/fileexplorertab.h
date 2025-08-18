@@ -27,6 +27,8 @@ class FileExplorerTab : public QWidget {
 
   signals:
     void fileActivated(const QString& path);
+
+    void fileOpenRequested(const QString& path);
   private slots:
     void on_exploreView_activated(const QModelIndex &index);
     void on_exploreView_customContextMenuRequested(QPoint pos);
