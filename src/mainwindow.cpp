@@ -1424,7 +1424,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Import DLT Stream"), workingDirectory.getDltDirectory(), tr("DLT Stream file (*.*)"));
-
+    int version=0;
     if(fileName.isEmpty())
         return;
 
@@ -1444,10 +1444,22 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
     }
-    while (dlt_file_read_raw(&importfile,false,0)>=0)
-    {
-        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+    version = (dlt_file_check_version(&importfile,0)&0xe0) >>5;
+    qDebug() << "DLT file version " << version;
+    if (version!=2)
+    { /*DLT*/
+        while (dlt_file_read_raw(&importfile,false,0)>=0)
+        {
+            outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+            outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        }
+    }else if (version==2){
+        /*DLTv2*/
+        while (dltv2_file_read_raw(&importfile,false,0)>=0)
+        {   
+            outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+            outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+        }
     }
     outputfile.flush();
     outputfile.close();
@@ -2132,7 +2144,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
-
+    
     if( 0 != settings->loggingOnlyMode )
     {
         qDebug() << "Logging only mode !";
