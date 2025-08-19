@@ -2192,12 +2192,7 @@ int dlt_file_check_version(DltFile *file,int verbose)
 {   
     PRINT_FUNCTION_VERBOSE(verbose);
     char first_char =fgetc(file->handle);
-    if (first_char != EOF) {
-        rewind(file->handle);
-    } else {
-        printf("File is empty\n");
-    }
-    
+    rewind(file->handle);
     return (int)first_char;
 }
 
