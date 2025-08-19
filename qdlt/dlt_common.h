@@ -362,7 +362,7 @@ typedef struct
 {
     char pattern[4];		/**< This pattern should be DLT0x01 */
     uint32_t nanoseconds;			    /**< nanoseconds since 1.1.1970 */
-    uint32_t seconds;            /**< secocnds */
+    uint32_t seconds;            /**< seconds */
     uint8_t ecuidlen;			
     char ecu[5];			/**< The ECU id is added, if it is not already in the DLT message itself */
 } PACKED Dltv2StorageHeader;
