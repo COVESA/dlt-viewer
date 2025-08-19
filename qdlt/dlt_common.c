@@ -2496,7 +2496,7 @@ int dltv2_set_storageheader(Dltv2StorageHeader *storageheader, const char *ecu)
 
     /* Set current time */
 #if defined(_MSC_VER)
-    storageheader->microseconds = 0;
+    storageheader->nanoseconds = 0;
 #else
     storageheader->seconds = (time_t)tv.tv_sec; /* value is long */
     storageheader->nanoseconds = (int32_t)tv.tv_usec; /* value is long */
