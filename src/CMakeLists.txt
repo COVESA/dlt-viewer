@@ -20,35 +20,64 @@ endif()
 
 add_executable(dlt-viewer
     main.cpp
+    mainwindow.h
     mainwindow.cpp
+    project.h
     project.cpp
+    ecudialog.h
     ecudialog.cpp
+    applicationdialog.h
     applicationdialog.cpp
+    contextdialog.h
     contextdialog.cpp
+    filterdialog.h
     filterdialog.cpp
+    plugindialog.h
     plugindialog.cpp
+    settingsdialog.h
     settingsdialog.cpp
+    injectiondialog.h
     injectiondialog.cpp
+    searchdialog.h
     searchdialog.cpp
+    multiplecontextdialog.h
     multiplecontextdialog.cpp
+    tablemodel.h
     tablemodel.cpp
+    filtertreewidget.h
     filtertreewidget.cpp
+    dltfileutils.h
     dltfileutils.cpp
+    dltfileindexer.h
     dltfileindexer.cpp
+    dlttableview.h
     dlttableview.cpp
+    dltuiutils.h
     dltuiutils.cpp
+    workingdirectory.h
     workingdirectory.cpp
+    jumptodialog.h
     jumptodialog.cpp
+    searchtablemodel.h
     searchtablemodel.cpp
+    pulsebutton.h
     pulsebutton.cpp
+    plugintreewidget.h
     plugintreewidget.cpp
+    exporterdialog.h
     exporterdialog.cpp
+    dltmsgqueue.h
     dltmsgqueue.cpp
+    dltfileindexerthread.h
     dltfileindexerthread.cpp
+    dltfileindexerdefaultfilterthread.h
     dltfileindexerdefaultfilterthread.cpp
+    sortfilterproxymodel.h
     sortfilterproxymodel.cpp
     searchform.h
     searchform.cpp
+    filtergrouplogs.h
+    filtergrouplogs.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc
     ecutree.h
