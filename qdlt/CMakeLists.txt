@@ -81,7 +81,7 @@ add_library(qdlt SHARED
 
 target_compile_definitions(qdlt PRIVATE
     BYTE_ORDER=LITTLE_ENDIAN
-    PLUGIN_INSTALLATION_PATH="${DLT_PLUGIN_INSTALLATION_PATH}")
+    PLUGIN_INSTALLATION_PATH="${PLUGIN_INSTALLATION_PATH}")
 
 if(WIN32)
     target_compile_definitions(qdlt PRIVATE QDLT_LIBRARY QT_VIEWER)
@@ -135,32 +135,28 @@ if(DLT_INSTALL_SDK)
     install(DIRECTORY "."
         DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/include/qdlt"
         COMPONENT qdlt_sdk
-        FILES_MATCHING PATTERN "*.h")
-
-foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
-    install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
-        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/src"
-        COMPONENT qdlt_sdk)
-endforeach()
+        FILES_MATCHING PATTERN "*.h"
+        PATTERN "tests" EXCLUDE
+        PATTERN "tests/*" EXCLUDE)
+    set(SDK_EXAMPLES
+        dummycommandplugin
+        dummycontrolplugin
+        dummydecoderplugin
+        dummyviewerplugin
+    )
+    foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
+        install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
+            DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/src"
+            COMPONENT qdlt_sdk)
+    endforeach()
 endif()
 
 install(DIRECTORY "."
     DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/include/qdlt"
     COMPONENT qdlt_sdk
-    FILES_MATCHING PATTERN "*.h")
-
-set(SDK_EXAMPLES
-    dummycommandplugin
-    dummycontrolplugin
-    dummydecoderplugin
-    dummyviewerplugin)
-
-foreach(SDK_EXAMPLE IN ITEMS ${SDK_EXAMPLES})
-    install(DIRECTORY "../plugin/${SDK_EXAMPLE}"
-        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/src"
-        COMPONENT qdlt_sdk)
-endforeach()
-
+    FILES_MATCHING PATTERN "*.h"
+    PATTERN "tests" EXCLUDE
+    PATTERN "tests/*" EXCLUDE)
 
 find_package(GTest)
 # configure unit tests only if gtest found on the system
