@@ -47,3 +47,18 @@ add_test(
   NAME test_qdltargument
   COMMAND $<TARGET_FILE:test_qdltargument>
 )
+
+add_test(
+  NAME test_dltv2fileraw
+  COMMAND $<TARGET_FILE:test_dltv2fileraw> 
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+add_executable(test_dltv2fileraw
+    test_dltv2fileraw.cpp
+)
+target_link_libraries(
+  test_dltv2fileraw
+  PRIVATE
+    GTest::gtest_main
+    qdlt
+)

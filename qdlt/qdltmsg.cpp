@@ -676,20 +676,22 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
                                (((quint64)(*((quint8*) (buf.constData() + headerLength + 6 + sizeStorageHeader))))<<16)|
                                (((quint64)(*((quint8*) (buf.constData() + headerLength + 7 + sizeStorageHeader))))<<8)|
                                (((quint64)(*((quint8*) (buf.constData() + headerLength + 8 + sizeStorageHeader)))));
-            if(timestampNanoseconds&0x80000000)
+            timestamp = (timestampSeconds * (quint64)10000) + ((quint64)timestampNanoseconds / (quint64)100000ul);
+            if(!(timestampNanoseconds&0x80000000)) //Bit 31 is set on the timestamp. UTC timestamp
             {
                 timestampNanoseconds &= 0x7fffffff;
-                timestamp = (timestampSeconds * (quint64)10000) + ((quint64)timestampNanoseconds / (quint64)100000ul);
+                time = timestampSeconds;
+            }
+            else //Bit 31 is not set on the timestamp. Time since ECU startup
+            {
                 if(storageheader) {
                     time = storageHeaderTimestampSeconds;
-                    microseconds = storageHeaderTimestampNanoseconds;
+                }
+                else {
+                    time = 0;
                 }
             }
-            else
-            {
-                time = timestamp;
-                microseconds = (quint64)timestampNanoseconds / (quint64)1000ul;
-            }
+            microseconds = (quint64)timestampNanoseconds / (quint64)1000ul;
             headerLength += 9;
         }
 

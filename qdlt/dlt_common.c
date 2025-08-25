@@ -693,15 +693,13 @@ int dlt_message_init(DltMessage *msg,int verbose)
     /* initalise structure parameters */
     msg->headersize = 0;
     msg->datasize = 0;
-
     msg->databuffer = 0;
-
     msg->storageheader = 0;
     msg->standardheader = 0;
     msg->extendedheader = 0;
-
     msg->found_serialheader = 0;
-
+    msg->optionalheaderv2.buffer=0;
+    msg->extendedheaderv2.buffer=0;
     return 0;
 }
 
@@ -717,6 +715,12 @@ int dlt_message_free(DltMessage *msg,int verbose)
     if (msg->databuffer)
     {
         free(msg->databuffer);
+    }
+    if (msg->optionalheaderv2.buffer){
+        free(msg->optionalheaderv2.buffer);
+    }
+    if (msg->extendedheaderv2.buffer){
+        free(msg->extendedheaderv2.buffer);
     }
     msg->databuffer = 0;
 
@@ -1522,6 +1526,176 @@ int dlt_file_read_header_raw(DltFile *file,int resync,int verbose)
 
     return 0;
 }
+int dltv2_file_read_header_raw(DltFile *file,int resync,int verbose)
+{
+    PRINT_FUNCTION_VERBOSE(verbose);
+    
+    int headersize=7;
+    uint8_t sublen;
+    
+    
+    if (file==0)
+    {
+        return -1;
+    }
+     if (fread(&file->msg.baseheaderv2,7,1,file->handle)!=1){
+         if (!feof(file->handle))
+        {
+            dlt_log(LOG_ERR, "Cannot read header from file!\n");
+        }
+        return -1;
+     };
+
+    if (file->msg.baseheaderv2.htyp2 !=0x4c ){
+        dlt_log(LOG_ERR,"header not found \n");
+        /* go back to last file position */
+            fseek(file->handle,file->file_position,SEEK_SET);
+     }
+    //swap endianess of the length and htyp 
+    file->msg.baseheaderv2.len=(file->msg.baseheaderv2.len >> 8) | (file->msg.baseheaderv2.len << 8);
+    
+    if(((file->msg.baseheaderv2.htyp2 & 0x03)==0)||((file->msg.baseheaderv2.htyp2 & 0x03)==2)){// 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+        //has MSIN and NOAR
+        headersize=headersize+2;
+    }
+    if(((file->msg.baseheaderv2.htyp2 & 0x03)==0)||((file->msg.baseheaderv2.htyp2 & 0x03)==1)){// 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+        //has TMSP2
+        headersize=headersize+9;
+    }
+     if((file->msg.baseheaderv2.htyp2 & 0x03)==1){// 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+        //has MSID
+        headersize=headersize+4;
+    }
+
+    if(file->msg.optionalheaderv2.buffer==NULL){
+    
+        file->msg.optionalheaderv2.buffer=(uint8_t*)malloc(15);//15 can be the max size of the optional header
+        file->msg.optionalheaderv2.len=15;
+    }
+  
+    if ((file->msg.optionalheaderv2.len >15)||(file->msg.optionalheaderv2.len <0)){
+        dlt_log(LOG_ERR,"Something when wrong with the header length\n");
+        return -1;
+    };
+    if (headersize>7){
+        if(fread(file->msg.optionalheaderv2.buffer,headersize-7,1,file->handle)!=1)
+        {
+         if (!feof(file->handle))
+        {
+            dlt_log(LOG_ERR, "Cannot read header from file!\n");
+        }
+        return -1;
+         }
+        file->msg.optionalheaderv2.len=headersize-7;
+    }
+    
+
+    //initialize ectended header buffer
+    if (file->msg.extendedheaderv2.buffer==NULL){
+            
+            file->msg.extendedheaderv2.buffer=(uint8_t*)malloc(100);//arbitary number. DLTv2 allows for dynamic header length but
+                                                                    // very unlikely to exceed 100 bytes
+           
+        }
+   
+    file->msg.extendedheaderv2.len=0;
+    if((file->msg.baseheaderv2.htyp2 & 0x04)==4){// has ECUid bit 2
+        sublen=0;
+        if (fread(&sublen,1,1,file->handle)!=1)
+        {
+         if (!feof(file->handle))
+        {
+            dlt_log(LOG_ERR, "Cannot read header from file!\n");
+        }
+        return -1;
+         }
+        if ((sublen>200)|| (sublen<0)){
+            sprintf(str,"sublen %d \n",sublen);
+            dlt_log(LOG_ERR,str);
+            return -1;
+        }
+        fseek(file->handle, -1, SEEK_CUR);
+        if (fread(file->msg.extendedheaderv2.buffer,sublen+1,1,file->handle)!=1)
+        {
+         if (!feof(file->handle))
+        {
+            dlt_log(LOG_ERR, "Cannot read header from file!\n");
+        }
+        return -1;
+         }
+        headersize=headersize+sublen+1;
+        file->msg.extendedheaderv2.len=file->msg.extendedheaderv2.len+sublen+1;
+    }
+    if((file->msg.baseheaderv2.htyp2 & 0x08)==8)
+    {// has AppID and CtxId bit 3
+        sublen=0;
+        //read appid length
+        if (fread(&sublen,1,1,file->handle)!=1)
+        {
+            if (!feof(file->handle))
+            {
+                dlt_log(LOG_ERR, "Cannot read header from file!\n");
+            }
+            return -1;
+        }
+        if ((sublen+ file->msg.extendedheaderv2.len>200)|| (sublen<0)){
+            sprintf(str,"sublen %d \n",file->msg.extendedheaderv2.len+sublen);
+            dlt_log(LOG_ERR,str);
+            return -1;
+        }
+        //read appid
+        fseek(file->handle, -1, SEEK_CUR);
+        if (fread(file->msg.extendedheaderv2.buffer + file->msg.extendedheaderv2.len,sublen+1,1,file->handle)!=1)
+        {
+            if (!feof(file->handle))
+            {
+                dlt_log(LOG_ERR, "Cannot read header from file!\n");
+            }
+            return -1;
+        }
+        headersize=headersize+sublen+1;
+        file->msg.extendedheaderv2.len=file->msg.extendedheaderv2.len + sublen + 1;
+       
+        //read ctxid length
+        sublen=0;
+        if (fread(&sublen,1,1,file->handle)!=1)
+        {
+            if (!feof(file->handle))
+            {
+                dlt_log(LOG_ERR, "Cannot read header from file!\n");
+            }
+            return -1;
+        }
+        if ((sublen+ file->msg.extendedheaderv2.len>200)|| (sublen<0)){
+            sprintf(str,"sublen %d \n",file->msg.extendedheaderv2.len+sublen);
+            dlt_log(LOG_ERR,str);
+            return -1;
+        }
+        //read ctxid 
+        fseek(file->handle, -1, SEEK_CUR);
+        if (fread(file->msg.extendedheaderv2.buffer+ file->msg.extendedheaderv2.len,sublen+1,1,file->handle)!=1)
+        {
+            if (!feof(file->handle))
+            {
+                dlt_log(LOG_ERR, "Cannot read header from file!\n");
+            }
+            return -1;
+        }
+        headersize=headersize+sublen+1;
+        file->msg.extendedheaderv2.len=file->msg.extendedheaderv2.len+sublen+1;
+    }
+    if((file->msg.baseheaderv2.htyp2 & 0x10)==16){// has SessionId bit 4
+        headersize=headersize+4;
+        file->msg.extendedheaderv2.len=file->msg.extendedheaderv2.len+4;
+    }
+     /* Skip storage header field, fill this field with '0' */
+    file->msg.storageheaderv2 = (Dltv2StorageHeader*) file->msg.headerbuffer;
+    memset(file->msg.storageheaderv2,0,14);
+    dltv2_set_storageheader(file->msg.storageheaderv2,DLT_COMMON_DUMMY_ECUID);
+    file->msg.headersize =14;
+    return headersize;
+
+}
 
 int dlt_file_read_header_extended(DltFile *file, int verbose)
 {
@@ -1583,7 +1757,7 @@ int dlt_file_read_data(DltFile *file, int verbose)
     {
         return -1;
     }
-
+    
     /* free last used memory for buffer */
     if (file->msg.databuffer)
     {
@@ -1610,7 +1784,7 @@ int dlt_file_read_data(DltFile *file, int verbose)
             return -1;
         }
     }
-
+    
     return 0;
 }
 
@@ -1854,6 +2028,74 @@ int dlt_file_read_raw(DltFile *file,int resync, int verbose)
     return found;
 }
 
+int dltv2_file_read_raw(DltFile *file,int resync,int verbose){
+    
+    if (verbose)
+    {  
+        dlt_log(LOG_INFO, "dltv2_file_read_raw \n");
+    }
+
+    if (file==0){
+        return -1;
+    }
+     long *ptr;
+     int found = 0;
+     int headerlen=7;
+
+     /* allocate new memory for index if number of messages exceeds a multiple of DLT_COMMON_INDEX_ALLOC (e.g.: 1000) */
+    if (file->counter % DLT_COMMON_INDEX_ALLOC == 0)
+    {
+        ptr = (long *) malloc(((file->counter/DLT_COMMON_INDEX_ALLOC) + 1) * DLT_COMMON_INDEX_ALLOC * sizeof(long));
+
+        if (ptr==0)
+        {
+            return -1;
+        }
+
+        if (file->index)
+        {
+            memcpy(ptr,file->index,file->counter * sizeof(long));
+            free(file->index);
+        }
+        file->index = ptr;
+    }
+    
+    /* read standar headers */
+    headerlen=dltv2_file_read_header_raw(file,0,0);
+    if (headerlen<7){
+         /* go back to last position in file */
+        fseek(file->handle,file->file_position,SEEK_SET);
+        return -1;
+    }
+
+    file->msg.datasize=file->msg.baseheaderv2.len-headerlen;
+    //swap endianess of the length
+    file->msg.baseheaderv2.len=(file->msg.baseheaderv2.len >> 8) | (file->msg.baseheaderv2.len << 8);
+    /* read the data */
+     if (dlt_file_read_data(file,verbose)<0)
+    {
+        return -1;
+    }
+    /* store index pointer to message position in DLT file */
+    file->index[file->counter] = file->file_position;
+    file->counter++;
+    file->position = file->counter - 1;
+
+    found = 1;
+
+    /* increase total message counter */
+    file->counter_total++;
+
+    /* store position to next message */
+    file->file_position = ftell(file->handle);
+    memcpy(file->msg.headerbuffer+18,&file->msg.baseheaderv2,7);
+    memcpy(file->msg.headerbuffer+25,file->msg.optionalheaderv2.buffer,file->msg.optionalheaderv2.len+1);
+    memcpy(file->msg.headerbuffer+25+file->msg.optionalheaderv2.len,file->msg.extendedheaderv2.buffer,file->msg.extendedheaderv2.len+1);
+    file->msg.headersize=25+file->msg.optionalheaderv2.len+file->msg.extendedheaderv2.len;
+    return found;
+}
+
+
 int dlt_file_close(DltFile *file,int verbose)
 {
     PRINT_FUNCTION_VERBOSE(verbose);
@@ -1944,6 +2186,14 @@ int dlt_file_free(DltFile *file,int verbose)
     file->handle = 0;
 
     return dlt_message_free(&(file->msg),verbose);
+}
+
+int dlt_file_check_version(DltFile *file,int verbose)
+{   
+    PRINT_FUNCTION_VERBOSE(verbose);
+    char first_char =fgetc(file->handle);
+    rewind(file->handle);
+    return (int)first_char;
 }
 
 void dlt_log_init(int mode)
@@ -2209,6 +2459,49 @@ int dlt_set_storageheader(DltStorageHeader *storageheader, const char *ecu)
     storageheader->microseconds = (int32_t)tv.tv_usec; /* value is long */
 #endif
 
+    return 0;
+}
+
+int dltv2_set_storageheader(Dltv2StorageHeader *storageheader, const char *ecu)
+{
+
+#if !defined(_MSC_VER)
+    struct timeval tv;
+#endif
+
+    if (storageheader==0)
+    {
+        return -1;
+    }
+
+    /* get time of day */
+#if defined(_MSC_VER)
+    time((time_t*)&(storageheader->seconds));
+#else
+    gettimeofday(&tv, NULL);
+#endif
+
+    /* prepare storage header */
+    storageheader->pattern[0] = 'D';
+    storageheader->pattern[1] = 'L';
+    storageheader->pattern[2] = 'T';
+    storageheader->pattern[3] = 0x02;
+
+    dlt_set_id(storageheader->ecu,ecu);
+
+    /* Set current time */
+#if defined(_MSC_VER)
+    storageheader->nanoseconds = 0;
+#else
+    storageheader->seconds = (time_t)tv.tv_sec; /* value is long */
+    storageheader->nanoseconds = (int32_t)tv.tv_usec; /* value is long */
+#endif
+    storageheader->ecuidlen=0;
+    storageheader->ecu[0]=0x4;
+    storageheader->ecu[1]='E';
+    storageheader->ecu[2]='C';
+    storageheader->ecu[3]='U';
+    storageheader->ecu[4]='1';
     return 0;
 }
 
