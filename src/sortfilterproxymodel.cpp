@@ -68,3 +68,47 @@ bool SortFilterProxyModel::lessThan(const QModelIndex &left,
     return ret_val;
 }
 
+EcuIdFilterProxyModel::EcuIdFilterProxyModel(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{
+}
+
+// Sets a single ECU ID for filtering
+void EcuIdFilterProxyModel::setEcuId(const QString& ecuId) {
+    ecu = ecuId;
+    this->invalidateFilter();
+}
+
+// Sets a list of ECU IDs for filtering
+void EcuIdFilterProxyModel::setEcuIdList(const QSet<QString>& ids) {
+    ecuIdList.clear();
+    for (const QString& id : ids)
+        ecuIdList.insert(id.trimmed().toLower());
+    invalidateFilter();
+    sort(-1);
+}
+
+// Sets the column index for ECU filtering
+void EcuIdFilterProxyModel::setEcuColumn(int column) {
+    ecuColumn = column;
+    this->invalidateFilter();
+}
+
+// Determines if a row should be accepted based on ECU filtering
+bool EcuIdFilterProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) const {
+    if (!sourceModel() || ecuColumn < 0)
+        return false;
+    QModelIndex index = sourceModel()->index(row, ecuColumn, parent);
+    if (!index.isValid())
+        return false;
+    QString value = sourceModel()->data(index).toString().trimmed().toLower();
+    if (ecu.isEmpty() && ecuIdList.isEmpty())
+        return true;
+    if (!ecuIdList.isEmpty()) {
+        return ecuIdList.contains(value);
+    }
+    if (!ecu.isEmpty()) {
+        return value == ecu.trimmed().toLower();
+    }
+    return false;
+}

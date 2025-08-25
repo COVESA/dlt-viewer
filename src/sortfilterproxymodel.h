@@ -25,4 +25,23 @@ private:
     SortType sort_type = ALPHABETICALLY;
 };
 
+class EcuIdFilterProxyModel : public QSortFilterProxyModel
+{
+    Q_OBJECT
+public:
+    explicit EcuIdFilterProxyModel(QObject* parent = nullptr);
+
+    void setEcuId(const QString& ecuId);
+    void setEcuIdList(const QSet<QString> &ids);
+    void setEcuColumn(int column);
+
+protected:
+    bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
+
+private:
+    QString ecu;
+    QSet<QString> ecuIdList;
+    int ecuColumn = 4;
+};
+
 #endif // SORTFILTERPROXYMODEL_H
