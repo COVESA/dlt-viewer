@@ -32,6 +32,9 @@
 #include "export_rules.h"
 #include "qdltmsg.h"
 
+/**
+ * Unused.
+ */
 class QDLT_EXPORT QDltDataView
 {
 public:

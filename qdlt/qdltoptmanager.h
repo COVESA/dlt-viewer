@@ -41,6 +41,13 @@ enum class e_inputmode
     SERIAL = 2,
 };
 
+/**
+ * Holder for application options (UI).
+ *
+ * Unclear difference with QDltSettingsManager
+ *
+ * Some nondescript, nontrivial items need further doc.
+ */
 class QDLT_EXPORT QDltOptManager
 {
 public:

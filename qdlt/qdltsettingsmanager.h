@@ -30,6 +30,9 @@
 
 #define DEFAULT_REFRESH_RATE 20
 
+/**
+ * Application options.
+ */
 class QDLT_EXPORT QDltSettingsManager
 {
 // Singleton pattern

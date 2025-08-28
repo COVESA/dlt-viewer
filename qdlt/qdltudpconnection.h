@@ -34,6 +34,16 @@
 
 class QUdpSocket;
 
+/**
+ * Represents receiving messages from a UDP remote endpoint for the purposes of the UI.
+ *
+ * Currently set up as an inheritance scheme - QDltConnection (if necessary at all)
+ * should be an interface.
+ *
+ * @see QDltIPConnection
+ * @see QDltSerialConnection
+ * @see QDltTCPConnection
+ */
 class QDLT_EXPORT QDltUDPConnection : public QDltIPConnection
 {
 public:

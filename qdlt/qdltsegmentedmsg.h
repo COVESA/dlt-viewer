@@ -26,10 +26,16 @@
 
 #include <qdltmsg.h>
 
-//! Combine segmented network messages
-/*!
-  This class combines several segmented network message to a single message
-*/
+/**
+ * Combine segmented network messages
+ * This class combines several segmented network message to a single message
+ *
+ * this -> DltSegmentationPlugin::decodeMsg -> QDltMsg
+ * ^
+ * This usage is suboptimal - this class has a straightforward conversion to QDltMsg that should be
+ * part of this class' functions.
+ *
+ */
 class QDLT_EXPORT QDltSegmentedMsg
 {
 public:

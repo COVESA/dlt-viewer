@@ -36,6 +36,10 @@
 #include "qdltmsg.h"
 
 
+/**
+ * Represents filters set in the UI.
+ * Unclear difference to `QDltDefaultFilter`.
+ */
 class QDLT_EXPORT QDltFilter
 {
 public:

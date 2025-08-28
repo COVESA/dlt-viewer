@@ -11,6 +11,17 @@
 
 class QDltMsg;
 
+/**
+ * A class which can be used to set search parameters for matching on potential DLT messages.
+ *
+ * Offers functions to search different parts of a DLT message.
+ * Offers the option to search either the header, the payload, or both.
+ * Searches can be case-sensitive - default is case-insensitive.
+ * The pattern to search a payload can be either a regular expression or plain text.
+ *
+ * Currently used by the UI search dialog.
+ * @see SearchDialog
+ */
 class QDLT_EXPORT DltMessageMatcher
 {
 public:

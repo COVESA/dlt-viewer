@@ -12,6 +12,10 @@
 
 namespace qdlt::msg::payload {
 
+/**
+ * A struct associated with the `GetLogInfo` DLT command,
+ * to retrieve log levels for all registered contexts.
+ */
 struct GetLogInfo {
     struct App {
         struct Ctx {
@@ -30,31 +34,52 @@ struct GetLogInfo {
     std::vector<App> apps;
 };
 
+/**
+ * A struct associated with the `GetSoftwareVersion` DLT command,
+ * to retrieve a string denoting the system's software version.
+ */
 struct GetSoftwareVersion {
 };
 
+/**
+ * A struct associated with the `GetDefaultLogLevel` DLT command,
+ * to retrieve the currently set default log level.
+ */
 struct GetDefaultLogLevel
 {
     uint8_t logLevel;
     uint8_t status;
 };
 
+/**
+ * A struct associated with the `GetDefaultLogLevel` DLT command,
+ * to set a log level.
+ */
 struct SetLogLevel {
     uint8_t status;
 };
 
+/**
+ * ???
+ */
 struct Timezone {
     uint8_t status;
     int32_t timezone;
     uint8_t isDst;
 };
 
+/**
+ * ???
+ */
 struct UnregisterContext {
     uint8_t status;
     QString appid;
     QString ctxid;
 };
 
+/**
+ * ???
+ */
 struct Uninteresting {
     uint32_t serviceId;
 };

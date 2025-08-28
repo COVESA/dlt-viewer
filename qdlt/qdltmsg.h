@@ -28,18 +28,18 @@
 #include "qdltbase.h"
 #include "qdltargument.h"
 
-//! Access to a DLT message.
-/*!
-  This class provide access to a single DLT message from a DLT log file.
-  This class is currently not thread safe.
-*/
+/**
+ * An object modelling a DLT message.
+ * Can be used to create custom messages and to parse valid DLT messages (e.g. from a file).
+ *
+ * @warning No functions in this class are thread-safe.
+ */
 class QDLT_EXPORT QDltMsg
 {
 public:
-    //! Constructor.
-    /*!
-      This call clears all variables of the argument.
-    */
+    /**
+     * Constructor. Clears all variables of the argument.
+     */
     QDltMsg();
 
     //! The type of the DLT message.

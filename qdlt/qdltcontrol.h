@@ -32,6 +32,10 @@
 
 #include "export_rules.h"
 
+/**
+ * This class contains various functions relevant to the UI,
+ * corresponding to user commands.
+ */
 class QDLT_EXPORT QDltControl : public QObject
 {
       Q_OBJECT

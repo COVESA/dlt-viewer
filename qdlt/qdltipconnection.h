@@ -32,6 +32,11 @@
 #include "export_rules.h"
 #include "qdltconnection.h"
 
+/**
+ * A (conceptual) connection toward a DLT service.
+ *
+ * Used by the UI (main window).
+ */
 class QDLT_EXPORT QDltIPConnection : public QDltConnection
 {
 public:
