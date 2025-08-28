@@ -82,6 +82,11 @@ private:
     int m_position;
 };
 
+/**
+ * Base class for classes representing a connection for user commands & UI.
+ *
+ * Has concrete methods.
+ */
 class QDLT_EXPORT QDltConnection
 {
 
@@ -102,6 +107,11 @@ public:
     bool parseAscii(QDltMsg &msg);
 
     void clear();
+    /**
+     * Add data to a connection, to be parsed.
+     *
+     * @see MainWindow::read
+     */
     void add(const QByteArray &bytes);
 
     QByteArray data;
