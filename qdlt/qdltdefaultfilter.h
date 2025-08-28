@@ -36,6 +36,11 @@
 #include "qdltfilterlist.h"
 
 
+/**
+ * XXX
+ * Unclear usage. Maybe intended to represent filters set in the UI but only used in indexer.
+ * Unclear difference to `QDltFilter`.
+ */
 class QDLT_EXPORT QDltDefaultFilter
 {
 public:
