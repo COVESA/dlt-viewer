@@ -309,6 +309,15 @@ quint32 QDltMsg::checkMsgSize(const char *data,quint32 size,bool supportDLTv2)
     }
 }
 
+/**
+ * Attempt to parse a valid DLT message from `buf`, with an optional storage header.
+ *
+ * It will attempt to parse DLTv1 only if `supportDLTv2` is `false`.
+ *
+ * @return `false` if there is not enough data in `buf` for a valid message header or
+ * the entire message as indicated in the header's length field. Also `false` if
+ * arguments could not be parsed correctly. Otherwise, `true`.
+ */
 bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportDLTv2)
 {
     unsigned int offset;
@@ -926,6 +935,14 @@ bool QDltMsg::parseArguments()
     return true;
 }
 
+/**
+ * Attempt to create a valid DLT messages in `buf`, optionally
+ * preceded by a storage header, from the state of `this` object.
+ *
+ * Modifies `this.payload` to contain the message's arguments.
+ *
+ * @return `false` if calling `QDltArgument::getArgument` fails, `true` otherwise
+ */
 bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
     DltStorageHeader storageheader;
     DltStandardHeader standardheader;
@@ -1073,6 +1090,12 @@ int QDltMsg::sizeArguments() const
     return arguments.size();
 }
 
+/**
+ * Set `argument` to the argument of this message at `index`.
+ *
+ * @return `false` if `index` is outside the range of currently contained arguments, `true`
+ * otherwise.
+ */
 bool QDltMsg::getArgument(int index,QDltArgument &argument) const
 {
       if(index<0 || index>=arguments.size())

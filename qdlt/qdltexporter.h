@@ -15,6 +15,13 @@
 #define QDLT_DEFAULT_EXPORT_SIGNATURE "ITSOEACNYUMRP"
 #define QDLT_DEFAULT_EXPORT_DELIMITER ','
 
+/**
+ * Class used for UI export functions. Currently implemented as a thread that must be fed
+ * messages to export.
+ *
+ * There is no interface toward a collection of DLT messages, but instead
+ * functions are referencing single QDltMsg instances. This is suboptimal.
+ */
 class QDLT_EXPORT QDltExporter : public QThread
 {
     Q_OBJECT

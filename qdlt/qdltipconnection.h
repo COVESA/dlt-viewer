@@ -32,6 +32,15 @@
 #include "export_rules.h"
 #include "qdltconnection.h"
 
+/**
+ * A (conceptual) connection toward a DLT service.
+ *
+ * Currently set up as an inheritance scheme - QDltConnection has concrete functions
+ * for parsing.
+ * This class keeps track of the remote host(name). Also port, although IP has no port info.
+ *
+ * Used by the UI (main window).
+ */
 class QDLT_EXPORT QDltIPConnection : public QDltConnection
 {
 public:

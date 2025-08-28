@@ -31,7 +31,8 @@
 //! One argument of a DLT message.
 /*!
   This class contains one argument of a DLT message.
-  A QDltMessage contains several Arguments.
+  A QDltMessage contains several QDltArgument, like a DLT message contains
+  multiple arguments.
 */
 class QDLT_EXPORT QDltArgument
 {

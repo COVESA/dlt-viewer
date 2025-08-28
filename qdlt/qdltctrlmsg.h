@@ -12,6 +12,16 @@
 
 namespace qdlt::msg::payload {
 
+/**
+ * Most DLT service IDs referenced here can be found in the AUTOSAR DLT specification.
+ *
+ * Note the AUTOSAR spec does not reserve IDs.
+ */
+
+/**
+ * A struct associated with the `GetLogInfo` DLT service command,
+ * to retrieve log levels for all registered contexts.
+ */
 struct GetLogInfo {
     struct App {
         struct Ctx {
@@ -30,15 +40,27 @@ struct GetLogInfo {
     std::vector<App> apps;
 };
 
+/**
+ * A struct associated with the `GetSoftwareVersion` DLT service command,
+ * to retrieve a string denoting the system's software version.
+ */
 struct GetSoftwareVersion {
 };
 
+/**
+ * A struct associated with the `GetDefaultLogLevel` DLT service command,
+ * to retrieve the currently set default log level.
+ */
 struct GetDefaultLogLevel
 {
     uint8_t logLevel;
     uint8_t status;
 };
 
+/**
+ * A struct associated with the `GetDefaultLogLevel` DLT service command,
+ * to set a log level.
+ */
 struct SetLogLevel {
     uint8_t status;
 };

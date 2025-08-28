@@ -36,6 +36,12 @@
 #include "qdltfilterlist.h"
 
 
+/**
+ * "Default" filters loaded by MainWindow - initialises the indexer.
+ * this ∋ `QDltFilterList` ∋ `QDltFilter`
+ *
+ * @see MainWindow
+ */
 class QDLT_EXPORT QDltDefaultFilter
 {
 public:

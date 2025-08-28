@@ -6,6 +6,12 @@
 #include <QObject>
 #include <QString>
 
+/**
+ * Class to obtain human-readable names for DLT message parts,
+ * and UI element properties.
+ *
+ * @see MainWindow::initView
+ */
 class QDLT_EXPORT FieldNames : public QObject
 {
     Q_OBJECT
@@ -42,9 +48,9 @@ public:
     static bool getColumnShown(Fields cn,QDltSettingsManager *settings = NULL);
 
 signals:
-    
+
 public slots:
-    
+
 };
 
 #endif // FIELDNAMES_H

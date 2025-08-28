@@ -35,7 +35,9 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-
+/**
+ * A list of filters applied in the UI
+ */
 class QDLT_EXPORT QDltFilterList
 {
 public:

@@ -35,6 +35,16 @@
 
 class QSerialPort;
 
+/**
+ * Represents a serial connection for the purposes of the UI.
+ *
+ * Currently set up as an inheritance scheme - QDltConnection has concrete functions
+ * for parsing.
+ *
+ * @see QDltIPConnection
+ * @see QDltTCPConnection
+ * @see QDltUDPConnection
+ */
 class QDLT_EXPORT QDltSerialConnection : public QDltConnection
 {
 public:
