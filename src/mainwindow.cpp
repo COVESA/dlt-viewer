@@ -2966,7 +2966,7 @@ void MainWindow::on_action_menuConfig_Context_Edit_triggered()
 void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
 {
 
-    MultipleContextDialog dlg(0,0);
+    MultipleContextDialog dlg(logLevel,traceStatus);
 
     if(dlg.exec())
     {
@@ -3022,6 +3022,9 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
 
                     conitem->loglevel = dlg.loglevel();
                     conitem->tracestatus = dlg.tracestatus();
+
+                    logLevel = conitem->loglevel + 1;
+                    traceStatus = conitem->tracestatus +1;
 
                     /* update context item */
                     conitem->update();
