@@ -1855,10 +1855,6 @@ void MainWindow::on_action_menuFile_Clear_triggered()
     // reset / clear file indexes
     dltIndexer->clearindex();
 
-    /* clear the size of the file */
-    totalPayloadSize = 0;
-    totalMessageSize = 0;
-    totalStorageSize = 0;
     //clear all the action buttons from history
     for (int i = 0; i < MaxSearchHistory; i++)
     {
@@ -2130,24 +2126,6 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
     statusProgressBar->hide();
 }
 
-/* Calculate standard + extended header size based on HTYP */
-int MainWindow::calculateHeaderSize(quint8 htyp)
-{
-    int size = 4; // Minimum header size (standard header)
-    if (htyp & 0x01) size += 4;
-    if (htyp & 0x02) size += 4;
-    if (htyp & 0x04) size += 6;
-    if (htyp & 0x08) size += 8;
-    return size;
-}
-
-/* align a given size to a 4-byte (rounds up size to the next multiple of 4) */
-quint32 MainWindow::alignedStorageSize(quint32 size)
-{
-    constexpr int STORAGE_ALIGNMENT = 4;
-    return ((size + STORAGE_ALIGNMENT - 1) / STORAGE_ALIGNMENT) * STORAGE_ALIGNMENT;
-}
-
 void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
     qint64 fileerrors = 0;
@@ -2234,81 +2212,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         for(int num=0;num<openFileNames.size();num++)
         {
             bool back = qfile.open(openFileNames[num],num!=0);
-            QString fileNameSelected = openFileNames[num];
-            QFile fileNameForSize(fileNameSelected);
-            if (!fileNameForSize.open(QIODevice::ReadOnly)) {
-                qWarning() << "Failed to open file:" << fileNameForSize.errorString();
-                return;
-            }
-            bool StorageHeaderSeen = false;
-            while (!fileNameForSize.atEnd()) {
-                if (fileNameForSize.bytesAvailable() < STORAGE_HEADER_SIZE) {
-                    qWarning() << "Not enough bytes left for storage header.";
-                    break;
-                }
 
-                QByteArray storageHeader = fileNameForSize.read(STORAGE_HEADER_SIZE);
-                if (storageHeader.size() < STORAGE_HEADER_SIZE) {
-                    qWarning() << "Incomplete storage header.";
-                    break;
-                }
-                StorageHeaderSeen = true;
-
-                quint8 htyp = static_cast<quint8>(storageHeader[1]);
-                quint16 totalLen = static_cast<quint8>(storageHeader[2]) | (static_cast<quint8>(storageHeader[3]) << 8);
-
-                if (totalLen == 0) {
-                    qWarning() << "Corrupt message (totalLen=0). Skipping 1 byte to resync.";
-                    fileNameForSize.seek(fileNameForSize.pos() - STORAGE_HEADER_SIZE + 1);
-                    continue;
-                }
-
-                if (totalLen < STORAGE_HEADER_SIZE) {
-                    qWarning() << "Invalid totalLen (too small):" << totalLen;
-                    fileNameForSize.seek(fileNameForSize.pos() - STORAGE_HEADER_SIZE + 1);
-                    continue;
-                }
-
-                int headerSize = calculateHeaderSize(htyp);
-                int payloadSize = totalLen - headerSize;
-                if (payloadSize < 0) {
-                    qWarning() << "Negative payload size. Skipping 1 byte to resync.";
-                    fileNameForSize.seek(fileNameForSize.pos() - STORAGE_HEADER_SIZE + 1);
-                    continue;
-                }
-
-                // Check if full message bytes are available after storage header
-                qint64 bytesNeeded = totalLen - STORAGE_HEADER_SIZE;
-                qint64 remainingFileBytes = fileNameForSize.size() - fileNameForSize.pos();
-
-                if (remainingFileBytes < bytesNeeded) {
-                    qWarning() << "Not enough bytes left for full message.";
-                    break;
-                }
-                QByteArray restOfMessage = fileNameForSize.read(bytesNeeded);
-                if (restOfMessage.size() < bytesNeeded) {
-                    qWarning() << "Incomplete message read.";
-                    break;
-                }
-
-                quint32 storageSize = alignedStorageSize(totalLen);
-                totalPayloadSize += payloadSize;
-                totalMessageSize += totalLen;
-                if (StorageHeaderSeen) {
-                    totalStorageSize += storageSize;
-                } else {
-                    totalStorageSize += 0;
-                }
-                // Skip any padding bytes beyond totalLen to align to storageSize
-                qint64 paddingBytes = storageSize - totalLen;
-                if (paddingBytes > 0) {
-                    if (fileNameForSize.bytesAvailable() < paddingBytes) {
-                        qWarning() << "Not enough bytes left for padding. Ending.";
-                        break;
-                    }
-                    fileNameForSize.read(paddingBytes);
-                }
-            }
             if ( false == back )
             {
               qDebug() << "ERROR opening file (s)" << openFileNames[num] << __FILE__ << __LINE__;
@@ -2457,15 +2361,20 @@ void MainWindow::applySettings()
 
 void MainWindow::on_action_menuFile_DLTFilesize_triggered()
 {
-    if (totalPayloadSize == 0 && totalMessageSize == 0 && totalStorageSize == 0) {
-        QMessageBox::warning(this, "No Data", "Please open a DLT file first.");
-        return;
-    }
-      QString message = QString(
-        "Payload Size (octets) : %1 \n"
-        "Message Size (octets) : %2 \n"
-        "Storage Size (octets) : %3 "
-    ).arg(totalPayloadSize).arg(totalMessageSize).arg(totalStorageSize);
+  quint64 payloadSize = qfile.getTotalPayloadSize();
+  quint64 messageSize = qfile.getTotalMessageSize();
+  quint64 storageSize = qfile.getTotalStorageSize();
+
+  if (payloadSize == 0 && messageSize == 0 && storageSize == 0) {
+    QMessageBox::warning(this, "No Data", "Please open a valid DLT file first.");
+    return;
+  }
+
+  QString message = QString(
+        "Payload Size (octets): %1\n"
+        "Message Size (octets): %2\n"
+        "Storage Size (octets): %3"
+        ).arg(payloadSize).arg(messageSize).arg(storageSize);
 
     QMessageBox::information(this, "DLT File Size Information", message);
 }

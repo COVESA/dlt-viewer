@@ -130,13 +130,41 @@ int QDltFile::sizeFilter() const
         return size();
 }
 
+int QDltFile::calculateHeaderSize(quint8 htyp)
+{
+    // Base DLT standard header size (HTYP (1) + MCNT (1) + LEN (2))
+    int size = 4; 
+    
+    // Add standard header extra fields using DLT constants
+    if (DLT_IS_HTYP_WEID(htyp)) size += DLT_SIZE_WEID; // ECU ID
+    if (DLT_IS_HTYP_WSID(htyp)) size += DLT_SIZE_WSID; // Session ID  
+    if (DLT_IS_HTYP_WTMS(htyp)) size += DLT_SIZE_WTMS; // Timestamp
+    
+    // Add extended header if UEH flag is set
+    if (DLT_IS_HTYP_UEH(htyp)) {
+        size += 10; // Extended header: MSIN (1) + NOAR (1) + APID (4) + CTID (4)
+    }
+    return size;
+}
+
+quint32 QDltFile::alignedStorageSize(quint32 size)
+{
+    constexpr int STORAGE_ALIGNMENT = 4;
+    return ((size + STORAGE_ALIGNMENT - 1) / STORAGE_ALIGNMENT) * STORAGE_ALIGNMENT;
+}
+
 bool QDltFile::open(QString _filename, bool append)
 {
     qDebug() << "Open file" << _filename << "started";
 
     /* check if file is already opened */
-    if(!append)
+    if(!append) {
         clear();
+        // Reset size counters when opening new file
+        totalStorageSize = 0;
+        totalPayloadSize = 0;
+        totalMessageSize = 0;
+    }
 
     /* create new file item */
     QDltFileItem *item = new QDltFileItem();
@@ -156,12 +184,38 @@ bool QDltFile::open(QString _filename, bool append)
     return true;
 }
 
+quint64 QDltFile::getTotalStorageSize() { 
+    if (totalStorageSize == 0 && size() > 0) {
+        calculateTotalSizes();
+    }
+    return totalStorageSize; 
+}
+
+quint64 QDltFile::getTotalPayloadSize() { 
+    if (totalPayloadSize == 0 && size() > 0) {
+        calculateTotalSizes();
+    }
+    return totalPayloadSize; 
+}
+
+quint64 QDltFile::getTotalMessageSize() { 
+    if (totalMessageSize == 0 && size() > 0) {
+        calculateTotalSizes();
+    }
+    return totalMessageSize; 
+}
+
 void QDltFile::clearIndex()
 {
     for(int num=0;num<files.size();num++)
     {
         files[num]->indexAll.clear();
     }
+    
+    // Reset size counters when clearing index
+    totalStorageSize = 0;
+    totalPayloadSize = 0;
+    totalMessageSize = 0;
 }
 
 bool QDltFile::createIndex()
@@ -178,6 +232,7 @@ bool QDltFile::createIndex()
     ret = updateIndex();
 
     //qDebug() << "Create index finished - " << size() << "messages found";
+    calculateTotalSizes();
 
     return ret;
 }
@@ -544,6 +599,10 @@ void QDltFile::close()
 {
     /* close file */
     clear();
+    // Reset size counters when closing
+    totalPayloadSize = 0;
+    totalMessageSize = 0;
+    totalStorageSize = 0;
 }
 
 QByteArray QDltFile::getMsg(int index) const
@@ -778,4 +837,103 @@ bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 bool QDltFile::applyRegExStringMsg(QDltMsg &msg) const
 {    
     return filterList.applyRegExStringMsg(msg);
+}
+
+void QDltFile::calculateTotalSizes()
+{
+    // Structure to hold per-message size info
+    struct QDltMsgSizeInfo {
+        quint32 storageSize;
+        quint32 messageSize;
+        quint32 payloadSize;
+    };
+
+    // Get total number of indexed messages
+    const int totalMessages = size();
+    if (totalMessages == 0) {
+        totalStorageSize = 0;
+        totalMessageSize = 0;
+        totalPayloadSize = 0;
+        return;
+    }
+
+    // Create cache for per-message size info
+    QVector<QDltMsgSizeInfo> msgSizeCache(totalMessages);
+
+    // Progress reporting interval for large files
+    const int progressInterval = qMax(1, qMin(totalMessages / 20, 10000));
+    for (int msgIndex = 0; msgIndex < totalMessages; msgIndex++) {
+        // Print progress for large files
+        if (totalMessages > 10000 && (msgIndex % progressInterval) == 0) {
+            int percentage = (msgIndex * 100) / totalMessages;
+            qDebug() << "Caching sizes:" << percentage << "% (" << msgIndex << "/" << totalMessages << ")";
+        }
+
+        QByteArray msgData = getMsg(msgIndex);
+        QDltMsgSizeInfo info = {0, 0, 0};
+        if (msgData.isEmpty() || msgData.size() < 20) {
+            msgSizeCache[msgIndex] = info;
+            continue;
+        }
+
+        // Parse storage header
+        const char *data = msgData.constData();
+        const int msgDataSize = msgData.size();
+        const quint8 storageHeaderVersion = static_cast<quint8>(data[3]);
+        int storageHeaderSize = 16;
+        if (storageHeaderVersion == 2) {
+            // DLTv2: storage header size depends on ECU ID length
+            if (msgDataSize < 14) {
+                msgSizeCache[msgIndex] = info;
+                continue;
+            }
+            const quint8 ecuIdLength = static_cast<quint8>(data[13]);
+            storageHeaderSize = 14 + ecuIdLength;
+        }
+
+        // Validate enough data for DLT header
+        if (msgDataSize < storageHeaderSize + 4) {
+            msgSizeCache[msgIndex] = info;
+            continue;
+        }
+
+        // Parse DLT protocol header
+        const char* dltHeaderData = data + storageHeaderSize;
+        const quint8 htyp = static_cast<quint8>(dltHeaderData[0]);
+        const quint16 dltMessageLength = (static_cast<quint8>(dltHeaderData[2]) << 8) |
+                                         static_cast<quint8>(dltHeaderData[3]);
+
+        // Validate message length
+        if (dltMessageLength == 0 || dltMessageLength > 65535 ||
+            dltMessageLength > (msgDataSize - storageHeaderSize)) {
+            msgSizeCache[msgIndex] = info;
+            continue;
+        }
+
+        // Calculate header and payload sizes
+        const int headerSize = calculateHeaderSize(htyp);
+        const int payloadSize = dltMessageLength - headerSize;
+        if (payloadSize < 0) {
+            msgSizeCache[msgIndex] = info;
+            continue;
+        }
+
+        info.storageSize = alignedStorageSize(msgDataSize);
+        info.messageSize = dltMessageLength;
+        info.payloadSize = payloadSize;
+        msgSizeCache[msgIndex] = info;
+    }
+    if (totalMessages > 10000) {
+        qDebug() << "Size caching completed: processed" << totalMessages << "messages";
+    }
+
+    // Accumulate totals from cache
+    totalStorageSize = 0;
+    totalMessageSize = 0;
+    totalPayloadSize = 0;
+    for (int i = 0; i < msgSizeCache.size(); ++i) {
+        totalStorageSize += msgSizeCache[i].storageSize;
+        totalMessageSize += msgSizeCache[i].messageSize;
+        totalPayloadSize += msgSizeCache[i].payloadSize;
+    }
 }
