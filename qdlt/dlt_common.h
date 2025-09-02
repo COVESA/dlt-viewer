@@ -242,8 +242,8 @@ typedef unsigned int speed_t;
 
  * Definitions of DLT message buffer overflow
  */
-#define DLT_MESSAGE_BUFFER_NO_OVERFLOW     0x00 /**< Buffer overflow has not occured */
-#define DLT_MESSAGE_BUFFER_OVERFLOW        0x01 /**< Buffer overflow has occured */
+#define DLT_MESSAGE_BUFFER_NO_OVERFLOW     0x00 /**< Buffer overflow has not occurred */
+#define DLT_MESSAGE_BUFFER_OVERFLOW        0x01 /**< Buffer overflow has occurred */
 
 /*
  * Definition of DLT output variants

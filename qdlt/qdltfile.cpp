@@ -359,7 +359,7 @@ bool QDltFile::updateIndex()
                             storageLength = 13;
                         if(current_message_pos!=0)
                         {
-                            // first messages not at beginning or error occured before
+                            // first messages not at beginning or error occurred before
                             errors_in_file++;
                         }
                         // speed up move directly to message length, if inside current buffer

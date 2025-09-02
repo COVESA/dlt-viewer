@@ -37,7 +37,7 @@ private:
 
     /* Write the first line of CSV. This is just the names of the fields
      * \param file outputfile to write to
-     * \return True if writing was succesfull, false if error occured
+     * \return True if writing was successful, false if error occurred
      */
     bool writeCSVHeader();
 
