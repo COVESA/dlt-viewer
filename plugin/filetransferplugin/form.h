@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file form.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -40,11 +40,13 @@ public:
     QTreeWidget* getTreeWidget();
     void clearSelectedFiles();
     void setAutoSave(QString path, bool autosave);
+    void setStandardPath(QString path);
 
 signals:
     void additem_signal(File *f);
     void export_signal(QDir dir, QString *errorText, bool *success);
     void handleupdate_signal(QString filestring, QString packetnumber, int index);
+    void handlefinish_signal (QString fileid);
     void err_signal(QDltMsg *msg);
     void handle_errorsignal(QString filesname, QString errorCode1, QString errorCode2, QString time);
 
@@ -53,7 +55,8 @@ private:
     Ui::Form *ui;
     int selectedFiles=0;
     bool autosave=false;
-    QString savepath="";
+    QString autosavepath="";
+    QString standardsavepath="";
 
 public slots:
     void itemChanged(QTreeWidgetItem* item,int);
@@ -68,8 +71,10 @@ private slots:
     void on_deselectButton_clicked();
     void savetofile();
     void on_saveRightButtonClicked();
+    void on_selectionRightButton();
     void additem_slot(File *f);
     void updatefile_slot(QString filestring, QString packetnumber, int index);
+    void finishfile_slot (QString fileid);
     void export_slot(QDir dir, QString *errorText, bool *success);
     void error_slot(QString filesname, QString errorCode1, QString errorCode2, QString time);
 };

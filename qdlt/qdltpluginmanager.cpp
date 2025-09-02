@@ -1,9 +1,11 @@
 #include "qdltplugin.h"
+#include "qdltpluginmanager.h"
 
 #include <QDir>
+#include <QDebug>
 #include <QCoreApplication>
 #include <QPluginLoader>
-//#include <QMessageBox>
+#include <QMutex>
 #include <QTextStream>
 #include <QString>
 
@@ -11,58 +13,46 @@
 #define PLUGIN_INSTALLATION_PATH ""
 #endif
 
-QDltPluginManager::QDltPluginManager()
-{
-}
-
 int QDltPluginManager::size() const
 {
     return plugins.size();
 }
 
-int QDltPluginManager::sizeEnabled() const
-{
-    int count = 0;
-
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-        if(plugin->getMode()>=QDltPlugin::ModeEnable)
-            count++;
-    }
-    return count;
-}
 QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
-    QDir pluginsDir;
+    QDir pluginsDir1;
+    QDir pluginsDir2;
+    QDir pluginsDir3;
     QStringList errorStrings;
 
     QString defaultPluginPath = PLUGIN_INSTALLATION_PATH;
 
-    /* The viewer looks in the relativ to the executable in the ./plugins directory */
-    pluginsDir.setPath(QCoreApplication::applicationDirPath());
-    if(pluginsDir.cd("plugins"))
+    /* The viewer always looks in the relative to the executable in the ./plugins directory */
+    pluginsDir1.setPath(QCoreApplication::applicationDirPath());
+    if(pluginsDir1.cd("plugins"))
     {
-        errorStrings << loadPluginsPath(pluginsDir);
+        errorStrings << loadPluginsPath(pluginsDir1);
     }
 
     /* Check system plugins path */
     if(!defaultPluginPath.isEmpty())
     {
-        pluginsDir.setPath(defaultPluginPath);
-        if(pluginsDir.exists())
+        pluginsDir2.setPath(defaultPluginPath);
+        if(pluginsDir2.exists() && pluginsDir2.canonicalPath() != pluginsDir1.canonicalPath())
         {
-            errorStrings << loadPluginsPath(pluginsDir);
+            errorStrings << loadPluginsPath(pluginsDir2);
         }
     }
 
     /* load plugins form settings path if set */
     if(!settingsPluginPath.isEmpty())
     {
-        pluginsDir.setPath(settingsPluginPath);
-        if(pluginsDir.exists() && pluginsDir.isReadable())
+        pluginsDir3.setPath(settingsPluginPath);
+        if(pluginsDir3.exists() && pluginsDir3.isReadable()
+            && pluginsDir3.canonicalPath() != pluginsDir1.canonicalPath()
+            && pluginsDir3.canonicalPath() != pluginsDir2.canonicalPath())
         {
-            errorStrings << loadPluginsPath(pluginsDir);
+            errorStrings << loadPluginsPath(pluginsDir3);
         }
     }
 
@@ -72,11 +62,9 @@ QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
 {
     /* set filter for plugin files */
-    QStringList filters, errorStrings;
-    QString errorString;
-    filters << "*.dll" << "*.so" << "*.dylib";
-    dir.setNameFilters(filters);
+    QStringList errorStrings;
 
+    dir.setNameFilters(QStringList{} << "*.dll" << "*.so" << "*.dylib");
     /* iterate through all plugins */
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
@@ -92,7 +80,9 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
                     QDltPlugin* item = new QDltPlugin();
                     item->loadPlugin(plugin);
                     item->initMessageDecoder(this);
+                    pluginListMutex.lock();
                     plugins.append(item);
+                    pluginListMutex.unlock();
 
                     //project.plugin->addTopLevelItem(item);
 
@@ -128,110 +118,195 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
     return errorStrings;
 }
 
-void QDltPluginManager::loadConfig(QString pluginName,QString filename)
-{
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-        if(plugin->getName()==pluginName)
+void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin) {
+        if (plugin->name() == pluginName)
             plugin->setFilename(filename);
-    }
+    });
 }
-
 
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    for(int num=0;num<plugins.size();num++)
+    QMutexLocker mutexLocker(&pluginListMutex);
+    for(auto* plugin : plugins)
     {
-        QDltPlugin *plugin = plugins[num];
-
         if(plugin->decodeMsg(msg,triggeredByUser))
             break;
-
     }
 }
 
-QDltPlugin* QDltPluginManager::findPlugin(QString &name)
+QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {
+
+    QMutexLocker mutexLocker(&pluginListMutex);
+    auto it = std::find_if(plugins.begin(), plugins.end(), [&](auto* plugin) {
+        return plugin->name() == name;
+    });
+
+    return it != plugins.end() ? *it : nullptr;
+}
+
+void QDltPluginManager::initPluginPriority(const QStringList& desiredPrio)
 {
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-
-        if(plugin->getName()==name)
-            return plugin;
+    if(plugins.size() > 1) {
+        int prio = 0;
+        for (const auto& pluginName: desiredPrio) {
+            if (setPluginPriority(pluginName, prio)) {
+                ++prio;
+            }
+        }
     }
-    return 0;
 }
 
-QList<QDltPlugin*> QDltPluginManager::getDecoderPlugins()
+bool QDltPluginManager::decreasePluginPriority(const QString &name)
+{
+    bool result = false;
+
+    if(plugins.size() > 1)
+    {
+        QMutexLocker mutexLocker(&pluginListMutex);
+        for(int num=0; num < plugins.size()-1; ++num)
+        {
+            if(plugins[num]->name() == name)
+            {
+                qDebug() << "decrease prio of" << name << "from" << num << "to" << num+1;
+                plugins.move(num, num+1);
+                result = true;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+bool QDltPluginManager::raisePluginPriority(const QString &name)
+{
+    bool result = false;
+
+    if(plugins.size() > 1)
+    {
+        QMutexLocker mutexLocker(&pluginListMutex);
+        for(int num=1; num < plugins.size(); ++num)
+        {
+            if (plugins[num]->name() == name) {
+                qDebug() << "raise prio of" << name << "from" << num << "to" << num-1;
+                plugins.move(num, num-1);
+                result = true;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
+{
+    bool result = false;
+
+    if(plugins.size() > 1) {
+        //if prio is too large, put to the end of the list
+        if(prio >= plugins.size()) {
+            prio = plugins.size() - 1;
+        }
+
+        QMutexLocker mutexLocker(&pluginListMutex);
+        for (int num = 0; num < plugins.size(); ++num) {
+            if (plugins[num]->name() == name) {
+                if (prio != num) {
+                    qDebug() << "Changing priority of plugin" << name << "from" << num << "to" << prio;
+                    plugins.move(num, prio);
+                }
+                result = true;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+QStringList QDltPluginManager::getPluginPriorities() const
+{
+    QStringList finalPrio;
+    finalPrio.reserve(plugins.size());
+
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::transform(plugins.begin(), plugins.end(), std::back_inserter(finalPrio), [](const auto* plugin) {
+        return plugin->name();
+    });
+
+    return finalPrio;
+}
+
+QList<QDltPlugin*> QDltPluginManager::getDecoderPlugins() const
 {
     QList<QDltPlugin*> list;
 
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-
-        if(plugin->isDecoder() && plugin->getMode()>=QDltPlugin::ModeEnable)
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin) {
+        if (plugin->isDecoder() && plugin->getMode() >= QDltPlugin::ModeEnable)
             list.append(plugin);
-    }
+    });
+
     return list;
 }
 
-QList<QDltPlugin*> QDltPluginManager::getViewerPlugins()
+QList<QDltPlugin*> QDltPluginManager::getViewerPlugins() const
 {
     QList<QDltPlugin*> list;
 
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-
-        if(plugin->isViewer() && plugin->getMode()>=QDltPlugin::ModeEnable)
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin) {
+        if (plugin->isViewer() && plugin->getMode() >= QDltPlugin::ModeEnable)
             list.append(plugin);
-    }
+    });
+
     return list;
 }
 
 bool QDltPluginManager::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname)
 {
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
-        if(plugin->isControl() )
-            plugin->stateChanged(index,connectionState,hostname);
-    }
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin) {
+        if (plugin->isControl())
+            plugin->stateChanged(index, connectionState, hostname);
+    });
+
     return true;
 }
 
 bool  QDltPluginManager::autoscrollStateChanged(bool enabled)
 {
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin){
         if(plugin->isControl() )
             plugin->autoscrollStateChanged(enabled);
-    }
+    });
+
     return true;
 }
 
-
 bool QDltPluginManager::initControl(QDltControl *control)
 {
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin){
         if(plugin->isControl() )
             plugin->initControl(control);
-    }
+    });
+
     return true;
 }
 
 bool QDltPluginManager::initConnections(QStringList list)
 {
-    for(int num=0;num<plugins.size();num++)
-    {
-        QDltPlugin *plugin = plugins[num];
+    QMutexLocker mutexLocker(&pluginListMutex);
+    std::for_each(plugins.begin(), plugins.end(), [&](auto* plugin){
         if(plugin->isControl() )
             plugin->initConnections(list);
-    }
+    });
+
     return true;
 }
+

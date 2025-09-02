@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,14 +15,13 @@
  * \author Lassi Marttala <Lassi.LM.Marttala@parner.bmw.de>
  *
  * \file dltsettingsmanager.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #ifndef QDLTSETTINGSMANAGER_H
 #define QDLTSETTINGSMANAGER_H
 
-#include <QColor>
 #include <qsettings.h>
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
@@ -35,6 +34,11 @@ class QDLT_EXPORT QDltSettingsManager
 {
 // Singleton pattern
 public:
+    enum class UI_Colour
+    {
+        UI_SystemDefault, UI_Light, UI_Dark
+    };
+
     static QDltSettingsManager* getInstance();
     static void close();
 
@@ -63,6 +67,7 @@ public:
     QString tempOwnPath; // local setting
     int     tempCloseWithoutAsking; // local setting
     int     tempSaveOnClear; // local setting
+    int     tempSaveOnExit; // local setting
 
     int defaultLogFile; // local setting
     QString defaultLogFileName; // local setting
@@ -75,23 +80,25 @@ public:
     int pluginsAutoloadPath; // local setting
     QString pluginsAutoloadPathName; // local setting
     int filterCache; // local setting
-    int filterCacheDays; // local setting
-    QString filterCacheName; // local setting
     QByteArray geometry; // local setting
     QByteArray windowState; // local setting
     int RefreshRate; // local setting
     int StartupMinimized; // local settings
+    UI_Colour themeSelectionSettings; // local settings
+    UI_Colour uiColour; // local settings
+    quint64 msgCacheSize; // local settings
 
-    QColor markercolor; // local and project setting
+    int markercolorRed,markercolorGreen,markercolorBlue; // local and project setting
     int autoConnect; // project and local setting
+    int supportDLTv2Decoding; // project and local setting
     int autoScroll; // project and local setting
     int autoMarkFatalError; // local and local setting
     int autoMarkWarn; // project and local setting
     int autoMarkMarker; // project and local setting
-    int writeControl; // project and local setting
     int updateContextLoadingFile; // project and local setting
     int updateContextsUnregister; // project and local setting
     int loggingOnlyMode; // project and local setting
+    int loggingOnlyFilteredMessages; // project and local setting
     int splitlogfile; // local and project setting
     float fmaxFileSizeMB; // local and project setting
     int appendDateTime; // local and project setting
@@ -116,11 +123,15 @@ public:
     int showNoar; // project and local setting
     int showPayload; // project and local setting
     int showArguments; // project and local setting
+    int showMsgId; // project and local setting
 
+    QString msgIdFormat; // project and local setting
     int automaticTimeSettings; // project and local setting
     int automaticTimezoneFromDlt; // project and local setting
     qlonglong utcOffset; // project and local setting
     int dst; // project and local setting
+
+    QStringList pluginExecutionPrio; //local setting
 };
 
 #endif // QDLTSETTINGSMANAGER_H

@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltfilter.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -26,13 +26,14 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QRegularExpression>
+
 #include "export_rules.h"
+#include "qdltmsg.h"
 
 
 class QDLT_EXPORT QDltFilter
@@ -49,6 +50,8 @@ public:
     QString ctid;
     QString header;
     QString payload;
+    QString regex_search;
+    QString regex_replace;
 
     bool enableRegexp_Appid;
     bool enableRegexp_Context;
@@ -68,10 +71,14 @@ public:
     bool enableLogLevelMax;
     bool enableLogLevelMin;
     bool enableMarker;
+    bool enableMessageId;
+    bool enableRegexSearchReplace;
 
     QString filterColour;
     int logLevelMax;
     int logLevelMin;
+    unsigned int messageIdMax;
+    unsigned int messageIdMin;
 
     // generated from header and payload string
     QRegularExpression headerRegularExpression;
@@ -123,7 +130,7 @@ public:
     /*!
       \return true if filter matches the message, else false
     */
-    bool match(QDltMsg &msg) const;
+    bool match(const QDltMsg &msg) const;
 
     //! Save filter parameters in XML file.
     /*!

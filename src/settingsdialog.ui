@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>566</width>
-    <height>671</height>
+    <width>623</width>
+    <height>830</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset resource="resources/resource.qrc">
     <normaloff>:/toolbar/png/preferences-desktop.png</normaloff>:/toolbar/png/preferences-desktop.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
@@ -31,45 +31,38 @@
    <item row="0" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab_1">
       <attribute name="title">
        <string>Global</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="4" column="0">
-        <widget class="QCheckBox" name="checkBoxPluginsAutoload">
+       <item row="5" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultFilterPath">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable plugins autoload mechanism:  every activated plugin tries to load its optional config file from the path containing &amp;lt;plugin name&amp;gt;&amp;lt;SW version&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quick select you filters in filter tab ( &amp;lt;No filter selected &amp;gt;  ) when placed in the given directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string>Plugins Autoload</string>
+          <string>Default Filter Path</string>
          </property>
         </widget>
        </item>
-       <item row="7" column="0">
-        <widget class="QLabel" name="label">
+       <item row="3" column="0">
+        <widget class="QCheckBox" name="checkBoxPluginsPath">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use a custom path where the used plugins are placed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Empty Index Cache after</string>
+          <string>Plugins Path</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="4">
-        <widget class="QPushButton" name="toolButtonFilterCache">
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
+       <item row="1" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
        </item>
-       <item row="4" column="4">
-        <widget class="QPushButton" name="toolButtonPluginsAutoload">
+       <item row="5" column="4">
+        <widget class="QPushButton" name="toolButtonDefaultFilterPath">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -86,6 +79,23 @@
           <string>...</string>
          </property>
         </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
+         <property name="text">
+          <string>Default Log File</string>
+         </property>
+        </widget>
+       </item>
+       <item row="6" column="0">
+        <widget class="QCheckBox" name="checkBoxFilterCache">
+         <property name="text">
+          <string>Index Cache</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditDefaultProjectFile"/>
        </item>
        <item row="3" column="4">
         <widget class="QPushButton" name="tooButtonPluginsPath">
@@ -115,8 +125,11 @@
          </property>
         </widget>
        </item>
-       <item row="5" column="4">
-        <widget class="QPushButton" name="toolButtonDefaultFilterPath">
+       <item row="3" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditPluginsPath"/>
+       </item>
+       <item row="4" column="4">
+        <widget class="QPushButton" name="toolButtonPluginsAutoload">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -134,21 +147,74 @@
          </property>
         </widget>
        </item>
-       <item row="6" column="0">
-        <widget class="QCheckBox" name="checkBoxFilterCache">
-         <property name="text">
-          <string>Index Cache</string>
+       <item row="10" column="0">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
          </property>
-        </widget>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
-       <item row="5" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultFilterPath">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Quick select you filters in filter tab ( &amp;lt;No filter selected &amp;gt;  ) when placed in the given directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <item row="8" column="0" colspan="4">
+        <widget class="QGroupBox" name="groupBox_ThemeSettings">
+         <property name="title">
+          <string>Theme Settings</string>
          </property>
-         <property name="text">
-          <string>Default Filter Path</string>
-         </property>
+         <layout class="QGridLayout" name="gridLayout_81" columnminimumwidth="0,0,0,0,0">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Choose your colour</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="3">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="4">
+           <widget class="QComboBox" name="comboBoxTheme">
+            <property name="sizeAdjustPolicy">
+             <enum>QComboBox::AdjustToMinimumContentsLengthWithIcon</enum>
+            </property>
+            <property name="minimumContentsLength">
+             <number>10</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>System Default</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Light</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Dark</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item row="1" column="4">
@@ -164,136 +230,7 @@
          </property>
         </widget>
        </item>
-       <item row="2" column="4">
-        <widget class="QToolButton" name="toolButtonDefaultProjectFile">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>24</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
-       </item>
-       <item row="9" column="0">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item row="3" column="0">
-        <widget class="QCheckBox" name="checkBoxPluginsPath">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use a custom path where the used plugins are placed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Plugins Path</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultLogFile">
-         <property name="text">
-          <string>Default Log File</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QCheckBox" name="checkBoxDefaultProjectFile">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the given project at start up&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>Default Project</string>
-         </property>
-        </widget>
-       </item>
-       <item row="6" column="3">
-        <widget class="QPushButton" name="pushButtonClearIndexCache">
-         <property name="text">
-          <string>Empty Now!</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0" colspan="5">
-        <widget class="QGroupBox" name="gbTempDir">
-         <property name="title">
-          <string>Temporary File Behaviour</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_5">
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEditOwnTemp"/>
-          </item>
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioButtonUseTemp">
-            <property name="text">
-             <string>Use %TEMP%</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="3">
-           <widget class="QToolButton" name="toolButtonTempPath">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioButtonSelectTemp">
-            <property name="text">
-             <string>Select:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="lineEditSystemTemp">
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBoxCloseWithoutAsking">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Close temporary file without asking</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="2">
-           <widget class="QCheckBox" name="checkBoxSaveOnClear">
-            <property name="text">
-             <string>Save temporary file on clear</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="8" column="0" colspan="3">
+       <item row="7" column="0" colspan="4">
         <widget class="QGroupBox" name="groupBox_3">
          <property name="title">
           <string>Performance Settings</string>
@@ -335,33 +272,133 @@
          </layout>
         </widget>
        </item>
-       <item row="7" column="1">
-        <widget class="QSpinBox" name="spinBoxIndexCacheDays"/>
+       <item row="4" column="1" colspan="3">
+        <widget class="QLineEdit" name="lineEditPluginsAutoload"/>
        </item>
-       <item row="7" column="2">
-        <widget class="QLabel" name="label_2">
+       <item row="4" column="0">
+        <widget class="QCheckBox" name="checkBoxPluginsAutoload">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable plugins autoload mechanism:  every activated plugin tries to load its optional config file from the path containing &amp;lt;plugin name&amp;gt;&amp;lt;SW version&amp;gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>days</string>
+          <string>Plugins Autoload</string>
          </property>
         </widget>
        </item>
-       <item row="6" column="1" colspan="2">
-        <widget class="QLineEdit" name="lineEditFilterCache"/>
+       <item row="0" column="0" colspan="5">
+        <widget class="QGroupBox" name="gbTempDir">
+         <property name="title">
+          <string>Temporary File Behaviour</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_5">
+          <item row="3" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBoxSaveOnClear">
+            <property name="text">
+             <string>Keep temporary file on clear</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QRadioButton" name="radioButtonSelectTemp">
+            <property name="text">
+             <string>Select:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="3">
+           <widget class="QToolButton" name="toolButtonTempPath">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="lineEditSystemTemp">
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0" colspan="2">
+           <widget class="QCheckBox" name="checkBoxCloseWithoutAsking">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Do not ask to save temporary file on exit</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEditOwnTemp"/>
+          </item>
+          <item row="0" column="0">
+           <widget class="QRadioButton" name="radioButtonUseTemp">
+            <property name="text">
+             <string>Use %TEMP%</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="checkBoxSaveOnExit">
+            <property name="text">
+             <string>Keep temporary file on exit</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item row="5" column="1" colspan="3">
         <widget class="QLineEdit" name="lineEditDefaultFilterPath"/>
        </item>
-       <item row="4" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditPluginsAutoload"/>
+       <item row="2" column="0">
+        <widget class="QCheckBox" name="checkBoxDefaultProjectFile">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use the given project at start up&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
+         <property name="text">
+          <string>Default Project</string>
+         </property>
+        </widget>
        </item>
-       <item row="3" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditPluginsPath"/>
+       <item row="2" column="4">
+        <widget class="QToolButton" name="toolButtonDefaultProjectFile">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>24</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
        </item>
-       <item row="2" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditDefaultProjectFile"/>
+       <item row="9" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>DLT Msg Cache size:</string>
+         </property>
+        </widget>
        </item>
-       <item row="1" column="1" colspan="3">
-        <widget class="QLineEdit" name="lineEditDefaultLogFile"/>
+       <item row="9" column="1">
+        <widget class="QLineEdit" name="lineEditMsgCacheSize"/>
        </item>
       </layout>
      </widget>
@@ -376,7 +413,7 @@
           <string>Table</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_7">
-          <item row="5" column="0">
+          <item row="7" column="0">
            <widget class="QGroupBox" name="groupBoxAutomaticTimeSettings">
             <property name="title">
              <string>Set time column automatic to local recording time</string>
@@ -385,6 +422,13 @@
              <bool>true</bool>
             </property>
             <layout class="QGridLayout" name="gridLayout_9">
+             <item row="1" column="0">
+              <widget class="QLabel" name="labelTimezone">
+               <property name="text">
+                <string>Time zone</string>
+               </property>
+              </widget>
+             </item>
              <item row="0" column="0" colspan="3">
               <widget class="QCheckBox" name="checkBoxAutomaticTimezone">
                <property name="text">
@@ -402,30 +446,10 @@
                </property>
               </widget>
              </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="labelTimezone">
-               <property name="text">
-                <string>Time zone</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="2">
-              <spacer name="verticalSpacer_3">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>40</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
             </layout>
            </widget>
           </item>
-          <item row="4" column="0">
+          <item row="5" column="0">
            <widget class="QGroupBox" name="groupBoxSessionId">
             <property name="title">
              <string>Show Session/Process Id</string>
@@ -454,7 +478,7 @@
             </layout>
            </widget>
           </item>
-          <item row="3" column="0">
+          <item row="4" column="0">
            <widget class="QGroupBox" name="groupBoxConId">
             <property name="title">
              <string>Show Context</string>
@@ -486,7 +510,7 @@
             </layout>
            </widget>
           </item>
-          <item row="2" column="0">
+          <item row="3" column="0">
            <widget class="QGroupBox" name="groupBoxAppId">
             <property name="autoFillBackground">
              <bool>false</bool>
@@ -523,6 +547,60 @@
                 <bool>false</bool>
                </property>
               </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QGroupBox" name="groupBoxArguments">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>53</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Show Argument Columns</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_11">
+             <property name="topMargin">
+              <number>4</number>
+             </property>
+             <property name="bottomMargin">
+              <number>4</number>
+             </property>
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_Columns">
+               <property name="text">
+                <string>Columns</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="spinBox_showArguments">
+               <property name="maximum">
+                <number>15</number>
+               </property>
+               <property name="value">
+                <number>5</number>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="2">
+              <spacer name="horizontalSpacer_2">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
              </item>
             </layout>
            </widget>
@@ -685,8 +763,75 @@
             </item>
            </layout>
           </item>
+          <item row="6" column="0">
+           <widget class="QGroupBox" name="groupBoxMessageId">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>50</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Show Message Id (Non-Verbose)</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <widget class="QComboBox" name="comboBox_MessageIdFormat">
+             <property name="geometry">
+              <rect>
+               <x>220</x>
+               <y>20</y>
+               <width>261</width>
+               <height>21</height>
+              </rect>
+             </property>
+             <property name="editable">
+              <bool>true</bool>
+             </property>
+             <property name="currentText">
+              <string>%08u</string>
+             </property>
+             <property name="maxCount">
+              <number>30</number>
+             </property>
+            </widget>
+            <widget class="QLabel" name="label_MessageIdFormat">
+             <property name="geometry">
+              <rect>
+               <x>10</x>
+               <y>20</y>
+               <width>91</width>
+               <height>16</height>
+              </rect>
+             </property>
+             <property name="text">
+              <string>Message Id Format</string>
+             </property>
+            </widget>
+           </widget>
+          </item>
          </layout>
         </widget>
+       </item>
+       <item row="1" column="0">
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </widget>
@@ -694,311 +839,352 @@
       <attribute name="title">
        <string>Project Other</string>
       </attribute>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <widget class="QGroupBox" name="groupBox_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Other</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_4">
-          <item row="12" column="0">
-           <widget class="QGroupBox" name="groupBox_MarkerColor">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>50</height>
-             </size>
-            </property>
-            <property name="title">
-             <string>Manual marker color</string>
-            </property>
-            <property name="alignment">
-             <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-            </property>
-            <widget class="QPushButton" name="pushButtonMarkerColor">
-             <property name="geometry">
-              <rect>
-               <x>70</x>
-               <y>20</y>
-               <width>111</width>
-               <height>22</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777214</height>
-              </size>
-             </property>
-             <property name="cursor">
-              <cursorShape>UpArrowCursor</cursorShape>
-             </property>
-             <property name="toolTipDuration">
-              <number>-1</number>
-             </property>
-             <property name="layoutDirection">
-              <enum>Qt::LeftToRight</enum>
-             </property>
-             <property name="text">
-              <string>Select Color</string>
-             </property>
-             <property name="autoRepeatDelay">
-              <number>302</number>
-             </property>
-            </widget>
-            <widget class="QLabel" name="labelSelectedMarkerColor">
-             <property name="geometry">
-              <rect>
-               <x>20</x>
-               <y>20</y>
-               <width>31</width>
-               <height>24</height>
-              </rect>
-             </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>80</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="palette">
-              <palette>
-               <active>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </active>
-               <inactive>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </inactive>
-               <disabled>
-                <colorrole role="Base">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-                <colorrole role="Window">
-                 <brush brushstyle="SolidPattern">
-                  <color alpha="255">
-                   <red>255</red>
-                   <green>255</green>
-                   <blue>255</blue>
-                  </color>
-                 </brush>
-                </colorrole>
-               </disabled>
-              </palette>
-             </property>
-             <property name="autoFillBackground">
-              <bool>true</bool>
-             </property>
-             <property name="frameShape">
-              <enum>QFrame::Box</enum>
-             </property>
-             <property name="text">
-              <string/>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignCenter</set>
-             </property>
-            </widget>
-           </widget>
-          </item>
-          <item row="7" column="0">
-           <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
-            <property name="text">
-             <string>Update Context Unregister</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkMarker">
-            <property name="text">
-             <string>Auto mark Marker messages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically mark all messages of subtype ( loglevel ) &amp;quot;fatal&amp;quot; and &amp;quot;error&amp;quot; with red color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Auto mark fatal/error messages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="0">
-           <widget class="QCheckBox" name="checkBoxLoggingOnlyMode">
-            <property name="text">
-             <string>Logging only mode (Disables View and Plugins)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0">
-           <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
-            <property name="text">
-             <string>Update Contexts when loading log file</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QCheckBox" name="checkBoxWriteControl">
-            <property name="text">
-             <string>Write Control Messages to log file</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoConnect">
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this chechbox is enabled the last ECU connected is tried to be connected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="text">
-             <string>Auto connect to ECUs at start</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
-            <property name="text">
-             <string>Auto mark warn messages</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QCheckBox" name="checkBoxAutoScroll">
-            <property name="text">
-             <string>Auto scroll</string>
-            </property>
-           </widget>
-          </item>
-          <item row="10" column="0">
-           <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="cursor">
-             <cursorShape>UpArrowCursor</cursorShape>
-            </property>
-            <property name="focusPolicy">
-             <enum>Qt::StrongFocus</enum>
-            </property>
-            <property name="contextMenuPolicy">
-             <enum>Qt::NoContextMenu</enum>
-            </property>
-            <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the logfile is split to files of selected size ( limit &amp;lt; 0.01 Mb )&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="title">
-             <string>Maximum file size (in MBytes)</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <item>
-              <widget class="QLineEdit" name="lineEditMaxFileSizeMB">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="sizePolicy">
-                <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                 <horstretch>0</horstretch>
-                 <verstretch>0</verstretch>
-                </sizepolicy>
-               </property>
-               <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </widget>
-          </item>
-          <item row="9" column="0">
-           <widget class="QCheckBox" name="checkBoxAppendDateTime">
-            <property name="text">
-             <string>Append Date/Time to filename when closing DLT Viewer</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
+      <widget class="QGroupBox" name="groupBox_autoSettings">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>9</y>
+         <width>571</width>
+         <height>181</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Auto Settings</string>
+       </property>
+       <widget class="QCheckBox" name="checkBoxAutoConnect">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If this chechbox is enabled the last ECU connected is tried to be connected automatically.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Auto connect to ECUs at start</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxAutoScroll">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Auto scroll</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxAutoMarkFatalError">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>90</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically mark all messages of subtype ( loglevel ) &amp;quot;fatal&amp;quot; and &amp;quot;error&amp;quot; with red color&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="text">
+         <string>Auto mark fatal/error messages</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxAutoMarkWarn">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>120</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Auto mark warn messages</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxAutoMarkMarker">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>150</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Auto mark Marker messages</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_updateSettings">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>200</y>
+         <width>571</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Update Settings</string>
+       </property>
+       <widget class="QCheckBox" name="checkBoxUpdateContextLoadingFile">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Update Contexts when loading log file</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxUpdateContextUnregister">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Update Context Unregister</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_logSettings">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>300</y>
+         <width>571</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Log Settings</string>
+       </property>
+       <widget class="QCheckBox" name="checkBoxLoggingOnlyMode">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Logging only mode (Disables View and Plugins)</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxLoggingOnlyFilteredMessages">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Logging only filtered DLT Messages</string>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_other">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>400</y>
+         <width>571</width>
+         <height>241</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Other</string>
+       </property>
+       <widget class="QCheckBox" name="checkBoxAppendDateTime">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Append Date/Time to filename when closing DLT Viewer</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxSupportDLTV2Decoding">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>60</y>
+          <width>549</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Support DLTv2 Decoding</string>
+        </property>
+       </widget>
+       <widget class="QGroupBox" name="groupBoxMaxFileSizeMB">
+        <property name="geometry">
+         <rect>
+          <x>8</x>
+          <y>90</y>
+          <width>551</width>
+          <height>60</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>60</height>
+         </size>
+        </property>
+        <property name="cursor">
+         <cursorShape>ArrowCursor</cursorShape>
+        </property>
+        <property name="focusPolicy">
+         <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="contextMenuPolicy">
+         <enum>Qt::NoContextMenu</enum>
+        </property>
+        <property name="toolTip">
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If enabled the logfile is split to files of selected size ( limit &amp;lt; 0.01 Mb )&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        </property>
+        <property name="title">
+         <string>Maximum file size (in MBytes)</string>
+        </property>
+        <property name="checkable">
+         <bool>true</bool>
+        </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QLineEdit" name="lineEditMaxFileSizeMB">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="cursor">
+            <cursorShape>ArrowCursor</cursorShape>
+           </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QGroupBox" name="groupBox_MarkerColor">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>160</y>
+          <width>549</width>
+          <height>68</height>
+         </rect>
+        </property>
+        <property name="title">
+         <string>Manual marker color</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_7">
+         <item>
+          <widget class="QLabel" name="labelSelectedMarkerColor">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>80</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="palette">
+            <palette>
+             <active/>
+             <inactive/>
+             <disabled/>
+            </palette>
+           </property>
+           <property name="autoFillBackground">
+            <bool>true</bool>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Box</enum>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonMarkerColor">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>16777214</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>UpArrowCursor</cursorShape>
+           </property>
+           <property name="toolTipDuration">
+            <number>-1</number>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="text">
+            <string>Select Color</string>
+           </property>
+           <property name="autoRepeatDelay">
+            <number>302</number>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
      </widget>
     </widget>
    </item>
@@ -1029,10 +1215,6 @@
   <tabstop>lineEditDefaultFilterPath</tabstop>
   <tabstop>toolButtonDefaultFilterPath</tabstop>
   <tabstop>checkBoxFilterCache</tabstop>
-  <tabstop>lineEditFilterCache</tabstop>
-  <tabstop>pushButtonClearIndexCache</tabstop>
-  <tabstop>toolButtonFilterCache</tabstop>
-  <tabstop>spinBoxIndexCacheDays</tabstop>
   <tabstop>checkBoxStartUpMinimized</tabstop>
   <tabstop>spinBoxFrequency</tabstop>
   <tabstop>checkBoxIndex</tabstop>
@@ -1058,20 +1240,9 @@
   <tabstop>checkBoxAutomaticTimezone</tabstop>
   <tabstop>comboBoxUTCOffset</tabstop>
   <tabstop>checkBoxDST</tabstop>
-  <tabstop>checkBoxAutoConnect</tabstop>
-  <tabstop>checkBoxAutoScroll</tabstop>
-  <tabstop>checkBoxAutoMarkFatalError</tabstop>
-  <tabstop>checkBoxAutoMarkWarn</tabstop>
-  <tabstop>checkBoxAutoMarkMarker</tabstop>
-  <tabstop>checkBoxWriteControl</tabstop>
-  <tabstop>checkBoxUpdateContextLoadingFile</tabstop>
-  <tabstop>checkBoxUpdateContextUnregister</tabstop>
-  <tabstop>checkBoxLoggingOnlyMode</tabstop>
-  <tabstop>groupBoxMaxFileSizeMB</tabstop>
-  <tabstop>lineEditMaxFileSizeMB</tabstop>
  </tabstops>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

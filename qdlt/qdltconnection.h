@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltconnection.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -26,7 +26,6 @@
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-//#include <QColor>
 #include <QMutex>
 #include <time.h>
 
@@ -99,7 +98,8 @@ public:
     void setSyncSerialHeader(bool _syncSerialHeader);
     bool getSyncSerialHeader() const;
 
-    bool parse(QDltMsg &msg);
+    bool parseDlt(QDltMsg &msg,bool supportDLTv2 = false);
+    bool parseAscii(QDltMsg &msg);
 
     void clear();
     void add(const QByteArray &bytes);
@@ -116,7 +116,9 @@ protected:
     bool sendSerialHeader;
     bool syncSerialHeader;
 
+private:
 
+    unsigned char messageCounter;
 
 };
 

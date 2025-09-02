@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file filetransferplugin.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -26,7 +26,7 @@
 #include "globals.h"
 #include "configuration.h"
 
-#define FILETRANSFER_PLUGIN_VERSION "1.4.0"
+#define FILETRANSFER_PLUGIN_VERSION "1.4.3"
 
 class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInterface, QDltPluginCommandInterface, QDltPluginControlInterface
 {
@@ -35,7 +35,7 @@ class FiletransferPlugin : public QObject, QDLTPluginInterface, QDltPluginViewer
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginCommandInterface)
     Q_INTERFACES(QDltPluginControlInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.FileTransferPlugin")
 #endif
 
@@ -96,6 +96,7 @@ private:
     void doFLST(QDltMsg *msg); // file transfer start
     void doFLDA(int index, QDltMsg *msg); // file transfer update
     void doFLIF(QDltMsg *msg);
+    void doFLFI(QDltMsg *msg);
     void doFLER(QDltMsg *msg); // file transfer error handling
 
     Configuration config;

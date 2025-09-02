@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,19 +15,21 @@
  * \author Lassi Marttala <Lassi.LM.Marttala@partner.bmw.de
  *
  * \file dltsettingsmanager.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
-#include <QApplication>
+//#include <QApplication>
 #include <QDir>
-#include <QMessageBox>
+//#include <QMessageBox>
 #include <QDateTime>
 #include <QStandardPaths>
 
 #include "version.h"
 
-#include "qdlt.h"
+#include "qdltsettingsmanager.h"
+
+#include <ctime>
 
 #if (WIN32)
  #define TZSET _tzset()
@@ -65,10 +67,11 @@ QDltSettingsManager::QDltSettingsManager()
         if(!dir.mkpath(dir.absolutePath()))
         {
             /* creation of directory fails */
-            QMessageBox::critical(0, QString("DLT Viewer"),
+ /*           QMessageBox::critical(0, QString("DLT Viewer"),
                                            QString("Cannot create directory to store configuration!\n\n")+dir.absolutePath(),
                                            QMessageBox::Ok,
                                            QMessageBox::Ok);
+*/
         }
     }
 
@@ -127,22 +130,27 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("showNoar",QString("%1").arg(showNoar));
             xml.writeTextElement("showPayload",QString("%1").arg(showPayload));
             xml.writeTextElement("showArguments",QString("%1").arg(showArguments));
-            xml.writeTextElement("markercolor",QString("%1").arg(markercolor.name()));
+            xml.writeTextElement("showMsgId",QString("%1").arg(showMsgId));
+            xml.writeTextElement("markercolorRed",QString("%1").arg(markercolorRed));
+            xml.writeTextElement("markercolorGreen",QString("%1").arg(markercolorGreen));
+            xml.writeTextElement("markercolorBlue",QString("%1").arg(markercolorBlue));
         xml.writeEndElement(); // table
 
         xml.writeStartElement("other");
             xml.writeTextElement("autoConnect",QString("%1").arg(autoConnect));
+            xml.writeTextElement("supportDLTv2Decoding",QString("%1").arg(supportDLTv2Decoding));
             xml.writeTextElement("autoScroll",QString("%1").arg(autoScroll));
             xml.writeTextElement("autoMarkFatalError",QString("%1").arg(autoMarkFatalError));
             xml.writeTextElement("autoMarkWarn",QString("%1").arg(autoMarkWarn));
             xml.writeTextElement("autoMarkMarker",QString("%1").arg(autoMarkMarker));
-            xml.writeTextElement("writeControl",QString("%1").arg(writeControl));
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(updateContextLoadingFile));
             xml.writeTextElement("updateContextsUnregister",QString("%1").arg(updateContextsUnregister));
             xml.writeTextElement("loggingOnlyMode",QString("%1").arg(loggingOnlyMode));
+            xml.writeTextElement("loggingOnlyFilteredMessages",QString("%1").arg(loggingOnlyFilteredMessages));
             xml.writeTextElement("splitlogfile",QString("%1").arg(splitlogfile));
             xml.writeTextElement("fmaxFileSizeMB",QString("%1").arg(fmaxFileSizeMB));
             xml.writeTextElement("appendDateTime",QString("%1").arg(appendDateTime));
+            xml.writeTextElement("msgIdFormat",QString("%1").arg(msgIdFormat));
         xml.writeEndElement(); // other
     xml.writeEndElement(); // settings
 
@@ -154,6 +162,8 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("windowState", windowState);
     settings->setValue("RefreshRate",RefreshRate);
     settings->setValue("StartUpMinimized",StartupMinimized);
+    settings->setValue("ThemeSettings", static_cast<int>(themeSelectionSettings));
+    settings->setValue("msgCacheSize",msgCacheSize);
 
     /* Temporary directory */
     settings->setValue("tempdir/tempUseSystem", tempUseSystem);
@@ -162,6 +172,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("tempdir/tempOwnPath", tempOwnPath);
     settings->setValue("tempdir/tempCloseWithoutAsking", tempCloseWithoutAsking);
     settings->setValue("tempdir/tempSaveOnClear", tempSaveOnClear);
+    settings->setValue("tempdir/tempSaveOnExit", tempSaveOnExit);
 
     /* startup */
     settings->setValue("startup/defaultProjectFile",defaultProjectFile);
@@ -175,18 +186,20 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/pluginsAutoloadPath",pluginsAutoloadPath);
     settings->setValue("startup/pluginsAutoloadPathName",pluginsAutoloadPathName);
     settings->setValue("startup/filterCache",filterCache);
-    settings->setValue("startup/filterCacheDays",filterCacheDays);
-    settings->setValue("startup/filterCacheName",filterCacheName);
     settings->setValue("startup/autoConnect",autoConnect);
+    settings->setValue("startup/supportDLTv2Decoding",supportDLTv2Decoding);
     settings->setValue("startup/autoScroll",autoScroll);
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/autoMarkMarker",autoMarkMarker);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
+    settings->setValue("startup/loggingOnlyFilteredMessages",loggingOnlyFilteredMessages);
     settings->setValue("startup/splitfileyesno",splitlogfile);
     settings->setValue("startup/maxFileSizeMB",fmaxFileSizeMB);
     settings->setValue("startup/appendDateTime",appendDateTime);
-    settings->setValue("startup/markercolor",markercolor.name());
+    settings->setValue("startup/markercolorRed",markercolorRed);
+    settings->setValue("startup/markercolorGreen",markercolorGreen);
+    settings->setValue("startup/markercolorBlue",markercolorBlue);
 
     /* table */
     settings->setValue("startup/fontSize",fontSize);
@@ -215,16 +228,21 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/showNoar",showNoar);
     settings->setValue("startup/showPayload",showPayload);
     settings->setValue("startup/showArguments",showArguments);
+    settings->setValue("startup/showMsgId",showMsgId);
 
     /* other */
-    settings->setValue("startup/writeControl",writeControl);
     settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
     settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
+    settings->setValue("startup/msgIdFormat",msgIdFormat);
 
     /* For settings integrity validation */
-    settings->setValue("startup/versionMajor", QString(PACKAGE_MAJOR_VERSION).toInt());
-    settings->setValue("startup/versionMinor", QString(PACKAGE_MINOR_VERSION).toInt());
-    settings->setValue("startup/versionPatch", QString(PACKAGE_PATCH_LEVEL).toInt());
+    settings->setValue("startup/versionMajor", PACKAGE_MAJOR_VERSION);
+    settings->setValue("startup/versionMinor", PACKAGE_MINOR_VERSION);
+    settings->setValue("startup/versionPatch", PACKAGE_PATCH_LEVEL);
+
+    for(int i = 0; i < pluginExecutionPrio.count(); ++i) {
+        settings->setValue(QStringLiteral("plugin/default_prio/%1").arg(i), pluginExecutionPrio[i]);
+    }
 }
 
 void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
@@ -233,6 +251,10 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     if(xml.name() == QString("autoConnect"))
     {
         autoConnect = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("supportDLTv2Decoding"))
+    {
+        supportDLTv2Decoding = xml.readElementText().toInt();
     }
     if(xml.name() == QString("autoScroll"))
     {
@@ -350,13 +372,21 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         loggingOnlyMode = xml.readElementText().toInt();
     }
-    if(xml.name() == QString("markercolor"))
+    if(xml.name() == QString("loggingOnlyFilteredMessages"))
     {
-        markercolor.setNamedColor(xml.readElementText());
+        loggingOnlyFilteredMessages = xml.readElementText().toInt();
     }
-    if(xml.name() == QString("writeControl"))
+    if(xml.name() == QString("markercolorRed"))
     {
-        writeControl = xml.readElementText().toInt();
+        markercolorRed = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("markercolorGreen"))
+    {
+        markercolorGreen = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("markercolorBlue"))
+    {
+        markercolorBlue = xml.readElementText().toInt();
     }
     if(xml.name() == QString("updateContextLoadingFile"))
     {
@@ -378,6 +408,14 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     {
         appendDateTime = xml.readElementText().toInt();
     }
+    if(xml.name() == QString("showMsgId"))
+    {
+        showMsgId = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("msgIdFormat"))
+    {
+        msgIdFormat = xml.readElementText();
+    }
 
 }
 
@@ -391,12 +429,15 @@ void QDltSettingsManager::readSettings()
     tempOwnPath                 = settings->value("tempdir/tempOwnPath", QString("")).toString();
     tempCloseWithoutAsking      = settings->value("tempdir/tempCloseWithoutAsking", 0).toInt();
     tempSaveOnClear             = settings->value("tempdir/tempSaveOnClear", 1).toInt();
+    tempSaveOnExit              = settings->value("tempdir/tempSaveOnExit", 1).toInt();
 
     geometry = settings->value("geometry",0).toByteArray();
     windowState = settings->value("windowState",0).toByteArray();
 
     RefreshRate = settings->value("RefreshRate",DEFAULT_REFRESH_RATE).toInt();
     StartupMinimized = settings->value("StartupMinimized",0).toInt();
+    themeSelectionSettings = static_cast<UI_Colour>(settings->value("ThemeSettings", 0).toInt());
+    msgCacheSize = settings->value("msgCacheSize",1000).toInt();
 
     /* startup */
     defaultProjectFile = settings->value("startup/defaultProjectFile",0).toInt();
@@ -410,18 +451,20 @@ void QDltSettingsManager::readSettings()
     pluginsAutoloadPath = settings->value("startup/pluginsAutoloadPath",0).toInt();
     pluginsAutoloadPathName = settings->value("startup/pluginsAutoloadPathName",QString("")).toString();
     filterCache = settings->value("startup/filterCache",1).toInt();
-    filterCacheDays = settings->value("startup/filterCacheDays",7).toInt();
-    filterCacheName = settings->value("startup/filterCacheName",QStandardPaths::writableLocation(QStandardPaths::CacheLocation)+"/indexcache").toString();
     autoConnect = settings->value("startup/autoConnect",0).toInt();
+    supportDLTv2Decoding = settings->value("startup/supportDLTv2Decoding",0).toInt();
     autoScroll = settings->value("startup/autoScroll",1).toInt();
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
     autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
+    loggingOnlyFilteredMessages = settings->value("startup/loggingOnlyFilteredMessages",0).toInt();
     splitlogfile = settings->value("startup/splitfileyesno",0).toInt();
-    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",0).toFloat();
+    fmaxFileSizeMB = settings->value("startup/maxFileSizeMB",100).toFloat();
     appendDateTime = settings->value("startup/appendDateTime",0).toInt();
-    markercolor.setNamedColor(settings->value("startup/markercolor","#aaaaaa").toString() );
+    markercolorRed = settings->value("startup/markercolorRed",128).toInt();
+    markercolorGreen = settings->value("startup/markercolorGreen",128).toInt();
+    markercolorBlue = settings->value("startup/markercolorBlue",128).toInt();
 
     /* project table */
     fontSize = settings->value("startup/fontSize",8).toInt();
@@ -453,10 +496,19 @@ void QDltSettingsManager::readSettings()
     showNoar = settings->value("startup/showNoar",0).toInt();
     showPayload = settings->value("startup/showPayload",1).toInt();
     showArguments = settings->value("startup/showArguments",0).toInt();
-
+    showMsgId = settings->value("startup/showMsgId",0).toInt();
     /* other */
-    writeControl = settings->value("startup/writeControl",1).toInt();
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
+    msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();
+
+    // Read the plugin execution priority of a maximum of 100 plugins
+    for(int i = 0; i < 100; ++i)
+    {
+        QString lastValue(settings->value(QStringLiteral("plugin/default_prio/%1").arg(i),"").toString());
+        if( !lastValue.isEmpty() ) {
+            pluginExecutionPrio << lastValue;
+        }
+    }
 }
 

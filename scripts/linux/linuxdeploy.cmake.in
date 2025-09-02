@@ -1,0 +1,51 @@
+set(LINUXDEPLOY_EXECUTABLE "@LINUXDEPLOY_EXECUTABLE@")
+set(QMAKE_EXECUTABLE "@QMAKE_EXECUTABLE@")
+set(CMAKE_BINARY_DIR "@CMAKE_BINARY_DIR@")
+set(CMAKE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@")
+set(CPACK_PACKAGE_VERSION "@CPACK_PACKAGE_VERSION@")
+set(DLT_APP_DIR_NAME "@DLT_APP_DIR_NAME@")
+
+message(STATUS "Calling linuxdeploy ${CMAKE_INSTALL_PREFIX}")
+message(STATUS "QMAKE=${QMAKE_EXECUTABLE}")
+
+# See CMAKE_INSTALL_PREFIX
+execute_process(COMMAND ${CMAKE_COMMAND} "--install" "." "--prefix" "${CMAKE_INSTALL_PREFIX}"
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RESULT_VARIABLE STATUS)
+
+if(STATUS AND NOT STATUS EQUAL 0)
+    message(SEND_ERROR "Failure: ${STATUS}")
+else()
+    message(STATUS "Success.")
+endif()
+
+# APPIMAGE_EXTRACT_AND_RUN=1
+# FUSE is not woking with docker container: https://github.com/docker/for-linux/issues/321
+# FUSE will require CAP_ADMIN or privileged container run.
+# Just unpack AppImages and run build in the container. FUSE will be used on client installation of AppImage anyway.
+# https://github.com/AppImage/AppImageKit/issues/912#issuecomment-528669441
+
+execute_process(COMMAND
+    env QMAKE=${QMAKE_EXECUTABLE}
+    env OUTPUT=DLTViewer-${CPACK_PACKAGE_VERSION}.AppImage
+    env APPIMAGE_EXTRACT_AND_RUN=1
+    env VERSION=${CPACK_PACKAGE_VERSION}
+    env EXTRA_PLATFORM_PLUGINS=libqoffscreen.so
+    "${LINUXDEPLOY_EXECUTABLE}"
+    --plugin qt
+    --output appimage
+    --appdir ${DLT_APP_DIR_NAME}
+    --executable ${DLT_APP_DIR_NAME}/usr/bin/dlt-viewer
+    --deploy-deps-only ${DLT_APP_DIR_NAME}/usr/bin/plugins
+    --desktop-file ${DLT_APP_DIR_NAME}/org.genivi.DLTViewer.desktop
+    --icon-file ${DLT_APP_DIR_NAME}/org.genivi.DLTViewer.png
+    --library /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+    --library /lib/x86_64-linux-gnu/libgcc_s.so.1
+    WORKING_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
+    RESULT_VARIABLE STATUS)
+
+if(STATUS AND NOT STATUS EQUAL 0)
+    message(SEND_ERROR "Failure: ${STATUS}")
+else()
+    message(STATUS "Success.")
+endif()

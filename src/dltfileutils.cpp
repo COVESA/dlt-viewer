@@ -10,6 +10,7 @@
 #include <unistd.h>
 #endif
 
+#include "qdltsettingsmanager.h"
 
 
 

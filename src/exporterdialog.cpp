@@ -14,54 +14,54 @@ ExporterDialog::~ExporterDialog()
     delete ui;
 }
 
-void ExporterDialog::setFormat(DltExporter::DltExportFormat exportFormat)
+void ExporterDialog::setFormat(QDltExporter::DltExportFormat exportFormat)
 {
-    if(exportFormat == DltExporter::FormatDlt)
+    if(exportFormat == QDltExporter::FormatDlt)
         ui->radioButtonDlt->setChecked(true);
-    else if(exportFormat == DltExporter::FormatAscii)
+    else if(exportFormat == QDltExporter::FormatAscii)
         ui->radioButtonAscii->setChecked(true);
-    else if (exportFormat == DltExporter::FormatUTF8)
+    else if (exportFormat == QDltExporter::FormatUTF8)
         ui->radioButtonUTF8->setChecked(true);
-    else if(exportFormat == DltExporter::FormatCsv)
+    else if(exportFormat == QDltExporter::FormatCsv)
         ui->radioButtonCsv->setChecked(true);
-    else if(exportFormat == DltExporter::FormatDltDecoded)
+    else if(exportFormat == QDltExporter::FormatDltDecoded)
         ui->radioButtonDltDecoded->setChecked(true);
 }
 
-DltExporter::DltExportFormat ExporterDialog::getFormat()
+QDltExporter::DltExportFormat ExporterDialog::getFormat()
 {
     if(ui->radioButtonDlt->isChecked())
-        return DltExporter::FormatDlt;
+        return QDltExporter::FormatDlt;
     if(ui->radioButtonAscii->isChecked())
-        return DltExporter::FormatAscii;
+        return QDltExporter::FormatAscii;
     if(ui->radioButtonUTF8->isChecked())
-        return DltExporter::FormatUTF8;
+        return QDltExporter::FormatUTF8;
     if(ui->radioButtonCsv->isChecked())
-        return DltExporter::FormatCsv;
+        return QDltExporter::FormatCsv;
     if(ui->radioButtonDltDecoded->isChecked())
-        return DltExporter::FormatDltDecoded;
-    return DltExporter::FormatDlt;
+        return QDltExporter::FormatDltDecoded;
+    return QDltExporter::FormatDlt;
 }
 
-void ExporterDialog::setSelection(DltExporter::DltExportSelection exportSelection)
+void ExporterDialog::setSelection(QDltExporter::DltExportSelection exportSelection)
 {
-    if(exportSelection == DltExporter::SelectionAll)
+    if(exportSelection == QDltExporter::SelectionAll)
         ui->radioButtonAll->setChecked(true);
-    else if(exportSelection == DltExporter::SelectionFiltered)
+    else if(exportSelection == QDltExporter::SelectionFiltered)
         ui->radioButtonFiltered->setChecked(true);
-    else if(exportSelection == DltExporter::SelectionSelected)
+    else if(exportSelection == QDltExporter::SelectionSelected)
         ui->radioButtonSelection->setChecked(true);
 }
 
-DltExporter::DltExportSelection ExporterDialog::getSelection()
+QDltExporter::DltExportSelection ExporterDialog::getSelection()
 {
     if(ui->radioButtonAll->isChecked())
-        return DltExporter::SelectionAll;
+        return QDltExporter::SelectionAll;
     if(ui->radioButtonFiltered->isChecked())
-        return DltExporter::SelectionFiltered;
+        return QDltExporter::SelectionFiltered;
     if(ui->radioButtonSelection->isChecked())
-        return DltExporter::SelectionSelected;
-    return DltExporter::SelectionAll;
+        return QDltExporter::SelectionSelected;
+    return QDltExporter::SelectionAll;
 }
 
 void ExporterDialog::getRange(unsigned long *start, unsigned long *stop)

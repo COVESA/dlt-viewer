@@ -17,7 +17,7 @@
    <string>MainWindow</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset resource="resources/resource.qrc">
     <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <property name="tabShape">
@@ -41,7 +41,6 @@
      <widget class="DltTableView" name="tableView">
       <property name="font">
        <font>
-        <family>Segoe UI</family>
         <pointsize>8</pointsize>
        </font>
       </property>
@@ -82,7 +81,7 @@
        <bool>false</bool>
       </attribute>
       <attribute name="verticalHeaderDefaultSectionSize">
-       <number>21</number>
+       <number>27</number>
       </attribute>
      </widget>
     </item>
@@ -94,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -108,6 +107,7 @@
     </widget>
     <addaction name="action_menuFile_New"/>
     <addaction name="action_menuFile_Open"/>
+    <addaction name="actionAppend"/>
     <addaction name="action_menuFile_SaveAs"/>
     <addaction name="action_menuFile_Clear"/>
     <addaction name="separator"/>
@@ -115,7 +115,7 @@
     <addaction name="separator"/>
     <addaction name="action_menuFile_Import_DLT_Stream"/>
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
-    <addaction name="action_menuFile_Append_DLT_File"/>
+    <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionExport"/>
     <addaction name="separator"/>
@@ -211,6 +211,7 @@
     <addaction name="action_menuHelp_Support"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
+    <addaction name="actionShortcuts_List"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
@@ -313,7 +314,7 @@
     <enum>Qt::NoFocus</enum>
    </property>
    <property name="features">
-    <set>QDockWidget::AllDockWidgetFeatures</set>
+    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
     <string>Project</string>
@@ -357,16 +358,6 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="pluginsEnabled">
-          <property name="text">
-           <string>Plugins Enabled</string>
-          </property>
-          <property name="checked">
-           <bool>true</bool>
-          </property>
-         </widget>
-        </item>
         <item row="0" column="0" colspan="4">
          <widget class="QPushButton" name="applyConfig">
           <property name="enabled">
@@ -376,9 +367,29 @@
            <string>Apply Configuration</string>
           </property>
           <property name="icon">
-           <iconset resource="resource.qrc">
+           <iconset resource="resources/resource.qrc">
             <normaloff>:/toolbar/png/weather-storm.png</normaloff>
             <disabledoff>:/toolbar/png/weather-clear.png</disabledoff>:/toolbar/png/weather-storm.png</iconset>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Sorted by Timestamp</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="pluginsEnabled">
+          <property name="text">
+           <string>Plugins Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -392,13 +403,30 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="checkBoxFilterRange">
           <property name="text">
-           <string>Sorted by Timestamp</string>
+           <string>Filter Range</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLineEdit" name="lineEditFilterStart">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string extracomment="Filter Range Start Index"/>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QLineEdit" name="lineEditFilterEnd">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string extracomment="Filter Range End Index"/>
           </property>
          </widget>
         </item>
@@ -420,7 +448,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideNone</enum>
@@ -428,6 +456,95 @@
        <property name="movable">
         <bool>false</bool>
        </property>
+       <widget class="QWidget" name="tabExplore">
+        <property name="focusPolicy">
+         <enum>Qt::NoFocus</enum>
+        </property>
+        <attribute name="title">
+         <string>Explore</string>
+        </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_66">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
+          <number>2</number>
+         </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelExplorerSort">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Sort files:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortType">
+             <item>
+              <property name="text">
+               <string>By Filename</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>By Timestamp</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortOrder">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>Asc.</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Desc.</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeView" name="exploreView">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::ExtendedSelection</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
+        </layout>
+       </widget>
        <widget class="QWidget" name="tabConfig">
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
@@ -584,7 +701,7 @@
           <number>3</number>
          </property>
          <property name="spacing">
-          <number>3</number>
+          <number>5</number>
          </property>
          <item row="0" column="0">
           <widget class="QComboBox" name="comboBoxFilterSelection">
@@ -609,7 +726,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>50</width>
+             <width>100</width>
              <height>16777215</height>
             </size>
            </property>
@@ -621,7 +738,17 @@
            </property>
           </widget>
          </item>
-         <item row="1" column="0" colspan="2">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="checkBoxAppendDefaultFilter">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Append Filter (instead of replace)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0" colspan="2">
           <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -1215,7 +1342,7 @@
   </action>
   <action name="actionNewDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-new.png</normaloff>:/toolbar/png/document-new.png</iconset>
    </property>
    <property name="text">
@@ -1227,7 +1354,7 @@
   </action>
   <action name="actionOpenDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-open.png</normaloff>:/toolbar/png/document-open.png</iconset>
    </property>
    <property name="text">
@@ -1239,7 +1366,7 @@
   </action>
   <action name="actionClear">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/edit-clear.png</normaloff>:/toolbar/png/edit-clear.png</iconset>
    </property>
    <property name="text">
@@ -1251,7 +1378,7 @@
   </action>
   <action name="actionSaveDltFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-save-as.png</normaloff>:/toolbar/png/document-save-as.png</iconset>
    </property>
    <property name="text">
@@ -1263,7 +1390,7 @@
   </action>
   <action name="actionSaveProjectFile">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/document-save-as2.png</normaloff>:/toolbar/png/document-save-as2.png</iconset>
    </property>
    <property name="text">
@@ -1275,7 +1402,7 @@
   </action>
   <action name="actionConnectAll">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/network-transmit-receive.png</normaloff>:/toolbar/png/network-transmit-receive.png</iconset>
    </property>
    <property name="text">
@@ -1287,7 +1414,7 @@
   </action>
   <action name="actionDisconnectAll">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/network-offline.png</normaloff>:/toolbar/png/network-offline.png</iconset>
    </property>
    <property name="text">
@@ -1299,7 +1426,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/preferences-desktop.png</normaloff>:/toolbar/png/preferences-desktop.png</iconset>
    </property>
    <property name="text">
@@ -1311,7 +1438,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-bottom.png</normaloff>:/toolbar/png/go-bottom.png</iconset>
    </property>
    <property name="text">
@@ -1323,7 +1450,7 @@
   </action>
   <action name="actionFind">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
    </property>
    <property name="text">
@@ -1338,7 +1465,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/action-regexp.png</normaloff>:/toolbar/png/action-regexp.png</iconset>
    </property>
    <property name="text">
@@ -1350,7 +1477,7 @@
   </action>
   <action name="actionFindPrevious">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-previous.png</normaloff>:/toolbar/png/go-previous.png</iconset>
    </property>
    <property name="text">
@@ -1362,7 +1489,7 @@
   </action>
   <action name="actionFindNext">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/go-next.png</normaloff>:/toolbar/png/go-next.png</iconset>
    </property>
    <property name="text">
@@ -1380,7 +1507,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/action-searchlist.png</normaloff>:/toolbar/png/action-searchlist.png</iconset>
    </property>
    <property name="text">
@@ -1438,7 +1565,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/bookmark-new.png</normaloff>:/toolbar/png/bookmark-new.png</iconset>
    </property>
    <property name="text">
@@ -1458,7 +1585,7 @@
   </action>
   <action name="actionApply_Configuration">
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/weather-clear.png</normaloff>
      <normalon>:/toolbar/png/weather-storm.png</normalon>
      <selectedoff>:/toolbar/png/weather-clear.png</selectedoff>:/toolbar/png/weather-clear.png</iconset>
@@ -1475,7 +1602,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/view-filter_32_off.png</normaloff>
      <normalon>:/toolbar/png/view-filter_32_on.png</normalon>:/toolbar/png/view-filter_32_off.png</iconset>
    </property>
@@ -1491,7 +1618,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="resource.qrc">
+    <iconset resource="resources/resource.qrc">
      <normaloff>:/toolbar/png/x-kde-nsplugin-generated_gray.png</normaloff>
      <normalon>:/toolbar/png/x-kde-nsplugin-generated.png</normalon>:/toolbar/png/x-kde-nsplugin-generated_gray.png</iconset>
    </property>
@@ -1519,6 +1646,31 @@
    </property>
    <property name="text">
     <string>Sort By Timestamp</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_IPC_from_PCAP_MF4">
+   <property name="text">
+    <string>Import DLT/IPC from PCAP/MF4...</string>
+   </property>
+  </action>
+  <action name="actionImport_IPC_from_PCAP">
+   <property name="text">
+    <string>Import IPC from PCAP...</string>
+   </property>
+  </action>
+  <action name="actionImport_DLT_from_MF4">
+   <property name="text">
+    <string>Import DLT/IPC from MF4...</string>
+   </property>
+  </action>
+  <action name="actionAppend">
+   <property name="text">
+    <string>Append...</string>
+   </property>
+  </action>
+  <action name="actionShortcuts_List">
+   <property name="text">
+    <string>Shortcuts List</string>
    </property>
   </action>
  </widget>
@@ -1554,7 +1706,7 @@
   <tabstop>tableView_SearchIndex</tabstop>
  </tabstops>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

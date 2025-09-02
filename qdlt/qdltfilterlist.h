@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltfilterlist.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -23,17 +23,18 @@
 #define QDLT_FILTER_LIST_H
 
 #include "export_rules.h"
+#include "qdltfilter.h"
+#include "qdltmsg.h"
+
 #include <QObject>
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#ifdef USECOLOR
-#include <QColor>
-#endif
 #include <QMutex>
 #include <time.h>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+
 
 class QDLT_EXPORT QDltFilterList
 {
@@ -63,6 +64,12 @@ public:
     */
     void clearFilter();
 
+    //! Return true if Filter list is empty
+    /*!
+      This includes all positive and negative filters and markers.
+    */
+    bool isEmpty();
+
     //! Add a filter to the filter list.
     /*!
       \param filter the filter configuration
@@ -82,9 +89,9 @@ public:
       \return 0 if message will not be marked, colour if message will be marked
     */
 #ifdef USECOLOR
-    QColor checkMarker(QDltMsg &msg);
+    QColor checkMarker(const QDltMsg &msg);
 #else
-    QString checkMarker(QDltMsg &msg);
+    QString checkMarker(const QDltMsg &msg);
 #endif
 
 
@@ -120,6 +127,16 @@ public:
     /*!
     */
     void updateSortedFilter();
+
+    //! Apply RegEx Replace to the string, if any active in the filters.
+    /*!
+    */
+    bool applyRegExString(QDltMsg &msg,QString &text);
+
+    //! Apply RegEx Replace to the argumnets of a message, if any active in the filters.
+    /*!
+    */
+    bool applyRegExStringMsg(QDltMsg &msg) const;
 
 protected:
 private:

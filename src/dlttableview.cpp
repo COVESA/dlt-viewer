@@ -1,5 +1,8 @@
 #include "dlttableview.h"
 
+#include <QDebug>
+#include <QWheelEvent>
+
 DltTableView::DltTableView(QWidget *parent) :
     QTableView(parent)
 {
@@ -14,6 +17,17 @@ void DltTableView::paintEvent(QPaintEvent *event)
     {
         QTableView::paintEvent(event);
         paintMutex.unlock();
+    }
+}
+
+void DltTableView::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers().testFlag(Qt::ControlModifier)) {
+        auto val = event->angleDelta().y();
+        emit changeFontSize((0 < val) - (val < 0));
+        event->accept();
+    } else {
+        QTableView::wheelEvent(event);
     }
 }
 

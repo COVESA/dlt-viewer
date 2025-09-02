@@ -3,9 +3,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2014  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file dltdbusplugin.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
  /*  Change log
@@ -106,7 +106,7 @@ bool DltDBusPlugin::loadConfig(QString filename)
 
  if ( filename.length() <= 0 )
  {
-     // set the default config according to GENIVI APID/CTID
+     // set the default config according to COVESA APID/CTID
      // as given in dlt-dbus.conf on the logging device
      //qDebug()<< "Set default configuration";
      logid[0].apid=QString("DBUS");
@@ -305,7 +305,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg)
     text += QString("<tr><td>Destination</td><td>%1</td></tr>").arg(dbusMsg.getDestination());
     text += QString("<tr><td>Sender</td><td>%1</td></tr>").arg(dbusMsg.getSender());
     QByteArray signature = dbusMsg.getSignature();
-    text += QString("<tr><td>Signature</td><td>%1</td></tr>").arg(msg.toAsciiTable(signature,false,false,true,256,256,false));
+    text += QString("<tr><td>Signature</td><td>%1</td></tr>").arg(QDlt::toAsciiTable(signature,false,false,true,256,256,false));
     text += QString("<tr><td>UnixFds</td><td>%1</td></tr>").arg(dbusMsg.getUnixFds());
 
     text += QString("</table>");
@@ -315,7 +315,7 @@ void DltDBusPlugin::selectedIdxMsg(int /*index*/, QDltMsg &msg)
     /* DBus message payload Hex*/
     QByteArray payload = dbusMsg.getPayload();
     text = QString("<h3>Size: %1</h3>").arg(payload.size());
-    text += msg.toAsciiTable(payload,true,true,false);
+    text += QDlt::toAsciiTable(payload,true,true,false);
     form->setTextBrowserPayloadHex(text);
 
     /* decode DBus payload */
@@ -354,7 +354,7 @@ void DltDBusPlugin::initFileStart(QDltFile *file)
     plugin_is_active = true;
     dltFile = file;
     methods.clear();
-    qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_DBUS_PLUGIN_VERSION;
+    //qDebug() << "Activate plugin" << plugin_name_displayed <<  DLT_DBUS_PLUGIN_VERSION;
     // clear old map
     QMapIterator<uint32_t, QDltSegmentedMsg*> i(segmentedMessages);
     while (i.hasNext())
@@ -650,7 +650,7 @@ bool DltDBusPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
     argument.setEndianness(msg.getEndianness());
     argument.setOffsetPayload(0);
     QByteArray dataText;
-    dataText.append(text);
+    dataText.append(text.toUtf8());
     argument.setData(dataText);
     msg.addArgument(argument);
 
@@ -787,9 +787,8 @@ bool DltDBusPlugin::initControl(QDltControl *control)
 }
 
 
-bool DltDBusPlugin::initConnections(QStringList list)
+bool DltDBusPlugin::initConnections(QStringList)
 {
-	Q_UNUSED(list);
     return true;
 }
 
@@ -825,6 +824,6 @@ void DltDBusPlugin::initMainTableView(QTableView* pTableView)
 void DltDBusPlugin::configurationChanged()
 {}
 
-#ifndef QT5
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(dltdbusplugin, DltDBusPlugin);
 #endif

@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file settingsdialog.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -23,7 +23,8 @@
 #include <QDialog>
 #include <QMainWindow>
 #include <QColorDialog>
-#include "qdlt.h"
+
+#include "qdltfile.h"
 
 #define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
@@ -56,10 +57,6 @@ public:
     QStringList getRecentFilters();
     QString getWorkingDirectory();
 
-    // this function checks if old cache files should be deleted
-    // This function should be called during initialisation of dlt viewer
-    void clearIndexCacheAfterDays();
-
 Q_SIGNALS:
     void FilterPathChanged();
     void PluginsAutoloadChanged();
@@ -83,11 +80,9 @@ private slots:
 
     void on_toolButtonDefaultFilterPath_clicked();
     void on_toolButtonPluginsAutoload_clicked();
-    void on_toolButtonFilterCache_clicked();
-    void on_pushButtonClearIndexCache_clicked();
     void on_groupBoxSessionId_clicked(bool checked);
-    //void on_groupBoxArguments_clicked(bool checked);
-    //void on_spinBox_showArguments_valueChanged(int i);
+    void on_groupBoxArguments_clicked(bool checked);
+    void on_spinBox_showArguments_valueChanged(int i);
 
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
     void on_pushButtonMarkerColor_clicked();

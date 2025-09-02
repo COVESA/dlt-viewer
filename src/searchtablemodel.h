@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file searchdialog.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -23,9 +23,9 @@
 #include <QAbstractTableModel>
 
 #include "project.h"
-#include "qdlt.h"
+#include "qdltpluginmanager.h"
 
-#define DLT_VIEWER_SEARCHCOLUMN_COUNT 13
+#define DLT_VIEWER_SEARCHCOLUMN_COUNT FieldNames::Arg0
 
 class SearchTableModel : public QAbstractTableModel
 {
@@ -51,6 +51,7 @@ public:
     int get_SearchResultListSize() const;
     bool get_SearchResultEntry(int position, unsigned long &entry);
 
+    QColor getMsgBackgroundColor(QDltMsg &msg) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;

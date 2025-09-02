@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,13 +15,13 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdlt.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include <QtDebug>
 
-#include "qdlt.h"
+#include "qdltconnection.h"
 
 extern "C"
 {
@@ -68,18 +68,20 @@ void QDltConnection::clear()
     bytesReceived = 0;
     bytesError = 0;
     syncFound = 0;
+    messageCounter = 0;
 }
 
 void QDltConnection::add(const QByteArray &bytes)
 {
     bytesReceived += bytes.size();
 
-    data = dataView + bytes;
+    QByteArray dataViewArray = dataView;
+    data = dataViewArray + bytes;
 
     dataView.align(data);
 }
 
-bool QDltConnection::parse(QDltMsg &msg)
+bool QDltConnection::parseDlt(QDltMsg &msg , bool supportDLTv2)
 {
     /* if sync to serial header search for header */
     int found = 0;
@@ -148,7 +150,7 @@ bool QDltConnection::parse(QDltMsg &msg)
     {
         /* two sync headers found */
         /* try to read msg */
-        if(!msg.setMsg(dataView.mid(firstPos,secondPos-firstPos-4),false))
+        if(!msg.setMsg(dataView.mid(firstPos,secondPos-firstPos-4),false,supportDLTv2))
         {
             /* no valid msg found, perhaps to short */
             dataView.advance(secondPos-4);
@@ -173,7 +175,7 @@ bool QDltConnection::parse(QDltMsg &msg)
         bytesError += firstPos-4;
 
     /* try to read msg */
-    if(!msg.setMsg(dataView.mid(firstPos),false))
+    if(!msg.setMsg(dataView.mid(firstPos),false,supportDLTv2))
     {
         /* no complete msg found */
         /* perhaps not completely received */
@@ -194,3 +196,66 @@ bool QDltConnection::parse(QDltMsg &msg)
     return true;
 }
 
+bool QDltConnection::parseAscii(QDltMsg &msg)
+{
+    bool success = false;
+
+    /* Use primitive buffer for faster access */
+    int cbuf_sz = dataView.size();
+    const char *cbuf = dataView.constData();
+
+    /* find end of line in buffer */
+    for(int num=0;num<cbuf_sz;num++) {
+        if(cbuf[num] == '\r' || cbuf[num] == '\n')
+        {
+            // end of line found
+
+            // check if line is empty, do not store empty lines
+            if(num!=0)
+            {
+                // set parameters of DLT message to be generated
+                msg.clear();
+                msg.setEcuid("");
+                msg.setApid("SER");
+                msg.setCtid("ASC");
+                msg.setMode(QDltMsg::DltModeVerbose);
+                msg.setType(QDltMsg::DltTypeLog);
+                msg.setSubtype(QDltMsg::DltLogInfo);
+                msg.setMessageCounter(messageCounter++);
+                msg.setNumberOfArguments(1);
+
+                // add one argument as String
+                QDltArgument arg;
+                arg.setTypeInfo(QDltArgument::DltTypeInfoStrg);
+                arg.setEndianness(QDlt::DltEndiannessLittleEndian);
+                arg.setOffsetPayload(0);
+                arg.setData(QByteArray(cbuf,num)+QByteArray("",1));
+                msg.addArgument(arg);
+
+                // generate binary payload and header of DLT message
+                msg.genMsg();
+
+                // succesful found a new line to be written as DLT message
+                success = true;
+            }
+
+            // remove parsed line from buffer
+            if( (num < (cbuf_sz-1)) && (cbuf[num+1] == '\n' || cbuf[num+1] == '\r'))
+            {
+                // \n and \r found, remove two additional characters
+                dataView.advance(num+2);
+            }
+            else
+            {
+                // only \n or \r found, remove only one character
+                dataView.advance(num+1);
+            }
+
+            // msg read successful
+            return success;
+        }
+    }
+
+    // no message found
+    return success;
+}

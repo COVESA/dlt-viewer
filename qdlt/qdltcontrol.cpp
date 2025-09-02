@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,13 +15,13 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdlt.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include <QtDebug>
 
-#include "qdlt.h"
+#include "qdltcontrol.h"
 
 extern "C"
 {
@@ -42,6 +42,10 @@ QDltControl::QDltControl(QObject *_server)
             server, SLOT(connectEcuSignal(int)));
     connect(this, SIGNAL(disconnectEcuSignal(int)),
             server, SLOT(disconnectEcuSignal(int)));
+    connect(this, SIGNAL(connectAllEcuSignal()),
+            server, SLOT(connectAllEcuSignal()));
+    connect(this, SIGNAL(disconnectAllEcuSignal()),
+            server, SLOT(disconnectAllEcuSignal()));
     connect(this, SIGNAL(openFileSignal(QStringList)),
             server, SLOT(onOpenTriggered(QStringList)));
     connect(this, SIGNAL(newFileSignal(QString)),
@@ -109,6 +113,16 @@ void QDltControl::connectEcu(int index)
 void QDltControl::disconnectEcu(int index)
 {
     emit disconnectEcuSignal(index);
+}
+
+void QDltControl::connectAllEcu()
+{
+    emit connectAllEcuSignal();
+}
+
+void QDltControl::disconnectAllEcu()
+{
+    emit disconnectAllEcuSignal();
 }
 
 void QDltControl::reopenFile()

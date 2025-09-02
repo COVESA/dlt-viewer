@@ -1,6 +1,8 @@
 #include "dltmsgqueue.h"
 #include <QThread>
 
+#define QT_5_SUPPORTED_VERSION (QT_VERSION_MAJOR == 5 && QT_VERSION_MINOR >= 14) || (QT_VERSION_MAJOR >= 6)
+
 DltMsgQueue::DltMsgQueue(int size)
     : bufferSize(size),
       buffer(new QPair<QSharedPointer<QDltMsg>, int> [size]),
@@ -19,9 +21,16 @@ DltMsgQueue::~DltMsgQueue()
 
 void DltMsgQueue::enqueueMsg(const QSharedPointer<QDltMsg> &msg, int index)
 {
+
+#if QT_5_SUPPORTED_VERSION
+    int nextWritePosition = (writePosition.loadRelaxed() + 1) % bufferSize;
+
+    while(nextWritePosition == readPosition.loadRelaxed()) // buffer full?
+#else
     int nextWritePosition = (writePosition.load() + 1) % bufferSize;
 
     while(nextWritePosition == readPosition.load()) // buffer full?
+#endif
     {
         if(writeSleepTime > 0)
             QThread::currentThread()->usleep(writeSleepTime);
@@ -30,16 +39,26 @@ void DltMsgQueue::enqueueMsg(const QSharedPointer<QDltMsg> &msg, int index)
     }
 
     writeSleepTime = qMax(writeSleepTime - sleepTimeSteps, 0);
+#if QT_5_SUPPORTED_VERSION
+    buffer[writePosition.loadRelaxed()].first = msg;
+    buffer[writePosition.loadRelaxed()].second = index;
 
+    writePosition.storeRelaxed(nextWritePosition);
+#else
     buffer[writePosition.load()].first = msg;
     buffer[writePosition.load()].second = index;
 
     writePosition.store(nextWritePosition);
+#endif
 }
 
 bool DltMsgQueue::dequeue(QPair<QSharedPointer<QDltMsg>, int> &dequeuedData)
 {
+#if QT_5_SUPPORTED_VERSION
+    while(readPosition.loadRelaxed() == writePosition.loadRelaxed()) // buffer empty?
+#else
     while(readPosition.load() == writePosition.load()) // buffer empty?
+#endif
     {
         if(stopRequested)
             return false;
@@ -51,10 +70,16 @@ bool DltMsgQueue::dequeue(QPair<QSharedPointer<QDltMsg>, int> &dequeuedData)
     }
 
     readSleepTime = qMax(readSleepTime - sleepTimeSteps, 0);
+#if QT_5_SUPPORTED_VERSION
+    dequeuedData = buffer[readPosition.loadRelaxed()];
 
+    readPosition.storeRelaxed((readPosition.loadRelaxed() + 1) % bufferSize);
+#else
     dequeuedData = buffer[readPosition.load()];
 
     readPosition.store((readPosition.load() + 1) % bufferSize);
+#endif
+
 
     return true;
 }

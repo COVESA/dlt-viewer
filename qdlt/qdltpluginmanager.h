@@ -1,11 +1,13 @@
 #ifndef QDLTPLUGINMANAGER_H
 #define QDLTPLUGINMANAGER_H
 
-#include "plugininterface.h"
-
-#include <QDir>
+#include "qdltconnection.h"
+#include "qdltcontrol.h"
+#include "qdltmessagedecoder.h"
 
 #include "export_rules.h"
+
+#include <QDir>
 
 //! Manage all DLT Plugins
 /*!
@@ -13,25 +15,16 @@
 */
 
 class QDltPlugin;
+class QMutex;
 
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
-
-    //! Constructor
-    QDltPluginManager();
-
     //! The number of plugins
     /*!
       \return the number of loaded plugins.
     */
     int size() const;
-
-    //! The number of plugins that are enabled
-    /*!
-      \return the number of loaded plugins and enabled.
-    */
-    int sizeEnabled() const;
 
     //! Loads all plugins from three directories.current working sub directory /plugin
     /*!
@@ -59,20 +52,20 @@ public:
     void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
 
     //! Get the list of pointers to all loaded plugins
-    QList<QDltPlugin*> getPlugins() { return plugins; }
+    QList<QDltPlugin*> getPlugins() const { return plugins; }
 
     //! Get the list of pointers to all enabled decoder plugins
-    QList<QDltPlugin*> getDecoderPlugins();
+    QList<QDltPlugin*> getDecoderPlugins() const;
 
     //! Get the list of pointers to all enabled viewer plugins
-    QList<QDltPlugin*> getViewerPlugins();
+    QList<QDltPlugin*> getViewerPlugins() const;
 
     //! Find a plugin with the specific name
     /*!
       \param name The name of the plugin to be searched for.
-      \return pinter to plugin or zero if no plugin with the name is found
+      \return pointer to plugin or nullptr if no plugin with the name is found
     */
-    QDltPlugin* findPlugin(QString &name);
+    QDltPlugin* findPlugin(const QString &name) const;
 
     //control plugin interface
     bool stateChanged(int index, QDltConnection::QDltConnectionState connectionState, QString hostname);
@@ -80,7 +73,15 @@ public:
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
 
+    //control plugin execution order
+    void initPluginPriority(const QStringList &desiredPrio);
+    bool decreasePluginPriority(const QString &name);
+    bool raisePluginPriority(const QString &name);
+    bool setPluginPriority(const QString& name, int prio);
+    QStringList getPluginPriorities() const;
+
 private:
+    mutable QMutex pluginListMutex;
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;

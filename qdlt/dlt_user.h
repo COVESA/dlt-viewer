@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,7 +15,7 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  * 
  * \file dlt_user.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -71,7 +71,6 @@
   \{
 */
 
-#include "dlt_types.h"
 #include "dlt_common.h"
 
 #ifdef __cplusplus
@@ -351,7 +350,7 @@ int dlt_user_trace_network(DltContext *handle, DltNetworkTraceType nw_trace_type
  * This function has to be called first, before using any DLT user lib functions.
  * @return negative value if there was an error
  */
-int dlt_init();
+int dlt_init(void);
 
 /**
  * Initialise the user lib writing only to file.

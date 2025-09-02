@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file filterdialog.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -23,8 +23,6 @@
 #include <QDialog>
 #include <QColorDialog>
 #include <QAbstractButton>
-#include "project.h"
-#include "qdlt.h"
 
 namespace Ui {
     class FilterDialog;
@@ -91,6 +89,13 @@ public:
     void setEnablePayloadText(bool state);
     bool getEnablePayloadText();
 
+    void setEnableMessageId(bool state);
+    bool getEnableMessageId();
+    unsigned int getMessageId_min();
+    unsigned int getMessageId_max();
+    void setMessageId_min(unsigned int min);
+    void setMessageId_max(unsigned int max);
+
     void setFilterColour(QColor color);
     QString getFilterColour();
 
@@ -111,12 +116,25 @@ public:
     void setEnableMarker(bool state);
     bool getEnableMarker();
 
+    void setEnableRegexSearchReplace(bool state);
+    bool getEnableRegexSearchReplace();
+
+    void setRegexSearchText(const QString&);
+    QString getRegexSearchText();
+
+    void setRegexReplaceText(const QString&);
+    QString getRegexReplaceText();
+
 private:
     Ui::FilterDialog *ui;
-
+    unsigned int msgIdMin=0;
+    unsigned int msgIdMax=0;
 public slots:
     void on_buttonSelectColor_clicked();
     void on_comboBoxType_currentIndexChanged(int index);
+    void checkMsgIdValid(const QString&);
+    void on_checkboxMessageId_stateChanged(int state);
+    void on_checkRegex(const QString&);
     void validate();
 private slots:
     void on_lineEditApplicationId_textEdited(const QString &arg1);
@@ -140,6 +158,9 @@ private slots:
     void on_pushButton_c10_clicked();
     void on_buttonGroup_filterType_buttonClicked( int id );
 
+    void on_pushButton_Positive_clicked();
+    void on_pushButton_Negative_clicked();
+    void on_pushButton_Marker_clicked();
 };
 
 #endif // FILTERDIALOG_H

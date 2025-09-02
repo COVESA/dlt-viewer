@@ -1,0 +1,281 @@
+name: PullRequest
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+  pull_request:
+
+jobs:
+  buildMac:
+    name: Build ${{ matrix.macos }} (${{ matrix.abi }}) with Qt${{ matrix.qt }}
+    runs-on: ${{ matrix.macos }}
+    strategy:
+      fail-fast: false
+      matrix:
+        macos: [ macos-13 ]
+        abi: [ x86 ]
+        xcode: [ Xcode_15.2 ]
+        qt: [ 5 ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Investigate available XCode versions
+        run: ls -n /Applications/ | grep Xcode*
+      - name: Set XCode Version
+        run: |
+          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+          xcodebuild -version
+          xcode-select --print-path
+      - name: Install build environment
+        run: scripts/darwin/install_qt${{ matrix.qt }}.sh
+      - name: Show cmake version
+        run: cmake --version
+      - name: Build project
+        run: scripts/darwin/build_cmake_qt${{ matrix.qt }}.sh
+      - name: Codesign app bundle
+        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+        # Extract the secrets we defined earlier as environment variables
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
+          MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
+          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: scripts/darwin/codesign.sh
+
+      - name: Notarize app bundle
+        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+        env:
+          PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
+          PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
+          PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.APP_PASSWORD }}
+        run: scripts/darwin/notarize.sh
+
+      - name: Artifact Creation
+        run: |
+          cd /Users/runner/work/dlt-viewer/dlt-viewer/build
+          mkdir -p dist
+          cp ../scripts/darwin/install.md dist
+          tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
+      - name: Archive artifact
+        run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/dist
+      - name: Archive upload
+        uses: actions/upload-artifact@v4
+        if: ${{ success() }}
+        with:
+          name: DLT-Mac-${{ matrix.abi }}
+          path: DLT-macOS*.zip
+
+  buildUbuntu:
+    name: Build ${{ matrix.ubuntu }}
+    strategy:
+      matrix:
+        ubuntu: [ ubuntu-22.04, ubuntu-24.04 ]
+    runs-on: ${{ matrix.ubuntu }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: install build environment
+        run: scripts/linux/installUbuntu22and24.sh
+      - name: Build project
+        run: scripts/linux/buildUbuntu22and24.sh
+      - name: Run tests
+        run: ctest --test-dir build/qdlt
+      - name: Create package
+        if: ${{ matrix.ubuntu == 'ubuntu-24.04' }}
+        run: ./build_viewer_debs_noble.sh
+      - name: Archive artifact
+        if: ${{ matrix.ubuntu == 'ubuntu-24.04' && success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: DLTViewer-Ubuntu-24.04
+          path: debtmp/covesa-dlt-viewer_*.deb
+
+  buildWindows:
+    name: Build Windows
+    strategy:
+      matrix:
+        task: [ sdk ]
+        qt: [ 6 ]
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Install qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          modules: qtserialport
+      - name: Build with CMake ${{ matrix.task }}
+        run: >
+          $env:WORKSPACE=$env:GITHUB_WORKSPACE;
+          $env:CPACK_7Z="true";
+          $env:CPACK_NSIS="true";
+          ./build_sdk_windows_qt${{ matrix.qt }}_MSVC_cmake.bat
+      - name: Archive artifact
+        uses: actions/upload-artifact@v4
+        if: ${{ success() }}
+        with:
+          name: DLTViewer-windows-x86_64
+          path: |
+            build/dist/DLTViewer*.7z
+            build/dist/DLTViewer*.exe
+            build/dist/*.md
+
+  buildMacOSQt6:
+    name: "Build MacOS ${{ matrix.osversion }} with Qt 6"
+    runs-on: macos-${{ matrix.osversion }}
+    strategy:
+      fail-fast: false
+      matrix:
+        osversion: [ 14, 15 ]
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+
+    - name: Install Qt 6 (Framework build)
+      uses: jurplel/install-qt-action@v4
+      with:
+        host: 'mac'
+        target: 'desktop'
+        arch: 'clang_64'
+        modules: 'qtserialport'
+
+    - name: Configure project with CMake
+      run: |
+        mkdir build
+        cd build
+        echo "QT_ROOT_DIR=$QT_ROOT_DIR"
+        APP_DIR_NAME="DLTViewer.app"
+        cmake -G Ninja -DCMAKE_PREFIX_PATH=$QT_ROOT_DIR/lib/cmake \
+        -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DDLT_USE_QT_RPATH=OFF \
+        -DDLT_PARSER=OFF \
+        -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
+        -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
+        -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
+        -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
+        -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
+        ..
+
+    - name: Build project
+      run: |
+        cmake --build build --parallel 4
+
+    - name: Install and deploy with macdeployqt
+      run: |
+        cmake --install build --prefix $(pwd)/build/install
+        ls -l build/install/DLTViewer.app
+        otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+        otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
+        echo "Deploying DLTViewer.app with macdeployqt"
+        $QT_ROOT_DIR/bin/macdeployqt build/install/DLTViewer.app -verbose=2 -dmg \
+            -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
+            -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+
+    - name: Codesign app bundle
+      if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+       # Extract the secrets we defined earlier as environment variables
+      env:
+        MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+        MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
+        MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
+        MACOS_CI_KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PASSWORD }}
+      run: scripts/darwin/codesign.sh
+
+    - name: Notarize app bundle
+      if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+      env:
+        PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
+        PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
+        PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.APP_PASSWORD }}
+      run: scripts/darwin/notarize.sh
+  
+    - name: Compress artifacts
+      run: |
+        cd $(pwd)/build
+        mkdir -p dist
+        tar -czvf "dist/DLTViewer-qt6-macos${{ matrix.osversion }}.tgz" -C $(pwd)/install .
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      if: ${{ success() }}
+      with:
+        name: DLTViewer-macos${{ matrix.osversion }}-qt6
+        path: build/dist/DLTViewer*.tgz
+  
+  createRelease:
+    name: Create release
+    runs-on: ubuntu-24.04
+    needs: [ buildMac, buildMacOSQt6, buildUbuntu, buildWindows ]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      # TODO: restore AppImage build then enable this step, see https://github.com/COVESA/dlt-viewer/issues/717
+      # - name: Download DLT Linux artifacts
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: DLT-Linux
+      #   continue-on-error: true
+        
+      - name: Download DLT macOS artifacts arm64
+        uses: actions/download-artifact@v4
+        with:
+          name: DLTViewer-macos15-qt6
+
+      - name: Download DLT macOS artifacts x86
+        uses: actions/download-artifact@v4
+        with:
+          name: DLT-Mac-x86
+
+      - name: Download DLT Windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: DLTViewer-windows-x86_64
+
+      - name: Find Tag
+        id: tagger
+        uses: jimschubert/query-tag-action@v2.2
+        with:
+          skip-unshallow: 'true'
+          abbrev: false
+          commit-ish: HEAD
+      - name: Check pre-release
+        run: |
+          echo "tag=${{steps.tagger.outputs.tag}}"
+          if [[ ${{ steps.tagger.outputs.tag }} == *alpha* || ${{ steps.tagger.outputs.tag }} == *beta* ]]
+          then
+             prerelease=true
+          else
+             prerelease=false
+          fi
+          echo "PRE_RELEASE=$prerelease" >> $GITHUB_ENV
+          echo "prerelease=$prerelease"
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{steps.tagger.outputs.tag}}
+          generate_release_notes: true
+          prerelease: ${{ env.PRE_RELEASE }}
+          name: ${{steps.tagger.outputs.tag}}
+          files: |
+            DLT*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

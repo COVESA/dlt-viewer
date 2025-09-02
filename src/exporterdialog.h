@@ -3,7 +3,7 @@
 
 #include <QDialog>
 
-#include "dltexporter.h"
+#include "qdltexporter.h"
 
 namespace Ui {
 class ExporterDialog;
@@ -17,11 +17,11 @@ public:
     explicit ExporterDialog(QWidget *parent = 0);
     ~ExporterDialog();
 
-    void setFormat(DltExporter::DltExportFormat exportFormat);
-    DltExporter::DltExportFormat getFormat();
+    void setFormat(QDltExporter::DltExportFormat exportFormat);
+    QDltExporter::DltExportFormat getFormat();
 
-    void setSelection(DltExporter::DltExportSelection exportSelection);
-    DltExporter::DltExportSelection getSelection();
+    void setSelection(QDltExporter::DltExportSelection exportSelection);
+    QDltExporter::DltExportSelection getSelection();
 
     void getRange(unsigned long *start, unsigned long *stop);
     void setRange(unsigned long start, unsigned long stop);

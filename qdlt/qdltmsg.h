@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,30 +14,26 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
- * For further information see http://www.genivi.org/.
+ * \file qdltmsg.h
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #ifndef QDLT_MSG_H
 #define QDLT_MSG_H
 
-#include <QObject>
 #include <QString>
-#include <QFile>
-#include <QDateTime>
-//#include <QColor>
-#include <QMutex>
-#include <time.h>
 
 #include "export_rules.h"
+#include "qdltbase.h"
+#include "qdltargument.h"
 
 //! Access to a DLT message.
 /*!
   This class provide access to a single DLT message from a DLT log file.
   This class is currently not thread safe.
 */
-class QDLT_EXPORT QDltMsg : public QDlt
+class QDLT_EXPORT QDltMsg
 {
 public:
     //! Constructor.
@@ -45,11 +41,6 @@ public:
       This call clears all variables of the argument.
     */
     QDltMsg();
-
-    //! Destructor.
-    /*!
-    */
-    ~QDltMsg();
 
     //! The type of the DLT message.
     typedef enum { DltTypeUnknown = -2, DltTypeLog = 0,DltTypeAppTrace,DltTypeNwTrace,DltTypeControl } DltTypeDef;
@@ -68,6 +59,13 @@ public:
 
     //! The verbose mode of the message.
     typedef enum { DltModeUnknown = -2, DltModeNonVerbose = 0, DltModeVerbose = 1 } DltModeDef;
+
+    //! Get QString from const char id with length of 4 bytes.
+    /*!
+      \param text Pointer to 4 byte id.
+      \return QString of const char text.
+    */
+    static QString getStringFromId(const char *text);
 
     //! Get the time of the DLT message, when the DLT message is logged.
     /*!
@@ -220,14 +218,14 @@ public:
       \sa DltEndiannessDef
       \return The endianness of the DLT message.
     */
-    DltEndiannessDef getEndianness() const { return endianness; }
+    QDlt::DltEndiannessDef getEndianness() const { return endianness; }
 
     //! Set the endianness of the DLT message.
     /*!
       \sa DltEndiannessDef
       \param _endianness The endianness of the DLT message.
     */
-    void setEndianness(DltEndiannessDef _endianness) { endianness = _endianness; }
+    void setEndianness(QDlt::DltEndiannessDef _endianness) { endianness = _endianness; }
 
     //! Get the text of the endianness of the DLT message.
     /*!
@@ -299,11 +297,18 @@ public:
     */
     void setNumberOfArguments(unsigned char noargs) { numberOfArguments = noargs; }
 
-    //! Get the complete header of the DLT message.
+    //! Get the binary header of the DLT message.
     /*!
       \return Byte Array containing the complete header of the DLT message.
     */
     QByteArray getHeader() const { return header; }
+
+    //! Set the binary header of the DLT message.
+    /*!
+      Be careful with this function, binary data and interpreted data will not be in sync anymore.
+      \param data The new header of the DLT message
+    */
+    void setHeader(QByteArray &data) { header = data; }
 
     //! Get the size of the header.
     /*!
@@ -312,11 +317,25 @@ public:
     */
     int getHeaderSize() const { return headerSize; }
 
-    //! Get the complete payload of the DLT message.
+    //! Get the binary payload of the DLT message.
     /*!
       \return Byte Array containing the complete payload of the DLT message.
     */
     QByteArray getPayload() const { return payload; }
+
+    //! Set the binary payload of the DLT message.
+    /*!
+      Be careful with this function, binary data and interpreted data will not be in sync anymore.
+      \param data The new payload of the DLT message
+    */
+    void setPayload(QByteArray &data) { payload = data; }
+
+    //! Generate binary header and payload.
+    /*!
+      This function will generate first the binary payload from the argument list of the DLt message.
+      In a second step it will generate the binary header from all information in the DLT message.
+    */
+    void genMsg();
 
     //! Get the size of the payload.
     /*!
@@ -407,7 +426,18 @@ public:
       \param withSH message to be parsed contains storage header, default true.
       \return True if the operation was successful, false if there was an error.
     */
-    bool setMsg(const QByteArray& buf,bool withStorageHeader = true);
+    bool setMsg(const QByteArray& buf,bool withStorageHeader = true,bool supportDLTv2 = false);
+
+    //! Check the message size provided by a byte array containing the DLT message, without parsing the whole message.
+    /*!
+      \param data the buffer containing the DLT messages.
+      \param size the size of the buffer
+      \return the size of the DLT message including storage header if found
+    */
+    quint32 checkMsgSize(const char *data,quint32 size,bool supportDLTv2 = false);
+
+    //! Parse the arguments from the Payload.
+    bool parseArguments();
 
     //! Get the message written into a byte array containing the DLT message.
     /*!
@@ -432,7 +462,79 @@ public:
       \return The payload string.
     */
     QString toStringPayload() const;
-protected:
+
+    // Setter and Getters for new DLTv2 parameters
+    uint8_t getVersionNumber() const;
+    void setVersionNumber(uint8_t newVersionNumber);
+
+    bool getWithSessionId() const;
+    void setWithSessionId(bool newWithSessionId);
+
+    bool getWithAppContextId() const;
+    void setWithAppContextId(bool newWithAppContextId);
+
+    bool getWithEcuId() const;
+    void setWithEcuId(bool newWithEcuId);
+
+    quint8 getContentInformation() const;
+    void setContentInformation(quint8 newContentInformation);
+
+    bool getWithHFMessageInfo() const;
+    void setWithHFMessageInfo(bool newWithHFMessageInfo);
+
+    bool getWithHFNumberOfArguments() const;
+    void setWithHFNumberOfArguments(bool newWithHFNumberOfArguments);
+
+    bool getWithHFTimestamp() const;
+    void setWithHFTimestamp(bool newWithHFTimestamp);
+
+    bool getWithHFMessageId() const;
+    void setWithHFMessageId(bool newWithHFMessageId);
+
+    bool getWithSegementation() const;
+    void setWithSegementation(bool newWithSegementation);
+
+    bool getWithPrivacyLevel() const;
+    void setWithPrivacyLevel(bool newWithPrivacyLevel);
+
+    bool getWithTags() const;
+    void setWithTags(bool newWithTags);
+
+    bool getWithSourceFileNameLineNumber() const;
+    void setWithSourceFileNameLineNumber(bool newWithSourceFileNameLineNumber);
+
+    quint32 getTimestampNanoseconds() const;
+    void setTimestampNanoseconds(quint32 newTimestampNanoseconds);
+
+    quint64 getTimestampSeconds() const;
+    void setTimestampSeconds(quint64 newTimestampSeconds);
+
+    const QString &getSourceFileName() const;
+    void setSourceFileName(const QString &newSourceFileName);
+
+    quint32 getLineNumber() const;
+    void setLineNumber(quint32 newLineNumber);
+
+    const QStringList &getTags() const;
+    void setTags(const QStringList &newTags);
+
+    quint8 getPrivacyLevel() const;
+    void setPrivacyLevel(quint8 newPrivacyLevel);
+
+    quint8 getSegmentationFrameType() const;
+    void setSegmentationFrameType(quint8 newSegmentationFrameType);
+
+    quint64 getSegmentationTotalLength() const;
+    void setSegmentationTotalLength(quint64 newSegmentationTotalLength);
+
+    quint32 getSegmentationConsecutiveFrame() const;
+    void setSegmentationConsecutiveFrame(quint32 newSegmentationConsecutiveFrame);
+
+    quint8 getSegmentationAbortReason() const;
+    void setSegmentationAbortReason(quint8 newSegmentationAbortReason);
+
+    int getIndex() const;
+    void setIndex(int newIndex);
 
 private:
 
@@ -455,7 +557,7 @@ private:
     DltModeDef mode;
 
     //! The endianness of the payload of the message.
-    DltEndiannessDef endianness;
+    QDlt::DltEndiannessDef endianness;
 
     //! The time, seconds part, of the message generated by the logger.
     time_t time;
@@ -497,6 +599,41 @@ private:
 
     //! List of arguments of the DLT message.
     QList<QDltArgument> arguments;
+
+    //! New parameters of DLTv2 protocol
+    uint8_t versionNumber;
+    bool withSessionId;
+    bool withAppContextId;
+    bool withEcuId;
+    quint8 contentInformation; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
+    bool withHFMessageInfo; // verbose or control
+    bool withHFNumberOfArguments; // verbose or control
+    bool withHFTimestamp; // verbose or none verbose
+    bool withHFMessageId; // none verbose
+
+    bool withSegementation;
+    bool withPrivacyLevel;
+    bool withTags;
+    bool withSourceFileNameLineNumber;
+
+    quint32 timestampNanoseconds;
+    quint64 timestampSeconds;
+
+    QString sourceFileName;
+    quint32 lineNumber;
+
+    QStringList tags;
+
+    quint8 privacyLevel;
+
+    quint8 segmentationFrameType;
+    quint64 segmentationTotalLength;
+    quint32 segmentationConsecutiveFrame;
+    quint8 segmentationAbortReason;
+
+    //! Position of current file in a QDltFile
+    int index;
+
 };
 
 #endif // QDLT_MSG_H

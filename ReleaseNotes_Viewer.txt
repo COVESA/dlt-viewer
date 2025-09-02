@@ -3,24 +3,740 @@ DLT Viewer  - Release Notes
 Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Gernot Wirschal <Gernot.Wirschal@bmw.de>
 
-Changes
--------
-02.05.2019 GW: 2.19.0 Release
-14.04.2020 GW: 2.20.0 Release
-
 Version
 -------
-Version 2.19.0 RELEASE
-
+Version 2.28.0 RELEASE
 
 Known issues
 ------------
 
   * none
 
-
 Changes
 -------
+
+2.28.0
+
+* Fix marker when changing filter (#691)
+* add cmake presets and update gitignore
+* Fix regexp replace functionality in commander (#690)
+* Additionally fix the SimpleWriter by opening a file
+* Configure Keyboard Shortcuts (#637)
+* Add StartupWMClass to .desktop launcher (#686)
+* Restore string arg encoding  (#684)
+* Revert "fix: use full qbytearray and not char* conversion"
+* Revert "fix: use fromLatin1 for string args with ascii encoding"
+* Simplify string arg encoding code
+* Adjust test_qdltargument.cpp
+* Do not clear ecu tree on log on clearing logs (#680)
+* Merge pull request #681 from COVESA/rm-unused-functions
+* Remove obsolete unused code
+* Merge pull request #679 from COVESA/windows-2025
+* Build cosmetic
+* msvc 2022
+* windows-latest
+* MacOS 15
+* Prepare CI for qt6
+* Rename action job
+* Fix ECUs config tree when importing dlp (#668)
+* Restore build of the unit tests on CI (#669)
+* Persist Search History (#635)
+* Remove Unnecessary Plugin Pane Controls (#632)
+* Create new DLt file when drag and drop pcap and mf4 files. (#664)
+* Request user to save filter, if filter was changed. (#663)
+* fix README.md (#661)
+* Remove Ubuntu 20
+* Fix MF4 Import time calculation. (#656)
+* Fixed further occurrences.
+* prevent memory leak on each table view context menu open
+* fix crash due to wrongly parsed ctrl message (#646)
+* tests: add unit test for QDltArgument
+* Avoid exception when parsing uninteresting control message
+* fix: use full qbytearray and not char* conversion
+* fix: use fromLatin1 for string args with ascii encoding
+* Add timestamps to split parts
+* Implement dlt split feature in commander
+* Mark and Jump To Messages (#629)
+* Improve Dark Mode Visibility of Scrollbar (#631)
+* Fixe performance issue with only tracing. (#633)
+* Included the shortcut to the context menu
+* Improve Settings Organisation
+* Update tablemodel.h
+* Distinguish Log Generation and Storage Timestamps
+* Document dependencies for executing AppImage
+* install required offscreen plugin into appimage
+* populate ecus tree efficiently
+* Control message payload parsing
+* Update mainwindow.cpp
+* Copy Message Payload
+* Select by commandline signature, which columns are exported in CSV. (#623)
+* Remove code duplication when writing dlt message (#615)
+* Introduce QDltImporter::makeDltStorageHeader to avoid code duplication
+* Improve MainWindow::writeDLTMessageToFile signature
+* Use single C-func to get msg timestamp
+* Fix incorrect matching algo
+* qdltparser.h: drop some more old unused typedefs
+* simplify the definition of speed_t across all the different OSes (MAC/WIN/LINUX)
+* use std algos
+* Use QMutexLocker instead of explicit lock/unlock
+* additional minor code improvements
+* clang-format ref and ptr to the left
+* rm code duplication in plugin manager
+* Simplify initConnections
+* improve mingw compatibility and free the console in additional places (#588)
+* add fixes for mingw compatibility and free the console in additional places
+* c++17 flag not needed
+* add the freeWindowsConsole function
+* Remove inheritence of QDltMsg from QDlt
+* Remove unused vars from qdltimporter
+* Remove inheritence of QDltArgument from QDlt
+* Simplify code in qdltbase
+* Move constants from qdltbase to where they are needed
+* introduce separate header for C export rules
+* rm dead code
+* move search form specific vars from mainwindow
+* Merge pull request #602 from COVESA/remove_qmake_1
+* Remove qmake windows build scripts.
+* No use of QtGlobal in c-code
+* Add missing includes
+* Set C standard to c11
+* Add missing includes
+* Introduce EcuItem::find method to accelerate search
+* Prettify a bit controlMessage_ReceiveControlMessage method
+* Remove redundant check
+* Various code fixes
+* Set filter range end automatically to end of file. (#600)
+
+2.27.0
+
+* Fix MF4 import with only one datablock. (#596)
+* Build app for ubuntu 22 and 24
+  Rename Linux build
+* Rename Linux build
+* Fix multifilter export filepath
+* Multifilter export feature for dlt-commander (-multifilter) (#591)
+* DLT Commander remove creation of Filter index when exporting to speed up. (#590)
+* Remove extra thread for filter index to improve performance. (#589)
+* Updated Info.plist.in
+  Added minimum macOS version and category of application
+* Updated icon to meet Apple signing requirements
+* Improve speed MF4 import. (#585)
+* Background thread for export. (#584)
+* Background thread for import. (#582)
+* Progress output in dlt-commander. (#581)
+* Remove unused mcudpsocket class (#579)
+* rm unused mcudpsocket
+* add clang-format settings file
+  No enforcement, just as a tool and reference for
+  those who want to have convenient and consistent way
+  to format their code.
+* Fix wheel scrolling of the main tableview (#580)
+* LRU for main table model (#575)
+* Add generic lrucache structure
+* Use LRU cache
+* Handle color of corrupted messages
+* Change table view font on Ctrl + Wheel combination (#578)
+* Fix for command line parser issue with multiple arguments with same type. (#574)
+* Reapply "Use QCommandLineParser instead of custom cmd args parsing (#543)" (#566)
+* Simplify handling of logging only mode in log table view (#569)
+* Improve progress output. (#571)
+  Fix add multiple filter to dlt commander.
+  Enable filter when providing a filter file by the commandline.
+* Remove CtxId check from Filetransfer Plugin. (#570)
+* Add dlf file extension when saving filter (#567)
+* Windows update Script to use Qt 6.7.3. (#568)
+  Windows Multicore build for qmake.
+* Add QDltOptmanager unit tests and minor cleanup (#564)
+* Add unit tests for qdltoptmanager
+* Avoid double work when adding cmd argument
+  Reuse help text in main window
+* Avoid duplicate text on --version call
+* Remove redundant code in QDltOptmanager singleton
+* Avoid -Wempty-body compiler warnings
+* Fix and Improve RegEx Replace feature. (#565)
+  RegEx Replace will only be executed when filter matches.
+  Re enable RegEx Replace for DLT Export, no influence on non verbose messages anymore.
+* Linux build only with cmake in CI
+* Rename qmake build file for Windows
+* Rename build file for Darwin
+* Revert/Remove Regex Replace feature for DLT Export. (#556)
+  This causes currently issues with non verbose messages.
+* Fix setting filter index range start and stop when filter are active. (#555)
+* Revert "Use QCommandLineParser instead of custom cmd args parsing (#543)"
+* Enable Filter Regex Replacement also for exporting into DLT format. (#554)
+* Use QCommandLineParser instead of custom cmd args parsing (#543)
+  - avoid code duplication by reusing help text in main window
+  - add tests
+  Add QDltOptManager::reset method to have possibility
+  to test the singleton
+* Improve speed of MF4 and PCAP import. (#553)
+  Enable MF4 import of multiple data frames.
+* Additional port 3489 for DLT MF4 Import. (#552)
+* Reorder label in MacOS release job
+* Include MacOS artifacts to release action
+* MacOS release with codesign and notarization
+* Fix MAcOS release artifacts
+* Change regex replace func from std to qt internal. (#546)
+  CAUTION: Replacement placeholder changes from %1 to \1 .
+* Extend regex replace filter operation to all functionalities. (#545)
+* Fix qmake build (#544)
+* Run unit tests for Linux on CI (#538)
+* Build unit tests on CI
+* Run tests upon Linux build on CI
+* Accelerate linux build
+* Enable Debian build for noble. (#542)
+* Skip notarization on a fork
+  https://github.com/orgs/community/discussions/25217#discussioncomment-3246904
+* Removed creating tar from build
+  removed tar command from build as after notarization, binaries are tar'ed
+* Download on release MacOS x86 and arm64 artifacts separately
+   Notarization (copy)
+* Format yaml file
+* Notarization
+  Adding signing of macOS apps
+  Notarization
+  Syntax fixed
+* Make code backward compatible with Qt 5.12 (#531)
+  Names of the signals changed between Qt 5.12 and 5.15,
+  while we still need to maintain compatibility with 5.12
+* Keep console logging if app is launched from cmd (#528)
+* Increase precision of float ouput to 8 digits (#530)
+* Bump action
+* Abi in MacOS artifacts
+* Replace search progress dialog with an in-place progress bar (#509)
+* replace progress dialog with built-in progress bar
+* Adjust search input margins
+* Remove dead code related to payload range search functionality (#525)
+* remove functionality of payload search range
+  It was broken for long time and most probably
+  unused
+* Adjust layout of search dialog
+  Compensate gap due to removed payload-range
+  input fields
+* fix signal for socket error (#519)
+  The QAbstractSocket::error signal existed in Qt<5.15, but was renamed to
+  QAbstractSocket::errorOccured probably to avoid
+  https://stackoverflow.com/a/48250710
+  Since the codebase still uses the old style of connections
+  the compiler could not detect that signal does not exist anymore
+  and error was reported only on runtime:
+  "qt.core.qobject.connect: QObject::connect:
+  No such signal QTcpSocket::error(QAbstractSocket::SocketError)"
+* Testable search (#505)
+* Make tempPayload a local var
+* establish tools lib and tests infra
+* rm redundant SearchDialog::is_TimeStampRangeValid state var
+  If timestamp range search is selected
+  the loop will only continue if range is valid. It does not make sense
+  to check in functions below if range is valid since otherwise
+  that code cannot be even reached
+* implement matching for ctx and app Ids
+* use ctxid and appid match functionality in app
+* TimestampRange
+* use new timestamp filtering
+* text search using dltmessagematcher
+* fix build
+  move matcher to qdlt lib
+  enable c++17 in qmake config
+  The new code uses variant and optional
+  added in c++17 standard while qmake config was
+  setup restricted to c++11
+  enable tests only if gtest package found
+  Set c++17 standard in cmake
+  export class for windows linker
+* change parent of actions in config context menu (#522)
+  MainWindow was set as a parent of the context menu actions
+  as a result all actions ever created (upon each ctx menu open)
+  in one program session remained on heap until program is closed.
+  Assigning local menu variable as a parent deallocates actions
+  when menu is closed
+* Mac app store (#521)
+* Update README.md
+* Update INSTALL.md
+* Fix MF4 Import. (#518)
+* install qoffscreen plugin on windows (#510)
+* New command line option delimiter for CSV export. (#515)
+  Set dlt-commander export timezone to default.
+* Revert Rename of dlt_common. (#512)
+  Enable plugins if disabled when pre command called.
+* Rename dlt_common.c into dlt_common.cpp. (#506)
+  This makes sure c++ compiler is used and not plain c, failing with some error.
+  macOS Catalina
+* Update INSTALL.md
+* Update README.md
+* Update build.sh
+* Fix more compilation warnings (#499)
+* fix warning in PluginTreeWidget
+  due to comaprison of ints with different signedness
+* fix warnings in DltImporter::dltIpcFromMF4
+  comparison of integer expressions of different signedness
+* fix warnings in QDltMsg::checkMsgSize
+  comparison of integer expressions of different signedness
+* fix warnings in SettingsDialog::writeDlg
+   using integer constants in boolean context
+* fix warning in QDltPluginManager::setPluginPriority
+  + additional minor fixes
+* rm unused QDltPluginManager::sizeEnabled
+* replace deprecated constructor of QMessageBox
+* fix cast warnings in QDltArgument
+* DLT Commander Tool (#500)
+* Move Export, Import and Fieldname classes to qdlt.
+* Current limitation that progress bar is not updated.
+* First DLT Commander tool.
+* Command line only tool for environments without Qt GUI.
+* Finish first commander version.
+
+2.26.0
+
+    * Remove all zeros in every output of payload.
+    * Add status badge
+    * Cleanup commandline output. (#498)
+    * Fix filter menu. (#497)
+    * Reduce command line dlt file load progress update.
+    * Remove unused code and silence a deprecation warnings (#496)
+    * remove unused SearchDialog::payLoadValidityCheck
+    * silence warnings due to deprecated Qt settings
+    * silence Qt6 KeyCombination deprecation warning
+    * Fix filter active color. (#494)
+    * Fix Multifilter feature, expecially with older Qt version. (#493)
+    * Switch to Qt 6.7.2
+    * Enable Plugin when sending command line command to plugin. (#490)
+    * Remove Windows Vista support. (#489)
+    * Cosmetic to display OS in pipeline
+    * Remove pointless comment
+    * updated qt for arm64
+    * follow brew install suggestions
+    * Build on arm64
+    * Brew relink
+    * Run on MacOS arm64 runner
+    * Update Debian build script. (#486)
+    * Build any pullrequest
+    * MacOS build more verbose
+    * Fail fast in matrix CI jobs
+    * Enable Offscreen mode in silent mode. No display needed anymore in Linux. Runs now also on Servers without X Display. (#483)
+    * Corrections in command line usage help.
+    * Fixed some compilation warnings (#474)
+    * Allow conversion of input files in stream format (#475)
+    * Fix dark mode. (#481)
+    * Add tooltips to logs (#476)
+    * Update Windows Build script to Qt 6.7.1 (#480)
+    * Fix open and append dialog case sensitive endings. (#473)
+    * Filetransfer Plugin: - Default Save path (#471)
+    * Copy ID and filename in context menu
+    * Update Plugin version number.
+    * Fix DLTv2 support. (#472)
+    * Add getDLTv2Support function.
+    * Remove Reset Default Filter. (#466)
+    * Fix baudrate disabled. (#462)
+    * Allow loading multiple configuration files in one plugin separated by |.
+    * Change Export to simplified payload. (#459)
+    * Added Baudrate 1000000 to serial port.
+    * Update debian build package to focal. (#458)
+    * Further Cleanup Open and Append commands. (#456)
+    * Integration of PCAP/MF4 Import into Open/Append command.
+    * Filetransfer Plugin: Fix crash with Qt6 (#455)
+    * Support DLTv2 decoding as an option in the settings (#454)
+    * Fix Filetransfer Plugin Qt6 issue. (#452)
+    * Update build script to Qt6.6.2.
+    * Update version info.
+    * Fix crash in cache by using Mutex (#451)
+    * Clean up convert command line command. (#450)
+    * Explicit terminal command in command line.
+    * Terminate command line only when terminate command used.
+    * Multiple Filter per command line.
+    * Combination of Import and Convert now possible.
+    * Reorder command line commands.
+    * macOS: Skip installation of QT5 dependencies (#449)
+    * Remove Qt Gui/Widgets dependency from qdlt library. (#447)
+    * QT 5.15.2
+    * Fix commandline (#441)
+    * Fix compiler warnings
+    * Fix commandline pre plugin command
+    * Fix compiler warnings (#439)
+    * Fix import from pcap file dialog. (#438)
+    * Fix import from pcap file dialog.
+    * Import DLT from PLP in pcap.
+    * Fix DLT Import from IP Segmentation.
+    * Import DLT messages from further MF4 files.
+    * Fix Max File Size Checkbox in the settings.
+    * Remove null characters when exporting to clipboard (#435)
+    * New DLT Message Cache. (#437)
+    * Cache size can be changed in the settings.
+    * Improves GUI Response speed already with small cache size.
+    * Improves filter and search speed, when cache size is set to bigger value.
+    * Pcap and mf4 import improved Explorer widget support. (#436)
+    * Multiple files in open dialog now possible.
+    * Single import command for pcap and mf4.
+    * Support IP segmentation in pcap and mf4 import (#434)
+    * Improve pcap and mf4 import. (#432)
+    * Mf4 Import: Check record ids.
+    * Drag and Drop multiple pcap and mf4 files.
+    * Explorer tab pcap and mf4 lading support.
+    * pcap and mf4 import: Commandline and silent mode support.
+    * Limit table model output to 1000 characters.
+    * Add MF4 import PLP Raw support.
+    * Fixed MF4 import timestamp calculation.
+    * Prevent MF4 import duplicate messages.
+    * First MF4 import support. (#431)
+    * New file/class for import functions.
+    * Add Visual Studio Professional support.
+    * Add further EtherTypes to pcap import (#429)
+    * Separate installation directories. (#424)
+    * Fix Qt6 issues (#423)
+    * Logging only filtered messages feature (#418)
+    * Open DLT file writable only when needed. (#417)
+    * Fix new plugin commands from command line. (#415)
+    * Log files, project file and filter file can now be loaded in commandline without option. (#413)
+    * Allow mixing project and dlt files directly (#403)
+    * Set working directory from cli (#402)
+    * Improve non verbose mode plugin: (#412)
+    * Prepare Qt6 build. (#411)
+    * Remove Qwt support.
+    * Remove dlt-speed example.
+    * Dot matches newlines in regexps (#401)
+    * Show XCode version
+    * MacOS 13; XCode 15.2
+    * XCode 15.2 on CI
+    * MacOS 13 on CI
+    * Support Qt6
+
+2.25.0
+
+    * Experimental IPC import from PCAP file
+    * filetransferplugin: Present save popup once (#392)
+    * Fixes a bug where doFLDA was erroneously called on messages ending
+    * Adds FiletransferPlugin::doFLFI which emits a new signal
+    * Allow passing multiple dlt files on commandline (#390)
+    * More search history (#388) 
+    * Add more keyboard shortcuts (#387)
+    * Add shortcut to focus search input
+    * Add shortcut to apply config
+    * Add filter shortcut
+    * Improve speed of non verbose plugin Fibex loader (#386)
+    * Fix non-monotonic timestamps under Windows
+    * Remove Linefeeds and Cariage Returns in CSV Export of ECUId, AppId and CtxId.
+    * Fix also Timezone export for CSV and Jira
+    * Fix to use configured timezone during export
+    * Import from PCAP file
+    * Disable Completer in Injection Dialog
+    * Update INSTALL.md
+    * Release with auto. generated changelog
+    * Merge pull request #373 from SangTruongTan/build-on-apple-silicon
+    * No viable conversion from 'QDltDataView' to 'QByteArray'
+    * Revert "Build on Apple Silicon"
+    * Build on Apple Silicon
+    * Show cmake version
+    * Fix release on CI
+    * Code format
+    * Improved speed when loading DLT files, when plugins and filters are disabled
+    * bugfix: install qt5 dev packages manually since qt5-default is not available
+
+2.24.0
+
+    * Close ECU connections before loading new project to prevent crash of DLT Viewer.
+    * Fix plugins shown, even if they are disabled at startup.
+    * Fix settings ui.
+    * Fix crash when opening plugin context menu. (#354)
+    * Support joining multiple Multicast Addresses (#353)
+    * Support Multiple DLT messages in a single UDP message (#349)
+    * Fix ECU Dialog structure
+    * Add qt version define comparison (#348)
+    * Support of DLTv2 protocol
+    * Do not bind to Multicast Group when connect to UDP connection.
+    * Fix crash when right on Explorer tab in some specific empty area (#345) (#346)
+    * Add new option to save temporary file on exit. (#343)
+    * Temporary files were not saved before.
+    * Improve performance of UDP reception.
+    * Add setting to ECU to select storage header version.
+    * Write always ECU Id as configured in ECU settings.
+    * Always write Control messages to DLT file.
+    * Do not interpret control messages during UDP reception.
+    * Fix Settings Maximum file size cannot be changed anymore (#342)
+    * Update cmakelists.txt to set RPATH only if requested (#329)
+    * DLT_USE_QT_RPATH variable is meant to set RPATH only when set to ON, not regardless of its value.
+    * Fix installation of icons and other resource files
+    * Ignore installation of other tools
+    * Install in qdlt subdirectory, to avoid clashes with similar-named files
+    * convert.sh: delete intermediate files after creating final pdf pages (#331)
+    * version.cmake: if no git is found, just leave GIT_PATCH_VERSION set as null. (#332)
+    * Distributions are not using the same git tree as upstream, or no git at all, so this check can't succeed
+    * Fix build fail on Darwin. (#326)
+    * Darwin script still references Qt5 rather than Qt6.
+    * Changed to ${QT_PREFIX}:moc to be compatible on both Qt5 and Qt6
+    * Fix QString from QByteArray length error with Qt6 (#336)
+    * Add Segmentation Decoder Plugin.
+    * Update DLT Viewer to support Segmentation Plugin.
+    * Basic segmentation support
+    * Support DLTv2 non verbose messages
+    * Add DLTv2 storage header
+    * Update DLT Viewer Plugin for DLTv2
+    * Cleanup parameters.
+    * Add missing parameters.
+    * First support of DLTv2 protocol, but still without Storageheaderv2
+    * Update version to unstable
+    * QT 6 support code changes  (#324)
+    * Include_fix: Corrected all qdlt includes
+    * tested with Qt 5.15.2 and Qt 6.2.2
+    * tested on Windows (MSVC 2019) and Linux (gcc 11)
+    * QDltPlugin doesn't need forwarded classes anymore
+    * QDltPlugin matches plugininterface more closely
+    * moved includes from qdlt.h into respective headers
+    * analysis with clang and clazy now possible
+    * Include_fix: Corrected all qdlt includes
+    * fixes unknown _timezone and _daylight
+    * QT6: Batch script update
+    * batch files support Qt5 and Qt6
+    * QT6: CMakeLists update
+    * CMakeLists support Qt6 and Qt5
+    * removed QT5_WRAP_UI call as CMake 3+ handles that
+    * added define for Qt5/Qt6 compat code
+    * QT6: Added support for QT6
+    * replaced QRegExp with QRegularExpression
+    * replaced qSort with std::sort
+    * replaced QString!=0 with QString!=nullptr
+    * replaced QByteArray.append(QString) with QByteArray.append(QByteArray)
+    * replaced sprintf() with asprintf()
+    * replaced load() with loadRelaxed()
+    * replaced store() with storeRelaxed()
+    * added ifdefs for Qt < 5.14
+    * Qt6 changes
+    * Check build
+    * QTVER reset to 5.15.2
+    * MSVC_DIR path reset
+    * reset code changes for QT 5.12.12 compatible
+    * code cleanup
+    * reverted changes in src/cmake/Darwin.cmake file
+    * qmake build issue resolved by defining variable, removed QT5 specific checkes
+    * windows check added to check linux build failed
+    * reverted last code changes
+    * windows specific code changes
+
+2.23.0
+
+    * Fixed menu name set selected filters active/inactive. (#306)
+    * Fixed links to Homepage. (#305)
+    * Fix filter range end (#302)
+    * Filter Range should Enabled/Disabled on Filter Enabled option (#301)
+    * Bump jurplel/install-qt-action from 2 to 3 (#300)
+    * Filter in selected Index Range (#298)
+    * [ISSUE #292] Fix dead-lock in the dltpluginmanager (#293)
+    * Remove unnecessary settings check
+    * Remove the name GENIVI in the header of all source files. Replaced genivi.org with covesa.global in Links
+    * Notify user about changed settings
+    * Use UI theme depending on user choice
+    * Add theme selection option in settings dialog
+    * Add dark mode for Windows
+    * Ensure that no-one tries to set negative priority
+    * Read and store of default plugin execution priority settings
+    * Initialize plugin execution priority without triggering any events
+    * Read/Write of Plugin priority into project file
+    * Add sorting methods for plugin priority in TreeWidget
+    * Avoid child items to be draggable in Plugin Widget
+    * Enable Drag & Drop in PluginTreeWidget
+    * Cleanup PluginItem (QTreeWidgetItem)
+    * Allow to move up/down the Plugins in the TreeWidget
+    * Add "move-up", "move-down" to plugin context menu
+    * Plugin "move-up", "move-down" buttons enabling
+    * Add UI elements into Pluginlist (MainWindow)
+    * Reordering of Plugins in PluginManager
+    * added feature to export (selected) Dlt messages as Jira table
+    * Fixed message len for generated message from QDltMsg in case of using sessionId, timestamp and ecuId
+    * Add further commands to DLT Test Robot Plugin.
+    * Fix filter in DLT Test Robot Plugin
+    * Select UDP interface by interface name instead of IP address
+    * Improve selection of serial port
+    * Fix udp performance
+    * Linux scripts cleanups (#257)
+    * Add plain serial sending ability for send injection on serial ascii mode (#263)
+    * Add file explorer feature (#253)
+    * Bump actions/download-artifact from 2 to 3 (#265)
+    * Fix Action build
+    * Bump actions/checkout from 2.4.0 to 3 (#258)
+    * Bump actions/upload-artifact from 2.3.1 to 3 (#259)
+
+2.22.0
+
+    * Build macOS package with CPack (#256)
+    * Generate NSIS installer (#252)
+    * Local Index directory instead of global directory. (#254)
+    * Fix export to clipboard sometimes incomplete (#251)
+    * Generate AppImage (#248)
+    * CMake Windows Build improvements (#250)
+    * Prepare v2.22.0 (#249)
+    * Adapt cmake build (#244)
+    * fix: persist bool args with DLT_TYLE_8BIT (#247)
+    * Fix bat build
+    * Central config for all Windows batch files (#240)
+    * Update to Qt 5.12.12, Visual Studio 2017 Build Tools, simplify and cmake (#239)
+    * Windows build script improvements (#226)
+    * Fix rmdir usage in Windows build script
+        Apparently, there are problems setting the errorlevel
+        variable after rmdir was called and if errorlevel is
+        checked afterwards it will be always reported as 0,
+        although there were errors when deleting the directories/files.
+        Executing the "rem" command on error works around this
+        issue. For details see https://stackoverflow.com/a/11137825
+    * Windows build script improvement for automation
+    * don't prompt for user input at the end
+    * exit only the script (exit /b) instead of the whole cmd process
+    * Add interactive build script for Windows that waits for user input when finished
+    * Remove unnecessary connect and disconnect during reload log file (#230)
+    * User experience enhancements for filters (#227)
+    * add "Filter Clear all" option to Filter table context menu
+    * support deleting all selected filters (multi-selection support)
+    * support deleting all selected filters with the DELETE key
+    * Hide parse directory progress bar when "--no-gui" option is used (#219)
+    * Minor refactoring at mainwindow and DltExporter  (#216)
+    * [DltExporter] Remove '\n' from the end of clipboard string
+        It's not needed since it's at the end.
+    * [dockWidgetSearchIndex] Add results count to dockWidgetSearchIndex title
+    * Support more serial baudrates (#213)
+
+2.21.3
+
+    * Initial version of DLT Test Robot Plugin
+    * Fix DLT injection multiple messages
+    * Added filter function to DLTTestRobot plugin
+    * Keep whitespaces in ascii export (#210)
+    * Fix serial connection stopped when tcp disconnected (#209)
+    * Fix crash when TCP connection stopped and Serial connection available (#207)
+    * [Bugfix] Avoid error Message when cancelling open filter dialog (#204)
+    * Add "Save IDs to csv" to config tab (#206)
+        to get a list of registered APID/CTID + description from a dlt log file and save it as comma seperated file
+    * Count up version of filetransferplugin
+    * Increased priority of manual markers (#195)
+    * Remove using default filter index (#194)
+    * Removed App Id from Filetransfer Plugin (#193)
+    * Disable RPATH usage: (#192)
+        Make the usage of RPATH settings to detect non-standard QT
+        installations optional.
+    * Reduce macOS builds (#190)
+    * Keep windows artifacts (#189)
+
+2.21.2
+
+    * Bugfix: re-enable UDP reception which was destroyed due to regression in 18.6.20 remove warning "Attribute Qt::AA_EnableHighDpiScaling
+        must be set before QCoreApplication is created" Signed-off-by: Gernot Wirschal <gernot.wirschal@bmw.de>
+    * Windows release artifact (#187)
+    * Use qt 5 on macOS (#186)
+    * Release action (#184)
+    * Remove Windows warning (#183)
+    * Ignore Intellij files (#182)
+    * Make Linux artifact executable (#181)
+    * doc: Fix executable name (#180)
+        executable name is dlt-viewer.
+        Fallout from commit 0e6539e2a5ec6a3d3e5bbb2360463328073e70ea.
+    * Artifact name
+    * Remove pointless comment
+    * appveyor build replaced by github actions (#173)
+    * Introdcue Dependabot to keep actions up to date (#170)
+    * Pause build windows on desktop when finished (#169)
+    * Build on GitHub (#165)
+    * macOS build on Github CI
+    * Remove Travis
+    * Reduce XCode builds
+    * Make Windows Builds work
+    * use correct exit codes for the three .bat files
+    * upload a complete artifact including QT DLLs
+    * make some parameters for the bat files CI-Friendly
+    * No build for Ubuntu 16.04
+
+2.21.1
+
+    * New Connection type Serial ASCII (#166)
+        Provide a new connection type "Serial ASCII" for serial ASCII terminals.
+        All received lines over a serial line are converted and written into DLT message into the currently opened DLT file.
+        Select Interface Type "Serial ASCII" in the ECU configuration.
+    * Fix selection problem when index column not visible (#163)
+    * Fix no update of empty search table (#162)
+    * Fix read of DLT with DLT header in payload (#121)
+    * Remove wrong (swapped) clone commands for macOS (#152)
+    * Build on macOS Big Sur (#151)
+    * CI scripts execute able (#150)
+    * attempt to fix icon for macOS (#149)
+    * Fix index out of range issue (#160)
+
+2.21.0
+
+Features:
+    * Fix table model colors
+    * Fix forground color issue in search table model
+    * Fix serial connect problem
+    * Using better threshold for text color
+        Improved the selection of the text color based on the background. Also
+        fixed calculation (the real value has been used for red rather than the
+        uint8 value).
+    * Enable optional append for default filters
+    * Combo Box for default filter is capable of search
+        Allow to search a filter by a piece of the name in the defaultfilter
+        combobox.
+    * Load dlf from subfolders
+        Enabled the loading of .dlf from subfolders within the default filter
+        location. Symlinks are also allowed.
+    * changed regex filtering to only visualization data
+    * added search/replace to table models
+    * added regex setting to filter config
+    * added regex controls to filter menu
+    * Enable optional append for default filters
+        If the checkbox is activated and default filter is selected it is
+        appended rather than replacing the previous filters.
+    * add extended nonverbose messageid support: column,filter,search
+    * restore settings option ShowArguments
+    * Sync view menu checkboxes with restored window state
+        When the application is restarted the visibility state of the dock
+        widgets does not reflect the checkboxes in the View menu. This will
+        require activating menu items twice to make them in sync.
+    * Introduction of the QDltFile::getFileMsgNumber method
+        - Addition of the QDltFile::getFileMsgNumber method, which allows to get number of messages of the underlying file object
+    * dltexport: Cancel message export implemented
+            Add commandline progress output
+        dltindexer: local variable covered parameter
+            more detailed debug output
+            fix progressbar overflow
+        mainwindow: avoid error output ERROR: bytesRcvd <= 0
+            when ECU in dlt file is given
+            dlt injection: fix error when UTF8 ( chinese character)
+            transmitted
+        settingsdialog: avoid crash when resetting settings due to version change
+
+Fixes:
+    * src/filterdialog.cpp: Use QPalette::Window instead deprecated QPalette::Background
+    * Fix Filter Log Level Min Max enabled by mistake.
+    * Sort by time/timestamp keeps index order
+        For messages that have the exact same time/timestamp, we keep the same order for the messages by using their index.
+    * Fixed scroll in table view in case when Index column is hidden; disabled autoscroll to the right in search results
+    * Fix filter load in case of error
+        If a corrupted file has been passed to LoadFilter it still tried to load
+        the filters after notifying the loading of the file failed. This caused
+        a crash. Also the duplicate Messagebox has been removed.
+    * Set scaling attributes after create QApplication
+        Qt requires these attributes set after the creation else it will stay
+        blurry on macOS.
+    * Plugins are not working on Mac
+        Change description:
+        - Updated the INSTALL.txt for build instructions for release version using qmake on MacOs
+        Verification criteria:
+        - Build on MacOs Catalina Version 10.15.3(19D76) and checked
+    * Fast bugfix for livetracing in dltfileindexer.cpp - disconnected when broom used
+    * CMake build is not supported for MSVC
+        - Introduction of wrapping GCC specific flags into "not MSVC" condition to avoid build fail for MSVC CMake build
+    * Fixed enableMessageId in filter configuration file.
+    * Do not raise search results panel every time the filters are updated
+        If the user explicitly hid it they most likely prefer to keep it hidden.
+        The panel will still be shown when the "FindNext" action is activated.
+    * Fix non-standard binary install destination
+        Use the destination variables defined in the toplevel CMakeLists instead
+        of the hardcoded "deploy" directory. This makes the "install" target
+        behave in the standard CMake way, i.e. allows to relocate the whole
+        installation tree using CMAKE_INSTALL_PREFIX and find the binaries in
+        the expected place.
+    * Fix case insensitive regexp match in filters
+        - Fix inverted condition when setting pattern options.
+        - Fix incorrect passing of case sensitivity flag as match offset which
+          prevented the ^ anchor from working.
+    * Bugfix export index range
+        Commandline mode: option -l, create file if not existing
+        Adapt progress indication for index creation in commandline mode
 
 2.20.0
 
@@ -62,7 +778,6 @@ Changes
     * Moved local read/write routine to QDltSettingsManager.
     * Updated cmake files.
 
-
     Fixes:
     * fix and cleanup settings parameters.
     * fix ignoring of plugin return codes in qdltplugin
@@ -97,7 +812,6 @@ Changes
     * Adjust to cmake changes
     * QTextStream wants an IO target. Fixes a crash when a plugin failes to load
     * Changed ambiguous wording in documentation for CMake builds (#44)
-    * Upgrade version of qt, qwt and visual studio for windows build.
     * Fixed corrupt message received when the DLT frame starting sequence is detected in the payload.
     * Fix the manual trigger for all ECUs
     * README: Fix links to mailing list and wiki page (#42)

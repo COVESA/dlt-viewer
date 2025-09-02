@@ -7,14 +7,14 @@
     <x>0</x>
     <y>0</y>
     <width>441</width>
-    <height>168</height>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Injection Configuration</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resource.qrc">
+   <iconset resource="resources/resource.qrc">
     <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -75,6 +75,9 @@
      <property name="editable">
       <bool>true</bool>
      </property>
+     <property name="duplicatesEnabled">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
    <item row="1" column="1">
@@ -87,6 +90,9 @@
    <item row="2" column="1">
     <widget class="QComboBox" name="serviceidComboBox">
      <property name="editable">
+      <bool>true</bool>
+     </property>
+     <property name="frame">
       <bool>true</bool>
      </property>
     </widget>
@@ -109,7 +115,7 @@
   <tabstop>dataComboBox</tabstop>
  </tabstops>
  <resources>
-  <include location="resource.qrc"/>
+  <include location="resources/resource.qrc"/>
  </resources>
  <connections>
   <connection>

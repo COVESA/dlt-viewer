@@ -8,7 +8,10 @@
 #include <QPair>
 #include <QMutex>
 
-#include "qdlt.h"
+#include "qdltdefaultfilter.h"
+#include "qdltfile.h"
+#include "qdltplugin.h"
+#include "qdltpluginmanager.h"
 
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 2
@@ -16,7 +19,8 @@
 class DltFileIndexerKey
 {
 public:
-    DltFileIndexerKey(time_t time,unsigned int microseconds,unsigned int timestamp);
+    DltFileIndexerKey(time_t time, unsigned int microseconds, int index);
+    DltFileIndexerKey(unsigned int timestamp, int index);
 
     friend bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2);
 
@@ -24,19 +28,30 @@ private:
     time_t time;
     unsigned int microseconds;
     unsigned int timestamp;
+    int index;
 };
 
 inline bool operator< (const DltFileIndexerKey &key1, const DltFileIndexerKey &key2)
 {
-    if(key1.timestamp==0 && key2.timestamp==0)
+    if (key1.timestamp == 0 && key2.timestamp == 0)
     {
-        if(key1.time<key2.time)
+        if (key1.time < key2.time)
             return true;
-        if(key1.time>key2.time)
+        if (key1.time > key2.time)
             return false;
-        return (key1.microseconds<key2.microseconds);
+        if (key1.microseconds < key2.microseconds)
+            return true;
+        if (key1.microseconds > key2.microseconds)
+            return false;
     }
-    return (key1.timestamp<key2.timestamp);
+    else
+    {
+        if (key1.timestamp < key2.timestamp)
+            return true;
+        if (key1.timestamp > key2.timestamp)
+            return false;
+    }
+    return (key1.index < key2.index);
 }
 
 class DltFileIndexer : public QThread
@@ -51,7 +66,7 @@ public:
     // destructor
     ~DltFileIndexer();
 
-    typedef enum { modeNone, modeIndexAndFilter, modeFilter, modeDefaultFilter } IndexingMode;
+    typedef enum { modeNone, modeIndex, modeIndexAndFilter, modeFilter, modeDefaultFilter } IndexingMode;
 
     // create main index
     bool index(int num);
@@ -107,13 +122,13 @@ public:
     bool getMultithreaded() { return multithreaded; }
 
     // get and set filter cache
-    void setFilterCache(QString path) { filterCache = path; }
-    QString getFilterCache() { return filterCache; }
+    void setFilterCacheEnabled(bool enabled) { filterCacheEnabled = enabled; }
+    bool getFilterCacheEnabled() { return filterCacheEnabled; }
 
     // get index of all messages
     QVector<qint64> getIndexAll() { return indexAllList; }
     QVector<qint64> getIndexFilters() { return indexFilterList; }
-    QList<int> getGetLogInfoList() { return getLogInfoList; }
+    const QList<int>& getGetLogInfoList() { return getLogInfoList; }
 
     // let worker thread append to getLogInfoList
     void appendToGetLogInfoList(int value);
@@ -123,6 +138,15 @@ public:
 
     // main thread routine
     void run();
+
+    bool getFilterIndexEnabled() const;
+    void setFilterIndexEnabled(bool newFilterIndexEnabled);
+
+    qint64 getFilterIndexStart() const;
+    void setFilterIndexStart(qint64 newFilterIndexStart);
+
+    qint64 getFilterIndexEnd() const;
+    void setFilterIndexEnd(qint64 newFilterIndexEnd);
 
 protected:
 
@@ -156,7 +180,7 @@ private:
 
     // filtered index
     QVector<qint64> indexFilterList;
-    QMultiMap<DltFileIndexerKey,qint64> indexFilterListSorted;
+    QMap<DltFileIndexerKey,qint64> indexFilterListSorted;
 
     // getLogInfoList
     QList<int> getLogInfoList;
@@ -168,8 +192,8 @@ private:
     bool sortByTimeEnabled;
     bool sortByTimestampEnabled;
 
-    // filter cache path
-    QString filterCache;
+    // filter cache enabled
+    bool filterCacheEnabled;
 
     // file errors
     qint64 errors_in_file;
@@ -182,13 +206,18 @@ private:
     int msecsFilterCounter;
     int msecsDefaultFilterCounter;
 
+    // filter index only in a specific range
+    bool filterIndexEnabled;
+    qint64 filterIndexStart;
+    qint64 filterIndexEnd;
+
 signals:
 
     // the maximum progress value
-    void progressMax(quint64 index);
+    void progressMax(int index);
 
     // the current progress value
-    void progress(quint64 index);
+    void progress(int index);
 
     // progress text change fro different parts
     void progressText(QString text);

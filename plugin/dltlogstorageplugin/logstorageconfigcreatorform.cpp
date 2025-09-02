@@ -5,7 +5,7 @@
  * This code is developed by Advanced Driver Information Technology.
  * Copyright of Advanced Driver Information Technology, Bosch and DENSO.
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
  *
  * \copyright
@@ -16,12 +16,15 @@
  * \author Christoph Lipka <clipka@jp.adit-jv.com> ADIT 2015
  *
  * \file logstorageconfigcreatorform.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include "logstorageconfigcreatorform.h"
 #include "ui_logstorageconfigcreatorform.h"
+
+#include <QRegularExpression>
+#include <QValidator>
 
 LogstorageConfigCreatorForm::LogstorageConfigCreatorForm(QWidget *parent) :
     QWidget(parent),
@@ -41,12 +44,19 @@ LogstorageConfigCreatorForm::LogstorageConfigCreatorForm(QWidget *parent) :
         ui->comboBox_level->addItem(item);
 
     // define some basic lineEdit validators
-    ui->lineEdit_apid->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
-    ui->lineEdit_ctid->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
-    ui->lineEdit_fname->setValidator(new QRegExpValidator( QRegExp("[a-zA-Z0-9_-]\\S{0,20}$"), 0));
-    ui->lineEdit_fsize->setValidator( new QRegExpValidator( QRegExp("[1-9]\\d{0,7}$"), 0));
-    ui->lineEdit_nofiles->setValidator( new QRegExpValidator( QRegExp("[1-9]\\d{0,2}$"), 0));
-
+#ifdef QT5_QT6_COMPAT
+    ui->lineEdit_apid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_ctid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_fname->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_-]\\S{0,20}$"), 0));
+    ui->lineEdit_fsize->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,7}$"), 0));
+    ui->lineEdit_nofiles->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,2}$"), 0));
+#else
+    ui->lineEdit_apid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_ctid->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_,]{0,20}$|[.]{1}[*]{1}"), 0));
+    ui->lineEdit_fname->setValidator(new QRegularExpressionValidator( QRegularExpression("[a-zA-Z0-9_-]\\S{0,20}$"), 0));
+    ui->lineEdit_fsize->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,7}$"), 0));
+    ui->lineEdit_nofiles->setValidator( new QRegularExpressionValidator( QRegularExpression("[1-9]\\d{0,2}$"), 0));
+#endif
     setFilterDefaults();
 
     // create list of filters

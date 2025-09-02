@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,41 +13,41 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file main.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include <QModelIndex>
 #include <QApplication>
+#include <QStyleFactory>
 
-#include <qdlt.h>
+#include <qdltoptmanager.h>
 
 #include "mainwindow.h"
 
 int main(int argc, char *argv[])
 {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0) && QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
-    QApplication a(argc, argv);
-
-    QStringList arguments = a.arguments();
-    QDltOptManager *opt = QDltOptManager::getInstance();
-    opt->parse(&arguments);
-
-    MainWindow w;
-    /* check variable commandline_finished
-       instead of stopping during constructor run
-       after running a commandline mode call
-       which often leads to crash
-    */
-    if(opt->getInstance()->isConvert() == true )
+    // check if silent mode or help is requested
+    // if yes, activate offscreen mode to be able to run also without display
+    for(int i=0;i<argc;i++)
     {
-        return 0;
+        if(strcmp(argv[i],"-s")==0 || strcmp(argv[i],"--silent")==0 || strcmp(argv[i],"-h")==0 || strcmp(argv[i],"--help")==0)
+        {
+            qputenv("QT_QPA_PLATFORM","offscreen");
+            break;
+        }
     }
 
+    QApplication a(argc, argv);
+    QDltOptManager::getInstance()->parse(a.arguments());
+
+    MainWindow w;
     w.show();
 
     return a.exec();

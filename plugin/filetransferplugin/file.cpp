@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file file.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -41,7 +41,6 @@ File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
     receivedPackages = 0;
     fileSerialNumber = 0;
     packages = 0;
-    receivedPackages = 0;
     sizeInBytes = 0;
     buffer = 0;
     dltFileIndex = NULL;
@@ -49,8 +48,8 @@ File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
     fileData = NULL;
 
     this->setText(COLUMN_STATUS, "Incomplete");
-    this->setTextColor(COLUMN_STATUS,Qt::white);
-    this->setBackgroundColor(COLUMN_STATUS,Qt::red);
+    this->setForeground(COLUMN_STATUS,Qt::white);
+    this->setBackground(COLUMN_STATUS,Qt::red);
     this->setText(COLUMN_RECPACKAGES, "0");
 }
 
@@ -76,7 +75,7 @@ QString File::getFileSerialNumber(){
 
     return str;
 }
-unsigned int File:: getPackages(){
+unsigned int File::getPackages(){
     return packages;
 }
 unsigned int File::getReceivedPackages(){
@@ -90,14 +89,13 @@ unsigned int File::getBufferSize(){
 }
 
 
-
 void File::setFilename(QString f){
     filenameWithPath = f;
     this->setText(COLUMN_FILENAME, filenameWithPath);
 }
 
 void File::setFileCreationDate(QString f){
-    fileCreationDate = f;
+    fileCreationDate = f.simplified().remove(QChar::Null);
     this->setText(COLUMN_FILEDATE, fileCreationDate);
 }
 
@@ -132,8 +130,8 @@ void File::setBuffersize(QString b){
 
 void File::setComplete(){
     this->setText(COLUMN_STATUS, "Complete");
-    this->setBackgroundColor(COLUMN_STATUS,Qt::green);
-    this->setTextColor(COLUMN_STATUS,Qt::black);
+    this->setForeground(COLUMN_STATUS,Qt::black);
+    this->setBackground(COLUMN_STATUS,Qt::green);
 }
 
 void File::errorHappens(QString filename, QString errorCode1, QString errorCode2, QString time){
@@ -150,8 +148,8 @@ void File::errorHappens(QString filename, QString errorCode1, QString errorCode2
 
     this->setText(COLUMN_FILEDATE,time);
     this->setText(COLUMN_STATUS, "ERROR");
-    this->setTextColor(COLUMN_STATUS,Qt::white);
-    this->setBackgroundColor(COLUMN_STATUS,Qt::red);
+    this->setForeground(COLUMN_STATUS,Qt::white);
+    this->setBackground(COLUMN_STATUS,Qt::red);
 
 }
 
@@ -161,25 +159,36 @@ bool File::isComplete(){
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    dltFileIndex->insert(i-1,index);
+    if((i-1) <= dltFileIndex->length())
+    {
+        dltFileIndex->insert(i-1, index);
+    }
+    else
+    {
+        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is greater than dltFileIndex length" << dltFileIndex->length() << "FileSerialNumber" << fileSerialNumber;
+    }
     increaseReceivedPackages();
 }
 
 
-bool File::saveFile(QString newFile){
-
-    //QString newFile = directory.append("/").append(getFilename());
+bool File::saveFile(QString newFile)
+{
 
     if(QFile::exists(newFile)){
-        if(!QFile::remove(newFile)){
-            return false;
+        if(!QFile::remove(newFile))
+        {
+            qDebug() << "File " << newFile << "already exists";
+            // everything fine, file exists so that is what we want anyway
+            return true;
         }
     }
 
     QByteArray *completeFileData = getFileData();
 
     QFile file(newFile);
-    if (!file.open(QIODevice::WriteOnly)){
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "File " << newFile << "could not be opened" << __LINE__;
         freeFile();
         return false;
     }
@@ -213,6 +222,7 @@ QByteArray* File::getFileData(){
        int qfileIdx = dltFileIndex->value(i);
        msgBuffer =  dltFile->getMsg(qfileIdx);
        msg.setMsg(msgBuffer);
+       msg.setIndex(qfileIdx);
        msg.getArgument(PROTOCOL_FLDA_DATA,data);
        fileData->append(data.getData());
     }

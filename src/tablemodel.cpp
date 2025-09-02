@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file treemodel.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -25,34 +25,7 @@
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
-
-
-static long int lastrow = -1; // necessary because object tablemodel can not be changed, so no member variable can be used
-char buffer[DLT_VIEWER_LIST_BUFFER_SIZE];
-
-
-void getmessage( int indexrow, long int filterposindex, unsigned int* decodeflag, QDltMsg* msg, QDltMsg* lastmsg, QDltFile* qfile, bool* success )
-{
- if ( indexrow == lastrow)
- {
-  *msg = *lastmsg;
- }
- else
- {
-  *success = qfile->getMsg(filterposindex, *msg);
-  *lastmsg = *msg;
-  *decodeflag = 1;
- }
- if ( indexrow == 0)
- {
-  lastrow = 0;
- }
- else
- {
-  lastrow = indexrow;
- }
-}
-
+#include "qdltoptmanager.h"
 
 TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
@@ -64,7 +37,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      emptyForceFlag = false;
      loggingOnlyMode = false;
      searchhit = -1;
-     lastrow = -1;
  }
 
  TableModel::~TableModel()
@@ -72,25 +44,15 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
  }
 
-
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
 
+
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
-     QByteArray buf;
-     static QDltMsg msg;
-     static QDltMsg lastmsg;
-     static QDltMsg last_decoded_msg;
-     static unsigned int decodeflag = 0;
-     static bool success = true;
-
-     long int filterposindex = 0;
-
-
-     if (index.isValid() == false)
+     if (!index.isValid())
      {
          return QVariant();
      }
@@ -100,50 +62,52 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          return QVariant();
      }
 
-     filterposindex = qfile->getMsgFilterPos(index.row());
+     if (loggingOnlyMode) {
+         if ((role == Qt::DisplayRole) && (index.column() == FieldNames::Payload))
+            return QString("Logging only Mode! Disable in Project Settings!");
+         else
+            return QVariant();
+     }
+
+     if (role == Qt::TextAlignmentRole)
+     {
+         return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
+     }
+
+     long int filterposindex = qfile->getMsgFilterPos(index.row());
+
+     std::optional<QDltMsg> msg;
+     if (m_cache.exists(index.row())) {
+         msg = m_cache.get(index.row());
+     } else {
+         QDltMsg omsg;
+         if (bool success = qfile->getMsg(filterposindex, omsg); success) {
+            msg = std::make_optional(omsg);
+            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
+                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
+            }
+         }
+
+         m_cache.put(index.row(), msg);
+     }
 
      if (role == Qt::DisplayRole)
      {
-         /* get the message with the selected item id */
-         if(true == loggingOnlyMode)
+       if (!msg.has_value())
+       {
+         if(index.column() == FieldNames::Index)
          {
-             msg = QDltMsg();
+             return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
          }
-         else
+         else if(index.column() == FieldNames::Payload)
          {
-           getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success);
-
-           if ( success == false )
-           {
-             if(index.column() == FieldNames::Index)
-             {
-                 return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
-             }
-             else if(index.column() == FieldNames::Payload)
-             {
-                 qDebug() << "Corrupted message at index" << index.row();
-                 return QString("!!CORRUPTED MESSAGE!!");
-             }
-             return QVariant();
-          }
+             qDebug() << "Corrupted message at index" << index.row();
+             return QString("!!CORRUPTED MESSAGE!!");
          }
+         return QVariant();
+       }
 
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
-
-
+         QString visu_data;
          switch(index.column())
          {
          case FieldNames::Index:
@@ -151,20 +115,20 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
              return QString("%L1").arg(qfile->getMsgFilterPos(index.row()));
          case FieldNames::Time:
              if( project->settings->automaticTimeSettings == 0 )
-                return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+                return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
              else
-                return QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
+                return QString("%1.%2").arg(msg->getTimeString()).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
          case FieldNames::TimeStamp:
-             return QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000,4,10,QLatin1Char('0'));
+             return QString("%1.%2").arg(msg->getTimestamp()/10000).arg(msg->getTimestamp()%10000,4,10,QLatin1Char('0'));
          case FieldNames::Counter:
-             return QString("%1").arg(msg.getMessageCounter());
+             return QString("%1").arg(msg->getMessageCounter());
          case FieldNames::EcuId:
-             return msg.getEcuid();
+             return msg->getEcuid();
          case FieldNames::AppId:
              switch(project->settings->showApIdDesc)
              {
              case 0:
-                 return msg.getApid();
+                return msg->getApid();
                  break;
              case 1:
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
@@ -173,22 +137,22 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem->id == msg.getApid() && !appitem->description.isEmpty())
+                         if(appitem->id == msg->getApid() && !appitem->description.isEmpty())
                          {
                             return appitem->description;
                          }
                      }
                     }
-                   return QString("Apid: %1 (No description)").arg(msg.getApid());
+                   return QString("Apid: %1 (No description)").arg(msg->getApid());
                  break;
               default:
-                 return msg.getApid();
+                 return msg->getApid();
              }
          case FieldNames::ContextId:
              switch(project->settings->showCtIdDesc)
              {
              case 0:
-                 return msg.getCtid();
+                 return msg->getCtid();
                  break;
              case 1:
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
@@ -201,7 +165,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                          {
                              ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
 
-                             if(appitem->id == msg.getApid() && conitem->id == msg.getCtid()
+                             if(appitem->id == msg->getApid() && conitem->id == msg->getCtid()
                                      && !conitem->description.isEmpty())
                              {
                                 return conitem->description;
@@ -209,50 +173,66 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                          }
                      }
                     }
-                   return  QString("Ctid: %1 (No description)").arg(msg.getCtid());
+                   return  QString("Ctid: %1 (No description)").arg(msg->getCtid());
                  break;
               default:
-                 return msg.getCtid();
+                 return msg->getCtid();
              }
          case FieldNames::SessionId:
              switch(project->settings->showSessionName){
              case 0:
-                 return QString("%1").arg(msg.getSessionid());
+                 return QString("%1").arg(msg->getSessionid());
                  break;
              case 1:
-                 if(!msg.getSessionName().isEmpty())
+                 if(!msg->getSessionName().isEmpty())
                  {
-                    return msg.getSessionName();
+                    return msg->getSessionName();
                  }
                 else
                  {
-                    return QString("%1").arg(msg.getSessionid());
+                    return QString("%1").arg(msg->getSessionid());
                  }
                  break;
               default:
-                 return QString("%1").arg(msg.getSessionid());
+                 return QString("%1").arg(msg->getSessionid());
              }
          case FieldNames::Type:
-             return msg.getTypeString();
+             return msg->getTypeString();
          case FieldNames::Subtype:
-             return msg.getSubtypeString();
+             return msg->getSubtypeString();
          case FieldNames::Mode:
-             return msg.getModeString();
+             return msg->getModeString();
          case FieldNames::ArgCount:
-             return QString("%1").arg(msg.getNumberOfArguments());
+             return QString("%1").arg(msg->getNumberOfArguments());
          case FieldNames::Payload:
-             if( true == loggingOnlyMode)
-             {
-                 return QString("Logging only Mode! Disable in Project Settings!");
-             }
              /* display payload */
-             return msg.toStringPayload().trimmed().replace('\n', ' ');
+             visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
+             if(qfile) qfile->applyRegExString(*msg,visu_data);
+             /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+             {
+                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
+                     }
+                 }
+             }*/
+
+             /* limit size of string to 1000 characters to speed up scrolling */
+             if(visu_data.size()>1000)
+             {
+                visu_data = visu_data.mid(0,1000);
+             }
+
+             return visu_data;
+         case FieldNames::MessageId:
+             return QString::asprintf(project->settings->msgIdFormat.toUtf8(), msg->getMessageId());
          default:
              if (index.column()>=FieldNames::Arg0)
              {
                  int col=index.column()-FieldNames::Arg0; //arguments a zero based
                  QDltArgument arg;
-                 if (msg.getArgument(col,arg))
+                 if (msg->getArgument(col,arg))
                  {
                      return arg.toString();
                  }
@@ -267,131 +247,35 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
      if ( role == Qt::ForegroundRole )
      {
-         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
-
-         // Color the last search row
-         if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
-         {
-             return QVariant(QBrush(DltUiUtils::optimalTextColor(searchBackgroundColor())));
-         }
-         else if (QColor(qfile->checkMarker(msg)).isValid())
-         {
-           QColor color = qfile->checkMarker(msg);
-           return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
-         }
-         else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  )
-         {
-            return QVariant(QBrush(QColor(255,255,255)));
-         }
-         else
-         {
-            return QVariant(QBrush(QColor(0,0,0)));
-         }
+         /* Calculate background color and find optimal foreground color */
+         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(),filterposindex)));
      }
 
      if ( role == Qt::BackgroundRole )
      {
-         getmessage( index.row(), filterposindex, &decodeflag, &msg, &lastmsg, qfile, &success); // version2
-
-         if((QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()))
-         {
-             if ( decodeflag == 1 )
-              {
-               decodeflag = 0;
-               last_decoded_msg = msg;
-               pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-               last_decoded_msg = msg;
-              }
-              else
-              {
-                msg = last_decoded_msg;
-              }
-         }
-
-         QColor color = qfile->checkMarker(msg);
-
-         if(color.isValid())
-         {
-            return QVariant(QBrush(color));
-         }
-         else
-         {
-             if ( searchhit > -1 && searchhit == index.row() )
-             {
-               return QVariant(QBrush(searchhit_higlightColor));
-             }
-             if ( selectedMarkerRows.contains(index.row()) )
-             {
-               return QVariant(QBrush(manualMarkerColor));
-             }
-             if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
-             {
-                return QVariant(QBrush(QColor(255,0,0)));
-             }
-             if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn")
-             {
-                return QVariant(QBrush(QColor(255,255,0)));
-             }
-             if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
-                msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
-             {
-                return QVariant(QBrush(QColor(0,255,0)));
-             }
-             return QVariant(QBrush(QColor(255,255,255))); // this is the default background clor
-         }
+         /* Calculate background color */
+         return QBrush(getMsgBackgroundColor(msg, index.row(),filterposindex));
      }
 
-     if ( role == Qt::TextAlignmentRole )
-     {
-        switch(index.column())
+    if ( role == Qt::ToolTipRole )
+    {
+        if (!msg.has_value())
         {
-            case FieldNames::Index:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Time:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::TimeStamp:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Counter:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::EcuId:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::AppId:
-                switch(project->settings->showApIdDesc)
-                {
-                case 0:
-                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                    break;
-                case 1:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                default:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                }
-            case FieldNames::ContextId:
-                switch(project->settings->showCtIdDesc)
-                {
-                case 0:
-                    return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                    break;
-                case 1:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                default:
-                    return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                    break;
-                }
-            case FieldNames::Type:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::Subtype:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::Mode:
-                return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-            case FieldNames::ArgCount:
-                return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-            case FieldNames::Payload:
-                return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
+            return QString("!!CORRUPTED MESSAGE!!");
         }
+
+        QString visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
+        if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+        {
+            for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                    visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
+                }
+            }
+        }
+
+        return visu_data;
     }
 
      return QVariant();
@@ -407,7 +291,14 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
         case Qt::DisplayRole:
             return FieldNames::getName((FieldNames::Fields)section, project->settings);
         case Qt::TextAlignmentRole:
-            return (section == FieldNames::Payload) ? Qt::AlignLeft : QVariant();
+            {
+            /*switch(section)
+                {
+                 //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+                default:
+                }*/
+            return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
+            }
          default:
             break;
         }
@@ -440,7 +331,10 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          index(0, 0);
          index(0, columnCount() - 1);
      }
-     lastrow = -1;
+
+     /* last search index must be deleted because model changed */
+     lastSearchIndex = -1;
+
      emit(layoutChanged());
  }
 
@@ -503,4 +397,99 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
     doc.setHtml(optionV4.text);
     doc.setTextWidth(optionV4.rect.width());
     return QSize(doc.idealWidth(), doc.size().height());
+}
+
+QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
+{
+    /* first check manual markers with highest priority */
+    if ( selectedMarkerRows.contains(filterposindex) )
+    {
+      return manualMarkerColor;
+    }
+
+    if (!msg.has_value())
+    {
+        return QColor(1, 2, 3);
+    }
+
+    /* get check marker color */
+    if(QColor color = qfile->checkMarker(*msg); color.isValid())
+    {
+       /* Valid marker found, use background color as defined in marker */
+       return color;
+    }
+
+    if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
+    {
+        return searchBackgroundColor();
+    }
+    if ( searchhit > -1 && searchhit == index )
+    {
+      return searchhit_higlightColor;
+    }
+    if(project->settings->autoMarkFatalError && ( msg->getSubtypeString() == "error" || msg->getSubtypeString() == "fatal") )
+    {
+       /* If automark error is enabled, set red as background color */
+       return QColor(255,0,0);
+    }
+    if(project->settings->autoMarkWarn && msg->getSubtypeString() == "warn")
+    {
+       /* If automark warning is enabled, set red as background color */
+       return QColor(255,255,0);
+    }
+    if(project->settings->autoMarkMarker && msg->getType()==QDltMsg::DltTypeControl &&
+        msg->getSubtype()==QDltMsg::DltControlResponse && msg->getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+    {
+        /* If automark marker is enabled, set green as background color */
+       return QColor(0,255,0);
+    }
+
+
+    /* default return white background color */
+    QColor brushColor = QColor(255,255,255);
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        brushColor = QColor(31,31,31);
+    }
+
+    return brushColor; // this is the default background color
+}
+
+QString TableModel::getToolTipForFields(FieldNames::Fields cn)
+{
+    switch(cn){
+    case(FieldNames::Time): return "Detailed representation of time and date when the log entry was recorded";
+    case(FieldNames::TimeStamp): return "Displays the time when the log message was generated";
+    default: return "";
+    }
+}
+
+bool TableModel::eventFilter(QObject *obj, QEvent *event) {
+    if(event->type() == QEvent::Enter || event->type() == QEvent::Leave){
+        QHeaderView *header = qobject_cast<QHeaderView*>(obj);
+        if(header){
+            QPoint pos = QCursor::pos();
+            pos = header->mapFromGlobal(pos);
+            header->setMouseTracking(true);
+            int index = header->logicalIndexAt(pos);
+            QString toolTipText;
+            switch(index){
+            case 1:
+                toolTipText = getToolTipForFields(FieldNames::Time);
+                break;
+            case 2:
+                toolTipText = getToolTipForFields(FieldNames::TimeStamp);
+                break;
+            default:
+                toolTipText = "";
+            }
+            if(!toolTipText.isEmpty()){
+                QToolTip::showText(QCursor::pos(), toolTipText, header);
+            } else {
+                QToolTip::hideText();
+            }
+        }
+    }
+    return QObject::eventFilter(obj,event);
 }

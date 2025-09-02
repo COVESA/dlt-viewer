@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltargument.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -22,15 +22,10 @@
 #ifndef QDLT_ARGUMENT_H
 #define QDLT_ARGUMENT_H
 
-#include <QObject>
 #include <QString>
-#include <QFile>
-#include <QDateTime>
-//#include <QColor>
-#include <QMutex>
 #include <QVariant>
-#include <time.h>
 
+#include "qdltbase.h"
 #include "export_rules.h"
 
 //! One argument of a DLT message.
@@ -38,7 +33,7 @@
   This class contains one argument of a DLT message.
   A QDltMessage contains several Arguments.
 */
-class QDLT_EXPORT QDltArgument : public QDlt
+class QDLT_EXPORT QDltArgument
 {
 public:
 
@@ -47,11 +42,6 @@ public:
       This call clears all variables of the argument.
     */
     QDltArgument();
-
-    //! Destructor.
-    /*!
-    */
-    ~QDltArgument();
 
     //! The type definition of a DLT message argument.
     typedef enum { DltTypeInfoUnknown = -2, DltTypeInfoStrg = 0,DltTypeInfoBool,DltTypeInfoSInt,DltTypeInfoUInt, DltTypeInfoFloa, DltTypeInfoRawd, DltTypeInfoTrai, DltTypeInfoUtf8  } DltTypeInfoDef;
@@ -99,14 +89,14 @@ public:
       \sa DltEndiannessDef
       \return The endianness of the DLT message.
     */
-    DltEndiannessDef getEndianness() const { return endianness; }
+    QDlt::DltEndiannessDef getEndianness() const { return endianness; }
 
     //! Set the endianness of the Argument.
     /*!
       \sa DltEndiannessDef
       \param _endianess The endianness of the argument.
     */
-    void setEndianness(DltEndiannessDef _endianess) { endianness = (QDlt::DltEndiannessDef)_endianess; }
+    void setEndianness(QDlt::DltEndiannessDef _endianess) { endianness = _endianess; }
 
     //! Get the byte data of the parameter.
     /*!
@@ -163,7 +153,7 @@ public:
       \param _endianess The new endianness of the argument
       \return The name of the unit of the variable.
     */
-    bool setArgument(QByteArray &payload,unsigned int &offset,DltEndiannessDef _endianess);
+    bool setArgument(QByteArray &payload,unsigned int &offset, QDlt::DltEndiannessDef _endianess);
 
     //! Get argument as byte array and appends it to data.
     /*!
@@ -192,7 +182,7 @@ protected:
 private:
 
     //! The endianness of the argument.
-    DltEndiannessDef endianness;
+    QDlt::DltEndiannessDef endianness;
 
     //! This type of the argument linked in the DLT message header
     unsigned int dltType;
@@ -217,7 +207,6 @@ private:
       This is an optional parameter.
     */
     QString unit;
-
 };
 
 

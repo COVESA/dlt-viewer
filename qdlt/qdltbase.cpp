@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,67 +15,15 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdlt.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
-#include <QtDebug>
+#include "qdltbase.h"
 
-#include "qdlt.h"
+#include <vector>
 
-extern "C"
-{
-#include "dlt_common.h"
-}
-
-const char *qDltMessageType[] = {"log","app_trace","nw_trace","control","","","",""};
-const char *qDltLogInfo[] = {"","fatal","error","warn","info","debug","verbose","","","","","","","","",""};
-const char *qDltTraceType[] = {"","variable","func_in","func_out","state","vfb","","","","","","","","","",""};
-const char *qDltNwTraceType[] = {"","ipc","can","flexray","most","vfb","","","","","","","","","",""};
-const char *qDltControlType[] = {"","request","response","time","","","","","","","","","","","",""};
-const char *qDltMode[] = {"non-verbose","verbose"};
-const char *qDltEndianness[] = {"little-endian","big-endian"};
-const char *qDltTypeInfo[] = {"String","Bool","SignedInteger","UnsignedInteger","Float","RawData","TraceInfo","Utf8String"};
-const char *qDltCtrlServiceId[] = {"","set_log_level","set_trace_status","get_log_info","get_default_log_level","store_config","reset_to_factory_default",
-                             "set_com_interface_status","set_com_interface_max_bandwidth","set_verbose_mode","set_message_filtering","set_timing_packets",
-                             "get_local_time","use_ecu_id","use_session_id","use_timestamp","use_extended_header","set_default_log_level","set_default_trace_status",
-                             "get_software_version","message_buffer_overflow"};
-const char *qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
-
-QDlt::QDlt()
-{
-
-}
-
-QDlt::~QDlt()
-{
-
-}
-
-bool QDlt::swap(QByteArray &bytes,int size, int offset)
-{
-    char tmp;
-
-    if( (offset < 0)  || (offset >= bytes.size()) )
-        return false;
-
-    if(size == -1)
-        size = bytes.size()-offset;
-
-    if((size+offset) > bytes.size())
-        return false;
-
-    for(int num = 0;num<(size/2);num++)
-    {
-        tmp = bytes[offset+num];
-        bytes[offset+num] = bytes[offset+size-1-num];
-        bytes[offset+size-1-num] = tmp;
-    }
-
-    return true;
-}
-
-QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml) const
+QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool withBinary, bool withAscii, int blocksize, int linesize, bool toHtml)
 {
     QString text;
     text.reserve(1024+bytes.size());
@@ -156,9 +104,8 @@ QString QDlt::toAsciiTable(const QByteArray &bytes, bool withLineNumber, bool wi
     return text;
 }
 
-QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes) const
+QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes)
 {
-    static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
     if (type==1)
     {
         // ascii
@@ -231,6 +178,7 @@ QString QDlt::toAscii(const QByteArray &bytes, int type,int size_bytes) const
 
             char* strData = &str[0];
             const char* byteData = bytes.data();
+            static const char hexmap[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
             for(int num=0;num<size;++num)
             {
                 *strData = hexmap[ (*byteData & 0xF0) >> 4 ];

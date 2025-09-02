@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file filterdialog.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -21,6 +21,8 @@
 #include "ui_filterdialog.h"
 #include <QMessageBox>
 #include <QCloseEvent>
+#include <QRegularExpression>
+
 #include "dltuiutils.h"
 
 FilterDialog::FilterDialog(QWidget *parent) :
@@ -30,6 +32,12 @@ FilterDialog::FilterDialog(QWidget *parent) :
     ui->setupUi(this);
 
     connect(ui->buttonSelectColor, SIGNAL(pressed()), this, SLOT(on_buttonSelectColor_clicked()));
+    connect(ui->lineEdit_msgIdMax, SIGNAL(textChanged(const QString&)), this, SLOT(checkMsgIdValid(const QString&)));
+    connect(ui->lineEdit_msgIdMin, SIGNAL(textChanged(const QString&)), this, SLOT(checkMsgIdValid(const QString&)));
+    connect(ui->checkBoxMessageId, SIGNAL(stateChanged(int)), this, SLOT(on_checkboxMessageId_stateChanged(int)));
+    connect(ui->lineEditRegexSearch, SIGNAL(textChanged(const QString&)), this, SLOT(on_checkRegex(const QString&)));
+    connect(ui->lineEditRegexReplace, SIGNAL(textChanged(const QString&)), this, SLOT(on_checkRegex(const QString&)));
+
     ui->pushButton_c0->setStyleSheet ("QPushButton {background-color: rgb(255, 0  , 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
     ui->pushButton_c1->setStyleSheet ("QPushButton {background-color: rgb(255, 255, 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
     ui->pushButton_c2->setStyleSheet ("QPushButton {background-color: rgb(  0, 255, 0  );} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
@@ -41,7 +49,16 @@ FilterDialog::FilterDialog(QWidget *parent) :
     ui->pushButton_c8->setStyleSheet ("QPushButton {background-color: rgb(150, 255, 150);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
     ui->pushButton_c9->setStyleSheet ("QPushButton {background-color: rgb(150, 150 ,255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
     ui->pushButton_c10->setStyleSheet("QPushButton {background-color: rgb(255, 150 ,255);} QPushButton:disabled {background-color: rgb(255, 255, 255);}");
-    ui->comboBoxType->setVisible(false);
+
+    ui->lineEdit_msgIdMax->setInputMask("nnhhhhhhhh");
+    ui->lineEdit_msgIdMin->setInputMask("nnhhhhhhhh");
+    ui->plainTextEdit_msgIdRule->viewport()->setAutoFillBackground(false);
+    QFont font=  ui->plainTextEdit_msgIdRule->font();
+    font.setFamily("monospace [Consolas]");
+    font.setFixedPitch(true);
+    font.setStyleHint(QFont::Monospace);
+    ui->plainTextEdit_msgIdRule->setFont(font);
+    on_checkboxMessageId_stateChanged(0);
 }
 
 FilterDialog::~FilterDialog()
@@ -52,15 +69,23 @@ FilterDialog::~FilterDialog()
 
 void FilterDialog::setType(int value)
 {
-    ui->comboBoxType->setCurrentIndex(value);
+    ui->pushButton_Positive->setChecked(value==0);
+    ui->pushButton_Negative->setChecked(value==1);
+    ui->pushButton_Marker->setChecked(value==2);
 
-    /* update ui */
-    on_checkBoxMarkerClicked();
+    ui->groupBox_marker->setEnabled(value!=1);
+    ui->groupBox_marker->setCheckable(value==0);
+    ui->groupBox_marker->setChecked(value==2);
 }
 
 int FilterDialog::getType()
 {
-    return ui->comboBoxType->currentIndex();
+    if( ui->pushButton_Positive->isChecked())
+        return 0;
+    else if(ui->pushButton_Negative->isChecked())
+        return 1;
+    else
+        return 2;
 }
 
 void FilterDialog::setName(QString name)
@@ -233,19 +258,51 @@ bool FilterDialog::getEnablePayloadText()
     return (ui->checkBoxPayloadText->checkState() == Qt::Checked);
 }
 
+
+void FilterDialog::setEnableMessageId(bool state)
+{
+    ui->checkBoxMessageId->setCheckState(state?Qt::Checked:Qt::Unchecked);
+}
+
+bool FilterDialog::getEnableMessageId()
+{
+    return (ui->checkBoxMessageId->checkState() == Qt::Checked);
+}
+
+unsigned int  FilterDialog::getMessageId_min()
+{
+    return msgIdMin;
+}
+
+unsigned int  FilterDialog::getMessageId_max()
+{
+    if (msgIdMax==msgIdMin) return 0;
+    return msgIdMax;
+}
+
+void FilterDialog::setMessageId_min(unsigned int min)
+{
+    ui->lineEdit_msgIdMin->setText(QString("%1").arg(min));
+}
+
+void FilterDialog::setMessageId_max(unsigned int max)
+{
+    ui->lineEdit_msgIdMax->setText(QString("%1").arg(max));
+}
+
 void FilterDialog::setFilterColour(QColor color)
 {
    QPalette palette = ui->labelSelectedColor->palette();
    palette.setColor(QPalette::Active,this->backgroundRole(),color);
    palette.setColor(QPalette::Inactive,this->backgroundRole(),QColor(255,255,255,255));
-   palette.setColor(QPalette::Foreground,DltUiUtils::optimalTextColor(color));
+   palette.setColor(QPalette::WindowText,DltUiUtils::optimalTextColor(color));
    ui->labelSelectedColor->setPalette(palette);
 
 }
 
 QString FilterDialog::getFilterColour()
 {
-    return ui->labelSelectedColor->palette().background().color().name();
+    return ui->labelSelectedColor->palette().window().color().name();
 }
 
 void FilterDialog::setLogLevelMax(int value)
@@ -315,6 +372,31 @@ bool FilterDialog::getEnableMarker(){
     return (ui->groupBox_marker->isCheckable()&&ui->groupBox_marker->isChecked());
 }
 
+void FilterDialog::setEnableRegexSearchReplace(bool state){
+    return ui->checkBoxRegexSearchReplace->setChecked(state);
+}
+
+bool FilterDialog::getEnableRegexSearchReplace(){
+    return ui->checkBoxRegexSearchReplace->checkState() == Qt::Checked;
+}
+
+void FilterDialog::setRegexSearchText(const QString& str){
+    ui->lineEditRegexSearch->setText(str);
+}
+
+QString FilterDialog::getRegexSearchText(){
+    return ui->lineEditRegexSearch->text();
+}
+
+void FilterDialog::setRegexReplaceText(const QString& str){
+    ui->lineEditRegexReplace->setText(str);
+}
+
+QString FilterDialog::getRegexReplaceText(){
+    return ui->lineEditRegexReplace->text();
+}
+
+
 void FilterDialog::on_buttonSelectColor_clicked()
 {
     QColor selectedBackgroundColor = QColorDialog::getColor(this->getFilterColour());
@@ -333,7 +415,7 @@ void FilterDialog::on_comboBoxType_currentIndexChanged(int index){
 
 void FilterDialog::on_checkBoxMarkerClicked()
 {
-    int index = ui->comboBoxType->currentIndex();
+/*    int index = ui->comboBoxType->currentIndex();
     switch (index)
         {
             case 0: ui->pushButton_Positive->setChecked(true);break;
@@ -341,7 +423,7 @@ void FilterDialog::on_checkBoxMarkerClicked()
             case 2: ui->pushButton_Marker->setChecked(true);break;
         }
     on_buttonGroup_filterType_buttonClicked( -1 );
-
+*/
 }
 
 void FilterDialog::on_lineEditApplicationId_textEdited(const QString &)
@@ -394,6 +476,14 @@ void FilterDialog::on_comboBoxLogLevelMin_currentIndexChanged(int )
     ui->checkBoxLogLevelMin->setCheckState(Qt::Checked);
 }
 
+void FilterDialog::on_checkRegex(const QString&)
+{
+    if (ui->lineEditRegexSearch->text().length() || ui->lineEditRegexReplace->text().length())
+        ui->checkBoxRegexSearchReplace->setCheckState(Qt::Checked);
+    else
+        ui->checkBoxRegexSearchReplace->setCheckState(Qt::Unchecked);
+}
+
 void FilterDialog::validate()
 {
     QString
@@ -416,7 +506,7 @@ void FilterDialog::validate()
         return;
     }
 
-    QRegExp rx;
+    QRegularExpression rx;
     rx.setPattern(getPayloadText());
     if(!rx.isValid()) {
         QMessageBox::warning(this, "Warning", error.arg("PAYLOAD").arg(rx.pattern()).arg(rx.errorString()));
@@ -439,54 +529,131 @@ void FilterDialog::validate()
 }
 
 
-void FilterDialog::on_pushButton_c0_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c1_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c2_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c3_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c4_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c5_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c6_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c7_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c8_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c9_clicked() { setFilterColour(((QPushButton *)sender())->palette().background().color());}
-void FilterDialog::on_pushButton_c10_clicked(){ setFilterColour(((QPushButton *)sender())->palette().background().color());}
+void FilterDialog::on_pushButton_c0_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c1_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c2_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c3_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c4_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c5_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c6_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c7_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c8_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c9_clicked() { setFilterColour(((QPushButton *)sender())->palette().window().color());}
+void FilterDialog::on_pushButton_c10_clicked(){ setFilterColour(((QPushButton *)sender())->palette().window().color());}
+
+void FilterDialog::on_pushButton_Positive_clicked()
+{
+    ui->groupBox_marker->setEnabled(true);
+    ui->groupBox_marker->setCheckable(true);
+    ui->groupBox_marker->setChecked(false);
+}
+
+
+void FilterDialog::on_pushButton_Negative_clicked()
+{
+    ui->groupBox_marker->setEnabled(false);
+    ui->groupBox_marker->setCheckable(false);
+    ui->groupBox_marker->setChecked(false);
+}
+
+
+void FilterDialog::on_pushButton_Marker_clicked()
+{
+    ui->groupBox_marker->setEnabled(true);
+    ui->groupBox_marker->setCheckable(false);
+    ui->groupBox_marker->setChecked(true);
+}
 
 void FilterDialog::on_buttonGroup_filterType_buttonClicked( int id )
 {
     Q_UNUSED(id)
-    int i = -1;
-    if (ui->pushButton_Marker->isChecked())
-      {
-       ui->groupBox_marker->setEnabled(true);
-       i = ui->comboBoxType->findText("marker");
-       if (i != -1)
-           ui->comboBoxType->setCurrentIndex(i);
-       ui->groupBox_marker->setChecked(true);
-       ui->groupBox_marker->setCheckable(false);
-      }
-    else
-    {
-        ui->groupBox_marker->setCheckable(true);
-    }
-    if ( ui->pushButton_Negative->isChecked())
-      {
-        ui->groupBox_marker->setEnabled(false);
-        i = ui->comboBoxType->findText("negative");
-        if (i != -1)
-            ui->comboBoxType->setCurrentIndex(i);
-        ui->groupBox_marker->setChecked(false);
-        ui->groupBox_marker->setCheckable(false);
-
-      }
-    if (ui->pushButton_Positive->isChecked())
-      {
-        ui->groupBox_marker->setEnabled(true);
-        i = ui->comboBoxType->findText("positive");
-        if (i != -1)
-            ui->comboBoxType->setCurrentIndex(i);
-        ui->groupBox_marker->setCheckable(true);
-        ui->groupBox_marker->setChecked(false);
-      }
 }
+
+
+void FilterDialog::checkMsgIdValid(const QString&)
+{
+
+    QString hint;
+    QString rule="<= ID < ";
+    bool ok_min;
+    bool ok_max;
+
+    msgIdMin = ui->lineEdit_msgIdMin->text().toUInt(&ok_min,10);
+    if (ok_min)
+        {
+            ui->lineEdit_msgIdMin->setStyleSheet("border: 2px solid blue");
+        }
+    else
+        {
+            msgIdMin = ui->lineEdit_msgIdMin->text().toUInt(&ok_min,16);
+            ui->lineEdit_msgIdMin->setStyleSheet("border: 2px solid green");
+        }
+    if (!ok_min)
+        {
+            ui->lineEdit_msgIdMin->setStyleSheet("border: 2px solid red");
+        }
+
+    msgIdMax = ui->lineEdit_msgIdMax->text().toUInt(&ok_max,10);
+    if (ok_max)
+        {
+            ui->lineEdit_msgIdMax->setStyleSheet("border: 2px solid blue");
+        }
+    else
+        {
+            msgIdMax = ui->lineEdit_msgIdMax->text().toUInt(&ok_max,16);
+            ui->lineEdit_msgIdMax->setStyleSheet("border: 2px solid green");
+        }
+    if (!ok_max)
+        {
+            ui->lineEdit_msgIdMax->setStyleSheet("border: 2px solid red");
+        }
+
+    if ((!ok_max) && (!ok_min))
+        {
+            hint.append("[MIN & MAX invalid]");
+        }
+    else
+        {
+            if (!ok_min)
+                hint.append("[MIN invalid]");
+            if (!ok_max)
+                hint.append("[MAX invalid]");
+        }
+    if (msgIdMax==0)
+        {
+            rule="== ID //";
+            ui->lineEdit_msgIdMax->setStyleSheet("border: 2px solid grey");
+        }
+    else
+        if (msgIdMin>=msgIdMax)
+            {
+                ui->lineEdit_msgIdMax->setStyleSheet("border: 2px dotted grey");
+                hint.append("[MAX<=MIN !]");
+                rule= "== ID //";
+            }
+    if (ui->checkBoxMessageId->checkState()==Qt::Checked)
+        {
+            ui->plainTextEdit_msgIdRule->setVisible(true);
+        }
+    else
+        {
+            ui->plainTextEdit_msgIdRule->setVisible(false);
+            ui->lineEdit_msgIdMax->setStyleSheet("border: 1px solid black");
+            ui->lineEdit_msgIdMin->setStyleSheet("border: 1px solid black");
+        }
+
+     ui->plainTextEdit_msgIdRule->setPlainText(
+                QString("%1  %2 %3 %7 \n0x%4  %5 0x%6").\
+                arg(msgIdMin,10,10,QLatin1Char(' ')).arg(rule).arg(msgIdMax,10,10,QLatin1Char(' ')).\
+                arg(msgIdMin, 8,16,QLatin1Char('0')).arg(rule).arg(msgIdMax, 8,16,QLatin1Char('0')).\
+                arg(hint)\
+                );
+
+}
+
+void FilterDialog::on_checkboxMessageId_stateChanged(int)
+    {
+        checkMsgIdValid("");
+    }
 
 

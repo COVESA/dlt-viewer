@@ -2,7 +2,7 @@
 
 #include <QDir>
 #include <QCoreApplication>
-#include <QTableView>
+//#include <QTableView>
 
 #include <QPluginLoader>
 
@@ -15,30 +15,6 @@ QDltPlugin::QDltPlugin()
     plugincommandinterface = 0;
 
     mode = ModeDisable;
-}
-
-QString QDltPlugin::getName()
-{
-    if(plugininterface)
-        return plugininterface->name();
-    else
-        return QString();
-}
-
-QString QDltPlugin::getPluginVersion()
-{
-    if(plugininterface)
-        return plugininterface->pluginVersion();
-    else
-        return QString();
-}
-
-QString QDltPlugin::getPluginInterfaceVersion()
-{
-    if(plugininterface)
-        return plugininterface->pluginInterfaceVersion();
-    else
-        return QString();
 }
 
 int QDltPlugin::getMode()
@@ -99,15 +75,6 @@ void QDltPlugin::loadPlugin(QObject *plugin)
 
 }
 
-bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
-{
-    if(mode != ModeDisable && plugindecoderinterface && plugindecoderinterface->isMsg(msg,triggeredByUser))
-    {
-        return plugindecoderinterface->decodeMsg(msg,triggeredByUser);
-    }
-    return false;
-}
-
 bool QDltPlugin::isDecoder()
 {
     return (plugindecoderinterface?true:false);
@@ -128,20 +95,29 @@ bool QDltPlugin::isCommand()
     return (plugincommandinterface?true:false);
 }
 
-QStringList QDltPlugin::infoConfig()
+// generic plugin interfaces
+QString QDltPlugin::name() const
 {
     if(plugininterface)
-        return plugininterface->infoConfig();
+        return plugininterface->name();
     else
-        return QStringList();
+        return QString();
 }
 
-bool QDltPlugin::loadConfig(QString filename)
+QString QDltPlugin::pluginVersion()
 {
     if(plugininterface)
-        return plugininterface->loadConfig(filename);
+        return plugininterface->pluginVersion();
     else
-        return false;
+        return QString();
+}
+
+QString QDltPlugin::pluginInterfaceVersion()
+{
+    if(plugininterface)
+        return plugininterface->pluginInterfaceVersion();
+    else
+        return QString();
 }
 
 QString QDltPlugin::error()
@@ -152,12 +128,20 @@ QString QDltPlugin::error()
         return QString();
 }
 
-bool QDltPlugin::command(QString cmd,QStringList params)
+bool QDltPlugin::loadConfig(QString filename)
 {
-    if(plugincommandinterface)
-        return plugincommandinterface->command(cmd,params);
+    if(plugininterface)
+        return plugininterface->loadConfig(filename);
     else
         return false;
+}
+
+QStringList QDltPlugin::infoConfig()
+{
+    if(plugininterface)
+        return plugininterface->infoConfig();
+    else
+        return QStringList();
 }
 
 // viewer plugin interfaces
@@ -173,11 +157,6 @@ void QDltPlugin::initFileStart(QDltFile *file)
 if(pluginviewerinterface)
     pluginviewerinterface->initFileStart(file);
 }
-void QDltPlugin::initFileFinish()
-{
-if(pluginviewerinterface)
-    pluginviewerinterface->initFileFinish();
-}
 void QDltPlugin::initMsg(int index, QDltMsg &msg)
 {
 if(pluginviewerinterface)
@@ -187,6 +166,11 @@ void QDltPlugin::initMsgDecoded(int index, QDltMsg &msg)
 {
 if(pluginviewerinterface)
     pluginviewerinterface->initMsgDecoded(index,msg);
+}
+void QDltPlugin::initFileFinish()
+{
+if(pluginviewerinterface)
+    pluginviewerinterface->initFileFinish();
 }
 void QDltPlugin::updateFileStart()
 {
@@ -217,24 +201,6 @@ void QDltPlugin::selectedIdxMsgDecoded(int index, QDltMsg &msg)
 {
 if(pluginviewerinterface)
     pluginviewerinterface->selectedIdxMsgDecoded(index,msg);
-}
-
-void QDltPlugin::initMessageDecoder(QDltMessageDecoder* messageDecoder)
-{
-if(plugincontrolinterface)
-    plugincontrolinterface->initMessageDecoder(messageDecoder);
-}
-
-void QDltPlugin::initMainTableView(QTableView* pTableView)
-{
-if(plugincontrolinterface)
-    plugincontrolinterface->initMainTableView(pTableView);
-}
-
-void QDltPlugin::configurationChanged()
-{
-if(plugincontrolinterface)
-    plugincontrolinterface->configurationChanged();
 }
 
 // control plugin interface
@@ -278,3 +244,46 @@ bool QDltPlugin::autoscrollStateChanged(bool enabled)
         return false;
 }
 
+void QDltPlugin::initMessageDecoder(QDltMessageDecoder* messageDecoder)
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->initMessageDecoder(messageDecoder);
+}
+
+void QDltPlugin::initMainTableView(QTableView* pTableView)
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->initMainTableView(pTableView);
+}
+
+void QDltPlugin::configurationChanged()
+{
+if(plugincontrolinterface)
+    plugincontrolinterface->configurationChanged();
+}
+
+// decoder plugin interfaces
+bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
+{
+    if(mode != ModeDisable && plugindecoderinterface && plugindecoderinterface->isMsg(msg,triggeredByUser))
+    {
+        return plugindecoderinterface->decodeMsg(msg,triggeredByUser);
+    }
+    return false;
+}
+
+// command plugin interfaces
+bool QDltPlugin::command(QString cmd,QList<QString> params)
+{
+    if(plugincommandinterface)
+    {
+        // enable plugin, if not enabled in command line mode
+        if(getMode()==ModeDisable)
+            setMode(ModeEnable);
+
+        // execute command
+        return plugincommandinterface->command(cmd,params);
+    }
+    else
+        return false;
+}

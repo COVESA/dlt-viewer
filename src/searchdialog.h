@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file searchdialog.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -21,7 +21,6 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-#include "qdlt.h"
 #include <QTableView>
 #include <QTreeWidget>
 #include <QCheckBox>
@@ -79,18 +78,15 @@ private:
     Ui::SearchDialog *ui;
     SearchTableModel *m_searchtablemodel;
 
+    bool isSearchCancelled{false};
+
     long int startLine;
     long searchseconds;
     bool nextClicked;
     bool match;
     bool onceClicked;
     bool fSilentMode;
-    bool is_PayloadStartFound;
-    bool is_PayloadEndFound;
-    bool is_PayLoadRangeValid;
-    bool is_payLoadSearchSelected;
     bool is_TimeStampSearchSelected;
-    bool is_TimeStampRangeValid;
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;
@@ -98,9 +94,6 @@ private:
     double  dTimeStampStart;
     double  dTimeStampStop;
 
-    QString payloadStart;
-    QString payloadEnd;
-    QString tempPayLoad;
     QString stApid;
     QString stCtid;
 
@@ -124,7 +117,6 @@ private:
     int find();
 
     bool getSearchFromBeginning();
-    bool timeStampPayloadValidityCheck(long int searchLine);
     bool getHeader();
     bool getPayload();
     bool getCaseSensitive();
@@ -134,9 +126,6 @@ private:
     bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
-    bool payLoadValidityCheck();
-    bool payLoadStartpatternCheck();
-    bool payLoadStoppatternCheck();
     QString getApIDText();
     QString getCtIDText();
     QString getTimeStampStart();
@@ -168,11 +157,15 @@ public slots:
     void findNextClicked();
     void findPreviousClicked();
     void loadSearchHistory();
+    void abortSearch();
+    void saveSearchHistory(QStringList& searchHistory);
+    void loadSearchHistoryList(QStringList& searchHistory);
 
 signals:
     void refreshedSearchIndex();
     void addActionHistory();
     void searchProgressChanged(bool isInProgress);
+    void searchProgressValueChanged(int progress);
 };
 
 #endif // SEARCHDIALOG_H

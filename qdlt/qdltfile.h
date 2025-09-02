@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -14,7 +14,7 @@
  *
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
- * \file qdlt.h
+ * \file qdltfile.h
  * For further information see http://www.genivi.org/.
  * @licence end@
  */
@@ -23,15 +23,17 @@
 #define QDLT_FILE_H
 
 #include "export_rules.h"
+#include "qdltfilter.h"
+#include "qdltfilterlist.h"
+#include "qdltmsg.h"
+
 #include <QObject>
 #include <QString>
 #include <QFile>
 #include <QDateTime>
-#ifdef USECOLOR
-#include <QColor>
-#endif
 #include <QMutex>
 #include <time.h>
+#include <QCache>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -143,7 +145,7 @@ public:
       \param msg The message which contains the DLT message after the function returns.
       \return true if the message is valid, false if an error occurred.
     */
-    bool getMsg(int index,QDltMsg &msg) const;
+    bool getMsg(int index,QDltMsg &msg);
 
     //! Get one DLT message of the DLT log file selected by index
     /*!
@@ -250,9 +252,9 @@ public:
       \return 0 if message will not be marked, colour if message will be marked
     */
 #ifdef USECOLOR
-    QColor checkMarker(QDltMsg &msg);
+    QColor checkMarker(const QDltMsg &msg);
 #else
-    QString checkMarker(QDltMsg &msg);
+    QString checkMarker(const QDltMsg &msg);
 #endif
 
     //! Get file name of the underlying file object
@@ -260,6 +262,12 @@ public:
      * \return File name
      **/
     QString getFileName(int num = 0);
+
+    //! Get number of messages of the underlying file object
+    /*!
+     * \return File size or -1 in case of "wrong "out of range" input index
+     **/
+    int getFileMsgNumber(int num = 0) const;
 
     //! Get Index of all DLT messages matching filter
     /*!
@@ -272,6 +280,34 @@ public:
      * \param _indexFilter List of file positions
      **/
     void setIndexFilter(QVector<qint64> _indexFilter);
+
+    //! Sets the max cache size for DLT messages
+    /*!
+     * \param cost Cache size
+     **/
+    void setCacheSize(qsizetype cost);
+
+    //! Sets DLTv2 support
+    /*!
+     * \param dltv2Support DLTv2 Support
+     **/
+    void setDLTv2Support(bool dltv2Support);
+
+    //! Gets DLTv2 support setting
+    /*!
+     * \return DLTv2 Support
+     **/
+    bool getDLTv2Support() const;
+
+    //! Apply RegEx Replace to the string, if any active in the filters
+    /*!
+    */
+    bool applyRegExString(QDltMsg &msg,QString &text);
+
+    //! Apply RegEx Replace to the arguments of a message, if any active in the filters
+    /*!
+    */
+    bool applyRegExStringMsg(QDltMsg &msg) const;
 
 protected:
 
@@ -311,6 +347,16 @@ private:
       false sorting is disabled.
     */
     bool sortByTimestampFlag;
+
+    QCache<int,QDltMsg> cache;
+    bool cacheEnable;
+
+    //! DLTv2 Support.
+    /*!
+      true dltv2 support is enabled.
+      false dltv2 support is disabled.
+    */
+    bool dltv2Support;
 };
 
 

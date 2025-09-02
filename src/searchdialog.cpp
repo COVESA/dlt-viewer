@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,13 +13,16 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file searchdialog.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "mainwindow.h"
+#include "qdltoptmanager.h"
+
+#include <dltmessagematcher.h>
 
 #include <QMessageBox>
 #include <QProgressBar>
@@ -38,9 +41,6 @@ SearchDialog::SearchDialog(QWidget *parent) :
     match = false;
     onceClicked = false;
     startLine = -1;
-    is_PayloadStartFound = false;
-    is_PayloadEndFound = false;
-    is_PayLoadRangeValid = false;
 
     lineEdits = new QList<QLineEdit*>();
     lineEdits->append(ui->lineEditText);
@@ -84,6 +84,11 @@ void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEd
 
 QString SearchDialog::getText() { return ui->lineEditText->text(); }
 
+void SearchDialog::abortSearch()
+{
+    isSearchCancelled = true;
+}
+
 bool SearchDialog::getHeader()
 {
     return (ui->checkBoxHeader->checkState() == Qt::Checked);
@@ -104,19 +109,6 @@ bool SearchDialog::getOnceClicked(){return onceClicked;}
 
 QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
 QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
-
-
-QString SearchDialog::getPayLoadStampStart()
-{
-    //qDebug() << "content of payload start" << ui->payloadStartlineEdit->text()<< __LINE__;
-    return ui->payloadStartlineEdit->text();
-}
-
-QString SearchDialog::getPayLoadStampEnd()
-{
-    //qDebug() << "content of payload end" << ui->payloadEndlineEdit->text()<< __LINE__;
-    return ui->payloadEndlineEdit->text();
-}
 
 QString SearchDialog::getTimeStampStart()
 {
@@ -157,10 +149,17 @@ void SearchDialog::setStartLine(long int start)
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
     QPalette palette = lineEdit->palette();
-    QColor text0(255,255,255);
-    QColor text1(0,0,0);
-    QColor background0(255,102,102);
-    QColor background1(255,255,255);
+    QColor text0 = QColor(255,255,255);
+    QColor text1 = QColor(0,0,0);
+    QColor background0 = QColor(255,102,102);
+    QColor background1 = QColor(255,255,255);
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        background1 = QColor(31,31,31);
+        text1 = QColor(255,255,255);
+    }
+
     switch(result){
     case 0:
         palette.setColor(QPalette::Text,text0);
@@ -195,6 +194,8 @@ void SearchDialog::focusRow(long int searchLine)
 
 int SearchDialog::find()
 {
+    isSearchCancelled = false;
+
     emit addActionHistory();
     QRegularExpression searchTextRegExpression;
     is_TimeStampSearchSelected = false;
@@ -282,16 +283,10 @@ int SearchDialog::find()
             return 1;
         }
 
-        searchTextRegExpression.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        if ( getCaseSensitive() == true )
-        {
-         searchTextRegExpression.setPatternOptions(QRegularExpression::NoPatternOption);
-        }
-        else
-        {
-         searchTextRegExpression.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
-        }
-
+        int options = QRegularExpression::DotMatchesEverythingOption;
+        if (!getCaseSensitive())
+            options |= QRegularExpression::CaseInsensitiveOption;
+        searchTextRegExpression.setPatternOptions(static_cast<QRegularExpression::PatternOption>(options));
     }
 
     //check timestamp search pattern
@@ -318,22 +313,6 @@ int SearchDialog::find()
          emit searchProgressChanged(false);
          return 1;
         }
-    }
-
-
-    // check payload search pattern
-    payloadStart = getPayLoadStampStart();
-    payloadEnd = getPayLoadStampEnd();
-
-    if( (false == payloadStart.isEmpty() ) && ( false == payloadEnd.isEmpty() ) )
-    {
-        //qDebug() << "Payload search enabled" << __LINE__;
-        is_payLoadSearchSelected = true;
-    }
-    else
-    {
-        is_payLoadSearchSelected = false;
-        //qDebug() << "Payload search is disabled" << payloadStart.isEmpty() << payloadEnd.isEmpty()  << __LINE__;
     }
 
     //check APID and CTID search
@@ -387,8 +366,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
 
     QDltMsg msg;
     QByteArray buf;
-    QString text;
-    QString headerText;
     int ctr = 0;
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
@@ -399,25 +376,27 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         is_Case_Sensitive = Qt::CaseSensitive;
     }
 
-
-    tempPayLoad.clear();
-
-    is_PayloadStartFound = false;
-    is_PayloadEndFound = false;
-    is_PayLoadRangeValid = false;
-
     m_searchtablemodel->clear_SearchResults();
 
-    QProgressDialog fileprogress("Searching...", "Abort", 0, file->sizeFilter(), this);
-    fileprogress.setWindowTitle("DLT Viewer");
-    fileprogress.setWindowModality(Qt::NonModal);
-    fileprogress.show();
+    bool msgIdEnabled=QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
+    QString msgIdFormat=QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
+
+    DltMessageMatcher matcher;
+    matcher.setCaseSentivity(is_Case_Sensitive);
+    matcher.setSearchAppId(stApid);
+    matcher.setSearchCtxId(stCtid);
+    if (is_TimeStampSearchSelected) {
+        matcher.setTimestapmRange(dTimeStampStart, dTimeStampStop);
+    }
+    if (msgIdEnabled) {
+        matcher.setMessageIdFormat(msgIdFormat);
+    }
+    matcher.setHeaderSearchEnabled(getHeader());
+    matcher.setPayloadSearchEnabled(getPayload());
 
     do
     {
         ctr++; // for file progress indication
-
-        text.clear();
 
         if(getNextClicked() || searchtoIndex())
         {
@@ -436,20 +415,20 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             }
         }
 
-        /* Update progress every 0.5% */
-        if(searchLine%1000==0)
+        // Update progress every 0.5%
+        if(searchLine%1000 == 0)
         {
-            fileprogress.setValue(ctr);
-            if(fileprogress.wasCanceled())
-            {
+            QApplication::processEvents();
+            if (isSearchCancelled) {
                 break;
             }
-            QApplication::processEvents();
+            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / file->sizeFilter()));
         }
 
         /* get the message with the selected item id */
         buf = file->getMsgFilter(searchLine);
         msg.setMsg(buf);
+        msg.setIndex(file->getMsgFilterPos(searchLine));
 
         /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
@@ -458,276 +437,21 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             pluginManager->decodeMsg(msg, fSilentMode);
         }
 
-        headerText.clear();
-
-        /* search header */
-        if( text.isEmpty() )
+        const bool matchFound = getRegExp() ? matcher.match(msg, searchTextRegExp) : matcher.match(msg, getText());
+        if (!matchFound)
         {
-            text += msg.toStringHeader();
-            tempPayLoad = msg.toStringPayload();
-
-        } // get the header text in case not empty
-        headerText = text;
-        if ( true == fIs_APID_CTID_requested )
-            {
-              QString APID = headerText.section(" ",5,5);
-              QString CTID = headerText.section(" ",6,6);
-              // and check if the condition is valid
-              if ( ( APID.compare(stApid,is_Case_Sensitive) == 0 ) && ( stCtid.size() == 0 ) )
-              {
-                 // qDebug() << "APID hit" << searchLine << __LINE__;
-              }
-              else if ( ( CTID.compare(stCtid,is_Case_Sensitive) == 0 ) && ( stApid.size() == 0 ) )
-              {
-                 // qDebug() << "CTID hit" << searchLine << __LINE__;
-              }
-              else if( ( CTID.compare(stCtid,is_Case_Sensitive) == 0) && ( APID.compare(stApid,is_Case_Sensitive) == 0 ) )
-              {
-                 // qDebug() << "CTID & APID hit" << searchLine << __LINE__;
-              }
-              else
-              {
-                 //qDebug() << APID << CTID << searchLine;
-                 continue; // because if APID or CTID  doesn not fit there is no need to search in any payload or header
-              }
-            }
-
-
-        is_TimeStampRangeValid = false;
-        if(true == is_TimeStampSearchSelected) // set the flag to identify a valid time stamp range
-        {
-            /*Assuming that the timeStamp is the 3rd value always*/
-            QString TargetTimeStamp = headerText.section(" ",2,2);
-            if( ( dTimeStampStart <= TargetTimeStamp.toDouble() ) && ( dTimeStampStop >= TargetTimeStamp.toDouble() ) )
-            {
-                    //qDebug() << "Within time stamp range" << dTimeStampStart <<  TargetTimeStamp.toDouble() << dTimeStampStop << __LINE__;
-                    is_TimeStampRangeValid = true;
-            }
-            else
-                continue;
-         }
-
-
-        if(getHeader() == true) // header is search enabled
-        {
-            if (getRegExp() == true) // regular expressions are selected
-            {
-                if(text.contains(searchTextRegExp))
-                {
-                    if ( foundLine(searchLine) )
-                        break;
-                    else
-                        continue;
-                }
-                else
-                {
-                    //setMatch(false);
-                    match = false;
-                }
-            }
-            else // no regular expressions search was requested
-            {
-                if(true == getText().isEmpty())
-                {
-                 if ( foundLine(searchLine) ) // so no pattern always fits
-                  {
-                   //qDebug() << "Header search hit in"<< __LINE__;
-                   break;
-                  }
-                 else
-                  continue;
-                 }
-                else if(true == headerText.contains(getText(),is_Case_Sensitive)) // header search
-                {
-                    {
-                        if(true == timeStampPayloadValidityCheck(searchLine))
-                            break;
-                        else
-                            continue;
-                    }
-                }
-                else // no fit, no display
-                {
-                    match = false;
-                }
-            }
-        } // end header search
-
-        /* search payload */
-        text.clear();
-
-        if(getPayload() == true) // if payload is selected in the search box
-        {
-            if ( true == is_payLoadSearchSelected )
-            {
-              if ( true == payLoadStartpatternCheck() ) // if payload pattern search range is set we try to detect the ranges
-                 {
-                 //qDebug() << "Found start payload pattern in " << searchLine << __LINE__;
-                 }
-            }
-
-            if( text.isEmpty())
-            {
-                text += msg.toStringPayload();
-            }
-
-            if (getRegExp() == true)
-            {
-                if(tempPayLoad.contains(searchTextRegExp))
-                {
-                    if ( foundLine(searchLine) )
-                    {
-                        //qDebug() << "Search hit in"<< __LINE__;
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck();
-                        continue;
-                    }
-                }
-                else
-                {
-                    //setMatch(false);
-                    match = false;
-                }
-            }
-            else // search option without regular expressions
-            {
-                if(getText().isEmpty() == true) // no search text for payload given
-                {
-                    if(timeStampPayloadValidityCheck(searchLine))
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck();
-                        continue;
-                    }
-
-                }
-                else if(tempPayLoad.contains(getText(),is_Case_Sensitive))
-                {
-                    if(timeStampPayloadValidityCheck(searchLine))
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        payLoadStoppatternCheck();
-                        continue;
-                    }
-                }
-                else
-                {
-                    match = false;
-                }
-            }
+            match = false;
+            continue;
         }
+
+        if (foundLine(searchLine))
+            break;
+        else
+            continue;
     }
     while( searchBorder != searchLine );
     stoptime();
 }
-
-
-bool SearchDialog::payLoadStartpatternCheck()
-{
-    // When the start payload patternn is found, consider range as valid
-    if((tempPayLoad.contains(payloadStart)) && (false == is_PayloadEndFound) && true == is_payLoadSearchSelected)
-    {
-        //qDebug() << "Found start payload pattern" << __LINE__;
-        is_PayLoadRangeValid = true;
-        is_PayloadStartFound = true;
-    }
-   return is_PayLoadRangeValid;
-}
-
-
-bool SearchDialog::payLoadStoppatternCheck()
-{
-    // When the stop payload patern is found, consider range as ivalid
-    if(true == is_PayloadStartFound  &&  true == is_payLoadSearchSelected && true == is_payLoadSearchSelected)
-    {
-       if(tempPayLoad.contains(payloadEnd))
-       {
-        //qDebug() << "Found stop payload pattern" << __LINE__;
-        is_PayloadEndFound = true;
-        is_PayLoadRangeValid = false;
-       }
-       //else qDebug() << "No stop payload pattern" << __LINE__;
-    }
-   return is_PayLoadRangeValid;
-}
-
-
-bool SearchDialog::payLoadValidityCheck()
-{
-    // When the start payload is found, consider range as valid
-    if((tempPayLoad.contains(payloadStart)) && (false == is_PayloadEndFound))
-    {
-        //qDebug() << "Found start payload pattern" << __LINE__;
-        is_PayLoadRangeValid = true;
-        is_PayloadStartFound = true;
-    }
-
-    if(true == is_PayloadStartFound)
-    {
-       if(tempPayLoad.contains(payloadEnd))
-       {
-        //qDebug() << "Found stop payload pattern" << __LINE__;
-        is_PayloadEndFound = true;
-        is_PayLoadRangeValid = false;
-       }
-    }
-
-    return is_PayLoadRangeValid;
-}
-
-bool SearchDialog::timeStampPayloadValidityCheck(long int searchLine)
-{
-   // qDebug() << "timeStampPayloadValidityCheck" << __LINE__;
-    if(true == is_TimeStampSearchSelected)
-    {
-        if(true == is_TimeStampRangeValid)
-        {
-            if(true == is_payLoadSearchSelected)
-            {
-                if(is_PayLoadRangeValid == true)
-                {
-                    if(foundLine(searchLine))
-                    {
-                        return true;
-                    }
-                }
-            }
-            else
-            {
-                if(foundLine(searchLine) == true)
-                {
-                    return true;
-                }
-            }
-        }
-    }
-    else if(true == is_payLoadSearchSelected)
-    {
-        if(true == is_PayLoadRangeValid)
-            if(foundLine(searchLine))
-            {
-                return true;
-            }
-    }
-    else // all the other cases
-    {
-        if(foundLine(searchLine) == true)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
 
 bool SearchDialog::foundLine(long int searchLine)
 {
@@ -892,6 +616,31 @@ void SearchDialog::clearCacheHistory()
 {
     // obtaining the list of keys stored in cache
     cachedHistoryKey.clear();
+}
+
+void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
+    //To save the search history
+    QSettings settings("MyApp", "SearchHistory");
+    settings.beginWriteArray("history");
+    int count = qMin(searchHistory.size(), 20);
+    for (int i = 0; i < count; ++i) {
+        settings.setArrayIndex(i);
+        settings.setValue("entry", searchHistory.at(i));
+    }
+    settings.endArray();
+}
+
+void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
+{
+  //To retrive the search history once DLT Viewer restarts
+    QSettings settings("MyApp", "SearchHistory");
+    searchHistory.clear();
+    int size = settings.beginReadArray("history");
+    for (int i = 0; i < size; ++i) {
+        settings.setArrayIndex(i);
+        searchHistory.append(settings.value("entry").toString());
+    }
+    settings.endArray();
 }
 
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)

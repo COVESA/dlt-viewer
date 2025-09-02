@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2013  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,11 +13,12 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file pulsebutton.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include "pulsebutton.h"
+#include "QTimeLine"
 
 PulseButton::PulseButton(QWidget *parent) :
     QPushButton(parent),
@@ -27,14 +28,20 @@ PulseButton::PulseButton(QWidget *parent) :
      * Shape to curve that gives pleasant pulsing behaviour.
      * Loop forever */
     animationTimeline.setFrameRange(0, 100);
-    animationTimeline.setCurveShape(QTimeLine::SineCurve);
+    
+#ifdef QT5_QT6_COMPAT
+    QEasingCurve easing(QEasingCurve::SineCurve);
+    animationTimeline.setEasingCurve(easing);
+#else
+    animationTimeline.valueForTime(QEasingCurve::SineCurve);
+#endif
     animationTimeline.setLoopCount(0);
 
     connect(&animationTimeline, SIGNAL(frameChanged(int)), this, SLOT(frameChanged(int)));
     connect(&animationTimeline, SIGNAL(stateChanged(QTimeLine::State)), this, SLOT(animationStateChanged(QTimeLine::State)));
 
     /* Store the original background color */
-    baseColor = this->palette().background().color();
+    baseColor = this->palette().window().color();
 
     /* Let QT draw background whenever needed */
     setAutoFillBackground(true);

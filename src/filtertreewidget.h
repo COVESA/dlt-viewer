@@ -11,8 +11,13 @@ public:
     explicit FilterTreeWidget(QObject *parent = 0);
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
+    void deleteSelected();
+
 signals:
     void filterItemDropped();
+    void filterCountChanged();
+
 public slots:
 
 };

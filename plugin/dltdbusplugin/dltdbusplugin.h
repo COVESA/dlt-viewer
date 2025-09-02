@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2014  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file dltdbusplugin.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -66,7 +66,7 @@ inline bool operator==(const DltDbusMethodKey &e1, const DltDbusMethodKey &e2)
            && e1.getSerial() == e2.getSerial();
 }
 
-inline uint qHash(const DltDbusMethodKey &key)
+inline size_t qHash(const DltDbusMethodKey &key)
 {
     return qHash(key.getSender()) ^ key.getSerial();
 }
@@ -78,7 +78,7 @@ class DltDBusPlugin : public QObject, QDLTPluginInterface, QDltPluginViewerInter
     Q_INTERFACES(QDltPluginViewerInterface)
     Q_INTERFACES(QDltPluginControlInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
-#ifdef QT5
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.DltDbusPlugin")
 #endif
 

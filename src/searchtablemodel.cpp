@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,13 +13,16 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file searchdialog.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 #include "searchtablemodel.h"
 
 #include "fieldnames.h"
 #include "dltuiutils.h"
+#include "dlt_protocol.h"
+#include "qdltoptmanager.h"
+
 
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -34,8 +37,6 @@ SearchTableModel::~SearchTableModel()
 {
 
 }
-
-
 
 QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 {
@@ -67,6 +68,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
             pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
+        QString visu_data;
         switch(index.column())
         {
         case FieldNames::Index:
@@ -160,7 +162,20 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QString("%1").arg(msg.getNumberOfArguments());
         case FieldNames::Payload:
             /* display payload */
-            return msg.toStringPayload().trimmed();
+            visu_data = msg.toStringPayload().simplified().remove(QChar::Null);
+            if(qfile) qfile->applyRegExString(msg,visu_data);
+            /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
+            {
+                for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
+                    FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
+                    if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                        visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
+                    }
+                }
+            }*/
+            return visu_data;
+        case FieldNames::MessageId:
+            return QString::asprintf(project->settings->msgIdFormat.toUtf8(),msg.getMessageId());
         default:
             if (index.column()>=FieldNames::Arg0)
             {
@@ -178,91 +193,52 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         }
     }
 
-    if ( role == Qt::ForegroundRole ) {
-        qfile->getMsg(m_searchResultList.at(index.row()), msg);
+    if ( role == Qt::ForegroundRole )
+    {
+        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        {
+            /* Valid message found, calculate background color and find optimal forground color */
+            return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
+        }
+        /* default return black forground color */
+        QColor brushColor = QColor(0,0,0);
 
-        // Color the last search row
-        if (QColor(qfile->checkMarker(msg)).isValid())
+        if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
         {
-            QColor color = qfile->checkMarker(msg);
-            return QVariant(QBrush(DltUiUtils::optimalTextColor(color)));
+            brushColor = QColor(255,255,255);
         }
-        else if(project->settings->autoMarkFatalError && !QColor(qfile->checkMarker(msg)).isValid() && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal")  )
-        {
-            return QVariant(QBrush(QColor(255,255,255)));
-        }
-        else
-        {
-            return QVariant(QBrush(QColor(0,0,0)));
-        }
+
+        return QVariant(QBrush(brushColor));
     }
 
-    if ( role == Qt::BackgroundRole ) {
-        if(!qfile->getMsg(m_searchResultList.at(index.row()), msg)) {
-            //always white
-            return QVariant(QBrush(QColor(255,255,255)));
-        } else {
-            QColor color = qfile->checkMarker(msg);
-
-            if(color.isValid())
-            {
-                return QVariant(QBrush(color));
-            }
-
-            return QVariant(QBrush(QColor(255,255,255)));
+    if ( role == Qt::BackgroundRole )
+    {
+        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        {
+            /* Valid message found, calculate background color */
+            return QVariant(QBrush(getMsgBackgroundColor(msg)));
         }
+        /* default return white background color */
+        QColor brushColor = QColor(255,255,255);
+
+        if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+        {
+            brushColor = QColor(31,31,31);
+        }
+
+        return QVariant(QBrush(brushColor));
     }
 
 
     if ( role == Qt::TextAlignmentRole ) {
-       switch(index.column())
+       /*switch(index.column())
        {
-           case FieldNames::Index:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Time:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::TimeStamp:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Counter:               
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);//don't show that in the search field
-           case FieldNames::EcuId:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::AppId:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-               switch(project->settings->showApIdDesc){
-               case 0:
-                   return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                   break;
-               case 1:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               default:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               }
-           case FieldNames::ContextId:
-               switch(project->settings->showCtIdDesc){
-               case 0:
-                   return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-                   break;
-               case 1:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               default:
-                   return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
-                   break;
-               }
-           case FieldNames::Type:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::Subtype:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::Mode:
-               return QVariant(Qt::AlignCenter | Qt::AlignVCenter);
-           case FieldNames::ArgCount:
-               return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
-           case FieldNames::Payload:
-               return QVariant(Qt::AlignLeft   | Qt::AlignVCenter);
-       }
+           //override default alignment here if needed
+           //case FieldNames::Index: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+           default:
+
+       }*/
+       return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
    }
 
     return QVariant();
@@ -271,12 +247,25 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 QVariant SearchTableModel::headerData(int section, Qt::Orientation orientation,
                                int role) const
 {
-   if (role != Qt::DisplayRole)
-       return QVariant();
-
    if (orientation == Qt::Horizontal)
    {
-       return FieldNames::getName((FieldNames::Fields)section, project->settings);
+       switch (role)
+       {
+       case Qt::DisplayRole:
+           return FieldNames::getName((FieldNames::Fields)section, project->settings);
+       case Qt::TextAlignmentRole:
+           {
+           /*switch(section)
+               {
+                 //override default alignment here if needed
+                 //case FieldNames::Payload: return QVariant(Qt::AlignRight  | Qt::AlignVCenter);
+                 default:
+               }*/
+           return FieldNames::getColumnAlignment((FieldNames::Fields)section,project->settings);
+           }
+        default:
+           break;
+       }
    }
 
    return QVariant();
@@ -303,6 +292,7 @@ int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
 void SearchTableModel::clear_SearchResults()
 {
     m_searchResultList.clear();
+    modelChanged();
 }
 
 void SearchTableModel::add_SearchResultEntry(unsigned long entry)
@@ -326,4 +316,44 @@ bool SearchTableModel::get_SearchResultEntry(int position, unsigned long &entry)
 int SearchTableModel::get_SearchResultListSize() const
 {
     return m_searchResultList.size();
+}
+
+QColor SearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const
+{
+    /* get check marker color */
+    QColor color = qfile->checkMarker(msg);
+    if(color.isValid())
+    {
+        /* Valid marker found, use background color as defined in marker */
+        return color;
+    }
+    else
+    {
+        if(project->settings->autoMarkFatalError && ( msg.getSubtypeString() == "error" || msg.getSubtypeString() == "fatal") )
+        {
+           /* If automark error is enabled, set red as background color */
+           return QColor(255,0,0);
+        }
+        if(project->settings->autoMarkWarn && msg.getSubtypeString() == "warn")
+        {
+            /* If automark warning is enabled, set red as background color */
+           return QColor(255,255,0);
+        }
+        if(project->settings->autoMarkMarker && msg.getType()==QDltMsg::DltTypeControl &&
+           msg.getSubtype()==QDltMsg::DltControlResponse && msg.getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
+        {
+            /* If automark marker is enabled, set green as background color */
+           return QColor(0,255,0);
+        }
+    }
+
+    /* default return white background color */
+    QColor brushColor = QColor(255,255,255);
+
+    if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
+    {
+        brushColor = QColor(31,31,31);
+    }
+
+    return brushColor;
 }

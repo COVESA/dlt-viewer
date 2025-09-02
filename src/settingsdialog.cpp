@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,7 +13,7 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file settingsdialog.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
@@ -30,6 +30,7 @@
 #include "ui_settingsdialog.h"
 #include "version.h"
 #include "dltuiutils.h"
+#include "qdltsettingsmanager.h"
 
 
 #if (WIN32)
@@ -110,6 +111,12 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     ui->comboBoxUTCOffset->addItem("UTC+13:00",13*3600);
     ui->comboBoxUTCOffset->addItem("UTC+14:00",14*3600);
 
+    ui->comboBox_MessageIdFormat->addItem("%010u");
+    ui->comboBox_MessageIdFormat->addItem("%u");
+    ui->comboBox_MessageIdFormat->addItem("0x%08X");
+    ui->comboBox_MessageIdFormat->addItem("0x%08x");
+    ui->comboBox_MessageIdFormat->addItem("%08xh");
+
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->fmaxFileSizeMB = 0.0;
     settings->appendDateTime = 0;
@@ -141,16 +148,17 @@ void SettingsDialog::changeEvent(QEvent *e)
 
 void SettingsDialog::assertSettingsVersion()
 {
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
+   QDltSettingsManager *settings = QDltSettingsManager::getInstance();
 
-    int major = settings->value("startup/versionMajor").toInt();
-    int minor = settings->value("startup/versionMinor").toInt();
+   int major = settings->value("startup/versionMajor").toInt();
+   int minor = settings->value("startup/versionMinor").toInt();
 
-    if(major == 0 && minor == 0)
+   if(major == 0 && minor == 0)
+    {
         return; // The settings were empty already
+    }
 
-    if(major < QString(PACKAGE_MAJOR_VERSION).toInt() ||
-       minor < QString(PACKAGE_MINOR_VERSION).toInt())
+   if(major > PACKAGE_MAJOR_VERSION || minor > PACKAGE_MINOR_VERSION)
     {
         QString msg;
         msg.append("The application version has changed ! The settings file config.ini might be incompatible.\n");
@@ -158,8 +166,7 @@ void SettingsDialog::assertSettingsVersion()
         msg.append("Yes    - Reset settings to factory defaults.\n");
         msg.append("No     - Continue loading settings and risk crashing the application.\n");
         msg.append("Cancel - Exit the viewer now.\n");
-        QMessageBox dlg("Warning", msg, QMessageBox::Warning,
-                        QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
+        QMessageBox dlg(QMessageBox::Warning, "Warning", msg, QMessageBox::Yes|QMessageBox::No|QMessageBox::Cancel);
         int btn = dlg.exec();
         if(btn == QMessageBox::Yes)
         {
@@ -169,6 +176,7 @@ void SettingsDialog::assertSettingsVersion()
         {
             exit(-1);
         }
+
     }
 }
 
@@ -177,17 +185,21 @@ void SettingsDialog::resetSettings()
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->clear();
     QString fn(settings->fileName());
-    QDltSettingsManager::close();
     QFile fh(fn);
-    if(fh.exists())
+    if(true == fh.exists())
     {
-        if(!fh.open(QIODevice::ReadWrite))
+        if(false == fh.open(QIODevice::ReadWrite))
             return; // Could be a registry key on windows
         fh.close();
-        if(!fh.remove())
+        if(false == fh.remove())
         {
-            QMessageBox err("Error", "Could not remove the settings file", QMessageBox::Critical, QMessageBox::Ok, 0, 0);
+            QMessageBox err(QMessageBox::Critical, "Error", "Could not remove the settings file", QMessageBox::Ok);
             err.exec();
+        }
+        else
+        {
+          qDebug() << "Deleted settings file" << fn << fh.exists();
+          readSettings();
         }
     }
 }
@@ -211,6 +223,7 @@ void SettingsDialog::writeDlg()
     ui->lineEditOwnTemp->setText(settings->tempOwnPath);
     ui->checkBoxCloseWithoutAsking->setChecked(settings->tempCloseWithoutAsking == 1 ? true : false);
     ui->checkBoxSaveOnClear->setChecked(settings->tempSaveOnClear == 1 ? true : false);
+    ui->checkBoxSaveOnExit->setChecked(settings->tempSaveOnExit == 1 ? true : false);
 
     /* startup */
     ui->checkBoxDefaultProjectFile->setCheckState(settings->defaultProjectFile?Qt::Checked:Qt::Unchecked);
@@ -224,15 +237,15 @@ void SettingsDialog::writeDlg()
     ui->checkBoxPluginsAutoload->setCheckState(settings->pluginsAutoloadPath?Qt::Checked:Qt::Unchecked);
     ui->lineEditPluginsAutoload->setText(settings->pluginsAutoloadPathName);
     ui->checkBoxFilterCache->setCheckState(settings->filterCache?Qt::Checked:Qt::Unchecked);
-    ui->spinBoxIndexCacheDays->setValue(settings->filterCacheDays);
-    ui->lineEditFilterCache->setText(settings->filterCacheName);
     ui->checkBoxAutoConnect->setCheckState(settings->autoConnect?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxSupportDLTV2Decoding->setCheckState(settings->supportDLTv2Decoding?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoScroll->setCheckState(settings->autoScroll?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkFatalError->setCheckState(settings->autoMarkFatalError?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkWarn->setCheckState(settings->autoMarkWarn?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile?Qt::Checked:Qt::Unchecked);
+    ui->checkBoxLoggingOnlyFilteredMessages->setCheckState(settings->loggingOnlyFilteredMessages?Qt::Checked:Qt::Unchecked);
+    ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile);
     ui->lineEditMaxFileSizeMB->setText(QString("%1").arg(settings->fmaxFileSizeMB));
     ui->checkBoxAppendDateTime->setCheckState(settings->appendDateTime?Qt::Checked:Qt::Unchecked);
 
@@ -356,15 +369,19 @@ void SettingsDialog::writeDlg()
     ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
     ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
-   // ui->spinBox_showArguments->setValue(settings->showArguments);
+    ui->groupBoxMessageId->setChecked(settings->showMsgId);
+    ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
-    ui->checkBoxWriteControl->setCheckState(settings->writeControl?Qt::Checked:Qt::Unchecked);
     ui->checkBoxUpdateContextLoadingFile->setCheckState(settings->updateContextLoadingFile?Qt::Checked:Qt::Unchecked);
     ui->checkBoxUpdateContextUnregister->setCheckState(settings->updateContextsUnregister?Qt::Checked:Qt::Unchecked);
 
     ui->spinBoxFrequency->setValue(settings->RefreshRate);
     ui->checkBoxStartUpMinimized->setChecked(settings->StartupMinimized);
+    ui->comboBox_MessageIdFormat->setCurrentText(settings->msgIdFormat);
+    ui->lineEditMsgCacheSize->setText(QString("%1").arg(settings->msgCacheSize));
+
+    ui->comboBoxTheme->setCurrentIndex(static_cast<int>(settings->themeSelectionSettings));
 }
 
 void SettingsDialog::readDlg()
@@ -378,6 +395,7 @@ void SettingsDialog::readDlg()
     settings->tempOwnPath                 = ui->lineEditOwnTemp->text();
     settings->tempCloseWithoutAsking      = (ui->checkBoxCloseWithoutAsking->isChecked() == true ? 1 : 0);
     settings->tempSaveOnClear             = (ui->checkBoxSaveOnClear->isChecked() == true ? 1 : 0);
+    settings->tempSaveOnExit              = (ui->checkBoxSaveOnExit->isChecked() == true ? 1 : 0);
 
     /* startup */
     settings->defaultProjectFile = (ui->checkBoxDefaultProjectFile->checkState() == Qt::Checked);
@@ -391,14 +409,14 @@ void SettingsDialog::readDlg()
     settings->pluginsAutoloadPath = (ui->checkBoxPluginsAutoload->checkState() == Qt::Checked);
     settings->pluginsAutoloadPathName = ui->lineEditPluginsAutoload->text();
     settings->filterCache = (ui->checkBoxFilterCache->checkState() == Qt::Checked);
-    settings->filterCacheDays = ui->spinBoxIndexCacheDays->value();
-    settings->filterCacheName = ui->lineEditFilterCache->text();
     settings->autoConnect = (ui->checkBoxAutoConnect->checkState() == Qt::Checked);
+    settings->supportDLTv2Decoding = (ui->checkBoxSupportDLTV2Decoding->checkState() == Qt::Checked);
     settings->autoScroll = (ui->checkBoxAutoScroll->checkState() == Qt::Checked);
     settings->autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
     settings->autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
     settings->autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
     settings->loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
+    settings->loggingOnlyFilteredMessages = (ui->checkBoxLoggingOnlyFilteredMessages->checkState() == Qt::Checked);
     settings->splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();
     if(settings->splitlogfile != 0)
      {
@@ -441,15 +459,29 @@ void SettingsDialog::readDlg()
     settings->showMode = ( ui->checkBoxMode->checkState() == Qt::Checked);
     settings->showNoar = ( ui->checkBoxNoar->checkState() == Qt::Checked);
     settings->showPayload = ( ui->checkBoxPayload->checkState() == Qt::Checked);
-   // showArguments = (ui->spinBox_showArguments->value());
+    settings->showArguments = (ui->spinBox_showArguments->value());
+    settings->showMsgId     = (ui->groupBoxMessageId->isChecked()==true?1:0);
 
     /* other */
-    settings->writeControl = (ui->checkBoxWriteControl->checkState() == Qt::Checked);
     settings->updateContextLoadingFile = (ui->checkBoxUpdateContextLoadingFile->checkState() == Qt::Checked);
     settings->updateContextsUnregister = (ui->checkBoxUpdateContextUnregister->checkState() == Qt::Checked);
 
     settings->RefreshRate = ui->spinBoxFrequency->value();
     settings->StartupMinimized = ui->checkBoxStartUpMinimized->isChecked();
+    settings->msgIdFormat=ui->comboBox_MessageIdFormat->currentText();
+    settings->msgCacheSize = ui->lineEditMsgCacheSize->text().toULong();
+
+    auto prevUISettings = settings->themeSelectionSettings;
+    settings->themeSelectionSettings = static_cast<QDltSettingsManager::UI_Colour>(ui->comboBoxTheme->currentIndex());
+
+    if (prevUISettings != settings->themeSelectionSettings)
+    {
+        QMessageBox msgBox(QMessageBox::Warning,
+                           "Settings updated",
+                           "Restart the application for changes to take effect",
+                           QMessageBox::Ok);
+        msgBox.exec();
+    }
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
@@ -470,9 +502,26 @@ void SettingsDialog::readSettings()
     settings->readSettings();
 
     QPalette palette = ui->labelSelectedMarkerColor->palette();
-    palette.setColor(QPalette::Active,this->backgroundRole(),settings->markercolor);
+    palette.setColor(QPalette::Active,this->backgroundRole(),QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue));
     ui->labelSelectedMarkerColor->setPalette(palette);
 
+    auto uiColour = settings->themeSelectionSettings;
+
+    if (QDltSettingsManager::UI_Colour::UI_SystemDefault == uiColour)
+    {
+        uiColour = QDltSettingsManager::UI_Colour::UI_Light;
+
+#ifdef Q_OS_WIN
+        QSettings themeSettings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",QSettings::NativeFormat);
+
+        if(themeSettings.value("AppsUseLightTheme")==0)
+        {
+            uiColour = QDltSettingsManager::UI_Colour::UI_Dark;
+        }
+#endif
+    }
+
+    settings->uiColour = uiColour;
 }
 
 
@@ -587,22 +636,6 @@ void SettingsDialog::on_toolButtonPluginsAutoload_clicked()
     ui->lineEditPluginsAutoload->setText(fileName);
 }
 
-
-void SettingsDialog::on_toolButtonFilterCache_clicked()
-{
-    QString fileName = QFileDialog::getExistingDirectory(this,
-        tr("Filter Cache directory"), workingDirectory+"/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-
-    if(fileName.isEmpty())
-        return;
-
-    /* change current working directory */
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-    settings->filterCacheName = QFileInfo(fileName).absolutePath();
-
-    ui->lineEditFilterCache->setText(fileName);
-}
-
 void SettingsDialog::on_groupBoxConId_clicked(bool checked)
 {
     if(checked){
@@ -654,66 +687,6 @@ void SettingsDialog::on_groupBoxAutomaticTimeSettings_clicked(bool checked)
     }
 }
 
-
-void SettingsDialog::on_pushButtonClearIndexCache_clicked()
-{
-    QString path = ui->lineEditFilterCache->text();
-    QDir dir(path);
-    dir.setNameFilters(QStringList() << "*.dix");
-    dir.setFilter(QDir::Files);
-    foreach(QString dirFile, dir.entryList())
-    {
-        dir.remove(dirFile);
-    }
-}
-
-void SettingsDialog::clearIndexCacheAfterDays()
-{
-    QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-
-    // calculate comparison date
-    QDateTime comparisonDate(QDateTime::currentDateTime());
-    comparisonDate = comparisonDate.addSecs((quint64)settings->filterCacheDays*-1*60*60*24);
-
-    // check if index cache is enabled
-    if(0 == settings->filterCache)
-    {
-        return;
-    }
-
-    /* check if directory for configuration exists */
-    QString path = settings->filterCacheName;
-    QDir dir(path);
-    if(!dir.exists())
-    {
-        /* directory does not exist, make it */
-        if(!dir.mkpath(dir.absolutePath()))
-        {
-            /* creation of directory fails */
-            QMessageBox::critical(0, QString("DLT Viewer"),
-                                           QString("Cannot create directory to store index cache files!\n\n")+dir.absolutePath(),
-                                           QMessageBox::Ok,
-                                           QMessageBox::Ok);
-        }
-        return;
-    }
-
-    // go through each file and check modification date of file
-    dir.setNameFilters(QStringList() << "*.dix");
-    dir.setFilter(QDir::Files);
-    foreach(QString dirFile, dir.entryList())
-    {
-        QFileInfo info(path+"/"+dirFile);
-        QDateTime fileDate = info.lastRead();
-
-        //qDebug() << fileDate.toString("dd.MM.yyyy hh:mm:ss.zzz") << comparisonDate.toString("dd.MM.yyyy hh:mm:ss.zzz");
-
-        if(fileDate < comparisonDate)
-            dir.remove(dirFile);
-    }
-}
-
-
 void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 {
    if ( activated != 0)
@@ -725,17 +698,19 @@ void SettingsDialog::on_checkBoxPluginsAutoload_stateChanged(int activated)
 
 void SettingsDialog::on_pushButtonMarkerColor_clicked()
 {
-    QColor selectedcolor = QColorDialog::getColor( ui->labelSelectedMarkerColor->palette().background().color().name() );
+    QColor selectedcolor = QColorDialog::getColor( ui->labelSelectedMarkerColor->palette().window().color().name() );
     QPalette palette = ui->labelSelectedMarkerColor->palette();
     palette.setColor(QPalette::Active,this->backgroundRole(),selectedcolor);
     palette.setColor(QPalette::Inactive,this->backgroundRole(),QColor(255,255,255,255));
-    palette.setColor(QPalette::Foreground,DltUiUtils::optimalTextColor(selectedcolor));
+    palette.setColor(QPalette::WindowText,DltUiUtils::optimalTextColor(selectedcolor));
     ui->labelSelectedMarkerColor->setPalette(palette);
 
     if(selectedcolor.isValid())
     {
         QDltSettingsManager *settings = QDltSettingsManager::getInstance();
-        settings->markercolor =  selectedcolor;
+        settings->markercolorRed =  selectedcolor.red();
+        settings->markercolorGreen =  selectedcolor.green();
+        settings->markercolorBlue =  selectedcolor.blue();
     }
 }
 
@@ -751,4 +726,28 @@ void SettingsDialog::on_pushButtonSelectFont_clicked()
     } else {
         // the user canceled the dialog; font is set to the initial
     }
+}
+
+void SettingsDialog::on_groupBoxArguments_clicked(bool checked)
+{
+    if (checked)
+    {
+      if (ui->spinBox_showArguments->value()<=0) ui->spinBox_showArguments->setValue(5); //set to default
+    }
+    else
+    {
+      ui->spinBox_showArguments->setValue(0);
+    }
+}
+
+void SettingsDialog::on_spinBox_showArguments_valueChanged(int i)
+{
+ if (i<=0)
+ {
+  ui->groupBoxArguments->setChecked(false);
+ }
+ else
+ {
+     if (!ui->groupBoxArguments->isChecked()) ui->groupBoxArguments->setChecked(true);
+ }
 }

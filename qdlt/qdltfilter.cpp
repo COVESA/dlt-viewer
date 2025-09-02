@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -15,13 +15,13 @@
  * \author Alexander Wenzel <alexander.aw.wenzel@bmw.de> 2011-2012
  *
  * \file qdlt.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include <QtDebug>
 
-#include "qdlt.h"
+#include "qdltfilter.h"
 
 extern "C"
 {
@@ -48,13 +48,16 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     ctid = _filter.ctid;
     header = _filter.header;
     payload = _filter.payload;
+    regex_search = _filter.regex_search;
+    regex_replace = _filter.regex_replace;
 
-    enableRegexp_Appid   = _filter.enableRegexp_Appid;
-    enableRegexp_Context = _filter.enableRegexp_Context;
-    enableRegexp_Header  = _filter.enableRegexp_Header;
-    enableRegexp_Payload = _filter.enableRegexp_Payload;
-    ignoreCase_Header    = _filter.ignoreCase_Header;
-    ignoreCase_Payload   = _filter.ignoreCase_Payload;
+    enableRegexp_Appid       = _filter.enableRegexp_Appid;
+    enableRegexp_Context     = _filter.enableRegexp_Context;
+    enableRegexp_Header      = _filter.enableRegexp_Header;
+    enableRegexp_Payload     = _filter.enableRegexp_Payload;
+    ignoreCase_Header        = _filter.ignoreCase_Header;
+    ignoreCase_Payload       = _filter.ignoreCase_Payload;
+    enableRegexSearchReplace = _filter.enableRegexSearchReplace;
 
     enableFilter = _filter.enableFilter;
     enableEcuid = _filter.enableEcuid;
@@ -66,7 +69,10 @@ QDltFilter& QDltFilter::operator= (QDltFilter const& _filter)
     enableLogLevelMax = _filter.enableLogLevelMax;
     enableLogLevelMin = _filter.enableLogLevelMin;
     enableMarker = _filter.enableMarker;
+    enableMessageId=_filter.enableMessageId;
 
+    messageIdMax=_filter.messageIdMax;
+    messageIdMin=_filter.messageIdMin;
     filterColour = _filter.filterColour;
     logLevelMax = _filter.logLevelMax;
     logLevelMin = _filter.logLevelMin;
@@ -90,6 +96,8 @@ void QDltFilter::clear()
     ctid.clear();
     header.clear();
     payload.clear();
+    regex_search.clear();
+    regex_replace.clear();
 
     enableRegexp_Appid = false;
     enableRegexp_Context = false;
@@ -107,10 +115,13 @@ void QDltFilter::clear()
     enableLogLevelMax = false;
     enableLogLevelMin = false;
     enableMarker = false;
+    enableRegexSearchReplace = false;
 
     filterColour = "#000000"; // QColor() default contructor initializes to an invalid color RGB 0,0,0
     logLevelMax = 6;
     logLevelMin = 0;
+    messageIdMax=0;
+    messageIdMin=0;
 }
 
 bool QDltFilter::isMarker() const
@@ -136,8 +147,13 @@ bool QDltFilter::compileRegexps()
     contextRegularExpression.setPattern(ctid);
     appidRegularExpression.setPattern(apid);
 
-    headerRegularExpression.setPatternOptions(ignoreCase_Header?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption);
-    payloadRegularExpression.setPatternOptions(ignoreCase_Payload?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption);
+    headerRegularExpression.setPatternOptions(
+        ignoreCase_Header ? QRegularExpression::CaseInsensitiveOption
+                          : QRegularExpression::NoPatternOption);
+    payloadRegularExpression.setPatternOptions(
+        QRegularExpression::DotMatchesEverythingOption |
+        (ignoreCase_Payload ? QRegularExpression::CaseInsensitiveOption
+                            : QRegularExpression::NoPatternOption));
 
     return (headerRegularExpression.isValid() &&
             payloadRegularExpression.isValid() &&
@@ -145,7 +161,7 @@ bool QDltFilter::compileRegexps()
             appidRegularExpression.isValid());
 }
 
-bool QDltFilter::match(QDltMsg &msg) const
+bool QDltFilter::match(const QDltMsg &msg) const
 {
 
     if( (true == enableEcuid) && (msg.getEcuid() != ecuid))
@@ -186,7 +202,7 @@ bool QDltFilter::match(QDltMsg &msg) const
 
     if(true == enableRegexp_Header)
     {
-        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader(),ignoreCase_Header?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption).hasMatch() ) )
+        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader()).hasMatch() ) )
         {
             return false;
         }
@@ -201,7 +217,7 @@ bool QDltFilter::match(QDltMsg &msg) const
 
     if( true == enableRegexp_Payload)
     {
-        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload(),ignoreCase_Payload?QRegularExpression::NoPatternOption:QRegularExpression::CaseInsensitiveOption).hasMatch() ) )
+        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload()).hasMatch() ) )
         {
             return false;
         }
@@ -211,6 +227,24 @@ bool QDltFilter::match(QDltMsg &msg) const
         if( (true == enablePayload) && ( false == msg.toStringPayload().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
+        }
+    }
+
+    if (true == enableMessageId)
+    {
+        if (messageIdMax==0)
+        {
+            if(  false == ((msg.getMessageId()==messageIdMin)) )
+                {
+                    return false;
+                }
+        }
+        else 
+        {
+            if( false == ((msg.getMessageId()>=messageIdMin)&&(msg.getMessageId()<messageIdMax)) )
+                {
+                    return false;
+                }
         }
     }
 
@@ -264,6 +298,14 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     if(xml.name() == QString("payloadtext"))
     {
           payload = xml.readElementText();
+    }
+    if(xml.name() == QString("regex_search"))
+    {
+          regex_search = xml.readElementText();
+    }
+    if(xml.name() == QString("regex_replace"))
+    {
+          regex_replace = xml.readElementText();
     }
     if(xml.name() == QString("enableregexp"))    //legacy
     {
@@ -335,6 +377,14 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           enableMarker = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("enableMessageId"))
+    {
+          enableMessageId = xml.readElementText().toInt();;
+    }
+    if(xml.name() == QString("enableRegexSearchReplace"))
+    {
+          enableRegexSearchReplace = xml.readElementText().toInt();;
+    }
     if(xml.name() == QString("filterColour"))
     {
           filterColour = xml.readElementText();
@@ -347,6 +397,15 @@ void QDltFilter::LoadFilterItem(QXmlStreamReader &xml)
     {
           logLevelMin = xml.readElementText().toInt();;
     }
+    if(xml.name() == QString("messageIdMax"))
+    {
+          messageIdMax = xml.readElementText().toUInt();
+    }
+    if(xml.name() == QString("messageIdMin"))
+    {
+          messageIdMin = xml.readElementText().toUInt();
+    }
+
 }
 
 void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
@@ -359,6 +418,10 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("contextid",ctid);
     xml.writeTextElement("headertext",header);
     xml.writeTextElement("payloadtext",payload);
+    xml.writeTextElement("regex_search",regex_search);
+    xml.writeTextElement("regex_replace",regex_replace);
+    xml.writeTextElement("messageIdMin",QString("%1").arg(messageIdMin));
+    xml.writeTextElement("messageIdMax",QString("%1").arg(messageIdMax));
 
     xml.writeTextElement("enableregexp_Appid",QString("%1").arg(enableRegexp_Appid));
     xml.writeTextElement("enableregexp_Context",QString("%1").arg(enableRegexp_Context));
@@ -376,6 +439,8 @@ void QDltFilter::SaveFilterItem(QXmlStreamWriter &xml)
     xml.writeTextElement("enableLogLevelMin",QString("%1").arg(enableLogLevelMin));
     xml.writeTextElement("enableLogLevelMax",QString("%1").arg(enableLogLevelMax));
     xml.writeTextElement("enableMarker",QString("%1").arg(enableMarker));
+    xml.writeTextElement("enableMessageId",QString("%1").arg(enableMessageId));
+    xml.writeTextElement("enableRegexSearchReplace",QString("%1").arg(enableRegexSearchReplace));
 
     xml.writeTextElement("filterColour",filterColour);
 

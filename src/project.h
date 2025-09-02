@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,15 +13,19 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file project.h
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #ifndef PROJECT_H
 #define PROJECT_H
 
-#include "qdlt.h"
 
+#include "plugintreewidget.h"
+#include "qdltipconnection.h"
+#include "qdltserialconnection.h"
+#include "qdltplugin.h"
+#include "qdltsettingsmanager.h"
 
 #include <QTreeWidget>
 #include <QDockWidget>
@@ -32,30 +36,13 @@
 #include <QSerialPort>
 #include <QPluginLoader>
 
-#if defined(_MSC_VER)
 #include <cstdint>
-#else
-#include <stdint.h>
-#endif
 
-#include "settingsdialog.h"
-#include "mcudpsocket.h"
-
-extern "C"
-{
-
-}
-
-#include "plugininterface.h"
-
-#define DLT_VIEWER_BUFFER_SIZE 256000
-#define RCVBUFSIZE 128000   /* Size of receive buffer */
 #define RECONNECT_TIMEOUT 3
 
-
-
-
 enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
+
+class ApplicationItem;
 
 class EcuItem  : public QTreeWidgetItem
 {
@@ -63,7 +50,8 @@ public:
     enum {
         INTERFACETYPE_TCP,
         INTERFACETYPE_UDP,
-        INTERFACETYPE_SERIAL
+        INTERFACETYPE_SERIAL_DLT,
+        INTERFACETYPE_SERIAL_ASCII
     };
 
     EcuItem(QTreeWidgetItem *parent = 0);
@@ -91,8 +79,7 @@ public:
 
     /* connection */
     QTcpSocket tcpsocket;
-    //QUdpSocket udpsocket;
-    MCUdpSocket udpsocket;
+    QUdpSocket udpsocket;
     QAbstractSocket * socket;
 
     QSerialPort *m_serialport;
@@ -114,6 +101,8 @@ public:
     bool isAutoReconnectTimeoutPassed();
     void updateAutoReconnectTimestamp();
 
+    ApplicationItem* find(const QString& apid) const;
+
 private:
     QDateTime autoReconnectTimestamp;
     bool operator< ( const QTreeWidgetItem & other ) const;
@@ -126,6 +115,7 @@ private:
      unsigned int udpport; /*basically the same*/
      bool sendSerialHeaderIp;
      bool syncSerialHeaderIp;
+     bool writeDLTv2StorageHeader;
 
 public:
      QDltIPConnection ipcon;
@@ -168,7 +158,8 @@ public:
      void setSendSerialHeaderSerial(bool b) {sendSerialHeaderSerial = b;serialcon.setSendSerialHeader(sendSerialHeaderSerial);}
      void setSyncSerialHeaderSerial(bool b) {syncSerialHeaderSerial = b;serialcon.setSyncSerialHeader(syncSerialHeaderSerial);}
 
-
+     bool getWriteDLTv2StorageHeader() const;
+     void setWriteDLTv2StorageHeader(bool newWriteDLTv2StorageHeader);
 };
 
 class ApplicationItem  : public QTreeWidgetItem
@@ -227,9 +218,8 @@ private:
 //Forward declaration
 class MyPluginDockWidget;
 
-class PluginItem  : public QObject, public QTreeWidgetItem
+class PluginItem  : public QTreeWidgetItem
 {
-    Q_OBJECT
 public:
 
     PluginItem(QTreeWidgetItem *parent, QDltPlugin *_plugin);
@@ -264,13 +254,11 @@ public:
     QPluginLoader *loader;
 
 private:
-    QString name;
-    QString pluginVersion;
-    QString pluginInterfaceVersion;
     QString filename;
 
     int type;
     int mode;
+    int prio;
 
     QDltPlugin *plugin;
 
@@ -303,7 +291,7 @@ public:
 
     QTreeWidget *ecu;
     QTreeWidget *filter;
-    QTreeWidget *plugin;
+    PluginTreeWidget *plugin;
     //SettingsDialog *settings;
     QDltSettingsManager *settings;
 

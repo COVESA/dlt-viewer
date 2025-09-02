@@ -1,0 +1,19 @@
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - someuser
+  categories:
+    - title: Breaking Changes 🛠
+      labels:
+        - breaking-change
+    - title: Exciting New Features 🎉
+      labels:
+        - enhancement
+    - title: Build pipeline 🛠
+      labels:
+        - Build pipeline
+    - title: Other Changes
+      labels:
+        - "*"

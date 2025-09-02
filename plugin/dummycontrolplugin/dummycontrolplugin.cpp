@@ -2,9 +2,9 @@
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
- * This file is part of GENIVI Project Dlt Viewer.
+ * This file is part of COVESA Project Dlt Viewer.
  *
- * Contributions are licensed to the GENIVI Alliance under one or more
+ * Contributions are licensed to the COVESA Alliance under one or more
  * Contribution License Agreements.
  *
  * \copyright
@@ -13,11 +13,12 @@
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
  * \file dummycontrolplugin.cpp
- * For further information see http://www.genivi.org/.
+ * For further information see http://www.covesa.global/.
  * @licence end@
  */
 
 #include <QtGui>
+#include <QTextStream>
 
 #include "dummycontrolplugin.h"
 
@@ -107,9 +108,15 @@ void DummyControlPlugin::updateCounters(int ,int )
 }
 
 bool DummyControlPlugin::stateChanged(int index, QDltConnection::QDltConnectionState connectionState,QString hostname){
+    Q_UNUSED(index)
+    Q_UNUSED(connectionState)
+    Q_UNUSED(hostname)
 
-    qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
-
+#if QT_5_SUPPORTED_VERSION
+    //qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << Qt::endl;
+#else
+    //qDebug() << ecuList->at(index) << "ConnectionState:" << connectionState << "Hostname:" << hostname << endl;
+#endif
     return true;
 }
 
@@ -171,6 +178,6 @@ void DummyControlPlugin::updateFileFinish(){
 
 }
 
-#ifndef QT5
+#if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
 Q_EXPORT_PLUGIN2(dummycontrolplugin, DummyControlPlugin);
 #endif
