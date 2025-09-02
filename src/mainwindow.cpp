@@ -17,6 +17,7 @@
  * @licence end@
  */
 
+#include "filtergrouplogs.h"
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
@@ -6559,6 +6560,50 @@ void MainWindow::filterIndexEnd()
     ui->lineEditFilterEnd->setText(QString("%1").arg(pos));
 }
 
+//Groups DLT logs by ECU ID and displays progress to the user.
+void MainWindow::splitLogsEcuid()
+{
+    QAbstractTableModel* sourceModel = qobject_cast<QAbstractTableModel*>(ui->tableView->model());
+    int rowCount = sourceModel->rowCount();
+    if (qfile.getNumberOfFiles() > 0) {
+        filtergrouplogs *filterLogsEcuid = new filtergrouplogs(this);
+        // Get the path of the currently loaded DLT file
+        QString currentFilePath = qfile.getFileName(0);
+        QStringList ecuIds = filterLogsEcuid->extractEcuIds(currentFilePath);
+        if (ecuIds.isEmpty()) {
+            QMessageBox::information(this, "No DLT file found", "No DLT file is opened... Open a DLT File.");
+            delete filterLogsEcuid;
+            return;
+        }
+
+        /* Progress dialog */
+        QProgressDialog progress("Grouping DLT Logs by ECU ID...", "Cancel", 0, rowCount, this);
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setMinimumDuration(0);
+        progress.setValue(0);
+        progress.setWindowTitle("Grouping Progress");
+        progress.show();
+        for (int i = 0; i < rowCount; ++i) {
+            progress.setValue(i + 1);
+            QCoreApplication::processEvents();
+            if (progress.wasCanceled()) {
+                delete filterLogsEcuid;
+                return;
+            }
+        }
+
+        // Set up all necessary references
+        filterLogsEcuid->setSourceModel(sourceModel);
+        filterLogsEcuid->setDltFile(&qfile);
+        filterLogsEcuid->setPluginManager(&pluginManager);
+
+        filterLogsEcuid->ecuIdTabs();
+    } else {
+        QMessageBox::warning(this, "Warning", "No DLT file is currently loaded.");
+        return;
+    }
+}
+
 void MainWindow::filterAddTable() {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -7100,6 +7145,12 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Filter Index End", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Group DLT logs by ECU ID", &menu);
+    connect(action, SIGNAL(triggered()), this, SLOT(splitLogsEcuid()));
     menu.addAction(action);
 
     /* show popup menu */
