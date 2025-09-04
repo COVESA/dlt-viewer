@@ -309,9 +309,41 @@ public:
     */
     bool applyRegExStringMsg(QDltMsg &msg) const;
 
-protected:
+    //! Get the total storage size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total storage size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalStorageSize();
+
+    //! Get the total payload size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total payload size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalPayloadSize() ;
+
+    //! Get the total message size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total message size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalMessageSize();
+
+    //! Calculate DLT header size based on header type flags.
+    /*!
+    *  \return Total header size in bytes
+    **/
+    int calculateHeaderSize(quint8 htyp);
+
+    //! Align size to 4-byte boundary for DLT storage format.
+    /*!
+    *  \return Size rounded up to next 4-byte boundary
+    **/
+    quint32 alignedStorageSize(quint32 size);
+
 
 private:
+    // Calculates total storage, message, and payload sizes for all indexed DLT messages.
+    void calculateTotalSizes();
+
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;
 
@@ -350,6 +382,11 @@ private:
 
     QCache<int,QDltMsg> cache;
     bool cacheEnable;
+
+    // Size calculation variables
+    quint64 totalStorageSize = 0;
+    quint64 totalMessageSize = 0;
+    quint64 totalPayloadSize = 0;
 
     //! DLTv2 Support.
     /*!

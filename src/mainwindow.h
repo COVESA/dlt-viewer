@@ -251,7 +251,6 @@ private:
     /* general functions */
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
-
     void reloadLogFile(bool update=false, bool multithreaded = true);
     void populateEcusTree(EcuTree&& ecuTree);
 
@@ -425,6 +424,7 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
+    void on_action_menuFile_DLTFilesize_triggered();
 
 
 public slots:
