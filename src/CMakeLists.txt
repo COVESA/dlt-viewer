@@ -76,6 +76,8 @@ add_executable(dlt-viewer
     sortfilterproxymodel.cpp
     searchform.h
     searchform.cpp
+    filtergrouplogs.h
+    filtergrouplogs.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc
     ecutree.h

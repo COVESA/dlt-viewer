@@ -17,6 +17,7 @@
  * @licence end@
  */
 
+#include "filtergrouplogs.h"
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
@@ -1424,7 +1425,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Import DLT Stream"), workingDirectory.getDltDirectory(), tr("DLT Stream file (*.*)"));
-
+   
     if(fileName.isEmpty())
         return;
 
@@ -1444,11 +1445,14 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
     }
-    while (dlt_file_read_raw(&importfile,false,0)>=0)
-    {
-        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-    }
+    int version = (dlt_file_check_version(&importfile,0)&0xe0) >>5;
+    qDebug() << "DLT file version " << version;
+    auto dltReadFunc = (version == 2)  ? dltv2_file_read_raw : dlt_file_read_raw;
+	while (dltReadFunc(&importfile,false,0)>=0)
+	        {   
+	            outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+	            outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+	        }
     outputfile.flush();
     outputfile.close();
 
@@ -2132,7 +2136,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
-
+    
     if( 0 != settings->loggingOnlyMode )
     {
         qDebug() << "Logging only mode !";
@@ -6576,6 +6580,50 @@ void MainWindow::filterIndexEnd()
     ui->lineEditFilterEnd->setText(QString("%1").arg(pos));
 }
 
+//Groups DLT logs by ECU ID and displays progress to the user.
+void MainWindow::splitLogsEcuid()
+{
+    QAbstractTableModel* sourceModel = qobject_cast<QAbstractTableModel*>(ui->tableView->model());
+    int rowCount = sourceModel->rowCount();
+    if (qfile.getNumberOfFiles() > 0) {
+        filtergrouplogs *filterLogsEcuid = new filtergrouplogs(this);
+        // Get the path of the currently loaded DLT file
+        QString currentFilePath = qfile.getFileName(0);
+        QStringList ecuIds = filterLogsEcuid->extractEcuIds(currentFilePath);
+        if (ecuIds.isEmpty()) {
+            QMessageBox::information(this, "No DLT file found", "No DLT file is opened... Open a DLT File.");
+            delete filterLogsEcuid;
+            return;
+        }
+
+        /* Progress dialog */
+        QProgressDialog progress("Grouping DLT Logs by ECU ID...", "Cancel", 0, rowCount, this);
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setMinimumDuration(0);
+        progress.setValue(0);
+        progress.setWindowTitle("Grouping Progress");
+        progress.show();
+        for (int i = 0; i < rowCount; ++i) {
+            progress.setValue(i + 1);
+            QCoreApplication::processEvents();
+            if (progress.wasCanceled()) {
+                delete filterLogsEcuid;
+                return;
+            }
+        }
+
+        // Set up all necessary references
+        filterLogsEcuid->setSourceModel(sourceModel);
+        filterLogsEcuid->setDltFile(&qfile);
+        filterLogsEcuid->setPluginManager(&pluginManager);
+
+        filterLogsEcuid->ecuIdTabs();
+    } else {
+        QMessageBox::warning(this, "Warning", "No DLT file is currently loaded.");
+        return;
+    }
+}
+
 void MainWindow::filterAddTable() {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -7117,6 +7165,12 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Filter Index End", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
+    menu.addAction(action);
+
+    menu.addSeparator();
+
+    action = new QAction("Group DLT logs by ECU ID", &menu);
+    connect(action, SIGNAL(triggered()), this, SLOT(splitLogsEcuid()));
     menu.addAction(action);
 
     /* show popup menu */

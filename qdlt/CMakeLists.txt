@@ -77,7 +77,6 @@ add_library(qdlt SHARED
     qdltctrlmsg.h
     plugininterface.h
     qdlt.h
-
 )
 
 target_compile_definitions(qdlt PRIVATE
