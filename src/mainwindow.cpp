@@ -3281,6 +3281,23 @@ void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
     }
 }
 
+void MainWindow::on_tabExplore_fileAppendRequested(const QString& path) {
+    qDebug() << "on_tabExplore_fileAppendRequested" << path;
+
+    if (path.endsWith(".dlt", Qt::CaseInsensitive))
+        appendDltFile(path);
+    else if (path.endsWith(".pcap", Qt::CaseInsensitive) ||
+             path.endsWith(".mf4", Qt::CaseInsensitive)) {
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".dlf", Qt::CaseInsensitive))
+        openDlfFile(path, false);
+}
+
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {
 

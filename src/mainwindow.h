@@ -399,6 +399,7 @@ private slots:
 
     // file explorer tab slots
     void on_tabExplore_fileOpenRequested(const QString &path);
+    void on_tabExplore_fileAppendRequested(const QString &path);
 
     void on_configWidget_itemSelectionChanged();
     void on_pluginWidget_itemSelectionChanged();

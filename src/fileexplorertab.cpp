@@ -69,33 +69,8 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
         menu.addAction(action);
 
         action = new QAction("&Append DLT/PCAP/MF4/DLF file...", this);
-        connect(action, &QAction::triggered, this, [this, indexes]() {
-            QStringList pathsList;
-            auto selectedIndexes = indexes;
-            // QStringList importFilenames;
-            // for (auto& index : selectedIndexes) {
-            //     if (0 == index.column()) {
-            //         QString i = getPathFromExplorerViewIndexModel(index);
-            //         if (i.endsWith(".dlt", Qt::CaseInsensitive))
-            //             appendDltFile(i);
-            //         else if (i.endsWith(".pcap", Qt::CaseInsensitive))
-            //             importFilenames.append(i);
-            //         else if (i.endsWith(".mf4", Qt::CaseInsensitive))
-            //             importFilenames.append(i);
-            //         else if (i.endsWith(".dlf", Qt::CaseInsensitive))
-            //             openDlfFile(i, false);
-            //     }
-            // }
-            // if (!importFilenames.isEmpty()) {
-            //     QDltImporter* importerThread = new QDltImporter(&outputfile, importFilenames);
-            //     connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-            //     connect(importerThread, &QDltImporter::resultReady, this,
-            //             &MainWindow::handleImportResults);
-            //     connect(importerThread, &QDltImporter::finished, importerThread,
-            //             &QObject::deleteLater);
-            //     statusProgressBar->show();
-            //     importerThread->start();
-            // }
+        connect(action, &QAction::triggered, this, [this, path]() {
+            emit fileAppendRequested(path);
         });
         menu.addAction(action);
 
