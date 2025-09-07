@@ -64,45 +64,6 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
     if (QFileInfo(path).isFile()) {
         action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
         connect(action, &QAction::triggered, this, [this, path]() {
-            QStringList dltFileNames, pcapFileNames, mf4FileNames, dlfFileNames;
-
-            if (!dltFileNames.isEmpty() && pcapFileNames.isEmpty() && mf4FileNames.isEmpty() &&
-                dlfFileNames.isEmpty()) {
-                //onOpenTriggered(dltFileNames);
-            } else if (dltFileNames.isEmpty() && !pcapFileNames.isEmpty() &&
-                       mf4FileNames.isEmpty() && dlfFileNames.isEmpty()) {
-                //on_action_menuFile_Clear_triggered();
-                // QDltImporter* importerThread = new QDltImporter(&outputfile, pcapFileNames);
-                // connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-                // connect(importerThread, &QDltImporter::resultReady, this,
-                //         &MainWindow::handleImportResults);
-                // connect(importerThread, &QDltImporter::finished, importerThread,
-                //         &QObject::deleteLater);
-                // statusProgressBar->show();
-                // importerThread->start();
-            } else if (dltFileNames.isEmpty() && pcapFileNames.isEmpty() &&
-                       !mf4FileNames.isEmpty() && dlfFileNames.isEmpty()) {
-                // on_action_menuFile_Clear_triggered();
-                // QDltImporter* importerThread = new QDltImporter(&outputfile, mf4FileNames);
-                // connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-                // connect(importerThread, &QDltImporter::resultReady, this,
-                //         &MainWindow::handleImportResults);
-                // connect(importerThread, &QDltImporter::finished, importerThread,
-                //         &QObject::deleteLater);
-                // statusProgressBar->show();
-                // importerThread->start();
-            } else if (dltFileNames.isEmpty() && pcapFileNames.isEmpty() &&
-                       mf4FileNames.isEmpty() && !dlfFileNames.isEmpty()) {
-                // bool first = true;
-                // for (const auto& i : dlfFileNames) {
-                //     if (first) {
-                //         openDlfFile(i, true);
-                //         first = false;
-                //     } else
-                //         openDlfFile(i, false);
-                // }
-                // reloadLogFile();
-            }
             emit fileOpenRequested(path);
         });
         menu.addAction(action);
