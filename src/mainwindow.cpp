@@ -3298,6 +3298,20 @@ void MainWindow::on_tabExplore_fileAppendRequested(const QString& path) {
         openDlfFile(path, false);
 }
 
+void MainWindow::on_tabExplore_filesOpenRequest(const QStringList& dltPaths) {
+    openDltFile(dltPaths);
+    outputfileIsTemporary = true;
+}
+
+void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& mf4AndPcapPaths) {
+    QDltImporter* importerThread = new QDltImporter(&outputfile, mf4AndPcapPaths);
+    connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+    connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+    statusProgressBar->show();
+    importerThread->start();
+}
+
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {
 

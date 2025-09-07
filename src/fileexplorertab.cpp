@@ -93,10 +93,7 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
         }
     } else {
         action = new QAction("Open all DLT files", this);
-        connect(action, &QAction::triggered, this, [this, indexes]() {
-            auto index = indexes[0];
-            auto path = getPathFromModelIndex(index);
-
+        connect(action, &QAction::triggered, this, [this, path]() {
             QStringList files;
             QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files,
                                QDirIterator::Subdirectories);
@@ -104,39 +101,23 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
             while (it_sh.hasNext()) {
                 files.append(it_sh.next());
             }
-
-            // openDltFile(files);
-            // outputfileIsTemporary = true;
+            emit filesOpenRequest(files);
         });
         menu.addAction(action);
 
         action = new QAction("Append all PCAP/MF4 files", this);
-        connect(action, &QAction::triggered, this, [this, indexes]() {
-            auto index = indexes[0];
-            auto path = getPathFromModelIndex(index);
-
+        connect(action, &QAction::triggered, this, [this, path]() {
             QStringList files;
             QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files,
                                QDirIterator::Subdirectories);
 
             QStringList importFilenames;
             while (it_sh.hasNext()) {
-                QString i = it_sh.next();
-                if (i.endsWith(".pcap", Qt::CaseInsensitive))
-                    importFilenames.append(i);
-                else if (i.endsWith(".mf4", Qt::CaseInsensitive))
-                    importFilenames.append(i);
+                importFilenames.append(it_sh.next());
             }
-            // if (!importFilenames.isEmpty()) {
-            //     QDltImporter* importerThread = new QDltImporter(&outputfile, importFilenames);
-            //     connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-            //     connect(importerThread, &QDltImporter::resultReady, this,
-            //             &MainWindow::handleImportResults);
-            //     connect(importerThread, &QDltImporter::finished, importerThread,
-            //             &QObject::deleteLater);
-            //     statusProgressBar->show();
-            //     importerThread->start();
-            // }
+
+            if (!importFilenames.isEmpty())
+                emit filesAppendRequest(importFilenames);
         });
         menu.addAction(action);
     }
