@@ -235,7 +235,7 @@ bool QDltConnection::parseAscii(QDltMsg &msg)
                 // generate binary payload and header of DLT message
                 msg.genMsg();
 
-                // succesful found a new line to be written as DLT message
+                // successful found a new line to be written as DLT message
                 success = true;
             }
 
