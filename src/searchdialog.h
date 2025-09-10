@@ -43,7 +43,11 @@ namespace Ui {
     class SearchDialog;
 }
 
-
+/**
+ * @class SearchDialog
+ * @brief Provides a dialog for searching messages in DLT Viewer.
+ *      * Handles search parameters, search execution, result highlighting, and search history.
+ */
 class SearchDialog : public QDialog
 {
     Q_OBJECT
