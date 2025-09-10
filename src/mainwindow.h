@@ -447,6 +447,7 @@ public slots:
     void unmark_all_lines();
     void filterIndexStart();
     void filterIndexEnd();
+    void splitLogsEcuid();
 
 private slots:
 

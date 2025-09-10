@@ -94,11 +94,11 @@ public:
     /*!
       The DLT log file is parsed and a index of all DLT log messages is created.
       \param filename The DLT filename.
-      \return true if the file is successfully opened with no error, false if an error occured.
+      \return true if the file is successfully opened with no error, false if an error occurred.
     */
     bool open(QString _filename,bool append = false);
 
-    //! Close teh currently opened DLT log file.
+    //! Close the currently opened DLT log file.
     /*!
     */
     void close();
