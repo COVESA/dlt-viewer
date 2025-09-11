@@ -415,7 +415,6 @@ private slots:
     void on_pluginWidget_itemExpanded(QTreeWidgetItem* item);
 
     void onPluginWidgetPluginPriorityChanged(const QString name, int prio);
-    void splitOutputFile(qint64 maxChunkSizeBytes, const QString &destinationFolder);
 
 // File methods
 
