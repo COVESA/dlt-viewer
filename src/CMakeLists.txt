@@ -104,6 +104,8 @@ add_executable(dlt-viewer
     searchdialog.ui
     updatechecker.h
     updatechecker.cpp
+    filespliting.cpp
+    filespliting.h
 )
 
 target_link_libraries(dlt-viewer
