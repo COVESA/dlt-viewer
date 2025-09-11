@@ -36,6 +36,9 @@
 #include "qdltmsg.h"
 
 
+/**
+ * Represents a filter set in the UI.
+ */
 class QDLT_EXPORT QDltFilter
 {
 public:

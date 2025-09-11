@@ -41,6 +41,9 @@ enum class e_inputmode
     SERIAL = 2,
 };
 
+/**
+ * Holder for & parser of application options (from command-line / argv).
+ */
 class QDLT_EXPORT QDltOptManager
 {
 public:
