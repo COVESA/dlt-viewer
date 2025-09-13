@@ -6,6 +6,8 @@
 #include <QProcess>
 #include <QDesktopServices>
 #include <QClipboard>
+#include <QUrl>
+#include <QDirIterator>
 
 FileExplorerTab::FileExplorerTab(QWidget* parent)
     : QWidget{parent},
@@ -95,11 +97,11 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
         action = new QAction("Open all DLT files", this);
         connect(action, &QAction::triggered, this, [this, path]() {
             QStringList files;
-            QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files,
+            QDirIterator itSh(path, QStringList() << "*.dlt", QDir::Files,
                                QDirIterator::Subdirectories);
 
-            while (it_sh.hasNext()) {
-                files.append(it_sh.next());
+            while (itSh.hasNext()) {
+                files.append(itSh.next());
             }
             emit filesOpenRequest(files);
         });
@@ -108,12 +110,12 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
         action = new QAction("Append all PCAP/MF4 files", this);
         connect(action, &QAction::triggered, this, [this, path]() {
             QStringList files;
-            QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files,
+            QDirIterator itSh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files,
                                QDirIterator::Subdirectories);
 
             QStringList importFilenames;
-            while (it_sh.hasNext()) {
-                importFilenames.append(it_sh.next());
+            while (itSh.hasNext()) {
+                importFilenames.append(itSh.next());
             }
 
             if (!importFilenames.isEmpty())
@@ -149,7 +151,7 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
 #else
             auto path_splitted = path.split(QDir::separator());
             path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
-            QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
+            QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 #endif
     });
     menu.addAction(action);
