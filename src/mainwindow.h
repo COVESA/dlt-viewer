@@ -258,7 +258,7 @@ private:
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
-    void exportSelection_searchTable(QDltExporter::DltExportFormat format);
+    void exportSelection_searchTable(QDltExporter::DltExportFormat format, const QString& fileName = QString());
 
     void ControlServiceRequest(EcuItem* ecuitem, int service_id );
     void SendInjection(EcuItem* ecuitem);
@@ -483,6 +483,7 @@ private slots:
     void onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered();
+    void onActionMenuConfigSearchTableExportDltTriggered();
 
     void onActionMenuConfigSaveAllECUsTriggered();
 
