@@ -82,6 +82,9 @@ add_executable(dlt-viewer
     resources/dlt_viewer.rc
     ecutree.h
     ecutree.cpp
+    fileexplorertab.ui
+    fileexplorertab.h
+    fileexplorertab.cpp
 )
 
 target_link_libraries(dlt-viewer
