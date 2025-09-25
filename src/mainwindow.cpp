@@ -17,6 +17,7 @@
  * @licence end@
  */
 
+#include "filtergrouplogs.h"
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
@@ -29,6 +30,7 @@
 #include <QClipboard>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
+#include <QFileSystemModel>
 #include <QLineEdit>
 #include <QUrl>
 #include <QDateTime>
@@ -40,7 +42,6 @@
 #include <QSerialPortInfo>
 #include <QNetworkProxyFactory>
 #include <QNetworkInterface>
-#include <QFileSystemModel>
 #include <QSortFilterProxyModel>
 #include <QDesktopServices>
 #include <QProcess>
@@ -266,7 +267,6 @@ MainWindow::~MainWindow()
     delete dltIndexer;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
-    delete sortProxyModel;
 }
 
 void MainWindow::initState()
@@ -426,35 +426,18 @@ void MainWindow::initView()
     }
 
     // Some decoder-plugins can create very long payloads, which in turn severly impact performance
-    // So set some limit on what is displayed in the tableview. All details are always available using the message viewer-plugin
+    // So set some limit on what is displayed in the tableview. All details are always available
+    // using the message viewer-plugin
     ui->tableView->horizontalHeader()->setMaximumSectionSize(5000);
 
-    /* Init Explorer view */
-    QFileSystemModel *model = new QFileSystemModel;
-
-    model->setNameFilterDisables(false);
-    model->setNameFilters(QStringList() << "*.dlt" << "*.dlf" << "*.dlp" << "*.pcap" << "*.mf4");
-    model->setRootPath(QDir::rootPath());
-
-    /* sort dir entries */
-    ui->exploreView->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    sortProxyModel = new SortFilterProxyModel(this);
-    sortProxyModel->setSourceModel(model);
-
-    ui->exploreView->setModel(sortProxyModel);
-    ui->exploreView->setSortingEnabled(true);
-    ui->exploreView->sortByColumn(0, Qt::AscendingOrder);
-
-    ui->exploreView->hideColumn(1);
-    ui->exploreView->hideColumn(2);
-    ui->exploreView->hideColumn(3);
-
-    if (recentFiles.size() > 0)
-    {
-        ui->exploreView->scrollTo(
-                    sortProxyModel->mapFromSource(model->index(recentFiles[0])));
+    // set initial file explorer view
+    if (!recentFiles.empty()) {
+        ui->tabExplore->setCurrentFile(recentFiles[0]);
     }
+
+    connect(ui->tabExplore, &FileExplorerTab::fileActivated, this, [this](const QString& path){
+        openSupportedFile(path);
+    });
 
     /* Enable column sorting of config widget */
     ui->configWidget->sortByColumn(0, Qt::AscendingOrder); // column/order to sort by
@@ -602,12 +585,8 @@ void MainWindow::initSignalConnections()
     connect(ui->tableView->selectionModel(),  &QItemSelectionModel::selectionChanged, this, &MainWindow::onTableViewSelectionChanged);
 
     // connect file loaded signal with  explorerView
-    connect(this, &MainWindow::dltFileLoaded, this, [this](const QStringList& paths){
-        Q_UNUSED(paths)
-        QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
-        QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
-        ui->exploreView->scrollTo(
-                    proxyModel->mapFromSource(fsModel->index(recentFiles[0])));
+    connect(this, &MainWindow::dltFileLoaded, this, [this](){
+        ui->tabExplore->setCurrentFile(recentFiles[0]);
     });
 
     connect(ui->tableView, &DltTableView::changeFontSize, this, [this](int direction){
@@ -1341,7 +1320,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
     //ui->lineEditFilterEnd->setText(QString("%1").arg(qfile.size()));
 
     if (ret)
-        emit dltFileLoaded(fileNames);
+        emit dltFileLoaded();
 
     //qDebug() << "Open files done" << __FILE__ << __LINE__;
     return ret;
@@ -1424,7 +1403,7 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Import DLT Stream"), workingDirectory.getDltDirectory(), tr("DLT Stream file (*.*)"));
-
+   
     if(fileName.isEmpty())
         return;
 
@@ -1444,11 +1423,14 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
         return;
     }
-    while (dlt_file_read_raw(&importfile,false,0)>=0)
-    {
-        outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
-        outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
-    }
+    int version = (dlt_file_check_version(&importfile,0)&0xe0) >>5;
+    qDebug() << "DLT file version " << version;
+    auto dltReadFunc = (version == 2)  ? dltv2_file_read_raw : dlt_file_read_raw;
+	while (dltReadFunc(&importfile,false,0)>=0)
+	        {   
+	            outputfile.write((char*)importfile.msg.headerbuffer,importfile.msg.headersize);
+	            outputfile.write((char*)importfile.msg.databuffer,importfile.msg.datasize);
+	        }
     outputfile.flush();
     outputfile.close();
 
@@ -2132,7 +2114,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
     tableModel->modelChanged();
-
+    
     if( 0 != settings->loggingOnlyMode )
     {
         qDebug() << "Logging only mode !";
@@ -3272,6 +3254,63 @@ void MainWindow::on_configWidget_customContextMenuRequested(QPoint pos)
 
 }
 
+void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
+{
+    qDebug() << "on_tabExplore_fileOpenRequested" << path;
+    if (path.endsWith(".dlt", Qt::CaseInsensitive)) {
+        onOpenTriggered(QStringList() << path);
+    } else if (path.endsWith(".pcap", Qt::CaseInsensitive)) {
+        on_action_menuFile_Clear_triggered();
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".mf4", Qt::CaseInsensitive)) {
+        on_action_menuFile_Clear_triggered();
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".dlf", Qt::CaseInsensitive)) {
+        openDlfFile(path, true);
+        reloadLogFile();
+    }
+}
+
+void MainWindow::on_tabExplore_fileAppendRequested(const QString& path) {
+    qDebug() << "on_tabExplore_fileAppendRequested" << path;
+
+    if (path.endsWith(".dlt", Qt::CaseInsensitive))
+        appendDltFile(path);
+    else if (path.endsWith(".pcap", Qt::CaseInsensitive) ||
+             path.endsWith(".mf4", Qt::CaseInsensitive)) {
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->start();
+    } else if (path.endsWith(".dlf", Qt::CaseInsensitive))
+        openDlfFile(path, false);
+}
+
+void MainWindow::on_tabExplore_filesOpenRequest(const QStringList& dltPaths) {
+    openDltFile(dltPaths);
+    outputfileIsTemporary = true;
+}
+
+void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& mf4AndPcapPaths) {
+    QDltImporter* importerThread = new QDltImporter(&outputfile, mf4AndPcapPaths);
+    connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+    connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+    statusProgressBar->show();
+    importerThread->start();
+}
 
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
 {
@@ -6556,6 +6595,50 @@ void MainWindow::filterIndexEnd()
     ui->lineEditFilterEnd->setText(QString("%1").arg(pos));
 }
 
+//Groups DLT logs by ECU ID and displays progress to the user.
+void MainWindow::splitLogsEcuid()
+{
+    QAbstractTableModel* sourceModel = qobject_cast<QAbstractTableModel*>(ui->tableView->model());
+    int rowCount = sourceModel->rowCount();
+    if (qfile.getNumberOfFiles() > 0) {
+        filtergrouplogs *filterLogsEcuid = new filtergrouplogs(this);
+        // Get the path of the currently loaded DLT file
+        QString currentFilePath = qfile.getFileName(0);
+        QStringList ecuIds = filterLogsEcuid->extractEcuIds(currentFilePath);
+        if (ecuIds.isEmpty()) {
+            QMessageBox::information(this, "No DLT file found", "No DLT file is opened... Open a DLT File.");
+            delete filterLogsEcuid;
+            return;
+        }
+
+        /* Progress dialog */
+        QProgressDialog progress("Grouping DLT Logs by ECU ID...", "Cancel", 0, rowCount, this);
+        progress.setWindowModality(Qt::ApplicationModal);
+        progress.setMinimumDuration(0);
+        progress.setValue(0);
+        progress.setWindowTitle("Grouping Progress");
+        progress.show();
+        for (int i = 0; i < rowCount; ++i) {
+            progress.setValue(i + 1);
+            QCoreApplication::processEvents();
+            if (progress.wasCanceled()) {
+                delete filterLogsEcuid;
+                return;
+            }
+        }
+
+        // Set up all necessary references
+        filterLogsEcuid->setSourceModel(sourceModel);
+        filterLogsEcuid->setDltFile(&qfile);
+        filterLogsEcuid->setPluginManager(&pluginManager);
+
+        filterLogsEcuid->ecuIdTabs();
+    } else {
+        QMessageBox::warning(this, "Warning", "No DLT file is currently loaded.");
+        return;
+    }
+}
+
 void MainWindow::filterAddTable() {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -7099,241 +7182,17 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
     menu.addAction(action);
 
+    menu.addSeparator();
+
+    action = new QAction("Group DLT logs by ECU ID", &menu);
+    connect(action, SIGNAL(triggered()), this, SLOT(splitLogsEcuid()));
+    menu.addAction(action);
+
     /* show popup menu */
     menu.exec(globalPos);
 }
 
-void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
-{
-    /* show custom pop menu for explorer */
-    QPoint globalPos = ui->exploreView->mapToGlobal(pos);
-    QMenu menu(ui->exploreView);
-    QAction *action;
-    /* Get path from index */
-    auto indexes   = ui->exploreView->selectionModel()->selectedIndexes();
 
-    if (0 < indexes.size())
-    {
-        auto index     = indexes[0];
-        auto path      = getPathFromExplorerViewIndexModel(index);
-        bool is_file   = !QDir(path).exists();
-
-        if (is_file)
-        {
-            action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
-            connect(action, &QAction::triggered, this, [this, indexes](){
-                auto selectedIndexes = indexes;
-                QStringList dltFileNames,pcapFileNames,mf4FileNames,dlfFileNames;
-
-                for (auto &index : selectedIndexes)
-                {
-                   if (0 == index.column())
-                   {
-                       QString path = getPathFromExplorerViewIndexModel(index);
-
-                       if(path.endsWith(".dlt",Qt::CaseInsensitive))
-                           dltFileNames+=path;
-                       else if(path.endsWith(".pcap",Qt::CaseInsensitive))
-                           pcapFileNames+=path;
-                       else if(path.endsWith(".mf4",Qt::CaseInsensitive))
-                           mf4FileNames+=path;
-                       else if(path.endsWith(".dlf",Qt::CaseInsensitive))
-                           dlfFileNames+=path;
-                   }
-                }
-
-                if(!dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
-                {
-                    onOpenTriggered(dltFileNames);
-                }
-                else if(dltFileNames.isEmpty()&&!pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
-                {
-                    on_action_menuFile_Clear_triggered();
-                    QDltImporter *importerThread = new QDltImporter(&outputfile,pcapFileNames);
-                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
-                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
-                    statusProgressBar->show();
-                    importerThread->start();
-                }
-                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&!mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
-                {
-                    on_action_menuFile_Clear_triggered();
-                    QDltImporter *importerThread = new QDltImporter(&outputfile,mf4FileNames);
-                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
-                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
-                    statusProgressBar->show();
-                    importerThread->start();
-                }
-                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&!dlfFileNames.isEmpty())
-                {
-                    bool first = true;
-                    for ( const auto& i : dlfFileNames )
-                    {
-                        if(first)
-                        {
-                            openDlfFile(i,true);
-                            first = false;
-                        }
-                        else
-                            openDlfFile(i,false);
-                    }
-                    reloadLogFile();
-                }
-                else
-                {
-                    QMessageBox msgBox(QMessageBox::Warning, "Open DLT/PCAP/MF4/DLF files", "Mixing opening different file types not allowed!", QMessageBox::Close);
-                    qDebug() << "ERROR: Mixing opening different file types not allowed!";
-                }
-
-            });
-            menu.addAction(action);
-
-            action = new QAction("&Append DLT/PCAP/MF4/DLF file...", this);
-            connect(action, &QAction::triggered, this, [this, indexes](){
-                QStringList  pathsList;
-                auto selectedIndexes = indexes;
-                QStringList importFilenames;
-                for (auto &index : selectedIndexes)
-                {
-                   if (0 == index.column())
-                   {
-                       QString i = getPathFromExplorerViewIndexModel(index);
-                       if(i.endsWith(".dlt",Qt::CaseInsensitive))
-                           appendDltFile(i);
-                       else if(i.endsWith(".pcap",Qt::CaseInsensitive))
-                           importFilenames.append(i);
-                       else if(i.endsWith(".mf4",Qt::CaseInsensitive))
-                           importFilenames.append(i);
-                       else if(i.endsWith(".dlf",Qt::CaseInsensitive))
-                           openDlfFile(i,false);
-                   }
-                }
-                if(!importFilenames.isEmpty())
-                {
-                    QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
-                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
-                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
-                    statusProgressBar->show();
-                    importerThread->start();
-                }
-            });
-            menu.addAction(action);
-
-            if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size()))
-            {
-                if ((path.toLower().endsWith(".dlt")))
-                {
-                    action = new QAction("&Open in new instance", this);
-                    connect(action, &QAction::triggered, this, [this, indexes](){
-                        auto index = indexes[0];
-                        auto path = getPathFromExplorerViewIndexModel(index);
-                        QProcess process;
-                        process.setProgram(QCoreApplication::applicationFilePath());
-                        process.setArguments({path});
-                        process.setStandardOutputFile(QProcess::nullDevice());
-                        process.setStandardErrorFile(QProcess::nullDevice());
-                        qint64 pid;
-                        process.startDetached(&pid);
-                    });
-                    menu.addAction(action);
-                }
-            }
-        }
-        else
-        {
-            action = new QAction("Open all DLT files", this);
-            connect(action, &QAction::triggered, this, [this, indexes](){
-                auto index = indexes[0];
-                auto path  = getPathFromExplorerViewIndexModel(index);
-
-                QStringList  files;
-                QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files, QDirIterator::Subdirectories);
-
-                while (it_sh.hasNext())
-                {
-                    files.append(it_sh.next());
-                }
-
-                openDltFile(files);
-                outputfileIsTemporary = true;
-            });
-            menu.addAction(action);
-            action = new QAction("Append all PCAP/MF4 files", this);
-            connect(action, &QAction::triggered, this, [this, indexes](){
-                auto index = indexes[0];
-                auto path  = getPathFromExplorerViewIndexModel(index);
-
-                QStringList  files;
-                QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files, QDirIterator::Subdirectories);
-
-                QStringList importFilenames;
-                while (it_sh.hasNext())
-                {
-                    QString i = it_sh.next();
-                    if (i.endsWith(".pcap",Qt::CaseInsensitive))
-                        importFilenames.append(i);
-                    else if (i.endsWith(".mf4",Qt::CaseInsensitive))
-                        importFilenames.append(i);
-                }
-                if(!importFilenames.isEmpty())
-                {
-                    QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
-                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
-                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
-                    statusProgressBar->show();
-                    importerThread->start();
-                }
-
-            });
-            menu.addAction(action);
-
-        }
-
-        menu.addSeparator();
-
-        action = new QAction("&Copy paths", this);
-        connect(action, &QAction::triggered, this, [this, indexes](){
-            QClipboard *clipboard = QGuiApplication::clipboard();
-
-            QStringList clipboardText;
-            for (auto & index : indexes)
-            {
-                if (0 == index.column())
-                {
-                    auto path  = getPathFromExplorerViewIndexModel(index);
-                    clipboardText += path;
-                }
-            }
-
-            clipboard->setText(clipboardText.join("\n"));
-        });
-        menu.addAction(action);
-        menu.addSeparator();
-
-        action = new QAction("&Show in explorer", this);
-        connect(action, &QAction::triggered, this, [this](){
-            auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
-            auto path  = getPathFromExplorerViewIndexModel(index);
-    #ifdef WIN32
-            QProcess process;
-            process.startDetached(QString("explorer.exe /select,%1")
-                                        .arg(QDir::toNativeSeparators(path)));
-    #else
-            auto path_splitted = path.split(QDir::separator());
-            path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
-            QDesktopServices::openUrl( QUrl::fromLocalFile(path) );
-    #endif
-        });
-        menu.addAction(action);
-
-        /* show popup menu */
-        menu.exec(globalPos);
-    }
-}
 
 void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
 {
@@ -8194,15 +8053,6 @@ void MainWindow::resetDefaultFilter()
     ui->comboBoxFilterSelection->setCurrentIndex(0); //no default filter anymore
 }
 
-QString MainWindow::getPathFromExplorerViewIndexModel(const QModelIndex &index)
-{
-    QSortFilterProxyModel*   proxyModel = reinterpret_cast<QSortFilterProxyModel*>(ui->exploreView->model());
-    QFileSystemModel*        fsModel    = reinterpret_cast<QFileSystemModel*>(proxyModel->sourceModel());
-    QString                  path       = fsModel->filePath(proxyModel->mapToSource(index));
-
-    return path;
-}
-
 void MainWindow::on_pushButtonDefaultFilterUpdateCache_clicked()
 {
     on_actionDefault_Filter_Create_Index_triggered();
@@ -8284,15 +8134,13 @@ void MainWindow::indexStart()
     statusFileError->setText(QString("FileErr: %L1").arg("-"));
 }
 
-void MainWindow::on_exploreView_activated(const QModelIndex &index)
+void MainWindow::openSupportedFile(const QString& path)
 {
-    static const QStringList ext  = QStringList() << ".dlt" << ".dlf" << ".dlp" << ".pcap" << ".mf4";
-    QString                  path = getPathFromExplorerViewIndexModel(index);
+    static const QStringList ext = QStringList() << ".dlt" << ".dlf" << ".dlp" << ".pcap" << ".mf4";
 
     auto result = std::find_if(ext.begin(), ext.end(),
-                                [&path](const QString &el){return path.toLower().endsWith(el);});
-    switch(result - ext.begin())
-    {
+                               [&path](const QString& el) { return path.toLower().endsWith(el); });
+    switch (result - ext.begin()) {
     case 0: /* this represents index in "ext" list */
         openDltFile(QStringList() << path);
         outputfileIsTemporary = false;
@@ -8303,55 +8151,23 @@ void MainWindow::on_exploreView_activated(const QModelIndex &index)
     case 2:
         openDlpFile(path);
         break;
-    case 3:
-        {
-        QDltImporter *importerThread = new QDltImporter(&outputfile,path);
-        connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+    case 3: {
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-        connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
         statusProgressBar->show();
         importerThread->start();
-        }
-        break;
-    case 4:
-        {
-        QDltImporter *importerThread = new QDltImporter(&outputfile,path);
-        connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+    } break;
+    case 4: {
+        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-        connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
         statusProgressBar->show();
         importerThread->start();
-        }
-        break;
+    } break;
     default:
-        break;
-    }
-}
-
-void MainWindow::on_comboBoxExplorerSortType_currentIndexChanged(int index)
-{
-    switch (index)
-    {
-    case 1:
-        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::TIMESTAMP);
-        break;
-    case 0:
-    default:
-        sortProxyModel->changeSortingType(SortFilterProxyModel::SortType::ALPHABETICALLY);
-        break;
-    }
-}
-
-void MainWindow::on_comboBoxExplorerSortOrder_currentIndexChanged(int index)
-{
-    switch (index)
-    {
-    case 1:
-        sortProxyModel->changeSortingOrder(Qt::DescendingOrder);
-        break;
-    case 0:
-    default:
-        sortProxyModel->changeSortingOrder(Qt::AscendingOrder);
         break;
     }
 }

@@ -16,29 +16,57 @@
 #
 
 add_library(qdlt SHARED
+    dlt_common.h
     dlt_common.c
+    dlt_common_cfg.h
+    dlt_protocol.h
+    dlt_types.h
+    dlt_user.h
+    qdltipconnection.h
     qdltipconnection.cpp
+    qdlttcpconnection.h
     qdlttcpconnection.cpp
+    qdltudpconnection.h
     qdltudpconnection.cpp
+    qdltserialconnection.h
     qdltserialconnection.cpp
+    qdltmsg.h
     qdltmsg.cpp
+    qdltfilter.h
     qdltfilter.cpp
+    qdltfile.h
     qdltfile.cpp
+    qdltcontrol.h
     qdltcontrol.cpp
+    qdltconnection.h
     qdltconnection.cpp
+    qdltbase.h
     qdltbase.cpp
+    qdltargument.h
     qdltargument.cpp
+    qdltfilterlist.h
     qdltfilterlist.cpp
+    qdltfilterindex.h
     qdltfilterindex.cpp
+    qdltdefaultfilter.h
     qdltdefaultfilter.cpp
+    qdltmessagedecoder.h
     qdltmessagedecoder.cpp
+    qdltpluginmanager.h
     qdltpluginmanager.cpp
+    qdltplugin.h
     qdltplugin.cpp
+    qdltsegmentedmsg.h
     qdltsegmentedmsg.cpp
+    qdltoptmanager.h
     qdltoptmanager.cpp
+    qdltsettingsmanager.h
     qdltsettingsmanager.cpp
+    qdltexporter.h
     qdltexporter.cpp
+    qdltimporter.h
     qdltimporter.cpp
+    fieldnames.h
     fieldnames.cpp
     dltmessagematcher.cpp
     dltmessagematcher.h
@@ -47,6 +75,8 @@ add_library(qdlt SHARED
     export_rules.h
     qdltctrlmsg.cpp
     qdltctrlmsg.h
+    plugininterface.h
+    qdlt.h
 )
 
 target_compile_definitions(qdlt PRIVATE
