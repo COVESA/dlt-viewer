@@ -94,6 +94,7 @@
      <y>0</y>
      <width>1001</width>
      <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -449,7 +450,7 @@
         <enum>QTabWidget::TabShape::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="elideMode">
         <enum>Qt::TextElideMode::ElideNone</enum>
@@ -457,7 +458,7 @@
        <property name="movable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="tabExplore">
+       <widget class="FileExplorerTab" name="tabExplore">
         <property name="focusPolicy">
          <enum>Qt::FocusPolicy::NoFocus</enum>
         </property>
@@ -1694,6 +1695,12 @@
    <class>DltTableView</class>
    <extends>QTableView</extends>
    <header>dlttableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FileExplorerTab</class>
+   <extends>QWidget</extends>
+   <header>fileexplorertab.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
