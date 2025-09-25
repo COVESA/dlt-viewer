@@ -34,6 +34,16 @@
 
 class QTcpSocket;
 
+/**
+ * Represents a TCP connection for the purposes of the UI.
+ *
+ * Currently set up as an inheritance scheme - QDltConnection has concrete functions
+ * for parsing.
+ *
+ * @see QDltIPConnection
+ * @see QDltSerialConnection
+ * @see QDltUDPConnection
+ */
 class QDLT_EXPORT QDltTCPConnection : public QDltIPConnection
 {
 public:

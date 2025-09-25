@@ -32,6 +32,11 @@
 #include "export_rules.h"
 #include "qdltfilterlist.h"
 
+/**
+ * Maybe supposed to represent a file with filters applied to it. Unclear usage of index.
+ *
+ * Missing getters / interface.
+ */
 class QDLT_EXPORT QDltFilterIndex
 {
 public:
