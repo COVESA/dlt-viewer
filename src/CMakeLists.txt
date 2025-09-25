@@ -96,6 +96,9 @@ add_executable(dlt-viewer
     ecudialog.ui
     contextdialog.ui
     applicationdialog.ui
+    fileexplorertab.ui
+    fileexplorertab.h
+    fileexplorertab.cpp
 )
 
 target_link_libraries(dlt-viewer

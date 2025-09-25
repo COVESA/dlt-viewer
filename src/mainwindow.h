@@ -47,7 +47,6 @@
 #include "workingdirectory.h"
 #include "exporterdialog.h"
 #include "searchtablemodel.h"
-#include "sortfilterproxymodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
 
@@ -237,7 +236,7 @@ private:
     QString target_version_string;
 
     QList<unsigned long int> selectedMarkerRows;
-
+    
     /**/
     SortFilterProxyModel *sortProxyModel;
 
@@ -253,6 +252,8 @@ private:
     void initSearchTable();
 
     /* general functions */
+
+    void openSupportedFile(const QString& path);
 
     void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
 
@@ -372,9 +373,6 @@ private:
     /* default filters */
     void resetDefaultFilter();
 
-    /* Get path from explorerView model index */
-    QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
-
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
 
@@ -405,7 +403,12 @@ private slots:
     void on_pluginWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_customContextMenuRequested(QPoint pos);
-    void on_exploreView_customContextMenuRequested(QPoint pos);
+
+    // file explorer tab slots
+    void on_tabExplore_fileOpenRequested(const QString &path);
+    void on_tabExplore_fileAppendRequested(const QString &path);
+    void on_tabExplore_filesOpenRequest(const QStringList &dltPaths);
+    void on_tabExplore_filesAppendRequest(const QStringList &mf4AndPcapPaths);
 
     void on_configWidget_itemSelectionChanged();
     void on_pluginWidget_itemSelectionChanged();
@@ -573,12 +576,6 @@ private slots:
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
 
-    void on_exploreView_activated(const QModelIndex &index);
-
-    void on_comboBoxExplorerSortType_currentIndexChanged(int index);
-
-    void on_comboBoxExplorerSortOrder_currentIndexChanged(int index);
-
     void on_checkBoxFilterRange_stateChanged(int arg1);
 
     void on_lineEditFilterStart_textChanged(const QString &arg1);
@@ -629,7 +626,7 @@ public:
     QDateTime startLoggingDateTime;
 
 signals:
-    void dltFileLoaded(const QStringList& paths);
+    void dltFileLoaded();
 };
 
 #endif // MAINWINDOW_H
