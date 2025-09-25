@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>26</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -448,7 +448,7 @@
         <enum>QTabWidget::Rounded</enum>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <property name="elideMode">
         <enum>Qt::ElideNone</enum>
@@ -456,7 +456,7 @@
        <property name="movable">
         <bool>false</bool>
        </property>
-       <widget class="QWidget" name="tabExplore">
+       <widget class="FileExplorerTab" name="tabExplore">
         <property name="focusPolicy">
          <enum>Qt::NoFocus</enum>
         </property>
@@ -476,73 +476,6 @@
          <property name="bottomMargin">
           <number>2</number>
          </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_3">
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QLabel" name="labelExplorerSort">
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="text">
-              <string>Sort files:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBoxExplorerSortType">
-             <item>
-              <property name="text">
-               <string>By Filename</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>By Timestamp</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-           <item>
-            <widget class="QComboBox" name="comboBoxExplorerSortOrder">
-             <property name="maximumSize">
-              <size>
-               <width>50</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <item>
-              <property name="text">
-               <string>Asc.</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>Desc.</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QTreeView" name="exploreView">
-           <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
-           </property>
-           <property name="sortingEnabled">
-            <bool>true</bool>
-           </property>
-           <attribute name="headerVisible">
-            <bool>false</bool>
-           </attribute>
-          </widget>
-         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tabConfig">
@@ -1690,6 +1623,12 @@
    <class>DltTableView</class>
    <extends>QTableView</extends>
    <header>dlttableview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>FileExplorerTab</class>
+   <extends>QWidget</extends>
+   <header>fileexplorertab.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>

@@ -283,7 +283,7 @@ public:
     /*!
       This is the number of arguments from the DLT message header.
       This is not the number of arguments in the argument list.
-      In verbose mode both values should be the same, if the extraction of the arguments from the payload was succesfull.
+      In verbose mode both values should be the same, if the extraction of the arguments from the payload was successful.
       In non-verbose mode this value can be invalid.
       \return The number of arguments.
     */
