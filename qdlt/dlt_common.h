@@ -242,8 +242,8 @@ typedef unsigned int speed_t;
 
  * Definitions of DLT message buffer overflow
  */
-#define DLT_MESSAGE_BUFFER_NO_OVERFLOW     0x00 /**< Buffer overflow has not occured */
-#define DLT_MESSAGE_BUFFER_OVERFLOW        0x01 /**< Buffer overflow has occured */
+#define DLT_MESSAGE_BUFFER_NO_OVERFLOW     0x00 /**< Buffer overflow has not occurred */
+#define DLT_MESSAGE_BUFFER_OVERFLOW        0x01 /**< Buffer overflow has occurred */
 
 /*
  * Definition of DLT output variants
@@ -356,6 +356,19 @@ typedef struct
 } PACKED DltStandardHeaderExtra;
 
 /**
+ * The structure of the DLT file storage header. This header is used before each stored DLT message.
+ */
+typedef struct
+{
+    char pattern[4];		/**< This pattern should be DLT0x01 */
+    uint32_t nanoseconds;			    /**< nanoseconds since 1.1.1970 */
+    uint32_t seconds;            /**< seconds */
+    uint8_t ecuidlen;			
+    char ecu[5];			/**< The ECU id is added, if it is not already in the DLT message itself */
+} PACKED Dltv2StorageHeader;
+
+
+/**
  * The structure of the DLT extended header. This header is only sent if enabled in htyp parameter.
  */
 typedef struct
@@ -365,6 +378,33 @@ typedef struct
     char apid[DLT_ID_SIZE];          /**< application id */
     char ctid[DLT_ID_SIZE];          /**< context id */
 } PACKED DltExtendedHeader;
+
+/**
+* The sturcture of the Dltv2 base header
+*/
+typedef struct dltv2baseheader
+{
+        uint32_t htyp2;
+        uint8_t mcnt;
+        uint16_t len;
+} PACKED Dltv2header;
+
+/**
+* The sturcture of the Dltv2 optional header
+*/
+typedef struct dltv2optionalheader
+{
+    uint32_t len;
+    uint8_t *buffer;
+} PACKED Dltv2optionalheader;
+
+/**
+* The sturcture of the Dltv2 extended header
+*/
+typedef struct dltv2extendedheader{
+        uint8_t len;
+        uint8_t *buffer;
+} PACKED Dltv2extended;    
 
 /**
  * The structure to organise the DLT messages.
@@ -383,8 +423,7 @@ typedef struct sDltMessage
     int32_t datasize;      /**< size of complete payload */
 
     /* buffer for current loaded message */
-    uint8_t headerbuffer[sizeof(DltStorageHeader)+
-                         sizeof(DltStandardHeader)+sizeof(DltStandardHeaderExtra)+sizeof(DltExtendedHeader)]; /**< buffer for loading complete header */
+    uint8_t headerbuffer[100];  /**< buffer for loading complete header DLTv2 allows for dynamic length but for simplicity limit it to 100 */
     uint8_t *databuffer;         /**< buffer for loading payload */
 
     /* header values of current loaded message */
@@ -392,6 +431,11 @@ typedef struct sDltMessage
     DltStandardHeader      *standardheader; /**< pointer to standard header of current loaded header */
     DltStandardHeaderExtra headerextra;     /**< extra parameters of current loaded header */
     DltExtendedHeader      *extendedheader; /**< pointer to extended of current loaded header */
+    Dltv2header            baseheaderv2;   /**< pointer to the dltv2 baseheader */
+    Dltv2optionalheader    optionalheaderv2; /**< pointer to the dltv2 optional baseheader */
+    Dltv2extended          extendedheaderv2; /**< pointer to the dltv2 extendedheader */
+    Dltv2StorageHeader     *storageheaderv2; /**< pointer to the dltv2 storage header */
+
 } DltMessage;
 
 /**
@@ -838,6 +882,15 @@ extern "C"
      */
     QDLT_C_EXPORT int dlt_file_read(DltFile *file,int verbose);
     /**
+     * Find next message in the DLTv2 file and parse them.
+     * This function finds the next message in the DLTv2 file.
+     * If a filter is set, the filter list is used.
+     * @param file pointer to structure of organising access to DLTv2 file
+     * @param verbose if set to true verbose information is printed out.
+     * @return 0 = message does not match filter, 1 = message was read, negative value if there was an error
+     */
+    QDLT_C_EXPORT int dltv2_file_read_raw(DltFile *file,int resync,int verbose);
+    /**
      * Find next message in the DLT file in RAW format (without storage header) and parse them.
      * This function finds the next message in the DLT file.
      * If a filter is set, the filter list is used.
@@ -869,6 +922,16 @@ extern "C"
      * @return negative value if there was an error
      */
     QDLT_C_EXPORT int dlt_file_read_header_raw(DltFile *file,int resync,int verbose);
+
+    /**
+     * Load standard header of a message from file in RAW format (without storage header)
+     * @param file pointer to structure of organising access to DLT file
+     * @param resync Resync to serial header when set to true
+     * @param verbose if set to true verbose information is printed out.
+     * @return negative value if there was an error
+     */
+    QDLT_C_EXPORT int dltv2_file_read_header_raw(DltFile *file,int resync,int verbose);
+
     /**
      * Load, if available in message, extra standard header fields and
      * extended header of a message from file
@@ -967,6 +1030,13 @@ extern "C"
      * @return negative value if there was an error
      */
     QDLT_C_EXPORT int dlt_set_storageheader(DltStorageHeader *storageheader, const char *ecu);
+    /**
+     * Fill out storage header of a dltv2 message
+     * @param storageheader pointer to storage header of a dlt message
+     * @param ecu name of ecu to be set in storage header
+     * @return negative value if there was an error
+     */
+    QDLT_C_EXPORT int dltv2_set_storageheader(Dltv2StorageHeader *storageheader, const char *ecu);
     /**
      * Check if a storage header contains its marker
      * @param storageheader pointer to storage header of a dlt message
@@ -1147,6 +1217,13 @@ extern "C"
      * @return negative value if there was an error
      */
     QDLT_C_EXPORT int dlt_message_argument_print(DltMessage *msg,uint32_t type_info,uint8_t **ptr,int32_t *datalength,char *text,int textlength,int byteLength,int verbose);
+    
+    /**
+     * Check the DLT version of the DLT file
+     * @param file pointer to structure of organising access to DLT file
+     * @param verbose if set to true verbose information is printed out.
+     */
+    QDLT_C_EXPORT int dlt_file_check_version(DltFile *file, int verbose);
 
 #ifdef __cplusplus
 }

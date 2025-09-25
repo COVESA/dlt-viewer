@@ -99,7 +99,7 @@ bool DltFileIndexer::index(int num)
     // load filter index if enabled
     if(filterCacheEnabled && loadIndexCache(dltFile->getFileName(num)))
     {
-        // loading index from filter is succesful
+        // loading index from filter is successful
         qDebug() << "Successfully loaded index cache for file" << dltFile->getFileName(num);// << __LINE__;
         return true;
     }
@@ -250,7 +250,7 @@ bool DltFileIndexer::index(int num)
             {
                 if(next_message_pos == 0)
                 {
-                    // very first message detected or the first message after an error occured
+                    // very first message detected or the first message after an error occurred
                     current_message_pos = pos+number-3;
                     counter_header = 3;
                     if(data[number] == 0x01)
@@ -259,7 +259,7 @@ bool DltFileIndexer::index(int num)
                         storageLength = 13;
                     if(current_message_pos!=0)
                     {
-                        // first messages not at beginning or error occured before
+                        // first messages not at beginning or error occurred before
                         errors_in_file++;
                         qDebug() << "ERROR in file" << dltFile->getFileName(num) << "detected new start sequence at index" << msgindex << "msg length" << message_length << "file position" << current_message_pos;
                         qDebug() << "------------";
@@ -413,7 +413,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // load filter index, if enabled and not an initial loading of file
     if(filterCacheEnabled && mode != modeIndexAndFilter && loadFilterIndexCache(filterList,indexFilterList,filenames))
     {
-        // loading filter index from filter is succesful
+        // loading filter index from filter is successful
         qDebug() << "Loaded filter index cache for files" << filenames;
         return true;
     }
