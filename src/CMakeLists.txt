@@ -84,6 +84,9 @@ add_executable(dlt-viewer
     ecutree.cpp
     filespliting.cpp
     filespliting.h
+    fileexplorertab.ui
+    fileexplorertab.h
+    fileexplorertab.cpp
 )
 
 target_link_libraries(dlt-viewer
