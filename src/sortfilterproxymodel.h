@@ -3,6 +3,8 @@
 
 #include <QSortFilterProxyModel>
 #include <QObject>
+#include <QSet>
+#include <QString>
 
 class SortFilterProxyModel : public QSortFilterProxyModel
 {
