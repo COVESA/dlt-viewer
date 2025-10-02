@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        macos: [ macos-latest-large ]
+        macos: [ macos-15-intel ]
         abi: [ x86 ]
         xcode: [ Xcode_15.2 ]
         qt: [ 5 ]
