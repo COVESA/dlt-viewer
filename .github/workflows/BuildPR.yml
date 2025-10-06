@@ -15,9 +15,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        macos: [ macos-13 ]
+        macos: [ macos-15-intel ]
         abi: [ x86 ]
-        xcode: [ Xcode_15.2 ]
+        xcode: [ Xcode_26.0 ]
         qt: [ 5 ]
     steps:
       - name: Checkout
