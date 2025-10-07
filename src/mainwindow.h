@@ -529,7 +529,6 @@ private slots:
     void error(QAbstractSocket::SocketError);
     void readyRead();
     void timeout();
-    void draw_timeout();
     void connectAll();
     void disconnectAll();
     void applySettings();
