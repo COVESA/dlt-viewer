@@ -578,8 +578,6 @@ private slots:
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
 
 public slots:
-
-    void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void filterCountChanged();
     void jumpToMsgSignal(int index);
