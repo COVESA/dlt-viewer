@@ -12,19 +12,13 @@ security unlock-keychain -p "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI_KEYCHAIN_PWD" build.keychain
 
-VERSION=$(sw_vers -productVersion)
-MAJOR=$(echo "$VERSION" | cut -d '.' -f 1)
-if [[ "$MAJOR" -ge 14 ]]; then
-  echo "macOS is Sonoma (14) or later"
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/networkinformation/* 
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/tls/* 
-else
-  echo "macOS is Ventura (13)"
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/bearer/*
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/platforminputcontexts/*
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/printsupport/*
-  /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/virtualkeyboard/* 
-fi
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/networkinformation/* 
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/tls/* 
+
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/bearer
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/platforminputcontexts/*
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/printsupport/*
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/virtualkeyboard/* 
 
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/Frameworks/* 
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/Resources/* 
