@@ -193,7 +193,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* what for do we need the next 2 lines ? */
     draw_timer.setSingleShot (true);
-    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
+    connect(&draw_timer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
 
     if ( true == (bool) settings->StartupMinimized )
     {
@@ -4356,14 +4356,7 @@ void MainWindow::updateIndex()
             item->updateFileFinish();
         }
     }
-
 }
-
-void MainWindow::draw_timeout()
-{
-    drawUpdatedView();
-}
-
 
 void MainWindow::drawUpdatedView()
 {
