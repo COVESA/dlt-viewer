@@ -15,7 +15,7 @@ security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_CI
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/networkinformation/* 
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/tls/* 
 
-/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/bearer
+/usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/bearer/*
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/platforminputcontexts/*
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/printsupport/*
 /usr/bin/codesign --timestamp --options=runtime -s "$MACOS_CERTIFICATE_NAME" -f -v build/install/DLTViewer.app/Contents/PlugIns/virtualkeyboard/* 
