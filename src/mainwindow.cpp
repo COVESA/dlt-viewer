@@ -73,7 +73,6 @@
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
-#include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
 #include "qdltctrlmsg.h"
 #include "ecutree.h"
@@ -193,7 +192,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     /* what for do we need the next 2 lines ? */
     draw_timer.setSingleShot (true);
-    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
+    connect(&draw_timer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
 
     if ( true == (bool) settings->StartupMinimized )
     {
@@ -4348,14 +4347,7 @@ void MainWindow::updateIndex()
             item->updateFileFinish();
         }
     }
-
 }
-
-void MainWindow::draw_timeout()
-{
-    drawUpdatedView();
-}
-
 
 void MainWindow::drawUpdatedView()
 {
@@ -5295,51 +5287,6 @@ void MainWindow::connectAllEcuSignal()
 void MainWindow:: disconnectAllEcuSignal()
 {
     disconnectAll();
-}
-
-void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
-{
-    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
-
-    injectionAplicationId = applicationId;
-    injectionContextId = contextId;
-
-    if(ecuitem)
-    {
-
-        unsigned int serviceID;
-        unsigned int size;
-
-        serviceID = serviceId;
-
-        if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
-        {
-            DltMessage msg;
-
-            /* initialise new message */
-            dlt_message_init(&msg,0);
-
-            // Request parameter:
-            // data_length uint32
-            // data        uint8[]
-
-            /* prepare payload of data */
-            size = (data.size());
-            msg.datasize = 4 + 4 + size;
-            if (msg.databuffer) free(msg.databuffer);
-            msg.databuffer = (uint8_t *) malloc(msg.datasize);
-
-            memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
-            memcpy(msg.databuffer+4, &size, sizeof(size));
-            memcpy(msg.databuffer+8, data.constData(), data.size());
-
-            /* send message */
-            controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
-
-            /* free message */
-            dlt_message_free(&msg,0);
-        }
-    }
 }
 
 void MainWindow::on_action_menuDLT_Send_Injection_triggered()
