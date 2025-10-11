@@ -7244,7 +7244,7 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     menu.addSeparator();
-    action = new QAction("Export in DLT Format...", this);
+    action = new QAction("Export all rows in DLT Format...", this);
     connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableExportDltTriggered);
     menu.addAction(action);
 
