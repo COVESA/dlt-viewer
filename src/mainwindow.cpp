@@ -1570,22 +1570,34 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
 }
 
-/* Exports all search results from the TableView to a DLT file. */
+/* Exports search results from the search table view to clipboard or file in various formats.
+   For clipboard operations: uses selected rows only.
+   For file export operations: always exports all rows. */
 void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard, const QString& fileName)
 {
-    QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
+    const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
+    QModelIndexList allRows;
     for (int row = 0; row < ui->tableView_SearchIndex->model()->rowCount(); ++row) {
         QModelIndex idx = ui->tableView_SearchIndex->model()->index(row, 0);
-        if (!list.contains(idx)) {
-            list.append(idx);
-        }
+        allRows.append(idx);
     }
 
     // Clear the selection from main table.
     ui->tableView->selectionModel()->clear();
 
+    // Determine which rows to process based on operation type and selection
+    QModelIndexList rowsToProcess;
+    
+    if (!fileName.trimmed().isEmpty()) {
+        // File export operation - always export all rows
+        rowsToProcess = allRows;
+    } else {
+        // Clipboard operation - use selected rows only
+        rowsToProcess = list;
+    }
+
     // Convert the index from search table to main table entry...
-    foreach(QModelIndex index,list)
+    foreach(QModelIndex index, rowsToProcess)
     {
         int position = index.row();
         unsigned long entry;
