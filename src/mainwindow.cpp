@@ -2324,14 +2324,6 @@ void MainWindow::applySettings()
         default:m_searchresultsTable->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));break;
         }
     }
-    if ( settings->RefreshRate > 0 )
-    {
-        draw_interval = 1000 / settings->RefreshRate;
-    }
-    else
-    {
-        draw_interval = 1000 / DEFAULT_REFRESH_RATE;
-    }
 
     // disable or enable filter cache
     if(dltIndexer)
@@ -4344,8 +4336,11 @@ void MainWindow::updateIndex()
      }
     }
 
-    if (!draw_timer.isActive())
-        draw_timer.start(draw_interval);
+    if (!draw_timer.isActive()) {
+        const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                             : 1000 / DEFAULT_REFRESH_RATE;
+        draw_timer.start(drawInterval);
+    }
 
     if(oldsize!=qfile.size())
     {

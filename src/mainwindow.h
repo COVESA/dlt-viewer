@@ -122,7 +122,6 @@ private:
 
     /* Timer for draw Event */
     QTimer draw_timer;
-    int draw_interval;
 
     QDltControl qcontrol;
     QFile outputfile;
