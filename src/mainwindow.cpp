@@ -191,10 +191,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
     ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
-    /* what for do we need the next 2 lines ? */
-    draw_timer.setSingleShot (true);
-    connect(&draw_timer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
-
     if ( true == (bool) settings->StartupMinimized )
     {
         qDebug() << "Start minimzed as defined in the settings";
@@ -2040,6 +2036,10 @@ void MainWindow::reloadLogFileFinishIndex()
         ui->lineEditFilterEnd->setText(QString("%1").arg(qfile.size()-1));
     else
         ui->lineEditFilterEnd->setText(QString("0"));
+
+    if (settings->autoScroll) {
+        ui->tableView->scrollToBottom();
+    }
 }
 
 void MainWindow::reloadLogFileFinishFilter()
@@ -3468,10 +3468,18 @@ void MainWindow::connectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         connectECU(ecuitem);
     }
+
+    if (settings->autoScroll) {
+        const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                             : 1000 / DEFAULT_REFRESH_RATE;
+        drawTimer.start(drawInterval);
+        connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
+    }
 }
 
 void MainWindow::disconnectAll()
 {
+    drawTimer.stop();
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
@@ -4336,12 +4344,6 @@ void MainWindow::updateIndex()
      }
     }
 
-    if (!draw_timer.isActive()) {
-        const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
-                                                             : 1000 / DEFAULT_REFRESH_RATE;
-        draw_timer.start(drawInterval);
-    }
-
     if(oldsize!=qfile.size())
     {
         // only run through viewer plugins, if new messages are added
@@ -4355,7 +4357,6 @@ void MainWindow::updateIndex()
 
 void MainWindow::drawUpdatedView()
 {
-
     statusByteErrorsReceived->setText(QString("Recv Errors: %L1").arg(totalByteErrorsRcvd));
     statusBytesReceived->setText(QString("Recv: %L1").arg(totalBytesRcvd));
     statusSyncFoundReceived->setText(QString("Sync found: %L1").arg(totalSyncFoundRcvd));
@@ -4367,7 +4368,6 @@ void MainWindow::drawUpdatedView()
     if(settings->autoScroll) {
         ui->tableView->scrollToBottom();
     }
-
 }
 
 void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
