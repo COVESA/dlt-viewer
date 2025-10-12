@@ -6051,51 +6051,7 @@ void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
         }
     }
 }
-/*
-void MainWindow::stateChangedUDP(QAbstractSocket::SocketState socketState)
-{
-    // signal emited when connection state changed
-    qDebug() << "stateChangedUDP" << socketState << __LINE__ << __FILE__;
-    // find socket which emited signal
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( ecuitem && ecuitem->socket == sender())
-        {
-            // update ECU item
-            ecuitem->update();
 
-            if (socketState==QAbstractSocket::ConnectedState)
-            {
-                // send new default log level to ECU, if selected in dlg
-                if (ecuitem->updateDataIfOnline)
-                {
-                    sendUpdates(ecuitem);
-                }
-            }
-
-            switch(socketState)
-            {
-            case QAbstractSocket::UnconnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ConnectingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ConnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ClosingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            default:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            }
-        }
-    }
-}
-*/
 //----------------------------------------------------------------------------
 // Search functionalities
 //----------------------------------------------------------------------------
