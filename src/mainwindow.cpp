@@ -824,6 +824,7 @@ void MainWindow::initFileHandling()
         for ( const auto& filename : QDltOptManager::getInstance()->getPcapFiles() )
         {
             QDltImporter importer(&outputfile);
+            importer.setPcapPorts(settings->importerPcapPorts);
             importer.dltIpcFromPCAP(filename);
         }
         if(QDltOptManager::getInstance()->isCommandlineMode())
@@ -1134,6 +1135,7 @@ void MainWindow::on_action_menuFile_Open_triggered()
     {
         on_action_menuFile_Clear_triggered();
         QDltImporter *importerThread = new QDltImporter(&outputfile,pcapFileNames);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
@@ -1144,6 +1146,7 @@ void MainWindow::on_action_menuFile_Open_triggered()
     {
         on_action_menuFile_Clear_triggered();
         QDltImporter *importerThread = new QDltImporter(&outputfile,mf4FileNames);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
@@ -1512,6 +1515,7 @@ void MainWindow::on_actionAppend_triggered()
     if(!importFilenames.isEmpty())
     {
         QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
@@ -3262,6 +3266,7 @@ void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
     } else if (path.endsWith(".pcap", Qt::CaseInsensitive)) {
         on_action_menuFile_Clear_triggered();
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
@@ -3270,6 +3275,7 @@ void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
     } else if (path.endsWith(".mf4", Qt::CaseInsensitive)) {
         on_action_menuFile_Clear_triggered();
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
@@ -3289,6 +3295,7 @@ void MainWindow::on_tabExplore_fileAppendRequested(const QString& path) {
     else if (path.endsWith(".pcap", Qt::CaseInsensitive) ||
              path.endsWith(".mf4", Qt::CaseInsensitive)) {
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
@@ -3305,6 +3312,7 @@ void MainWindow::on_tabExplore_filesOpenRequest(const QStringList& dltPaths) {
 
 void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& mf4AndPcapPaths) {
     QDltImporter* importerThread = new QDltImporter(&outputfile, mf4AndPcapPaths);
+    importerThread->setPcapPorts(settings->importerPcapPorts);
     connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
     connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
     connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
@@ -7410,6 +7418,7 @@ void MainWindow::dropEvent(QDropEvent *event)
         {
             on_action_menuFile_Clear_triggered();
             QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
+            importerThread->setPcapPorts(settings->importerPcapPorts);
             connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
             connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
             connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
@@ -8153,6 +8162,7 @@ void MainWindow::openSupportedFile(const QString& path)
         break;
     case 3: {
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
@@ -8161,6 +8171,7 @@ void MainWindow::openSupportedFile(const QString& path)
     } break;
     case 4: {
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
         connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
         connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
         connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
