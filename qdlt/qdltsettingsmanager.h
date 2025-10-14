@@ -132,6 +132,8 @@ public:
     int dst; // project and local setting
 
     QStringList pluginExecutionPrio; //local setting
+
+    QString importerPcapPorts; //local setting
 };
 
 #endif // QDLTSETTINGSMANAGER_H
