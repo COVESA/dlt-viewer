@@ -1,6 +1,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QtEndian>
+#include <QString>
 
 extern "C" {
     #include "dlt_common.h"
@@ -16,6 +17,7 @@ QDltImporter::QDltImporter(QFile *outputfile, QStringList fileNames, QObject *pa
 {
     this->outputfile = outputfile;
     this->fileNames = fileNames;
+    setPcapPorts(QString("3490 3489 49362"));
 }
 
 QDltImporter::QDltImporter(QFile *outputfile, QString fileName,QObject *parent) :
@@ -23,6 +25,7 @@ QDltImporter::QDltImporter(QFile *outputfile, QString fileName,QObject *parent) 
 {
     this->outputfile = outputfile;
     fileNames.append(fileName);
+    setPcapPorts(QString("3490 3489 49362"));
 }
 
 QDltImporter::~QDltImporter()
@@ -1189,7 +1192,7 @@ bool QDltImporter::dltFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                    return false;
                }
                quint16 destPort = (((quint16)record.at(pos))<<8)|((quint16)(record.at(pos+1)&0xff));
-               if(destPort==3490||destPort==3489)
+               if(pcapPorts.contains(destPort))
                {
                    pos+=6;
                    dltFrame(record,pos,sec,usec);
@@ -1210,7 +1213,7 @@ bool QDltImporter::dltFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                        return false;
                    }
                    quint16 destPort = (((quint16)segmentBufferUDP.at(pos))<<8)|((quint16)(segmentBufferUDP.at(pos+1)&0xff));
-                   if(destPort==3490||destPort==3489)
+                   if(pcapPorts.contains(destPort))
                    {
                        pos+=6;
                        dltFrame(segmentBufferUDP,pos,sec,usec);
@@ -1240,3 +1243,16 @@ void QDltImporter::writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPa
     outputfile->write(bufferHeader);
     outputfile->write(bufferPayload,bufferPayloadSize);
 }
+
+void QDltImporter::setPcapPorts(const QString &importPcapPorts)
+{
+    pcapPorts.clear();
+    QStringList portList = importPcapPorts.split(' ');
+
+    unsigned short port;
+    for (const QString& item : portList) {
+        if(item.toUShort()!=0)
+            pcapPorts.append(item.toUShort());
+    }
+}
+
