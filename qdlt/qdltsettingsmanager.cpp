@@ -235,6 +235,9 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/updateContextsUnregister",updateContextsUnregister);
     settings->setValue("startup/msgIdFormat",msgIdFormat);
 
+    /* importer */
+    settings->setValue("importer/pcapPorts",importerPcapPorts);
+
     /* For settings integrity validation */
     settings->setValue("startup/versionMajor", PACKAGE_MAJOR_VERSION);
     settings->setValue("startup/versionMinor", PACKAGE_MINOR_VERSION);
@@ -497,10 +500,14 @@ void QDltSettingsManager::readSettings()
     showPayload = settings->value("startup/showPayload",1).toInt();
     showArguments = settings->value("startup/showArguments",0).toInt();
     showMsgId = settings->value("startup/showMsgId",0).toInt();
+
     /* other */
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
     updateContextsUnregister = settings->value("startup/updateContextsUnregister",0).toInt();
     msgIdFormat = settings->value("startup/msgIdFormat","[%08u]").toString();
+
+    /* importer */
+    importerPcapPorts = settings->value("importer/pcapPorts",QString("3490 3489 49362")).toString();
 
     // Read the plugin execution priority of a maximum of 100 plugins
     for(int i = 0; i < 100; ++i)
