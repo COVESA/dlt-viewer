@@ -73,9 +73,9 @@
 #include "jumptodialog.h"
 #include "fieldnames.h"
 #include "tablemodel.h"
-#include "sortfilterproxymodel.h"
 #include "qdltoptmanager.h"
 #include "qdltctrlmsg.h"
+#include <qdltmsgwrapper.h>
 #include "ecutree.h"
 
 
@@ -4847,248 +4847,123 @@ void MainWindow::on_action_menuDLT_Get_Log_Info_triggered()
                              QString("No ECU selected in configuration!"));
 }
 
-void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,int log_level)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,
+                                            int log_level) {
+    DltServiceSetLogLevel req;
+    req.service_id = DLT_SERVICE_ID_SET_LOG_LEVEL;
+    dlt_set_id(req.apid, app.toLatin1());
+    dlt_set_id(req.ctid, con.toLatin1());
+    req.log_level = log_level;
+    dlt_set_id(req.com, "remo");
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceSetLogLevel);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetLogLevel *req;
-    req = (DltServiceSetLogLevel*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_LOG_LEVEL;
-    dlt_set_id(req->apid,app.toLatin1());
-    dlt_set_id(req->ctid,con.toLatin1());
-    req->log_level = log_level;
-    dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status) {
+    DltServiceSetDefaultLogLevel req;
+    req.service_id = DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL;
+    req.log_level = status;
+    dlt_set_id(req.com, "remo");
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceSetDefaultLogLevel);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetDefaultLogLevel *req;
-    req = (DltServiceSetDefaultLogLevel*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_DEFAULT_LOG_LEVEL;
-    req->log_level = status;
-    dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_SetTraceStatus(EcuItem* ecuitem,QString app, QString con,int status)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_SetTraceStatus(EcuItem* ecuitem, QString app, QString con,
+                                               int status) {
+    DltServiceSetLogLevel req;
+    req.service_id = DLT_SERVICE_ID_SET_TRACE_STATUS;
+    dlt_set_id(req.apid, app.toLatin1());
+    dlt_set_id(req.ctid, con.toLatin1());
+    req.log_level = status;
+    dlt_set_id(req.com, "remo");
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceSetLogLevel);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetLogLevel *req;
-    req = (DltServiceSetLogLevel*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_TRACE_STATUS;
-    dlt_set_id(req->apid,app.toLatin1());
-    dlt_set_id(req->ctid,con.toLatin1());
-    req->log_level = status;
-    dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
-
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int status)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int status) {
+    DltServiceSetDefaultLogLevel req;
+    req.service_id = DLT_SERVICE_ID_SET_DEFAULT_TRACE_STATUS;
+    req.log_level = status;
+    dlt_set_id(req.com, "remo");
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceSetDefaultLogLevel);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetDefaultLogLevel *req;
-    req = (DltServiceSetDefaultLogLevel*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_DEFAULT_TRACE_STATUS;
-    req->log_level = status;
-    dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
 void MainWindow::controlMessage_SetVerboseMode(EcuItem* ecuitem, int verbosemode)
 {
-    DltMessage msg;
+    DltServiceSetVerboseMode req;
+    req.service_id = DLT_SERVICE_ID_SET_VERBOSE_MODE;
+    req.new_status = verbosemode;
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceSetVerboseMode);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetVerboseMode *req;
-    req = (DltServiceSetVerboseMode*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_VERBOSE_MODE;
-    req->new_status = verbosemode;
-    //dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable)
-{
-    DltMessage msg;
-    uint8_t new_status=(enable?1:0);
+void MainWindow::controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable) {
+    DltServiceSetVerboseMode req;
+    req.service_id = DLT_SERVICE_ID_SET_TIMING_PACKETS;
+    req.new_status = (enable ? 1 : 0);
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload of data */
-    msg.datasize = sizeof(DltServiceSetVerboseMode);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceSetVerboseMode *req;
-    req = (DltServiceSetVerboseMode*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_SET_TIMING_PACKETS;
-    req->new_status = new_status;
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_GetLogInfo(EcuItem* ecuitem)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_GetLogInfo(EcuItem* ecuitem) {
+    DltServiceGetLogInfoRequest req;
+    req.service_id = DLT_SERVICE_ID_GET_LOG_INFO;
+    req.options = 7;
+    dlt_set_id(req.apid, "");
+    dlt_set_id(req.ctid, "");
+    dlt_set_id(req.com, "remo");
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceGetLogInfoRequest);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceGetLogInfoRequest *req;
-    req = (DltServiceGetLogInfoRequest*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_GET_LOG_INFO;
-
-    req->options = 7;
-
-    dlt_set_id(req->apid, "");
-    dlt_set_id(req->ctid, "");
-
-    dlt_set_id(req->com,"remo");
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_GetSoftwareVersion(EcuItem* ecuitem)
-{
-    DltMessage msg;
+void MainWindow::controlMessage_GetSoftwareVersion(EcuItem* ecuitem) {
+    DltServiceGetSoftwareVersion req;
+    req.service_id = DLT_SERVICE_ID_GET_SOFTWARE_VERSION;
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(req));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceGetSoftwareVersion);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceGetSoftwareVersion *req;
-    req = (DltServiceGetSoftwareVersion*) msg.databuffer;
-    req->service_id = DLT_SERVICE_ID_GET_SOFTWARE_VERSION;
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::ControlServiceRequest(EcuItem* ecuitem, int service_id )
-{
-    DltMessage msg;
+void MainWindow::ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id) {
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(service_id));
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
-
-    /* prepare payload of data */
-    msg.datasize = sizeof(uint32_t);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    uint32_t sid = service_id;
-    memcpy(msg.databuffer,&sid,sizeof(sid));
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::controlMessage_Marker()
-{
-    DltMessage msg;
+void MainWindow::controlMessage_Marker() {
+    DltServiceMarker resp;
+    resp.service_id = DLT_SERVICE_ID_MARKER;
+    resp.status = DLT_SERVICE_RESPONSE_OK;
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper;
+    msgWrapper.asDataBuffer(std::move(resp));
 
-    /* prepare payload */
-    msg.datasize = sizeof(DltServiceMarker);
-    if (msg.databuffer) free(msg.databuffer);
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-    DltServiceMarker *resp;
-    resp = (DltServiceMarker*) msg.databuffer;
-    resp->service_id = DLT_SERVICE_ID_MARKER;
-    resp->status = DLT_SERVICE_RESPONSE_OK;
-
-    /* send message */
-    controlMessage_WriteControlMessage(msg,QString(""),QString(""));
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_WriteControlMessage(msgWrapper.getMessage(), "", "");
 }
 
 void MainWindow::SendInjection(EcuItem* ecuitem)

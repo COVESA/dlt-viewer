@@ -257,7 +257,7 @@ private:
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
     void exportSelection_searchTable(QDltExporter::DltExportFormat format);
 
-    void ControlServiceRequest(EcuItem* ecuitem, int service_id );
+    void ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id);
     void SendInjection(EcuItem* ecuitem);
 
     void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
