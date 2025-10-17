@@ -4968,10 +4968,6 @@ void MainWindow::controlMessage_Marker() {
 
 void MainWindow::SendInjection(EcuItem* ecuitem)
 {
-    unsigned int serviceID = 0;
-    unsigned int size = 0;
-    bool ok = true;
-
     qDebug() << "DLT SendInjection" << injectionAplicationId << injectionContextId << injectionServiceId << __LINE__;
 
     if (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII)
@@ -4987,64 +4983,27 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
         return;
     }
 
-    serviceID = (unsigned int)injectionServiceId.toInt(&ok, 0);
-
-    if ( (serviceID < DLT_SERVICE_ID_CALLSW_CINJECTION) || (serviceID==0) )
-    {
-        qDebug() << "Wrong range of service id: " << serviceID << ", it has to be > " << DLT_SERVICE_ID_CALLSW_CINJECTION;
+    bool ok = true;
+    unsigned int serviceID = (unsigned int)injectionServiceId.toInt(&ok, 0);
+    if ((serviceID < DLT_SERVICE_ID_CALLSW_CINJECTION) || (serviceID == 0)) {
+        qDebug() << "Wrong range of service id: " << serviceID << ", it has to be > "
+                 << DLT_SERVICE_ID_CALLSW_CINJECTION;
         return;
     }
 
-    DltMessage msg;
     QByteArray hexData;
+    // prepare injection data
+    if (injectionDataBinary) {
+        hexData = QByteArray::fromHex(injectionData.toLatin1());
+    } else {
+        hexData = injectionData.toUtf8();
+    }
+    const std::vector<uint8_t> dataBytes(hexData.begin(), hexData.end());
 
-    /* initialise new message */
-    dlt_message_init(&msg,0);
+    QDltMsgWrapper msgWrapper(serviceID, dataBytes);
 
-    /* prepare payload of data */
-    if(true == injectionDataBinary)
-        {
-            hexData = QByteArray::fromHex(injectionData.toLatin1());
-            size = hexData.size();
-        }
-    else
-        {
-            size = (injectionData.toUtf8().size() );
-        }
-
-    msg.datasize = 4 + 4 + size;
-
-    if (msg.databuffer)
-       {
-            free(msg.databuffer);
-       }
-    msg.databuffer = (uint8_t *) malloc(msg.datasize);
-
-    if (NULL == msg.databuffer)
-        {
-            qDebug() << "Error could not allocate memory for msg data buffer" << "LINE" << __LINE__ << __FILE__;
-            return;
-        }
-
-    memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
-    memcpy(msg.databuffer+4, &size, sizeof(size));
-
-    if(true == injectionDataBinary)
-        {
-            memcpy(msg.databuffer+8,hexData.data(),hexData.size());
-        }
-    else
-        {
-            memcpy(msg.databuffer+8, injectionData.toUtf8(), size);
-        }
-
-    qDebug() << "Send" << injectionData.toUtf8() << "of size" << size << "string:" << injectionData.toUtf8() <<  "size" << injectionData.toUtf8().size();// << "LINE" << __LINE__;
-
-    /* send message */
-    controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
-
-    /* free message */
-    dlt_message_free(&msg,0);
+    controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), injectionAplicationId,
+                                      injectionContextId);
 }
 
 void MainWindow::on_action_menuDLT_Store_Config_triggered()
@@ -5168,47 +5127,21 @@ void MainWindow:: disconnectAllEcuSignal()
     disconnectAll();
 }
 
-void MainWindow::sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data)
-{
-    EcuItem* ecuitem = (EcuItem*) project.ecu->topLevelItem(index);
+void MainWindow::sendInjection(int index, QString applicationId, QString contextId, int serviceId,
+                               QByteArray data) {
+    EcuItem* ecuitem = (EcuItem*)project.ecu->topLevelItem(index);
 
     injectionAplicationId = applicationId;
     injectionContextId = contextId;
 
-    if(ecuitem)
-    {
+    if (ecuitem) {
+        unsigned int serviceID = serviceId;
 
-        unsigned int serviceID;
-        unsigned int size;
-
-        serviceID = serviceId;
-
-        if ((DLT_SERVICE_ID_CALLSW_CINJECTION<= serviceID) && (serviceID!=0))
-        {
-            DltMessage msg;
-
-            /* initialise new message */
-            dlt_message_init(&msg,0);
-
-            // Request parameter:
-            // data_length uint32
-            // data        uint8[]
-
-            /* prepare payload of data */
-            size = (data.size());
-            msg.datasize = 4 + 4 + size;
-            if (msg.databuffer) free(msg.databuffer);
-            msg.databuffer = (uint8_t *) malloc(msg.datasize);
-
-            memcpy(msg.databuffer  , &serviceID,sizeof(serviceID));
-            memcpy(msg.databuffer+4, &size, sizeof(size));
-            memcpy(msg.databuffer+8, data.constData(), data.size());
-
-            /* send message */
-            controlMessage_SendControlMessage(ecuitem,msg,injectionAplicationId,injectionContextId);
-
-            /* free message */
-            dlt_message_free(&msg,0);
+        if ((DLT_SERVICE_ID_CALLSW_CINJECTION <= serviceID) && (serviceID != 0)) {
+            const std::vector<uint8_t> dataBytes(data.begin(), data.end());
+            QDltMsgWrapper msgWrapper(serviceID, dataBytes);
+            controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(),
+                                              injectionAplicationId, injectionContextId);
         }
     }
 }
