@@ -191,10 +191,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
     ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
-    /* what for do we need the next 2 lines ? */
-    draw_timer.setSingleShot (true);
-    connect(&draw_timer, SIGNAL(timeout()), this, SLOT(draw_timeout()));
-
     if ( true == (bool) settings->StartupMinimized )
     {
         qDebug() << "Start minimzed as defined in the settings";
@@ -2040,6 +2036,10 @@ void MainWindow::reloadLogFileFinishIndex()
         ui->lineEditFilterEnd->setText(QString("%1").arg(qfile.size()-1));
     else
         ui->lineEditFilterEnd->setText(QString("0"));
+
+    if (settings->autoScroll) {
+        ui->tableView->scrollToBottom();
+    }
 }
 
 void MainWindow::reloadLogFileFinishFilter()
@@ -2323,14 +2323,6 @@ void MainWindow::applySettings()
         case(FieldNames::ArgCount):  m_searchresultsTable->setColumnHidden(col, true);break;
         default:m_searchresultsTable->setColumnHidden(col, !(FieldNames::getColumnShown((FieldNames::Fields)col,settings)));break;
         }
-    }
-    if ( settings->RefreshRate > 0 )
-    {
-        draw_interval = 1000 / settings->RefreshRate;
-    }
-    else
-    {
-        draw_interval = 1000 / DEFAULT_REFRESH_RATE;
     }
 
     // disable or enable filter cache
@@ -3476,10 +3468,18 @@ void MainWindow::connectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         connectECU(ecuitem);
     }
+
+    if (settings->autoScroll) {
+        const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                             : 1000 / DEFAULT_REFRESH_RATE;
+        drawTimer.start(drawInterval);
+        connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
+    }
 }
 
 void MainWindow::disconnectAll()
 {
+    drawTimer.stop();
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
@@ -4344,9 +4344,6 @@ void MainWindow::updateIndex()
      }
     }
 
-    if (!draw_timer.isActive())
-        draw_timer.start(draw_interval);
-
     if(oldsize!=qfile.size())
     {
         // only run through viewer plugins, if new messages are added
@@ -4356,18 +4353,10 @@ void MainWindow::updateIndex()
             item->updateFileFinish();
         }
     }
-
 }
-
-void MainWindow::draw_timeout()
-{
-    drawUpdatedView();
-}
-
 
 void MainWindow::drawUpdatedView()
 {
-
     statusByteErrorsReceived->setText(QString("Recv Errors: %L1").arg(totalByteErrorsRcvd));
     statusBytesReceived->setText(QString("Recv: %L1").arg(totalBytesRcvd));
     statusSyncFoundReceived->setText(QString("Sync found: %L1").arg(totalSyncFoundRcvd));
@@ -4379,7 +4368,6 @@ void MainWindow::drawUpdatedView()
     if(settings->autoScroll) {
         ui->tableView->scrollToBottom();
     }
-
 }
 
 void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
@@ -6058,51 +6046,7 @@ void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
         }
     }
 }
-/*
-void MainWindow::stateChangedUDP(QAbstractSocket::SocketState socketState)
-{
-    // signal emited when connection state changed
-    qDebug() << "stateChangedUDP" << socketState << __LINE__ << __FILE__;
-    // find socket which emited signal
-    for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
-    {
-        EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
-        if( ecuitem && ecuitem->socket == sender())
-        {
-            // update ECU item
-            ecuitem->update();
 
-            if (socketState==QAbstractSocket::ConnectedState)
-            {
-                // send new default log level to ECU, if selected in dlg
-                if (ecuitem->updateDataIfOnline)
-                {
-                    sendUpdates(ecuitem);
-                }
-            }
-
-            switch(socketState)
-            {
-            case QAbstractSocket::UnconnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ConnectingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionConnecting,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ConnectedState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOnline,ecuitem->getHostname());
-                break;
-            case QAbstractSocket::ClosingState:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            default:
-                pluginManager.stateChanged(num,QDltConnection::QDltConnectionOffline,ecuitem->getHostname());
-                break;
-            }
-        }
-    }
-}
-*/
 //----------------------------------------------------------------------------
 // Search functionalities
 //----------------------------------------------------------------------------
