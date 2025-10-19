@@ -4856,9 +4856,7 @@ void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QStri
     req.log_level = log_level;
     dlt_set_id(req.com, "remo");
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4868,9 +4866,7 @@ void MainWindow::controlMessage_SetDefaultLogLevel(EcuItem* ecuitem, int status)
     req.log_level = status;
     dlt_set_id(req.com, "remo");
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4883,9 +4879,7 @@ void MainWindow::controlMessage_SetTraceStatus(EcuItem* ecuitem, QString app, QS
     req.log_level = status;
     dlt_set_id(req.com, "remo");
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4895,9 +4889,7 @@ void MainWindow::controlMessage_SetDefaultTraceStatus(EcuItem* ecuitem, int stat
     req.log_level = status;
     dlt_set_id(req.com, "remo");
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4907,9 +4899,7 @@ void MainWindow::controlMessage_SetVerboseMode(EcuItem* ecuitem, int verbosemode
     req.service_id = DLT_SERVICE_ID_SET_VERBOSE_MODE;
     req.new_status = verbosemode;
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4918,9 +4908,7 @@ void MainWindow::controlMessage_SetTimingPackets(EcuItem* ecuitem, bool enable) 
     req.service_id = DLT_SERVICE_ID_SET_TIMING_PACKETS;
     req.new_status = (enable ? 1 : 0);
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4932,9 +4920,7 @@ void MainWindow::controlMessage_GetLogInfo(EcuItem* ecuitem) {
     dlt_set_id(req.ctid, "");
     dlt_set_id(req.com, "remo");
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4942,16 +4928,12 @@ void MainWindow::controlMessage_GetSoftwareVersion(EcuItem* ecuitem) {
     DltServiceGetSoftwareVersion req;
     req.service_id = DLT_SERVICE_ID_GET_SOFTWARE_VERSION;
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(req));
-
+    QDltMsgWrapper msgWrapper(std::move(req));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
-void MainWindow::ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id) {
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(service_id));
-
+void MainWindow::ControlServiceRequest(EcuItem* ecuitem, uint32_t serviceId) {
+    QDltMsgWrapper msgWrapper(std::move(serviceId));
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), "", "");
 }
 
@@ -4960,9 +4942,7 @@ void MainWindow::controlMessage_Marker() {
     resp.service_id = DLT_SERVICE_ID_MARKER;
     resp.status = DLT_SERVICE_RESPONSE_OK;
 
-    QDltMsgWrapper msgWrapper;
-    msgWrapper.asDataBuffer(std::move(resp));
-
+    QDltMsgWrapper msgWrapper(std::move(resp));
     controlMessage_WriteControlMessage(msgWrapper.getMessage(), "", "");
 }
 
@@ -5001,7 +4981,6 @@ void MainWindow::SendInjection(EcuItem* ecuitem)
     const std::vector<uint8_t> dataBytes(hexData.begin(), hexData.end());
 
     QDltMsgWrapper msgWrapper(serviceID, dataBytes);
-
     controlMessage_SendControlMessage(ecuitem, msgWrapper.getMessage(), injectionAplicationId,
                                       injectionContextId);
 }

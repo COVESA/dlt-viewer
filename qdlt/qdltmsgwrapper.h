@@ -14,7 +14,17 @@
 
 class QDltMsgWrapper {
   public:
-    QDltMsgWrapper();
+    template<typename T>
+    QDltMsgWrapper(T t) : QDltMsgWrapper() {
+        static_assert(std::is_pod<T>::value, "T must be a POD type");
+
+        constexpr uint32_t size = sizeof(T);
+        m_msg.datasize = size;
+        m_msg.databuffer = (static_cast<uint8_t*>(malloc(size)));
+        if (m_msg.databuffer) {
+            memcpy(m_msg.databuffer, &t, size);
+        }
+    }
 
     template<typename T>
     QDltMsgWrapper(T t, const std::vector<uint8_t>& c) : QDltMsgWrapper() {
@@ -37,23 +47,10 @@ class QDltMsgWrapper {
 
     ~QDltMsgWrapper();
 
-    // TODO: replace with constructor
-    // serialize packed plan C structure into underlying DltMessage::databuffer
-    template<typename T>
-    uint32_t asDataBuffer(T t) {
-        static_assert(std::is_pod<T>::value, "T must be a POD type");
-
-        constexpr uint32_t size = sizeof(T);
-        m_msg.datasize = size;
-        m_msg.databuffer = (static_cast<uint8_t*>(malloc(size)));
-        if (m_msg.databuffer) {
-            memcpy(m_msg.databuffer, &t, size);
-        }
-        return size;
-    }
-
     // access to underlying raw structure to be used in legacy API
     DltMessage& getMessage();
+  private:
+    QDltMsgWrapper();
 
   private:
     DltMessage m_msg;
