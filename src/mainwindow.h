@@ -576,7 +576,7 @@ private slots:
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
 
 public slots:
-
+    // this slot is required because it is implicitly used in qdltcontrol
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void filterCountChanged();

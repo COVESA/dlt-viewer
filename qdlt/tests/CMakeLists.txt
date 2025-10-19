@@ -2,6 +2,7 @@ add_executable(test_qdlt
     test_dltmessagematcher.cpp
     test_dltctrlmsg.cpp
     test_qdltargument.cpp
+    test_qdltmsgwrapper.cpp
 )
 target_link_libraries(
   test_qdlt

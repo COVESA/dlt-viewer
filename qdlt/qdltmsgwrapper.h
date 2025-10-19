@@ -1,21 +1,22 @@
 #ifndef QDLTMSGWRAPPER_H
 #define QDLTMSGWRAPPER_H
 
+#include "export_rules.h"
+
 #include "dlt_common.h"
 
 #include <cstdlib>
+#include <cstring>
 #include <type_traits>
 #include <vector>
-#include <cstring>
 
 /**
-* C++ wrapper around raw C-DltMsg structure with RAII semantics.
-*/
+ * C++ wrapper around raw C-DltMsg structure with RAII semantics.
+ */
 
-class QDltMsgWrapper {
-  public:
-    template<typename T>
-    QDltMsgWrapper(T t) : QDltMsgWrapper() {
+class QDLT_EXPORT QDltMsgWrapper {
+public:
+    template <typename T> QDltMsgWrapper(T t) : QDltMsgWrapper() {
         static_assert(std::is_pod<T>::value, "T must be a POD type");
 
         constexpr uint32_t size = sizeof(T);
@@ -26,8 +27,7 @@ class QDltMsgWrapper {
         }
     }
 
-    template<typename T>
-    QDltMsgWrapper(T t, const std::vector<uint8_t>& c) : QDltMsgWrapper() {
+    template <typename T> QDltMsgWrapper(T t, const std::vector<uint8_t>& c) : QDltMsgWrapper() {
         static_assert(std::is_pod<T>::value, "T must be a POD type");
 
         constexpr uint32_t sizeT = sizeof(T);
@@ -41,7 +41,6 @@ class QDltMsgWrapper {
             memcpy(m_msg.databuffer + offset, &sizeC, sizeof(sizeC));
             offset += sizeof(sizeC);
             memcpy(m_msg.databuffer + offset, c.data(), c.size());
-
         }
     }
 
@@ -49,10 +48,11 @@ class QDltMsgWrapper {
 
     // access to underlying raw structure to be used in legacy API
     DltMessage& getMessage();
-  private:
+
+private:
     QDltMsgWrapper();
 
-  private:
+private:
     DltMessage m_msg;
 };
 
