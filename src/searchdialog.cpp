@@ -192,6 +192,14 @@ void SearchDialog::focusRow(long int searchLine)
     model->modelChanged();
 }
 
+/**
+ * Called from findNextClicked and findPreviousClicked
+ *
+ * @return 2 if an invalid context or application ID is set for search,
+ * 1 if a match of the search text is found or an invalid regular expression is given in search
+ *   text,
+ * 0 otherwise.
+ */
 int SearchDialog::find()
 {
     isSearchCancelled = false;
@@ -337,6 +345,9 @@ int SearchDialog::find()
      fIs_APID_CTID_requested = false;
     }
 
+    /* Actual search taking place here,
+     * will set this->match accordingly.
+     */
     findMessages(startLine,searchBorder,searchTextRegExpression);
 
     emit searchProgressChanged(false);
@@ -437,6 +448,10 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             pluginManager->decodeMsg(msg, fSilentMode);
         }
 
+        /*
+         * Search for a match
+         * Note the message `msg` is decoded here (see above)
+         */
         const bool matchFound = getRegExp() ? matcher.match(msg, searchTextRegExp) : matcher.match(msg, getText());
         if (!matchFound)
         {
