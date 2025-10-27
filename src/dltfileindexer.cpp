@@ -114,6 +114,9 @@ bool DltFileIndexer::index(int num)
         return false;
     }
 
+    // clear old index
+    indexAllList.clear();
+
     // check if file is empty
     if(f.size() <= 0)
     {
@@ -130,9 +133,6 @@ bool DltFileIndexer::index(int num)
     }
 
     qDebug() << "Start creating indexfile for" << dltFile->getFileName(num);
-
-    // clear old index
-    indexAllList.clear();
 
     // Go through the segments and create new index
     char lastFound = 0;
