@@ -121,8 +121,7 @@ private:
     QTimer timer;
 
     /* Timer for draw Event */
-    QTimer draw_timer;
-    int draw_interval;
+    QTimer drawTimer;
 
     QDltControl qcontrol;
     QFile outputfile;
@@ -533,7 +532,6 @@ private slots:
     void error(QAbstractSocket::SocketError);
     void readyRead();
     void timeout();
-    void draw_timeout();
     void connectAll();
     void disconnectAll();
     void applySettings();

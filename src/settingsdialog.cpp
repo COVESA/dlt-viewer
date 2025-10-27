@@ -382,6 +382,10 @@ void SettingsDialog::writeDlg()
     ui->lineEditMsgCacheSize->setText(QString("%1").arg(settings->msgCacheSize));
 
     ui->comboBoxTheme->setCurrentIndex(static_cast<int>(settings->themeSelectionSettings));
+
+    /* Importer */
+    ui->lineEditImporterPcapPorts->setText(settings->importerPcapPorts);
+
 }
 
 void SettingsDialog::readDlg()
@@ -473,6 +477,9 @@ void SettingsDialog::readDlg()
 
     auto prevUISettings = settings->themeSelectionSettings;
     settings->themeSelectionSettings = static_cast<QDltSettingsManager::UI_Colour>(ui->comboBoxTheme->currentIndex());
+
+    /* Importer */
+    settings->importerPcapPorts = ui->lineEditImporterPcapPorts->text();
 
     if (prevUISettings != settings->themeSelectionSettings)
     {
