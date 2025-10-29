@@ -257,7 +257,7 @@ private:
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
     void exportSelection_searchTable(QDltExporter::DltExportFormat format);
 
-    void ControlServiceRequest(EcuItem* ecuitem, int service_id );
+    void ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id);
     void SendInjection(EcuItem* ecuitem);
 
     void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
@@ -576,7 +576,7 @@ private slots:
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
 
 public slots:
-
+    // this slot is required because it is implicitly used in qdltcontrol
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void filterCountChanged();
