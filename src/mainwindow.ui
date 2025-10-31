@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="focusPolicy">
-   <enum>Qt::NoFocus</enum>
+   <enum>Qt::FocusPolicy::NoFocus</enum>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
@@ -21,7 +21,7 @@
     <normaloff>:/icons/png/org.genivi.DLTViewer.png</normaloff>:/icons/png/org.genivi.DLTViewer.png</iconset>
   </property>
   <property name="tabShape">
-   <enum>QTabWidget::Rounded</enum>
+   <enum>QTabWidget::TabShape::Rounded</enum>
   </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -45,10 +45,10 @@
        </font>
       </property>
       <property name="contextMenuPolicy">
-       <enum>Qt::CustomContextMenu</enum>
+       <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
       </property>
       <property name="sizeAdjustPolicy">
-       <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+       <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContentsOnFirstShow</enum>
       </property>
       <property name="autoScroll">
        <bool>false</bool>
@@ -60,13 +60,13 @@
        <bool>true</bool>
       </property>
       <property name="selectionMode">
-       <enum>QAbstractItemView::ExtendedSelection</enum>
+       <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
       </property>
       <property name="selectionBehavior">
-       <enum>QAbstractItemView::SelectRows</enum>
+       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
       </property>
       <property name="horizontalScrollMode">
-       <enum>QAbstractItemView::ScrollPerPixel</enum>
+       <enum>QAbstractItemView::ScrollMode::ScrollPerPixel</enum>
       </property>
       <property name="wordWrap">
        <bool>false</bool>
@@ -118,6 +118,7 @@
     <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionExport"/>
+    <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
     <addaction name="action_menuFile_Settings"/>
     <addaction name="separator"/>
@@ -311,10 +312,10 @@
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QDockWidget" name="dockWidgetProject">
    <property name="focusPolicy">
-    <enum>Qt::NoFocus</enum>
+    <enum>Qt::FocusPolicy::NoFocus</enum>
    </property>
    <property name="features">
-    <set>QDockWidget::DockWidgetClosable|QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
+    <set>QDockWidget::DockWidgetFeature::DockWidgetClosable|QDockWidget::DockWidgetFeature::DockWidgetFloatable|QDockWidget::DockWidgetFeature::DockWidgetMovable</set>
    </property>
    <property name="windowTitle">
     <string>Project</string>
@@ -324,7 +325,7 @@
    </attribute>
    <widget class="QWidget" name="dockWidgetContents">
     <property name="focusPolicy">
-     <enum>Qt::NoFocus</enum>
+     <enum>Qt::FocusPolicy::NoFocus</enum>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <property name="leftMargin">
@@ -342,10 +343,10 @@
      <item>
       <widget class="QFrame" name="enableConfigFrame">
        <property name="frameShape">
-        <enum>QFrame::NoFrame</enum>
+        <enum>QFrame::Shape::NoFrame</enum>
        </property>
        <property name="frameShadow">
-        <enum>QFrame::Plain</enum>
+        <enum>QFrame::Shadow::Plain</enum>
        </property>
        <layout class="QGridLayout" name="gridLayout">
         <item row="2" column="1">
@@ -439,26 +440,26 @@
         <bool>true</bool>
        </property>
        <property name="focusPolicy">
-        <enum>Qt::TabFocus</enum>
+        <enum>Qt::FocusPolicy::TabFocus</enum>
        </property>
        <property name="tabPosition">
-        <enum>QTabWidget::South</enum>
+        <enum>QTabWidget::TabPosition::South</enum>
        </property>
        <property name="tabShape">
-        <enum>QTabWidget::Rounded</enum>
+        <enum>QTabWidget::TabShape::Rounded</enum>
        </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
        <property name="elideMode">
-        <enum>Qt::ElideNone</enum>
+        <enum>Qt::TextElideMode::ElideNone</enum>
        </property>
        <property name="movable">
         <bool>false</bool>
        </property>
        <widget class="FileExplorerTab" name="tabExplore">
         <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
+         <enum>Qt::FocusPolicy::NoFocus</enum>
         </property>
         <attribute name="title">
          <string>Explore</string>
@@ -476,11 +477,78 @@
          <property name="bottomMargin">
           <number>2</number>
          </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelExplorerSort">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Sort files:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortType">
+             <item>
+              <property name="text">
+               <string>By Filename</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>By Timestamp</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortOrder">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>Asc.</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Desc.</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeView" name="exploreView">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tabConfig">
         <property name="focusPolicy">
-         <enum>Qt::NoFocus</enum>
+         <enum>Qt::FocusPolicy::NoFocus</enum>
         </property>
         <attribute name="title">
          <string>Config</string>
@@ -501,19 +569,19 @@
          <item>
           <widget class="QTreeWidget" name="configWidget">
            <property name="focusPolicy">
-            <enum>Qt::TabFocus</enum>
+            <enum>Qt::FocusPolicy::TabFocus</enum>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
            </property>
            <property name="tabKeyNavigation">
             <bool>true</bool>
            </property>
            <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
            </property>
            <property name="selectionBehavior">
-            <enum>QAbstractItemView::SelectRows</enum>
+            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
            </property>
            <property name="rootIsDecorated">
             <bool>true</bool>
@@ -574,7 +642,7 @@
          <item>
           <widget class="PluginTreeWidget" name="pluginWidget">
            <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
            </property>
            <property name="tabKeyNavigation">
             <bool>true</bool>
@@ -690,7 +758,7 @@
             </sizepolicy>
            </property>
            <property name="contextMenuPolicy">
-            <enum>Qt::CustomContextMenu</enum>
+            <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
            </property>
            <property name="acceptDrops">
             <bool>true</bool>
@@ -699,13 +767,13 @@
             <bool>true</bool>
            </property>
            <property name="dragDropMode">
-            <enum>QAbstractItemView::InternalMove</enum>
+            <enum>QAbstractItemView::DragDropMode::InternalMove</enum>
            </property>
            <property name="defaultDropAction">
-            <enum>Qt::MoveAction</enum>
+            <enum>Qt::DropAction::MoveAction</enum>
            </property>
            <property name="selectionMode">
-            <enum>QAbstractItemView::ExtendedSelection</enum>
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
            </property>
            <property name="rootIsDecorated">
             <bool>false</bool>
@@ -782,7 +850,7 @@
         </font>
        </property>
        <property name="contextMenuPolicy">
-        <enum>Qt::CustomContextMenu</enum>
+        <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
        </property>
        <property name="tabKeyNavigation">
         <bool>false</bool>
@@ -1601,6 +1669,11 @@
     <string>Append...</string>
    </property>
   </action>
+  <action name="action_menuFile_DLTFilesize">
+   <property name="text">
+    <string>DLT File size</string>
+    </property>
+   </action>
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
