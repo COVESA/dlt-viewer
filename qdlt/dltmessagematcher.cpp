@@ -64,3 +64,11 @@ bool DltMessageMatcher::matchTimestampRange(unsigned int ts) const
 
     return (m_timestampRange->start <= uiTs) && (uiTs <= m_timestampRange->end);
 }
+
+bool DltMessageMatcher::matchTimeRange(time_t seconds) const
+{
+    if (!m_timeRange)
+        return true;
+
+    return (m_timeRange->start.toSecsSinceEpoch() < seconds) && (seconds < m_timeRange->end.toSecsSinceEpoch());
+}

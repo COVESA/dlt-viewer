@@ -69,6 +69,8 @@ SearchDialog::SearchDialog(QWidget *parent) :
             ui->stackedWidgetRange->setCurrentIndex(1);
     });
 
+    // TODO: time range has to be populated with min and max time from loaded files
+
     fSilentMode = !QDltOptManager::getInstance()->issilentMode();
 
     updateColorbutton();
@@ -398,9 +400,15 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     matcher.setCaseSentivity(is_Case_Sensitive);
     matcher.setSearchAppId(stApid);
     matcher.setSearchCtxId(stCtid);
+
+    assert(!(is_TimeStampSearchSelected && is_TimeSearchSelected));
     if (is_TimeStampSearchSelected) {
-        matcher.setTimestapmRange(dTimeStampStart, dTimeStampStop);
+        matcher.setTimestampRange(dTimeStampStart, dTimeStampStop);
     }
+    if (ui->radioTime->isChecked()) {
+        matcher.setTimeRange(ui->dateTimeStart->dateTime(), ui->dateTimeEnd->dateTime());
+    }
+
     if (msgIdEnabled) {
         matcher.setMessageIdFormat(msgIdFormat);
     }

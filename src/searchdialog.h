@@ -86,7 +86,8 @@ private:
     bool match;
     bool onceClicked;
     bool fSilentMode;
-    bool is_TimeStampSearchSelected;
+    bool is_TimeStampSearchSelected{false};
+    bool is_TimeSearchSelected{false};
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;
