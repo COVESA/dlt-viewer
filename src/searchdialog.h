@@ -138,13 +138,12 @@ private:
     QCheckBox *CheckBoxSearchtoList;
 
 private slots:
-    void on_lineEditText_textEdited(QString newText);
+    void on_lineEditSearch_textEdited(QString newText);
     void on_pushButtonPrevious_clicked();
     void on_pushButtonNext_clicked();
-    void on_pushButtonColor_clicked();
+    void on_buttonHighlightColor_clicked();
 
-
-    void on_checkBoxSearchIndex_toggled(bool checked);
+    void on_checkBoxFindAll_toggled(bool checked);
 
     void on_checkBoxHeader_toggled(bool checked);
 
