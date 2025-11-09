@@ -259,7 +259,7 @@
              </sizepolicy>
             </property>
             <property name="displayFormat">
-             <string>yyyy/MM/dd HH:mm:ss.zzzzzz</string>
+             <string>yyyy/MM/dd HH:mm:ss.zzz</string>
             </property>
            </widget>
           </item>
@@ -288,7 +288,7 @@
              </sizepolicy>
             </property>
             <property name="displayFormat">
-             <string>yyyy/MM/dd HH:mm:ss.zzzzzz</string>
+             <string>yyyy/MM/dd HH:mm:ss.zzz</string>
             </property>
            </widget>
           </item>
