@@ -19,8 +19,8 @@
 
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
-#include "mainwindow.h"
 #include "qdltoptmanager.h"
+#include "tablemodel.h"
 
 #include <dltmessagematcher.h>
 
@@ -28,27 +28,28 @@
 #include <QProgressBar>
 #include <QProgressDialog>
 #include <QSignalBlocker>
-
+#include <QColorDialog>
+#include <QAction>
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SearchDialog)
 {
-
     ui->setupUi(this);
+
     regexpCheckBox = ui->checkBoxRegExp;
-    CheckBoxSearchtoList = ui->checkBoxSearchIndex;
+    CheckBoxSearchtoList = ui->checkBoxFindAll;
     match = false;
     onceClicked = false;
     startLine = -1;
 
     lineEdits = new QList<QLineEdit*>();
-    lineEdits->append(ui->lineEditText);
+    lineEdits->append(ui->lineEditSearch);
     table = nullptr;
 
     // at start we want to know if single step search or "fill search table mode" is active !
     bool checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxSearchIndex", bool(true)).toBool();
-    ui->checkBoxSearchIndex->setChecked(checked);
+    ui->checkBoxFindAll->setChecked(checked);
 
     checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxHeader", bool(true)).toBool();
     ui->checkBoxHeader->setChecked(checked);
@@ -58,6 +59,15 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
     checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxRegEx", bool(true)).toBool();
     ui->checkBoxRegExp->setChecked(checked);
+
+    connect(ui->radioTimestamp, &QRadioButton::toggled, this, [this](bool checked) {
+        if (checked)
+            ui->stackedWidgetRange->setCurrentIndex(0);
+    });
+    connect(ui->radioTime, &QRadioButton::toggled, this, [this] (bool checked) {
+        if (checked)
+            ui->stackedWidgetRange->setCurrentIndex(1);
+    });
 
     fSilentMode = !QDltOptManager::getInstance()->issilentMode();
 
@@ -70,7 +80,11 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::selectText(){ui->lineEditText->setFocus();ui->lineEditText->selectAll();}
+void SearchDialog::selectText() {
+    ui->lineEditSearch->setFocus();
+    ui->lineEditSearch->selectAll();
+}
+
 void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
 void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
@@ -82,7 +96,7 @@ void SearchDialog::setMatch(bool matched){match=matched;}
 void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
 void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
 
-QString SearchDialog::getText() { return ui->lineEditText->text(); }
+QString SearchDialog::getText() { return ui->lineEditSearch->text(); }
 
 void SearchDialog::abortSearch()
 {
@@ -107,19 +121,19 @@ bool SearchDialog::getRegExp()
 bool SearchDialog::getNextClicked(){return nextClicked;}
 bool SearchDialog::getOnceClicked(){return onceClicked;}
 
-QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
-QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
+QString SearchDialog::getApIDText(){ return ui->lineEditApld->text();}
+QString SearchDialog::getCtIDText(){ return ui->lineEditCtid->text();}
 
 QString SearchDialog::getTimeStampStart()
 {
     //qDebug() << "content of start time" << ui->timeStartlineEdit->text()<< __LINE__;
-    return ui->timeStartlineEdit->text();
+    return ui->lineEditTimestampStart->text();
 }
 
 QString SearchDialog::getTimeStampEnd()
 {
     //qDebug() << "content of end time" << ui->timeEndlineEdit->text() << __LINE__;
-    return ui->timeEndlineEdit->text();
+    return ui->lineEditTimestampEnd->text();
 }
 
 bool SearchDialog::getCaseSensitive()
@@ -131,7 +145,7 @@ bool SearchDialog::getCaseSensitive()
 bool SearchDialog::searchtoIndex()
 {
     //qDebug() << "searchtoIndex is" << ui->checkBoxSearchIndex->checkState() << __LINE__;
-    return (ui->checkBoxSearchIndex->checkState() == Qt::Checked);
+    return (ui->checkBoxFindAll->checkState() == Qt::Checked);
 }
 
 
@@ -144,7 +158,6 @@ void SearchDialog::setStartLine(long int start)
 {
   startLine=start;
 }
-
 
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
@@ -515,7 +528,7 @@ void SearchDialog::findPreviousClicked()
     }
 }
 
-void SearchDialog::on_lineEditText_textEdited(QString newText)
+void SearchDialog::on_lineEditSearch_textEdited(QString newText)
 {
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(0)!
@@ -540,7 +553,7 @@ void SearchDialog::textEditedFromToolbar(QString newText)
         }
 }
 
-void SearchDialog::on_pushButtonColor_clicked()
+void SearchDialog::on_buttonHighlightColor_clicked()
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor oldColor(color);
@@ -562,7 +575,7 @@ void SearchDialog::updateColorbutton()
     highlightColor = lhlColor;
     QPixmap px(12, 12);
     px.fill(highlightColor);
-    ui->pushButtonColor->setIcon(px);
+    ui->buttonHighlightColor->setIcon(px);
 }
 
 
@@ -648,8 +661,7 @@ void SearchDialog::on_checkBoxHeader_toggled(bool checked)
    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
-
-void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
+void SearchDialog::on_checkBoxFindAll_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
     setStartLine(-1);
