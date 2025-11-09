@@ -60,13 +60,24 @@ SearchDialog::SearchDialog(QWidget *parent) :
     checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxRegEx", bool(true)).toBool();
     ui->checkBoxRegExp->setChecked(checked);
 
+    ui->stackedWidgetRange->setCurrentIndex(0); // default Timestamp range
     connect(ui->radioTimestamp, &QRadioButton::toggled, this, [this](bool checked) {
         if (checked)
             ui->stackedWidgetRange->setCurrentIndex(0);
     });
     connect(ui->radioTime, &QRadioButton::toggled, this, [this] (bool checked) {
-        if (checked)
+        if (checked) {
+            // switch from timestamp range to time range requires time range reset
+            m_timeRangeResetNeeded = true;
             ui->stackedWidgetRange->setCurrentIndex(1);
+        }
+    });
+    // user interaction with time range edits sets need for reset to false
+    connect(ui->dateTimeStart, &QDateTimeEdit::dateTimeChanged, this, [this]() {
+        m_timeRangeResetNeeded = false;
+    });
+    connect(ui->dateTimeEnd, &QDateTimeEdit::dateTimeChanged, this, [this]() {
+        m_timeRangeResetNeeded = false;
     });
 
     fSilentMode = !QDltOptManager::getInstance()->issilentMode();
@@ -92,6 +103,14 @@ void SearchDialog::setRegExp(bool regExp) { ui->checkBoxRegExp->setCheckState(re
 void SearchDialog::setNextClicked(bool next){nextClicked = next;}
 void SearchDialog::setMatch(bool matched){match=matched;}
 
+void SearchDialog::setTimeRange(const QDateTime& min, const QDateTime& max) {
+    ui->dateTimeStart->setDateTimeRange(min, max);
+    ui->dateTimeEnd->setDateTimeRange(min, max);
+    ui->dateTimeStart->setDateTime(min);
+    ui->dateTimeEnd->setDateTime(max);
+}
+
+bool SearchDialog::needTimeRangeReset() const { return m_timeRangeResetNeeded; }
 
 void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
 void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
@@ -398,9 +417,15 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     matcher.setCaseSentivity(is_Case_Sensitive);
     matcher.setSearchAppId(stApid);
     matcher.setSearchCtxId(stCtid);
-    if (is_TimeStampSearchSelected) {
-        matcher.setTimestapmRange(dTimeStampStart, dTimeStampStop);
+
+    assert(!(is_TimeStampSearchSelected && is_TimeSearchSelected));
+    if (ui->radioTimestamp->isChecked() && is_TimeStampSearchSelected) {
+        matcher.setTimestampRange(dTimeStampStart, dTimeStampStop);
     }
+    if (ui->radioTime->isChecked()) {
+        matcher.setTimeRange(ui->dateTimeStart->dateTime(), ui->dateTimeEnd->dateTime());
+    }
+
     if (msgIdEnabled) {
         matcher.setMessageIdFormat(msgIdFormat);
     }
