@@ -1570,9 +1570,6 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
 }
 
-/* Exports search results from the search table view to clipboard or file in various formats.
-   For clipboard operations: uses selected rows only.
-   For file export operations: always exports all rows. */
 void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard, const QString& fileName)
 {
     const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
