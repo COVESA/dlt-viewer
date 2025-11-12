@@ -255,7 +255,8 @@ private:
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
-    void exportSelection_searchTable(QDltExporter::DltExportFormat format);
+    /* Exports search results from the search table view to clipboard or file in various formats. For clipboard operations: uses selected rows only and for file export operations: always exports all rows. */
+    void exportSelection_searchTable(QDltExporter::DltExportFormat format, const QString& fileName = QString());
 
     void ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id);
     void SendInjection(EcuItem* ecuitem);
@@ -483,6 +484,7 @@ private slots:
     void onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered();
+    void onActionMenuConfigSearchTableExportDltTriggered();
 
     void onActionMenuConfigSaveAllECUsTriggered();
 
