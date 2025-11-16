@@ -5857,7 +5857,20 @@ void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
 
 void MainWindow::on_action_menuSearch_Find_triggered()
 {
-    //qDebug() << "on_action_menuSearch_Find_triggered" << __LINE__ << __FILE__;
+    if (searchDlg->needTimeRangeReset() && qfile.size() > 0) {
+        QDltMsg firstMessage, lastMessage;
+        const bool success =
+                (qfile.getMsg(0, firstMessage) && qfile.getMsg(qfile.size() - 1, lastMessage));
+        if (success) {
+            // TODO: to take into accound milliseconds
+            // qint64 msecsSinceEpoch = seconds * 1000 + microseconds / 1000;
+
+            QDateTime firstTimestamp = QDateTime::fromSecsSinceEpoch(firstMessage.getTime());
+            QDateTime lastTimestamp = QDateTime::fromSecsSinceEpoch(lastMessage.getTime());
+            searchDlg->setTimeRange(firstTimestamp, lastTimestamp);
+        }
+    }
+
     searchDlg->open();
     searchDlg->selectText();
 }

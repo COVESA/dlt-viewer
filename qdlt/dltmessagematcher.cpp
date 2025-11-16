@@ -13,6 +13,10 @@ bool DltMessageMatcher::match(const QDltMsg &msg, const Pattern& pattern) const
         return false;
     }
 
+    if (!matchTimeRange(msg.getTime())) {
+        return false;
+    }
+
     bool matchFound = false;
     if (m_headerSearchEnabled) {
         auto header = msg.toStringHeader();

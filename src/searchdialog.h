@@ -74,6 +74,8 @@ public:
     QDltPluginManager *pluginManager;
     QCheckBox *regexpCheckBox;
 
+    void setTimeRange(const QDateTime &min, const QDateTime &max);
+    bool needTimeRangeReset() const;
 private:
     Ui::SearchDialog *ui;
     SearchTableModel *m_searchtablemodel;
@@ -94,6 +96,7 @@ private:
     QString TimeStampStoptime;
     double  dTimeStampStart;
     double  dTimeStampStop;
+    bool m_timeRangeResetNeeded{true};
 
     QString stApid;
     QString stCtid;
