@@ -13,7 +13,9 @@ bool DltMessageMatcher::match(const QDltMsg &msg, const Pattern& pattern) const
         return false;
     }
 
-    if (!matchTimeRange(msg.getTime())) {
+    qint64 timestampMSecsSinceEpoch = msg.getTime() * 1000 + msg.getMicroseconds() / 1000;
+    QDateTime timestamp = QDateTime::fromMSecsSinceEpoch(timestampMSecsSinceEpoch);
+    if (!matchTimeRange(timestamp)) {
         return false;
     }
 
@@ -69,10 +71,10 @@ bool DltMessageMatcher::matchTimestampRange(unsigned int ts) const
     return (m_timestampRange->start <= uiTs) && (uiTs <= m_timestampRange->end);
 }
 
-bool DltMessageMatcher::matchTimeRange(time_t seconds) const
+bool DltMessageMatcher::matchTimeRange(const QDateTime& dt) const
 {
     if (!m_timeRange)
         return true;
 
-    return (m_timeRange->start.toSecsSinceEpoch() < seconds) && (seconds < m_timeRange->end.toSecsSinceEpoch());
+    return (m_timeRange->start < dt) && (dt < m_timeRange->end);
 }

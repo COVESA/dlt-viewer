@@ -5862,11 +5862,12 @@ void MainWindow::on_action_menuSearch_Find_triggered()
         const bool success =
                 (qfile.getMsg(0, firstMessage) && qfile.getMsg(qfile.size() - 1, lastMessage));
         if (success) {
-            // TODO: to take into accound milliseconds
-            // qint64 msecsSinceEpoch = seconds * 1000 + microseconds / 1000;
+            qint64 firstTimestampMSecsSinceEpoch = firstMessage.getTime() * 1000 + firstMessage.getMicroseconds() / 1000;
+            QDateTime firstTimestamp = QDateTime::fromMSecsSinceEpoch(firstTimestampMSecsSinceEpoch);
 
-            QDateTime firstTimestamp = QDateTime::fromSecsSinceEpoch(firstMessage.getTime());
-            QDateTime lastTimestamp = QDateTime::fromSecsSinceEpoch(lastMessage.getTime());
+            qint64 lastTimestampMSecsSinceEpoch = lastMessage.getTime() * 1000 + lastMessage.getMicroseconds() / 1000;
+            QDateTime lastTimestamp = QDateTime::fromMSecsSinceEpoch(lastTimestampMSecsSinceEpoch);
+
             searchDlg->setTimeRange(firstTimestamp, lastTimestamp);
         }
     }
