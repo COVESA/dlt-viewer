@@ -1570,15 +1570,31 @@ void MainWindow::exportSelection(bool ascii = true,bool file = false,QDltExporte
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
 }
 
-void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard)
+void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat format = QDltExporter::FormatClipboard, const QString& fileName)
 {
     const QModelIndexList list = ui->tableView_SearchIndex->selectionModel()->selectedRows();
+    QModelIndexList allRows;
+    for (int row = 0; row < ui->tableView_SearchIndex->model()->rowCount(); ++row) {
+        QModelIndex idx = ui->tableView_SearchIndex->model()->index(row, 0);
+        allRows.append(idx);
+    }
 
     // Clear the selection from main table.
     ui->tableView->selectionModel()->clear();
 
+    // Determine which rows to process based on operation type and selection
+    QModelIndexList rowsToProcess;
+    
+    if (!fileName.trimmed().isEmpty()) {
+        // File export operation - always export all rows
+        rowsToProcess = allRows;
+    } else {
+        // Clipboard operation - use selected rows only
+        rowsToProcess = list;
+    }
+
     // Convert the index from search table to main table entry...
-    foreach(QModelIndex index,list)
+    foreach(QModelIndex index, rowsToProcess)
     {
         int position = index.row();
         unsigned long entry;
@@ -1602,7 +1618,8 @@ void MainWindow::exportSelection_searchTable(QDltExporter::DltExportFormat forma
 
     filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
-    QDltExporter exporter(&qfile,"",&pluginManager,format,QDltExporter::SelectionSelected,&finallist,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature());
+    QString exportFile = fileName.trimmed();
+    QDltExporter exporter(&qfile,exportFile,&pluginManager,format,QDltExporter::SelectionSelected,&finallist,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature());
     connect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
     exporter.exportMessages();
     disconnect(&exporter,SIGNAL(clipboard(QString)),this,SLOT(clipboard(QString)));
@@ -6963,6 +6980,11 @@ void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     menu.addSeparator();
+    action = new QAction("Export all rows in DLT Format...", this);
+    connect(action, &QAction::triggered, this, &MainWindow::onActionMenuConfigSearchTableExportDltTriggered);
+    menu.addAction(action);
+
+    menu.addSeparator();
 
     /* show popup menu */
     menu.exec(globalPos);
@@ -6986,6 +7008,20 @@ void MainWindow::onActionMenuConfigSearchTableCopyJiraToClipboardTriggered()
 void MainWindow::onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered()
 {
     exportSelection_searchTable(QDltExporter::FormatClipboardJiraTableHead);
+}
+
+void MainWindow::onActionMenuConfigSearchTableExportDltTriggered()
+{
+    QString fileName = QFileDialog::getSaveFileName(
+        this,
+        tr("Export Search Results as DLT"),
+        workingDirectory.getExportDirectory(),
+        tr("DLT Files (*.dlt);;All files (*.*)")
+    );
+    if (fileName.isEmpty())
+        return;
+    workingDirectory.setExportDirectory(QFileInfo(fileName).absolutePath());
+    exportSelection_searchTable(QDltExporter::FormatDlt, fileName);
 }
 
 void MainWindow::keyPressEvent ( QKeyEvent * event )
