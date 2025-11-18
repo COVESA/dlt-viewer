@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLT Web Tools - Index</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .tool-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .tool-icon {
+            font-size: 4em;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .tool-title {
+            font-size: 1.8em;
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .tool-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .tool-features {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .tool-features li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .tool-features li:before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tool-button {
+            display: block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .tool-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .info-section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .info-section ul {
+            list-style-position: inside;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .quick-start {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .quick-start h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .quick-start ol {
+            margin-left: 20px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 30px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 DLT Web Tools</h1>
+            <p>Suite di strumenti web per l'analisi di file DLT</p>
+        </div>
+
+        <div class="tools-grid">
+            <div class="tool-card">
+                <div class="tool-icon">📊</div>
+                <h2 class="tool-title">Timestamp Viewer</h2>
+                <p class="tool-description">Visualizza e analizza i timestamp contenuti nei file DLT</p>
+                <ul class="tool-features">
+                    <li>Estrazione rapida timestamp</li>
+                    <li>Statistiche aggregate</li>
+                    <li>Ricerca e filtri</li>
+                    <li>Esportazione CSV</li>
+                </ul>
+                <a href="dlt-timestamp-viewer.html" class="tool-button">Apri Viewer →</a>
+            </div>
+
+            <div class="tool-card">
+                <div class="tool-icon">🔧</div>
+                <h2 class="tool-title">Test File Generator</h2>
+                <p class="tool-description">Genera file DLT di test per validare il parser</p>
+                <ul class="tool-features">
+                    <li>File semplici (5 msg)</li>
+                    <li>File grandi (100 msg)</li>
+                    <li>File personalizzati</li>
+                    <li>DLT v1 compliant</li>
+                </ul>
+                <a href="create-test-dlt.html" class="tool-button">Apri Generator →</a>
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h2>📖 Quick Start Guide</h2>
+            <div class="quick-start">
+                <h3>Per iniziare:</h3>
+                <ol>
+                    <li><strong>Genera un file di test</strong>: Apri il Test File Generator e crea un file .dlt di esempio</li>
+                    <li><strong>Apri il Viewer</strong>: Vai al Timestamp Viewer</li>
+                    <li><strong>Carica il file</strong>: Trascina il file .dlt generato nell'area di upload</li>
+                    <li><strong>Esplora i risultati</strong>: Visualizza timestamp, cerca, filtra ed esporta i dati</li>
+                </ol>
+            </div>
+
+            <h2 style="margin-top: 30px;">🎯 Caratteristiche Principali</h2>
+            <ul style="line-height: 1.8; color: #555; margin-top: 15px;">
+                <li><strong>100% Client-Side</strong>: Tutti i tool funzionano completamente nel browser</li>
+                <li><strong>Privacy Totale</strong>: Nessun dato viene inviato a server esterni</li>
+                <li><strong>DLT v1/v2</strong>: Supporto per entrambe le versioni del formato storage header</li>
+                <li><strong>Performance</strong>: Parsing veloce anche per file di grandi dimensioni</li>
+                <li><strong>Cross-Platform</strong>: Funziona su Windows, Linux, macOS</li>
+                <li><strong>Zero Installazione</strong>: Basta un browser moderno</li>
+            </ul>
+
+            <h2 style="margin-top: 30px;">📚 Documentazione</h2>
+            <p style="color: #555; line-height: 1.8; margin-top: 15px;">
+                Per informazioni dettagliate sul formato DLT, istruzioni d'uso complete e limitazioni,
+                consulta il file <strong>DLT-TIMESTAMP-VIEWER-README.md</strong> incluso nella repository.
+            </p>
+
+            <h2 style="margin-top: 30px;">🔗 Standard DLT</h2>
+            <p style="color: #555; line-height: 1.8; margin-top: 15px;">
+                Questi strumenti supportano il formato <strong>Diagnostic Log and Trace (DLT)</strong>
+                sviluppato da <strong>COVESA</strong> (ex GENIVI Alliance) per sistemi automotive embedded.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>DLT Web Tools v1.0 - Sviluppato per l'analisi di file DLT standard COVESA</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                Repository: <a href="https://github.com/COVESA/dlt-viewer" style="color: white; text-decoration: underline;">DLT-Viewer</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
