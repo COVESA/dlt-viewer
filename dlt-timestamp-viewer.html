@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLT Timestamp Viewer v1.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 60px 40px;
+            background: #f8f9ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #f0f2ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: #e8ebff;
+            border-color: #5a67d8;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2em;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .stats {
+            padding: 20px 40px;
+            background: #f8f9ff;
+            display: none;
+            border-top: 2px solid #667eea;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .results-section {
+            padding: 40px;
+            display: none;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafbff;
+        }
+
+        .message-index {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .timestamp {
+            font-family: 'Courier New', monospace;
+            color: #2d3748;
+        }
+
+        .ecu-id {
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 40px;
+            display: none;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 DLT Timestamp Viewer</h1>
+            <p>Analizza timestamp da file DLT - Versione 1.0</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Trascina qui il file .dlt o clicca per selezionare</div>
+                <div class="upload-hint">Supporta file DLT v1 e v2</div>
+            </div>
+            <input type="file" id="fileInput" accept=".dlt">
+        </div>
+
+        <div class="error" id="errorMsg"></div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Parsing del file in corso...</p>
+        </div>
+
+        <div class="stats" id="stats">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Messaggi Totali</div>
+                    <div class="stat-value" id="totalMessages">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Primo Timestamp</div>
+                    <div class="stat-value" id="firstTimestamp" style="font-size: 1.2em;">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Ultimo Timestamp</div>
+                    <div class="stat-value" id="lastTimestamp" style="font-size: 1.2em;">-</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Durata Totale</div>
+                    <div class="stat-value" id="duration">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="results">
+            <div class="controls">
+                <input type="text" class="search-box" id="searchBox" placeholder="🔍 Cerca per data, ora, ECU ID...">
+                <button class="btn btn-primary" id="exportCsv">📥 Esporta CSV</button>
+                <button class="btn btn-secondary" id="resetBtn">🔄 Nuovo File</button>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data e Ora</th>
+                            <th>Timestamp (s)</th>
+                            <th>Microsecondi</th>
+                            <th>ECU ID</th>
+                            <th>Dimensione (bytes)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            Sviluppato per analisi file DLT - COVESA Standard
+        </div>
+    </div>
+
+    <script>
+        // DLT Parser Class
+        class DltParser {
+            constructor() {
+                this.messages = [];
+            }
+
+            parse(arrayBuffer) {
+                this.messages = [];
+                const dataView = new DataView(arrayBuffer);
+                let offset = 0;
+                let messageIndex = 0;
+
+                while (offset < arrayBuffer.byteLength) {
+                    try {
+                        const message = this.parseMessage(dataView, offset, messageIndex);
+                        if (message) {
+                            this.messages.push(message);
+                            offset += message.totalSize;
+                            messageIndex++;
+                        } else {
+                            break;
+                        }
+                    } catch (error) {
+                        console.error(`Error parsing message at offset ${offset}:`, error);
+                        break;
+                    }
+                }
+
+                return this.messages;
+            }
+
+            parseMessage(dataView, offset, index) {
+                if (offset + 4 > dataView.byteLength) {
+                    return null;
+                }
+
+                // Check for storage header pattern "DLT\x01" or "DLT\x02"
+                const pattern = String.fromCharCode(
+                    dataView.getUint8(offset),
+                    dataView.getUint8(offset + 1),
+                    dataView.getUint8(offset + 2)
+                );
+
+                let storageHeaderSize = 0;
+                let storageHeader = null;
+
+                if (pattern === 'DLT') {
+                    const version = dataView.getUint8(offset + 3);
+
+                    if (version === 1) {
+                        // DLT v1 storage header (16 bytes)
+                        if (offset + 16 > dataView.byteLength) {
+                            return null;
+                        }
+
+                        storageHeaderSize = 16;
+                        storageHeader = {
+                            version: 1,
+                            seconds: dataView.getUint32(offset + 4, false), // Big endian
+                            microseconds: dataView.getInt32(offset + 8, false), // Big endian
+                            ecuId: this.readString(dataView, offset + 12, 4)
+                        };
+                    } else if (version === 2) {
+                        // DLT v2 storage header (variable size)
+                        if (offset + 14 > dataView.byteLength) {
+                            return null;
+                        }
+
+                        const ecuIdLength = dataView.getUint8(offset + 13);
+                        storageHeaderSize = 14 + ecuIdLength;
+
+                        if (offset + storageHeaderSize > dataView.byteLength) {
+                            return null;
+                        }
+
+                        const seconds = dataView.getBigUint64(offset + 4, false); // Big endian
+                        const nanoseconds = dataView.getUint32(offset + 12, false);
+
+                        storageHeader = {
+                            version: 2,
+                            seconds: Number(seconds),
+                            microseconds: Math.floor(nanoseconds / 1000), // Convert ns to μs
+                            nanoseconds: nanoseconds,
+                            ecuId: this.readString(dataView, offset + 14, ecuIdLength)
+                        };
+                    }
+                }
+
+                // Read standard header to get message length
+                const standardHeaderOffset = offset + storageHeaderSize;
+                if (standardHeaderOffset + 4 > dataView.byteLength) {
+                    return null;
+                }
+
+                // Read message length from standard header (bytes 2-3, little endian)
+                const messageLength = dataView.getUint16(standardHeaderOffset + 2, true);
+                const totalSize = storageHeaderSize + messageLength;
+
+                if (offset + totalSize > dataView.byteLength) {
+                    return null;
+                }
+
+                return {
+                    index: index,
+                    totalSize: totalSize,
+                    storageHeader: storageHeader,
+                    timestamp: storageHeader ? {
+                        seconds: storageHeader.seconds,
+                        microseconds: storageHeader.microseconds,
+                        date: this.timestampToDate(storageHeader.seconds, storageHeader.microseconds),
+                        ecuId: storageHeader.ecuId
+                    } : null
+                };
+            }
+
+            readString(dataView, offset, length) {
+                let str = '';
+                for (let i = 0; i < length; i++) {
+                    const char = dataView.getUint8(offset + i);
+                    if (char === 0) break;
+                    str += String.fromCharCode(char);
+                }
+                return str || 'N/A';
+            }
+
+            timestampToDate(seconds, microseconds) {
+                const milliseconds = seconds * 1000 + Math.floor(microseconds / 1000);
+                return new Date(milliseconds);
+            }
+
+            formatDate(date) {
+                if (!date || !(date instanceof Date) || isNaN(date)) {
+                    return 'N/A';
+                }
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const hours = String(date.getHours()).padStart(2, '0');
+                const minutes = String(date.getMinutes()).padStart(2, '0');
+                const seconds = String(date.getSeconds()).padStart(2, '0');
+                const ms = String(date.getMilliseconds()).padStart(3, '0');
+
+                return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}.${ms}`;
+            }
+        }
+
+        // Application Logic
+        const parser = new DltParser();
+        let currentData = [];
+
+        const elements = {
+            uploadArea: document.getElementById('uploadArea'),
+            fileInput: document.getElementById('fileInput'),
+            loading: document.getElementById('loading'),
+            stats: document.getElementById('stats'),
+            results: document.getElementById('results'),
+            tableBody: document.getElementById('tableBody'),
+            searchBox: document.getElementById('searchBox'),
+            exportCsv: document.getElementById('exportCsv'),
+            resetBtn: document.getElementById('resetBtn'),
+            errorMsg: document.getElementById('errorMsg'),
+            totalMessages: document.getElementById('totalMessages'),
+            firstTimestamp: document.getElementById('firstTimestamp'),
+            lastTimestamp: document.getElementById('lastTimestamp'),
+            duration: document.getElementById('duration')
+        };
+
+        // Event Listeners
+        elements.uploadArea.addEventListener('click', () => elements.fileInput.click());
+        elements.fileInput.addEventListener('change', handleFileSelect);
+        elements.uploadArea.addEventListener('dragover', handleDragOver);
+        elements.uploadArea.addEventListener('dragleave', handleDragLeave);
+        elements.uploadArea.addEventListener('drop', handleDrop);
+        elements.searchBox.addEventListener('input', handleSearch);
+        elements.exportCsv.addEventListener('click', exportToCsv);
+        elements.resetBtn.addEventListener('click', reset);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            elements.uploadArea.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            elements.uploadArea.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            elements.uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+
+        function showError(message) {
+            elements.errorMsg.textContent = message;
+            elements.errorMsg.style.display = 'block';
+            setTimeout(() => {
+                elements.errorMsg.style.display = 'none';
+            }, 5000);
+        }
+
+        function processFile(file) {
+            if (!file.name.endsWith('.dlt')) {
+                showError('Per favore seleziona un file .dlt valido');
+                return;
+            }
+
+            elements.loading.style.display = 'block';
+            elements.stats.style.display = 'none';
+            elements.results.style.display = 'none';
+            elements.errorMsg.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const arrayBuffer = e.target.result;
+                    const messages = parser.parse(arrayBuffer);
+
+                    if (messages.length === 0) {
+                        showError('Nessun messaggio DLT trovato nel file');
+                        elements.loading.style.display = 'none';
+                        return;
+                    }
+
+                    currentData = messages.filter(m => m.timestamp);
+                    displayResults(currentData);
+                    updateStats(currentData);
+                    elements.loading.style.display = 'none';
+                    elements.stats.style.display = 'block';
+                    elements.results.style.display = 'block';
+                } catch (error) {
+                    showError('Errore durante il parsing del file: ' + error.message);
+                    elements.loading.style.display = 'none';
+                    console.error(error);
+                }
+            };
+
+            reader.onerror = function() {
+                showError('Errore durante la lettura del file');
+                elements.loading.style.display = 'none';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function updateStats(data) {
+            elements.totalMessages.textContent = data.length.toLocaleString();
+
+            if (data.length > 0) {
+                const firstDate = data[0].timestamp.date;
+                const lastDate = data[data.length - 1].timestamp.date;
+
+                elements.firstTimestamp.textContent = parser.formatDate(firstDate);
+                elements.lastTimestamp.textContent = parser.formatDate(lastDate);
+
+                const durationMs = lastDate - firstDate;
+                const durationSec = Math.floor(durationMs / 1000);
+                const hours = Math.floor(durationSec / 3600);
+                const minutes = Math.floor((durationSec % 3600) / 60);
+                const seconds = durationSec % 60;
+
+                elements.duration.textContent = `${hours}h ${minutes}m ${seconds}s`;
+            }
+        }
+
+        function displayResults(data) {
+            elements.tableBody.innerHTML = '';
+
+            data.forEach(message => {
+                if (!message.timestamp) return;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="message-index">${message.index + 1}</td>
+                    <td class="timestamp">${parser.formatDate(message.timestamp.date)}</td>
+                    <td>${message.timestamp.seconds}</td>
+                    <td>${message.timestamp.microseconds}</td>
+                    <td><span class="ecu-id">${message.timestamp.ecuId}</span></td>
+                    <td>${message.totalSize}</td>
+                `;
+                elements.tableBody.appendChild(row);
+            });
+        }
+
+        function handleSearch(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filtered = currentData.filter(message => {
+                if (!message.timestamp) return false;
+                const dateStr = parser.formatDate(message.timestamp.date).toLowerCase();
+                const ecuId = message.timestamp.ecuId.toLowerCase();
+                const seconds = message.timestamp.seconds.toString();
+
+                return dateStr.includes(searchTerm) ||
+                       ecuId.includes(searchTerm) ||
+                       seconds.includes(searchTerm);
+            });
+            displayResults(filtered);
+        }
+
+        function exportToCsv() {
+            if (currentData.length === 0) {
+                showError('Nessun dato da esportare');
+                return;
+            }
+
+            let csv = 'Index,Data e Ora,Timestamp (s),Microsecondi,ECU ID,Dimensione (bytes)\n';
+
+            currentData.forEach(message => {
+                if (!message.timestamp) return;
+                csv += `${message.index + 1},`;
+                csv += `"${parser.formatDate(message.timestamp.date)}",`;
+                csv += `${message.timestamp.seconds},`;
+                csv += `${message.timestamp.microseconds},`;
+                csv += `${message.timestamp.ecuId},`;
+                csv += `${message.totalSize}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `dlt_timestamps_${new Date().getTime()}.csv`;
+            link.click();
+        }
+
+        function reset() {
+            currentData = [];
+            elements.fileInput.value = '';
+            elements.searchBox.value = '';
+            elements.stats.style.display = 'none';
+            elements.results.style.display = 'none';
+            elements.errorMsg.style.display = 'none';
+        }
+    </script>
+</body>
+</html>

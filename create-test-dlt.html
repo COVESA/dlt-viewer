@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DLT Test File Generator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #667eea;
+        }
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 10px 5px;
+        }
+        .btn:hover {
+            background: #5a67d8;
+        }
+        .info {
+            background: #f0f4ff;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+        pre {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 DLT Test File Generator</h1>
+        <p>Genera file .dlt di test con storage header validi per testare il DLT Timestamp Viewer.</p>
+
+        <div class="info">
+            <strong>Info:</strong> Questo tool genera file DLT v1 con storage header validi contenenti messaggi di esempio con timestamp.
+        </div>
+
+        <button class="btn" onclick="generateSimpleDlt()">📄 Genera File Semplice (5 messaggi)</button>
+        <button class="btn" onclick="generateLargeDlt()">📦 Genera File Grande (100 messaggi)</button>
+        <button class="btn" onclick="generateCustomDlt()">⚙️ Genera File Custom</button>
+
+        <h2>Struttura File Generato</h2>
+        <pre id="structure">Storage Header v1 (16 bytes per messaggio):
+- Pattern: "DLT\x01" (4 bytes)
+- Seconds: Unix timestamp (4 bytes, big endian)
+- Microseconds: 0-999999 (4 bytes, big endian)
+- ECU ID: "ECU1" (4 bytes)
+
+Standard Header (4 bytes):
+- Header type: 0x21 (UEH=1, WEID=0, WSID=0, WTMS=0)
+- Message counter: incrementale
+- Message length: lunghezza totale (2 bytes, little endian)
+
+Extended Header (10 bytes):
+- Message info: 0x01 (verbose log message)
+- Number of arguments: 0
+- Application ID: "TEST" (4 bytes)
+- Context ID: "CTX1" (4 bytes)
+
+Payload: variabile</pre>
+
+        <div id="output" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        function createDltMessage(index, timestamp, ecuId = "ECU1", appId = "TEST", ctxId = "CTX1", payload = null) {
+            const messages = [];
+
+            // Storage Header (16 bytes)
+            const storageHeader = new ArrayBuffer(16);
+            const shView = new DataView(storageHeader);
+
+            // Pattern "DLT\x01"
+            shView.setUint8(0, 0x44); // 'D'
+            shView.setUint8(1, 0x4C); // 'L'
+            shView.setUint8(2, 0x54); // 'T'
+            shView.setUint8(3, 0x01); // version 1
+
+            // Timestamp (big endian)
+            shView.setUint32(4, timestamp.seconds, false);
+            shView.setInt32(8, timestamp.microseconds, false);
+
+            // ECU ID
+            for (let i = 0; i < 4; i++) {
+                shView.setUint8(12 + i, i < ecuId.length ? ecuId.charCodeAt(i) : 0);
+            }
+
+            // Standard Header + Extended Header + Payload
+            const payloadData = payload || `Message ${index}: Test log entry`;
+            const payloadBytes = new TextEncoder().encode(payloadData);
+
+            // Calculate message length (standard header + extended header + payload)
+            const messageLength = 4 + 10 + payloadBytes.length;
+
+            const message = new ArrayBuffer(messageLength);
+            const msgView = new DataView(message);
+
+            // Standard Header (4 bytes)
+            msgView.setUint8(0, 0x21); // htyp: UEH=1 (use extended header)
+            msgView.setUint8(1, index & 0xFF); // message counter
+            msgView.setUint16(2, messageLength, true); // length (little endian)
+
+            // Extended Header (10 bytes)
+            msgView.setUint8(4, 0x01); // msin: verbose log message
+            msgView.setUint8(5, 0x00); // noar: number of arguments
+
+            // Application ID
+            for (let i = 0; i < 4; i++) {
+                msgView.setUint8(6 + i, i < appId.length ? appId.charCodeAt(i) : 0);
+            }
+
+            // Context ID
+            for (let i = 0; i < 4; i++) {
+                msgView.setUint8(10 + i, i < ctxId.length ? ctxId.charCodeAt(i) : 0);
+            }
+
+            // Payload
+            const payloadOffset = 14;
+            for (let i = 0; i < payloadBytes.length; i++) {
+                msgView.setUint8(payloadOffset + i, payloadBytes[i]);
+            }
+
+            return { storageHeader, message };
+        }
+
+        function combineDltMessages(messages) {
+            // Calculate total size
+            let totalSize = 0;
+            messages.forEach(msg => {
+                totalSize += msg.storageHeader.byteLength + msg.message.byteLength;
+            });
+
+            // Create combined buffer
+            const combined = new Uint8Array(totalSize);
+            let offset = 0;
+
+            messages.forEach(msg => {
+                combined.set(new Uint8Array(msg.storageHeader), offset);
+                offset += msg.storageHeader.byteLength;
+                combined.set(new Uint8Array(msg.message), offset);
+                offset += msg.message.byteLength;
+            });
+
+            return combined;
+        }
+
+        function downloadDltFile(data, filename) {
+            const blob = new Blob([data], { type: 'application/octet-stream' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+
+            showOutput(`✅ File "${filename}" generato con successo!<br>
+                        Dimensione: ${data.byteLength} bytes<br>
+                        Messaggi: ${filename.includes('simple') ? '5' : filename.includes('large') ? '100' : 'custom'}`);
+        }
+
+        function showOutput(message) {
+            document.getElementById('output').innerHTML = `
+                <div style="background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745;">
+                    ${message}
+                </div>`;
+        }
+
+        function generateSimpleDlt() {
+            const messages = [];
+            const baseTime = Math.floor(Date.now() / 1000);
+
+            for (let i = 0; i < 5; i++) {
+                const timestamp = {
+                    seconds: baseTime + (i * 10),
+                    microseconds: i * 100000
+                };
+
+                messages.push(createDltMessage(
+                    i + 1,
+                    timestamp,
+                    "ECU1",
+                    "TEST",
+                    "CTX1",
+                    `Simple test message ${i + 1} - Testing DLT timestamp viewer`
+                ));
+            }
+
+            const dltData = combineDltMessages(messages);
+            downloadDltFile(dltData, 'test_simple.dlt');
+        }
+
+        function generateLargeDlt() {
+            const messages = [];
+            const baseTime = Math.floor(Date.now() / 1000) - 3600; // 1 ora fa
+
+            for (let i = 0; i < 100; i++) {
+                const timestamp = {
+                    seconds: baseTime + (i * 36), // Un messaggio ogni 36 secondi
+                    microseconds: (i * 12345) % 1000000
+                };
+
+                const ecuId = `ECU${(i % 3) + 1}`;
+                const appId = i % 2 === 0 ? "APP1" : "APP2";
+                const ctxId = `CTX${(i % 4) + 1}`;
+
+                messages.push(createDltMessage(
+                    i + 1,
+                    timestamp,
+                    ecuId,
+                    appId,
+                    ctxId,
+                    `Log entry ${i + 1}: Performance test message with various ECU IDs and contexts`
+                ));
+            }
+
+            const dltData = combineDltMessages(messages);
+            downloadDltFile(dltData, 'test_large.dlt');
+        }
+
+        function generateCustomDlt() {
+            const numMessages = parseInt(prompt('Numero di messaggi da generare:', '10'));
+            if (!numMessages || numMessages < 1) return;
+
+            const messages = [];
+            const baseTime = Math.floor(Date.now() / 1000);
+
+            for (let i = 0; i < numMessages; i++) {
+                const timestamp = {
+                    seconds: baseTime + (i * 5),
+                    microseconds: (i * 50000) % 1000000
+                };
+
+                messages.push(createDltMessage(
+                    i + 1,
+                    timestamp,
+                    "CUST",
+                    "MYAP",
+                    "MYCT",
+                    `Custom message ${i + 1} generated at ${new Date(timestamp.seconds * 1000).toISOString()}`
+                ));
+            }
+
+            const dltData = combineDltMessages(messages);
+            downloadDltFile(dltData, `test_custom_${numMessages}.dlt`);
+        }
+
+        // Auto-generate simple file on page load for convenience
+        window.onload = function() {
+            showOutput('💡 Clicca uno dei pulsanti sopra per generare un file DLT di test.');
+        };
+    </script>
+</body>
+</html>
