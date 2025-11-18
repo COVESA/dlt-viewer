@@ -552,10 +552,6 @@ void MainWindow::initSignalConnections()
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_actionFindNext()));
 
-   // connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
-   // connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
-   // ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
-
     /* Connect Search dialog find to action History */
     connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
 
@@ -566,9 +562,9 @@ void MainWindow::initSignalConnections()
 
     /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
     m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);
-    connect(m_shortcut_searchnext, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonNext_clicked() ) );
+    connect(m_shortcut_searchnext, &QShortcut::activated, searchDlg, &SearchDialog::findNextClicked);
     m_shortcut_searchprev = new QShortcut(QKeySequence("F2"), this);
-    connect(m_shortcut_searchprev, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
+    connect(m_shortcut_searchprev, &QShortcut::activated, searchDlg, &SearchDialog::findPreviousClicked);
 
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
@@ -1167,7 +1163,6 @@ void MainWindow::onOpenTriggered(QStringList filenames)
     outputfileIsTemporary = false;
 
     searchDlg->setMatch(false);
-    searchDlg->setOnceClicked(false);
     searchDlg->focusRow(-1);
     searchDlg->setStartLine(-1);
 }
