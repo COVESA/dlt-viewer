@@ -30,6 +30,12 @@
 
 #define DEFAULT_REFRESH_RATE 20
 
+/**
+ * Application options. Used by the UI.
+ *
+ * @see MainWindow
+ * @see SettingsDialog
+ */
 class QDLT_EXPORT QDltSettingsManager
 {
 // Singleton pattern

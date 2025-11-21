@@ -156,6 +156,12 @@ typedef struct mdf_hdr {
         quint64 link_count;     /* number of links in link section */
 } PACKED mdf_hdr_t;
 
+/**
+ * Class used for UI import functions. Currently implemented as a thread that must be fed
+ * messages individually - this is suboptimal.
+ *
+ * Function names are nondescript.
+ */
 class QDLT_EXPORT QDltImporter : public QThread
 {
     Q_OBJECT

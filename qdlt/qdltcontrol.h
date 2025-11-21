@@ -32,6 +32,17 @@
 
 #include "export_rules.h"
 
+/**
+ * This class contains various signals used in MainWindow, corresponding to user commands.
+ * Execution of the commands is in UI code. Signals defined here are
+ * connected to slots in e.g. MainWindow.
+ * (rem. private slots can be invoked by arbitrary components)
+ *
+ * Also passed to plugins via MainWindow -> QDltPluginManager
+ *
+ * @see MainWindow::sendInjection
+ * @see MainWindow::jumpToMsgSignal
+ */
 class QDLT_EXPORT QDltControl : public QObject
 {
       Q_OBJECT
