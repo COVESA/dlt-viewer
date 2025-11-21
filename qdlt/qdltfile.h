@@ -68,6 +68,8 @@ public:
     */
     ~QDltFile();
 
+    static QVector<qint64> scanDltMessagePositions(QIODevice *device);
+
     void clear();
 
     int getNumberOfFiles() const;
