@@ -343,6 +343,11 @@ bool DltFileIndexer::index(int num)
     while(length>0); // overall "do loop"
     qDebug() << "Create index: Finish";
 
+    for (const auto& pos : indexAllList)
+    {
+        qDebug() << "Index at position:" << pos;
+    }
+
     if ( errors_in_file != 0 )
     {
     qDebug() << "Indexing error:" << errors_in_file << "wrong DLT message headers found during indexing" << msgindex << "messages";
