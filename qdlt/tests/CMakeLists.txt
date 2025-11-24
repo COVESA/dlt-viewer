@@ -1,23 +1,24 @@
-add_executable(test_dltmessagematcher
+add_executable(test_qdlt
     test_dltmessagematcher.cpp
     test_dltctrlmsg.cpp
+    test_qdltargument.cpp
+    test_qdltmsgwrapper.cpp
 )
 target_link_libraries(
-  test_dltmessagematcher
+  test_qdlt
   PRIVATE
     GTest::gtest_main
     qdlt
 )
 
 add_test(
-  NAME test_dltmessagematcher
-  COMMAND $<TARGET_FILE:test_dltmessagematcher>
+  NAME test_qdlt
+  COMMAND $<TARGET_FILE:test_qdlt>
 )
 
-
+# opt manager has its own test executable since its a singleton
 add_executable(test_dltoptmanager
     test_dltoptmanager.cpp
-    test_dltctrlmsg.cpp
 )
 
 target_link_libraries(
@@ -32,22 +33,7 @@ add_test(
   COMMAND $<TARGET_FILE:test_dltoptmanager>
 )
 
-add_executable(test_qdltargument
-    test_qdltargument.cpp
-)
-
-target_link_libraries(
-  test_qdltargument
-  PRIVATE
-    GTest::gtest_main
-    qdlt
-)
-
-add_test(
-  NAME test_qdltargument
-  COMMAND $<TARGET_FILE:test_qdltargument>
-)
-
+# dltv2fileraw test configures its working directory to use test data file located in the source dir
 add_test(
   NAME test_dltv2fileraw
   COMMAND $<TARGET_FILE:test_dltv2fileraw> 
