@@ -43,6 +43,8 @@
  #define DAYLIGHT daylight
 #endif
 
+bool SettingsDialog::columnBoolean = false;
+bool SettingsDialog::checked = false;
 
 SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
 
@@ -120,6 +122,8 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->fmaxFileSizeMB = 0.0;
     settings->appendDateTime = 0;
+
+    initializeFeatureStateMap();
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -204,6 +208,106 @@ void SettingsDialog::resetSettings()
     }
 }
 
+void SettingsDialog::initializeFeatureStateMap() {
+    featureStateMap[5] = { ui->groupBoxAppId, ui->radioButtonAppId, ui->radioButtonAppIdDesc };
+    featureStateMap[6] = { ui->groupBoxConId, ui->radioButtonConId, ui->radioButtonConIdDesc };
+    featureStateMap[7] = {ui->groupBoxSessionId, ui->radioButtonSessionId,ui->radioButtonSessionName};
+
+    for (auto it = featureStateMap.begin(); it != featureStateMap.end(); ++it) {
+        int column = it.key();
+        GroupRadioState& state = it.value();
+
+        qDebug() << "featureStateMap_column : " << it.key();
+
+        qDebug() << "state : " ;
+
+               // Save initial state
+        state.groupBox->setProperty("lastState", state.groupBox->isChecked());
+
+               // Connect toggle and pass column, checked status
+        connect(state.groupBox, &QGroupBox::toggled, this, [=](bool checked) {
+            updateCheckboxState(column, checked);
+        });
+
+        connect(state.radioBtn1, &QRadioButton::toggled, this, [=](bool checked) {
+            if (checked) {
+                featureStateMap[column].wasFirstRadioSelected = true;
+            }
+        });
+        connect(state.radioBtn2, &QRadioButton::toggled, this, [=](bool checked) {
+            if (checked) {
+                featureStateMap[column].wasFirstRadioSelected = false;
+            }
+        });
+    }
+}
+
+void SettingsDialog::updateCheckboxState(int column, bool checked) {
+
+    if(!ui){
+        qDebug() << "NO UI.....";
+        return;
+    }
+
+    QMap<int, QCheckBox*> columnCheckboxMap;
+    QMap<int, QGroupBox*> columnGroupboxMap;
+
+    columnCheckboxMap[0] = ui->checkBoxIndex;
+    columnCheckboxMap[1] = ui->checkBoxTime;
+    columnCheckboxMap[2] = ui->checkBoxTimestamp;
+    columnCheckboxMap[3] = ui->checkBoxCount;
+    columnCheckboxMap[4] = ui->checkBoxEcuid;
+    columnCheckboxMap[8] = ui->checkBoxType;
+    columnCheckboxMap[9] = ui->checkBoxSubtype;
+    columnCheckboxMap[10] = ui->checkBoxMode;
+    columnCheckboxMap[13] = ui->checkBoxPayload;
+
+    columnGroupboxMap[5] = ui->groupBoxAppId;
+    columnGroupboxMap[6] = ui->groupBoxConId;
+    columnGroupboxMap[7] = ui->groupBoxSessionId;
+
+    if (columnCheckboxMap.contains(column) && columnBoolean == true) {
+        QCheckBox* checkbox = columnCheckboxMap[column];
+        if (checkbox) {
+            checkbox->blockSignals(true);  // Avoid signal loop
+            checkbox->setChecked(checked);
+            checkbox->blockSignals(false);
+        }
+    }
+
+    else if(columnGroupboxMap.contains(column) && columnBoolean == true)
+    {
+
+        QGroupBox* groupbox = columnGroupboxMap[column];
+
+        if(groupbox){
+            groupbox->blockSignals(true);  // Avoid signal loop
+            groupbox->setChecked(checked);
+            groupbox->blockSignals(false);
+        }
+
+        GroupRadioState& state = featureStateMap[column];
+        bool lastChecked = state.groupBox->property("lastState").toBool();
+
+        if (checked != lastChecked) {
+            state.groupBox->setProperty("lastState", checked);
+
+            if (!checked) {
+                // Save current radio button state before disabling
+                state.wasFirstRadioSelected = state.radioBtn1->isChecked();
+            }
+        }
+
+        if (checked) {
+            // Restore saved radio button state
+            if (state.wasFirstRadioSelected)
+                state.radioBtn1->setChecked(true);
+            else
+                state.radioBtn2->setChecked(true);
+        }
+    }
+}
+
 void SettingsDialog::writeDlg()
 {
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
@@ -275,101 +379,153 @@ void SettingsDialog::writeDlg()
     ui->checkBoxDST->setCheckState(settings->dst?Qt::Checked:Qt::Unchecked);
     ui->comboBoxUTCOffset->setCurrentIndex(ui->comboBoxUTCOffset->findData(QVariant(settings->utcOffset)));
 
-    ui->checkBoxIndex->setCheckState(settings->showIndex?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxTime->setCheckState(settings->showTime?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxTimestamp->setCheckState(settings->showTimestamp?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxCount->setCheckState(settings->showCount?Qt::Checked:Qt::Unchecked);
+    if(columnBoolean == false){
 
-    ui->checkBoxEcuid->setCheckState(settings->showEcuId?Qt::Checked:Qt::Unchecked);
+        ui->checkBoxIndex->setCheckState(settings->showIndex?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxIndex, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(0, checked);
+        });
 
-    ui->groupBoxAppId->setChecked(settings->showApId);
-    if(ui->groupBoxAppId->isChecked())
-    {
-        ui->radioButtonAppId->setEnabled(true);
-        ui->radioButtonAppIdDesc->setEnabled(true);
-    }
-    else
-    {
-        ui->radioButtonAppId->setEnabled(false);
-        ui->radioButtonAppIdDesc->setEnabled(false);
-    }
-    switch(settings->showApIdDesc)
-    {
-    case 0:
-        ui->radioButtonAppId->setChecked(true);
-        ui->radioButtonAppIdDesc->setChecked(false);
-        break;
-    case 1:
-        ui->radioButtonAppId->setChecked(false);
-        ui->radioButtonAppIdDesc->setChecked(true);
-        break;
-    default:
-        ui->radioButtonAppId->setChecked(true);
-        ui->radioButtonAppIdDesc->setChecked(false);
-        break;
+        ui->checkBoxTime->setCheckState(settings->showTime?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxTime, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(1, checked);
+        });
+
+        ui->checkBoxTimestamp->setCheckState(settings->showTimestamp?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxTimestamp, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(2, checked);
+        });
+
+        ui->checkBoxCount->setCheckState(settings->showCount?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxCount, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(3, checked);
+        });
+
+        ui->checkBoxEcuid->setCheckState(settings->showEcuId?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxEcuid, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(4, checked);
+        });
+
+        ui->groupBoxAppId->setChecked(settings->showApId);
+        if(ui->groupBoxAppId->isChecked())
+        {
+            ui->radioButtonAppId->setEnabled(true);
+            ui->radioButtonAppIdDesc->setEnabled(true);
+        }
+        else
+        {
+            ui->radioButtonAppId->setEnabled(false);
+            ui->radioButtonAppIdDesc->setEnabled(false);
+        }
+
+        connect(ui->groupBoxAppId, &QGroupBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(5, checked);
+        });
+
+        switch(settings->showApIdDesc)
+        {
+        case 0:
+            ui->radioButtonAppId->setChecked(true);
+            ui->radioButtonAppIdDesc->setChecked(false);
+            break;
+        case 1:
+            ui->radioButtonAppId->setChecked(false);
+            ui->radioButtonAppIdDesc->setChecked(true);
+            break;
+        default:
+            ui->radioButtonAppId->setChecked(true);
+            ui->radioButtonAppIdDesc->setChecked(false);
+            break;
+        }
+
+        ui->groupBoxConId->setChecked(settings->showCtId);
+        if(ui->groupBoxConId->isChecked())
+        {
+            ui->radioButtonConId->setEnabled(true);
+            ui->radioButtonConIdDesc->setEnabled(true);
+        }
+        else
+        {
+            ui->radioButtonConId->setEnabled(false);
+            ui->radioButtonConIdDesc->setEnabled(false);
+        }
+
+        connect(ui->groupBoxConId, &QGroupBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(6, checked);
+        });
+
+        switch(settings->showCtIdDesc)
+        {
+        case 0:
+            ui->radioButtonConId->setChecked(true);
+            ui->radioButtonConIdDesc->setChecked(false);
+            break;
+        case 1:
+            ui->radioButtonConId->setChecked(false);
+            ui->radioButtonConIdDesc->setChecked(true);
+            break;
+        default:
+            ui->radioButtonConId->setChecked(true);
+            ui->radioButtonConIdDesc->setChecked(false);
+            break;
+        }
+
+        ui->groupBoxSessionId->setChecked(settings->showSessionId);
+        if(ui->groupBoxSessionId->isChecked())
+        {
+            ui->radioButtonSessionId->setEnabled(true);
+            ui->radioButtonSessionName->setEnabled(true);
+        }
+        else
+        {
+            ui->radioButtonSessionId->setEnabled(false);
+            ui->radioButtonSessionName->setEnabled(false);
+        }
+
+        connect(ui->groupBoxSessionId, &QGroupBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(7, checked);
+        });
+
+        switch(settings->showSessionName)
+        {
+        case 0:
+            ui->radioButtonSessionId->setChecked(true);
+            ui->radioButtonSessionName->setChecked(false);
+            break;
+        case 1:
+            ui->radioButtonSessionId->setChecked(false);
+            ui->radioButtonSessionName->setChecked(true);
+            break;
+        default:
+            ui->radioButtonSessionId->setChecked(true);
+            ui->radioButtonSessionName->setChecked(false);
+            break;
+        }
+
+        ui->checkBoxType->setCheckState(settings->showType?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxType, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(8, checked);
+        });
+
+        ui->checkBoxSubtype->setCheckState(settings->showSubtype?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxSubtype, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(9, checked);
+        });
+
+        ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxMode, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(10, checked);
+        });
+
+        ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
+        connect(ui->checkBoxPayload, &QCheckBox::toggled, this, [=](bool checked){
+            emit columnVisibilityChanged(13, checked);
+        });
+
+        ui->groupBoxMessageId->setChecked(settings->showMsgId);
     }
 
-    ui->groupBoxConId->setChecked(settings->showCtId);
-    if(ui->groupBoxConId->isChecked())
-    {
-        ui->radioButtonConId->setEnabled(true);
-        ui->radioButtonConIdDesc->setEnabled(true);
-    }
-    else
-    {
-        ui->radioButtonConId->setEnabled(false);
-        ui->radioButtonConIdDesc->setEnabled(false);
-    }
-    switch(settings->showCtIdDesc)
-    {
-    case 0:
-        ui->radioButtonConId->setChecked(true);
-        ui->radioButtonConIdDesc->setChecked(false);
-        break;
-    case 1:
-        ui->radioButtonConId->setChecked(false);
-        ui->radioButtonConIdDesc->setChecked(true);
-        break;
-    default:
-        ui->radioButtonConId->setChecked(true);
-        ui->radioButtonConIdDesc->setChecked(false);
-        break;
-    }
-
-    ui->groupBoxSessionId->setChecked(settings->showSessionId);
-    if(ui->groupBoxSessionId->isChecked())
-    {
-        ui->radioButtonSessionId->setEnabled(true);
-        ui->radioButtonSessionName->setEnabled(true);
-    }
-    else
-    {
-        ui->radioButtonSessionId->setEnabled(false);
-        ui->radioButtonSessionName->setEnabled(false);
-    }
-    switch(settings->showSessionName)
-    {
-    case 0:
-        ui->radioButtonSessionId->setChecked(true);
-        ui->radioButtonSessionName->setChecked(false);
-        break;
-    case 1:
-        ui->radioButtonSessionId->setChecked(false);
-        ui->radioButtonSessionName->setChecked(true);
-        break;
-    default:
-        ui->radioButtonSessionId->setChecked(true);
-        ui->radioButtonSessionName->setChecked(false);
-        break;
-    }
-
-    ui->checkBoxType->setCheckState(settings->showType?Qt::Checked:Qt::Unchecked);
-
-    ui->checkBoxSubtype->setCheckState(settings->showSubtype?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxMode->setCheckState(settings->showMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxNoar->setCheckState(settings->showNoar?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxPayload->setCheckState(settings->showPayload?Qt::Checked:Qt::Unchecked);
-    ui->groupBoxMessageId->setChecked(settings->showMsgId);
     ui->spinBox_showArguments->setValue(settings->showArguments);
 
     /* other */
