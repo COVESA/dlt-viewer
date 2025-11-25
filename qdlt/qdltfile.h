@@ -35,6 +35,9 @@
 #include <time.h>
 #include <QCache>
 
+/**
+ * Object containing a single QFile and an index to offsets of DLT messages in it.
+ */
 class QDLT_EXPORT QDltFileItem
 {
 public:
@@ -49,11 +52,12 @@ public:
 
 };
 
-//! Access to a DLT log file.
-/*!
-  This class provide access to DLT log file.
-  This class is currently not thread safe.
-*/
+/**
+ * Access to a DLT log file.
+ *
+ * This class provide access to DLT log file.
+ * This class is currently not thread safe.
+ */
 class QDLT_EXPORT QDltFile : public QDlt
 {
 public:

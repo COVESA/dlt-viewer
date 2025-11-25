@@ -164,7 +164,10 @@
 #define DLT_SCOD_HEX        0x00010000
 #define DLT_SCOD_BIN        0x00018000
 /*
- * Definitions of DLT services.
+ * Definitions of DLT service IDs.
+ *
+ * Should correspond to AUTOSAR DLT protocol specification the DLT service
+ * implementation conforms to.
  */
 #define DLT_SERVICE_ID_SET_LOG_LEVEL                   0x01 /**< Service ID: Set log level */
 #define DLT_SERVICE_ID_SET_TRACE_STATUS                0x02 /**< Service ID: Set trace status */

@@ -28,10 +28,11 @@
 
 constexpr const auto DLT_MAX_MESSAGE_LEN = 1024*64;
 
-//! Base class for all DLT classes.
-/*!
-  This class contains helper functions needed for all DLT operations and classes.
-*/
+/**
+ * Base class for all DLT classes.
+ *
+ * This class contains helper functions needed for all DLT operations and classes.
+ */
 class QDLT_EXPORT QDlt
 {
 public:

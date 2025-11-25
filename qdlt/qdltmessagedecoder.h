@@ -27,6 +27,12 @@
 
 class QDltMsg;
 
+/**
+ * An interface for modifying a QDltMsg based on plugin-specific functionality.
+ *
+ * Designing the decoding to be done by expecting a message to be its own object
+ * is suboptimal and does not allow efficient organisation (memory, temporal, or otherwise).
+ */
 class QDLT_EXPORT QDltMessageDecoder
 {
 public:

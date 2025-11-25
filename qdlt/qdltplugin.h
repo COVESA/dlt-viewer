@@ -8,10 +8,10 @@
 #include "export_rules.h"
 
 
-//! Access class to a DLT Plugin to decode, view and control DLT messages
-/*!
-  This class loads a DLT Viewer Plugin library and provides functions to access the plugin.
-*/
+/**
+ * Class representing a DLT plugin. Plugins can be used to decode, view and control DLT messages.
+ * This class loads a DLT Viewer Plugin library and provides functions to access the plugin.
+ */
 class QDLT_EXPORT QDltPlugin
 {
 public:
