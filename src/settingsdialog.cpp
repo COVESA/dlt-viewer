@@ -43,6 +43,8 @@
  #define DAYLIGHT daylight
 #endif
 
+// Define default update check interval in months
+static const int DEFAULT_UPDATE_CHECK_MONTHS = 3;
 
 SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
 
@@ -120,6 +122,38 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->fmaxFileSizeMB = 0.0;
     settings->appendDateTime = 0;
+
+    loadUpdateSettings();
+
+    // Enable/disable spinbox based on selected radio button
+    connect(ui->defaultRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+        if (checked) {
+            ui->intervalspinBox->setEnabled(false);
+        }
+    });
+
+    connect(ui->customRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+        if (checked) {
+            ui->intervalspinBox->setEnabled(true);
+            ui->intervalUnit->setEnabled(true);
+        }
+    });
+
+    connect(ui->defaultRadioButton, &QRadioButton::clicked, this, [=](){
+        emit intervalModeChanged(false, 2);   // Default mode → 2 minutes
+    });
+
+    connect(ui->customRadioButton, &QRadioButton::clicked, this, [=](){
+        emit intervalModeChanged(true, ui->intervalspinBox->value());
+    });
+
+    connect(ui->intervalspinBox, qOverload<int>(&QSpinBox::valueChanged),
+            this, [=](int val){
+                if (ui->customRadioButton->isChecked()) {
+                    emit intervalModeChanged(true, val);
+                }
+            });
+
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -132,6 +166,31 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+}
+
+void SettingsDialog::loadUpdateSettings()
+{
+    QSettings settings("MyCompany", "DLTViewer");
+
+    bool isCustom = settings.value("updateCheck/useCustom", false).toBool();
+    int interval = settings.value("updateCheck/customMonths", DEFAULT_UPDATE_CHECK_MONTHS).toInt();
+
+    if (isCustom)
+        ui->customRadioButton->setChecked(true);
+    else
+        ui->defaultRadioButton->setChecked(true);
+
+    ui->intervalspinBox->setEnabled(isCustom);
+    ui->intervalspinBox->setValue(interval);
+
+}
+
+void SettingsDialog::saveUpdateSettings()
+{
+    QSettings settings("MyCompany", "DLTViewer");
+
+    settings.setValue("updateCheck/useCustom", ui->customRadioButton->isChecked());
+    settings.setValue("updateCheck/customMonths", ui->intervalspinBox->value());
 }
 
 void SettingsDialog::changeEvent(QEvent *e)
@@ -490,6 +549,7 @@ void SettingsDialog::readDlg()
                            QMessageBox::Ok);
         msgBox.exec();
     }
+    saveUpdateSettings();
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)
