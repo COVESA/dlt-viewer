@@ -27,7 +27,6 @@
 #include <QFile>
 #include <QDateTime>
 #include <QMutex>
-#include <time.h>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QRegularExpression>
