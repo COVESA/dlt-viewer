@@ -50,6 +50,7 @@
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
+#include "updatechecker.h"
 
 /**
  * @brief Namespace to contain the toolbar positions.
@@ -164,6 +165,9 @@ private:
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
+
+    /* Update Checker class for automatic pop up for new updates*/
+    UpdateChecker *updChecker;
 
     /* injections */
     QString injectionAplicationId;
@@ -494,6 +498,7 @@ private slots:
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
     void on_actionShortcuts_List_triggered();
+    void on_actionCheck_For_Latest_Updates_triggered();
 
     // Config methods
     void on_action_menuConfig_Context_Delete_triggered();

@@ -78,7 +78,7 @@
 #include "qdltctrlmsg.h"
 #include <qdltmsgwrapper.h>
 #include "ecutree.h"
-
+#include "updatechecker.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -88,6 +88,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
+
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
@@ -111,7 +112,6 @@ MainWindow::MainWindow(QWidget *parent) :
     initSignalConnections();
 
     initFileHandling();
-
 
     /* Commands plugin after loading log file */
     qDebug() << "### Plugin commands after loading log file";
@@ -197,6 +197,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
     }
+
 }
 
 MainWindow::~MainWindow()
@@ -286,6 +287,10 @@ void MainWindow::initState()
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
     settingsDlg->readSettings();
+
+    /* Update Checker call for timer to check if there is any new update*/
+    updChecker = new UpdateChecker(this);
+    updChecker->startAutoCheck();
 
     if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
     {
@@ -621,6 +626,7 @@ void MainWindow::initView()
     addFilter->setShortcut((Qt::SHIFT | Qt::CTRL) | Qt::Key_A);
     connect(addFilter, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Add_triggered()));
     addAction(addFilter);
+
 }
 
 void MainWindow::initSignalConnections()
@@ -934,6 +940,7 @@ void MainWindow::initFileHandling()
             // normally load log file mutithreaded
             reloadLogFile();
     }
+
 }
 
 
@@ -5726,7 +5733,7 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     const QString shortcutNextMark = "F4";
     const QString shortcutPrevMark = "F5";
     const QString shortcutInfo = "F1";
-    const QString shortcutQuit = "Ctrl +- Q";
+    const QString shortcutQuit = "Ctrl + Q";
 
     // Store shortcuts dynamically using a list of pairs
     QList<QPair<QString, QString>> shortcutsList = {
@@ -5782,6 +5789,11 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     shortcutDialog->setLayout(layout);
     shortcutDialog->exec();
     delete shortcutDialog;
+}
+
+
+void MainWindow::on_actionCheck_For_Latest_Updates_triggered(){
+    updChecker->linkToUrl();
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
