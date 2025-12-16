@@ -29,10 +29,6 @@
 #include <QProgressDialog>
 #include <QSignalBlocker>
 
-/**
- * @brief Constructor for SearchDialog.
- * @param parent Parent widget.
- */
 SearchDialog::SearchDialog(QWidget *parent) :
                                               QDialog(parent),
                                               ui(new Ui::SearchDialog)
@@ -67,195 +63,94 @@ SearchDialog::SearchDialog(QWidget *parent) :
     updateColorbutton();
 }
 
-/**
- * @brief Destructor for SearchDialog.
- */
 SearchDialog::~SearchDialog()
 {
     clearCacheHistory();
     delete ui;
 }
 
-/**
- * @brief Selects and focuses the search text field.
- */
 void SearchDialog::selectText(){ui->lineEditText->setFocus();ui->lineEditText->selectAll();}
 
-/**
- * @brief Sets the header checkbox state.
- * @param header True to check, false to uncheck.
- */
 void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
 
-/**
- * @brief Sets the payload checkbox state.
- * @param payload True to check, false to uncheck.
- */
 void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
 
-/**
- * @brief Sets the case sensitivity checkbox state.
- * @param caseSensitive True to check, false to uncheck.
- */
 void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
 
-/**
- * @brief Sets the regular expression checkbox state.
- * @param regExp True to check, false to uncheck.
- */
 void SearchDialog::setRegExp(bool regExp) { ui->checkBoxRegExp->setCheckState(regExp?Qt::Checked:Qt::Unchecked);}
 
-/**
- * @brief Sets the search direction (next/previous).
- * @param next True for next, false for previous.
- */
 void SearchDialog::setNextClicked(bool next){nextClicked = next;}
 
-/**
- * @brief Sets the match flag.
- * @param matched True if matched.
- */
 void SearchDialog::setMatch(bool matched){match=matched;}
-/**
- * @brief Sets the once clicked flag.
- * @param clicked True if clicked once.
- */
+
 void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
 
-/**
- * @brief Appends a QLineEdit to the list of line edits.
- * @param lineEdit Pointer to QLineEdit.
- */
 void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
 
-/**
- * @brief Gets the search text.
- * @return Search text as QString.
- */
 QString SearchDialog::getText() { return ui->lineEditText->text(); }
 
-/**
- * @brief Aborts the ongoing search.
- */
 void SearchDialog::abortSearch()
 {
     isSearchCancelled = true;
 }
 
-/**
- * @brief Checks if header search is enabled.
- * @return True if enabled.
- */
 bool SearchDialog::getHeader()
 {
     return (ui->checkBoxHeader->checkState() == Qt::Checked);
 }
 
-/**
- * @brief Checks if payload search is enabled.
- * @return True if enabled.
- */
 bool SearchDialog::getPayload()
 {
     return (ui->checkBoxPayload->checkState() == Qt::Checked);
 }
 
-/**
- * @brief Checks if regular expression search is enabled.
- * @return True if enabled.
- */
 bool SearchDialog::getRegExp()
 {
     return (ui->checkBoxRegExp->checkState() == Qt::Checked);
 }
 
-/**
- * @brief Gets the search direction.
- * @return True if next, false if previous.
- */
 bool SearchDialog::getNextClicked(){return nextClicked;}
-/**
- * @brief Gets the once clicked flag
- * @return True if clicked.
- */
+
 bool SearchDialog::getOnceClicked(){return onceClicked;}
 
-/**
- * @brief Gets the APID text.
- * @return APID as QString.
- */
 QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
 
-/**
- * @brief Gets the CTID text.
- * @return CTID as QString.
- */
 QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
 
-/**
- * @brief Gets the start timestamp text.
- * @return Start timestamp as QString.
- */
 QString SearchDialog::getTimeStampStart()
 {
     //qDebug() << "content of start time" << ui->timeStartlineEdit->text()<< __LINE__;
     return ui->timeStartlineEdit->text();
 }
 
-
-/**
- * @brief Gets the end timestamp text.
- * @return End timestamp as QString.
- */
 QString SearchDialog::getTimeStampEnd()
 {
     //qDebug() << "content of end time" << ui->timeEndlineEdit->text() << __LINE__;
     return ui->timeEndlineEdit->text();
 }
 
-/**
- * @brief Checks if case sensitive search is enabled.
- * @return True if enabled.
- */
 bool SearchDialog::getCaseSensitive()
 {
     //qDebug() << "getCaseSensitive is" << ui->checkBoxCaseSensitive->checkState() << __LINE__;
     return (ui->checkBoxCaseSensitive->checkState() == Qt::Checked);
 }
 
-/**
- * @brief Checks if search to index is enabled.
- * @return True if enabled.
- */
 bool SearchDialog::searchtoIndex()
 {
     //qDebug() << "searchtoIndex is" << ui->checkBoxSearchIndex->checkState() << __LINE__;
     return (ui->checkBoxSearchIndex->checkState() == Qt::Checked);
 }
 
-/**
- * @brief Checks if search should start from beginning.
- * @return True if enabled.
- */
 bool SearchDialog::getSearchFromBeginning()
 {
     return (ui->radioButtonPosBeginning->isChecked());
 }
 
-/**
- * @brief Sets the start line for search.
- * @param start Line number.
- */
 void SearchDialog::setStartLine(long int start)
 {
     startLine=start;
 }
 
-/**
- * @brief Sets the color of the search box based on result.
- * @param lineEdit Pointer to QLineEdit.
- * @param result Result code.
- */
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
     QPalette palette = lineEdit->palette();
@@ -286,10 +181,6 @@ void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
     }
 }
 
-/**
- * @brief Focuses the specified row in the table.
- * @param searchLine Row number.
- */
 void SearchDialog::focusRow(long int searchLine)
 {
     TableModel *model = qobject_cast<TableModel *>(table->model());
@@ -306,10 +197,6 @@ void SearchDialog::focusRow(long int searchLine)
     model->modelChanged();
 }
 
-/**
- * @brief Main function to perform search.
- * @return Result code.
- */
 int SearchDialog::find()
 {
     isSearchCancelled = false;
@@ -478,13 +365,6 @@ int SearchDialog::find()
     return 0;
 }
 
-
-/**
- * @brief Iterates through messages and finds matches.
- * @param searchLine Start line.
- * @param searchBorder Border line.
- * @param searchTextRegExp Regular expression for search.
- */
 void SearchDialog::findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp)
 {
 
@@ -577,11 +457,6 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     stoptime();
 }
 
-/**
- * @brief Handles actions when a matching line is found.
- * @param searchLine Line number.
- * @return True to break search, false to continue.
- */
 bool SearchDialog::foundLine(long int searchLine)
 {
     match = true;
@@ -601,9 +476,6 @@ bool SearchDialog::foundLine(long int searchLine)
     return false;//don't break search here
 }
 
-/**
- * @brief Slot for Next button click.
- */
 void SearchDialog::on_pushButtonNext_clicked() // connected to main window line 424
 {
     /* For every new search, start payLoad and EndpayLoad will be different and hence member variable storing previous found
@@ -616,9 +488,6 @@ void SearchDialog::on_pushButtonNext_clicked() // connected to main window line 
     }
 }
 
-/**
- * @brief Slot for Previous button click.
- */
 void SearchDialog::on_pushButtonPrevious_clicked()
 {
     setNextClicked(false);
@@ -629,9 +498,6 @@ void SearchDialog::on_pushButtonPrevious_clicked()
     }
 }
 
-/**
- * @brief Slot for Find Next action.
- */
 void SearchDialog::findNextClicked()
 {
     setNextClicked(true);
@@ -643,9 +509,6 @@ void SearchDialog::findNextClicked()
     }
 }
 
-/**
- * @brief Slot for Find Previous action.
- */
 void SearchDialog::findPreviousClicked()
 {
     setNextClicked(false);
@@ -656,10 +519,6 @@ void SearchDialog::findPreviousClicked()
     }
 }
 
-/**
- * @brief Slot for text edited in main search box.
- * @param newText New text.
- */
 void SearchDialog::on_lineEditText_textEdited(QString newText)
 {
     {
@@ -673,10 +532,6 @@ void SearchDialog::on_lineEditText_textEdited(QString newText)
     }
 }
 
-/**
- * @brief Slot for text edited from toolbar.
- * @param newText New text.
- */
 void SearchDialog::textEditedFromToolbar(QString newText)
 {
     {
@@ -690,9 +545,6 @@ void SearchDialog::textEditedFromToolbar(QString newText)
     }
 }
 
-/**
- * @brief Slot for Color button click.
- */
 void SearchDialog::on_pushButtonColor_clicked()
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
@@ -708,9 +560,6 @@ void SearchDialog::on_pushButtonColor_clicked()
     updateColorbutton();
 }
 
-/**
- * @brief Updates the color button icon.
- */
 void SearchDialog::updateColorbutton()
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
@@ -721,28 +570,17 @@ void SearchDialog::updateColorbutton()
     ui->pushButtonColor->setIcon(px);
 }
 
-/**
- * @brief Adds a found line to the search index.
- * @param searchLine Line number.
- */
 void SearchDialog::addToSearchIndex(long int searchLine)
 {
     //qDebug() << "Add hit line to search table" << searchLine << __LINE__;
     m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));
 }
 
-/**
- * @brief Registers the search table model.
- * @param model Pointer to SearchTableModel.
- */
 void SearchDialog::registerSearchTableModel(SearchTableModel *model)
 {
     m_searchtablemodel = model;
 }
 
-/**
- * @brief Loads search history from cache.
- */
 void SearchDialog::loadSearchHistory()
 {
     // getting text of the action button clicked to load search history.
@@ -769,9 +607,6 @@ void SearchDialog::loadSearchHistory()
     emit refreshedSearchIndex();
 }
 
-/**
- * @brief Caches the current search history.
- */
 void SearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
@@ -780,19 +615,12 @@ void SearchDialog::cacheSearchHistory()
     cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
 }
 
-/**
- * @brief Clears the cached search history.
- */
 void SearchDialog::clearCacheHistory()
 {
     // obtaining the list of keys stored in cache
     cachedHistoryKey.clear();
 }
 
-/**
- * @brief Saves search history to persistent storage.
- * @param searchHistory Reference to QStringList of history.
- */
 void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
     //To save the search history
     QSettings settings("MyApp", "SearchHistory");
@@ -805,10 +633,6 @@ void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
     settings.endArray();
 }
 
-/**
- * @brief Loads search history from persistent storage.
- * @param searchHistory Reference to QStringList to populate.
- */
 void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
 {
   //To retrive the search history once DLT Viewer restarts
@@ -822,46 +646,27 @@ void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
     settings.endArray();
 }
 
-/**
- * @brief Slot for header checkbox toggled.
- * @param checked Checkbox state.
- */
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
-/**
- * @brief Slot for search index checkbox toggled.
- * @param checked Checkbox state.
- */
 void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
     setStartLine(-1);
 }
 
-/**
- * @brief Slot for case sensitivity checkbox toggled.
- * @param checked Checkbox state.
- */
 void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxCasesensitive", checked);
 }
 
-/**
- * @brief Slot for regular expression checkbox toggled.
- * @param checked Checkbox state.
- */
 void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
 }
 
-/**
- * @brief Starts timing for search duration.
- */
 void SearchDialog::starttime(void)
 {
     long int temps;
@@ -881,9 +686,6 @@ void SearchDialog::starttime(void)
 
 }
 
-/**
- * @brief Stops timing and logs search duration.
- */
 void SearchDialog::stoptime(void)
 {
     long int temps;
