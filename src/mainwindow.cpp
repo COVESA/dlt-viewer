@@ -3486,12 +3486,11 @@ void MainWindow::connectAll()
         connectECU(ecuitem);
     }
 
-    if (settings->autoScroll) {
-        const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
-                                                             : 1000 / DEFAULT_REFRESH_RATE;
-        drawTimer.start(drawInterval);
-        connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
-    }
+    // periodically update table view to account for the new incoming messages
+    const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                         : 1000 / DEFAULT_REFRESH_RATE;
+    drawTimer.start(drawInterval);
+    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
 }
 
 void MainWindow::disconnectAll()
