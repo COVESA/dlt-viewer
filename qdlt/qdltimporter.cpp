@@ -1249,7 +1249,6 @@ void QDltImporter::setPcapPorts(const QString &importPcapPorts)
     pcapPorts.clear();
     QStringList portList = importPcapPorts.split(' ');
 
-    unsigned short port;
     for (const QString& item : portList) {
         if(item.toUShort()!=0)
             pcapPorts.append(item.toUShort());

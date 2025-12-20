@@ -5,6 +5,7 @@
 
 #include <QString>
 #include <QRegularExpression>
+#include <QDateTime>
 
 #include <optional>
 #include <variant>
@@ -30,8 +31,12 @@ public:
         m_ctxId = ctxId;
     }
 
-    void setTimestapmRange(double start, double end) {
+    void setTimestampRange(double start, double end) {
         m_timestampRange = {start, end};
+    }
+
+    void setTimeRange(QDateTime start, QDateTime end) {
+        m_timeRange = {std::move(start), std::move(end)};
     }
 
     void setHeaderSearchEnabled(bool enabled) {
@@ -51,6 +56,7 @@ private:
     bool matchAppId(const QString& appId) const;
     bool matchCtxId(const QString& ctxId) const;
     bool matchTimestampRange(unsigned int ts) const;
+    bool matchTimeRange(const QDateTime& seconds) const;
 private:
     QString m_ctxId;
     QString m_appId;
@@ -60,6 +66,12 @@ private:
         double end;
     };
     std::optional<TimestampRange> m_timestampRange;
+
+    struct TimeRange {
+        QDateTime start;
+        QDateTime end;
+    };
+    std::optional<TimeRange> m_timeRange;
 
     Qt::CaseSensitivity m_caseSensitivity{Qt::CaseInsensitive};
 
