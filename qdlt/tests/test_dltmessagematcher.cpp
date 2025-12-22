@@ -44,17 +44,17 @@ TEST(DltMessageMatcher, matchTimestampRange) {
     EXPECT_TRUE(matcher.match(msg, QString{}));
 
     // in the range
-    matcher.setTimestapmRange(static_cast<double>(msg.getTimestamp() - 10) / 10'000,
+    matcher.setTimestampRange(static_cast<double>(msg.getTimestamp() - 10) / 10'000,
                               static_cast<double>(msg.getTimestamp() + 10) / 10'000);
     EXPECT_TRUE(matcher.match(msg, QString{}));
 
     // range is to the left
-    matcher.setTimestapmRange(static_cast<double>(msg.getTimestamp() - 100) / 10'000,
+    matcher.setTimestampRange(static_cast<double>(msg.getTimestamp() - 100) / 10'000,
                               static_cast<double>(msg.getTimestamp() - 10) / 10'000);
     EXPECT_FALSE(matcher.match(msg, QString{}));
 
     // range is to the right
-    matcher.setTimestapmRange(static_cast<double>(msg.getTimestamp() + 10) / 10'000,
+    matcher.setTimestampRange(static_cast<double>(msg.getTimestamp() + 10) / 10'000,
                               static_cast<double>(msg.getTimestamp() + 100) / 10'000);
     EXPECT_FALSE(matcher.match(msg, QString{}));
 }

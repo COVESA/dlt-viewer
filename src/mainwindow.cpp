@@ -553,10 +553,6 @@ void MainWindow::initSignalConnections()
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), searchDlg, SLOT(findNextClicked()));
     connect(m_searchActions.at(ToolbarPosition::FindNext), SIGNAL(triggered()), this, SLOT(on_actionFindNext()));
 
-   // connect(searchDlg->CheckBoxSearchtoList,SIGNAL(toggled(bool)),ui->actionSearchList,SLOT(setChecked(bool)));
-   // connect(ui->actionSearchList,SIGNAL(toggled(bool)),searchDlg->CheckBoxSearchtoList,SLOT(setChecked(bool)));
-   // ui->actionSearchList->setChecked(searchDlg->searchtoIndex());
-
     /* Connect Search dialog find to action History */
     connect(searchDlg,SIGNAL(addActionHistory()),this,SLOT(onAddActionToHistory()));
 
@@ -567,9 +563,9 @@ void MainWindow::initSignalConnections()
 
     /* adding shortcuts - regard: in the search window, the signal is caught by another way, this here only catches the keys when main window is active */
     m_shortcut_searchnext = new QShortcut(QKeySequence("F3"), this);
-    connect(m_shortcut_searchnext, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonNext_clicked() ) );
+    connect(m_shortcut_searchnext, &QShortcut::activated, searchDlg, &SearchDialog::findNextClicked);
     m_shortcut_searchprev = new QShortcut(QKeySequence("F2"), this);
-    connect(m_shortcut_searchprev, SIGNAL(activated()), searchDlg, SLOT( on_pushButtonPrevious_clicked() ) );
+    connect(m_shortcut_searchprev, &QShortcut::activated, searchDlg, &SearchDialog::findPreviousClicked);
 
     connect(ui->tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(sectionInTableDoubleClicked(int)));
 
@@ -1168,7 +1164,6 @@ void MainWindow::onOpenTriggered(QStringList filenames)
     outputfileIsTemporary = false;
 
     searchDlg->setMatch(false);
-    searchDlg->setOnceClicked(false);
     searchDlg->focusRow(-1);
     searchDlg->setStartLine(-1);
 }
@@ -5864,7 +5859,21 @@ void MainWindow::stateChangedIP(QAbstractSocket::SocketState socketState)
 
 void MainWindow::on_action_menuSearch_Find_triggered()
 {
-    //qDebug() << "on_action_menuSearch_Find_triggered" << __LINE__ << __FILE__;
+    if (searchDlg->needTimeRangeReset() && qfile.size() > 0) {
+        QDltMsg firstMessage, lastMessage;
+        const bool success =
+                (qfile.getMsg(0, firstMessage) && qfile.getMsg(qfile.size() - 1, lastMessage));
+        if (success) {
+            qint64 firstTimestampMSecsSinceEpoch = firstMessage.getTime() * 1000 + firstMessage.getMicroseconds() / 1000;
+            QDateTime firstTimestamp = QDateTime::fromMSecsSinceEpoch(firstTimestampMSecsSinceEpoch);
+
+            qint64 lastTimestampMSecsSinceEpoch = lastMessage.getTime() * 1000 + lastMessage.getMicroseconds() / 1000;
+            QDateTime lastTimestamp = QDateTime::fromMSecsSinceEpoch(lastTimestampMSecsSinceEpoch);
+
+            searchDlg->setTimeRange(firstTimestamp, lastTimestamp);
+        }
+    }
+
     searchDlg->open();
     searchDlg->selectText();
 }
@@ -7833,10 +7842,7 @@ void MainWindow::searchtable_cellSelected( QModelIndex index)
 }
 
 void MainWindow::on_comboBoxFilterSelection_currentTextChanged(const QString &arg1)
-//void MainWindow::on_comboBoxFilterSelection_textActivated(const QString &arg1)
 {
-    qDebug() << "on_comboBoxFilterSelection_currentTextChanged" << arg1;
-
     /* load current selected filter */
     if(!arg1.isEmpty() && project.LoadFilter(arg1,!ui->checkBoxAppendDefaultFilter->isChecked()))
     {
@@ -7849,7 +7855,6 @@ void MainWindow::on_comboBoxFilterSelection_currentTextChanged(const QString &ar
        ui->tabWidget->setCurrentWidget(ui->tabPFilter);
        on_filterWidget_itemSelectionChanged();
     }
-
 }
 
 void MainWindow::on_actionDefault_Filter_Reload_triggered()
