@@ -6,21 +6,9 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>600</width>
-    <height>359</height>
+    <width>588</width>
+    <height>454</height>
    </rect>
-  </property>
-  <property name="minimumSize">
-   <size>
-    <width>600</width>
-    <height>0</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>700</width>
-    <height>2000</height>
-   </size>
   </property>
   <property name="windowTitle">
    <string>Search</string>
@@ -29,303 +17,29 @@
    <iconset resource="resources/resource.qrc">
     <normaloff>:/toolbar/png/system-search.png</normaloff>:/toolbar/png/system-search.png</iconset>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="12" column="0" colspan="9">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="maximumSize">
-      <size>
-       <width>500</width>
-       <height>150</height>
-      </size>
-     </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <layout class="QHBoxLayout" name="_2">
+     <item>
+      <widget class="QLabel" name="labelSearch">
+       <property name="text">
+        <string>Text to search:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="lineEditSearch"/>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxStartFrom">
      <property name="title">
-      <string>Advanced</string>
+      <string>Search start from</string>
      </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>ApId:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="apIdlineEdit">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only messages of the given ApId are considered by the search &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the ApId to search text only for this ApId&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>CtId:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QLineEdit" name="ctIdlineEdit">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only messages of the given CtId are considered by the search &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the CtId to search text only for this CtId&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_8">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Only consider / show search hits inbetween the given time stamp range&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="text">
-         <string>Timestamp start:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="timeStartlineEdit">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Starting time stamp of format xxx.yyy&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp start after which the text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Timestamp end:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="3">
-       <widget class="QLineEdit" name="timeEndlineEdit">
-        <property name="toolTip">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stop time stamp of format xxx.yyy&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-        <property name="whatsThis">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enter the TimeStamp end before which this text would be searched&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="10" column="3">
-    <widget class="QCheckBox" name="checkBoxRegExp">
-     <property name="maximumSize">
-      <size>
-       <width>200</width>
-       <height>20</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Regular Expression</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="3">
-    <widget class="QCheckBox" name="checkBoxSearchIndex">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Look for all hits and show all the search results in the search results window. If disabled the single step search is active. Navigate through the serach results by next / previous buttons.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Find All</string>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="2">
-    <widget class="QCheckBox" name="checkBoxCaseSensitive">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Case Sensitive</string>
-     </property>
-     <property name="checked">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="2">
-    <widget class="QLineEdit" name="lineEditText">
-     <property name="minimumSize">
-      <size>
-       <width>299</width>
-       <height>0</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="2">
-    <widget class="QPushButton" name="pushButtonColor">
-     <property name="minimumSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>22</width>
-       <height>22</height>
-      </size>
-     </property>
-     <property name="text">
-      <string/>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>12</width>
-       <height>12</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="3">
-    <widget class="QCheckBox" name="checkBoxPayload">
-     <property name="text">
-      <string>Payload</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <widget class="QCheckBox" name="checkBoxHeader">
-     <property name="maximumSize">
-      <size>
-       <width>80</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Header</string>
-     </property>
-     <property name="checked">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="0">
-    <widget class="QLabel" name="label_2">
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>Search in:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>Text to search:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QLabel" name="label_5">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Highlight color:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="13" column="0" alignment="Qt::AlignLeft">
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="layoutDirection">
-      <enum>Qt::LeftToRight</enum>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Save</set>
-     </property>
-    </widget>
-   </item>
-   <item row="10" column="0">
-    <widget class="QLabel" name="label_4">
-     <property name="layoutDirection">
-      <enum>Qt::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>Search options:</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="9">
-    <widget class="QGroupBox" name="groupBox">
-     <property name="maximumSize">
-      <size>
-       <width>500</width>
-       <height>60</height>
-      </size>
-     </property>
-     <property name="title">
-      <string/>
-     </property>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QLabel" name="label_3">
-        <property name="maximumSize">
-         <size>
-          <width>120</width>
-          <height>20</height>
-         </size>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
-        <property name="text">
-         <string>Search start from:</string>
-        </property>
-       </widget>
-      </item>
+     <layout class="QHBoxLayout">
       <item>
        <widget class="QRadioButton" name="radioButtonPosBeginning">
-        <property name="minimumSize">
-         <size>
-          <width>120</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>120</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="layoutDirection">
-         <enum>Qt::LeftToRight</enum>
-        </property>
         <property name="text">
          <string>The beginning</string>
         </property>
@@ -335,13 +49,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QRadioButton" name="radioButtonPosCurrent">
-        <property name="maximumSize">
-         <size>
-          <width>120</width>
-          <height>16777215</height>
-         </size>
-        </property>
+       <widget class="QRadioButton" name="radioCurrent">
         <property name="text">
          <string>Current position</string>
         </property>
@@ -350,70 +58,267 @@
      </layout>
     </widget>
    </item>
-   <item row="13" column="1">
-    <widget class="QPushButton" name="pushButtonPrevious">
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
+   <item>
+    <layout class="QGridLayout">
+     <item row="0" column="0">
+      <widget class="QLabel" name="labelHighlight">
+       <property name="text">
+        <string>Highlight:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="buttonHighlightColor">
+       <property name="minimumSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>22</width>
+         <height>22</height>
+        </size>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="checkBoxFindAll">
+       <property name="toolTip">
+        <string>Look for all hits and show all the search results in the search results window. If disabled the single step search is active.</string>
+       </property>
+       <property name="text">
+        <string>Find All</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="labelSearchIn">
+       <property name="text">
+        <string>Search in:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QCheckBox" name="checkBoxHeader">
+       <property name="text">
+        <string>Header</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QCheckBox" name="checkBoxPayload">
+       <property name="text">
+        <string>Payload</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="labelSearchOptions">
+       <property name="text">
+        <string>Search options:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="checkBoxCaseSensitive">
+       <property name="text">
+        <string>Case Sensitive</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="checkBoxRegExp">
+       <property name="text">
+        <string>Regular Expression</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBoxAdvanced">
+     <property name="title">
+      <string>Advanced</string>
      </property>
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Go back to the last hit in the message table view&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Previous  (F2)</string>
-     </property>
-     <property name="shortcut">
-      <string>F2</string>
-     </property>
+     <layout class="QVBoxLayout">
+      <item>
+       <layout class="QHBoxLayout">
+        <item>
+         <widget class="QLabel" name="labelApld">
+          <property name="text">
+           <string>App ID:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditApld"/>
+        </item>
+        <item>
+         <widget class="QLabel" name="labelCtid">
+          <property name="text">
+           <string>Ctx ID:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEditCtid"/>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBoxRangeType">
+        <property name="title">
+         <string>Range Type</string>
+        </property>
+        <layout class="QHBoxLayout">
+         <item>
+          <widget class="QRadioButton" name="radioTimestamp">
+           <property name="text">
+            <string>Timestamp</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioTime">
+           <property name="text">
+            <string>Time</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QStackedWidget" name="stackedWidgetRange">
+        <property name="currentIndex">
+         <number>0</number>
+        </property>
+        <widget class="QWidget" name="pageTimestamp">
+         <layout class="QHBoxLayout">
+          <item>
+           <widget class="QLabel" name="labelTimestampStart">
+            <property name="text">
+             <string>start:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditTimestampStart">
+            <property name="toolTip">
+             <string>Starting time stamp of format xxx.yyy</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelTimestampEnd">
+            <property name="text">
+             <string>end:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditTimestampEnd">
+            <property name="toolTip">
+             <string>Stop time stamp of format xxx.yyy</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="pageTime">
+         <layout class="QHBoxLayout">
+          <item>
+           <widget class="QLabel" name="labelTimeStart">
+            <property name="text">
+             <string>start:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDateTimeEdit" name="dateTimeStart">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="displayFormat">
+             <string>yyyy/MM/dd HH:mm:ss.zzz</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="labelTimeEnd">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>end:</string>
+            </property>
+            <property name="alignment">
+             <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QDateTimeEdit" name="dateTimeEnd">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="displayFormat">
+             <string>yyyy/MM/dd HH:mm:ss.zzz</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="13" column="2">
-    <widget class="QPushButton" name="pushButtonNext">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-       <horstretch>0</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="minimumSize">
-      <size>
-       <width>100</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Go to next hit in the message table view&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-     </property>
-     <property name="text">
-      <string>Next  (F3)</string>
-     </property>
-     <property name="shortcut">
-      <string>F3</string>
-     </property>
-     <property name="default">
-      <bool>true</bool>
-     </property>
-    </widget>
+   <item>
+    <layout class="QHBoxLayout">
+     <item>
+      <widget class="QDialogButtonBox" name="buttonBox">
+       <property name="standardButtons">
+        <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
   </layout>
  </widget>
- <tabstops>
-  <tabstop>radioButtonPosCurrent</tabstop>
- </tabstops>
  <resources>
   <include location="resources/resource.qrc"/>
  </resources>
@@ -425,12 +330,12 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>292</x>
+     <y>430</y>
     </hint>
     <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
+     <x>292</x>
+     <y>226</y>
     </hint>
    </hints>
   </connection>
@@ -441,12 +346,12 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>293</x>
+     <y>430</y>
     </hint>
     <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
+     <x>293</x>
+     <y>226</y>
     </hint>
    </hints>
   </connection>
