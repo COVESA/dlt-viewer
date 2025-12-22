@@ -22,26 +22,14 @@
 
 #include <QDialog>
 #include <QTableView>
-#include <QTreeWidget>
 #include <QCheckBox>
-#include <QCache>
 
 #include "searchtablemodel.h"
 
-
-#if defined(_MSC_VER)
-#include <io.h>
-#include <time.h>
-#include <WinSock.h>
-#else
-#include <unistd.h>     /* for read(), close() */
-#include <sys/time.h>	/* for gettimeofday() */
-#endif
-
-
 namespace Ui {
-    class SearchDialog;
+class SearchDialog;
 }
+
 
 /**
  * @class SearchDialog
@@ -63,6 +51,13 @@ public:
     /**
      * @brief Destructor for SearchDialog.
      */
+
+class SearchDialog : public QDialog {
+    Q_OBJECT
+
+public:
+    explicit SearchDialog(QWidget *parent = nullptr);
+
     ~SearchDialog();
 
     /**
@@ -120,6 +115,8 @@ public:
     QDltPluginManager *pluginManager;
     QCheckBox *regexpCheckBox;
 
+    void setTimeRange(const QDateTime &min, const QDateTime &max);
+    bool needTimeRangeReset() const;
 private:
     Ui::SearchDialog *ui;
     SearchTableModel *m_searchtablemodel;
@@ -127,18 +124,18 @@ private:
     bool isSearchCancelled{false};
 
     long int startLine;
-    long searchseconds;
     bool nextClicked;
     bool match;
-    bool onceClicked;
     bool fSilentMode;
-    bool is_TimeStampSearchSelected;
+    bool is_TimeStampSearchSelected{false};
+    bool is_TimeSearchSelected{false};
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;
     QString TimeStampStoptime;
     double  dTimeStampStart;
     double  dTimeStampStop;
+    bool m_timeRangeResetNeeded{true};
 
     QString stApid;
     QString stCtid;
@@ -206,6 +203,9 @@ private:
      * @brief Main function to perform search.
      * @return Result code.
      */
+
+
+
     int find();
 
     /**
@@ -278,11 +278,10 @@ private:
     QString getPayLoadStampStart();
     QString getPayLoadStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
-    QList<QLineEdit*> *lineEdits;
-
-    QCheckBox *CheckBoxSearchtoList;
+    QList<QLineEdit*> lineEdits;
 
 private slots:
+
     /**
      * @brief Slot for text edited in main search box.
      * @param newText New text.
@@ -309,6 +308,13 @@ private slots:
      * @brief Slot for header checkbox toggled.
      * @param checked Checkbox state.
      */
+
+    void on_lineEditSearch_textEdited(QString newText);
+    void on_buttonHighlightColor_clicked();
+
+    void on_checkBoxFindAll_toggled(bool checked);
+
+
     void on_checkBoxHeader_toggled(bool checked);
     /**
      * @brief Slot for case sensitivity checkbox toggled.
