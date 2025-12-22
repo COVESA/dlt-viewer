@@ -32,8 +32,8 @@
 #include <QAction>
 
 SearchDialog::SearchDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::SearchDialog)
+                                              QDialog(parent),
+                                              ui(new Ui::SearchDialog)
 {
     ui->setupUi(this);
 
@@ -44,7 +44,7 @@ SearchDialog::SearchDialog(QWidget *parent) :
     lineEdits.append(ui->lineEditSearch);
     table = nullptr;
 
-    // at start we want to know if single step search or "fill search table mode" is active !
+           // at start we want to know if single step search or "fill search table mode" is active !
     bool checked = QDltSettingsManager::getInstance()->value("other/search/checkBoxSearchIndex", bool(true)).toBool();
     ui->checkBoxFindAll->setChecked(checked);
 
@@ -91,17 +91,28 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
+void SearchDialog::selectText(){ui->lineEditText->setFocus();ui->lineEditText->selectAll();}
+
 void SearchDialog::selectText() {
     ui->lineEditSearch->setFocus();
     ui->lineEditSearch->selectAll();
 }
 
 void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
+
 void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
+
 void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
+
 void SearchDialog::setRegExp(bool regExp) { ui->checkBoxRegExp->setCheckState(regExp?Qt::Checked:Qt::Unchecked);}
+
 void SearchDialog::setNextClicked(bool next){nextClicked = next;}
+
 void SearchDialog::setMatch(bool matched){match=matched;}
+
+void SearchDialog::setOnceClicked(bool clicked){onceClicked=clicked;}
+
+void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits->append(lineEdit);}
 
 void SearchDialog::setTimeRange(const QDateTime& min, const QDateTime& max) {
     ui->dateTimeStart->setDateTimeRange(min, max);
@@ -113,6 +124,7 @@ void SearchDialog::setTimeRange(const QDateTime& min, const QDateTime& max) {
 bool SearchDialog::needTimeRangeReset() const { return m_timeRangeResetNeeded; }
 
 void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits.append(lineEdit);}
+
 
 QString SearchDialog::getText() { return ui->lineEditSearch->text(); }
 
@@ -138,8 +150,16 @@ bool SearchDialog::getRegExp()
 
 bool SearchDialog::getNextClicked(){return nextClicked;}
 
+bool SearchDialog::getOnceClicked(){return onceClicked;}
+
+QString SearchDialog::getApIDText(){ return ui->apIdlineEdit->text();}
+
+QString SearchDialog::getCtIDText(){ return ui->ctIdlineEdit->text();}
+
+
 QString SearchDialog::getApIDText(){ return ui->lineEditApld->text();}
 QString SearchDialog::getCtIDText(){ return ui->lineEditCtid->text();}
+
 
 QString SearchDialog::getTimeStampStart()
 {
@@ -165,7 +185,6 @@ bool SearchDialog::searchtoIndex()
     return (ui->checkBoxFindAll->checkState() == Qt::Checked);
 }
 
-
 bool SearchDialog::getSearchFromBeginning()
 {
     return (ui->radioButtonPosBeginning->isChecked());
@@ -173,7 +192,7 @@ bool SearchDialog::getSearchFromBeginning()
 
 void SearchDialog::setStartLine(long int start)
 {
-  startLine=start;
+    startLine=start;
 }
 
 void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
@@ -240,7 +259,7 @@ int SearchDialog::find()
         return 0;
     }
 
-   if( ( (match == true) || ( getSearchFromBeginning() == false )) && false == searchtoIndex() )
+    if( ( (match == true) || ( getSearchFromBeginning() == false )) && false == searchtoIndex() )
     {
         // single step search
         QModelIndexList list = table->selectionModel()->selection().indexes();
@@ -258,10 +277,10 @@ int SearchDialog::find()
             setStartLine(index.row());
         }
     }
-   else
-   {
-      focusRow(-1);
-   }
+    else
+    {
+        focusRow(-1);
+    }
 
 
     if ( true == getSearchFromBeginning() )
@@ -271,19 +290,19 @@ int SearchDialog::find()
     else
     {
         if (table->selectionModel() != nullptr )
-         {
-          {
-           if ( false == table->selectionModel()->selectedIndexes().isEmpty() )
+        {
             {
-             if (table->selectionModel()->selectedIndexes().first().row() > -1)
-              {
-               lStartLine = table->selectionModel()->selectedIndexes().first().row();
-               setStartLine( lStartLine );
-              }
-           }
-          }
-         }
-         qDebug() << "Search starting at line" << startLine;
+                if ( false == table->selectionModel()->selectedIndexes().isEmpty() )
+                {
+                    if (table->selectionModel()->selectedIndexes().first().row() > -1)
+                    {
+                        lStartLine = table->selectionModel()->selectedIndexes().first().row();
+                        setStartLine( lStartLine );
+                    }
+                }
+            }
+        }
+        qDebug() << "Search starting at line" << startLine;
     }
 
     searchBorder = startLine;
@@ -307,7 +326,7 @@ int SearchDialog::find()
         {
             if ( false == fSilentMode)
             {
-            QMessageBox::warning(0, QString("Search"), QString("Invalid regular expression!"));
+                QMessageBox::warning(0, QString("Search"), QString("Invalid regular expression!"));
             }
             emit searchProgressChanged(false);
             return 1;
@@ -319,7 +338,7 @@ int SearchDialog::find()
         searchTextRegExpression.setPatternOptions(static_cast<QRegularExpression::PatternOption>(options));
     }
 
-    //check timestamp search pattern
+           //check timestamp search pattern
     TimeStampStarttime = getTimeStampStart();
     TimeStampStoptime = getTimeStampEnd();
 
@@ -328,24 +347,24 @@ int SearchDialog::find()
         dTimeStampStart = TimeStampStarttime.toDouble();
         dTimeStampStop = TimeStampStoptime.toDouble();
         if( (dTimeStampStop -  dTimeStampStart) >= 0 )
-         {
-         //qDebug() << "Timestamp search enabled" << dTimeStampStart << dTimeStampStop << __LINE__;
-         is_TimeStampSearchSelected = true;
-         }
+        {
+            //qDebug() << "Timestamp search enabled" << dTimeStampStart << dTimeStampStop << __LINE__;
+            is_TimeStampSearchSelected = true;
+        }
         else
         {
-         qDebug() << "Invalid timestamp range" << dTimeStampStart << dTimeStampStop << __LINE__;
-         is_TimeStampSearchSelected = false;
-         if ( false == fSilentMode)
-         {
-         QMessageBox::warning(0, QString("Search"), QString("Invalid timestamp range !"));
-         }
-         emit searchProgressChanged(false);
-         return 1;
+            qDebug() << "Invalid timestamp range" << dTimeStampStart << dTimeStampStop << __LINE__;
+            is_TimeStampSearchSelected = false;
+            if ( false == fSilentMode)
+            {
+                QMessageBox::warning(0, QString("Search"), QString("Invalid timestamp range !"));
+            }
+            emit searchProgressChanged(false);
+            return 1;
         }
     }
 
-    //check APID and CTID search
+           //check APID and CTID search
     stApid = getApIDText();
     stCtid = getCtIDText();
     if( stApid.size() > 0 || stCtid.size() > 0 ) // so we need to consider what is given here
@@ -355,7 +374,7 @@ int SearchDialog::find()
             qDebug() << "Given APID or CTID exceeds limit !";
             if ( false == fSilentMode)
             {
-            QMessageBox::warning(0, QString("Search"), QString("Given APID or CTID exceeds limit !"));
+                QMessageBox::warning(0, QString("Search"), QString("Given APID or CTID exceeds limit !"));
             }
             emit searchProgressChanged(false);
             return 2;
@@ -364,7 +383,7 @@ int SearchDialog::find()
     }
     else
     {
-     fIs_APID_CTID_requested = false;
+        fIs_APID_CTID_requested = false;
     }
 
     findMessages(startLine,searchBorder,searchTextRegExpression);
@@ -465,7 +484,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             }
         }
 
-        // Update progress every 0.5%
+               // Update progress every 0.5%
         if(searchLine%1000 == 0)
         {
             QApplication::processEvents();
@@ -521,6 +540,28 @@ bool SearchDialog::foundLine(long int searchLine)
     return false;//don't break search here
 }
 
+void SearchDialog::on_pushButtonNext_clicked() // connected to main window line 424
+{
+    /* For every new search, start payLoad and EndpayLoad will be different and hence member variable storing previous found
+     * value shoudl eb reset. */
+    setNextClicked(true);
+    int result = find();
+    for(int i=0; i<lineEdits->size();i++)
+    {
+        setSearchColour(lineEdits->at(i),result);
+    }
+}
+
+void SearchDialog::on_pushButtonPrevious_clicked()
+{
+    setNextClicked(false);
+    int result = find();
+    for(int i=0; i<lineEdits->size();i++)
+    {
+        setSearchColour(lineEdits->at(i),result);
+    }
+}
+
 void SearchDialog::findNextClicked()
 {
     setNextClicked(true);
@@ -528,7 +569,9 @@ void SearchDialog::findNextClicked()
     int result = find();
     for(int i=0; i<lineEdits.size();i++)
     {
+        setSearchColour(lineEdits->at(i),result);
        setSearchColour(lineEdits.at(i),result);
+
     }
 }
 
@@ -537,13 +580,27 @@ void SearchDialog::findPreviousClicked()
     setNextClicked(false);
 
     int result = find();
+    for(int i=0; i<lineEdits->size();i++){
+        setSearchColour(lineEdits->at(i),result);
     for(int i=0; i<lineEdits.size();i++){
        setSearchColour(lineEdits.at(i),result);
+
     }
 }
 
 void SearchDialog::on_lineEditSearch_textEdited(QString newText)
 {
+
+    {
+        // block signal so that it does not trigger a setText back on lineEdits->at(0)!
+        QSignalBlocker signalBlocker(lineEdits->at(1));
+        lineEdits->at(1)->setText(newText);
+    }
+    for(int i=0; i<lineEdits->size();i++){
+        if(lineEdits->at(0)->text().isEmpty())
+            setSearchColour(lineEdits->at(i),1);
+    }
+
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(0)!
             QSignalBlocker signalBlocker(lineEdits.at(1));
@@ -553,9 +610,22 @@ void SearchDialog::on_lineEditSearch_textEdited(QString newText)
             if(lineEdits.at(0)->text().isEmpty())
                 setSearchColour(lineEdits.at(i),1);
         }
+
 }
+
 void SearchDialog::textEditedFromToolbar(QString newText)
 {
+
+    {
+        // block signal so that it does not trigger a setText back on lineEdits->at(1)!
+        QSignalBlocker signalBlocker(lineEdits->at(0));
+        lineEdits->at(0)->setText(newText);
+    }
+    for(int i=0; i<lineEdits->size();i++){
+        if(lineEdits->at(0)->text().isEmpty())
+            setSearchColour(lineEdits->at(i),1);
+    }
+
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(1)!
             QSignalBlocker signalBlocker(lineEdits.at(0));
@@ -565,6 +635,7 @@ void SearchDialog::textEditedFromToolbar(QString newText)
             if(lineEdits.at(0)->text().isEmpty())
                 setSearchColour(lineEdits.at(i),1);
         }
+
 }
 
 void SearchDialog::on_buttonHighlightColor_clicked()
@@ -592,18 +663,16 @@ void SearchDialog::updateColorbutton()
     ui->buttonHighlightColor->setIcon(px);
 }
 
-
 void SearchDialog::addToSearchIndex(long int searchLine)
 {
     //qDebug() << "Add hit line to search table" << searchLine << __LINE__;
-    m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));    
- }
+    m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));
+}
 
 void SearchDialog::registerSearchTableModel(SearchTableModel *model)
 {
-    m_searchtablemodel = model;    
+    m_searchtablemodel = model;
 }
-
 
 void SearchDialog::loadSearchHistory()
 {
@@ -615,13 +684,13 @@ void SearchDialog::loadSearchHistory()
         text = action->text();
     }
 
-    // creating a local list to store the indexes related to the key retrieved from the cache.
+           // creating a local list to store the indexes related to the key retrieved from the cache.
     QList <unsigned long> tmp ;
     if(cachedHistoryKey.size() > 0)
     {
         tmp = cachedHistoryKey[text];
 
-        //deleting the previous search list and adding the cached search obtained to the model.
+               //deleting the previous search list and adding the cached search obtained to the model.
         m_searchtablemodel->clear_SearchResults();
         for (int i = 0;i < tmp.size();i++)
         {
@@ -634,9 +703,9 @@ void SearchDialog::loadSearchHistory()
 void SearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
-    QString searchBoxText = getText();  
+    QString searchBoxText = getText();
     m_searchHistory.append(m_searchtablemodel->m_searchResultList);
-    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());    
+    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());
 }
 
 void SearchDialog::clearCacheHistory()
@@ -672,10 +741,13 @@ void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
 
 void SearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
-   QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
+    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
+void SearchDialog::on_checkBoxSearchIndex_toggled(bool checked)
+
 void SearchDialog::on_checkBoxFindAll_toggled(bool checked)
+
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
     setStartLine(-1);
@@ -689,6 +761,46 @@ void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
+}
+
+void SearchDialog::starttime(void)
+{
+    long int temps;
+
+#if defined(_MSC_VER)
+    SYSTEMTIME systemtime;
+    GetSystemTime(&systemtime);
+    time_t timestamp_sec;
+    time(&timestamp_sec);
+    temps = (time_t)timestamp_sec;
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    temps = (time_t)tv.tv_sec;
+#endif
+    searchseconds = temps;
+
+}
+
+void SearchDialog::stoptime(void)
+{
+    long int temps;
+    long int dtemps;
+
+#if defined(_MSC_VER)
+    SYSTEMTIME systemtime;
+    GetSystemTime(&systemtime);
+    time_t timestamp_sec;
+    time(&timestamp_sec);
+    temps = (time_t)timestamp_sec;
+#else
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    temps = (time_t)tv.tv_sec;
+#endif
+
+    dtemps = temps - searchseconds;
+    qDebug() << "Time for search [s]" << dtemps;
 }
 
 
