@@ -442,6 +442,11 @@ public slots:
     void filterIndexEnd();
     void splitLogsEcuid();
 
+    void updateColumnVisibility(int column, bool isChecked);
+    void saveColumnState(int column, bool isChecked);
+    bool loadColumnState(int column);
+    void setupColumnCheckBox(QAction *SessionIDAction, int column);
+
 private slots:
 
     // Search methods
@@ -600,6 +605,8 @@ public slots:
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);
 
+    void callForCustomMenu(int column, bool checked);
+
 public:
 
     /* Project configuration containing ECU/APP/Context/Filter/Plugin configuration */
@@ -618,7 +625,12 @@ public:
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;
 
+    void fillColumnActions();
+    QMap<QAction*, int> columnActions;
+
 signals:
+    void dltFileLoaded(const QStringList& paths);
+    void columnToggledFromMainWindow(int column, bool checked);
     void dltFileLoaded();
 };
 
