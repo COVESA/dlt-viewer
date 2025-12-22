@@ -65,7 +65,7 @@ jobs:
       - name: Archive artifact
         run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/dist
       - name: Archive upload
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ success() }}
         with:
           name: DLT-Mac-${{ matrix.abi }}
@@ -94,7 +94,7 @@ jobs:
         run: ./build_viewer_debs_noble.sh
       - name: Archive artifact
         if: ${{ matrix.ubuntu == 'ubuntu-24.04' && success() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: DLTViewer-Ubuntu-24.04
           path: debtmp/covesa-dlt-viewer_*.deb
@@ -123,7 +123,7 @@ jobs:
           $env:CPACK_NSIS="true";
           ./build_sdk_windows_qt${{ matrix.qt }}_MSVC_cmake.bat
       - name: Archive artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: ${{ success() }}
         with:
           name: DLTViewer-windows-x86_64
@@ -210,7 +210,7 @@ jobs:
         tar -czvf "dist/DLTViewer-qt6-macos${{ matrix.osversion }}.tgz" -C $(pwd)/install .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: ${{ success() }}
       with:
         name: DLTViewer-macos${{ matrix.osversion }}-qt6
@@ -230,23 +230,23 @@ jobs:
 
       # TODO: restore AppImage build then enable this step, see https://github.com/COVESA/dlt-viewer/issues/717
       # - name: Download DLT Linux artifacts
-      #   uses: actions/download-artifact@v6
+      #   uses: actions/download-artifact@v7
       #   with:
       #     name: DLT-Linux
       #   continue-on-error: true
         
       - name: Download DLT macOS artifacts arm64
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: DLTViewer-macos15-qt6
 
       - name: Download DLT macOS artifacts x86
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: DLT-Mac-x86
 
       - name: Download DLT Windows artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: DLTViewer-windows-x86_64
 
