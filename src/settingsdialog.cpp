@@ -170,8 +170,8 @@ void SettingsDialog::loadUpdateSettings()
 {
     QSettings settings("MyCompany", "DLTViewer");
 
-    bool isCustom = settings.value("updateCheck/customEnabled", false).toBool();
-    int interval = settings.value("updateCheck/customInterval", 3).toInt();
+    bool isCustom = settings.value("updateCheck/useCustom", false).toBool();
+    int interval = settings.value("updateCheck/customMonths", 3).toInt();
 
     if (isCustom)
         ui->customRadioButton->setChecked(true);
@@ -187,8 +187,8 @@ void SettingsDialog::saveUpdateSettings()
 {
     QSettings settings("MyCompany", "DLTViewer");
 
-    settings.setValue("updateCheck/customEnabled", ui->customRadioButton->isChecked());
-    settings.setValue("updateCheck/customInterval", ui->intervalspinBox->value());
+    settings.setValue("updateCheck/useCustom", ui->customRadioButton->isChecked());
+    settings.setValue("updateCheck/customMonths", ui->intervalspinBox->value());
 }
 
 void SettingsDialog::changeEvent(QEvent *e)

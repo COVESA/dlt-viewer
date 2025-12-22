@@ -111,7 +111,7 @@ void updateChecker::startAutoCheck()
     int minutes = s.value("updateCheck/customMinutes", 2).toInt();
 
     if (!useCustom)
-        minutes = 2;  // default = 2 mins
+        minutes = 120;
 
     qDebug() << "[AutoCheck] Starting auto update timer every" << minutes << "minutes";
 
