@@ -22,34 +22,19 @@
 
 #include <QDialog>
 #include <QTableView>
-#include <QTreeWidget>
 #include <QCheckBox>
-#include <QCache>
 
 #include "searchtablemodel.h"
 
-
-#if defined(_MSC_VER)
-#include <io.h>
-#include <time.h>
-#include <WinSock.h>
-#else
-#include <unistd.h>     /* for read(), close() */
-#include <sys/time.h>	/* for gettimeofday() */
-#endif
-
-
 namespace Ui {
-    class SearchDialog;
+class SearchDialog;
 }
 
-
-class SearchDialog : public QDialog
-{
+class SearchDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit SearchDialog(QWidget *parent = 0);
+    explicit SearchDialog(QWidget *parent = nullptr);
     ~SearchDialog();
 
     void focusRow(long int searchLine);
@@ -74,6 +59,8 @@ public:
     QDltPluginManager *pluginManager;
     QCheckBox *regexpCheckBox;
 
+    void setTimeRange(const QDateTime &min, const QDateTime &max);
+    bool needTimeRangeReset() const;
 private:
     Ui::SearchDialog *ui;
     SearchTableModel *m_searchtablemodel;
@@ -81,18 +68,18 @@ private:
     bool isSearchCancelled{false};
 
     long int startLine;
-    long searchseconds;
     bool nextClicked;
     bool match;
-    bool onceClicked;
     bool fSilentMode;
-    bool is_TimeStampSearchSelected;
+    bool is_TimeStampSearchSelected{false};
+    bool is_TimeSearchSelected{false};
     bool fIs_APID_CTID_requested;
 
     QString TimeStampStarttime;
     QString TimeStampStoptime;
     double  dTimeStampStart;
     double  dTimeStampStop;
+    bool m_timeRangeResetNeeded{true};
 
     QString stApid;
     QString stCtid;
@@ -111,9 +98,6 @@ private:
     void setCaseSensitive(bool caseSensitive);
     void setNextClicked(bool next);
 
-    void starttime(void);
-    void stoptime(void);
-
     int find();
 
     bool getSearchFromBeginning();
@@ -123,7 +107,6 @@ private:
     bool getRegExp();
     bool getNextClicked();
     bool getClicked();
-    bool getOnceClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
     QString getApIDText();
@@ -133,18 +116,13 @@ private:
     QString getPayLoadStampStart();
     QString getPayLoadStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
-    QList<QLineEdit*> *lineEdits;
-
-    QCheckBox *CheckBoxSearchtoList;
+    QList<QLineEdit*> lineEdits;
 
 private slots:
-    void on_lineEditText_textEdited(QString newText);
-    void on_pushButtonPrevious_clicked();
-    void on_pushButtonNext_clicked();
-    void on_pushButtonColor_clicked();
+    void on_lineEditSearch_textEdited(QString newText);
+    void on_buttonHighlightColor_clicked();
 
-
-    void on_checkBoxSearchIndex_toggled(bool checked);
+    void on_checkBoxFindAll_toggled(bool checked);
 
     void on_checkBoxHeader_toggled(bool checked);
 
