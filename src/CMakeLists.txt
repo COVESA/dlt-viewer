@@ -85,6 +85,9 @@ add_executable(dlt-viewer
     fileexplorertab.ui
     fileexplorertab.h
     fileexplorertab.cpp
+    applicationdialog.ui contextdialog.ui ecudialog.ui exporterdialog.ui fileexplorertab.ui filterdialog.ui injectiondialog.ui jumptodialog.ui mainwindow.ui multiplecontextdialog.ui plugindialog.ui searchdialog.ui searchform.ui settingsdialog.ui
+    updatechecker.h
+    updatechecker.cpp
     applicationdialog.ui
     contextdialog.ui
     ecudialog.ui

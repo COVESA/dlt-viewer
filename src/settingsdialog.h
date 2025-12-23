@@ -28,6 +28,9 @@
 
 #define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
+// Define default update check interval in months
+static const int DEFAULT_UPDATE_CHECK_MONTHS = 3;
+
 namespace Ui {
     class SettingsDialog;
 }
@@ -57,9 +60,13 @@ public:
     QStringList getRecentFilters();
     QString getWorkingDirectory();
 
+    void loadUpdateSettings();
+    void saveUpdateSettings();
+
 Q_SIGNALS:
     void FilterPathChanged();
     void PluginsAutoloadChanged();
+    void intervalModeChanged(bool isCustom, int minutes);
 
 protected:
     void changeEvent(QEvent *e);
@@ -87,6 +94,7 @@ private slots:
     void on_checkBoxPluginsAutoload_stateChanged(int arg1);
     void on_pushButtonMarkerColor_clicked();
     void on_pushButtonSelectFont_clicked();
+
 };
 
 #endif // SETTINGSDIALOG_H
