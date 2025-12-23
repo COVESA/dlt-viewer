@@ -23,8 +23,11 @@
 #include <QDialog>
 #include <QTableView>
 #include <QCheckBox>
+#include <QCache>
+#include <QElapsedTimer>
 
 #include "searchtablemodel.h"
+#include "searchperformance.h"
 
 namespace Ui {
 class SearchDialog;
@@ -68,6 +71,10 @@ private:
     bool isSearchCancelled{false};
 
     long int startLine;
+    qint64 searchseconds{0};
+    QElapsedTimer searchTimer;
+    qint64 searchCpuTimeStart;
+    SearchPerformance performanceMeasure;
     bool nextClicked;
     bool match;
     bool fSilentMode;
@@ -97,6 +104,9 @@ private:
     void setPayload(bool payload);
     void setCaseSensitive(bool caseSensitive);
     void setNextClicked(bool next);
+
+    void starttime(const QString& searchTerm = "");
+    void stoptime(qint64 messagesProcessed = 0);
 
     int find();
 

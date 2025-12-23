@@ -31,6 +31,13 @@
 #include <QColorDialog>
 #include <QAction>
 
+#include <ctime>
+
+#if !defined(_MSC_VER)
+#include <sys/time.h>
+#include <time.h>
+#endif
+
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SearchDialog)
@@ -413,7 +420,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     int ctr = 0;
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
-    ScopedTimer timer{};
+    starttime(getText());
 
     if(getCaseSensitive() == true)
     {
@@ -500,6 +507,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             continue;
     }
     while( searchBorder != searchLine );
+    stoptime(ctr);
 }
 
 bool SearchDialog::foundLine(long int searchLine)
@@ -689,6 +697,46 @@ void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
+}
+
+
+void SearchDialog::starttime(const QString& searchTerm)
+{
+    // Start high-precision performance measurement
+    performanceMeasure.start(searchTerm);
+    // Start the high-resolution timer
+    searchTimer.start();
+    // Store CPU time at start (in milliseconds)
+#if defined(_MSC_VER)
+    {
+        const std::clock_t cpu = std::clock();
+        searchCpuTimeStart = (cpu == static_cast<std::clock_t>(-1))
+                                 ? 0
+                                 : (static_cast<qint64>(cpu) * 1000) / CLOCKS_PER_SEC;
+    }
+#else
+    struct timespec ts;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    searchCpuTimeStart = ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+#endif
+
+    const std::time_t timestamp_sec = std::time(nullptr);
+    searchseconds = static_cast<qint64>(timestamp_sec);
+
+}
+
+void SearchDialog::stoptime(qint64 messagesProcessed)
+{
+    qint64 temps;
+    qint64 dtemps;
+
+    QString perfReport = performanceMeasure.stop(messagesProcessed);
+    qDebug().noquote() << perfReport;
+    const std::time_t timestamp_sec = std::time(nullptr);
+    temps = static_cast<qint64>(timestamp_sec);
+
+    dtemps = temps - searchseconds;
+    qDebug() << "Time for search [s]" << dtemps;
 }
 
 

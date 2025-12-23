@@ -40,6 +40,8 @@ add_executable(dlt-viewer
     injectiondialog.cpp
     searchdialog.h
     searchdialog.cpp
+    searchperformance.h
+    searchperformance.cpp
     multiplecontextdialog.h
     multiplecontextdialog.cpp
     tablemodel.h
