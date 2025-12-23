@@ -3,16 +3,17 @@
 
 #include <QObject>
 #include <QNetworkAccessManager>
+#include <settingsdialog.h>
 
-class updateChecker : public QObject
+class UpdateChecker : public QObject
 {
     Q_OBJECT
 
   public:
-    explicit updateChecker(QObject *parent = nullptr);
+    explicit UpdateChecker(QObject *parent = nullptr);
 
-    void startAutoCheck();          // starts the timer based on default/custom interval
-    void checkForUpdates();         // actual update check logic
+    void startAutoCheck();
+    void checkForUpdates();
     void linkToUrl();
 
   private:

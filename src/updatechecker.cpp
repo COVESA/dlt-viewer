@@ -15,14 +15,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 
-updateChecker::updateChecker(QObject *parent)
+UpdateChecker::UpdateChecker(QObject *parent)
     : QObject(parent),
       updateTimer(nullptr),
       manager(new QNetworkAccessManager(this))
 {
 }
 
-void updateChecker::linkToUrl(){
+void UpdateChecker::linkToUrl(){
     qDebug() << "Update check called";
 
     QString currentVersion = PACKAGE_VERSION;
@@ -58,13 +58,13 @@ void updateChecker::linkToUrl(){
 
 }
 
-QDateTime updateChecker::getLastCheckTime()
+QDateTime UpdateChecker::getLastCheckTime()
 {
     QSettings s("MyCompany", "DLTViewer");
     return s.value("updateCheck/lastCheck").toDateTime();
 }
 
-void updateChecker::updateLastCheckTime()
+void UpdateChecker::updateLastCheckTime()
 {
 
     QDateTime now = QDateTime::currentDateTime();
@@ -75,13 +75,13 @@ void updateChecker::updateLastCheckTime()
 }
 
 // interval: default = 3 months
-bool updateChecker::isIntervalPassed()
+bool UpdateChecker::isIntervalPassed()
 {
     QSettings s("MyCompany", "DLTViewer");
 
     bool useCustom = s.value("updateCheck/useCustom", false).toBool();
-    int customMonths = s.value("updateCheck/customMonths", 3).toInt();
-    int months = useCustom ? customMonths : 3;
+    int customMonths = s.value("updateCheck/customMonths", DEFAULT_UPDATE_CHECK_MONTHS).toInt();
+    int months = useCustom ? customMonths : DEFAULT_UPDATE_CHECK_MONTHS;
 
     QDateTime last = getLastCheckTime();
 
@@ -100,10 +100,8 @@ bool updateChecker::isIntervalPassed()
     return passed;
 }
 
-// -----------------------------
 // Start auto-check timer
-// -----------------------------
-void updateChecker::startAutoCheck()
+void UpdateChecker::startAutoCheck()
 {
     QSettings s("MyCompany", "DLTViewer");
 
@@ -117,13 +115,13 @@ void updateChecker::startAutoCheck()
 
     if (!updateTimer) {
         updateTimer = new QTimer(this);
-        connect(updateTimer, &QTimer::timeout, this, &updateChecker::checkForUpdates);
+        connect(updateTimer, &QTimer::timeout, this, &UpdateChecker::checkForUpdates);
     }
 
     updateTimer->start(minutes * 60 * 1000);
 }
 
-void updateChecker::checkForUpdates()
+void UpdateChecker::checkForUpdates()
 {
     if (!isIntervalPassed()) {
         qDebug() << "Interval not passed. Skipping update check.";
@@ -176,10 +174,8 @@ void updateChecker::checkForUpdates()
     });
 }
 
-// -----------------------------
 // Version comparison
-// -----------------------------
-bool updateChecker::isNewerVersion(const QString &latest, const QString &current)
+bool UpdateChecker::isNewerVersion(const QString &latest, const QString &current)
 {
     QStringList l = latest.split(".");
     QStringList c = current.split(".");
@@ -194,10 +190,8 @@ bool updateChecker::isNewerVersion(const QString &latest, const QString &current
     return false;
 }
 
-// -----------------------------
 // Popups
-// -----------------------------
-void updateChecker::showUpdatePopup(const QString &current, const QString &latest)
+void UpdateChecker::showUpdatePopup(const QString &current, const QString &latest)
 {
     QMessageBox msg;
     msg.setWindowTitle("Update Available");
@@ -214,7 +208,7 @@ void updateChecker::showUpdatePopup(const QString &current, const QString &lates
     }
 }
 
-void updateChecker::showNoUpdatePopup()
+void UpdateChecker::showNoUpdatePopup()
 {
     QMessageBox::information(nullptr,
                              "No Updates",

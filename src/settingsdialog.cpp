@@ -43,6 +43,8 @@
  #define DAYLIGHT daylight
 #endif
 
+// Define default update check interval in months
+static const int DEFAULT_UPDATE_CHECK_MONTHS = 3;
 
 SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
 
@@ -171,7 +173,7 @@ void SettingsDialog::loadUpdateSettings()
     QSettings settings("MyCompany", "DLTViewer");
 
     bool isCustom = settings.value("updateCheck/useCustom", false).toBool();
-    int interval = settings.value("updateCheck/customMonths", 3).toInt();
+    int interval = settings.value("updateCheck/customMonths", DEFAULT_UPDATE_CHECK_MONTHS).toInt();
 
     if (isCustom)
         ui->customRadioButton->setChecked(true);

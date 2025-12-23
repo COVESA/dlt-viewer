@@ -28,6 +28,9 @@
 
 #define AUTOCONNECT_DEFAULT_TIME 1000 // in ms
 
+// Define default update check interval in months
+static const int DEFAULT_UPDATE_CHECK_MONTHS = 3;
+
 namespace Ui {
     class SettingsDialog;
 }

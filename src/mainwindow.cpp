@@ -281,8 +281,8 @@ void MainWindow::initState()
     settingsDlg->assertSettingsVersion();
     settingsDlg->readSettings();
 
-
-    updChecker = new updateChecker(this);
+    /* Update Checker call for timer to check if there is any new update*/
+    updChecker = new UpdateChecker(this);
     updChecker->startAutoCheck();
 
     if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)

@@ -163,8 +163,8 @@ private:
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
 
-    //Update Pop Up
-    updateChecker *updChecker;
+    /* Update Checker class for automatic pop up for new updates*/
+    UpdateChecker *updChecker;
 
     /* injections */
     QString injectionAplicationId;
