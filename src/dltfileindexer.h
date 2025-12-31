@@ -239,6 +239,9 @@ signals:
     // complete index creation finished
     void finishFilter();
 
+    // chunk of filter index ready for early display
+    void filterIndexChunkReady(QVector<qint64> chunk);
+
     // complete index creation of default filter finished
     void finishDefaultFilter();
 

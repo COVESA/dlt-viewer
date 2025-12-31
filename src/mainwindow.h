@@ -29,7 +29,6 @@
 #include <QComboBox>
 #include <QProgressBar>
 #include <QVector>
-#include <limits>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -617,6 +616,8 @@ public slots:
     //History Slots
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
+    void onFilterIndexChunkReady(const QVector<qint64> &chunk);
+    void applyIncrementalFilterIndexToUi();
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);

@@ -7,6 +7,7 @@
 #include <QApplication>
 #include <QTime>
 #include <QCryptographicHash>
+#include <QElapsedTimer>
 #include <QMutexLocker>
 #include <QDir>
 #include <QFileInfo>
@@ -92,9 +93,8 @@ DltFileIndexer::~DltFileIndexer()
 
 bool DltFileIndexer::index(int num)
 {
-    // start performance counter
-    //QTime time(0,0,0,0);
-    // time.start();
+    QElapsedTimer perfTimer;
+    perfTimer.start();
 
     // load filter index if enabled
     if(filterCacheEnabled && loadIndexCache(dltFile->getFileName(num)))
@@ -367,7 +367,7 @@ bool DltFileIndexer::index(int num)
     // close file
     f.close();
 
-    //qDebug() << "Duration:" << time.elapsed()/1000 << __LINE__;
+    qDebug().noquote() << "Create index duration:" << perfTimer.elapsed() << "ms for" << dltFile->getFileName(num);
 
     return true;
 }
@@ -378,6 +378,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
+    QElapsedTimer perfTimer;
+    perfTimer.start();
 
     // start performance counter
     //time.start();
@@ -414,7 +416,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(filterCacheEnabled && mode != modeIndexAndFilter && loadFilterIndexCache(filterList,indexFilterList,filenames))
     {
         // loading filter index from filter is successful
-        qDebug() << "Loaded filter index cache for files" << filenames;
+        qDebug() << "Loaded filter index cache for files" << filenames << "in" << (perfTimer.elapsed() / 1000.0) << "sec";
+        emit filterIndexChunkReady(indexFilterList);
         return true;
     }
 
@@ -423,6 +426,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(dltFile->size() == 0)
     {
         // No need to do anything here.
+        qDebug() << "Create filter index: Duration" << (perfTimer.elapsed() / 1000.0) << "sec";
         return true;
     }
 
@@ -465,6 +469,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     emit progress(0);
 
     // Start reading messages
+    const bool allowStreaming = !(sortByTimeEnabled || sortByTimestampEnabled);
+    const int emitChunkSize = 5000;
+    int lastEmittedCount = 0;
+
     for(ix=start;ix<end;ix++)
     {
         msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
@@ -480,6 +488,16 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         {*/
             indexerThread.processMessage(msg, ix);
         //}
+
+        if(allowStreaming)
+        {
+            const int currentCount = indexFilterList.size();
+            if((currentCount - lastEmittedCount) >= emitChunkSize)
+            {
+                emit filterIndexChunkReady(indexFilterList.mid(lastEmittedCount, currentCount - lastEmittedCount));
+                lastEmittedCount = currentCount;
+            }
+        }
 
         if((end-start)!=0)
             iPercent = ( (ix-start)*100 )/(end-start);
@@ -500,7 +518,17 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 indexerThread.wait();
             }*/
 
+            qDebug() << "Create filter index: Duration" << (perfTimer.elapsed() / 1000.0) << "sec";
             return false;
+        }
+    }
+
+    if(allowStreaming)
+    {
+        const int currentCount = indexFilterList.size();
+        if(currentCount > lastEmittedCount)
+        {
+            emit filterIndexChunkReady(indexFilterList.mid(lastEmittedCount, currentCount - lastEmittedCount));
         }
     }
     emit(progress(100));
@@ -528,6 +556,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     }
 
     qDebug() << "Create filter index: Finish";
+    qDebug().noquote() << "Create filter index duration:" << (perfTimer.elapsed() / 1000.0) << "sec for" << filenames;
 
     return true;
 }
@@ -802,6 +831,40 @@ bool DltFileIndexer::loadIndexCache(QString filename)
     {
         // loading cache file failed
         return false;
+    }
+
+    // Sanity-check: a successfully read cache that yields an empty or implausible index
+    // must be treated as a cache miss. Otherwise the UI ends up with 0 rows.
+    // (This can happen with truncated/old-format cache files.)
+    const qint64 dltFileSize = QFileInfo(filename).size();
+    if(dltFileSize > 0)
+    {
+        if(indexAllList.isEmpty())
+        {
+            qWarning() << "Index cache loaded but contains 0 entries; ignoring cache for" << filename;
+            return false;
+        }
+
+        // Basic plausibility: first entry must be within file and non-negative.
+        const qint64 firstPos = indexAllList.first();
+        const qint64 lastPos = indexAllList.last();
+        if(firstPos < 0 || firstPos >= dltFileSize || lastPos < 0 || lastPos >= dltFileSize)
+        {
+            qWarning() << "Index cache contains out-of-range offsets; ignoring cache for" << filename
+                       << "first" << firstPos << "last" << lastPos << "fileSize" << dltFileSize;
+            return false;
+        }
+
+        // Ensure monotonicity for the first few entries (cheap corruption/type-mismatch check).
+        const int checkCount = qMin(indexAllList.size(), 16);
+        for(int i = 1; i < checkCount; ++i)
+        {
+            if(indexAllList[i] <= indexAllList[i - 1])
+            {
+                qWarning() << "Index cache offsets are not strictly increasing; ignoring cache for" << filename;
+                return false;
+            }
+        }
     }
 
     return true;

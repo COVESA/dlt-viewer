@@ -40,6 +40,8 @@ QDltFile::QDltFile()
     sortByTimestampFlag = false;
     reverseSortFlag = false;
 
+    indexFilterBaseIsCanonical = true;
+
     cache.setMaxCost(1000);
     cacheEnable = true;
 }
@@ -164,6 +166,27 @@ void QDltFile::setManualMarkerIndices(const QList<unsigned long int> &indices)
 
     manualMarkerIndices = std::move(newSet);
     recomputeEffectiveIndexFilter();
+}
+
+void QDltFile::recomputeEffectiveIndexFilter()
+{
+    // In normal operation, indexFilterBase is the canonical filtered index.
+    // During incremental UI updates, indexFilter can be built directly without touching indexFilterBase.
+    QVector<qint64> effective = indexFilterBaseIsCanonical ? indexFilterBase : indexFilter;
+
+    if(!manualMarkerIndices.isEmpty())
+    {
+        effective.reserve(effective.size() + manualMarkerIndices.size());
+        for(const qint64 idx : manualMarkerIndices)
+        {
+            effective.append(idx);
+        }
+    }
+
+    std::sort(effective.begin(), effective.end());
+    effective.erase(std::unique(effective.begin(), effective.end()), effective.end());
+
+    indexFilter = std::move(effective);
 }
 
 bool QDltFile::open(QString _filename, bool append)
@@ -460,6 +483,7 @@ bool QDltFile::createIndexFilter()
 {
     /* clear old index */
     indexFilterBase.clear();
+    indexFilterBaseIsCanonical = true;
 
     return updateIndexFilter();
 }
@@ -529,6 +553,7 @@ void QDltFile::clearFilterIndex()
 {
     /* clear old index */
     indexFilterBase.clear();
+    indexFilterBaseIsCanonical = true;
     recomputeEffectiveIndexFilter();
 
 }
@@ -536,6 +561,7 @@ void QDltFile::clearFilterIndex()
 void QDltFile::addFilterIndex (int index)
 {
     indexFilterBase.append(index);
+    indexFilterBaseIsCanonical = true;
     recomputeEffectiveIndexFilter();
 
 }
@@ -870,12 +896,17 @@ QVector<qint64> QDltFile::getIndexFilterBase() const
 void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
     indexFilterBase = std::move(_indexFilter);
+    indexFilterBaseIsCanonical = true;
     recomputeEffectiveIndexFilter();
 }
 
 void QDltFile::clearIndexFilter()
 {
+    // Incremental filter streaming: clear base filter list and rebuild effective.
+    // We always keep indexFilterBase as the canonical filtered index.
     indexFilterBase.clear();
+    indexFilter.clear();
+    indexFilterBaseIsCanonical = true;
     recomputeEffectiveIndexFilter();
 }
 
@@ -884,76 +915,13 @@ void QDltFile::appendIndexFilter(const QVector<qint64> &chunk)
     if(chunk.isEmpty())
         return;
 
-    // Keep base index as the canonical filtered index. If there are no manual markers,
-    // we can update the effective index incrementally without re-merging.
+    // Incremental filter streaming: append to base filter list and rebuild effective.
+    indexFilterBaseIsCanonical = true;
     indexFilterBase.reserve(indexFilterBase.size() + chunk.size());
-    for(const auto &idx : chunk)
-        indexFilterBase.append(idx);
-
-    if(manualMarkerIndices.isEmpty())
-    {
-        indexFilter.reserve(indexFilter.size() + chunk.size());
-        for(const auto &idx : chunk)
-            indexFilter.append(idx);
-        return;
-    }
-
+    indexFilterBase += chunk;
     recomputeEffectiveIndexFilter();
 }
 
-void QDltFile::recomputeEffectiveIndexFilter()
-{
-    // indexFilterBase is expected to be in ascending order (it is built that way by
-    // updateIndexFilter()). Merge manual marker indices into it without re-sorting the full
-    // base vector.
-    QVector<qint64> markers;
-    if(!manualMarkerIndices.isEmpty())
-    {
-        const qint64 maxIdx = static_cast<qint64>(size());
-        markers.reserve(manualMarkerIndices.size());
-        for(const auto &manualIdx : manualMarkerIndices)
-        {
-            if(manualIdx < 0 || manualIdx >= maxIdx)
-                continue;
-            markers.append(manualIdx);
-        }
-        std::sort(markers.begin(), markers.end());
-        markers.erase(std::unique(markers.begin(), markers.end()), markers.end());
-    }
-
-    QVector<qint64> merged;
-    merged.reserve(indexFilterBase.size() + markers.size());
-
-    qsizetype i = 0;
-    qsizetype j = 0;
-    while(i < indexFilterBase.size() && j < markers.size())
-    {
-        const qint64 a = indexFilterBase[i];
-        const qint64 b = markers[j];
-        if(a < b)
-        {
-            merged.append(a);
-            ++i;
-        }
-        else if(b < a)
-        {
-            merged.append(b);
-            ++j;
-        }
-        else
-        {
-            merged.append(a);
-            ++i;
-            ++j;
-        }
-    }
-    while(i < indexFilterBase.size())
-        merged.append(indexFilterBase[i++]);
-    while(j < markers.size())
-        merged.append(markers[j++]);
-
-    indexFilter = std::move(merged);
-}
 bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 {
 

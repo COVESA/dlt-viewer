@@ -317,11 +317,10 @@ public:
      **/
     void setIndexFilter(QVector<qint64> _indexFilter);
 
-    //! Clear the filtered index (base) and recompute the effective filtered index.
+    //! Clear filter index (fast path for incremental updates)
     void clearIndexFilter();
 
-    //! Append a chunk of indices to the base filtered index.
-    /*! Intended for incremental filter-index updates. */
+    //! Append to filter index (used for incremental updates)
     void appendIndexFilter(const QVector<qint64> &chunk);
 
     //! Sets the max cache size for DLT messages
@@ -372,6 +371,11 @@ private:
 
     //! Manually marked message indices to always include in filtered view.
     QSet<qint64> manualMarkerIndices;
+
+    //! Source selector for recomputeEffectiveIndexFilter().
+    //! - true: use indexFilterBase as the canonical filtered index (even if empty)
+    //! - false: use indexFilter as the canonical filtered index (incremental streaming)
+    bool indexFilterBaseIsCanonical = true;
 
     void recomputeEffectiveIndexFilter();
 

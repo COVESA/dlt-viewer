@@ -130,13 +130,21 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false)
+    isSearchOngoing(false),
+    m_incrementalFilterStreaming(false),
+    m_incrementalFilterUiUpdateTimer(nullptr),
+    m_incrementalFilterUiUpdatePending(false)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
+
+    m_incrementalFilterUiUpdateTimer = new QTimer(this);
+    m_incrementalFilterUiUpdateTimer->setSingleShot(true);
+    m_incrementalFilterUiUpdateTimer->setInterval(120);
+    connect(m_incrementalFilterUiUpdateTimer, &QTimer::timeout, this, &MainWindow::applyIncrementalFilterIndexToUi);
 
     target_version_string = "";
 
@@ -909,6 +917,7 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
     connect(dltIndexer, SIGNAL(finishFilter()), this, SLOT(reloadLogFileFinishFilter()));
     connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
+    connect(dltIndexer, SIGNAL(filterIndexChunkReady(QVector<qint64>)), this, SLOT(onFilterIndexChunkReady(QVector<qint64>)));
     connect(dltIndexer, SIGNAL(timezone(int,unsigned char)), this, SLOT(controlMessage_Timezone(int,unsigned char)));
     connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
     connect(dltIndexer, SIGNAL(finished()), this, SLOT(indexDone()));
@@ -1345,6 +1354,9 @@ void MainWindow::onNewTriggered(QString fileName)
         }
     }
 
+    // Manual markers are per-file. Ensure a new file starts clean.
+    unmark_all_lines();
+
     // create new file; truncate if already exist
     outputfile.setFileName(fileName);
     outputfileIsTemporary = false;
@@ -1481,6 +1493,9 @@ bool MainWindow::openDltFile(QStringList fileNames)
 {
     /* close existing file */
     bool ret = false;
+
+    // Manual markers are per-file. Ensure they don't leak across file opens.
+    unmark_all_lines();
 
     if(fileNames.size()==0)
     {
@@ -2099,6 +2114,7 @@ void MainWindow::on_actionExport_triggered()
         }
         else
         {
+            // Export = (base filtered) U (manually marked).
             QVector<qint64> indices = qfile.getIndexFilterBase();
             indices.reserve(indices.size() + selectedMarkerRows.size());
             for(const auto &idx : selectedMarkerRows)
@@ -2457,6 +2473,55 @@ void MainWindow::reloadLogFileFinishIndex()
     }
 }
 
+void MainWindow::onFilterIndexChunkReady(const QVector<qint64> &chunk)
+{
+    if(chunk.isEmpty())
+        return;
+
+    if(!m_incrementalFilterUiUpdateTimer)
+        return;
+
+    if(!m_incrementalFilterStreaming)
+    {
+        m_incrementalFilterPending.clear();
+        m_incrementalFilterStreaming = true;
+        // Only enable filtering for incremental UI updates if filters are enabled.
+        // Otherwise we still collect/build the filter index, but keep the view unfiltered.
+        qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+        qfile.clearIndexFilter();
+    }
+
+    m_incrementalFilterPending += chunk;
+
+    // Coalesce UI updates to avoid repeated full relayouts while indexing.
+    m_incrementalFilterUiUpdatePending = true;
+    if(!m_incrementalFilterUiUpdateTimer->isActive())
+        m_incrementalFilterUiUpdateTimer->start();
+}
+
+void MainWindow::applyIncrementalFilterIndexToUi()
+{
+    if(!m_incrementalFilterUiUpdatePending)
+        return;
+    m_incrementalFilterUiUpdatePending = false;
+
+    if(m_incrementalFilterPending.isEmpty())
+        return;
+
+    // Keep filter enable state consistent with UI/settings.
+    qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    qfile.appendIndexFilter(m_incrementalFilterPending);
+    m_incrementalFilterPending.clear();
+
+    tableModel->setForceEmpty(false);
+    tableModel->modelChanged();
+
+    // Avoid forcing QWidget::update() for every chunk; modelChanged triggers view updates.
+    // Only autoscroll at this throttled rate.
+    if(settings->autoScroll)
+        ui->tableView->scrollToBottom();
+}
+
 void MainWindow::reloadLogFileFinishFilter()
 {
     // unlock table view
@@ -2475,10 +2540,32 @@ void MainWindow::reloadLogFileFinishFilter()
         }
     }
 
-    // enable filter if requested
+    // If filter indexing finishes very quickly (e.g. filter index cache hit),
+    // the coalescing timer may not have fired yet. Flush any pending chunk now
+    // before we stop/reset incremental state.
+    applyIncrementalFilterIndexToUi();
+
+    // Apply final enable/sort states based on settings (must be after any incremental flush).
     qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+
+    // Re-apply manual markers to the effective filtered index after filter rebuild.
+    // This fixes cases where Apply Filter / reload clears & rebuilds the filter index,
+    // and ensures marked rows are included when the setting is enabled.
+    {
+        QList<unsigned long int> indices;
+        if(settings->includeManualMarkersInFilter)
+        {
+            indices.reserve(selectedMarkerRows.size());
+            for(const auto &idx : selectedMarkerRows)
+            {
+                if(idx < static_cast<unsigned long int>(qfile.size()))
+                    indices.append(idx);
+            }
+        }
+        qfile.setManualMarkerIndices(indices);
+    }
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -2489,6 +2576,13 @@ void MainWindow::reloadLogFileFinishFilter()
     this->update(); // force update
     restoreSelection();
     m_searchtableModel->modelChanged();
+
+    if(m_incrementalFilterUiUpdateTimer)
+        m_incrementalFilterUiUpdateTimer->stop();
+    m_incrementalFilterUiUpdatePending = false;
+
+    m_incrementalFilterStreaming = false;
+    m_incrementalFilterPending.clear();
 
     // process getLogInfoMessages
     if ((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) &&
@@ -2603,23 +2697,6 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // force empty table
     tableModel->setForceEmpty(true);
     tableModel->modelChanged();
-
-    // Per-file UI state must not leak across opened files.
-    // Clear manual markers (and dependent filter inclusion) when doing a full reload.
-    if(false == update)
-    {
-        selectedMarkerRows.clear();
-        invalidateSelectedMarkerRowsCache();
-
-        tableModel->setManualMarker(
-            selectedMarkerRows,
-            QColor(settings->markercolorRed, settings->markercolorGreen, settings->markercolorBlue));
-
-        qfile.setManualMarkerIndices(QList<unsigned long int>());
-
-        // Clear one-off search-hit highlight from the previous file.
-        tableModel->setMarker(-1, QColor());
-    }
 
     m_incrementalFilterPending.clear();
     m_incrementalFilterStreaming = false;
