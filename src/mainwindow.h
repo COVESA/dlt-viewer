@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QVector>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -227,6 +228,12 @@ private:
 
     /* DLT File opened only Read only */
     bool isDltFileReadOnly;
+
+    /* incremental filter index streaming */
+    QVector<qint64> m_incrementalFilterPending;
+    bool m_incrementalFilterStreaming;
+    QTimer *m_incrementalFilterUiUpdateTimer;
+    bool m_incrementalFilterUiUpdatePending;
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
@@ -596,6 +603,8 @@ public slots:
     //History Slots
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
+    void onFilterIndexChunkReady(const QVector<qint64> &chunk);
+    void applyIncrementalFilterIndexToUi();
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);
