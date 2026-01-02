@@ -961,15 +961,28 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
     if(endianness == QDlt::DltEndiannessBigEndian) {
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
-    if(mode == DltModeVerbose) {
+    
+    // Determine if we need extended header - for verbose mode or non-verbose with valid apid/ctid
+    bool needOfExtendedHeader = (mode == DltModeVerbose) ||
+                             (mode == DltModeNonVerbose && (!apid.isEmpty() || !ctid.isEmpty()));
+    
+    if(needOfExtendedHeader) {
         standardheader.htyp |= DLT_HTYP_UEH;
+    }
+    
+    if(mode == DltModeVerbose) {
         standardheader.htyp |= DLT_HTYP_WEID;
         standardheader.htyp |= DLT_HTYP_WSID;
         standardheader.htyp |= DLT_HTYP_WTMS;
         standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + sizeof(headerextra.ecu) + sizeof(headerextra.seid) +
                                      sizeof(headerextra.tmsp) + sizeof(DltExtendedHeader) + payload.size());
     }
+    else if(needOfExtendedHeader) {
+        // Non-verbose with extended header
+        standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
+    }
     else {
+        // Non-verbose without extended header
         standardheader.len = DLT_SWAP_16(sizeof(DltStandardHeader) + payload.size());
     }
     standardheader.mcnt = messageCounter;
@@ -986,7 +999,7 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
     }
 
     /* write extendedheader */
-    if(mode == DltModeVerbose) {
+    if(needOfExtendedHeader) {
         strncpy(extendedheader.apid,apid.toLatin1().constData(),apid.size()>3?4:apid.size()+1);
         strncpy(extendedheader.ctid,ctid.toLatin1().constData(),ctid.size()>3?4:ctid.size()+1);
         extendedheader.msin = 0;
@@ -1520,6 +1533,11 @@ void QDltMsg::genMsg()
     if(endianness == QDlt::DltEndiannessBigEndian) {
         standardheader.htyp |= DLT_HTYP_MSBF;
     }
+    
+    // Determine if we need extended header - for verbose mode or non-verbose with valid apid/ctid
+    bool needOfExtendedHeader = (mode == DltModeVerbose) ||
+                             (mode == DltModeNonVerbose && (!apid.isEmpty() || !ctid.isEmpty()));
+    
     if(mode == DltModeVerbose) {
         uint16_t standardheaderlen = sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size();
         standardheader.htyp |= DLT_HTYP_UEH;
@@ -1537,7 +1555,13 @@ void QDltMsg::genMsg()
         }
         standardheader.len = DLT_HTOBE_16(standardheaderlen);
     }
+    else if(needOfExtendedHeader) {
+        // Non-verbose with extended header
+        standardheader.htyp |= DLT_HTYP_UEH;
+        standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + payload.size());
+    }
     else {
+        // Non-verbose without extended header
         standardheader.len = DLT_HTOBE_16(sizeof(DltStandardHeader) + payload.size());
     }
     standardheader.mcnt = messageCounter;
@@ -1560,7 +1584,7 @@ void QDltMsg::genMsg()
     }
 
     // write extendedheader
-    if(mode == DltModeVerbose) {
+    if(needOfExtendedHeader) {
         strncpy(extendedheader.apid,apid.toLatin1().constData(),apid.size()>3?4:apid.size()+1);
         strncpy(extendedheader.ctid,ctid.toLatin1().constData(),ctid.size()>3?4:ctid.size()+1);
         extendedheader.msin = 0;
