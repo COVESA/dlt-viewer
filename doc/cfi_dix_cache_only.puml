@@ -1,0 +1,108 @@
+@startuml cfi_dix_cache_only
+hide footbox
+
+title CFI .dix cache – save/load only
+
+actor Caller as "Caller (re-apply filter)"
+participant Indexer as "DltFileIndexer"
+participant DltFile as "QDltFile"
+participant FilterList as "QDltFilterList"
+participant Crypto as "QCryptographicHash (MD5)"
+participant Plugins as "Active decoder plugins"
+participant FS as "<logdir>/index/"
+participant Dix as "*.dix file"
+
+== Load path (reuse cached CFI) ==
+Caller -> Indexer: indexFilter(filenames)
+activate Indexer
+
+Indexer -> DltFile: getFilterList()
+DltFile --> Indexer: FilterList
+
+alt filterCacheEnabled == false
+  note right of Indexer
+  No .dix cache is used.
+  end note
+else filterCacheEnabled == true
+  alt mode == modeIndexAndFilter
+    note right of Indexer
+    Cache load is intentionally skipped during initial file load.
+    (Condition: mode != modeIndexAndFilter)
+    end note
+  else mode != modeIndexAndFilter
+    Indexer -> FilterList: createMD5()
+    FilterList --> Indexer: md5FilterList
+
+    opt pluginsEnabled
+      Indexer -> Plugins: concatenate(name, version, filename)
+      Indexer -> Crypto: MD5("Plugins" + plugin-metadata)
+      Crypto --> Indexer: md5Plugins
+    end
+
+    note right of Indexer
+    filenameFilterIndexCache():
+    - base: join(filenames)[sorted if sort enabled] + "_" + fileSize
+    - md5Base = MD5(base)
+    - filename = md5Base + "_" + md5FilterList
+    - + "_" + md5Plugins (if pluginsEnabled)
+    - + "_S" (if sortByTimeEnabled)
+    - + "_STS" (if sortByTimestampEnabled)
+    - + "_<start>_<end>" (if filterIndexEnabled)
+    - + ".dix"
+    end note
+
+    Indexer -> FS: ensure directory exists (mkpath)
+    Indexer -> Dix: loadIndex(<logdir>/index/<filename>.dix)
+
+    alt .dix exists AND version matches
+      Dix --> Indexer: QVector<qint64> indexFilterList
+      note right of Dix
+      loadIndex():
+      - read quint32 version (must equal DLT_FILE_INDEXER_FILE_VERSION)
+      - read qint64 values until EOF
+      end note
+      Indexer --> Caller: return true (CFI loaded)
+    else missing / unreadable / wrong version
+      Dix --> Indexer: fail
+      note right of Indexer
+      Falls back to rebuilding CFI by scanning messages.
+      end note
+    end
+  end
+end
+
+deactivate Indexer
+
+== Save path (write cached CFI after rebuilding) ==
+Caller -> Indexer: indexFilter(filenames)
+activate Indexer
+
+note right of Indexer
+After rebuilding indexFilterList (and optional sorting),
+indexFilter() writes the cache when filterCacheEnabled is true.
+end note
+
+alt filterCacheEnabled == true
+  Indexer -> FilterList: createMD5()
+  FilterList --> Indexer: md5FilterList
+  opt pluginsEnabled
+    Indexer -> Crypto: MD5("Plugins" + plugin-metadata)
+    Crypto --> Indexer: md5Plugins
+  end
+
+  Indexer -> FS: ensure directory exists (mkpath)
+  Indexer -> Dix: saveIndex(<logdir>/index/<filename>.dix, indexFilterList)
+  note right of Dix
+  saveIndex():
+  - write quint32 version = DLT_FILE_INDEXER_FILE_VERSION
+  - write qint64 values for every entry in indexFilterList
+  end note
+  Dix --> Indexer: ok
+else filterCacheEnabled == false
+  note right of Indexer
+  No .dix file is written.
+  end note
+end
+
+deactivate Indexer
+@enduml

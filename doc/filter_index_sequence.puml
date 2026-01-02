@@ -1,0 +1,52 @@
+@startuml
+title Filter Indexing Flow (sequence)
+
+actor User
+participant "DltFileIndexer" as Indexer
+participant "DltFile" as File
+participant "DltFileIndexerThread" as Worker
+participant "QDltFilterList" as Filters
+participant "QDltFilter" as Filter
+participant "indexFilterList /\nindexFilterListSorted" as IndexOut
+
+User -> Indexer: start indexFilter(filenames)
+Indexer -> Filters: filterList = dltFile.getFilterList()
+Indexer -> IndexOut: clear()
+Indexer -> Indexer: compute start/end range
+Indexer -> Indexer: try load filter index cache
+alt cache hit
+    Indexer -> User: emit progress done
+    return
+end
+
+loop messages in [start,end)
+    Indexer -> File: getMsg(ix)
+    alt broken message
+        File --> Indexer: false (skip)
+    else valid
+        File --> Indexer: QDltMsg msg
+        Indexer -> Worker: processMessage(msg, ix)
+        activate Worker
+        Worker -> Filters: checkFilter(msg)
+        activate Filters
+        Filters -> Filter: match(msg)
+        Filter --> Filters: true/false
+        Filters --> Worker: show? (true/false)
+        deactivate Filters
+        alt show == true
+            alt sortByTime or sortByTimestamp
+                Worker -> IndexOut: indexFilterListSorted.insert(key(ix), ix)
+            else
+                Worker -> IndexOut: indexFilterList.append(ix)
+            end
+        end
+        deactivate Worker
+    end
+end
+
+Indexer -> Indexer: if sortByTime/timestamp
+Indexer -> IndexOut: indexFilterList = sorted values
+Indexer -> Indexer: save filter index cache (if enabled)
+Indexer -> User: emit progress done
+
+@enduml

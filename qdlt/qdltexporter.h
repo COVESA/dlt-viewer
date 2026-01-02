@@ -5,6 +5,7 @@
 #include <QThread>
 #include <QFile>
 #include <QModelIndexList>
+#include <QVector>
 
 #include "export_rules.h"
 #include "qdltfile.h"
@@ -24,7 +25,7 @@ public:
     typedef enum { FormatDlt,FormatAscii,FormatCsv,FormatClipboard,FormatClipboardPayloadOnly,FormatDltDecoded,FormatUTF8,
                    FormatClipboardJiraTable, FormatClipboardJiraTableHead} DltExportFormat;
 
-    typedef enum { SelectionAll,SelectionFiltered,SelectionSelected } DltExportSelection;
+    typedef enum { SelectionAll,SelectionFiltered,SelectionSelected,SelectionFilteredPlusMarked } DltExportSelection;
 
 private:
 
@@ -76,6 +77,11 @@ public:
 
     void exportMessageRange(unsigned long start, unsigned long stop);
 
+    /* Export an explicit set of message indices (global indices in the file).
+     * Used by SelectionFilteredPlusMarked.
+     */
+    void setExplicitMessageIndices(const QVector<unsigned long int> &indices);
+
     /* If a filter list is set, an additional filter is applied when exporting
      * \param filterList Copy of filter list
      */
@@ -104,6 +110,7 @@ private:
     QDltPluginManager *pluginManager;
     QModelIndexList *selection;
     QList<int> selectedRows;
+    QVector<unsigned long int> explicitMessageIndices;
     QDltExporter::DltExportFormat exportFormat;
     QDltExporter::DltExportSelection exportSelection;
     int automaticTimeSettings; // project and local setting

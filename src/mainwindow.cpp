@@ -19,6 +19,7 @@
 
 #include "filtergrouplogs.h"
 #include <algorithm>
+#include <limits>
 #include <QMimeData>
 #include <QTreeView>
 #include <QFileDialog>
@@ -85,13 +86,21 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false)
+    isSearchOngoing(false),
+    m_incrementalFilterStreaming(false),
+    m_incrementalFilterUiUpdateTimer(nullptr),
+    m_incrementalFilterUiUpdatePending(false)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
+
+    m_incrementalFilterUiUpdateTimer = new QTimer(this);
+    m_incrementalFilterUiUpdateTimer->setSingleShot(true);
+    m_incrementalFilterUiUpdateTimer->setInterval(120);
+    connect(m_incrementalFilterUiUpdateTimer, &QTimer::timeout, this, &MainWindow::applyIncrementalFilterIndexToUi);
 
     target_version_string = "";
 
@@ -275,6 +284,12 @@ void MainWindow::initState()
     markShortcut = new QShortcut(QKeySequence("Ctrl+M"), this);
     connect(markShortcut, &QShortcut::activated, this, &MainWindow::mark_unmark_lines);
 
+    /* Shortcuts for traversing manually marked messages */
+    nextMarkedShortcut = new QShortcut(QKeySequence("F4"), this);
+    connect(nextMarkedShortcut, &QShortcut::activated, this, &MainWindow::goto_next_marked_line);
+    prevMarkedShortcut = new QShortcut(QKeySequence("F5"), this);
+    connect(prevMarkedShortcut, &QShortcut::activated, this, &MainWindow::goto_prev_marked_line);
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
@@ -380,6 +395,161 @@ void MainWindow::initState()
     injectionServiceId.clear();
     injectionData.clear();
     injectionDataBinary = false;
+}
+
+void MainWindow::goto_next_marked_line()
+{
+    if(selectedMarkerRows.isEmpty())
+    {
+        return;
+    }
+
+    QVector<qint64> marks;
+    marks.reserve(selectedMarkerRows.size());
+    for(const auto &v : selectedMarkerRows)
+    {
+        marks.append(static_cast<qint64>(v));
+    }
+
+    if(qfile.isFilter())
+    {
+        const QVector<qint64> visible = qfile.getIndexFilter();
+        QSet<qint64> visibleSet;
+        visibleSet.reserve(visible.size());
+        for(const auto &v : visible)
+        {
+            visibleSet.insert(v);
+        }
+
+        marks.erase(std::remove_if(marks.begin(), marks.end(), [&visibleSet](qint64 idx) {
+            return !visibleSet.contains(idx);
+        }),
+        marks.end());
+    }
+
+    if(marks.isEmpty())
+    {
+        return;
+    }
+
+    std::sort(marks.begin(), marks.end());
+    marks.erase(std::unique(marks.begin(), marks.end()), marks.end());
+
+    const QModelIndex current = ui->tableView->currentIndex();
+    qint64 currentMsgIndex = -1;
+    if(current.isValid())
+    {
+        currentMsgIndex = qfile.getMsgFilterPos(current.row());
+    }
+
+    auto it = std::upper_bound(marks.begin(), marks.end(), currentMsgIndex);
+    if(it == marks.end())
+    {
+        // Wrap-around: after last marked, go back to first.
+        it = marks.begin();
+    }
+
+    const qint64 targetMsgIndex = *it;
+    int targetRow = static_cast<int>(targetMsgIndex);
+    if(qfile.isFilter())
+    {
+        const QVector<qint64> indexFilter = qfile.getIndexFilter();
+        const auto itRow = std::lower_bound(indexFilter.begin(), indexFilter.end(), targetMsgIndex);
+        if(itRow == indexFilter.end() || *itRow != targetMsgIndex)
+        {
+            return;
+        }
+        targetRow = static_cast<int>(std::distance(indexFilter.begin(), itRow));
+    }
+
+    const QModelIndex targetIndex = ui->tableView->model()->index(targetRow, 0);
+    if(!targetIndex.isValid())
+    {
+        return;
+    }
+
+    ui->tableView->selectionModel()->setCurrentIndex(
+        targetIndex,
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    ui->tableView->scrollTo(targetIndex, QAbstractItemView::PositionAtCenter);
+}
+
+void MainWindow::goto_prev_marked_line()
+{
+    if(selectedMarkerRows.isEmpty())
+    {
+        return;
+    }
+
+    QVector<qint64> marks;
+    marks.reserve(selectedMarkerRows.size());
+    for(const auto &v : selectedMarkerRows)
+    {
+        marks.append(static_cast<qint64>(v));
+    }
+
+    if(qfile.isFilter())
+    {
+        const QVector<qint64> visible = qfile.getIndexFilter();
+        QSet<qint64> visibleSet;
+        visibleSet.reserve(visible.size());
+        for(const auto &v : visible)
+        {
+            visibleSet.insert(v);
+        }
+
+        marks.erase(std::remove_if(marks.begin(), marks.end(), [&visibleSet](qint64 idx) {
+            return !visibleSet.contains(idx);
+        }),
+        marks.end());
+    }
+
+    if(marks.isEmpty())
+    {
+        return;
+    }
+
+    std::sort(marks.begin(), marks.end());
+    marks.erase(std::unique(marks.begin(), marks.end()), marks.end());
+
+    const QModelIndex current = ui->tableView->currentIndex();
+    qint64 currentMsgIndex = (std::numeric_limits<qint64>::max)();
+    if(current.isValid())
+    {
+        currentMsgIndex = qfile.getMsgFilterPos(current.row());
+    }
+
+    auto it = std::lower_bound(marks.begin(), marks.end(), currentMsgIndex);
+    if(it == marks.begin())
+    {
+        // Wrap-around: before first marked, go back to last.
+        it = marks.end();
+    }
+    --it;
+
+    const qint64 targetMsgIndex = *it;
+    int targetRow = static_cast<int>(targetMsgIndex);
+    if(qfile.isFilter())
+    {
+        const QVector<qint64> indexFilter = qfile.getIndexFilter();
+        const auto itRow = std::lower_bound(indexFilter.begin(), indexFilter.end(), targetMsgIndex);
+        if(itRow == indexFilter.end() || *itRow != targetMsgIndex)
+        {
+            return;
+        }
+        targetRow = static_cast<int>(std::distance(indexFilter.begin(), itRow));
+    }
+
+    const QModelIndex targetIndex = ui->tableView->model()->index(targetRow, 0);
+    if(!targetIndex.isValid())
+    {
+        return;
+    }
+
+    ui->tableView->selectionModel()->setCurrentIndex(
+        targetIndex,
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    ui->tableView->scrollTo(targetIndex, QAbstractItemView::PositionAtCenter);
 }
 
 void MainWindow::initView()
@@ -641,6 +811,7 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(finishIndex()), this, SLOT(reloadLogFileFinishIndex()));
     connect(dltIndexer, SIGNAL(finishFilter()), this, SLOT(reloadLogFileFinishFilter()));
     connect(dltIndexer, SIGNAL(finishDefaultFilter()), this, SLOT(reloadLogFileFinishDefaultFilter()));
+    connect(dltIndexer, SIGNAL(filterIndexChunkReady(QVector<qint64>)), this, SLOT(onFilterIndexChunkReady(QVector<qint64>)));
     connect(dltIndexer, SIGNAL(timezone(int,unsigned char)), this, SLOT(controlMessage_Timezone(int,unsigned char)));
     connect(dltIndexer, SIGNAL(unregisterContext(QString,QString,QString)), this, SLOT(controlMessage_UnregisterContext(QString,QString,QString)));
     connect(dltIndexer, SIGNAL(finished()), this, SLOT(indexDone()));
@@ -1540,6 +1711,20 @@ void MainWindow::mark_unmark_lines()
     }
     //qDebug() << selectedMarkerRows;
     model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
+
+    // Keep manually marked rows visible even when filters are active.
+    {
+        QList<unsigned long int> indices;
+        if(settings->includeManualMarkersInFilter)
+        {
+            indices = selectedMarkerRows;
+        }
+        qfile.setManualMarkerIndices(indices);
+    }
+    if(qfile.isFilter())
+    {
+        tableModel->modelChanged();
+    }
 }
 
 void MainWindow::unmark_all_lines()
@@ -1547,6 +1732,19 @@ void MainWindow::unmark_all_lines()
     TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
     selectedMarkerRows.clear();
     model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
+
+    {
+        QList<unsigned long int> indices;
+        if(settings->includeManualMarkersInFilter)
+        {
+            indices = selectedMarkerRows;
+        }
+        qfile.setManualMarkerIndices(indices);
+    }
+    if(qfile.isFilter())
+    {
+        tableModel->modelChanged();
+    }
 }
 
 
@@ -1646,8 +1844,24 @@ void MainWindow::on_actionExport_triggered()
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
     {
-        qDebug() << "DLT Export of filterd" << qfile.sizeFilter() << "messages";
-        if(qfile.sizeFilter() <= 0)
+        qDebug() << "DLT Export of filterd" << qfile.sizeFilterBase() << "messages";
+        if(qfile.sizeFilterBase() <= 0)
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
+            return;
+        }
+    }
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+    {
+        qDebug() << "DLT Export of filtered + marked";
+        if(qfile.size() <= 0)
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export. Make sure you have a DLT file open."));
+            return;
+        }
+        if(qfile.sizeFilterBase() <= 0 && selectedMarkerRows.isEmpty())
         {
             QMessageBox::critical(this, QString("DLT Viewer"),
                                   QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
@@ -1724,6 +1938,45 @@ void MainWindow::on_actionExport_triggered()
     if(exportSelection == QDltExporter::SelectionSelected) // marked messages
     {
         exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,&list,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+    }
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+    {
+        // If no filter is active, "Filtered + Marked" is equivalent to "All".
+        if(!qfile.isFilter())
+        {
+            exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,QDltExporter::SelectionAll,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+            exporterThread->exportMessageRange(startix,stopix);
+        }
+        else
+        {
+            QVector<qint64> indices = qfile.getIndexFilterBase();
+            indices.reserve(indices.size() + selectedMarkerRows.size());
+            for(const auto &idx : selectedMarkerRows)
+            {
+                if(idx < static_cast<unsigned long int>(qfile.size()))
+                {
+                    indices.append(static_cast<qint64>(idx));
+                }
+            }
+
+            std::sort(indices.begin(), indices.end());
+            QVector<unsigned long int> uniqueIndices;
+            uniqueIndices.reserve(indices.size());
+            qint64 last = -1;
+            for(const auto &idx : indices)
+            {
+                if(idx < 0 || idx >= qfile.size())
+                    continue;
+                if(idx == last)
+                    continue;
+                uniqueIndices.append(static_cast<unsigned long int>(idx));
+                last = idx;
+            }
+
+            exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+            exporterThread->setExplicitMessageIndices(uniqueIndices);
+            exporterThread->exportMessageRange(startix,stopix);
+        }
     }
     else
     {
@@ -2054,6 +2307,52 @@ void MainWindow::reloadLogFileFinishIndex()
     }
 }
 
+void MainWindow::onFilterIndexChunkReady(const QVector<qint64> &chunk)
+{
+    if(chunk.isEmpty())
+        return;
+
+    if(!m_incrementalFilterUiUpdateTimer)
+        return;
+
+    if(!m_incrementalFilterStreaming)
+    {
+        m_incrementalFilterPending.clear();
+        m_incrementalFilterStreaming = true;
+        qfile.enableFilter(true);
+        qfile.clearIndexFilter();
+    }
+
+    m_incrementalFilterPending += chunk;
+
+    // Coalesce UI updates to avoid repeated full relayouts while indexing.
+    m_incrementalFilterUiUpdatePending = true;
+    if(!m_incrementalFilterUiUpdateTimer->isActive())
+        m_incrementalFilterUiUpdateTimer->start();
+}
+
+void MainWindow::applyIncrementalFilterIndexToUi()
+{
+    if(!m_incrementalFilterUiUpdatePending)
+        return;
+    m_incrementalFilterUiUpdatePending = false;
+
+    if(m_incrementalFilterPending.isEmpty())
+        return;
+
+    qfile.enableFilter(true);
+    qfile.appendIndexFilter(m_incrementalFilterPending);
+    m_incrementalFilterPending.clear();
+
+    tableModel->setForceEmpty(false);
+    tableModel->modelChanged();
+
+    // Avoid forcing QWidget::update() for every chunk; modelChanged triggers view updates.
+    // Only autoscroll at this throttled rate.
+    if(settings->autoScroll)
+        ui->tableView->scrollToBottom();
+}
+
 void MainWindow::reloadLogFileFinishFilter()
 {
     // unlock table view
@@ -2080,12 +2379,24 @@ void MainWindow::reloadLogFileFinishFilter()
     // updateIndex, if messages are received in between
     updateIndex();
 
+    // If filter indexing finishes very quickly (e.g. filter index cache hit),
+    // the coalescing timer may not have fired yet. Flush any pending chunk now
+    // before we stop/reset incremental state, otherwise the view can stay empty.
+    applyIncrementalFilterIndexToUi();
+
     // update table
     tableModel->setForceEmpty(false);
     tableModel->modelChanged();
     this->update(); // force update
     restoreSelection();
     m_searchtableModel->modelChanged();
+
+    if(m_incrementalFilterUiUpdateTimer)
+        m_incrementalFilterUiUpdateTimer->stop();
+    m_incrementalFilterUiUpdatePending = false;
+
+    m_incrementalFilterStreaming = false;
+    m_incrementalFilterPending.clear();
 
     // process getLogInfoMessages
     if ((dltIndexer->getMode() == DltFileIndexer::modeIndexAndFilter) &&
@@ -2200,6 +2511,14 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // force empty table
     tableModel->setForceEmpty(true);
     tableModel->modelChanged();
+
+    m_incrementalFilterPending.clear();
+    m_incrementalFilterStreaming = false;
+    qfile.setIndexFilter(QVector<qint64>());
+
+    if(m_incrementalFilterUiUpdateTimer)
+        m_incrementalFilterUiUpdateTimer->stop();
+    m_incrementalFilterUiUpdatePending = false;
 
     // stop last indexing process, if any
     dltIndexer->stop();
@@ -2389,6 +2708,15 @@ void MainWindow::on_action_menuFile_Settings_triggered()
                   QMessageBox::information(0, QString("DLT Viewer"), QString("Logging only mode disabled! Please reload DLT file to view file!"));
             }
            */
+        }
+
+        {
+            QList<unsigned long int> indices;
+            if(settings->includeManualMarkersInFilter)
+            {
+                indices = selectedMarkerRows;
+            }
+            qfile.setManualMarkerIndices(indices);
         }
 
         // update table, perhaps settings changed table, e.g. number of columns
@@ -4533,6 +4861,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
     } catch (const std::exception& e) {
         qDebug() << "Error parsing control message: " << e.what();
     }
+
 }
 
 void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid)
@@ -5388,6 +5717,9 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     const QString shortcutExpandAllECU = "Ctrl++";
     const QString shortcutCollapseAllECU = "Ctrl+";
     const QString shortcutCopyPayload = "Ctrl + P";
+    const QString shortcutMark = "Ctrl + M";
+    const QString shortcutNextMark = "F4";
+    const QString shortcutPrevMark = "F5";
     const QString shortcutInfo = "F1";
     const QString shortcutQuit = "Ctrl +- Q";
 
@@ -5408,6 +5740,9 @@ void MainWindow::on_actionShortcuts_List_triggered(){
         {"Expand All ECU", shortcutExpandAllECU},
         {"Collapse All ECU", shortcutCollapseAllECU},
         {"Copy Payload", shortcutCopyPayload},
+        {"Mark/Unmark line(s)", shortcutMark},
+        {"Previous marked line", shortcutPrevMark},
+        {"Next marked line", shortcutNextMark},
         {"Info", shortcutInfo},
         {"Quit", shortcutQuit},
     };

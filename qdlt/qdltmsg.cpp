@@ -563,6 +563,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         if(mode==DltModeVerbose) {
             offset = 0;
             arguments.clear();
+            arguments.reserve(numberOfArguments);  // Pre-allocate capacity
             for(int num=0;num<numberOfArguments;num++) {
                 if(argument.setArgument(payload,offset,endianness)==false) {
                     /* There was an error parsing the arguments */
@@ -888,6 +889,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         if(mode==DltModeVerbose && !withSegementation) {
             offset = 0;
             arguments.clear();
+            arguments.reserve(numberOfArguments);  // Pre-allocate capacity
             for(int num=0;num<numberOfArguments;num++) {
                 if(argument.setArgument(payload,offset,endianness)==false) {
                     /* There was an error parsing the arguments */
@@ -914,6 +916,7 @@ bool QDltMsg::parseArguments()
     /* get the arguments of the payload */
     if(mode==DltModeVerbose) {
         arguments.clear();
+        arguments.reserve(numberOfArguments);  // Pre-allocate capacity
         for(int num=0;num<numberOfArguments;num++) {
             if(argument.setArgument(payload,offset,endianness)==false) {
                 /* There was an error parsing the arguments */
@@ -1021,9 +1024,20 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
 void QDltMsg::clear()
 {
-    ecuid.clear();
-    apid.clear();
-    ctid.clear();
+    // Clear QString fields only if not empty (avoid unnecessary ref counting)
+    if (!ecuid.isEmpty()) ecuid.clear();
+    if (!apid.isEmpty()) apid.clear();
+    if (!ctid.isEmpty()) ctid.clear();
+    if (!sessionName.isEmpty()) sessionName.clear();
+    if (!sourceFileName.isEmpty()) sourceFileName.clear();
+    
+    // Clear collections
+    arguments.clear();
+    if (!payload.isEmpty()) payload.clear();
+    if (!header.isEmpty()) header.clear();
+    if (!tags.isEmpty()) tags.clear();
+    
+    // Reset POD types in bulk
     type = DltTypeUnknown;
     subtype = DltLogUnknown;
     mode = DltModeUnknown;
@@ -1032,48 +1046,46 @@ void QDltMsg::clear()
     microseconds = 0;
     timestamp = 0;
     sessionid = 0;
-    sessionName.clear();
     numberOfArguments = 0;
     messageId = 0;
     ctrlServiceId = 0;
     ctrlReturnType = 0;
-    arguments.clear();
-    payload.clear();
     payloadSize = 0;
-    header.clear();
     headerSize = 0;
-    versionNumber=0;
-
+    versionNumber = 0;
+    
     withSessionId = false;
     withAppContextId = false;
     withEcuId = false;
-    contentInformation = 0; // 0x0 = verbose, 0x1 = non verbose, 0x2 = control
-    withHFMessageInfo = false; // verbose or control
-    withHFNumberOfArguments = false; // verbose or control
-    withHFTimestamp = false; // verbose or none verbose
-    withHFMessageId = false; // none verbose
-
+    contentInformation = 0;
+    withHFMessageInfo = false;
+    withHFNumberOfArguments = false;
+    withHFTimestamp = false;
+    withHFMessageId = false;
     withSegementation = false;
     withPrivacyLevel = false;
     withTags = false;
     withSourceFileNameLineNumber = false;
-
+    
     timestampNanoseconds = 0;
     timestampSeconds = 0;
-
-    sourceFileName.clear();
     lineNumber = 0;
-
-    tags.clear();
-
     privacyLevel = 0;
-
     segmentationFrameType = 0;
     segmentationTotalLength = 0;
     segmentationConsecutiveFrame = 0;
     segmentationAbortReason = 0;
-
     index = -1;
+    
+    // Invalidate cached strings
+    if (headerStringCached) {
+        headerStringCached = false;
+        cachedHeaderString.clear();
+    }
+    if (payloadStringCached) {
+        payloadStringCached = false;
+        cachedPayloadString.clear();
+    }
 }
 
 void QDltMsg::clearArguments()
@@ -1112,26 +1124,55 @@ void QDltMsg::removeArgument(int index)
 
 QString QDltMsg::toStringHeader() const
 {
-    QString text;
-    text.reserve(1024);
+    // Return cached version if available
+    if (headerStringCached) {
+        return cachedHeaderString;
+    }
 
-    text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
-    text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
-    text += QString(" %1").arg(getMessageCounter());
-    text += QString(" %1").arg(getEcuid());
-    text += QString(" %1").arg(getApid());
-    text += QString(" %1").arg(getCtid());
-    text += QString(" %1").arg(getSessionid());
-    text += QString(" %2").arg(getTypeString());
-    text += QString(" %2").arg(getSubtypeString());
-    text += QString(" %2").arg(getModeString());
-    text += QString(" %1").arg(getNumberOfArguments());
+    QString text;
+    text.reserve(128);
+
+    // Build header string using optimized concatenation
+    text += getTimeString();
+    text += '.';
+    text += QString::number(getMicroseconds()).rightJustified(6, '0');
+    text += ' ';
+    text += QString::number(getTimestamp() / 10000);
+    text += '.';
+    text += QString::number(getTimestamp() % 10000).rightJustified(4, '0');
+    text += ' ';
+    text += QString::number(getMessageCounter());
+    text += ' ';
+    text += getEcuid();
+    text += ' ';
+    text += getApid();
+    text += ' ';
+    text += getCtid();
+    text += ' ';
+    text += QString::number(getSessionid());
+    text += ' ';
+    text += getTypeString();
+    text += ' ';
+    text += getSubtypeString();
+    text += ' ';
+    text += getModeString();
+    text += ' ';
+    text += QString::number(getNumberOfArguments());
+
+    // Cache for future use
+    cachedHeaderString = text;
+    headerStringCached = true;
 
     return text;
 }
 
 QString QDltMsg::toStringPayload() const
 {
+    // Return cached version if available
+    if (payloadStringCached) {
+        return cachedPayloadString;
+    }
+
     QString text;
     QDltArgument argument;
     QByteArray data;
@@ -1150,6 +1191,8 @@ QString QDltMsg::toStringPayload() const
             text += "|";
             text += QDlt::toAscii(data, false);
         }
+        cachedPayloadString = text;
+        payloadStringCached = true;
         return text;
     }
 
@@ -1261,6 +1304,9 @@ QString QDltMsg::toStringPayload() const
 
     }
 
+    // Cache for future use
+    cachedPayloadString = text;
+    payloadStringCached = true;
     return text;
 }
 

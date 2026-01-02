@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QVector>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -154,6 +155,8 @@ private:
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
     QShortcut *markShortcut;
+    QShortcut *nextMarkedShortcut;
+    QShortcut *prevMarkedShortcut;
 
     /* Export */
     ExporterDialog exporterDialog;
@@ -227,6 +230,12 @@ private:
 
     /* DLT File opened only Read only */
     bool isDltFileReadOnly;
+
+    /* incremental filter index streaming */
+    QVector<qint64> m_incrementalFilterPending;
+    bool m_incrementalFilterStreaming;
+    QTimer *m_incrementalFilterUiUpdateTimer;
+    bool m_incrementalFilterUiUpdatePending;
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
@@ -438,6 +447,8 @@ public slots:
     void on_actionFindNext();
     void mark_unmark_lines();
     void unmark_all_lines();
+    void goto_next_marked_line();
+    void goto_prev_marked_line();
     void filterIndexStart();
     void filterIndexEnd();
     void splitLogsEcuid();
@@ -596,6 +607,8 @@ public slots:
     //History Slots
     void onAddActionToHistory();
     void onSearchProgressChanged(bool isInProgress);
+    void onFilterIndexChunkReady(const QVector<qint64> &chunk);
+    void applyIncrementalFilterIndexToUi();
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);

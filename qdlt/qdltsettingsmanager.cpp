@@ -143,6 +143,7 @@ void QDltSettingsManager::writeSettingsLocal(QXmlStreamWriter &xml)
             xml.writeTextElement("autoMarkFatalError",QString("%1").arg(autoMarkFatalError));
             xml.writeTextElement("autoMarkWarn",QString("%1").arg(autoMarkWarn));
             xml.writeTextElement("autoMarkMarker",QString("%1").arg(autoMarkMarker));
+            xml.writeTextElement("includeManualMarkersInFilter",QString("%1").arg(includeManualMarkersInFilter));
             xml.writeTextElement("updateContextLoadingFile",QString("%1").arg(updateContextLoadingFile));
             xml.writeTextElement("updateContextsUnregister",QString("%1").arg(updateContextsUnregister));
             xml.writeTextElement("loggingOnlyMode",QString("%1").arg(loggingOnlyMode));
@@ -192,6 +193,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/autoMarkFatalError",autoMarkFatalError);
     settings->setValue("startup/autoMarkWarn",autoMarkWarn);
     settings->setValue("startup/autoMarkMarker",autoMarkMarker);
+    settings->setValue("startup/includeManualMarkersInFilter",includeManualMarkersInFilter);
     settings->setValue("startup/loggingOnlyMode",loggingOnlyMode);
     settings->setValue("startup/loggingOnlyFilteredMessages",loggingOnlyFilteredMessages);
     settings->setValue("startup/splitfileyesno",splitlogfile);
@@ -274,6 +276,10 @@ void QDltSettingsManager::readSettingsLocal(QXmlStreamReader &xml)
     if(xml.name() == QString("autoMarkMarker"))
     {
         autoMarkMarker = xml.readElementText().toInt();
+    }
+    if(xml.name() == QString("includeManualMarkersInFilter"))
+    {
+        includeManualMarkersInFilter = xml.readElementText().toInt();
     }
     if(xml.name() == QString("fontSize"))
     {
@@ -460,6 +466,7 @@ void QDltSettingsManager::readSettings()
     autoMarkFatalError = settings->value("startup/autoMarkFatalError",0).toInt();
     autoMarkWarn = settings->value("startup/autoMarkWarn",0).toInt();
     autoMarkMarker = settings->value("startup/autoMarkMarker",1).toInt();
+    includeManualMarkersInFilter = settings->value("startup/includeManualMarkersInFilter",1).toInt();
     loggingOnlyMode = settings->value("startup/loggingOnlyMode",0).toInt();
     loggingOnlyFilteredMessages = settings->value("startup/loggingOnlyFilteredMessages",0).toInt();
     splitlogfile = settings->value("startup/splitfileyesno",0).toInt();

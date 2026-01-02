@@ -1,0 +1,144 @@
+@startuml cfi_indexing_sequence
+hide footbox
+
+title DLT Viewer – CFI (Create Filter Index) only
+
+actor UI as "UI / Caller"
+participant Indexer as "DltFileIndexer (QThread)"
+participant DltFile as "QDltFile"
+participant Opt as "QDltOptManager"
+participant FilterList as "QDltFilterList"
+participant IndexerThread as "DltFileIndexerThread\n(processMessage)"
+participant PluginMgr as "QDltPluginManager"
+participant ViewerPlugin as "QDltPlugin (viewer plugins)"
+participant CacheFS as "Index Cache (.dix)"
+
+note right of CacheFS
+CFI cache is stored as a .dix file under a sibling "index" directory
+(e.g. <logdir>/index/<hash>_<filterMD5>[_<pluginMD5>][_S|_STS][_<start>_<end>].dix).
+end note
+
+== Start (CFI) ==
+UI -> Indexer: configure(mode, flags)
+UI -> Indexer: start()
+activate Indexer
+Indexer -> Indexer: run()
+
+note right of Indexer
+run() holds indexLock and clears stopFlag.
+Active viewer/decoder plugins are captured from pluginManager.
+end note
+
+opt modeFilter or modeIndexAndFilter
+  Indexer -> DltFile: getFilterList()
+  DltFile --> Indexer: FilterList
+
+  Indexer -> Indexer: indexFilter(filenames)  // "CFI" progress
+
+  note right of Indexer
+  indexFilter iterates message indices [start..end)
+  where start/end depend on filterIndexEnabled.
+  end note
+
+  alt filterCacheEnabled AND mode != modeIndexAndFilter AND cache hit
+    note right of Indexer
+    Cache load is intentionally skipped during initial file load
+    (modeIndexAndFilter). It is used on later re-filter operations.
+    end note
+    Indexer -> CacheFS: loadFilterIndexCache(FilterList, filenames)
+    CacheFS --> Indexer: indexFilterList (message indices)
+  else cache miss / disabled / initial load
+    Indexer -> Opt: issilentMode()
+    Opt --> Indexer: silentMode flag
+
+    note right of IndexerThread
+    Current code constructs DltFileIndexerThread but
+    calls processMessage() directly (threaded queue is commented out).
+    end note
+
+    loop for ix = start .. end-1
+      Indexer -> DltFile: getMsg(ix)
+      alt broken message
+        DltFile --> Indexer: false
+        Indexer -> Indexer: continue
+      else ok
+        DltFile --> Indexer: QDltMsg
+        Indexer -> IndexerThread: processMessage(msg, ix)
+
+        activate IndexerThread
+
+        group Optional: only in modeIndexAndFilter
+          opt control msg: GET_SOFTWARE_VERSION
+            IndexerThread -> Indexer: versionString(ecuId, version)
+          end
+          opt control msg: TIMEZONE
+            IndexerThread -> Indexer: timezone(tz, dst)
+          end
+          opt control msg: UNREGISTER_CONTEXT
+            IndexerThread -> Indexer: unregisterContext(ecuId, apid, ctid)
+          end
+
+          opt viewer plugins (pre-decode)
+            loop each viewer plugin
+              IndexerThread -> ViewerPlugin: initMsg(ix, msg)
+            end
+          end
+        end
+
+        opt decoder plugins enabled
+          IndexerThread -> PluginMgr: decodeMsg(msg, silentMode)
+        end
+
+        IndexerThread -> FilterList: checkFilter(msg)
+        alt matches
+          alt sortByTimeEnabled
+            IndexerThread -> Indexer: insert sorted key(time,usec,ix)
+          else sortByTimestampEnabled
+            IndexerThread -> Indexer: insert sorted key(timestamp,ix)
+          else no sorting
+            IndexerThread -> Indexer: indexFilterList.append(ix)
+          end
+        else no match
+          IndexerThread -> Indexer: (no index entry)
+        end
+
+        group Optional: only in modeIndexAndFilter
+          opt viewer plugins (post-decode)
+            loop each viewer plugin
+              IndexerThread -> ViewerPlugin: initMsgDecoded(ix, msg)
+            end
+          end
+
+          opt control msg: GET_LOG_INFO
+            IndexerThread -> Indexer: appendToGetLogInfoList(ix)
+          end
+        end
+
+        deactivate IndexerThread
+      end
+
+      opt stopFlag set
+        Indexer --> UI: (indexing aborted)
+        break
+      end
+    end
+
+    opt sortByTimeEnabled or sortByTimestampEnabled
+      Indexer -> Indexer: indexFilterList = values(indexFilterListSorted)
+    end
+
+    opt filterCacheEnabled
+      Indexer -> CacheFS: saveFilterIndexCache(FilterList, filenames, indexFilterList)
+      note right of CacheFS
+      Writes version + qint64[] indices via saveIndex() into the .dix file.
+      end note
+    end
+  end
+
+  Indexer -> DltFile: enableFilter(filtersEnabled)
+  Indexer -> DltFile: setIndexFilter(indexFilterList)
+  Indexer --> UI: finishFilter()
+end
+
+deactivate Indexer
+@enduml
