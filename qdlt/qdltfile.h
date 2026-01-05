@@ -34,6 +34,8 @@
 #include <QMutex>
 #include <time.h>
 #include <QCache>
+#include <QList>
+#include <QSet>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -137,6 +139,13 @@ public:
       \return true if the operation was successful, false if an error occurred.
     */
     bool updateIndexFilter();
+
+    //! Set list of manually marked message indices (global message indices).
+    /*!
+      These indices will be included in the filtered view even if they don't match the current filter.
+      Intended for viewer-side manual row markers.
+    */
+    void setManualMarkerIndices(const QList<unsigned long int> &indices);
 
     //! Get one message of the DLT log file.
     /*!
@@ -275,6 +284,10 @@ public:
      **/
     QVector<qint64> getIndexFilter() const;
 
+    //! Get Index of all DLT messages matching filter by const reference.
+    /*! Avoids copying large vectors; reference stays valid until the filter index is recomputed. */
+    const QVector<qint64>& getIndexFilterRef() const { return indexFilter; }
+
     //! Set Index of all DLT messages matching filter
     /*!
      * \param _indexFilter List of file positions
@@ -355,6 +368,15 @@ private:
       Index contains positions of DLT messages in indexAll.
     */
     QVector<qint64> indexFilter;
+
+    //! Base index of messages matching the active filter (without manual markers).
+    QVector<qint64> indexFilterBase;
+
+    //! Manually marked message indices to always include in filtered view.
+    QSet<qint64> manualMarkerIndices;
+
+    QVector<qint64> mergeIndexFilterBaseWithMarkers(const QSet<qint64> &markerSet) const;
+    void recomputeEffectiveIndexFilter();
 
     //! This contains the list of filters.
     QDltFilterList filterList;
