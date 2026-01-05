@@ -95,6 +95,7 @@ public:
     int autoMarkFatalError; // local and local setting
     int autoMarkWarn; // project and local setting
     int autoMarkMarker; // project and local setting
+    int includeManualMarkersInFilter; // project and local setting
     int updateContextLoadingFile; // project and local setting
     int updateContextsUnregister; // project and local setting
     int loggingOnlyMode; // project and local setting
