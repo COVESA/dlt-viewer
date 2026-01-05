@@ -23,10 +23,19 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     this->from = from;
     to.setFileName(outputfileName);
     this->pluginManager = pluginManager;
-    this->selection = selection;
     this->exportFormat = exportFormat;
     this->exportSelection = exportSelection;
-    this->selection = selection;
+
+    if(selection != nullptr)
+    {
+        this->selection = *selection;
+        hasSelection = true;
+    }
+    else
+    {
+        hasSelection = false;
+        this->selection.clear();
+    }
 
     this->signature = signature;
 }
@@ -36,6 +45,11 @@ void QDltExporter::run()
     QString result;
     exportMessages();
     emit resultReady(result);
+}
+
+void QDltExporter::setExplicitMessageIndices(const QVector<unsigned long int> &indices)
+{
+    explicitMessageIndices = indices;
 }
 
 QString QDltExporter::escapeCSVValue(QString arg)
@@ -193,13 +207,13 @@ void QDltExporter::writeCSVLine(int index, QDltMsg msg,QFile &to)
 bool QDltExporter::startExport()
 {
     /* Sort the selection list and create Row list */
-    if(exportSelection == QDltExporter::SelectionSelected && selection != NULL)
+    if(exportSelection == QDltExporter::SelectionSelected && hasSelection)
     {
-        std::sort(selection->begin(), selection->end());
+        std::sort(selection.begin(), selection.end());
         selectedRows.clear();
-        for(int num=0;num<selection->count();num++)
+        for(int num=0;num<selection.count();num++)
         {
-            QModelIndex index = selection->at(num);
+            QModelIndex index = selection.at(num);
             if(index.column() == 0)
                 selectedRows.append(index.row());
         }
@@ -311,9 +325,11 @@ bool QDltExporter::startExport()
     if(exportSelection == QDltExporter::SelectionAll)
         size = from->size();
     else if(exportSelection == QDltExporter::SelectionFiltered)
-        size = from->sizeFilter();
+        size = from->sizeFilterBase();
     else if(exportSelection == QDltExporter::SelectionSelected)
         size = selectedRows.size();
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+        size = static_cast<unsigned long int>(explicitMessageIndices.size());
     else
         return false;
 
@@ -392,17 +408,22 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
     {
-        buf = from->getMsgFilter(num);
+        buf = from->getMsgFilterBase(num);
         if( true == buf.isEmpty())
         {
             qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
             return false;
         }
         result =  msg.setMsg(buf);
-        msg.setIndex(from->getMsgFilterPos(num));
+        msg.setIndex(from->getMsgFilterPosBase(num));
     }
     else if(exportSelection == QDltExporter::SelectionSelected)
     {
+        if(num >= static_cast<unsigned long int>(selectedRows.size()))
+        {
+            qDebug() << "Unhandled error in" << __FILE__ << __LINE__;
+            return false;
+        }
         buf = from->getMsgFilter(selectedRows[num]);
         if( true == buf.isEmpty())
         {
@@ -411,6 +432,24 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
         }
         result =  msg.setMsg(buf);
         msg.setIndex(from->getMsgFilterPos(selectedRows[num]));
+    }
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+    {
+        if(num >= static_cast<unsigned long int>(explicitMessageIndices.size()))
+        {
+            qDebug() << "Unhandled error in" << __FILE__ << __LINE__;
+            return false;
+        }
+
+        const unsigned long int msgIndex = explicitMessageIndices[static_cast<int>(num)];
+        buf = from->getMsg(msgIndex);
+        if(true == buf.isEmpty())
+        {
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            return false;
+        }
+        result = msg.setMsg(buf);
+        msg.setIndex(msgIndex);
     }
     else
     {
@@ -440,9 +479,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
             if(exportSelection == QDltExporter::SelectionAll)
                 text += QString("%1 ").arg(num);
             else if(exportSelection == QDltExporter::SelectionFiltered)
-                text += QString("%1 ").arg(from->getMsgFilterPos(num));
+                text += QString("%1 ").arg(from->getMsgFilterPosBase(num));
             else if(exportSelection == QDltExporter::SelectionSelected)
+            {
+                if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                    return false;
                 text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
+            }
+            else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+                text += QString("%1 ").arg(msg.getIndex());
             else
                 return false;
             if( automaticTimeSettings == 0 )
@@ -486,9 +531,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             writeCSVLine(num, msg,to);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            writeCSVLine(from->getMsgFilterPos(num), msg,to);
+            writeCSVLine(from->getMsgFilterPosBase(num), msg,to);
         else if(exportSelection == QDltExporter::SelectionSelected)
+        {
+            if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                return false;
             writeCSVLine(from->getMsgFilterPos(selectedRows[num]), msg,to);
+        }
+        else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+            writeCSVLine(msg.getIndex(), msg,to);
         else
             return false;
     }
@@ -500,9 +551,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             text += QString("%1").arg(num);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            text += QString("%1").arg(from->getMsgFilterPos(num));
+            text += QString("%1").arg(from->getMsgFilterPosBase(num));
         else if(exportSelection == QDltExporter::SelectionSelected)
+        {
+            if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                return false;
             text += QString("%1").arg(from->getMsgFilterPos(selectedRows[num]));
+        }
+        else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+            text += QString("%1").arg(msg.getIndex());
         else
             return false;
 

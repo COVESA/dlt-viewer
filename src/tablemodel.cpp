@@ -342,6 +342,14 @@ int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hl
 {
 manualMarkerColor = hlcolor;
 this->selectedMarkerRows = selectedRows;
+
+QVector<int> roles;
+roles << Qt::BackgroundRole << Qt::ForegroundRole;
+
+if(rowCount() > 0 && columnCount() > 0)
+{
+    emit dataChanged(index(0, 0), index(rowCount() - 1, columnCount() - 1), roles);
+}
 return 0;
 }
 

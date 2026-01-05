@@ -243,7 +243,7 @@ void SettingsDialog::writeDlg()
     ui->checkBoxAutoMarkFatalError->setCheckState(settings->autoMarkFatalError?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkWarn->setCheckState(settings->autoMarkWarn?Qt::Checked:Qt::Unchecked);
     ui->checkBoxAutoMarkMarker->setCheckState(settings->autoMarkMarker?Qt::Checked:Qt::Unchecked);
-    ui->checkBoxAutoReverseSortOrder->setChecked(settings->value("startup/reverseSortEnabled", false).toBool());
+    ui->checkBoxIncludeManualMarkersInFilter->setCheckState(settings->includeManualMarkersInFilter?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyMode->setCheckState(settings->loggingOnlyMode?Qt::Checked:Qt::Unchecked);
     ui->checkBoxLoggingOnlyFilteredMessages->setCheckState(settings->loggingOnlyFilteredMessages?Qt::Checked:Qt::Unchecked);
     ui->groupBoxMaxFileSizeMB->setChecked(settings->splitlogfile);
@@ -420,7 +420,7 @@ void SettingsDialog::readDlg()
     settings->autoMarkFatalError = (ui->checkBoxAutoMarkFatalError->checkState() == Qt::Checked);
     settings->autoMarkWarn = (ui->checkBoxAutoMarkWarn->checkState() == Qt::Checked);
     settings->autoMarkMarker = (ui->checkBoxAutoMarkMarker->checkState() == Qt::Checked);
-    settings->setValue("startup/reverseSortEnabled", ui->checkBoxAutoReverseSortOrder->isChecked());
+    settings->includeManualMarkersInFilter = (ui->checkBoxIncludeManualMarkersInFilter->checkState() == Qt::Checked);
     settings->loggingOnlyMode = (ui->checkBoxLoggingOnlyMode->checkState() == Qt::Checked);
     settings->loggingOnlyFilteredMessages = (ui->checkBoxLoggingOnlyFilteredMessages->checkState() == Qt::Checked);
     settings->splitlogfile = ui->groupBoxMaxFileSizeMB->isChecked();

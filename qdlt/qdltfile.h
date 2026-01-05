@@ -34,6 +34,8 @@
 #include <QMutex>
 #include <time.h>
 #include <QCache>
+#include <QList>
+#include <QSet>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -90,6 +92,12 @@ public:
     */
     int sizeFilter() const;
 
+    //! Get the number of base-filtered DLT messages (without manual marker inclusion).
+    /*!
+      \return the number of messages matching the active filter, excluding any manual marker union.
+    */
+    int sizeFilterBase() const;
+
     //! Open a DLT log file.
     /*!
       The DLT log file is parsed and a index of all DLT log messages is created.
@@ -138,6 +146,13 @@ public:
     */
     bool updateIndexFilter();
 
+    //! Set list of manually marked message indices (global message indices).
+    /*!
+      These indices will be included in the filtered view even if they don't match the current filter.
+      Intended for viewer-side manual row markers.
+    */
+    void setManualMarkerIndices(const QList<unsigned long int> &indices);
+
     //! Get one message of the DLT log file.
     /*!
       This function retrieves on DLT message of the log file
@@ -161,12 +176,18 @@ public:
     */
     QByteArray getMsgFilter(int index) const;
 
+    //! Get one DLT message of the base-filtered DLT log file selected by index (excluding manual markers).
+    QByteArray getMsgFilterBase(int index) const;
+
     //! Get the position in the log file of the filtered DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number of DLT messages in the file
       \return real position in log file, -1 if invalid.
     */
     int getMsgFilterPos(int index) const;
+
+    //! Get the position in the log file of the base-filtered DLT log file selected by index (excluding manual markers).
+    int getMsgFilterPosBase(int index) const;
 
     //! Delete all filters and markers.
     /*!
@@ -281,11 +302,27 @@ public:
      **/
     QVector<qint64> getIndexFilter() const;
 
+    //! Get Index of all DLT messages matching filter (by const reference, avoids copying large vectors).
+    const QVector<qint64>& getIndexFilterRef() const { return indexFilter; }
+
+    //! Get Index of all DLT messages matching the active filter (excluding manual marker union).
+    QVector<qint64> getIndexFilterBase() const;
+
+    //! Get Index of all DLT messages matching the active filter (excluding manual marker union) by const reference.
+    const QVector<qint64>& getIndexFilterBaseRef() const { return indexFilterBase; }
+
     //! Set Index of all DLT messages matching filter
     /*!
      * \param _indexFilter List of file positions
      **/
     void setIndexFilter(QVector<qint64> _indexFilter);
+
+    //! Clear the filtered index (base) and recompute the effective filtered index.
+    void clearIndexFilter();
+
+    //! Append a chunk of indices to the base filtered index.
+    /*! Intended for incremental filter-index updates. */
+    void appendIndexFilter(const QVector<qint64> &chunk);
 
     //! Sets the max cache size for DLT messages
     /*!
@@ -329,6 +366,14 @@ private:
       Index contains positions of DLT messages in indexAll.
     */
     QVector<qint64> indexFilter;
+
+    //! Base index of messages matching the active filter (without manual markers).
+    QVector<qint64> indexFilterBase;
+
+    //! Manually marked message indices to always include in filtered view.
+    QSet<qint64> manualMarkerIndices;
+
+    void recomputeEffectiveIndexFilter();
 
     //! This contains the list of filters.
     QDltFilterList filterList;
