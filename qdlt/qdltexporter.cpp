@@ -23,10 +23,19 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     this->from = from;
     to.setFileName(outputfileName);
     this->pluginManager = pluginManager;
-    this->selection = selection;
     this->exportFormat = exportFormat;
     this->exportSelection = exportSelection;
-    this->selection = selection;
+
+    if(selection != nullptr)
+    {
+        this->selection = *selection;
+        hasSelection = true;
+    }
+    else
+    {
+        hasSelection = false;
+        this->selection.clear();
+    }
 
     this->signature = signature;
 }
@@ -36,6 +45,11 @@ void QDltExporter::run()
     QString result;
     exportMessages();
     emit resultReady(result);
+}
+
+void QDltExporter::setExplicitMessageIndices(const QVector<unsigned long int> &indices)
+{
+    explicitMessageIndices = indices;
 }
 
 QString QDltExporter::escapeCSVValue(QString arg)
@@ -193,13 +207,13 @@ void QDltExporter::writeCSVLine(int index, QDltMsg msg,QFile &to)
 bool QDltExporter::startExport()
 {
     /* Sort the selection list and create Row list */
-    if(exportSelection == QDltExporter::SelectionSelected && selection != NULL)
+    if(exportSelection == QDltExporter::SelectionSelected && hasSelection)
     {
-        std::sort(selection->begin(), selection->end());
+        std::sort(selection.begin(), selection.end());
         selectedRows.clear();
-        for(int num=0;num<selection->count();num++)
+        for(int num=0;num<selection.count();num++)
         {
-            QModelIndex index = selection->at(num);
+            QModelIndex index = selection.at(num);
             if(index.column() == 0)
                 selectedRows.append(index.row());
         }
@@ -212,7 +226,7 @@ bool QDltExporter::startExport()
     {
         if(multifilterFilenames.isEmpty())
         {
-            if(!to.open(QIODevice::WriteOnly | QIODevice::Text))
+            if(!to.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
             {
                 if (QDltOptManager::getInstance()->issilentMode())
                     qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
@@ -235,7 +249,7 @@ bool QDltExporter::startExport()
                 QDltFilterList *filterList = new QDltFilterList();
                 if(!filterList->LoadFilter(filename,true))
                     qDebug() << "Export: Open filter file " << filename << " failed!";
-                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly | QIODevice::Text))
+                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text))
                 {
                     qDebug() << "Multifilter export filename: " << file->fileName();
                     multifilterFilesList.append(file);
@@ -255,7 +269,7 @@ bool QDltExporter::startExport()
     {
         if(multifilterFilenames.isEmpty())
         {
-            if(!to.open(QIODevice::WriteOnly))
+            if(!to.open(QIODevice::WriteOnly | QIODevice::Truncate))
             {
                 if (QDltOptManager::getInstance()->issilentMode())
                     qDebug() << QString("ERROR - cannot open the export file %1").arg(to.fileName());
@@ -274,7 +288,7 @@ bool QDltExporter::startExport()
                 if(!filterList->LoadFilter(filename,true))
                     qDebug() << "Export: Open filter file " << filename << " failed!";
                 qDebug() << "Multifilter export filename: " << file->fileName();
-                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly))
+                if(!filterList->isEmpty() && file->open(QIODevice::WriteOnly | QIODevice::Truncate))
                 {
                     multifilterFilesList.append(file);
                     multifilterFilterList.append(filterList);
@@ -311,9 +325,11 @@ bool QDltExporter::startExport()
     if(exportSelection == QDltExporter::SelectionAll)
         size = from->size();
     else if(exportSelection == QDltExporter::SelectionFiltered)
-        size = from->sizeFilter();
+        size = from->sizeFilterBase();
     else if(exportSelection == QDltExporter::SelectionSelected)
         size = selectedRows.size();
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked || exportSelection == QDltExporter::SelectionMarked)
+        size = static_cast<unsigned long int>(explicitMessageIndices.size());
     else
         return false;
 
@@ -392,17 +408,22 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
     {
-        buf = from->getMsgFilter(num);
+        buf = from->getMsgFilterBase(num);
         if( true == buf.isEmpty())
         {
             qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
             return false;
         }
         result =  msg.setMsg(buf);
-        msg.setIndex(from->getMsgFilterPos(num));
+        msg.setIndex(from->getMsgFilterPosBase(num));
     }
     else if(exportSelection == QDltExporter::SelectionSelected)
     {
+        if(num >= static_cast<unsigned long int>(selectedRows.size()))
+        {
+            qDebug() << "Unhandled error in" << __FILE__ << __LINE__;
+            return false;
+        }
         buf = from->getMsgFilter(selectedRows[num]);
         if( true == buf.isEmpty())
         {
@@ -411,6 +432,24 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
         }
         result =  msg.setMsg(buf);
         msg.setIndex(from->getMsgFilterPos(selectedRows[num]));
+    }
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked || exportSelection == QDltExporter::SelectionMarked)
+    {
+        if(num >= static_cast<unsigned long int>(explicitMessageIndices.size()))
+        {
+            qDebug() << "Unhandled error in" << __FILE__ << __LINE__;
+            return false;
+        }
+
+        const unsigned long int msgIndex = explicitMessageIndices[static_cast<int>(num)];
+        buf = from->getMsg(msgIndex);
+        if(true == buf.isEmpty())
+        {
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
+            return false;
+        }
+        result = msg.setMsg(buf);
+        msg.setIndex(msgIndex);
     }
     else
     {
@@ -440,9 +479,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
             if(exportSelection == QDltExporter::SelectionAll)
                 text += QString("%1 ").arg(num);
             else if(exportSelection == QDltExporter::SelectionFiltered)
-                text += QString("%1 ").arg(from->getMsgFilterPos(num));
+                text += QString("%1 ").arg(from->getMsgFilterPosBase(num));
             else if(exportSelection == QDltExporter::SelectionSelected)
+            {
+                if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                    return false;
                 text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
+            }
+            else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked || exportSelection == QDltExporter::SelectionMarked)
+                text += QString("%1 ").arg(msg.getIndex());
             else
                 return false;
             if( automaticTimeSettings == 0 )
@@ -486,9 +531,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             writeCSVLine(num, msg,to);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            writeCSVLine(from->getMsgFilterPos(num), msg,to);
+            writeCSVLine(from->getMsgFilterPosBase(num), msg,to);
         else if(exportSelection == QDltExporter::SelectionSelected)
+        {
+            if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                return false;
             writeCSVLine(from->getMsgFilterPos(selectedRows[num]), msg,to);
+        }
+        else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked || exportSelection == QDltExporter::SelectionMarked)
+            writeCSVLine(msg.getIndex(), msg,to);
         else
             return false;
     }
@@ -500,9 +551,15 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             text += QString("%1").arg(num);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            text += QString("%1").arg(from->getMsgFilterPos(num));
+            text += QString("%1").arg(from->getMsgFilterPosBase(num));
         else if(exportSelection == QDltExporter::SelectionSelected)
+        {
+            if(num >= static_cast<unsigned long int>(selectedRows.size()))
+                return false;
             text += QString("%1").arg(from->getMsgFilterPos(selectedRows[num]));
+        }
+        else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked || exportSelection == QDltExporter::SelectionMarked)
+            text += QString("%1").arg(msg.getIndex());
         else
             return false;
 
@@ -545,7 +602,6 @@ void QDltExporter::exportMessages()
     QDltMsg msg;
     QByteArray buf;
     float percent=0;
-    QString qszPercent;
     /* initialise values */
     int readErrors=0;
     int exportErrors=0;
@@ -563,19 +619,37 @@ void QDltExporter::exportMessages()
         return;
     }
 
-    bool silentMode = !QDltOptManager::getInstance()->issilentMode();
+    const bool triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+    const unsigned long int fileSize = (from != nullptr) ? static_cast<unsigned long int>(from->size()) : this->size;
 
-    if ( this->stoping_index == 0 || this->stoping_index > this->size || this->stoping_index < this->starting_index )
+    // Treat exportMessageRange(start, stop) as a GLOBAL message-index range (0..from->size()).
+    const bool hasGlobalRange = (from != nullptr) &&
+                               (this->stoping_index != 0) &&
+                               (this->stoping_index <= fileSize) &&
+                               (this->stoping_index >= this->starting_index);
+    const unsigned long int globalStart = hasGlobalRange ? this->starting_index : 0;
+    const unsigned long int globalStop  = hasGlobalRange ? this->stoping_index  : fileSize;
+
+    // For SelectionAll we can iterate directly in global index space; for other selections
+    // we iterate the selection space and filter by msg.getIndex().
+    if(exportSelection == QDltExporter::SelectionAll && hasGlobalRange)
     {
-        stoping = this->size;
-        starting = 0;
-        qDebug() << "Start DLT export of" << this->size << "messages" << ",silent mode" << !silentMode;
+        starting = globalStart;
+        stoping = std::min(globalStop, this->size);
+        qDebug() << "Start DLT export" << stoping - starting << "messages" << "of" << this->size << "range: " << starting << "-" << stoping << ",silent mode" << !triggeredByUser;
     }
     else
     {
-        stoping = this->stoping_index;
-        starting = this->starting_index;
-        qDebug() << "Start DLT export" << stoping - starting << "messages" << "of" << this->size << "range: " << starting << "-" << stoping << ",silent mode" << !silentMode;
+        stoping = this->size;
+        starting = 0;
+        if(hasGlobalRange)
+        {
+            qDebug() << "Start DLT export (filtered by global range " << globalStart << "-" << globalStop << ") of" << this->size << "messages" << ",silent mode" << !triggeredByUser;
+        }
+        else
+        {
+            qDebug() << "Start DLT export of" << this->size << "messages" << ",silent mode" << !triggeredByUser;
+        }
     }
 
     /* init fileprogress */
@@ -585,13 +659,13 @@ void QDltExporter::exportMessages()
 
     for(;starting<stoping;starting++)
     {
-        int percent = (( starting * 100.0 ) /stoping );
-        if(percent>=progressCounter)
+        const int progressPercent = (( starting * 100.0 ) / stoping );
+        if(progressPercent >= progressCounter)
         {
             progressCounter += 1;
-            emit progress("Exp:",2,percent); // every 1%
-            if((percent>0) && ((percent%10)==0))
-                qDebug() << "Exported:" << percent << "%"; // every 10%
+            emit progress("Exp:",2,progressPercent); // every 1%
+            if((progressPercent > 0) && ((progressPercent % 10) == 0))
+                qDebug() << "Exported:" << progressPercent << "%"; // every 10%
         }
 
         // TODO: Handle cancel operation
@@ -610,12 +684,19 @@ void QDltExporter::exportMessages()
         {
             //FIXME: The following does not work for non verbose messages, must be fixed
             if(pluginManager)
-                pluginManager->decodeMsg(msg,silentMode);
+                pluginManager->decodeMsg(msg, triggeredByUser ? 1 : 0);
             if (exportFormat == QDltExporter::FormatDltDecoded)
             {
                 msg.setNumberOfArguments(msg.sizeArguments());
                 msg.getMsg(buf,true);
             }
+        }
+
+        if(hasGlobalRange)
+        {
+            const unsigned long int msgIndex = static_cast<unsigned long int>(msg.getIndex());
+            if(msgIndex < globalStart || msgIndex >= globalStop)
+                continue;
         }
 
         // apply Regex if needed
@@ -672,7 +753,7 @@ void QDltExporter::exportMessages()
     if ( startFinishError>0 || readErrors>0 || exportErrors>0 )
     {
        //qDebug() << "DLT Export finish() failed";
-       if (silentMode == true ) // reversed login in this case !
+       if (triggeredByUser == true ) // reversed logic in this case !
        {
            ;//QMessageBox::warning(NULL,"Export Errors!",QString("Exported successful: %1 / %2\n\nReadErrors:%3\nWriteErrors:%4\nStart/Finish errors:%5").arg(exportCounter).arg(size).arg(readErrors).arg(exportErrors).arg(startFinishError));
        }

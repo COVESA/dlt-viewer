@@ -49,8 +49,10 @@ void ExporterDialog::setSelection(QDltExporter::DltExportSelection exportSelecti
         ui->radioButtonAll->setChecked(true);
     else if(exportSelection == QDltExporter::SelectionFiltered)
         ui->radioButtonFiltered->setChecked(true);
-    else if(exportSelection == QDltExporter::SelectionSelected)
-        ui->radioButtonSelection->setChecked(true);
+    else if(exportSelection == QDltExporter::SelectionMarked)
+        ui->radioButtonMarked->setChecked(true);
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+        ui->radioButtonFilteredPlusMarked->setChecked(true);
 }
 
 QDltExporter::DltExportSelection ExporterDialog::getSelection()
@@ -59,8 +61,10 @@ QDltExporter::DltExportSelection ExporterDialog::getSelection()
         return QDltExporter::SelectionAll;
     if(ui->radioButtonFiltered->isChecked())
         return QDltExporter::SelectionFiltered;
-    if(ui->radioButtonSelection->isChecked())
-        return QDltExporter::SelectionSelected;
+    if(ui->radioButtonMarked->isChecked())
+        return QDltExporter::SelectionMarked;
+    if(ui->radioButtonFilteredPlusMarked->isChecked())
+        return QDltExporter::SelectionFilteredPlusMarked;
     return QDltExporter::SelectionAll;
 }
 
