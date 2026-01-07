@@ -463,6 +463,11 @@ public:
     */
     QString toStringPayload() const;
 
+    // Cache stats for toStringHeader()/getTimeString() caching.
+    // Intended for performance diagnostics.
+    static void resetCacheStats();
+    static void printCacheStats(quint64 linesSearched);
+
     // Setter and Getters for new DLTv2 parameters
     uint8_t getVersionNumber() const;
     void setVersionNumber(uint8_t newVersionNumber);
