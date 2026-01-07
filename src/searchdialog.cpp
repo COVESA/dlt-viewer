@@ -421,6 +421,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
     starttime(getText());
+    QDltMsg::resetCacheStats();
 
     if(getCaseSensitive() == true)
     {
@@ -508,6 +509,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     }
     while( searchBorder != searchLine );
     stoptime(ctr);
+    // QDltMsg::printCacheStats(static_cast<quint64>(ctr));
 }
 
 bool SearchDialog::foundLine(long int searchLine)
