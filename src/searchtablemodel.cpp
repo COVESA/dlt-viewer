@@ -278,9 +278,12 @@ int SearchTableModel::rowCount(const QModelIndex & /*parent*/) const
 
 void SearchTableModel::modelChanged()
 {    
-    index(0, 1);
-    index(m_searchResultList.size()-1, 0);
-    index(m_searchResultList.size()-1, columnCount() - 1);
+    if (!m_searchResultList.isEmpty())
+    {
+        index(0, 1);
+        index(m_searchResultList.size()-1, 0);
+        index(m_searchResultList.size()-1, columnCount() - 1);
+    }
     emit(layoutChanged());
 }
 
@@ -291,13 +294,30 @@ int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
 
 void SearchTableModel::clear_SearchResults()
 {
+    beginResetModel();
     m_searchResultList.clear();
-    modelChanged();
+    endResetModel();
 }
 
 void SearchTableModel::add_SearchResultEntry(unsigned long entry)
 {
+    const int row = m_searchResultList.size();
+    beginInsertRows(QModelIndex(), row, row);
     m_searchResultList.append(entry);
+    endInsertRows();
+}
+
+void SearchTableModel::add_SearchResultEntries(const QList<unsigned long>& entries)
+{
+    if (entries.isEmpty())
+        return;
+
+    const int firstRow = m_searchResultList.size();
+    const int lastRow = firstRow + entries.size() - 1;
+
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    m_searchResultList.append(entries);
+    endInsertRows();
 }
 
 
