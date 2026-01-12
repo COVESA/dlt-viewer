@@ -47,6 +47,8 @@ public:
 
     void clear_SearchResults();
     void add_SearchResultEntry(unsigned long entry);
+    void add_SearchResultEntries(const QList<unsigned long>& entries);
+    void add_SearchResultEntriesSorted(const QList<unsigned long>& entries);
 
     // Call this after changing file sort order (e.g. reverse sort) to update the view ordering.
     void refreshOrder();

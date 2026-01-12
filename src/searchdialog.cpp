@@ -30,6 +30,16 @@
 #include <QSignalBlocker>
 #include <QColorDialog>
 #include <QAction>
+#include <QPointer>
+#include <QThreadPool>
+#include <QThread>
+#include <QDebug>
+
+#include <QtConcurrent/QtConcurrent>
+
+#if defined(__linux__)
+#include <pthread.h>
+#endif
 
 #include <ctime>
 
@@ -43,6 +53,9 @@ SearchDialog::SearchDialog(QWidget *parent) :
     ui(new Ui::SearchDialog)
 {
     ui->setupUi(this);
+
+    connect(&m_findAllWatcher, &QFutureWatcher<QList<unsigned long>>::finished,
+            this, &SearchDialog::onFindAllFinished);
 
     regexpCheckBox = ui->checkBoxRegExp;
     match = false;
@@ -94,8 +107,80 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
 SearchDialog::~SearchDialog()
 {
+    // Avoid use-after-free if a parallel search is still running.
+    if (m_findAllWatcher.isRunning())
+    {
+        isSearchCancelled.store(true, std::memory_order_relaxed);
+        m_findAllWatcher.future().cancel();
+        m_findAllWatcher.waitForFinished();
+    }
+
     clearCacheHistory();
     delete ui;
+}
+
+void SearchDialog::starttime(const QString& searchTerm)
+{
+    m_searchTimerTerm = searchTerm;
+    m_searchTimer.restart();
+    m_searchTimerRunning = true;
+
+    // Keep existing detailed performance measurement as well.
+    performanceMeasure.start(searchTerm);
+    searchTimer.start();
+
+    // Store CPU time at start (in milliseconds)
+#if defined(_MSC_VER)
+    {
+        const std::clock_t cpu = std::clock();
+        searchCpuTimeStart = (cpu == static_cast<std::clock_t>(-1))
+                                 ? 0
+                                 : (static_cast<qint64>(cpu) * 1000) / CLOCKS_PER_SEC;
+    }
+#else
+    struct timespec ts;
+    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+    searchCpuTimeStart = ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+#endif
+
+    const std::time_t timestamp_sec = std::time(nullptr);
+    searchseconds = static_cast<qint64>(timestamp_sec);
+}
+
+void SearchDialog::stoptime(qint64 messagesProcessed)
+{
+    if (!m_searchTimerRunning)
+        return;
+
+    m_searchTimerRunning = false;
+
+    const qint64 elapsedMs = m_searchTimer.elapsed();
+    const double elapsedSec = elapsedMs > 0 ? (elapsedMs / 1000.0) : 0.0;
+    const double rate = (elapsedSec > 0.0) ? (messagesProcessed / elapsedSec) : 0.0;
+
+    // Detailed performance report (existing feature)
+    const QString perfReport = performanceMeasure.stop(messagesProcessed);
+    if (!perfReport.isEmpty())
+        qDebug().noquote() << perfReport;
+
+    // Simple summary
+    if (!m_searchTimerTerm.isEmpty())
+    {
+        qDebug().nospace() << "Search '" << m_searchTimerTerm << "' processed "
+                          << messagesProcessed << " messages in " << elapsedMs
+                          << " ms (" << rate << " msg/s)";
+    }
+    else
+    {
+        qDebug().nospace() << "Search processed " << messagesProcessed
+                          << " messages in " << elapsedMs
+                          << " ms (" << rate << " msg/s)";
+    }
+
+    const std::time_t timestamp_sec = std::time(nullptr);
+    const qint64 temps = static_cast<qint64>(timestamp_sec);
+    const qint64 dtemps = temps - searchseconds;
+    qDebug() << "Time for search [s]" << dtemps;
 }
 
 void SearchDialog::selectText() {
@@ -125,7 +210,236 @@ QString SearchDialog::getText() { return ui->lineEditSearch->text(); }
 
 void SearchDialog::abortSearch()
 {
-    isSearchCancelled = true;
+    isSearchCancelled.store(true, std::memory_order_relaxed);
+    if (m_findAllWatcher.isRunning())
+        m_findAllWatcher.future().cancel();
+}
+
+void SearchDialog::reportProgress(int progress)
+{
+    emit searchProgressValueChanged(progress);
+}
+
+void SearchDialog::appendFindAllMatchesChunk(const QList<unsigned long>& entries)
+{
+    if (!m_searchtablemodel)
+        return;
+
+    if (entries.isEmpty())
+        return;
+
+    const bool wasEmpty = (m_searchtablemodel->get_SearchResultListSize() == 0);
+    m_searchtablemodel->add_SearchResultEntriesSorted(entries);
+
+    m_findAllAddedSinceLastUiUpdate += entries.size();
+
+    // Throttle table refreshes to keep UI responsive.
+    const qint64 nowMs = m_findAllUiUpdateTimer.elapsed();
+    const bool timeToUpdate = (nowMs - m_findAllLastUiUpdateMs) >= 200;
+    const bool manyNewItems = m_findAllAddedSinceLastUiUpdate >= 2000;
+    if (wasEmpty || timeToUpdate || manyNewItems)
+    {
+        m_findAllLastUiUpdateMs = nowMs;
+        m_findAllAddedSinceLastUiUpdate = 0;
+        emit refreshedSearchIndex();
+    }
+}
+
+void SearchDialog::startParallelFindAll(const QRegularExpression& searchTextRegExp)
+{
+    if (!file)
+        return;
+
+    if (m_findAllWatcher.isRunning())
+    {
+        isSearchCancelled.store(true, std::memory_order_relaxed);
+        m_findAllWatcher.future().cancel();
+        return;
+    }
+
+    isSearchCancelled.store(false, std::memory_order_relaxed);
+    emit searchProgressChanged(true);
+
+    starttime(getText());
+
+    m_findAllUiUpdateTimer.restart();
+    m_findAllLastUiUpdateMs = 0;
+    m_findAllAddedSinceLastUiUpdate = 0;
+
+    m_searchtablemodel->clear_SearchResults();
+    emit refreshedSearchIndex();
+
+    const int total = file->sizeFilter();
+    if (total <= 0)
+        return;
+
+    const bool msgIdEnabled = QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
+    const QString msgIdFormat = QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
+    const bool pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+
+    // Optimization: only decode when payload search is enabled.
+    const bool payloadEnabled = getPayload();
+    const bool doDecode = pluginsEnabled && payloadEnabled;
+
+    const bool headerEnabled = getHeader();
+    const bool caseSensitive = getCaseSensitive();
+    const bool useRegExp = getRegExp();
+    const QString searchText = getText();
+
+    const QString apid = stApid;
+    const QString ctid = stCtid;
+
+    const bool timestampRangeEnabled = (ui->radioTimestamp->isChecked() && is_TimeStampSearchSelected);
+    const double tsStart = dTimeStampStart;
+    const double tsStop = dTimeStampStop;
+    const bool timeRangeEnabled = ui->radioTime->isChecked();
+    const QDateTime timeStart = ui->dateTimeStart->dateTime();
+    const QDateTime timeEnd = ui->dateTimeEnd->dateTime();
+
+    struct Chunk {
+        int begin;
+        int end;
+    };
+
+    const int maxThreads = qMax(1, QThreadPool::globalInstance()->maxThreadCount());
+    // Use more chunks than threads so some chunks complete early and we can show results sooner.
+    // Keep it bounded to avoid too many tasks.
+    const int desiredChunks = qMin(total, maxThreads * 32);
+    const int chunkSize = qMax(1, (total + desiredChunks - 1) / desiredChunks);
+
+    QVector<Chunk> chunks;
+    chunks.reserve((total + chunkSize - 1) / chunkSize);
+    for (int begin = 0; begin < total; begin += chunkSize)
+    {
+        const int end = qMin(total - 1, begin + chunkSize - 1);
+        chunks.push_back(Chunk{begin, end});
+    }
+
+    auto processed = std::make_shared<std::atomic<int>>(0);
+    auto workerIdCounter = std::make_shared<std::atomic<int>>(0);
+    // Unique token for this run (used to re-init thread_local state per new search).
+    auto runToken = std::make_shared<int>(0);
+    const QPointer<SearchDialog> dlg(this);
+    QDltFile* filePtr = file;
+    QDltPluginManager* pluginPtr = pluginManager;
+
+    auto mapFn = [=](const Chunk& chunk) -> QList<unsigned long> {
+        // Name the pooled worker thread once (useful for top -H / perf / debugging).
+        thread_local int workerId = -1;
+        thread_local bool threadNamed = false;
+        if (!threadNamed)
+        {
+            workerId = workerIdCounter->fetch_add(1, std::memory_order_relaxed) + 1;
+            const QString qtName = QStringLiteral("DLTSearch-%1").arg(workerId);
+            QThread::currentThread()->setObjectName(qtName);
+#if defined(__linux__)
+            // Linux thread name is limited (typically 15 chars + NUL).
+            const QByteArray osName = QStringLiteral("DLTSrch-%1").arg(workerId).toLatin1();
+            pthread_setname_np(pthread_self(), osName.constData());
+#endif
+            threadNamed = true;
+        }
+
+        QList<unsigned long> matches;
+        matches.reserve(qMax(0, chunk.end - chunk.begin + 1) / 16);
+
+        // Reuse matcher per thread, but re-init it per new search run.
+        thread_local const void* lastRunToken = nullptr;
+        thread_local DltMessageMatcher matcher;
+        if (lastRunToken != runToken.get())
+        {
+            matcher.setCaseSentivity(caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
+            matcher.setSearchAppId(apid);
+            matcher.setSearchCtxId(ctid);
+            if (timestampRangeEnabled)
+                matcher.setTimestampRange(tsStart, tsStop);
+            if (timeRangeEnabled)
+                matcher.setTimeRange(timeStart, timeEnd);
+            if (msgIdEnabled)
+                matcher.setMessageIdFormat(msgIdFormat);
+            matcher.setHeaderSearchEnabled(headerEnabled);
+            matcher.setPayloadSearchEnabled(payloadEnabled);
+            lastRunToken = runToken.get();
+        }
+
+        QDltMsg msg;
+        QByteArray buf;
+
+        for (int i = chunk.begin; i <= chunk.end; ++i)
+        {
+            if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
+                break;
+
+            buf = filePtr->getMsgFilter(i);
+            msg.setMsg(buf);
+            msg.setIndex(filePtr->getMsgFilterPos(i));
+
+            if (doDecode && pluginPtr)
+                pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
+
+            const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
+                                      : matcher.match(msg, searchText);
+            if (ok)
+                matches.append(static_cast<unsigned long>(filePtr->getMsgFilterPos(i)));
+
+            const int done = processed->fetch_add(1, std::memory_order_relaxed) + 1;
+            if ((done % 2000) == 0)
+            {
+                const int progress = static_cast<int>(done * 100.0 / total);
+                if (dlg)
+                {
+                    QMetaObject::invokeMethod(dlg, [dlg, progress]() {
+                        if (dlg)
+                            dlg->reportProgress(progress);
+                    }, Qt::QueuedConnection);
+                }
+            }
+        }
+
+        return matches;
+    };
+
+    auto reduceFn = [dlg](QList<unsigned long>& result, const QList<unsigned long>& part) {
+        result.append(part);
+        if (dlg && !part.isEmpty())
+        {
+            // Append results incrementally in UI thread.
+            QMetaObject::invokeMethod(dlg, [dlg, part]() {
+                if (dlg)
+                    dlg->appendFindAllMatchesChunk(part);
+            }, Qt::QueuedConnection);
+        }
+    };
+
+    auto future = QtConcurrent::mappedReduced<QList<unsigned long>>(
+        chunks,
+        mapFn,
+        reduceFn,
+        QList<unsigned long>{},
+        QtConcurrent::UnorderedReduce | QtConcurrent::SequentialReduce);
+    m_findAllWatcher.setFuture(future);
+}
+
+void SearchDialog::onFindAllFinished()
+{
+    // Ensure the last batch of incremental updates is reflected.
+    emit refreshedSearchIndex();
+
+    // Use total scanned count for perf reporting (more meaningful than hit count).
+    stoptime(file ? file->sizeFilter() : 0);
+    emit searchProgressChanged(false);
+
+    // Do not rebuild the model here; it was built incrementally during reduce.
+    cacheSearchHistory();
+
+    match = (m_searchtablemodel && m_searchtablemodel->get_SearchResultListSize() > 0);
+    const int colourResult = match ? 1 : 0;
+
+    for (int i = 0; i < lineEdits.size(); ++i)
+        setSearchColour(lineEdits.at(i), colourResult);
+
+    if (!match)
+        setStartLine(-1);
 }
 
 bool SearchDialog::getHeader()
@@ -231,7 +545,7 @@ void SearchDialog::focusRow(long int searchLine)
 
 int SearchDialog::find()
 {
-    isSearchCancelled = false;
+    isSearchCancelled.store(false, std::memory_order_relaxed);
 
     emit addActionHistory();
     QRegularExpression searchTextRegExpression;
@@ -372,6 +686,14 @@ int SearchDialog::find()
     else
     {
      fIs_APID_CTID_requested = false;
+    }
+
+    if (searchtoIndex() == true)
+    {
+        // Parallelize Find All across multiple worker threads.
+        // Completion will update the model and emit searchProgressChanged(false).
+        startParallelFindAll(searchTextRegExpression);
+        return 1;
     }
 
     findMessages(startLine,searchBorder,searchTextRegExpression);
@@ -535,21 +857,32 @@ void SearchDialog::findNextClicked()
 {
     setNextClicked(true);
 
+    // In "Find All" mode, work happens asynchronously (and potentially in parallel).
+    // Colour is updated on completion.
+    if (searchtoIndex())
+    {
+        (void)find();
+        return;
+    }
+
     int result = find();
     for(int i=0; i<lineEdits.size();i++)
-    {
-       setSearchColour(lineEdits.at(i),result);
-    }
+        setSearchColour(lineEdits.at(i),result);
 }
 
 void SearchDialog::findPreviousClicked()
 {
     setNextClicked(false);
 
-    int result = find();
-    for(int i=0; i<lineEdits.size();i++){
-       setSearchColour(lineEdits.at(i),result);
+    if (searchtoIndex())
+    {
+        (void)find();
+        return;
     }
+
+    int result = find();
+    for(int i=0; i<lineEdits.size();i++)
+        setSearchColour(lineEdits.at(i),result);
 }
 
 void SearchDialog::on_lineEditSearch_textEdited(QString newText)
@@ -699,46 +1032,6 @@ void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
-}
-
-
-void SearchDialog::starttime(const QString& searchTerm)
-{
-    // Start high-precision performance measurement
-    performanceMeasure.start(searchTerm);
-    // Start the high-resolution timer
-    searchTimer.start();
-    // Store CPU time at start (in milliseconds)
-#if defined(_MSC_VER)
-    {
-        const std::clock_t cpu = std::clock();
-        searchCpuTimeStart = (cpu == static_cast<std::clock_t>(-1))
-                                 ? 0
-                                 : (static_cast<qint64>(cpu) * 1000) / CLOCKS_PER_SEC;
-    }
-#else
-    struct timespec ts;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
-    searchCpuTimeStart = ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
-#endif
-
-    const std::time_t timestamp_sec = std::time(nullptr);
-    searchseconds = static_cast<qint64>(timestamp_sec);
-
-}
-
-void SearchDialog::stoptime(qint64 messagesProcessed)
-{
-    qint64 temps;
-    qint64 dtemps;
-
-    QString perfReport = performanceMeasure.stop(messagesProcessed);
-    qDebug().noquote() << perfReport;
-    const std::time_t timestamp_sec = std::time(nullptr);
-    temps = static_cast<qint64>(timestamp_sec);
-
-    dtemps = temps - searchseconds;
-    qDebug() << "Time for search [s]" << dtemps;
 }
 
 

@@ -22,20 +22,22 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
+#include "qdltfile.h"
 
 #include <algorithm>
 
-namespace {
-int mapRowToStorageRow(const QDltFile* file, int storageSize, int viewRow)
+namespace
 {
-    if (!file || storageSize <= 0)
-        return viewRow;
+    int mapRowToStorageRow(const QDltFile* file, int listSize, int viewRow)
+    {
+        if (viewRow < 0 || viewRow >= listSize)
+            return -1;
 
-    if (!file->isReverseSort())
-        return viewRow;
+        if (!file || !file->isReverseSort())
+            return viewRow;
 
-    return (storageSize - 1 - viewRow);
-}
+        return (listSize - 1 - viewRow);
+    }
 }
 
 
@@ -297,9 +299,12 @@ int SearchTableModel::rowCount(const QModelIndex & /*parent*/) const
 
 void SearchTableModel::modelChanged()
 {    
-    index(0, 1);
-    index(m_searchResultList.size()-1, 0);
-    index(m_searchResultList.size()-1, columnCount() - 1);
+    if (!m_searchResultList.isEmpty())
+    {
+        index(0, 1);
+        index(m_searchResultList.size()-1, 0);
+        index(m_searchResultList.size()-1, columnCount() - 1);
+    }
     emit(layoutChanged());
 }
 
@@ -310,12 +315,15 @@ int SearchTableModel::columnCount(const QModelIndex & /*parent*/) const
 
 void SearchTableModel::clear_SearchResults()
 {
+    beginResetModel();
     m_searchResultList.clear();
-    modelChanged();
+    endResetModel();
 }
 
 void SearchTableModel::add_SearchResultEntry(unsigned long entry)
 {
+    const int row = m_searchResultList.size();
+    beginInsertRows(QModelIndex(), row, row);
     m_searchResultList.append(entry);
     endInsertRows();
 }
@@ -343,8 +351,8 @@ void SearchTableModel::add_SearchResultEntriesSorted(const QList<unsigned long>&
     std::sort(sortedEntries.begin(), sortedEntries.end());
 
     const unsigned long firstValue = sortedEntries.first();
-    const auto insertIt = std::lower_bound(m_searchResultList.begin(), m_searchResultList.end(), firstValue);
-    const int insertPos = int(std::distance(m_searchResultList.begin(), insertIt));
+    const int insertPos = int(std::lower_bound(m_searchResultList.begin(), m_searchResultList.end(), firstValue)
+                                  - m_searchResultList.begin());
 
     const int firstRow = insertPos;
     const int lastRow = insertPos + sortedEntries.size() - 1;
