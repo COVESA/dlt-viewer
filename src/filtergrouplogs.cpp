@@ -11,6 +11,7 @@
 #include <QProgressDialog>
 #include <QCoreApplication>
 #include <QProgressBar>
+#include <QThread>
 
 #include "filtergrouplogs.h"
 #include "fieldnames.h"
@@ -351,6 +352,7 @@ void filtergrouplogs::onExportFilteredLogsClicked() {
             exportCompleted = true;
             exporter->deleteLater();
         });
+        exporter->setPriority(QThread::LowPriority);
         exporter->start();
         while (!exportCompleted && exporter->isRunning()) {
             QCoreApplication::processEvents(QEventLoop::AllEvents, 100);

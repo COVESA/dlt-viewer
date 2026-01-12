@@ -30,7 +30,6 @@ extern "C"
 #include <QDateTime>
 #include <QCache>
 #include <QHash>
-#include <cstdio>
 
 namespace {
     constexpr const char * const qDltMessageType[] = {"log","app_trace","nw_trace","control","","","",""};
@@ -86,21 +85,11 @@ namespace {
         return seed;
     }
 
-    struct CacheStats
-    {
-        quint64 calls = 0;
-        quint64 hits = 0;
-        quint64 misses = 0;
-        void reset() { calls = 0; hits = 0; misses = 0; }
-    };
-
     thread_local time_t g_lastTime = static_cast<time_t>(-1);
     thread_local QString g_lastTimeStr;
-    thread_local CacheStats g_timeStats;
 
     thread_local QCache<HeaderSuffixKey, QString> g_headerSuffixCache;
     thread_local bool g_headerSuffixCacheInitialized = false;
-    thread_local CacheStats g_headerSuffixStats;
 
     static QString formatLocalTime(time_t t)
     {
@@ -123,15 +112,11 @@ namespace {
 
     static const QString &cachedTimeString(time_t t)
     {
-        ++g_timeStats.calls;
-
         const bool hit = (t == g_lastTime) && !g_lastTimeStr.isEmpty();
         if (hit) {
-            ++g_timeStats.hits;
             return g_lastTimeStr;
         }
 
-        ++g_timeStats.misses;
         g_lastTime = t;
         g_lastTimeStr = formatLocalTime(t);
         return g_lastTimeStr;
@@ -145,8 +130,6 @@ namespace {
             g_headerSuffixCacheInitialized = true;
         }
 
-        ++g_headerSuffixStats.calls;
-
         HeaderSuffixKey key;
         key.ecuid = msg.getEcuid();
         key.apid = msg.getApid();
@@ -158,11 +141,8 @@ namespace {
         key.numberOfArguments = msg.getNumberOfArguments();
 
         if (auto *cached = g_headerSuffixCache.object(key)) {
-            ++g_headerSuffixStats.hits;
             return *cached;
         }
-
-        ++g_headerSuffixStats.misses;
 
         // Build the stable suffix once and cache it.
         auto *suffix = new QString();
@@ -187,39 +167,6 @@ namespace {
         g_headerSuffixCache.insert(key, suffix, 1);
         return *suffix;
     }
-}
-
-void QDltMsg::resetCacheStats()
-{
-    // Reset counters only; keep caches warm so performance isn't affected.
-    g_timeStats.reset();
-    g_headerSuffixStats.reset();
-}
-
-void QDltMsg::printCacheStats(quint64 linesSearched)
-{
-    Q_UNUSED(linesSearched);
-    return;
-
-    const double timeHitRate = g_timeStats.calls ? (100.0 * static_cast<double>(g_timeStats.hits) / static_cast<double>(g_timeStats.calls)) : 0.0;
-    const double suffixHitRate = g_headerSuffixStats.calls ? (100.0 * static_cast<double>(g_headerSuffixStats.hits) / static_cast<double>(g_headerSuffixStats.calls)) : 0.0;
-
-    std::fprintf(stderr,
-                 "[Search] linesSearched=%llu\n",
-                 static_cast<unsigned long long>(linesSearched));
-    std::fprintf(stderr,
-                 "[QDltMsg] CacheStats(getTimeString): calls=%llu hits=%llu misses=%llu hitRate=%.2f\n",
-                 static_cast<unsigned long long>(g_timeStats.calls),
-                 static_cast<unsigned long long>(g_timeStats.hits),
-                 static_cast<unsigned long long>(g_timeStats.misses),
-                 timeHitRate);
-    std::fprintf(stderr,
-                 "[QDltMsg] CacheStats(toStringHeader suffix): calls=%llu hits=%llu misses=%llu hitRate=%.2f\n",
-                 static_cast<unsigned long long>(g_headerSuffixStats.calls),
-                 static_cast<unsigned long long>(g_headerSuffixStats.hits),
-                 static_cast<unsigned long long>(g_headerSuffixStats.misses),
-                 suffixHitRate);
-    std::fflush(stderr);
 }
 
 QDltMsg::QDltMsg()

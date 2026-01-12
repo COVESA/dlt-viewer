@@ -564,7 +564,10 @@ bool DltFileIndexer::indexDefaultFilter()
             );
 
     if(useDefaultFilterThread)
+    {
+        defaultFilterThread.setPriority(QThread::NormalPriority);
         defaultFilterThread.start();
+    }
 
     /* run through the whole open file */
     for(int ix = 0; ix < dltFile->size(); ix++)
