@@ -23,6 +23,21 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
+#include <algorithm>
+
+namespace {
+int mapRowToStorageRow(const QDltFile* file, int storageSize, int viewRow)
+{
+    if (!file || storageSize <= 0)
+        return viewRow;
+
+    if (!file->isReverseSort())
+        return viewRow;
+
+    return (storageSize - 1 - viewRow);
+}
+}
+
 
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -46,17 +61,21 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (index.row() >= m_searchResultList.size() && index.row()<0)
+    if (index.row() >= m_searchResultList.size() || index.row() < 0)
+        return QVariant();
+
+    const int row = mapRowToStorageRow(qfile, m_searchResultList.size(), index.row());
+    if (row < 0 || row >= m_searchResultList.size())
         return QVariant();
 
     if (role == Qt::DisplayRole)
     {
         /* get the message with the selected item id */
-        if(!qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        if(!qfile->getMsg(m_searchResultList.at(row), msg))
         {
             if(index.column() == FieldNames::Index)
             {
-                return QString("%1").arg((m_searchResultList.at(index.row())));
+                return QString("%1").arg((m_searchResultList.at(row)));
             }
             else if(index.column() == FieldNames::Payload)
             {
@@ -73,7 +92,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         {
         case FieldNames::Index:
             /* display index */            
-            return QString("%L1").arg((m_searchResultList.at(index.row())));
+            return QString("%L1").arg((m_searchResultList.at(row)));
         case FieldNames::Time:
             if( project->settings->automaticTimeSettings == 0 )
                return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));
@@ -195,7 +214,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::ForegroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        if(qfile->getMsg(m_searchResultList.at(row), msg))
         {
             /* Valid message found, calculate background color and find optimal forground color */
             return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
@@ -213,7 +232,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::BackgroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        if(qfile->getMsg(m_searchResultList.at(row), msg))
         {
             /* Valid message found, calculate background color */
             return QVariant(QBrush(getMsgBackgroundColor(msg)));
@@ -297,19 +316,71 @@ void SearchTableModel::clear_SearchResults()
 
 void SearchTableModel::add_SearchResultEntry(unsigned long entry)
 {
-    m_searchResultList.append(entry);
+    // Keep the internal list sorted by message index.
+    // Display order is derived from QDltFile::isReverseSort() via mapRowToStorageRow().
+    const auto insertIt = std::lower_bound(m_searchResultList.begin(), m_searchResultList.end(), entry);
+    const int insertPos = int(std::distance(m_searchResultList.begin(), insertIt));
+    beginInsertRows(QModelIndex(), insertPos, insertPos);
+    m_searchResultList.insert(insertPos, entry);
+    endInsertRows();
+}
+
+void SearchTableModel::add_SearchResultEntries(const QList<unsigned long>& entries)
+{
+    if (entries.isEmpty())
+        return;
+
+    const int firstRow = m_searchResultList.size();
+    const int lastRow = firstRow + entries.size() - 1;
+
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    m_searchResultList.append(entries);
+    endInsertRows();
+}
+
+void SearchTableModel::add_SearchResultEntriesSorted(const QList<unsigned long>& entries)
+{
+    if (entries.isEmpty())
+        return;
+
+    // Entries produced by scanning are typically already sorted, but we don't rely on it.
+    QList<unsigned long> sortedEntries(entries);
+    std::sort(sortedEntries.begin(), sortedEntries.end());
+
+    const unsigned long firstValue = sortedEntries.first();
+    const auto insertIt = std::lower_bound(m_searchResultList.begin(), m_searchResultList.end(), firstValue);
+    const int insertPos = int(std::distance(m_searchResultList.begin(), insertIt));
+
+    const int firstRow = insertPos;
+    const int lastRow = insertPos + sortedEntries.size() - 1;
+
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    for (int i = 0; i < sortedEntries.size(); ++i)
+        m_searchResultList.insert(insertPos + i, sortedEntries.at(i));
+    endInsertRows();
 }
 
 
 bool SearchTableModel::get_SearchResultEntry(int position, unsigned long &entry)
 {
-    if (position > m_searchResultList.size() || 0 > position )
+    if (position >= m_searchResultList.size() || 0 > position )
     {
         return false;
     }
 
-    entry = m_searchResultList.at(position);
+    const int row = mapRowToStorageRow(qfile, m_searchResultList.size(), position);
+    if (row < 0 || row >= m_searchResultList.size())
+        return false;
+
+    entry = m_searchResultList.at(row);
     return true;
+}
+
+void SearchTableModel::refreshOrder()
+{
+    // Ordering depends on QDltFile state (reverse sort). No data changes required.
+    emit layoutAboutToBeChanged();
+    emit layoutChanged();
 }
 
 

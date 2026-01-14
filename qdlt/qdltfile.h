@@ -221,6 +221,12 @@ public:
     */
     void enableSortByTimestamp(bool state);
 
+    //! Enable or disable reverse sort (affects visible line order only).
+    void enableReverseSort(bool state);
+
+    //! Get current reverse sort state.
+    bool isReverseSort() const;
+
     //! Check if message matches the filter.
     /*!
       \param msg The message to be checked
@@ -379,6 +385,9 @@ private:
       false sorting is disabled.
     */
     bool sortByTimestampFlag;
+
+    //! Enabling reverse sort (view order).
+    bool reverseSortFlag;
 
     QCache<int,QDltMsg> cache;
     bool cacheEnable;
