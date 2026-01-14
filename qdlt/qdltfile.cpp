@@ -24,6 +24,8 @@
 
 #include "qdltfile.h"
 
+#include <algorithm>
+
 extern "C"
 {
 #include "dlt_common.h"
@@ -34,6 +36,7 @@ QDltFile::QDltFile()
     filterFlag = false;
     sortByTimeFlag = false;
     sortByTimestampFlag = false;
+    reverseSortFlag = false;
 
     cache.setMaxCost(1000);
     cacheEnable = true;
@@ -683,7 +686,8 @@ QByteArray QDltFile::getMsgFilter(int index) const
           /* return empty data buffer */
            return QByteArray();
         }
-        return getMsg(indexFilter[index]);
+        const int mapped = reverseSortFlag ? (indexFilter.size() - 1 - index) : index;
+        return getMsg(indexFilter[mapped]);
     }
     else
     {
@@ -694,7 +698,8 @@ QByteArray QDltFile::getMsgFilter(int index) const
          /* return empty data buffer */
          return QByteArray();
         }
-        return getMsg(index);
+        const int mapped = reverseSortFlag ? (size() - 1 - index) : index;
+        return getMsg(mapped);
     }
 }
 
@@ -710,7 +715,8 @@ int QDltFile::getMsgFilterPos(int index) const
         /* return invalid */
         return -1;
         }
-        return indexFilter[index];
+        const int mapped = reverseSortFlag ? (indexFilter.size() - 1 - index) : index;
+        return indexFilter[mapped];
     }
     else {
         /* check if index is in range */
@@ -720,7 +726,7 @@ int QDltFile::getMsgFilterPos(int index) const
         /* return invalid */
         return -1;
         }
-        return index;
+        return reverseSortFlag ? (size() - 1 - index) : index;
     }
 }
 
@@ -759,9 +765,24 @@ void QDltFile::enableSortByTimestamp(bool state)
     sortByTimestampFlag = state;
 }
 
+void QDltFile::enableReverseSort(bool state)
+{
+    reverseSortFlag = state;
+}
+
+bool QDltFile::isReverseSort() const
+{
+    return reverseSortFlag;
+}
+
 QVector<qint64> QDltFile::getIndexFilter() const
 {
-    return indexFilter;
+    if(!reverseSortFlag)
+        return indexFilter;
+
+    QVector<qint64> reversed = indexFilter;
+    std::reverse(reversed.begin(), reversed.end());
+    return reversed;
 }
 
 void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)

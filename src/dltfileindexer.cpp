@@ -519,6 +519,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(sortByTimeEnabled || sortByTimestampEnabled)
         indexFilterList = QVector<qint64>::fromList(indexFilterListSorted.values());
 
+
     // write filter index if enabled
     if(filterCacheEnabled)
     {

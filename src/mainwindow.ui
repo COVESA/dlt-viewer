@@ -281,6 +281,7 @@
    <addaction name="actionDisconnectAll"/>
    <addaction name="separator"/>
    <addaction name="actionSettings"/>
+    <addaction name="actionToggle_Sort"/>
    <addaction name="separator"/>
    <addaction name="actionAutoScroll"/>
    <addaction name="separator"/>
@@ -1579,6 +1580,32 @@
    </property>
    <property name="text">
     <string>Sort By Timestamp</string>
+   </property>
+  </action>
+  <action name="actionToggle_ReverseSortOrder">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Reverse Sort Order</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle reversed sort order (descending)</string>
+   </property>
+  </action>
+  <action name="actionToggle_Sort">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources/resource.qrc">
+     <normaloff>:/toolbar/png/sort.png</normaloff>:/toolbar/png/sort.png</iconset>
+   </property>
+   <property name="text">
+    <string>Sort</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle reversed sort order</string>
    </property>
   </action>
   <action name="actionImport_DLT_IPC_from_PCAP_MF4">

@@ -568,6 +568,8 @@ private slots:
 
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
+    void on_actionToggle_ReverseSortOrder_triggered(bool checked);
+    void on_actionToggle_Sort_triggered(bool checked);
 
     void on_checkBoxFilterRange_stateChanged(int arg1);
 
