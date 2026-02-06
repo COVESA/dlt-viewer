@@ -7,11 +7,6 @@ Version
 -------
 Version 2.28.0 RELEASE
 
-Known issues
-------------
-
-  * none
-
 Changes
 -------
 
