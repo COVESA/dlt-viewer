@@ -126,6 +126,11 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     bool_result = filterList->checkFilter(*msg);
     if ( bool_result == true)
     {
+        if(const QDltFilter *markerFilter = filterList->matchMarkerFilter(*msg); markerFilter != nullptr)
+        {
+            indexer->addMarkerCount(markerFilter->name);
+        }
+
         if(sortByTimeEnabled)
          {
             indexFilterListSorted->insert(DltFileIndexerKey(msg->getTime(), msg->getMicroseconds(), index), index);

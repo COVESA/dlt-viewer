@@ -6663,6 +6663,21 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     if(item->filter.isMarker())
     {
         tableModel->modelChanged();
+        QVector<qint64> indices;
+        if(qfile.isFilter())
+        {
+            indices = qfile.getIndexFilter();
+        }
+        else
+        {
+            indices.reserve(qfile.size());
+            for(int i = 0; i < qfile.size(); i++)
+            {
+                indices.append(i);
+            }
+        }
+
+        dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
     }
 
     //Collects all the filter names and the colors used for highlighting for finding the marked message count.
@@ -6677,56 +6692,17 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
 
 void MainWindow::findFilteredLines()
 {
+  filterCountMap.clear();
 
-  QAbstractItemModel *model = ui->tableView->model();
-  int count = 0;
-  int rowCount = model->rowCount();
-  totalMessages = rowCount;
-
-  QProgressDialog progress("Counting highlighted rows...", "Cancel", 0, rowCount, this);
-  progress.setWindowModality(Qt::ApplicationModal);
-  progress.setMinimumDuration(0); // show immediately
-  progress.setAutoClose(true);
-
-  for (auto it = filterCollectionMap.constBegin(); it != filterCollectionMap.constEnd(); ++it) {
+  const QMap<QString, int> markerCounts = dltIndexer->getMarkerCounts();
+  for (auto it = filterCollectionMap.constBegin(); it != filterCollectionMap.constEnd(); ++it)
+  {
       const QString& filterName = it.key();
-      const QColor& currentColor = it.value();
-
-      // Check if already counted with same color
-      if (previousFilterStateMap.contains(filterName)) {
-          const QColor& previousColor = previousFilterStateMap[filterName].first;
-
-          if (previousColor == currentColor) {
-              // Same color used before → skip recount
-              filterCountMap[filterName] = previousFilterStateMap[filterName].second;
-              continue;
-          }
-      }
-
-      for (int row = 0; row < rowCount; ++row) {
-          QModelIndex index = model->index(row, 0);  // Check only column 0
-          QVariant bgVariant = model->data(index, Qt::BackgroundRole);
-
-          if (bgVariant.canConvert<QBrush>()) {
-              QColor bgColor = qvariant_cast<QBrush>(bgVariant).color();
-              if (bgColor == currentColor)
-                  ++count;
-          }
-
-          // Update progress bar
-          if (it == filterCollectionMap.constBegin())
-             progress.setValue(row);
-
-          if (progress.wasCanceled())
-             return;
-      }
-
-      // Save in result and state map
-      filterCountMap[filterName] = count;
-      previousFilterStateMap[filterName] = qMakePair(currentColor, count);
+      filterCountMap[filterName] = markerCounts.value(filterName, 0);
   }
 
-  progress.setValue(rowCount);
+  totalMessages = ui->tableView->model()->rowCount();
+  previousFilterStateMap.clear();
 }
 
 //The function is triggered when "Marked Message Count" is clicked in the filter's custom menu.
@@ -6739,7 +6715,7 @@ void MainWindow::on_actionFiltered_Message_Count_triggered(){
 
   QDialog *dialog = new QDialog(this);
      dialog->setWindowTitle("Filtered Message Counts");
-     dialog->resize(400, 300);
+      dialog->resize(560, 300);
 
      // Create layout and table widget
      QVBoxLayout *layout = new QVBoxLayout(dialog);
@@ -6747,6 +6723,9 @@ void MainWindow::on_actionFiltered_Message_Count_triggered(){
      table->setColumnCount(3);
      table->setHorizontalHeaderLabels(QStringList() << "Filter Term" << "Marked Messages" << "Total Number of Messages");
      table->horizontalHeader()->setStretchLastSection(true);
+    table->setColumnWidth(0, 180);
+    table->setColumnWidth(1, 170);
+    table->setColumnWidth(2, 210);
      table->verticalHeader()->setVisible(false);
      table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 

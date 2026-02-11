@@ -93,8 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>21</height>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1673,6 +1672,8 @@
   <action name="actionFiltered_Message_Count">
    <property name="text">
     <string>Marked Message Count</string>
+   </property>
+  </action>
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
