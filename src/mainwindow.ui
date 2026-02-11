@@ -93,10 +93,9 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-
      <height>23</height>
-
      <height>21</height>
+     <height>26</height>
 
     </rect>
    </property>
@@ -1674,7 +1673,6 @@
     <string>Append...</string>
    </property>
   </action>
-
   <action name="action_menuFile_DLTFilesize">
    <property name="text">
     <string>DLT File size</string>
@@ -1683,11 +1681,11 @@
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
-
+    </property>
+   </action>
   <action name="actionFiltered_Message_Count">
    <property name="text">
     <string>Marked Message Count</string>
-
    </property>
   </action>
  </widget>
