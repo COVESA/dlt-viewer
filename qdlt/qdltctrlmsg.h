@@ -57,6 +57,7 @@ struct UnregisterContext {
 
 struct Uninteresting {
     uint32_t serviceId;
+    bool parseError = false;
 };
 
 using Type = std::variant<GetLogInfo, GetSoftwareVersion, GetDefaultLogLevel, SetLogLevel, Timezone,
