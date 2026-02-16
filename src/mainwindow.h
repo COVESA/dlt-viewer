@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QVector>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -154,6 +155,8 @@ private:
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
     QShortcut *markShortcut;
+    QShortcut *nextMarkedShortcut;
+    QShortcut *prevMarkedShortcut;
 
     /* Export */
     ExporterDialog exporterDialog;
@@ -235,6 +238,18 @@ private:
     QString target_version_string;
 
     QList<unsigned long int> selectedMarkerRows;
+
+    bool markedRowCacheValid = false;
+    QVector<int> markedRowsInView;
+
+    bool isLiveLoggingActive() const;
+
+    bool manualMarkerUnionEnabled() const;
+    void updateManualMarkerUnionInFilter();
+    void clearManualMarkerUnionInFilter();
+
+    void invalidateMarkedRowCache();
+    void rebuildMarkedRowCache();
 
     /* functions called in constructor */
     void initState();
@@ -438,6 +453,8 @@ public slots:
     void on_actionFindNext();
     void mark_unmark_lines();
     void unmark_all_lines();
+    void goto_next_marked_line();
+    void goto_prev_marked_line();
     void filterIndexStart();
     void filterIndexEnd();
     void splitLogsEcuid();

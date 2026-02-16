@@ -275,6 +275,12 @@ void MainWindow::initState()
     markShortcut = new QShortcut(QKeySequence("Ctrl+M"), this);
     connect(markShortcut, &QShortcut::activated, this, &MainWindow::mark_unmark_lines);
 
+    /* Shortcuts for traversing manually marked messages */
+    nextMarkedShortcut = new QShortcut(QKeySequence("F4"), this);
+    connect(nextMarkedShortcut, &QShortcut::activated, this, &MainWindow::goto_next_marked_line);
+    prevMarkedShortcut = new QShortcut(QKeySequence("F5"), this);
+    connect(prevMarkedShortcut, &QShortcut::activated, this, &MainWindow::goto_prev_marked_line);
+
     /* Settings */
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
@@ -382,6 +388,84 @@ void MainWindow::initState()
     injectionDataBinary = false;
 }
 
+void MainWindow::goto_next_marked_line()
+{
+    if(!ui || !ui->tableView || !ui->tableView->model() || !ui->tableView->selectionModel())
+        return;
+
+    if(selectedMarkerRows.isEmpty())
+        return;
+
+    rebuildMarkedRowCache();
+    if(markedRowsInView.isEmpty())
+        return;
+
+    const QModelIndex current = ui->tableView->currentIndex();
+    const int currentRow = current.isValid() ? current.row() : -1;
+
+    auto it = std::upper_bound(markedRowsInView.begin(), markedRowsInView.end(), currentRow);
+    const int targetRow = (it == markedRowsInView.end()) ? markedRowsInView.first() : *it;
+
+    const QModelIndex targetIndex = ui->tableView->model()->index(targetRow, 0);
+    if(!targetIndex.isValid())
+    {
+        return;
+    }
+
+    ui->tableView->selectionModel()->setCurrentIndex(
+        targetIndex,
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    ui->tableView->scrollTo(targetIndex, QAbstractItemView::PositionAtCenter);
+}
+
+void MainWindow::goto_prev_marked_line()
+{
+    if(!ui || !ui->tableView || !ui->tableView->model() || !ui->tableView->selectionModel())
+        return;
+
+    if(selectedMarkerRows.isEmpty())
+        return;
+
+    rebuildMarkedRowCache();
+    if(markedRowsInView.isEmpty())
+        return;
+
+    const QModelIndex current = ui->tableView->currentIndex();
+    const int currentRow = current.isValid() ? current.row() : -1;
+
+    if(currentRow < 0)
+    {
+        const int targetRow = markedRowsInView.last();
+        const QModelIndex targetIndex = ui->tableView->model()->index(targetRow, 0);
+        if(!targetIndex.isValid())
+            return;
+
+        ui->tableView->selectionModel()->setCurrentIndex(
+            targetIndex,
+            QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+        ui->tableView->scrollTo(targetIndex, QAbstractItemView::PositionAtCenter);
+        return;
+    }
+
+    auto it = std::lower_bound(markedRowsInView.begin(), markedRowsInView.end(), currentRow);
+    int targetRow = -1;
+    if(it == markedRowsInView.begin())
+        targetRow = markedRowsInView.last();
+    else
+        targetRow = *(--it);
+
+    const QModelIndex targetIndex = ui->tableView->model()->index(targetRow, 0);
+    if(!targetIndex.isValid())
+    {
+        return;
+    }
+
+    ui->tableView->selectionModel()->setCurrentIndex(
+        targetIndex,
+        QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    ui->tableView->scrollTo(targetIndex, QAbstractItemView::PositionAtCenter);
+}
+
 void MainWindow::initView()
 {
     int maxWidth = 0;
@@ -406,6 +490,12 @@ void MainWindow::initView()
 
     /* set table size and en */
     ui->tableView->setModel(tableModel);
+
+    // Keep marked-row traversal cache in sync with model changes.
+    connect(tableModel, &QAbstractItemModel::modelReset, this, &MainWindow::invalidateMarkedRowCache);
+    connect(tableModel, &QAbstractItemModel::layoutChanged, this, &MainWindow::invalidateMarkedRowCache);
+    connect(tableModel, &QAbstractItemModel::rowsInserted, this, &MainWindow::invalidateMarkedRowCache);
+    connect(tableModel, &QAbstractItemModel::rowsRemoved, this, &MainWindow::invalidateMarkedRowCache);
 
     QHeaderView *header = ui->tableView->horizontalHeader();
     header->installEventFilter(tableModel);
@@ -1515,38 +1605,186 @@ void MainWindow::on_actionAppend_triggered()
     }
 }
 
+bool MainWindow::isLiveLoggingActive() const
+{
+    if(!project.ecu)
+        return false;
+
+    for(int num = 0; num < project.ecu->topLevelItemCount(); num++)
+    {
+        const EcuItem *ecuitem = static_cast<const EcuItem*>(project.ecu->topLevelItem(num));
+        if(!ecuitem)
+            continue;
+
+        // In online tracing, UDP may be "connected" == false but still actively receiving.
+        if(ecuitem->tryToConnect || ecuitem->connected)
+            return true;
+    }
+
+    return false;
+}
+
+bool MainWindow::manualMarkerUnionEnabled() const
+{
+    return settings && settings->includeManualMarkersInFilter && !isLiveLoggingActive();
+}
+
+void MainWindow::updateManualMarkerUnionInFilter()
+{
+    if(!settings || !tableModel)
+        return;
+
+    if(manualMarkerUnionEnabled())
+        qfile.setManualMarkerIndices(selectedMarkerRows);
+    else
+        qfile.setManualMarkerIndices(QList<unsigned long int>());
+
+    if(qfile.isFilter())
+        tableModel->modelChanged();
+}
+
+void MainWindow::clearManualMarkerUnionInFilter()
+{
+    if(!tableModel)
+        return;
+
+    qfile.setManualMarkerIndices(QList<unsigned long int>());
+    if(qfile.isFilter())
+        tableModel->modelChanged();
+}
+
 void MainWindow::mark_unmark_lines()
 {
+    if(!ui || !ui->tableView || !ui->tableView->model() || !ui->tableView->selectionModel())
+        return;
+
     TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
-    QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
-    unsigned long int amount = ui->tableView->selectionModel()->selectedRows().count();
-    unsigned long int line;
+    if(!model)
+        return;
 
-    for ( unsigned long int i = 0; i < amount; i++ )
+    const QModelIndexList selectedRows = ui->tableView->selectionModel()->selectedRows();
+    if(selectedRows.isEmpty())
+        return;
+
+    QSet<unsigned long int> markerSet;
+    markerSet.reserve(selectedMarkerRows.size() + selectedRows.size());
+    for(const auto &idx : selectedMarkerRows)
+        markerSet.insert(idx);
+
+    for(const QModelIndex &index : selectedRows)
     {
+        const int row = index.row();
+        const int msgIndex = qfile.getMsgFilterPos(row);
+        if(msgIndex < 0)
+            continue;
 
-     line = ui->tableView->selectionModel()->selectedRows().at(i).row();
-     line = qfile.getMsgFilterPos(line);
-     if ( true == selectedMarkerRows.contains(line) )// so we remove it
-      {
-       //qDebug() << "Remove selected line" << line;
-       selectedMarkerRows.removeAt(selectedMarkerRows.indexOf(line));
-      }
-     else // we add it
-      {
-       //qDebug() << "Add selected line" << line;
-       selectedMarkerRows.append(line);
-      }
+        const unsigned long int line = static_cast<unsigned long int>(msgIndex);
+        if(markerSet.contains(line))
+            markerSet.remove(line);
+        else
+            markerSet.insert(line);
     }
+
+    selectedMarkerRows = markerSet.values();
+    std::sort(selectedMarkerRows.begin(), selectedMarkerRows.end());
     //qDebug() << selectedMarkerRows;
-    model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
+    model->setManualMarker(selectedMarkerRows,
+                           QColor(settings->markercolorRed,
+                                  settings->markercolorGreen,
+                                  settings->markercolorBlue));
+
+    invalidateMarkedRowCache();
+
+    // New behavior: optionally union manual markers into the filtered output.
+    // This is known to cause issues in live logging; fall back to old behavior then.
+    if(manualMarkerUnionEnabled())
+        updateManualMarkerUnionInFilter();
 }
 
 void MainWindow::unmark_all_lines()
 {
+    if(!ui || !ui->tableView || !ui->tableView->model())
+        return;
+
     TableModel *model = qobject_cast<TableModel *>(ui->tableView->model());
+    if(!model)
+        return;
+
     selectedMarkerRows.clear();
-    model->setManualMarker(selectedMarkerRows, QColor(settings->markercolorRed,settings->markercolorGreen,settings->markercolorBlue)); //used in mainwindow
+    model->setManualMarker(selectedMarkerRows,
+                           QColor(settings->markercolorRed,
+                                  settings->markercolorGreen,
+                                  settings->markercolorBlue));
+
+    invalidateMarkedRowCache();
+
+    if(manualMarkerUnionEnabled())
+        updateManualMarkerUnionInFilter();
+}
+
+void MainWindow::invalidateMarkedRowCache()
+{
+    markedRowCacheValid = false;
+    markedRowsInView.clear();
+}
+
+void MainWindow::rebuildMarkedRowCache()
+{
+    if(markedRowCacheValid)
+        return;
+
+    if(!ui || !ui->tableView || !ui->tableView->model())
+        return;
+
+    const int rowCount = ui->tableView->model()->rowCount();
+
+    markedRowsInView.clear();
+    if(rowCount <= 0 || selectedMarkerRows.isEmpty())
+    {
+        markedRowCacheValid = true;
+        return;
+    }
+
+    // Fast-path: if there is no active filter, the view row equals the global message index.
+    if(!qfile.isFilter())
+    {
+        markedRowsInView.reserve(selectedMarkerRows.size());
+        for(const auto &idx : selectedMarkerRows)
+        {
+            const auto row = static_cast<qint64>(idx);
+            if(row >= 0 && row < rowCount)
+                markedRowsInView.append(static_cast<int>(row));
+        }
+    }
+    else
+    {
+        // Filtered view: scan the existing index vector once (cheap contiguous memory access)
+        // and stop early once all marked indices are found.
+        QSet<qint64> marked;
+        marked.reserve(selectedMarkerRows.size());
+        for(const auto &idx : selectedMarkerRows)
+            marked.insert(static_cast<qint64>(idx));
+
+        const QVector<qint64> &viewIndices = qfile.getIndexFilterRef();
+        const int limit = qMin(rowCount, viewIndices.size());
+
+        markedRowsInView.reserve(marked.size());
+        for(int row = 0; row < limit; ++row)
+        {
+            if(marked.contains(viewIndices.at(row)))
+            {
+                markedRowsInView.append(row);
+                if(markedRowsInView.size() >= marked.size())
+                    break;
+            }
+        }
+    }
+
+    std::sort(markedRowsInView.begin(), markedRowsInView.end());
+    markedRowsInView.erase(std::unique(markedRowsInView.begin(), markedRowsInView.end()),
+                           markedRowsInView.end());
+
+    markedRowCacheValid = true;
 }
 
 
@@ -1646,21 +1884,37 @@ void MainWindow::on_actionExport_triggered()
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
     {
-        qDebug() << "DLT Export of filterd" << qfile.sizeFilter() << "messages";
-        if(qfile.sizeFilter() <= 0)
+        qDebug() << "DLT Export of filtered" << qfile.sizeFilterBase() << "messages";
+        if(qfile.sizeFilterBase() <= 0)
         {
             QMessageBox::critical(this, QString("DLT Viewer"),
                                   QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
             return;
         }
     }
-    else if(exportSelection == QDltExporter::SelectionSelected)
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
     {
-        qDebug() << "DLT Export of selected" << list.count() << "messages";
-        if(list.count() <= 0)
+        qDebug() << "DLT Export of filtered + marked";
+        if(qfile.size() <= 0)
         {
             QMessageBox::critical(this, QString("DLT Viewer"),
-                                  QString("No messages selected. Select something from the main view."));
+                                  QString("Nothing to export. Make sure you have a DLT file open."));
+            return;
+        }
+        if(qfile.sizeFilterBase() <= 0 && selectedMarkerRows.isEmpty())
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export. Make sure you have a DLT file open and that not everything is filtered."));
+            return;
+        }
+    }
+    else if(exportSelection == QDltExporter::SelectionMarked)
+    {
+        qDebug() << "DLT Export of marked" << selectedMarkerRows.size() << "messages";
+        if(selectedMarkerRows.isEmpty())
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("No messages marked. Mark messages with Ctrl+M and try again."));
             return;
         }
     }
@@ -1721,9 +1975,98 @@ void MainWindow::on_actionExport_triggered()
 
     filterUpdate(); // update filters of qfile before starting Exporting for RegEx operation
 
-    if(exportSelection == QDltExporter::SelectionSelected) // marked messages
+    if(exportSelection == QDltExporter::SelectionMarked) // marked messages (Ctrl+M)
     {
-        exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,&list,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+        QVector<unsigned long int> markedIndices;
+        markedIndices.reserve(selectedMarkerRows.size());
+        for(const auto &idx : selectedMarkerRows)
+        {
+            if(idx < static_cast<unsigned long int>(qfile.size()))
+                markedIndices.append(idx);
+        }
+
+        std::sort(markedIndices.begin(), markedIndices.end());
+        markedIndices.erase(std::unique(markedIndices.begin(), markedIndices.end()), markedIndices.end());
+
+        // Apply index-range restriction as a global message-index range.
+        if(!(stopix == 0 || stopix > static_cast<unsigned long int>(qfile.size()) || stopix < startix))
+        {
+            QVector<unsigned long int> ranged;
+            ranged.reserve(markedIndices.size());
+            for(const auto &idx : markedIndices)
+            {
+                if(idx >= startix && idx < stopix)
+                    ranged.append(idx);
+            }
+            markedIndices = std::move(ranged);
+        }
+
+        if(markedIndices.isEmpty())
+        {
+            QMessageBox::critical(this, QString("DLT Viewer"),
+                                  QString("Nothing to export in the specified index range."));
+            return;
+        }
+
+        exporterThread = new QDltExporter(&qfile, fileName, &pluginManager, exportFormat,
+                                          QDltExporter::SelectionMarked, nullptr,
+                                          project.settings->automaticTimeSettings, project.settings->utcOffset, project.settings->dst,
+                                          QDltOptManager::getInstance()->getDelimiter(), QDltOptManager::getInstance()->getSignature(), this);
+        exporterThread->setExplicitMessageIndices(markedIndices);
+        // Range already applied by filtering markedIndices above.
+        exporterThread->exportMessageRange(0, 0);
+    }
+    else if(exportSelection == QDltExporter::SelectionFilteredPlusMarked)
+    {
+        // If no filter is active, "Filtered + Marked" is equivalent to "All".
+        if(!qfile.isFilter())
+        {
+            exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,QDltExporter::SelectionAll,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+            exporterThread->exportMessageRange(startix,stopix);
+        }
+        else
+        {
+            const QVector<qint64> merged = qfile.getIndexFilterBasePlusManualMarkers(selectedMarkerRows);
+
+            QVector<unsigned long int> uniqueIndices;
+            uniqueIndices.reserve(merged.size());
+            QSet<qint64> seen;
+            seen.reserve(merged.size());
+            for(const auto &idx : merged)
+            {
+                if(idx < 0 || idx >= qfile.size())
+                    continue;
+                if(seen.contains(idx))
+                    continue;
+                seen.insert(idx);
+                uniqueIndices.append(static_cast<unsigned long int>(idx));
+            }
+
+            // Apply index-range restriction as a global message-index range.
+            if(!(stopix == 0 || stopix > static_cast<unsigned long int>(qfile.size()) || stopix < startix))
+            {
+                QVector<unsigned long int> ranged;
+                ranged.reserve(uniqueIndices.size());
+                for(const auto &idx : uniqueIndices)
+                {
+                    if(idx >= startix && idx < stopix)
+                        ranged.append(idx);
+                }
+                uniqueIndices = std::move(ranged);
+            }
+
+            if(uniqueIndices.isEmpty())
+            {
+                QMessageBox::critical(this, QString("DLT Viewer"),
+                                      QString("Nothing to export in the specified index range."));
+                return;
+            }
+
+            exporterThread = new QDltExporter(&qfile, fileName, &pluginManager,exportFormat,exportSelection,0,project.settings->automaticTimeSettings,project.settings->utcOffset,project.settings->dst,QDltOptManager::getInstance()->getDelimiter(),QDltOptManager::getInstance()->getSignature(),this);
+            exporterThread->setExplicitMessageIndices(uniqueIndices);
+            // Range already applied by filtering uniqueIndices above.
+            exporterThread->exportMessageRange(0,0);
+        }
     }
     else
     {
@@ -2201,6 +2544,21 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     tableModel->setForceEmpty(true);
     tableModel->modelChanged();
 
+    // Per-file UI state must not leak across opened files.
+    // Clear manual markers (and dependent filter inclusion) when doing a full reload.
+    if(false == update)
+    {
+        selectedMarkerRows.clear();
+
+        tableModel->setManualMarker(
+            selectedMarkerRows,
+            QColor(settings->markercolorRed, settings->markercolorGreen, settings->markercolorBlue));
+
+        qfile.setManualMarkerIndices(QList<unsigned long int>());
+    }
+
+    qfile.setIndexFilter(QVector<qint64>());
+
     // stop last indexing process, if any
     dltIndexer->stop();
 
@@ -2390,6 +2748,9 @@ void MainWindow::on_action_menuFile_Settings_triggered()
             }
            */
         }
+
+        // Apply marker-in-filter setting, but always disable it during live logging.
+        updateManualMarkerUnionInFilter();
 
         // update table, perhaps settings changed table, e.g. number of columns
         tableModel->modelChanged();
@@ -3496,6 +3857,12 @@ void MainWindow::disconnectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         disconnectECU(ecuitem);
     }
+
+    // Live logging is stopping: if the option is enabled, re-apply marker union
+    // for offline/filter use.
+    if(settings && settings->includeManualMarkersInFilter && !isLiveLoggingActive())
+        updateManualMarkerUnionInFilter();
+
     checkConnectionState();
 }
 
@@ -3527,6 +3894,10 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
         ecuitem->InvalidAll();
     }
     checkConnectionState();
+
+    // If this was the last active ECU, switch back to offline marker union (if enabled).
+    if(settings && settings->includeManualMarkersInFilter && !isLiveLoggingActive())
+        updateManualMarkerUnionInFilter();
 }
 
 void MainWindow::on_action_menuConfig_Connect_triggered()
@@ -3565,6 +3936,11 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
     //qDebug() << "try to connect" << __LINE__;
     if(false == ecuitem->tryToConnect || true == force)
     {
+        // Live logging is (re)starting: marker union in filtered output is disabled
+        // because it does not work reliably during live logging.
+        if(settings && settings->includeManualMarkersInFilter)
+            clearManualMarkerUnionInFilter();
+
         ecuitem->tryToConnect = true;
         ecuitem->connected = false;
         ecuitem->update();
@@ -4533,6 +4909,7 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
     } catch (const std::exception& e) {
         qDebug() << "Error parsing control message: " << e.what();
     }
+
 }
 
 void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid)
@@ -5388,6 +5765,9 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     const QString shortcutExpandAllECU = "Ctrl++";
     const QString shortcutCollapseAllECU = "Ctrl+";
     const QString shortcutCopyPayload = "Ctrl + P";
+    const QString shortcutMark = "Ctrl + M";
+    const QString shortcutNextMark = "F4";
+    const QString shortcutPrevMark = "F5";
     const QString shortcutInfo = "F1";
     const QString shortcutQuit = "Ctrl +- Q";
 
@@ -5408,6 +5788,9 @@ void MainWindow::on_actionShortcuts_List_triggered(){
         {"Expand All ECU", shortcutExpandAllECU},
         {"Collapse All ECU", shortcutCollapseAllECU},
         {"Copy Payload", shortcutCopyPayload},
+        {"Mark/Unmark line(s)", shortcutMark},
+        {"Next marked line", shortcutNextMark},
+        {"Previous marked line", shortcutPrevMark},
         {"Info", shortcutInfo},
         {"Quit", shortcutQuit},
     };
