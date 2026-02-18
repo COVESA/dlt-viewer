@@ -2210,6 +2210,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         for(int num=0;num<openFileNames.size();num++)
         {
             bool back = qfile.open(openFileNames[num],num!=0);
+
             if ( false == back )
             {
               qDebug() << "ERROR opening file (s)" << openFileNames[num] << __FILE__ << __LINE__;
@@ -2348,6 +2349,25 @@ void MainWindow::applySettings()
     qfile.setDLTv2Support(settings->supportDLTv2Decoding);
 }
 
+void MainWindow::on_action_menuFile_DLTFilesize_triggered()
+{
+  quint64 payloadSize = qfile.getTotalPayloadSize();
+  quint64 messageSize = qfile.getTotalMessageSize();
+  quint64 storageSize = qfile.getTotalStorageSize();
+
+  if (payloadSize == 0 && messageSize == 0 && storageSize == 0) {
+    QMessageBox::warning(this, "No Data", "Please open a valid DLT file first.");
+    return;
+  }
+
+  QString message = QString(
+        "Payload Size (octets): %1\n"
+        "Message Size (octets): %2\n"
+        "Storage Size (octets): %3"
+        ).arg(payloadSize).arg(messageSize).arg(storageSize);
+
+    QMessageBox::information(this, "DLT File Size Information", message);
+}
 
 void MainWindow::on_action_menuFile_Settings_triggered()
 {
