@@ -38,6 +38,7 @@ extern const char *return_type[];
 NonverbosePlugin::NonverbosePlugin()
 {
     dltControl = 0;
+    fibex_path = "";
 }
 
 QString NonverbosePlugin::name()
@@ -65,13 +66,22 @@ QString NonverbosePlugin::error()
 
 bool NonverbosePlugin::loadConfig(QString filename)
 {
-   /* remove all stored items */
-   m_error_string.clear();
-   clear();
+    /* remove all stored items */
+    m_error_string.clear();
+    clear();
 
-   if ( filename.isEmpty() )
-       // empty filename is valid, only clear plugin data
-       return true;
+    if ( filename.isEmpty() )
+    {
+        if ( fibex_path != "" )
+        {
+            filename = fibex_path;
+        }
+        else
+        {
+            // empty filename is valid, only clear plugin data
+            return true;
+        }
+    }
 
     QDir dir(filename);
 
@@ -97,6 +107,23 @@ bool NonverbosePlugin::loadConfig(QString filename)
     {
         return parseFile(filename);
     }
+}
+
+bool NonverbosePlugin::command(QString command, QList<QString> params)
+{
+    if(command.compare("fibex_path", Qt::CaseInsensitive) == 0)
+    {
+        if(params.length() != 1)
+        {
+            qDebug()<< "Need one parameter, path to Fibex file to decode non-verbose messages.";
+            return false;
+        }
+        fibex_path = params.at(0);
+
+        return true;
+    }
+    qDebug()<< "Unknown command " + command;
+    return false;
 }
 
 void NonverbosePlugin::clear()
