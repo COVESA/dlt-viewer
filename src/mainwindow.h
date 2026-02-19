@@ -618,6 +618,9 @@ public:
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;
 
+    /* Getter for version string - used by plugins */
+    Q_INVOKABLE QString getTargetVersionString() const { return target_version_string; }
+
 signals:
     void dltFileLoaded();
 };
