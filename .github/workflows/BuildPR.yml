@@ -60,15 +60,15 @@ jobs:
         run: |
           cd /Users/runner/work/dlt-viewer/dlt-viewer/build
           mkdir -p dist
-          cp ../scripts/darwin/install.md dist          
-      - name: Archive artifact
-        run: zip DLT-macOS-${{ matrix.abi }}.zip -r build/dist
+          cp ../scripts/darwin/install.md dist
+          tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
+
       - name: Archive upload
         uses: actions/upload-artifact@v6
         if: ${{ success() }}
         with:
           name: DLT-Mac-${{ matrix.abi }}
-          path: DLT-macOS*.zip
+          path: DLTViewer*.tgz
 
   buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
