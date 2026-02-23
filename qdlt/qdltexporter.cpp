@@ -495,7 +495,8 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         {
             // Non-verbose data messages: turn decoded view into a single
             // string argument inside a new verbose DLT message
-            QString payload = msg.toStringPayload().simplified().remove(QChar::Null);
+            QString payload = msg.toStringPayload();
+            payload.remove(QChar::Null);
             if(from)
                 from->applyRegExString(msg,payload);
             QByteArray decodedBuf = createDltMessage(msg, payload);
