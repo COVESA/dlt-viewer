@@ -52,6 +52,7 @@ private:
     bool finish();
     bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
     bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf,QFile &to);
+    QByteArray createDltMessage(const QDltMsg &msg, const QString &payload);
 
 public:
 
