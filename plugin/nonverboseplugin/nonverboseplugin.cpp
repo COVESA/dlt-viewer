@@ -22,6 +22,7 @@
 #include <QDir>
 #include <QDebug>
 #include <QProgressDialog>
+#include <QCoreApplication>
 
 #include "nonverboseplugin.h"
 #include "dlt_protocol.h"
@@ -38,6 +39,7 @@ extern const char *return_type[];
 NonverbosePlugin::NonverbosePlugin()
 {
     dltControl = 0;
+    fibex_path = "";
 }
 
 QString NonverbosePlugin::name()
@@ -65,13 +67,22 @@ QString NonverbosePlugin::error()
 
 bool NonverbosePlugin::loadConfig(QString filename)
 {
-   /* remove all stored items */
-   m_error_string.clear();
-   clear();
+    /* remove all stored items */
+    m_error_string.clear();
+    clear();
 
-   if ( filename.isEmpty() )
-       // empty filename is valid, only clear plugin data
-       return true;
+    if ( filename.isEmpty() )
+    {
+        if ( fibex_path != "" )
+        {
+            filename = fibex_path;
+        }
+        else
+        {
+            // empty filename is valid, only clear plugin data
+            return true;
+        }
+    }
 
     QDir dir(filename);
 
@@ -97,6 +108,23 @@ bool NonverbosePlugin::loadConfig(QString filename)
     {
         return parseFile(filename);
     }
+}
+
+bool NonverbosePlugin::command(QString command, QList<QString> params)
+{
+    if(command.compare("fibex_path", Qt::CaseInsensitive) == 0)
+    {
+        if(params.length() != 1)
+        {
+            qDebug()<< "Need one parameter, path to Fibex file to decode non-verbose messages.";
+            return false;
+        }
+        fibex_path = params.at(0);
+
+        return true;
+    }
+    qDebug()<< "Unknown command " + command;
+    return false;
 }
 
 void NonverbosePlugin::clear()
@@ -133,13 +161,23 @@ bool NonverbosePlugin::parseFile(QString filename)
 
     QXmlStreamReader xml(&file);
 
-    QProgressDialog progress("Load Fibex file "+filename, "Abort Load", 0, xml.device()->size(), 0);
-    if(!dltControl->silentmode)
+    // Only create a progress dialog if a full QApplication exists;
+    // in command-line tools (dlt-commander) we just parse without UI.
+    QScopedPointer<QProgressDialog> progress;
+    if (QCoreApplication::instance() && QCoreApplication::instance()->inherits("QApplication"))
     {
-        progress.setWindowModality(Qt::WindowModal);
-        progress.setWindowTitle(name());
-        progress.raise();
-        progress.activateWindow();
+        progress.reset(new QProgressDialog("Load Fibex file "+filename,
+                                           "Abort Load",
+                                           0,
+                                           xml.device()->size(),
+                                           nullptr));
+        if(!dltControl->silentmode)
+        {
+            progress->setWindowModality(Qt::WindowModal);
+            progress->setWindowTitle(name());
+            progress->raise();
+            progress->activateWindow();
+        }
     }
 
     int progressCounter = 0;
@@ -148,11 +186,11 @@ bool NonverbosePlugin::parseFile(QString filename)
           xml.readNext();
 
           progressCounter++;
-          if(!dltControl->silentmode && ((progressCounter%1000) == 0))
+          if(progress && !dltControl->silentmode && ((progressCounter%1000) == 0))
           {
-              progress.setValue(xml.device()->pos());
+              progress->setValue(xml.device()->pos());
 
-              if (progress.wasCanceled())
+              if (progress->wasCanceled())
               {
                   break;
               }
