@@ -119,6 +119,7 @@
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
     <addaction name="actionSplitDLTFile"/>
     <addaction name="actionExport"/>
+    <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
     <addaction name="action_menuFile_Settings"/>
     <addaction name="separator"/>
@@ -1669,6 +1670,11 @@
     <string>Append...</string>
    </property>
   </action>
+  <action name="action_menuFile_DLTFilesize">
+   <property name="text">
+    <string>DLT File size</string>
+    </property>
+   </action>
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
