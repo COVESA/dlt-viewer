@@ -403,7 +403,7 @@
        <item row="10" column="0">
         <widget class="QLabel" name="labelFilterCloseBehaviour">
          <property name="text">
-          <string>Filter Changes on close:</string>
+          <string>Save Filter Changes on close:</string>
          </property>
         </widget>
        </item>
