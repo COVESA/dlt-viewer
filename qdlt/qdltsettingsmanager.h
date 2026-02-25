@@ -134,6 +134,7 @@ public:
     QStringList pluginExecutionPrio; //local setting
 
     QString importerPcapPorts; //local setting
+    int filterCloseBehaviour; // local setting: 0=Ask, 1=Save, 2=Ignore
 };
 
 #endif // QDLTSETTINGSMANAGER_H
