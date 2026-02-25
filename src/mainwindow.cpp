@@ -46,6 +46,8 @@
 #include <QDesktopServices>
 #include <QProcess>
 #include <QStyleFactory>
+#include <QPainter>
+#include <QPixmap>
 #include <QTextStream>
 #include <QTemporaryFile>
 #include <QtEndian>
@@ -77,6 +79,48 @@
 #include "qdltctrlmsg.h"
 #include <qdltmsgwrapper.h>
 #include "ecutree.h"
+
+namespace {
+QColor chooseHighContrastIconColor(const QPalette& palette)
+{
+    const QColor background = palette.color(QPalette::Window);
+    return (background.lightness() < 128) ? QColor(250, 250, 250) : QColor(20, 20, 20);
+}
+
+QIcon createSortArrowsIcon(const QColor& color)
+{
+    const int size = 16;
+    QPixmap pixmap(size, size);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(color);
+
+    // Up arrow
+    {
+        const QPoint top(size / 2, 3);
+        const QPoint left(4, 7);
+        const QPoint right(size - 4, 7);
+        QPolygon poly;
+        poly << top << right << left;
+        painter.drawPolygon(poly);
+    }
+
+    // Down arrow
+    {
+        const QPoint bottom(size / 2, size - 3);
+        const QPoint left(4, size - 7);
+        const QPoint right(size - 4, size - 7);
+        QPolygon poly;
+        poly << bottom << left << right;
+        painter.drawPolygon(poly);
+    }
+
+    return QIcon(pixmap);
+}
+}
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -318,6 +362,16 @@ void MainWindow::initState()
         darkMode.setColor(QPalette::Mid, backgroundColor);
         darkMode.setColor(QPalette::Shadow, darkColor);
         qApp->setPalette(darkMode);
+    }
+
+    // Ensure the sort action icon is visible in both light/dark themes.
+    {
+        const QColor iconColor = chooseHighContrastIconColor(qApp->palette());
+        const QIcon sortIcon = createSortArrowsIcon(iconColor);
+        if (ui->actionToggle_Sort)
+            ui->actionToggle_Sort->setIcon(sortIcon);
+        if (ui->actionToggle_ReverseSortOrder)
+            ui->actionToggle_ReverseSortOrder->setIcon(sortIcon);
     }
 
     recentFiles = settingsDlg->getRecentFiles();
@@ -656,6 +710,19 @@ void MainWindow::initFileHandling()
     ui->checkBoxSortByTime->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
     ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+
+    // Default: reverse-sort OFF (only set if missing so user preference is respected)
+    if(!QDltSettingsManager::getInstance()->value("startup/reverseSortEnabled").isValid())
+        QDltSettingsManager::getInstance()->setValue("startup/reverseSortEnabled", false);
+
+    const bool reverseSortEnabled = QDltSettingsManager::getInstance()->value("startup/reverseSortEnabled", false).toBool();
+    ui->actionToggle_ReverseSortOrder->setEnabled(true);
+    ui->actionToggle_ReverseSortOrder->setChecked(reverseSortEnabled);
+    if(ui->actionToggle_Sort)
+    {
+        ui->actionToggle_Sort->setEnabled(true);
+        ui->actionToggle_Sort->setChecked(reverseSortEnabled);
+    }
     ui->checkBoxFilterRange->setEnabled(ui->filtersEnabled->isChecked());
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
     ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
@@ -1368,10 +1435,11 @@ void MainWindow::appendDltFile(const QString &fileName)
         }
     }
 
-    /* read DLT messages and append to current output file */
+    /* append parsed data to output file */
     if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
     {
         qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
+        dlt_file_free(&importfile,0);
         return;
     }
     for(int pos = 0 ; pos<num ; pos++)
@@ -2229,6 +2297,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     //qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
     qfile.enableFilter(false);
 
+    // reverse-sort is handled by QDltFile mapping (no reindex needed)
+    qfile.enableReverseSort(QDltSettingsManager::getInstance()->value("startup/reverseSortEnabled", false).toBool());
+
     // lock table view
     //ui->tableView->lock();
 
@@ -2393,6 +2464,12 @@ void MainWindow::on_action_menuFile_Settings_triggered()
         // change settings and store settings persistently
         settingsDlg->readDlg();
         settingsDlg->writeSettings(this);
+
+        // Apply reverse-sort setting immediately (cheap; no reindex)
+        const bool reverseSortEnabled = QDltSettingsManager::getInstance()->value("startup/reverseSortEnabled", false).toBool();
+        if(ui->actionToggle_Sort)
+            ui->actionToggle_Sort->setChecked(reverseSortEnabled);
+        on_actionToggle_Sort_triggered(reverseSortEnabled);
 
         // Apply settings to table
         applySettings();
@@ -7495,6 +7572,8 @@ void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
 void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
 {
     ui->checkBoxSortByTime->setChecked(checked);
+    ui->tableView->clearSelection();
+    ui->tableView->setCurrentIndex(QModelIndex());
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     on_applyConfig_clicked();
 }
@@ -7502,8 +7581,36 @@ void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
 void MainWindow::on_actionSort_By_Timestamp_triggered(bool checked)
 {
     ui->checkBoxSortByTimestamp->setChecked(checked);
+    ui->tableView->clearSelection();
+    ui->tableView->setCurrentIndex(QModelIndex());
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     on_applyConfig_clicked();
+}
+
+void MainWindow::on_actionToggle_ReverseSortOrder_triggered(bool checked)
+{
+    if(ui->actionToggle_Sort && ui->actionToggle_Sort->isChecked() != checked)
+        ui->actionToggle_Sort->setChecked(checked);
+    on_actionToggle_Sort_triggered(checked);
+}
+
+void MainWindow::on_actionToggle_Sort_triggered(bool checked)
+{
+    if(ui->actionToggle_ReverseSortOrder && ui->actionToggle_ReverseSortOrder->isChecked() != checked)
+        ui->actionToggle_ReverseSortOrder->setChecked(checked);
+
+    // Sorting changes the view-to-data mapping; clear selection to avoid selecting different rows.
+    ui->tableView->clearSelection();
+    ui->tableView->setCurrentIndex(QModelIndex());
+
+    QDltSettingsManager::getInstance()->setValue("startup/reverseSortEnabled", checked);
+    qfile.enableReverseSort(checked);
+
+    if(tableModel)
+        tableModel->modelChanged();
+
+    if(m_searchtableModel)
+        m_searchtableModel->refreshOrder();
 }
 
 void MainWindow::on_actionAutoScroll_triggered(bool checked)
@@ -7559,6 +7666,9 @@ void MainWindow::on_filtersEnabled_toggled(bool checked)
     QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
     ui->checkBoxSortByTime->setEnabled(checked);
     ui->checkBoxSortByTimestamp->setEnabled(checked);
+    ui->actionToggle_ReverseSortOrder->setEnabled(true);
+    if(ui->actionToggle_Sort)
+        ui->actionToggle_Sort->setEnabled(true);
     ui->checkBoxFilterRange->setEnabled(checked);
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
     ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
@@ -7601,6 +7711,10 @@ void MainWindow::syncCheckBoxesAndMenu()
 
     ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
     ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
+    const bool reverseSortEnabled = QDltSettingsManager::getInstance()->value("startup/reverseSortEnabled", false).toBool();
+    ui->actionToggle_ReverseSortOrder->setChecked(reverseSortEnabled);
+    if(ui->actionToggle_Sort)
+        ui->actionToggle_Sort->setChecked(reverseSortEnabled);
 
     ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
     if (ui->pluginsEnabled->isChecked())
