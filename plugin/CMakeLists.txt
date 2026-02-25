@@ -35,8 +35,9 @@ add_subdirectory(dltviewerplugin)
 add_subdirectory(filetransferplugin)
 add_subdirectory(nonverboseplugin)
 
-option(DLT_NOTUSED_PLUGINS "Build Non Functional Plugins" OFF)
-if(DLT_NOTUSED_PLUGINS)
+option(DLT_NON_FUNCTIONAL_PLUGINS "Build Non Functional Plugins" OFF)
+if(DLT_NON_FUNCTIONAL_PLUGINS)
+   # Deprecated Plugins
    add_subdirectory(dltlogstorageplugin)
    add_subdirectory(dltsegmentationplugin)
    add_subdirectory(dltsystemviewerplugin)
