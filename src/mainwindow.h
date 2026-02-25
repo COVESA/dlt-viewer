@@ -368,6 +368,9 @@ private:
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
 
+    //File Splitting Settings
+    QStringList outputFilePath;
+
 
 protected:
     void keyPressEvent ( QKeyEvent * event ) override;
@@ -424,8 +427,8 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
+    void on_actionSplitDLTFile_triggered(); //Split DLT Files
     void on_action_menuFile_DLTFilesize_triggered();
-
 
 public slots:
 

@@ -117,6 +117,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
+    <addaction name="actionSplitDLTFile"/>
     <addaction name="actionExport"/>
     <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
@@ -1677,6 +1678,11 @@
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
+   </property>
+  </action>
+  <action name="actionSplitDLTFile">
+   <property name="text">
+    <string>Split DLT File</string>
    </property>
   </action>
  </widget>

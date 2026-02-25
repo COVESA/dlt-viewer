@@ -77,6 +77,7 @@
 #include "qdltctrlmsg.h"
 #include <qdltmsgwrapper.h>
 #include "ecutree.h"
+#include "filespliting.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -1215,6 +1216,7 @@ bool MainWindow::openDltFile(QStringList fileNames)
         qDebug() << "Open filename error in " << __FILE__ << __LINE__;
         return false;
     }
+    outputFilePath = fileNames;
     /* Color of the scrollbar when dark mode is enabled */
     if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
     {
@@ -1744,6 +1746,19 @@ void MainWindow::on_actionExport_triggered()
     connect(exporterThread, &QDltExporter::finished,    exporterThread, &QObject::deleteLater);
     statusProgressBar->show();
     exporterThread->start();
+}
+
+//call for spliting the DLT File
+void MainWindow::on_actionSplitDLTFile_triggered(){
+
+    if (!outputfile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open Output File for File Splitting";
+        return;
+    }
+    FileSpliting *splitFile = new FileSpliting(this);
+    splitFile->setFile(&outputfile);
+    splitFile->splitDLTFile_triggered(outputfile,outputFilePath);
+
 }
 
 void MainWindow::on_action_menuFile_SaveAs_triggered()
