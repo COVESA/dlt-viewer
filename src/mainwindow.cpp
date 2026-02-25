@@ -2080,9 +2080,9 @@ void MainWindow::reloadLogFileFinishFilter()
             item->initFileFinish();
         }
     }
-
-    // enable filter if requested
-    qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    // enable filter if requested and at least one filter is active
+    const bool filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    qfile.enableFilter(filtersEnabled && hasEnabledFilters());
     qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
@@ -2155,9 +2155,12 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // update indexFilter only if index already generated
+    const bool filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool hasActiveFilters = filtersEnabled && hasEnabledFilters();
+
     if( true == update )
     {
-        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+        if(hasActiveFilters)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeFilter);
@@ -2172,7 +2175,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
     else // no update
     {
-        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool() || pluginsEnabled == true)
+        if(hasActiveFilters || pluginsEnabled == true)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
@@ -2253,7 +2256,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // enable plugins
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
+    dltIndexer->setFiltersEnabled(filtersEnabled);
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
@@ -6896,6 +6899,26 @@ void MainWindow::filterUpdate()
     }
     qfile.updateSortedFilter();
 }
+
+bool MainWindow::hasEnabledFilters() const
+{
+    if(!project.filter)
+    {
+        return false;
+    }
+
+    for(int num = 0; num < project.filter->topLevelItemCount(); num++)
+    {
+        auto *item = static_cast<FilterItem*>(project.filter->topLevelItem(num));
+        if(item && item->filter.enableFilter)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
