@@ -229,6 +229,7 @@ void QDltSettingsManager::writeSettings()
     settings->setValue("startup/showPayload",showPayload);
     settings->setValue("startup/showArguments",showArguments);
     settings->setValue("startup/showMsgId",showMsgId);
+    settings->setValue("startup/filterCloseBehaviour",filterCloseBehaviour);
 
     /* other */
     settings->setValue("startup/updateContextLoadingFile",updateContextLoadingFile);
@@ -500,6 +501,7 @@ void QDltSettingsManager::readSettings()
     showPayload = settings->value("startup/showPayload",1).toInt();
     showArguments = settings->value("startup/showArguments",0).toInt();
     showMsgId = settings->value("startup/showMsgId",0).toInt();
+    filterCloseBehaviour = settings->value("startup/filterCloseBehaviour",0).toInt();
 
     /* other */
     updateContextLoadingFile = settings->value("startup/updateContextLoadingFile",1).toInt();
