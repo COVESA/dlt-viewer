@@ -129,6 +129,20 @@ QString QDltFilterList::checkMarker(const QDltMsg &msg)
 
 #endif
 
+const QDltFilter* QDltFilterList::matchMarkerFilter(const QDltMsg &msg) const
+{
+    for(int numfilter=0;numfilter<mfilters.size();numfilter++)
+    {
+        QDltFilter *filter = mfilters[numfilter];
+        if(filter->match(msg))
+        {
+            return filter;
+        }
+    }
+
+    return nullptr;
+}
+
 bool QDltFilterList::applyRegExString(QDltMsg &msg,QString &text)
 {
     QDltFilter *filter;

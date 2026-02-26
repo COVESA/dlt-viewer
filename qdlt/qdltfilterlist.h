@@ -94,6 +94,8 @@ public:
     QString checkMarker(const QDltMsg &msg);
 #endif
 
+    const QDltFilter* matchMarkerFilter(const QDltMsg &msg) const;
+
 
 
     //! Check if message matches the filter.

@@ -10,6 +10,7 @@
 #include <QMutexLocker>
 #include <QDir>
 #include <QFileInfo>
+#include <limits>
 
 #include "qdltoptmanager.h"
 
@@ -384,6 +385,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // get filter list
     filterList = dltFile->getFilterList();
+    resetMarkerCounts(filterList);
     // clear index filter
     indexFilterList.clear();
     indexFilterListSorted.clear();
@@ -415,6 +417,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     {
         // loading filter index from filter is successful
         qDebug() << "Loaded filter index cache for files" << filenames;
+        computeMarkerCountsFromIndex(filterList, indexFilterList);
         return true;
     }
 
@@ -529,6 +532,68 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     qDebug() << "Create filter index: Finish";
 
     return true;
+}
+
+QMap<QString, int> DltFileIndexer::getMarkerCounts() const
+{
+    QMutexLocker locker(&markerCountLock);
+    return markerCounts;
+}
+
+void DltFileIndexer::addMarkerCount(const QString &filterName)
+{
+    if(filterName.isEmpty())
+    {
+        return;
+    }
+
+    QMutexLocker locker(&markerCountLock);
+    markerCounts[filterName] = markerCounts.value(filterName, 0) + 1;
+}
+
+void DltFileIndexer::recomputeMarkerCounts(const QDltFilterList &filterList, const QVector<qint64> &indices)
+{
+    resetMarkerCounts(filterList);
+    computeMarkerCountsFromIndex(filterList, indices);
+}
+
+void DltFileIndexer::resetMarkerCounts(const QDltFilterList &filterList)
+{
+    QMutexLocker locker(&markerCountLock);
+    markerCounts.clear();
+
+    for(int numfilter=0; numfilter<filterList.filters.size(); numfilter++)
+    {
+        QDltFilter *filter = filterList.filters[numfilter];
+        if(filter != nullptr && filter->isMarker() && filter->enableFilter)
+        {
+            markerCounts.insert(filter->name, 0);
+        }
+    }
+}
+
+void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterList, const QVector<qint64> &indices)
+{
+    for(int i = 0; i < indices.size(); i++)
+    {
+        const qint64 rawIndex = indices[i];
+        if(rawIndex < 0 || rawIndex > std::numeric_limits<int>::max())
+        {
+            continue;
+        }
+
+        QDltMsg msg;
+        if(!dltFile->getMsg(static_cast<int>(rawIndex), msg))
+        {
+            continue;
+        }
+
+        const QDltFilter *markerFilter = filterList.matchMarkerFilter(msg);
+        if(markerFilter != nullptr)
+        {
+            addMarkerCount(markerFilter->name);
+        }
+    }
 }
 
 bool DltFileIndexer::indexDefaultFilter()

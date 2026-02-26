@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>23</height>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -192,6 +192,7 @@
     <addaction name="actionToggle_FiltersEnabled"/>
     <addaction name="actionToggle_SortByTimeEnabled"/>
     <addaction name="actionSort_By_Timestamp"/>
+    <addaction name="actionFiltered_Message_Count"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
@@ -1667,6 +1668,11 @@
   <action name="actionAppend">
    <property name="text">
     <string>Append...</string>
+   </property>
+  </action>
+  <action name="actionFiltered_Message_Count">
+   <property name="text">
+    <string>Marked Message Count</string>
    </property>
   </action>
   <action name="action_menuFile_DLTFilesize">
