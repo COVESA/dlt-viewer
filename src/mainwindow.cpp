@@ -79,6 +79,9 @@
 #include "ecutree.h"
 
 
+//Global Variable for visible column
+bool columnMenuInitialized = false;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -196,6 +199,13 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
     }
+
+    fillColumnActions();
+    connect(qobject_cast<SettingsDialog*>(settingsDlg), &SettingsDialog::columnVisibilityChanged,
+            this, &MainWindow::callForCustomMenu);
+
+    connect(this, &MainWindow::columnToggledFromMainWindow,
+            settingsDlg, &SettingsDialog::updateCheckboxState,Qt::QueuedConnection);
 }
 
 MainWindow::~MainWindow()
@@ -6897,6 +6907,72 @@ void MainWindow::filterUpdate()
     qfile.updateSortedFilter();
 }
 
+void MainWindow::fillColumnActions()
+{
+    if (!columnActions.isEmpty()) return; // Already created
+
+    QAction *indexAction = new QAction("Index",this);
+    indexAction->setCheckable(true);
+    columnActions.insert(indexAction,0);
+    setupColumnCheckBox(indexAction,0);
+
+    QAction *timeAction = new QAction("Time",this);
+    timeAction->setCheckable(true);
+    columnActions.insert(timeAction,1);
+    setupColumnCheckBox(timeAction,1);
+
+    QAction *timestampAction = new QAction("TimeStamp",this);
+    timestampAction->setCheckable(true);
+    columnActions.insert(timestampAction,2);
+    setupColumnCheckBox(timestampAction,2);
+
+    QAction *counterAction = new QAction("Counter",this);
+    counterAction->setCheckable(true);
+    columnActions.insert(counterAction,3);
+    setupColumnCheckBox(counterAction,3);
+
+    QAction *ecuidAction = new QAction("ECU ID", this);
+    ecuidAction->setCheckable(true);
+    columnActions.insert(ecuidAction,4);
+    setupColumnCheckBox(ecuidAction,4);
+
+    QAction *apidAction = new QAction("AP ID", this);
+    apidAction->setCheckable(true);
+    columnActions.insert(apidAction,5);
+    setupColumnCheckBox(apidAction,5);
+
+    QAction *ctidAction = new QAction("Ct ID", this);
+    ctidAction->setCheckable(true);
+    columnActions.insert(ctidAction,6);
+    setupColumnCheckBox(ctidAction,6);
+
+    QAction *sessionIDAction = new QAction("Session ID", this);
+    sessionIDAction->setCheckable(true);
+    columnActions.insert(sessionIDAction,7);
+    setupColumnCheckBox(sessionIDAction,7);
+
+    QAction *typeAction = new QAction("Type",this);
+    typeAction->setCheckable(true);
+    columnActions.insert(typeAction,8);
+    setupColumnCheckBox(typeAction,8);
+
+    QAction *subTypeAction = new QAction("SubType",this);
+    subTypeAction->setCheckable(true);
+    columnActions.insert(subTypeAction,9);
+    setupColumnCheckBox(subTypeAction,9);
+
+    QAction *modeAction = new QAction("Mode",this);
+    modeAction->setCheckable(true);
+    columnActions.insert(modeAction,10);
+    setupColumnCheckBox(modeAction,10);
+
+    QAction* payloadAction = new QAction("Payload", this);
+    payloadAction->setCheckable(true);
+    columnActions.insert(payloadAction,13);
+    setupColumnCheckBox(payloadAction,13);
+
+}
+
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
     /* show custom pop menu  for configuration */
@@ -6974,17 +7050,334 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
     action = new QAction("Filter Index End", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(filterIndexEnd()));
     menu.addAction(action);
+  
+//Adding the QActions to Sub Menu.
 
+    QMenu *subMenu = menu.addMenu("Customise Column Visibility");
+    fillColumnActions();
+
+    for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+        QAction* action = it.key();
+
+        // Add to submenu
+        subMenu->addAction(action);
+    }
+
+    // Connect action toggled -> setUpColumn
+    connect(action, &QAction::toggled, this, [=](bool checked){
+        setupColumnCheckBox(action, columnActions.value(action));
+        settingsDlg->columnBoolean = true;
+        if(settingsDlg->columnBoolean == true){
+            if(checked){
+                settingsDlg->checked = true;
+            }
+            else{
+                settingsDlg->checked = false;
+            }
+            emit columnToggledFromMainWindow(columnActions.value(action), checked);
+        }
+    });
+
+    menu.addSeparator();
     menu.addSeparator();
 
     action = new QAction("Group DLT logs by ECU ID", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(splitLogsEcuid()));
     menu.addAction(action);
-
     /* show popup menu */
     menu.exec(globalPos);
 }
 
+// Function to save checkbox state persistently
+void MainWindow::saveColumnState(int column, bool isChecked) {
+    QSettings settings("BMW", "DLTViewer");
+    settings.setValue(QString("Column%1State").arg(column), isChecked);
+}
+
+bool MainWindow::loadColumnState(int column) {
+
+    QSettings settings("BMW", "DLTViewer");
+
+    const QSet<int> defaultVisibleColumns = {0,1,2,4,5,6,8,13};
+    bool isDefaultVisible = defaultVisibleColumns.contains(column);
+    return isDefaultVisible;
+
+}
+
+void MainWindow::updateColumnVisibility(int column, bool isChecked) {
+
+    ui->tableView->setColumnHidden(column, !isChecked);
+    if(isChecked){
+        settingsDlg->columnBoolean = true;
+    }
+    else if(!isChecked){
+        settingsDlg->columnBoolean = false;
+    }
+}
+
+void MainWindow::setupColumnCheckBox(QAction *Action, int column) {
+
+    bool defaulValueCheck = loadColumnState(column);
+
+    //Apply the stored state
+    Action->setCheckable(true);
+    Action->setChecked(defaulValueCheck);
+    updateColumnVisibility(column, defaulValueCheck); // Apply visibility
+
+    // Connect checkbox action to update visibility and save state
+    QObject::connect(Action, &QAction::toggled, [=](bool checked) {
+        updateColumnVisibility(column, checked);
+        saveColumnState(column, checked);
+        settingsDlg->columnBoolean =true;
+        emit columnToggledFromMainWindow(column,checked);
+
+    });
+
+    if(settingsDlg->columnBoolean == true){
+        settingsDlg->columnBoolean = false;
+    }
+}
+
+void MainWindow::callForCustomMenu(int column, bool checked)
+{
+
+    if (!columnMenuInitialized) {
+         fillColumnActions();  // This fills your QMap<int, QAction*>
+         columnMenuInitialized = true;
+     }
+
+     // Now update the correct QAction checkbox state
+     for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+         int columnValue = it.value();
+         bool visible = loadColumnState(columnValue);  // Or however you get current state
+         it.key()->setChecked(visible);         // Update QAction
+     }
+
+    for (auto it = columnActions.begin(); it != columnActions.end(); ++it) {
+        if (it.value() == column) {
+            // QAction* action = it.value();
+            if (it.value() == column) {
+                QAction* action = it.key();
+                setupColumnCheckBox(action,column);
+                action->blockSignals(true);              // Avoid triggering QAction's toggled signal
+                action->setChecked(checked);             // Reflect checkbox state
+                action->blockSignals(false);
+                break;  // Found the correct action, no need to loop further
+            }
+        }
+    }
+}
+
+void MainWindow::on_exploreView_customContextMenuRequested(QPoint pos)
+{
+    /* show custom pop menu for explorer */
+    QPoint globalPos = ui->exploreView->mapToGlobal(pos);
+    QMenu menu(ui->exploreView);
+    QAction *action;
+    /* Get path from index */
+    auto indexes   = ui->exploreView->selectionModel()->selectedIndexes();
+
+    if (0 < indexes.size())
+    {
+        auto index     = indexes[0];
+        auto path      = getPathFromExplorerViewIndexModel(index);
+        bool is_file   = !QDir(path).exists();
+
+        if (is_file)
+        {
+            action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto selectedIndexes = indexes;
+                QStringList dltFileNames,pcapFileNames,mf4FileNames,dlfFileNames;
+
+                for (auto &index : selectedIndexes)
+                {
+                   if (0 == index.column())
+                   {
+                       QString path = getPathFromExplorerViewIndexModel(index);
+
+                       if(path.endsWith(".dlt",Qt::CaseInsensitive))
+                           dltFileNames+=path;
+                       else if(path.endsWith(".pcap",Qt::CaseInsensitive))
+                           pcapFileNames+=path;
+                       else if(path.endsWith(".mf4",Qt::CaseInsensitive))
+                           mf4FileNames+=path;
+                       else if(path.endsWith(".dlf",Qt::CaseInsensitive))
+                           dlfFileNames+=path;
+                   }
+                }
+
+                if(!dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
+                {
+                    onOpenTriggered(dltFileNames);
+                }
+                else if(dltFileNames.isEmpty()&&!pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
+                {
+                    on_action_menuFile_Clear_triggered();
+                    QDltImporter *importerThread = new QDltImporter(&outputfile,pcapFileNames);
+                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+                    statusProgressBar->show();
+                    importerThread->start();
+                }
+                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&!mf4FileNames.isEmpty()&&dlfFileNames.isEmpty())
+                {
+                    on_action_menuFile_Clear_triggered();
+                    QDltImporter *importerThread = new QDltImporter(&outputfile,mf4FileNames);
+                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+                    statusProgressBar->show();
+                    importerThread->start();
+                }
+                else if(dltFileNames.isEmpty()&&pcapFileNames.isEmpty()&&mf4FileNames.isEmpty()&&!dlfFileNames.isEmpty())
+                {
+                    bool first = true;
+                    for ( const auto& i : dlfFileNames )
+                    {
+                        if(first)
+                        {
+                            openDlfFile(i,true);
+                            first = false;
+                        }
+                        else
+                            openDlfFile(i,false);
+                    }
+                    reloadLogFile();
+                }
+                else
+                {
+                    QMessageBox msgBox(QMessageBox::Warning, "Open DLT/PCAP/MF4/DLF files", "Mixing opening different file types not allowed!", QMessageBox::Close);
+                    qDebug() << "ERROR: Mixing opening different file types not allowed!";
+                }
+
+            });
+            menu.addAction(action);
+
+            action = new QAction("&Append DLT/PCAP/MF4/DLF file...", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                QStringList  pathsList;
+                auto selectedIndexes = indexes;
+                QStringList importFilenames;
+                for (auto &index : selectedIndexes)
+                {
+                   if (0 == index.column())
+                   {
+                       QString i = getPathFromExplorerViewIndexModel(index);
+                       if(i.endsWith(".dlt",Qt::CaseInsensitive))
+                           appendDltFile(i);
+                       else if(i.endsWith(".pcap",Qt::CaseInsensitive))
+                           importFilenames.append(i);
+                       else if(i.endsWith(".mf4",Qt::CaseInsensitive))
+                           importFilenames.append(i);
+                       else if(i.endsWith(".dlf",Qt::CaseInsensitive))
+                           openDlfFile(i,false);
+                   }
+                }
+                if(!importFilenames.isEmpty())
+                {
+                    QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
+                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+                    statusProgressBar->show();
+                    importerThread->start();
+                }
+            });
+            menu.addAction(action);
+
+            if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size()))
+            {
+                if ((path.toLower().endsWith(".dlt")))
+                {
+                    action = new QAction("&Open in new instance", this);
+                    connect(action, &QAction::triggered, this, [this, indexes](){
+                        auto index = indexes[0];
+                        auto path = getPathFromExplorerViewIndexModel(index);
+                        QProcess process;
+                        process.setProgram(QCoreApplication::applicationFilePath());
+                        process.setArguments({path});
+                        process.setStandardOutputFile(QProcess::nullDevice());
+                        process.setStandardErrorFile(QProcess::nullDevice());
+                        qint64 pid;
+                        process.startDetached(&pid);
+                    });
+                    menu.addAction(action);
+                }
+            }
+        }
+        else
+        {
+            action = new QAction("Open all DLT files", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto index = indexes[0];
+                auto path  = getPathFromExplorerViewIndexModel(index);
+
+                QStringList  files;
+                QDirIterator it_sh(path, QStringList() << "*.dlt", QDir::Files, QDirIterator::Subdirectories);
+
+                while (it_sh.hasNext())
+                {
+                    files.append(it_sh.next());
+                }
+
+                openDltFile(files);
+                outputfileIsTemporary = true;
+            });
+            menu.addAction(action);
+            action = new QAction("Append all PCAP/MF4 files", this);
+            connect(action, &QAction::triggered, this, [this, indexes](){
+                auto index = indexes[0];
+                auto path  = getPathFromExplorerViewIndexModel(index);
+
+                QStringList  files;
+                QDirIterator it_sh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files, QDirIterator::Subdirectories);
+
+                QStringList importFilenames;
+                while (it_sh.hasNext())
+                {
+                    QString i = it_sh.next();
+                    if (i.endsWith(".pcap",Qt::CaseInsensitive))
+                        importFilenames.append(i);
+                    else if (i.endsWith(".mf4",Qt::CaseInsensitive))
+                        importFilenames.append(i);
+                }
+                if(!importFilenames.isEmpty())
+                {
+                    QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
+                    connect(importerThread, &QDltImporter::progress,    this, &MainWindow::progress);
+                    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+                    connect(importerThread, &QDltImporter::finished,    importerThread, &QObject::deleteLater);
+                    statusProgressBar->show();
+                    importerThread->start();
+                }
+
+            });
+            menu.addAction(action);
+
+        }
+
+        menu.addSeparator();
+
+        action = new QAction("&Copy paths", this);
+        connect(action, &QAction::triggered, this, [this, indexes](){
+            QClipboard *clipboard = QGuiApplication::clipboard();
+
+            QStringList clipboardText;
+            for (auto & index : indexes)
+            {
+                if (0 == index.column())
+                {
+                    auto path  = getPathFromExplorerViewIndexModel(index);
+                    clipboardText += path;
+                }
+            }
+
+            clipboard->setText(clipboardText.join("\n"));
+        });
+        menu.addAction(action);
+        menu.addSeparator();
 
 
 void MainWindow::on_tableView_SearchIndex_customContextMenuRequested(QPoint pos)
