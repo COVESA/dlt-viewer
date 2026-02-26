@@ -7,6 +7,8 @@
 #include <qdltfilter.h>
 #include <qdltimporter.h>
 #include <qdltexporter.h>
+#include <qdltpluginmanager.h>
+#include <qdltplugin.h>
 #include <optmanager.h>
 
 #include "dltfileexporter.h"
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
     QDltFilterList filterList;
     OptManager opt;
     QFile outputfile;
+    QDltPluginManager pluginManager;
 
     // Parse commandline parameters
     QStringList arguments = a.arguments();
@@ -90,7 +93,65 @@ int main(int argc, char *argv[])
 
     // Export
     if(!opt.getConvertDestFile().isEmpty())
-    {       
+    {
+        // Load plugins once before any export so that decoder
+        // plugins like the non-verbose plugin are available
+        // during the export loop.
+        QStringList pluginErrors = pluginManager.loadPlugins(QString());
+        for (const auto &err : pluginErrors)
+        {
+            qDebug() << err;
+        }
+
+        // Enable all decoder plugins by default so that they
+        // participate in message decoding during export.
+        const QList<QDltPlugin*> plugins = pluginManager.getPlugins();
+        for (QDltPlugin *plugin : plugins)
+        {
+            if (plugin && plugin->isDecoder())
+            {
+                plugin->setMode(QDltPlugin::ModeEnable);
+            }
+        }
+
+        // Execute pre-plugin commands (-b) before loading log files,
+        // using the same syntax as dlt-viewer: "Plugin|command|param1|..".
+        const QStringList preCommands = opt.getPrePluginCommands();
+        for (const QString &cmdLine : preCommands)
+        {
+            QStringList parts = cmdLine.split("|");
+            if (parts.size() >= 2)
+            {
+                const QString pluginName = parts.takeFirst();
+                const QString commandName = parts.takeFirst();
+                QDltPlugin *plugin = pluginManager.findPlugin(pluginName);
+                if (!plugin)
+                {
+                    qDebug() << "Plugin not found for command" << pluginName;
+                    continue;
+                }
+                if (!plugin->isCommand())
+                {
+                    qDebug() << "Plugin is not a command plugin:" << pluginName;
+                    continue;
+                }
+                if (!plugin->command(commandName, parts))
+                {
+                    qDebug() << "Plugin command failed for" << pluginName << ":" << plugin->error();
+                }
+            }
+        }
+
+        // After plugin commands like "Non Verbose Mode Plugin|fibex_path|..."
+        // have run, trigger config loading only for the non-verbose
+        // decoder plugin. Its loadConfig() implementation is non-GUI
+        // and, with an empty filename, uses the previously set fibex_path.
+        QDltPlugin *nonVerbosePlugin = pluginManager.findPlugin("Non Verbose Mode Plugin");
+        if (nonVerbosePlugin && nonVerbosePlugin->isDecoder())
+        {
+            nonVerbosePlugin->loadConfig(QString());
+        }
+
         // Load dlt files
         qDebug() << "### Load DLT files";
         QStringList logFiles = opt.getLogFiles();
@@ -141,7 +202,7 @@ int main(int argc, char *argv[])
         if(opt.getConvertionMode()==e_ASCI)
         {
             qDebug() << "### Convert to ASCII";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),&pluginManager,QDltExporter::FormatAscii,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -153,7 +214,7 @@ int main(int argc, char *argv[])
         if(opt.getConvertionMode()==e_CSV)
         {
             qDebug() << "### Convert to CSV";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),&pluginManager,QDltExporter::FormatCsv,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -165,7 +226,7 @@ int main(int argc, char *argv[])
         if(opt.getConvertionMode()==e_UTF8)
         {
             qDebug() << "### Convert to UTF8";
-            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),0,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),&pluginManager,QDltExporter::FormatUTF8,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
             if(opt.isMultifilter())
                 exporter.setMultifilterFilenames(opt.getFilterFiles());
             else
@@ -173,6 +234,19 @@ int main(int argc, char *argv[])
             qDebug() << "Commandline UTF8 convert to " << opt.getConvertDestFile();
             exporter.exportMessages();
             qDebug() << "DLT export UTF8 done";
+        }
+
+        if(opt.getConvertionMode()==e_DDLT)
+        {
+            qDebug() << "### Convert to decoded DLT";
+            QDltExporter exporter(&dltFile,opt.getConvertDestFile(),&pluginManager,QDltExporter::FormatDltDecoded,QDltExporter::SelectionAll,0,1,0,0,opt.getDelimiter(),opt.getSignature());
+            if(opt.isMultifilter())
+                exporter.setMultifilterFilenames(opt.getFilterFiles());
+            else
+                exporter.setFilterList(filterList);
+            qDebug() << "Commandline decoded DLT convert to " << opt.getConvertDestFile();
+            exporter.exportMessages();
+            qDebug() << "DLT export decoded DLT done";
         }
     }
 

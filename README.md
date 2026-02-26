@@ -62,6 +62,7 @@ Examples:
   dlt-viewer.exe -t -s -u -c output.txt input.dlt
   dlt-viewer.exe -t -s -d -c output.dlt input.dlt
   dlt-viewer.exe -t -s decoded.dlp -dd -c output.dlt input.dlt
+  dlt-viewer.exe -t -s -dd -b "Non Verbose Mode Plugin|fibex_path|c:\fibex" -c output_decoded.dlt input.dlt
   dlt-viewer.exe -t -s -csv -c output.csv input.dlt
   dlt-viewer.exe -t -s -d filter.dlf -c output.dlt input.dlt
   dlt-viewer.exe -p export.dlp -e "Filetransfer Plugin|export|ftransferdir" input.dlt
@@ -81,6 +82,7 @@ Options:
 
  [logfile]                Loading one or more logfiles on startup (must end with .dlt)
  [filterfile]             Loading filterfile on startup (must end with .dlf)
+ [projectfile]            Loading project file on startup (must end with .dlp)
  [pcapfile]               Importing DLT/IPC from pcap file on startup (must end with .pcap)
  [mf4file]                Importing DLT/IPC from mf4 file on startup (must end with .mf4)
  -h                       Print usage
@@ -89,6 +91,9 @@ Options:
  -u                       Conversion will be done in UTF8 instead of ASCII
  -csv                     Conversion will be done in CSV format
  -d                       Conversion will NOT be done, save in dlt file format again instead
+ -dd                      Conversion will NOT be done, save as decoded messages in dlt format
+ -b "Plugin|command|param1|..|paramN"
+                          Execute a plugin command before loading log file (same syntax as dlt-viewer).
  -delimiter <character>   The used delimiter for CSV export (Default: ,).
  -multifilter             Multifilter will generate a separate export file with the name of
                           the filter.
@@ -107,6 +112,7 @@ Examples:
  dlt-commander input.pcap output.dlt
  dlt-commander -c output.txt input.pcap
  dlt-commander -c output.txt input1.mf4 input2.mf4
+ dlt-commander -dd -b "Non Verbose Mode Plugin|fibex_path|c:\fibex" -c .\decoded.dlt c:\trace\trace.dlt
 ```
 
 ## API Documentation

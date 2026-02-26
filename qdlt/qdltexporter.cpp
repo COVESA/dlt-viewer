@@ -6,6 +6,7 @@
 #include "qdltexporter.h"
 #include "fieldnames.h"
 #include "qdltoptmanager.h"
+#include "qdltimporter.h"
 
 QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                            QDltExporter::DltExportFormat exportFormat,
@@ -43,6 +44,62 @@ QString QDltExporter::escapeCSVValue(QString arg)
     QString retval = arg.replace(QChar('\"'), QString("\"\""));
     retval = QString("\"%1\"").arg(retval);
     return retval;
+}
+
+QByteArray QDltExporter::createDltMessage(const QDltMsg &msg, const QString &payload)
+{
+    // Build a fresh verbose message with the same meta data
+    // (time, counter, ECU/APID/CTID, type, etc.) but with a
+    // single string argument that holds the decoded payload.
+    QDltMsg newMsg;
+
+    newMsg.setEcuid(msg.getEcuid());
+    newMsg.setApid(msg.getApid());
+    newMsg.setCtid(msg.getCtid());
+    newMsg.setType(msg.getType());
+    newMsg.setSubtype(msg.getSubtype());
+    newMsg.setMode(QDltMsg::DltModeVerbose);
+    // Use little-endian for the newly created verbose payload so that
+    // QDltArgument::getArgument() / setArgument() stay consistent.
+    newMsg.setEndianness(QDlt::DltEndiannessLittleEndian);
+    newMsg.setTime(msg.getTime());
+    newMsg.setMicroseconds(msg.getMicroseconds());
+    newMsg.setTimestamp(msg.getTimestamp());
+    newMsg.setSessionid(msg.getSessionid());
+    newMsg.setMessageCounter(msg.getMessageCounter());
+    newMsg.setNumberOfArguments(1);
+
+    QDltArgument arg;
+    // setValue() will configure the argument for a UTF-8 string and
+    // chooses little-endian encoding internally.
+    arg.setValue(payload, true); // UTF-8 string
+    newMsg.addArgument(arg);
+
+    // First generate standard header + extended header + payload only
+    QByteArray headerAndPayload;
+    if (!newMsg.getMsg(headerAndPayload, false))
+    {
+        return QByteArray();
+    }
+
+    // Now prepend a standard DLT storage header, reusing the original
+    // timestamp from the message so the exported file keeps the same
+    // time information as the source.
+    QDltImporter::DltStorageHeaderTimestamp ts;
+    ts.sec = static_cast<quint32>(msg.getTime());
+    ts.usec = static_cast<quint32>(msg.getMicroseconds());
+    DltStorageHeader storage = QDltImporter::makeDltStorageHeader(ts);
+    dlt_set_id(storage.ecu, msg.getEcuid().toLatin1());
+
+    QByteArray out;
+    out.append(reinterpret_cast<const char*>(&storage), sizeof(DltStorageHeader));
+    out.append(headerAndPayload);
+
+    // Self-check: can we parse what we just generated?
+    QDltMsg checkMsg;
+    checkMsg.setMsg(out, true, true);
+
+    return out;
 }
 
 bool QDltExporter::writeCSVHeader()
@@ -423,9 +480,31 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
 
 bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf,QFile &to)
 {
-    if((exportFormat == QDltExporter::FormatDlt)||(exportFormat == QDltExporter::FormatDltDecoded))
+    if(exportFormat == QDltExporter::FormatDlt)
     {
         to.write(buf);
+    }
+    else if(exportFormat == QDltExporter::FormatDltDecoded)
+    {
+        // For already verbose or control messages, keep original binary
+        if(msg.getMode() == QDltMsg::DltModeVerbose || msg.getType() == QDltMsg::DltTypeControl)
+        {
+            to.write(buf);
+        }
+        else
+        {
+            // Non-verbose data messages: turn decoded view into a single
+            // string argument inside a new verbose DLT message
+            QString payload = msg.toStringPayload();
+            payload.remove(QChar::Null);
+            if(from)
+                from->applyRegExString(msg,payload);
+            QByteArray decodedBuf = createDltMessage(msg, payload);
+            if (!decodedBuf.isEmpty())
+            {
+                to.write(decodedBuf);
+            }
+        }
     }
     else if(exportFormat == QDltExporter::FormatAscii ||
             exportFormat == QDltExporter::FormatUTF8  ||

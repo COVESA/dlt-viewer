@@ -951,6 +951,21 @@ void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList
 
         exit(-1);
     }
+
+    // Special handling for the non-verbose decoder plugin when used from
+    // the command line:
+    //
+    // The "fibex_path" command only stores the configured path inside the
+    // plugin. To actually load and parse the Fibex data before any
+    // decoding or exporting happens, we need to trigger its loadConfig()
+    // once the command has been processed. Passing an empty filename lets
+    // the plugin use the path set via the command.
+    if (plugin->isDecoder()
+            && plugin->name() == QLatin1String("Non Verbose Mode Plugin")
+            && cmd.compare(QLatin1String("fibex_path"), Qt::CaseInsensitive) == 0)
+    {
+        plugin->loadConfig(QString());
+    }
 }
 
 void MainWindow::deleteactualFile()
