@@ -3,6 +3,7 @@
 
 #include <QSemaphore>
 #include <QSharedPointer>
+#include <vector>
 
 #include "qdltmsg.h"
 
@@ -17,7 +18,7 @@ public:
 
 private:
     int bufferSize;
-    QPair<QSharedPointer<QDltMsg>, int> *buffer;
+    std::vector<QPair<QSharedPointer<QDltMsg>, int>> buffer;
     QAtomicInt readPosition, writePosition;
     volatile bool stopRequested;
     int writeSleepTime; // Microseconds to sleep if buffer is full during a write attempt

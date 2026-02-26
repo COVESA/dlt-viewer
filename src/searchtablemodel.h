@@ -46,6 +46,7 @@ public:
 
     void clear_SearchResults();
     void add_SearchResultEntry(unsigned long entry);
+    void add_SearchResultEntries(const QList<unsigned long>& entries);
 
 
     int get_SearchResultListSize() const;
