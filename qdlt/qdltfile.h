@@ -281,6 +281,12 @@ public:
      **/
     void setIndexFilter(QVector<qint64> _indexFilter);
 
+    //! Clear filter index (fast path for incremental updates)
+    void clearIndexFilter();
+
+    //! Append to filter index (used for incremental updates)
+    void appendIndexFilter(const QVector<qint64> &chunk);
+
     //! Sets the max cache size for DLT messages
     /*!
      * \param cost Cache size

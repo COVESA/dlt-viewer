@@ -828,6 +828,19 @@ void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
     indexFilter = _indexFilter;
 }
 
+void QDltFile::clearIndexFilter()
+{
+    indexFilter.clear();
+}
+
+void QDltFile::appendIndexFilter(const QVector<qint64> &chunk)
+{
+    if(chunk.isEmpty())
+        return;
+    indexFilter.reserve(indexFilter.size() + chunk.size());
+    indexFilter += chunk;
+}
+
 bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 {
 
