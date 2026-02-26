@@ -874,15 +874,72 @@ bool DltFileIndexer::loadFilterIndexCache(QDltFilterList &filterList, QVector<qi
     QDir dir(info.dir().path()+"/index");
     if (!dir.exists())
         dir.mkpath(".");
-    if(loadIndex(info.dir().path() + "/index/" +filenameCache,index))
+
+    const QString cachePath = info.dir().path() + "/index/" + filenameCache;
+    if(loadIndex(cachePath,index))
     {
-        qDebug() << "loadIndex" << info.dir().path() + "/index/" +filenameCache << "success";
+        qDebug() << "loadIndex" << cachePath << "success";
+        return true;
     }
-    else
+
+    // Fallback: try to reuse an existing cache even if the application/plugin build changed.
+    // The current cache filename includes an optional decoder-plugin fingerprint, which can vary
+    // across branches/build directories. If we can't find the exact filename, try to locate a
+    // compatible cache with the same file-set + filter hash + sort/range flags.
+    QByteArray md5FilterList = filterList.createMD5();
+
+    QString hashString;
+    if(sortByTimeEnabled || sortByTimestampEnabled)
+        filenames.sort();
+    hashString = filenames.join(QString("_"));
+    hashString += "_" + QString("%1").arg(dltFile->fileSize());
+    const QByteArray md5 = QCryptographicHash::hash(hashString.toLatin1(), QCryptographicHash::Md5);
+
+    QString expectedTail;
+    if(this->sortByTimeEnabled)
+        expectedTail += "_S";
+    if(this->sortByTimestampEnabled)
+        expectedTail += "_STS";
+    if(this->filterIndexEnabled)
+        expectedTail += QString("_%1_%2").arg(this->filterIndexStart).arg(this->filterIndexEnd);
+    expectedTail += ".dix";
+
+    const QString basePrefix = QString(md5.toHex()) + "_" + QString(md5FilterList.toHex());
+
+    // 1) Try a no-plugin-fingerprint filename (older/newer builds may differ only in plugin hash)
+    const QString noPluginPath = info.dir().path() + "/index/" + basePrefix + expectedTail;
+    if(loadIndex(noPluginPath, index))
     {
-        qDebug() << "loadIndex" << info.dir().path() + "/index/" +filenameCache << "failed";
-        return false;
+        qDebug() << "loadIndex" << noPluginPath << "success (fallback-no-plugin-fingerprint)";
+        // Re-save under the current expected filename so next start is fast.
+        saveIndex(cachePath, index);
+        return true;
     }
+
+    // 2) Scan directory for any matching cache with the right prefix and suffix.
+    // Current naming scheme: <baseMd5>_<filterMd5>[_<pluginMd5>][_S][_STS][_<start>_<end>].dix
+    // We accept any middle part (typically the plugin md5) as long as tail matches current flags.
+    QFileInfoList candidates = dir.entryInfoList(QStringList() << (basePrefix + "*.dix"), QDir::Files, QDir::Time);
+    for(const QFileInfo &candidate : candidates)
+    {
+        const QString candidateName = candidate.fileName();
+        if(!candidateName.startsWith(basePrefix))
+            continue;
+        if(!candidateName.endsWith(expectedTail))
+            continue;
+
+        const QString candidatePath = candidate.absoluteFilePath();
+        if(loadIndex(candidatePath, index))
+        {
+            qDebug() << "loadIndex" << candidatePath << "success (fallback-scan)";
+            // Re-save under the current expected filename so next start is fast.
+            saveIndex(cachePath, index);
+            return true;
+        }
+    }
+
+    qDebug() << "loadIndex" << cachePath << "failed";
+    return false;
 
     return true;
 }
@@ -1038,12 +1095,29 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
     length = file.read((char*)&version,sizeof(version));
 
     // compare version if valid
-    if((length != sizeof(version)) || version != DLT_FILE_INDEXER_FILE_VERSION)
+    if(length != sizeof(version))
     {
-        // wrong version number
-        qDebug() << "Loading index file " << filename << "failed !";
+        qDebug() << "Loading index file" << filename << "failed (short header)";
         file.close();
         return false;
+    }
+
+    // Be tolerant: allow older/newer version numbers as long as the on-disk layout is still
+    // the same (version header + array of qint64 offsets). This keeps caches reusable across
+    // application branches/versions when the file format didn't actually change.
+    if(version != DLT_FILE_INDEXER_FILE_VERSION)
+    {
+        const qint64 payloadBytes = file.size() - static_cast<qint64>(sizeof(version));
+        const bool sizeLooksValid = (payloadBytes >= 0) && (payloadBytes % static_cast<qint64>(sizeof(value)) == 0);
+        if(!sizeLooksValid)
+        {
+            qDebug() << "Loading index file" << filename << "failed (incompatible version" << version << ")";
+            file.close();
+            return false;
+        }
+
+        qDebug() << "Loading index file" << filename << "with compatible version" << version
+                 << "(expected" << DLT_FILE_INDEXER_FILE_VERSION << ")";
     }
 
     int modvalue = file.size() / 100;
