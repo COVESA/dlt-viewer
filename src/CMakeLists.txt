@@ -22,6 +22,7 @@ add_executable(dlt-viewer
     main.cpp
     mainwindow.h
     mainwindow.cpp
+    mainwindow.h
     project.h
     project.cpp
     ecudialog.h
@@ -82,6 +83,19 @@ add_executable(dlt-viewer
     resources/dlt_viewer.rc
     ecutree.h
     ecutree.cpp
+    mainwindow.ui
+    exporterdialog.ui
+    searchdialog.ui
+    searchform.ui
+    settingsdialog.ui
+    multiplecontextdialog.ui
+    plugindialog.ui
+    filterdialog.ui
+    injectiondialog.ui
+    jumptodialog.ui
+    ecudialog.ui
+    contextdialog.ui
+    applicationdialog.ui
     fileexplorertab.ui
     fileexplorertab.h
     fileexplorertab.cpp
