@@ -985,12 +985,21 @@ void MainWindow::closeEvent(QCloseEvent *event)
     settingsDlg->writeSettings(this);
     if(filterIsChanged)
     {
-        if(QMessageBox::information(this, "DLT Viewer",
-           "You have changed the filter. Do you want to save the filter configuration?",
-           QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+        int behaviour = settings->filterCloseBehaviour;
+        if(behaviour == 0) // Ask
+        {
+            if(QMessageBox::information(this, "DLT Viewer",
+               "You have changed the filter. Do you want to save the filter configuration?",
+               QMessageBox::Yes, QMessageBox::No) == QMessageBox::Yes)
+            {
+                on_action_menuFilter_Save_As_triggered();
+            }
+        }
+        else if(behaviour == 1) // Save
         {
             on_action_menuFilter_Save_As_triggered();
         }
+        // else Ignore: do nothing
     }
     if(true == isSearchOngoing)
     {
