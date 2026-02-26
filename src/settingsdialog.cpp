@@ -633,6 +633,7 @@ void SettingsDialog::readDlg()
 
     auto prevUISettings = settings->themeSelectionSettings;
     settings->themeSelectionSettings = static_cast<QDltSettingsManager::UI_Colour>(ui->comboBoxTheme->currentIndex());
+    settings->filterCloseBehaviour = ui->comboBoxFilterCloseBehaviour->currentIndex();
 
     /* Importer */
     settings->importerPcapPorts = ui->lineEditImporterPcapPorts->text();
@@ -685,6 +686,7 @@ void SettingsDialog::readSettings()
     }
 
     settings->uiColour = uiColour;
+    ui->comboBoxFilterCloseBehaviour->setCurrentIndex(settings->filterCloseBehaviour);
 }
 
 
