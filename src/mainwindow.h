@@ -50,7 +50,6 @@
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
-#include "updatechecker.h"
 #include "crlffilterwindow.h"
 
 /**
