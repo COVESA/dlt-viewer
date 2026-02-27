@@ -5,6 +5,8 @@
 #include <QDateTime>
 
 #include "sortfilterproxymodel.h"
+#include "fieldnames.h"
+#include "qdltfile.h"
 
 SortFilterProxyModel::SortFilterProxyModel(QObject *parent)
     : QSortFilterProxyModel(parent)
@@ -79,6 +81,17 @@ void EcuIdFilterProxyModel::setEcuId(const QString& ecuId) {
     this->invalidateFilter();
 }
 
+// Enables or disables CRLF filtering
+void EcuIdFilterProxyModel::setCrlfFilter(bool enabled) {
+    crlfFilterEnabled = enabled;
+    this->invalidateFilter();
+}
+
+// Set the DLT file for direct access
+void EcuIdFilterProxyModel::setDltFile(QDltFile* file) {
+    dltFile = file;
+}
+
 // Sets a list of ECU IDs for filtering
 void EcuIdFilterProxyModel::setEcuIdList(const QSet<QString>& ids) {
     ecuIdList.clear();
@@ -94,21 +107,81 @@ void EcuIdFilterProxyModel::setEcuColumn(int column) {
     this->invalidateFilter();
 }
 
-// Determines if a row should be accepted based on ECU filtering
+//Determines if a row should be accepted based on ECU filtering or CRLF filtering
 bool EcuIdFilterProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) const {
-    if (!sourceModel() || ecuColumn < 0)
+    if (!sourceModel())
         return false;
-    QModelIndex index = sourceModel()->index(row, ecuColumn, parent);
-    if (!index.isValid())
+    
+    // If CRLF filtering is enabled, apply it first
+    if (crlfFilterEnabled) {
+        if (dltFile) {
+            QDltMsg msg;
+            if (dltFile->getMsg(row, msg)) {
+                QString payload = msg.toStringPayload();
+                return payload.contains("\r") || payload.contains("\n");
+            }
+        }
+        // Fallback to model-based method if direct access fails
+        QModelIndex payloadIndex = sourceModel()->index(row, FieldNames::Payload, parent);
+        if (payloadIndex.isValid()) {
+            QString payload = sourceModel()->data(payloadIndex).toString();
+            return payload.contains("\r") || payload.contains("\n");
+        }
         return false;
-    QString value = sourceModel()->data(index).toString().trimmed().toLower();
-    if (ecu.isEmpty() && ecuIdList.isEmpty())
-        return true;
-    if (!ecuIdList.isEmpty()) {
-        return ecuIdList.contains(value);
     }
-    if (!ecu.isEmpty()) {
-        return value == ecu.trimmed().toLower();
+    
+    // Apply ECU filtering only if CRLF is not enabled
+    if (!ecu.isEmpty() || !ecuIdList.isEmpty()) {
+        if (ecuColumn < 0)
+            return false;
+            
+        QModelIndex index = sourceModel()->index(row, ecuColumn, parent);
+        if (!index.isValid())
+            return false;
+        
+        QString value = sourceModel()->data(index).toString().trimmed().toLower();
+        
+        if (!ecuIdList.isEmpty()) {
+            return ecuIdList.contains(value);
+        } else if (!ecu.isEmpty()) {
+            return value == ecu.trimmed().toLower();
+        }
     }
-    return false;
+    
+    return true;
+}
+
+
+
+// Override data method to preserve original source indices in Index column
+QVariant EcuIdFilterProxyModel::data(const QModelIndex &index, int role) const {
+    if (!index.isValid() || !sourceModel())
+        return QVariant();
+        
+    // For Index column, return the original source model index instead of filtered proxy index
+    if (role == Qt::DisplayRole && index.column() == FieldNames::Index) {
+        QModelIndex sourceIndex = mapToSource(index);
+        if (sourceIndex.isValid()) {
+            // Get the actual source model data for the Index column which uses getMsgFilterPos()
+            QModelIndex sourceIndexCol = sourceModel()->index(sourceIndex.row(), FieldNames::Index);
+            if (sourceIndexCol.isValid()) {
+                QVariant originalIndex = sourceModel()->data(sourceIndexCol, role);                
+                return originalIndex;
+            }
+        }
+    }
+    return QSortFilterProxyModel::data(index, role);
+}
+
+// Override lessThan for proper sorting, especially for Index column
+bool EcuIdFilterProxyModel::lessThan(const QModelIndex &left, const QModelIndex &right) const {
+    if (!sourceModel() || !left.isValid() || !right.isValid())
+        return false;
+        
+    QModelIndex leftSource = mapToSource(left);
+    QModelIndex rightSource = mapToSource(right);
+    
+    if (!leftSource.isValid() || !rightSource.isValid())
+        return false;
+    return leftSource.row() < rightSource.row();
 }
