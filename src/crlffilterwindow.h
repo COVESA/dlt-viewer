@@ -30,15 +30,6 @@ public:
     // Creates a single window displaying all CRLF messages
     void createCrlfWindow();
     
-    // Refresh the CRLF window with latest data
-    void refreshWindow();
-    
-    // Show and activate the CRLF window
-    void showAndActivate();
-    
-    // Close the CRLF window
-    void closeWindow();
-    
     // Exports all filtered CRLF DLT logs to a file
     void onExportFilteredCrlfLogsClicked();
     
