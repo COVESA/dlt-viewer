@@ -6764,6 +6764,28 @@ void MainWindow::splitLogsEcuid()
     }
 }
 
+// Shows CRLF messages in a single window
+void MainWindow::showCrlfMessages()
+{   
+    // Verify DLT file has messages
+    if (qfile.size() == 0) {
+        QMessageBox::information(this, "No Messages", "DLT file is not loaded or contains no messages.");
+        return;
+    }
+    CrlfFilterWindow *crlfFilterWindow = new CrlfFilterWindow(this);
+    crlfFilterWindow->setSourceModel(tableModel);
+    crlfFilterWindow->setDltFile(&qfile);
+    crlfFilterWindow->setPluginManager(&pluginManager);
+    
+    // Connect navigation signal to allow double-click navigation to main window
+    connect(crlfFilterWindow, &CrlfFilterWindow::jumpToMessageRequested, this, &MainWindow::jump_to_line);
+    // Add connection to handle main window closing
+    connect(this, &MainWindow::destroyed, crlfFilterWindow, &CrlfFilterWindow::cleanup);
+    
+    // Create and show the CRLF filter window
+    crlfFilterWindow->createCrlfWindow();
+}
+
 void MainWindow::filterAddTable() {
     QModelIndexList list = ui->tableView->selectionModel()->selection().indexes();
     QDltMsg msg;
@@ -7438,6 +7460,10 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Group DLT logs by ECU ID", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(splitLogsEcuid()));
+    menu.addAction(action);
+
+    action = new QAction("Show CRLF Messages", &menu);
+    connect(action, SIGNAL(triggered()), this, SLOT(showCrlfMessages()));
     menu.addAction(action);
 
     /* show popup menu */
