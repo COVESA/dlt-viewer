@@ -50,6 +50,7 @@
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
+#include "crlffilterwindow.h"
 
 /**
  * @brief Namespace to contain the toolbar positions.
@@ -461,6 +462,7 @@ public slots:
     void filterIndexStart();
     void filterIndexEnd();
     void splitLogsEcuid();
+    void showCrlfMessages();
 
 private slots:
 
