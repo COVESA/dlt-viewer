@@ -28,6 +28,7 @@
         <file>png/document-open-recent-2_gray.png</file>
         <file>png/network-transmit-receive_connected.png</file>
         <file>png/network-transmit-receive_disconnected.png</file>
+        <file>png/sort.png</file>
     </qresource>
     <qresource prefix="/icons">
         <file alias="png/org.genivi.DLTViewer.png">icon/32x32/org.genivi.DLTViewer.png</file>

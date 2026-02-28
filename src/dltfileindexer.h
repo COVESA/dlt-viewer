@@ -117,6 +117,7 @@ public:
     void setSortByTimestampEnabled(bool enable) { sortByTimestampEnabled = enable; }
     bool setSortByTimestampEnabled() { return sortByTimestampEnabled; }
 
+
     // enable/disable multithreaded
     void setMultithreaded(bool enable) { multithreaded = enable; }
     bool getMultithreaded() { return multithreaded; }
@@ -191,6 +192,7 @@ private:
     bool multithreaded;
     bool sortByTimeEnabled;
     bool sortByTimestampEnabled;
+
 
     // filter cache enabled
     bool filterCacheEnabled;
