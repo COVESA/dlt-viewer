@@ -64,7 +64,7 @@ jobs:
           tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
 
       - name: Archive upload
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ success() }}
         with:
           name: DLT-Mac-${{ matrix.abi }}
@@ -93,7 +93,7 @@ jobs:
         run: ./build_viewer_debs_noble.sh
       - name: Archive artifact
         if: ${{ matrix.ubuntu == 'ubuntu-24.04' && success() }}
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: DLTViewer-Ubuntu-24.04
           path: debtmp/covesa-dlt-viewer_*.deb
@@ -122,7 +122,7 @@ jobs:
           $env:CPACK_NSIS="true";
           ./build_sdk_windows_qt${{ matrix.qt }}_MSVC_cmake.bat
       - name: Archive artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         if: ${{ success() }}
         with:
           name: DLTViewer-windows-x86_64
@@ -209,7 +209,7 @@ jobs:
         tar -czvf "dist/DLTViewer-qt6-macos${{ matrix.osversion }}.tgz" -C $(pwd)/install .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: ${{ success() }}
       with:
         name: DLTViewer-macos${{ matrix.osversion }}-qt6
