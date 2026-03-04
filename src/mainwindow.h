@@ -296,7 +296,6 @@ private:
     void filterDialogRead(FilterDialog &dlg,FilterItem* item);
     void filterDialogWrite(FilterDialog &dlg,FilterItem* item);
     void filterUpdate();
-    bool hasEnabledFilters() const;
 
     void loadPlugins();
     void updatePluginsECUList();

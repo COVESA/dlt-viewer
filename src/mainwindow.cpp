@@ -2324,8 +2324,7 @@ void MainWindow::reloadLogFileFinishFilter()
         }
     }
     // enable filter if requested and at least one filter is active
-    const bool filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
-    qfile.enableFilter(filtersEnabled && hasEnabledFilters());
+    qfile.enableFilter(anyFiltersEnabled());
     qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
 
@@ -2399,7 +2398,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
 
     // update indexFilter only if index already generated
     const bool filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
-    const bool hasActiveFilters = filtersEnabled && hasEnabledFilters();
+    const bool hasActiveFilters = filtersEnabled && anyFiltersEnabled();
 
     if( true == update )
     {
@@ -7191,26 +7190,6 @@ void MainWindow::filterUpdate()
     }
     qfile.updateSortedFilter();
 }
-
-bool MainWindow::hasEnabledFilters() const
-{
-    if(!project.filter)
-    {
-        return false;
-    }
-
-    for(int num = 0; num < project.filter->topLevelItemCount(); num++)
-    {
-        auto *item = static_cast<FilterItem*>(project.filter->topLevelItem(num));
-        if(item && item->filter.enableFilter)
-        {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
