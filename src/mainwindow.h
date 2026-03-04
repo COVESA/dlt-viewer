@@ -236,6 +236,10 @@ private:
 
     QList<unsigned long int> selectedMarkerRows;
 
+    //values to carry the logLevel and traceStatus : Edit All Log Levels
+    int logLevel = 0;
+    int traceStatus = 0;
+
     /* functions called in constructor */
     void initState();
     void initView();
