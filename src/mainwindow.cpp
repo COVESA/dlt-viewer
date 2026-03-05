@@ -2397,8 +2397,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // update indexFilter only if index already generated
-    const bool filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
-    const bool hasActiveFilters = filtersEnabled && anyFiltersEnabled();
+    const bool filtersSettingEnabled  = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool hasActiveFilters = filtersSettingEnabled  && anyFiltersEnabled();
 
     if( true == update )
     {
@@ -2513,7 +2513,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // enable plugins
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(filtersEnabled);
+    dltIndexer->setFiltersEnabled(filtersSettingEnabled );
     dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
     dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
     dltIndexer->setMultithreaded(multithreaded);
