@@ -106,6 +106,7 @@ target_link_libraries(dlt-viewer
     qdlt
     ${QT_PREFIX}::Core
     ${QT_PREFIX}::Network
+    ${QT_PREFIX}::Concurrent
     ${QT_PREFIX}::Widgets
     ${QT_PREFIX}::SerialPort)
 

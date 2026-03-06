@@ -10,6 +10,7 @@
 #include <QMutexLocker>
 #include <QDir>
 #include <QFileInfo>
+#include <vector>
 
 #include "qdltoptmanager.h"
 
@@ -151,7 +152,7 @@ bool DltFileIndexer::index(int num)
     qint64 lengthOffset=2;
     qint64 storageLength=0;
     errors_in_file  = 0;
-    char *data = new char[DLT_FILE_INDEXER_SEG_SIZE];
+    std::vector<char> data(DLT_FILE_INDEXER_SEG_SIZE);
 
     // Initialise progress bar
     emit(progressText(QString("CI %1/%2").arg(currentRun).arg(maxRun)));
@@ -166,7 +167,7 @@ bool DltFileIndexer::index(int num)
     do
     {
         pos = f.pos();
-        readresult =f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
+        readresult = f.read(data.data(), static_cast<qint64>(data.size()));
         if (length >= 0)
         {
            length = readresult;
@@ -304,7 +305,7 @@ bool DltFileIndexer::index(int num)
                     qDebug() << "At index file:" << ( pos *100 )/file_size << "% -" << "Header detected after end of message, offset:" << (pos+number-3) - next_message_pos << "bytes";
                     f.seek(current_message_pos+4);
                     pos = current_message_pos+4;
-                    length = f.read(data,DLT_FILE_INDEXER_SEG_SIZE);
+                    length = f.read(data.data(), static_cast<qint64>(data.size()));
                     number=0;
                     next_message_pos = 0;
                 }
@@ -322,7 +323,6 @@ bool DltFileIndexer::index(int num)
             {
                 qDebug().noquote() << "Request stoping indexing received" << __LINE__ << __FILE__;
                 emit(progress((abspos)));
-                delete[] data;
                 f.close();
                 return false;
             }
@@ -361,8 +361,7 @@ bool DltFileIndexer::index(int num)
     }
     emit(progress(pos));
 
-    // delete buffer
-    delete[] data;
+    // buffer is RAII-managed by std::vector
 
     // close file
     f.close();
@@ -565,7 +564,10 @@ bool DltFileIndexer::indexDefaultFilter()
             );
 
     if(useDefaultFilterThread)
+    {
+        defaultFilterThread.setPriority(QThread::NormalPriority);
         defaultFilterThread.start();
+    }
 
     /* run through the whole open file */
     for(int ix = 0; ix < dltFile->size(); ix++)

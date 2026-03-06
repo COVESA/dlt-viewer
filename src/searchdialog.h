@@ -21,14 +21,27 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-#include <QTableView>
 #include <QCheckBox>
+#include <QColor>
+#include <QDateTime>
+#include <QElapsedTimer>
+#include <QHash>
+#include <QLineEdit>
+#include <QFutureWatcher>
+#include <QRegularExpression>
+#include <QStringList>
+#include <QTableView>
+
+#include <atomic>
 
 #include "searchtablemodel.h"
 
 namespace Ui {
 class SearchDialog;
 }
+
+class QDltFile;
+class QDltPluginManager;
 
 class SearchDialog : public QDialog {
     Q_OBJECT
@@ -41,7 +54,6 @@ public:
     void selectText();
     void setMatch(bool matched);
     void setStartLine(long int start);
-    void setOnceClicked(bool clicked);
     void appendLineEdit(QLineEdit *lineEdit);
     void cacheSearchHistory();
     void clearCacheHistory();
@@ -54,31 +66,31 @@ public:
      * @return true, if search can be breaked here, false if it should continue
      */
 
-    QDltFile *file;
-    QTableView *table;
-    QDltPluginManager *pluginManager;
-    QCheckBox *regexpCheckBox;
+    QDltFile *file{nullptr};
+    QTableView *table{nullptr};
+    QDltPluginManager *pluginManager{nullptr};
+    QCheckBox *regexpCheckBox{nullptr};
 
     void setTimeRange(const QDateTime &min, const QDateTime &max);
     bool needTimeRangeReset() const;
 private:
-    Ui::SearchDialog *ui;
-    SearchTableModel *m_searchtablemodel;
+    Ui::SearchDialog *ui{nullptr};
+    SearchTableModel *m_searchtablemodel{nullptr};
 
-    bool isSearchCancelled{false};
+    std::atomic_bool isSearchCancelled{false};
+    QFutureWatcher<int> m_findAllWatcher;
+    QElapsedTimer m_findAllUiUpdateTimer;
+    qint64 m_findAllLastUiUpdateMs{0};
+    int m_findAllAddedSinceLastUiUpdate{0};
 
-    long int startLine;
-    bool nextClicked;
-    bool match;
-    bool fSilentMode;
+    long int startLine{-1};
+    bool nextClicked{true};
+    bool match{false};
+    bool fSilentMode{false};
     bool is_TimeStampSearchSelected{false};
-    bool is_TimeSearchSelected{false};
-    bool fIs_APID_CTID_requested;
 
-    QString TimeStampStarttime;
-    QString TimeStampStoptime;
-    double  dTimeStampStart;
-    double  dTimeStampStop;
+    double  dTimeStampStart{0.0};
+    double  dTimeStampStop{0.0};
     bool m_timeRangeResetNeeded{true};
 
     QString stApid;
@@ -98,6 +110,11 @@ private:
     void setCaseSensitive(bool caseSensitive);
     void setNextClicked(bool next);
 
+    void startParallelFindAll(QRegularExpression searchTextRegExp);
+    void reportProgress(int progress);
+    void onFindAllFinished();
+    void appendFindAllMatchesChunk(const QList<unsigned long>& entries);
+
     int find();
 
     bool getSearchFromBeginning();
@@ -106,15 +123,12 @@ private:
     bool getCaseSensitive();
     bool getRegExp();
     bool getNextClicked();
-    bool getClicked();
     bool searchtoIndex();
     bool foundLine(long int searchLine);
     QString getApIDText();
     QString getCtIDText();
     QString getTimeStampStart();
     QString getTimeStampEnd();
-    QString getPayLoadStampStart();
-    QString getPayLoadStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
     QList<QLineEdit*> lineEdits;
 
