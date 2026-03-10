@@ -43,28 +43,76 @@ class SearchDialog;
 class QDltFile;
 class QDltPluginManager;
 
+/**
+ * @class SearchDialog
+ * @brief Provides a dialog for searching messages in DLT Viewer.
+ *      * Handles search parameters, search execution, result highlighting, and search history.
+ */
 class SearchDialog : public QDialog {
     Q_OBJECT
 
 public:
+
+    /**
+     * @brief Constructor for SearchDialog.
+     * @param parent Parent widget.
+     */
     explicit SearchDialog(QWidget *parent = nullptr);
+    /**
+     * @brief Destructor for SearchDialog.
+     */
+
     ~SearchDialog();
 
+    /**
+     * @brief Focuses the specified row in the table.
+     * @param searchLine Row number.
+     */
     void focusRow(long int searchLine);
+
+    /**
+     * @brief Selects and focuses the search text field.
+     */
     void selectText();
+    /**
+     * @brief Sets the match flag.
+     * @param matched True if matched.
+     */
     void setMatch(bool matched);
+    /**
+     * @brief Sets the start line for search.
+     * @param start Line number.
+     */
     void setStartLine(long int start);
+    /**
+     * @brief Sets the once clicked flag.
+     * @param clicked True if clicked once.
+     */
+    void setOnceClicked(bool clicked);
+    /**
+     * @brief Appends a QLineEdit to the list of line edits.
+     * @param lineEdit Pointer to QLineEdit.
+     */
     void appendLineEdit(QLineEdit *lineEdit);
+    /**
+     * @brief Caches the current search history.
+     */
     void cacheSearchHistory();
+    /**
+     * @brief Clears the cached search history.
+     */
     void clearCacheHistory();
+    /**
+     * @brief Gets the search text.
+     * @return Search text as QString.
+     */
     QString getText();
 
-    void registerSearchTableModel(SearchTableModel *model);
     /**
-     * @brief foundLine
-     * @param searchLine
-     * @return true, if search can be breaked here, false if it should continue
+     * @brief Registers the search table model.
+     * @param model Pointer to SearchTableModel.
      */
+    void registerSearchTableModel(SearchTableModel *model);
 
     QDltFile *file{nullptr};
     QTableView *table{nullptr};
@@ -100,16 +148,58 @@ private:
 
     QHash<QString, QList <unsigned long>> cachedHistoryKey;
 
+    /**
+     * @brief Sets the regular expression checkbox state.
+     * @param regExp True to check, false to uncheck.
+     */
     void setRegExp(bool regExp);
+    /**
+     * @brief Adds a found line to the search index.
+     * @param searchLine Line number.
+     */
     void addToSearchIndex(long int searchLine);
+    /**
+     * @brief Iterates through messages and finds matches.
+     * @param searchLine Start line.
+     * @param searchBorder Border line.
+     * @param searchTextRegExp Regular expression for search.
+     */
     void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
+    /**
+     * @brief Updates the color button icon.
+     */
     void updateColorbutton();
+    /**
+     * @brief Sets the color of the search box based on result.
+     * @param lineEdit Pointer to QLineEdit.
+     * @param result Result code.
+     */
     void setSearchColour(QLineEdit *lineEdit,int result);
+    /**
+     * @brief Sets the header checkbox state.
+     * @param header True to check, false to uncheck.
+     */
     void setHeader(bool header);
+    /**
+     * @brief Sets the payload checkbox state.
+     * @param payload True to check, false to uncheck.
+     */
     void setPayload(bool payload);
+    /**
+     * @brief Sets the case sensitivity checkbox state.
+     * @param caseSensitive True to check, false to uncheck.
+     */
     void setCaseSensitive(bool caseSensitive);
-    void setNextClicked(bool next);
+    /**
+     * @brief Sets the search direction (next/previous).
+     * @param next True for next, false for previous.
+     */
+    void setNextClicked(bool next);    
 
+    /**
+     * @brief Main function to perform search.
+     * @return Result code.
+     */
     void startParallelFindAll(QRegularExpression searchTextRegExp);
     void reportProgress(int progress);
     void onFindAllFinished();
@@ -117,40 +207,127 @@ private:
 
     int find();
 
+    /**
+     * @brief Checks if search should start from beginning.
+     * @return True if enabled.
+     */
     bool getSearchFromBeginning();
+    /**
+     * @brief Checks if header search is enabled.
+     * @return True if enabled.
+     */
     bool getHeader();
+    /**
+     * @brief Checks if payload search is enabled.
+     * @return True if enabled.
+     */
     bool getPayload();
+    /**
+     * @brief Checks if case sensitive search is enabled.
+     * @return True if enabled.
+     */
     bool getCaseSensitive();
+    /**
+     * @brief Checks if regular expression search is enabled.
+     * @return True if enabled.
+     */
     bool getRegExp();
+    /**
+     * @brief Gets the search direction.
+     * @return True if next, false if previous.
+     */
     bool getNextClicked();
+    bool getClicked();
+
+    /**
+     * @brief Checks if search to index is enabled.
+     * @return True if enabled.
+     */
+
     bool searchtoIndex();
+    /**
+     * @brief Handles actions when a matching line is found.
+     * @param searchLine Line number.
+     * @return True to break search, false to continue.
+     */
     bool foundLine(long int searchLine);
+    /**
+     * @brief Gets the APID text.
+     * @return APID as QString.
+     */
     QString getApIDText();
+    /**
+     * @brief Gets the CTID text.
+     * @return CTID as QString.
+     */
     QString getCtIDText();
+    /**
+     * @brief Gets the start timestamp text.
+     * @return Start timestamp as QString.
+     */
     QString getTimeStampStart();
+    /**
+     * @brief Gets the end timestamp text.
+     * @return End timestamp as QString.
+     */
     QString getTimeStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
     QList<QLineEdit*> lineEdits;
 
 private slots:
+
     void on_lineEditSearch_textEdited(QString newText);
     void on_buttonHighlightColor_clicked();
-
     void on_checkBoxFindAll_toggled(bool checked);
 
+    /**
+     * @brief Slot for header checkbox toggled.
+     * @param checked Checkbox state.
+    */
+
     void on_checkBoxHeader_toggled(bool checked);
-
+    /**
+     * @brief Slot for case sensitivity checkbox toggled.
+     * @param checked Checkbox state.
+     */
     void on_checkBoxCaseSensitive_toggled(bool checked);
-
+    /**
+     * @brief Slot for regular expression checkbox toggled.
+     * @param checked Checkbox state.
+     */
     void on_checkBoxRegExp_toggled(bool checked);
 
 public slots:
+    /**
+     * @brief Slot for text edited from toolbar.
+     * @param newText New text.
+     */
     void textEditedFromToolbar(QString newText);
+    /**
+     * @brief Slot for Find Next action.
+     */
     void findNextClicked();
+    /**
+     * @brief Slot for Find Previous action.
+     */
     void findPreviousClicked();
+    /**
+     * @brief Loads search history from cache.
+     */
     void loadSearchHistory();
+    /**
+     * @brief Aborts the ongoing search.
+     */
     void abortSearch();
+    /**
+     * @brief Saves search history to persistent storage.
+     * @param searchHistory Reference to QStringList of history.
+     */
     void saveSearchHistory(QStringList& searchHistory);
+    /**
+     * @brief Loads search history from persistent storage.
+     * @param searchHistory Reference to QStringList to populate.
+     */
     void loadSearchHistoryList(QStringList& searchHistory);
 
 signals:
