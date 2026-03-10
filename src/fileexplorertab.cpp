@@ -34,7 +34,7 @@ FileExplorerTab::FileExplorerTab(QWidget* parent)
     ui->exploreView->hideColumn(3);
 
     // disable multiple selection
-    ui->exploreView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->exploreView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 }
 
 FileExplorerTab::~FileExplorerTab() {
@@ -56,6 +56,7 @@ void FileExplorerTab::on_exploreView_activated(const QModelIndex &index)
 
 void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
     auto indexes = ui->exploreView->selectionModel()->selectedIndexes();
+    auto rows = ui->exploreView->selectionModel()->selectedRows();
     if (indexes.empty()) {
         return;
     }
@@ -63,98 +64,70 @@ void FileExplorerTab::on_exploreView_customContextMenuRequested(QPoint pos) {
     QMenu menu(ui->exploreView);
     QAction* action;
     auto path = getPathFromModelIndex(indexes[0]);
-    if (QFileInfo(path).isFile()) {
-        action = new QAction("&Open DLT/PCAP/MF4/DLF file...", this);
-        connect(action, &QAction::triggered, this, [this, path]() {
-            emit fileOpenRequested(path);
-        });
-        menu.addAction(action);
+    QStringList files = getAllFilesFromSelection(rows);
+    QStringList dltFiles = files.filter(".dlt", Qt::CaseInsensitive);
 
-        action = new QAction("&Append DLT/PCAP/MF4/DLF file...", this);
-        connect(action, &QAction::triggered, this, [this, path]() {
-            emit fileAppendRequested(path);
-        });
-        menu.addAction(action);
-
-        if ((!path.toLower().endsWith(".dlp")) && (5 > indexes.size())) {
-            if ((path.toLower().endsWith(".dlt"))) {
-                action = new QAction("&Open in new instance", this);
-                connect(action, &QAction::triggered, this, [this, indexes]() {
-                    auto index = indexes[0];
-                    auto path = getPathFromModelIndex(index);
-                    QProcess process;
-                    process.setProgram(QCoreApplication::applicationFilePath());
-                    process.setArguments({path});
-                    process.setStandardOutputFile(QProcess::nullDevice());
-                    process.setStandardErrorFile(QProcess::nullDevice());
-                    qint64 pid;
-                    process.startDetached(&pid);
-                });
-                menu.addAction(action);
-            }
-        }
-    } else {
-        action = new QAction("Open all DLT files", this);
-        connect(action, &QAction::triggered, this, [this, path]() {
-            QStringList files;
-            QDirIterator itSh(path, QStringList() << "*.dlt", QDir::Files,
-                               QDirIterator::Subdirectories);
-
-            while (itSh.hasNext()) {
-                files.append(itSh.next());
-            }
+    action = new QAction("&Open DLT/PCAP/MF4/DLF files...", this);
+    connect(action, &QAction::triggered, this, [this, files]() {
+        if (!files.isEmpty())
             emit filesOpenRequest(files);
-        });
-        menu.addAction(action);
+    });
+    menu.addAction(action);
 
-        action = new QAction("Append all PCAP/MF4 files", this);
-        connect(action, &QAction::triggered, this, [this, path]() {
-            QStringList files;
-            QDirIterator itSh(path, QStringList() << "*.pcap" << "*.mf4", QDir::Files,
-                               QDirIterator::Subdirectories);
+    action = new QAction("&Append DLT/PCAP/MF4/DLF files...", this);
+    connect(action, &QAction::triggered, this, [this, files]() {
+        if (!files.isEmpty())
+            emit filesAppendRequest(files);
+    });
+    menu.addAction(action);
 
-            QStringList importFilenames;
-            while (itSh.hasNext()) {
-                importFilenames.append(itSh.next());
-            }
-
-            if (!importFilenames.isEmpty())
-                emit filesAppendRequest(importFilenames);
+    if (!dltFiles.isEmpty()) {
+        action = new QAction("&Open dlt files in new instance", this);
+        connect(action, &QAction::triggered, this, [dltFiles]() {
+            QProcess process;
+            process.setProgram(QCoreApplication::applicationFilePath());
+            process.setArguments(dltFiles);
+            process.setStandardOutputFile(QProcess::nullDevice());
+            process.setStandardErrorFile(QProcess::nullDevice());
+            qint64 pid;
+            process.startDetached(&pid);
         });
         menu.addAction(action);
     }
     menu.addSeparator();
 
-    action = new QAction("&Copy paths", this);
-    connect(action, &QAction::triggered, this, [this, indexes]() {
-        QStringList clipboardText;
-        for (auto& index : indexes) {
-            if (0 == index.column()) {
-                auto path = getPathFromModelIndex(index);
-                clipboardText += path;
+    if (rows.size() == 1) {
+        action = new QAction("&Copy paths", this);
+        connect(action, &QAction::triggered, this, [this, indexes]() {
+            QStringList clipboardText;
+            for (auto& index : indexes) {
+                if (0 == index.column()) {
+                    auto path = getPathFromModelIndex(index);
+                    clipboardText += path;
+                }
             }
-        }
 
-        QGuiApplication::clipboard()->setText(clipboardText.join("\n"));
-    });
-    menu.addAction(action);
-    menu.addSeparator();
+            QGuiApplication::clipboard()->setText(clipboardText.join("\n"));
+        });
+        menu.addAction(action);
+        menu.addSeparator();
 
-    action = new QAction("&Show in explorer", this);
-    connect(action, &QAction::triggered, this, [this]() {
-        auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
-        auto path = getPathFromModelIndex(index);
+        action = new QAction("&Show in explorer", this);
+        connect(action, &QAction::triggered, this, [this]() {
+            auto index = ui->exploreView->selectionModel()->selectedIndexes()[0];
+            auto path = getPathFromModelIndex(index);
 #ifdef WIN32
-        QProcess process;
-        process.startDetached(
-            QString("explorer.exe /select,%1").arg(QDir::toNativeSeparators(path)));
+            QProcess process;
+            process.startDetached(
+                QString("explorer.exe /select,%1").arg(QDir::toNativeSeparators(path)));
 #else
-            auto path_splitted = path.split(QDir::separator());
-            path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
-            QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+                auto path_splitted = path.split(QDir::separator());
+                path = path_splitted.mid(0, path_splitted.length()-1).join(QDir::separator());
+                QDesktopServices::openUrl(QUrl::fromLocalFile(path));
 #endif
-    });
-    menu.addAction(action);
+        });
+        menu.addAction(action);
+    }
 
     /* show popup menu */
     const QPoint globalPos = ui->exploreView->mapToGlobal(pos);
@@ -179,4 +152,31 @@ void FileExplorerTab::on_comboBoxExplorerSortOrder_currentIndexChanged(int index
 
 QString FileExplorerTab::getPathFromModelIndex(const QModelIndex& index) const {
     return m_fsModel->filePath(m_fsSortProxyModel->mapToSource(index));
+}
+
+QStringList FileExplorerTab::getMultiFilesFromSelection(const QModelIndexList& rows) const {
+    QStringList files;
+    for (const auto &row : rows) {
+        files.append(m_fsModel->filePath(m_fsSortProxyModel->mapToSource(row)));
+    }
+    return files;
+}
+
+QStringList FileExplorerTab::getAllFilesFromSelection(const QModelIndexList& rows) const {
+    QSet<QString> files;
+    for (const auto &row : rows) {
+        auto path = m_fsModel->filePath(m_fsSortProxyModel->mapToSource(row));
+        if (QFileInfo(path).isFile()) {
+            files.insert(path);
+        } else {
+            QDirIterator itSh(path, m_fsModel->nameFilters(), QDir::Files,
+                              QDirIterator::Subdirectories);
+            while (itSh.hasNext()) {
+                files.insert(itSh.next());
+            }
+        }
+    }
+    QStringList result(files.begin(), files.end());
+    result.sort();
+    return result;
 }
