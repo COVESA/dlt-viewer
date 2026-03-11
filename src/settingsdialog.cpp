@@ -135,22 +135,6 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
             ui->intervalUnit->setEnabled(true);
         }
     });
-
-    connect(ui->defaultRadioButton, &QRadioButton::clicked, this, [=](){
-        emit intervalModeChanged(false, 2);   // Default mode → 2 minutes
-    });
-
-    connect(ui->customRadioButton, &QRadioButton::clicked, this, [=](){
-        emit intervalModeChanged(true, ui->intervalspinBox->value());
-    });
-
-    connect(ui->intervalspinBox, qOverload<int>(&QSpinBox::valueChanged),
-            this, [=](int val){
-                if (ui->customRadioButton->isChecked()) {
-                    emit intervalModeChanged(true, val);
-                }
-            });
-
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :

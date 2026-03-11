@@ -5,6 +5,8 @@
 #include <QNetworkAccessManager>
 #include <settingsdialog.h>
 
+const QString LatestReleaseApi = QStringLiteral("https://api.github.com/repos/COVESA/dlt-viewer/releases/latest");
+
 class UpdateChecker : public QObject
 {
     Q_OBJECT
@@ -25,7 +27,7 @@ class UpdateChecker : public QObject
     QTimer *updateTimer;
     QNetworkAccessManager *manager;
 
-           // used for 3-month interval logic
+    // used for 3-month interval logic
     void updateLastCheckTime();
     QDateTime getLastCheckTime();
     bool isIntervalPassed();

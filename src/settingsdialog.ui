@@ -1155,7 +1155,7 @@
             <item>
              <widget class="QLabel" name="intervalUnit">
               <property name="text">
-               <string>month</string>
+                   <string>month</string>
               </property>
              </widget>
             </item>

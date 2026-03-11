@@ -66,7 +66,6 @@ public:
 Q_SIGNALS:
     void FilterPathChanged();
     void PluginsAutoloadChanged();
-    void intervalModeChanged(bool isCustom, int minutes);
 
 protected:
     void changeEvent(QEvent *e);

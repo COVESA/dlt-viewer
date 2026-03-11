@@ -290,7 +290,8 @@ void MainWindow::initState()
 
     /* Update Checker call for timer to check if there is any new update*/
     updChecker = new UpdateChecker(this);
-    updChecker->startAutoCheck();
+    updChecker->checkForUpdates(); //runs intervalPassed on start of DLT Viewer
+    updChecker->startAutoCheck();// keeps the periodic check for every 120 mins
 
     if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
     {

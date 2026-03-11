@@ -23,10 +23,11 @@ UpdateChecker::UpdateChecker(QObject *parent)
 }
 
 void UpdateChecker::linkToUrl(){
-    qDebug() << "Update check called";
 
     QString currentVersion = PACKAGE_VERSION;
-    QNetworkRequest request(QUrl("https://api.github.com/repos/COVESA/dlt-viewer/releases/latest"));
+    QNetworkRequest request((QUrl(LatestReleaseApi)));
+    //setting GitHub-required header
+    request.setRawHeader("User-Agent", "DLTViewer");
     QNetworkReply *reply = manager->get(request);
 
     connect(reply, &QNetworkReply::finished, this, [=]() {
@@ -37,14 +38,12 @@ void UpdateChecker::linkToUrl(){
         }
 
         QString response = reply->readAll();
-        reply->deleteLater();
 
         QRegularExpression re(R"((\d+\.\d+(\.\d+)?))");
         QRegularExpressionMatch match = re.match(response);
         QString latestVersion = match.hasMatch() ? match.captured(1) : "";
 
-        qDebug() << "Current Version:" << currentVersion;
-        qDebug() << "Latest Version:" << latestVersion;
+        qDebug() << "Current Version: " << currentVersion << " Latest Version:" << latestVersion;
 
                // Compare versions
         if (isNewerVersion(latestVersion, currentVersion)) {
@@ -100,18 +99,13 @@ bool UpdateChecker::isIntervalPassed()
     return passed;
 }
 
-// Start auto-check timer
+// Start auto-check timer. This timer checks if the interval for checking the update is passed or not
 void UpdateChecker::startAutoCheck()
 {
-    QSettings s("MyCompany", "DLTViewer");
 
-    bool useCustom = s.value("updateCheck/useCustom", false).toBool();
-    int minutes = s.value("updateCheck/customMinutes", 2).toInt();
+    const int minutes = 120;
 
-    if (!useCustom)
-        minutes = 120;
-
-    qDebug() << "[AutoCheck] Starting auto update timer every" << minutes << "minutes";
+    // qDebug() << "[AutoCheck] Starting auto update timer every" << minutes << "minutes";
 
     if (!updateTimer) {
         updateTimer = new QTimer(this);
@@ -121,6 +115,9 @@ void UpdateChecker::startAutoCheck()
     updateTimer->start(minutes * 60 * 1000);
 }
 
+//checks if the interval to test has passed or not.
+//accesses the release url and takes the latest version.
+//the current version and latest version is further processed.
 void UpdateChecker::checkForUpdates()
 {
     if (!isIntervalPassed()) {
@@ -129,9 +126,9 @@ void UpdateChecker::checkForUpdates()
     }
 
     QString currentVersion = PACKAGE_VERSION;
-    QNetworkRequest request(QUrl("https://api.github.com/repos/COVESA/dlt-viewer/releases/latest"));
+    QNetworkRequest request((QUrl(LatestReleaseApi)));
 
-    // Add GitHub-required header
+           // Add GitHub-required header
     request.setRawHeader("User-Agent", "QtApp");
 
     QNetworkReply *reply = manager->get(request);
@@ -159,11 +156,8 @@ void UpdateChecker::checkForUpdates()
         QString tag = obj["tag_name"].toString();   // Example: "v3.35.0"
         QString latestVersion = tag.startsWith('v') ? tag.mid(1) : tag;
 
-        QString releaseUrl = obj["html_url"].toString();
-
         qDebug() << "Current Version:" << currentVersion;
         qDebug() << "Latest Version:" << latestVersion;
-        qDebug() << "Release URL:" << releaseUrl;
 
         if (isNewerVersion(latestVersion, currentVersion)) {
             showUpdatePopup(currentVersion, latestVersion);   // You can open releaseUrl here
@@ -174,7 +168,7 @@ void UpdateChecker::checkForUpdates()
     });
 }
 
-// Version comparison
+// Version comparison - current and latest
 bool UpdateChecker::isNewerVersion(const QString &latest, const QString &current)
 {
     QStringList l = latest.split(".");
@@ -204,10 +198,11 @@ void UpdateChecker::showUpdatePopup(const QString &current, const QString &lates
     msg.exec();
 
     if (msg.clickedButton() == updateBtn) {
-        QDesktopServices::openUrl(QUrl("https://github.com/COVESA/dlt-viewer/releases/latest"));
+        QDesktopServices::openUrl((QUrl("https://github.com/COVESA/dlt-viewer/releases/latest")));
     }
 }
 
+//if no update
 void UpdateChecker::showNoUpdatePopup()
 {
     QMessageBox::information(nullptr,
