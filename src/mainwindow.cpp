@@ -6791,7 +6791,14 @@ void MainWindow::showCrlfMessages()
         QMessageBox::information(this, "No Messages", "DLT file is not loaded or contains no messages.");
         return;
     }
-    CrlfFilterWindow *crlfFilterWindow = new CrlfFilterWindow(this);
+    // Check if CRLF window already exists
+    if (crlfFilterWindow) {
+        crlfFilterWindow->refreshWindow();
+        crlfFilterWindow->showAndActivate();
+        return;
+    }
+    // Create new CRLF window
+    crlfFilterWindow = new CrlfFilterWindow(this);
     crlfFilterWindow->setSourceModel(tableModel);
     crlfFilterWindow->setDltFile(&qfile);
     crlfFilterWindow->setPluginManager(&pluginManager);
@@ -6801,6 +6808,10 @@ void MainWindow::showCrlfMessages()
     // Add connection to handle main window closing
     connect(this, &MainWindow::destroyed, crlfFilterWindow, &CrlfFilterWindow::cleanup);
     
+    // Connect to handle CRLF window closing to reset the pointer
+    connect(crlfFilterWindow, &QObject::destroyed, this, [this]() {
+        crlfFilterWindow = nullptr;
+    });
     // Create and show the CRLF filter window
     crlfFilterWindow->createCrlfWindow();
 }
@@ -7483,6 +7494,11 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Show CRLF Messages", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(showCrlfMessages()));
+    
+    // Disable CRLF option during live logging or with temporary files
+    bool crlfEnabled = !isLiveLoggingActive() && !outputfileIsTemporary;
+    action->setEnabled(crlfEnabled);
+    
     menu.addAction(action);
 
     /* show popup menu */
