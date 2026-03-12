@@ -2323,10 +2323,15 @@ void MainWindow::reloadLogFileFinishFilter()
             item->initFileFinish();
         }
     }
-    // enable filter if requested and at least one filter is active
-    qfile.enableFilter(anyFiltersEnabled());
-    qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    // Enable index-based view when filters are active or time-based sorting is requested.
+    const bool filtersSettingEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    const bool shouldUseFilterIndex = shouldUseFilterIndexing(filtersSettingEnabled, sortByTimeEnabled, sortByTimestampEnabled);
+
+    qfile.enableFilter(shouldUseFilterIndex);
+    qfile.enableSortByTime(sortByTimeEnabled);
+    qfile.enableSortByTimestamp(sortByTimestampEnabled);
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -2397,12 +2402,14 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // update indexFilter only if index already generated
-    const bool filtersSettingEnabled  = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
-    const bool hasActiveFilters = filtersSettingEnabled  && anyFiltersEnabled();
+    const bool filtersSettingEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    const bool shouldIndexFilter = shouldUseFilterIndexing(filtersSettingEnabled, sortByTimeEnabled, sortByTimestampEnabled);
 
     if( true == update )
     {
-        if(hasActiveFilters)
+        if(shouldIndexFilter)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeFilter);
@@ -2417,7 +2424,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
     else // no update
     {
-        if(hasActiveFilters || pluginsEnabled == true)
+        if(shouldIndexFilter || pluginsEnabled == true)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
@@ -2514,8 +2521,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(filtersSettingEnabled );
-    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    dltIndexer->setSortByTimeEnabled(sortByTimeEnabled);
+    dltIndexer->setSortByTimestampEnabled(sortByTimestampEnabled);
     dltIndexer->setMultithreaded(multithreaded);
     dltIndexer->setFilterCacheEnabled(settings->filterCache);
 
@@ -2740,7 +2747,7 @@ void MainWindow::on_action_menuProject_Open_triggered()
 
 }
 
-bool MainWindow::anyFiltersEnabled()
+bool MainWindow::anyFiltersEnabled() const
 {
     if(!(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
     {
@@ -2757,6 +2764,16 @@ bool MainWindow::anyFiltersEnabled()
         }
     }
     return foundEnabledFilter;
+}
+
+bool MainWindow::shouldUseFilterIndexing(bool filtersSettingEnabled,
+                                          bool sortByTimeEnabled,
+                                          bool sortByTimestampEnabled) const
+{
+    // Use filter indexing if:
+    // 1. User has active filters (when filtersSettingEnabled is true), OR
+    // 2. User requested time-based sorting (when filtersSettingEnabled is true)
+    return filtersSettingEnabled && (anyFiltersEnabled() || sortByTimeEnabled || sortByTimestampEnabled);
 }
 
 bool MainWindow::openDlfFile(QString fileName,bool replace)

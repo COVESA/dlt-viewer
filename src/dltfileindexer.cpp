@@ -718,7 +718,8 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        const bool shouldIndexFilters = filtersEnabled && hasEnabledFilters(dltFile->getFilterList());
+        const bool sortingEnabled = sortByTimeEnabled || sortByTimestampEnabled;
+        const bool shouldIndexFilters = filtersEnabled && (hasEnabledFilters(dltFile->getFilterList()) || sortingEnabled);
         QStringList filenames;
         for(int num=0;num<dltFile->getNumberOfFiles();num++)
             filenames.append(dltFile->getFileName(num));
