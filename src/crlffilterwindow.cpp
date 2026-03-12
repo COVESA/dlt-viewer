@@ -9,7 +9,6 @@
 #include <QProgressDialog>
 #include <QCoreApplication>
 #include <QTimer>
-#include <QThread>
 #include <QFileDialog>
 #include <QStandardItemModel>
 #include <QStandardItem>
@@ -143,7 +142,10 @@ void CrlfFilterWindow::createCrlfWindow() {
     int addedCount = 0;
     for (int i = 0; i < totalFilteredMessages; i++) {
         if (prepareProgress.wasCanceled()) {
-            return; // User cancelled
+            // User cancelled - clear the model and exit
+            crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
+            prepareProgress.close();
+            return;
         }
         
         QDltMsg msg;
@@ -154,8 +156,14 @@ void CrlfFilterWindow::createCrlfWindow() {
                 pluginManager->decodeMsg(msg, true); // Silent mode
             }
             
-            QString payload = msg.toStringPayload();
-            if (containsCrlf(payload)) {
+            QString rawPayload = msg.toStringPayload();
+            if (containsCrlf(rawPayload)) {
+                // Process payload for display like main table model
+                QString payload = rawPayload.simplified().remove(QChar::Null);
+                if (dltFile) {
+                    dltFile->applyRegExString(msg, payload);
+                }
+                
                 // Create a row with the message data
                 QList<QStandardItem*> rowItems;
                 
@@ -173,9 +181,9 @@ void CrlfFilterWindow::createCrlfWindow() {
                         << new QStandardItem(msg.getApid())
                         << new QStandardItem(msg.getCtid())
                         << new QStandardItem(QString::number(msg.getSessionid()))
-                        << new QStandardItem(QString::number(msg.getType()))
-                        << new QStandardItem(QString::number(msg.getSubtype()))
-                        << new QStandardItem(QString::number(msg.getMode()))
+                        << new QStandardItem(msg.getTypeString())
+                        << new QStandardItem(msg.getSubtypeString())
+                        << new QStandardItem(msg.getModeString())
                         << new QStandardItem(QString::number(msg.getMessageId()))
                         << new QStandardItem(QString::number(msg.getNumberOfArguments()))
                         << new QStandardItem(payload);
@@ -235,7 +243,10 @@ void CrlfFilterWindow::createCrlfWindow() {
     crlfTableView->setSortingEnabled(false);
     crlfTableView->horizontalHeader()->setSortIndicatorShown(false);
     crlfTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
-    crlfTableView->horizontalHeader()->setStretchLastSection(false);
+    crlfTableView->horizontalHeader()->setStretchLastSection(true); // Enable stretching for better payload display
+    crlfTableView->setWordWrap(false); // Disable word wrap but allow horizontal scrolling
+    // Apply column settings like main window
+    applyColumnSettings();
     
     connect(crlfTableView, &QTableView::doubleClicked, this, &CrlfFilterWindow::onCrlfMessageDoubleClicked);
     layout->addWidget(crlfTableView);
@@ -335,7 +346,6 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
         int foundMessages = 0;
         
         for (qint64 targetAbsolutePos : messageIndices) {
-            bool found = false;
             // Find which filtered row corresponds to this absolute position
             for (int filteredRow = 0; filteredRow < totalFilteredMessages; ++filteredRow) {
                 int absolutePos = dltFile->getMsgFilterPos(filteredRow);
@@ -344,7 +354,6 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
                     if (sourceModelOfDLT && filteredRow < sourceModelOfDLT->rowCount()) {
                         selectedIndices.append(sourceModelOfDLT->index(filteredRow, 0));
                         foundMessages++;
-                        found = true;
                     }
                     break;
                 }
@@ -604,6 +613,11 @@ void CrlfFilterWindow::rebuildCrlfModel() {
     int addedCount = 0;
     for (int i = 0; i < totalFilteredMessages; i++) {
         if (buildProgress.wasCanceled()) {
+            // User cancelled - clear the model, set count to 0, and exit
+            crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
+            buildProgress.close();
+            updateMessageCount(0);
+            lastFilteredMessageCount = totalFilteredMessages;
             return;
         }
         
@@ -615,8 +629,14 @@ void CrlfFilterWindow::rebuildCrlfModel() {
                 pluginManager->decodeMsg(msg, true); // Silent mode
             }
             
-            QString payload = msg.toStringPayload();
-            if (containsCrlf(payload)) {
+            QString rawPayload = msg.toStringPayload();
+            if (containsCrlf(rawPayload)) {
+                // Process payload for display like main table model
+                QString payload = rawPayload.simplified().remove(QChar::Null);
+                if (dltFile) {
+                    dltFile->applyRegExString(msg, payload);
+                }
+                
                 // Create a row with the message data
                 QList<QStandardItem*> rowItems;
                 
@@ -634,9 +654,9 @@ void CrlfFilterWindow::rebuildCrlfModel() {
                         << new QStandardItem(msg.getApid())
                         << new QStandardItem(msg.getCtid())
                         << new QStandardItem(QString::number(msg.getSessionid()))
-                        << new QStandardItem(QString::number(msg.getType()))
-                        << new QStandardItem(QString::number(msg.getSubtype()))
-                        << new QStandardItem(QString::number(msg.getMode()))
+                        << new QStandardItem(msg.getTypeString())
+                        << new QStandardItem(msg.getSubtypeString())
+                        << new QStandardItem(msg.getModeString())
                         << new QStandardItem(QString::number(msg.getMessageId()))
                         << new QStandardItem(QString::number(msg.getNumberOfArguments()))
                         << new QStandardItem(payload);
@@ -681,5 +701,28 @@ void CrlfFilterWindow::onRebuildTimerTimeout() {
         rebuildInProgress = true;
         rebuildCrlfModel();
         rebuildInProgress = false;
+    }
+}
+
+// Public method to refresh the CRLF window with latest data
+void CrlfFilterWindow::refreshWindow() {
+    if (crlfWindow && dltFile) {
+        rebuildCrlfModel();
+    }
+}
+
+// Public method to show and activate the CRLF window
+void CrlfFilterWindow::showAndActivate() {
+    if (crlfWindow) {
+        crlfWindow->activateWindow();
+        crlfWindow->raise();
+        crlfWindow->show();
+    }
+}
+
+// Public method to close the CRLF window
+void CrlfFilterWindow::closeWindow() {
+    if (crlfWindow) {
+        crlfWindow->close();
     }
 }
