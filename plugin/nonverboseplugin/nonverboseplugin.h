@@ -105,11 +105,12 @@ public:
         uint32_t pduRefCounter;
 };
 
-class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface, QDltPluginControlInterface
+class NonverbosePlugin : public QObject, QDLTPluginInterface, QDLTPluginDecoderInterface, QDltPluginCommandInterface, QDltPluginControlInterface
 {
     Q_OBJECT
     Q_INTERFACES(QDLTPluginInterface)
     Q_INTERFACES(QDLTPluginDecoderInterface)
+    Q_INTERFACES(QDltPluginCommandInterface)
     Q_INTERFACES(QDltPluginControlInterface)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     Q_PLUGIN_METADATA(IID "org.genivi.DLT.NonVerbosePlugin")
@@ -132,6 +133,9 @@ public:
     bool isMsg(QDltMsg &msg, int triggeredByUser);
     bool decodeMsg(QDltMsg &msg, int triggeredByUser);
 
+    /* QDltPluginCommandInterface */
+    bool command(QString command, QList<QString> params);
+
     /* QDltPluginControlInterface */
     bool initControl(QDltControl *control);
     bool initConnections(QStringList list);
@@ -153,6 +157,8 @@ private:
     void clear();
 
     QDltControl *dltControl;
+
+    QString fibex_path;
 
     QString m_error_string;
 };
