@@ -133,6 +133,10 @@ private:
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
+    //Maps to hold the filter values - findFilteredLines() & MarkedMessages
+    QMap<QString, int> filterCountMap;
+    int totalMessages;
+
     /* Status line items */
     QLabel *statusFilename;
     QLabel *statusFileError;
@@ -401,6 +405,10 @@ private:
                                const EcuItem* ecuitem);
 
 
+
+    void findFilteredLines();
+
+
 protected:
     void keyPressEvent ( QKeyEvent * event ) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -546,6 +554,7 @@ private slots:
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_actionFiltered_Message_Count_triggered();
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
