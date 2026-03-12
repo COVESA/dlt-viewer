@@ -340,7 +340,21 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
-    bool anyFiltersEnabled();
+    bool anyFiltersEnabled() const;
+    
+    /**
+     * @brief Determine if filter indexing should be used based on settings and filters.
+     * This is the single source of truth for this decision, used in both
+     * reloadLogFile() and reloadLogFileFinishFilter() to ensure consistency.
+     *
+     * @param filtersSettingEnabled Whether filters are enabled in settings
+     * @param sortByTimeEnabled Whether sorting by time is enabled
+     * @param sortByTimestampEnabled Whether sorting by timestamp is enabled
+     * @return true if filter index should be created and used, false otherwise
+     */
+    bool shouldUseFilterIndexing(bool filtersSettingEnabled, 
+                                 bool sortByTimeEnabled, 
+                                 bool sortByTimestampEnabled) const;
 
     bool openDltFile(QStringList fileName);
     bool openDlpFile(QString filename);
