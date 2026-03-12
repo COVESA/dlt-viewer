@@ -135,8 +135,6 @@ private:
 
     //Maps to hold the filter values - findFilteredLines() & MarkedMessages
     QMap<QString, int> filterCountMap;
-    QMap<QString, QColor> filterCollectionMap;
-    QMap<QString, QPair<QColor, int>> previousFilterStateMap;
     int totalMessages;
 
     /* Status line items */

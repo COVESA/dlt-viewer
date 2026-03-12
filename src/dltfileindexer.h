@@ -251,6 +251,10 @@ signals:
     // complete index creation of default filter finished
     void finishDefaultFilter();
 
+    //signal for progress bar while displaying marked message count
+    void markerCountProgressMax(int max);
+    void markerCountProgressValue(int value);
+
 public slots:
 
     void stop();

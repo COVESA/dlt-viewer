@@ -7000,36 +7000,81 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
 
         dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
     }
-
-    //Collects all the filter names and the colors used for highlighting for finding the marked message count.
-
-    filterCollectionMap[item->filter.name] = item->filter.filterColour;
 }
 
 //findFiltered Lines is used for segregating the number of lines filtered per filter.
-//filterCollectionMap collects the filter name and their respective colors.
 //previousFilterMap is used for checking if the same color is used for the same filter.
 //If same color is used it will not be counted else, it will check the count again.
-
 void MainWindow::findFilteredLines()
 {
-  filterCountMap.clear();
+    filterCountMap.clear();
 
-  const QMap<QString, int> markerCounts = dltIndexer->getMarkerCounts();
-  for (auto it = filterCollectionMap.constBegin(); it != filterCollectionMap.constEnd(); ++it)
-  {
-      const QString& filterName = it.key();
-      filterCountMap[filterName] = markerCounts.value(filterName, 0);
-  }
+    // Keep qfile filters synchronized with what is currently loaded in the UI tree.
+    filterUpdate();
 
-  totalMessages = ui->tableView->model()->rowCount();
-  previousFilterStateMap.clear();
+    QVector<qint64> indices;
+    if(qfile.isFilter())
+    {
+        indices = qfile.getIndexFilter();
+    }
+    else
+    {
+        indices.reserve(qfile.size());
+        for(int i = 0; i < qfile.size(); i++)
+        {
+            indices.append(i);
+        }
+    }
+
+    if(dltIndexer != nullptr)
+    {
+        QProgressDialog progress("Calculating marked message counts...", QString(), 0, indices.size(), this);
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setMinimumDuration(0);
+        progress.setCancelButton(nullptr); // simple non-cancelable progress
+
+        QMetaObject::Connection c1 = connect(
+            dltIndexer, &DltFileIndexer::markerCountProgressMax,
+            &progress, &QProgressDialog::setMaximum);
+
+        QMetaObject::Connection c2 = connect(
+            dltIndexer, &DltFileIndexer::markerCountProgressValue,
+            this, [&](int v){
+                progress.setValue(v);
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            });
+
+        progress.show();
+        dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
+        progress.setValue(progress.maximum());
+
+        disconnect(c1);
+        disconnect(c2);
+        const QMap<QString, int> markerCounts = dltIndexer->getMarkerCounts();
+
+        // Rebuild marker list from currently loaded filters (including .dlf loaded ones).
+        for(int num = 0; num < project.filter->topLevelItemCount(); num++)
+        {
+            FilterItem *item = static_cast<FilterItem *>(project.filter->topLevelItem(num));
+            if(item == nullptr)
+            {
+                continue;
+            }
+
+            if(item->filter.isMarker() && item->filter.enableFilter)
+            {
+                const QString &filterName = item->filter.name;
+                filterCountMap[filterName] = markerCounts.value(filterName, 0);
+            }
+        }
+    }
+
+    totalMessages = (ui->tableView->model() != nullptr) ? ui->tableView->model()->rowCount() : 0;
 }
 
 //The function is triggered when "Marked Message Count" is clicked in the filter's custom menu.
 //It checked the number of filtered message using findFilteredLines function and then
 //generates a dialog for displaying the marked messages count.
-
 void MainWindow::on_actionFiltered_Message_Count_triggered(){
 
   findFilteredLines();

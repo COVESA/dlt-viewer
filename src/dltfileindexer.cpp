@@ -552,8 +552,13 @@ void DltFileIndexer::addMarkerCount(const QString &filterName)
 
 void DltFileIndexer::recomputeMarkerCounts(const QDltFilterList &filterList, const QVector<qint64> &indices)
 {
+    emit markerCountProgressMax(indices.size());
+    emit markerCountProgressValue(0);
+
     resetMarkerCounts(filterList);
     computeMarkerCountsFromIndex(filterList, indices);
+
+    emit markerCountProgressValue(indices.size());
 }
 
 void DltFileIndexer::resetMarkerCounts(const QDltFilterList &filterList)
@@ -573,7 +578,10 @@ void DltFileIndexer::resetMarkerCounts(const QDltFilterList &filterList)
 
 void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterList, const QVector<qint64> &indices)
 {
-    for(int i = 0; i < indices.size(); i++)
+    const int total = indices.size();
+    const int step = qMax(1, total / 200); // throttle UI updates
+
+    for(int i = 0; i < total; ++i)
     {
         const qint64 rawIndex = indices[i];
         if(rawIndex < 0 || rawIndex > std::numeric_limits<int>::max())
@@ -592,6 +600,9 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
         {
             addMarkerCount(markerFilter->name);
         }
+
+        if ((i % step) == 0 || i + 1 == total)
+            emit markerCountProgressValue(i + 1);
     }
 }
 
