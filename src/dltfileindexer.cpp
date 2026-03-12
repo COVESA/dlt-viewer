@@ -91,6 +91,18 @@ DltFileIndexer::~DltFileIndexer()
 {
 }
 
+static bool hasEnabledFilters(const QDltFilterList &filterList)
+{
+    for (const auto *filter : filterList.filters)
+    {
+        if (filter && filter->enableFilter)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool DltFileIndexer::index(int num)
 {
     // start performance counter
@@ -706,15 +718,21 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
+        const bool sortingEnabled = sortByTimeEnabled || sortByTimestampEnabled;
+        const bool shouldIndexFilters = filtersEnabled && (hasEnabledFilters(dltFile->getFilterList()) || sortingEnabled);
         QStringList filenames;
         for(int num=0;num<dltFile->getNumberOfFiles();num++)
             filenames.append(dltFile->getFileName(num));
-        if((mode != modeNone) && !indexFilter(filenames))
+        if(shouldIndexFilters && (mode != modeNone) && !indexFilter(filenames))
         {
             // error
             return;
         }
-        dltFile->enableFilter(filtersEnabled);
+        if(!shouldIndexFilters)
+        {
+            indexFilterList.clear();
+        }
+        dltFile->enableFilter(shouldIndexFilters);
         dltFile->setIndexFilter(indexFilterList);
         emit(finishFilter());
     }
