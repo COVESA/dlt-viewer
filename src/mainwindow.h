@@ -153,6 +153,9 @@ private:
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
+    /* CRLF Filter Window */
+    CrlfFilterWindow *crlfFilterWindow;
+
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
     QShortcut *markShortcut;

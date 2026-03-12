@@ -86,7 +86,8 @@ MainWindow::MainWindow(QWidget *parent) :
     timer(this),
     qcontrol(this),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false)
+    isSearchOngoing(false),
+    crlfFilterWindow(nullptr)
 {
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
@@ -264,6 +265,7 @@ MainWindow::~MainWindow()
     delete dltIndexer;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
+    delete crlfFilterWindow;
 }
 
 void MainWindow::initState()
@@ -3874,7 +3876,24 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
     //qDebug() << "try to connect" << __LINE__;
     if(false == ecuitem->tryToConnect || true == force)
     {
-        // Live logging is (re)starting: marker union in filtered output is disabled
+        // Handle CRLF window when ECU connects
+        if (crlfFilterWindow) {
+            // Show warning to user about switching to live logging
+            QMessageBox::StandardButton reply = QMessageBox::question(this, 
+                "CRLF Window Open", 
+                "CRLF window is open. CRLF feature does not support live logging. "
+                "Connecting ECU will close the CRLF window and append live logs to the current file. "
+                "Continue?",
+                QMessageBox::Yes | QMessageBox::No);
+                
+            if (reply == QMessageBox::No) {
+                return; // User cancelled ECU connection
+            }
+            
+            crlfFilterWindow->closeWindow();
+            crlfFilterWindow = nullptr;
+        }
+        
         // because it does not work reliably during live logging.
         if(settings && settings->includeManualMarkersInFilter)
             clearManualMarkerUnionInFilter();
@@ -6732,7 +6751,14 @@ void MainWindow::showCrlfMessages()
         QMessageBox::information(this, "No Messages", "DLT file is not loaded or contains no messages.");
         return;
     }
-    CrlfFilterWindow *crlfFilterWindow = new CrlfFilterWindow(this);
+    // Check if CRLF window already exists
+    if (crlfFilterWindow) {
+        crlfFilterWindow->refreshWindow();
+        crlfFilterWindow->showAndActivate();
+        return;
+    }
+    // Create new CRLF window
+    crlfFilterWindow = new CrlfFilterWindow(this);
     crlfFilterWindow->setSourceModel(tableModel);
     crlfFilterWindow->setDltFile(&qfile);
     crlfFilterWindow->setPluginManager(&pluginManager);
@@ -6742,6 +6768,10 @@ void MainWindow::showCrlfMessages()
     // Add connection to handle main window closing
     connect(this, &MainWindow::destroyed, crlfFilterWindow, &CrlfFilterWindow::cleanup);
     
+    // Connect to handle CRLF window closing to reset the pointer
+    connect(crlfFilterWindow, &QObject::destroyed, this, [this]() {
+        crlfFilterWindow = nullptr;
+    });
     // Create and show the CRLF filter window
     crlfFilterWindow->createCrlfWindow();
 }
@@ -7297,6 +7327,11 @@ void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 
     action = new QAction("Show CRLF Messages", &menu);
     connect(action, SIGNAL(triggered()), this, SLOT(showCrlfMessages()));
+    
+    // Disable CRLF option during live logging or with temporary files
+    bool crlfEnabled = !isLiveLoggingActive() && !outputfileIsTemporary;
+    action->setEnabled(crlfEnabled);
+    
     menu.addAction(action);
 
     /* show popup menu */
