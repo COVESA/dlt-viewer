@@ -5,7 +5,7 @@
 
 DltMsgQueue::DltMsgQueue(int size)
     : bufferSize(size),
-      buffer(new QPair<QSharedPointer<QDltMsg>, int> [size]),
+    buffer(size),
       readPosition(0),
       writePosition(0),
       stopRequested(false),
@@ -15,8 +15,7 @@ DltMsgQueue::DltMsgQueue(int size)
 
 DltMsgQueue::~DltMsgQueue()
 {
-    if(buffer != nullptr)
-        delete[] buffer;
+    // buffer is managed by std::vector; nothing to free
 }
 
 void DltMsgQueue::enqueueMsg(const QSharedPointer<QDltMsg> &msg, int index)

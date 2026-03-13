@@ -22,6 +22,10 @@
 #include <QFile>
 #include <QtDebug>
 
+#include <algorithm>
+
+#include <QHash>
+
 #include "qdltfile.h"
 
 extern "C"
@@ -80,6 +84,11 @@ void QDltFile::clear()
     files.clear();
 
     cache.clear();
+
+    indexFilter.clear();
+    indexFilterBase.clear();
+
+    manualMarkerIndices.clear();
 }
 
 int QDltFile::getNumberOfFiles() const
@@ -151,6 +160,24 @@ quint32 QDltFile::alignedStorageSize(quint32 size)
 {
     constexpr int STORAGE_ALIGNMENT = 4;
     return ((size + STORAGE_ALIGNMENT - 1) / STORAGE_ALIGNMENT) * STORAGE_ALIGNMENT;
+}
+
+void QDltFile::setManualMarkerIndices(const QList<unsigned long int> &indices)
+{
+    QSet<qint64> newSet;
+    newSet.reserve(indices.size());
+    for(const auto &idx : indices)
+    {
+        newSet.insert(static_cast<qint64>(idx));
+    }
+
+    if(newSet == manualMarkerIndices)
+    {
+        return;
+    }
+
+    manualMarkerIndices = std::move(newSet);
+    recomputeEffectiveIndexFilter();
 }
 
 bool QDltFile::open(QString _filename, bool append)
@@ -478,7 +505,7 @@ bool QDltFile::updateIndex()
 bool QDltFile::createIndexFilter()
 {
     /* clear old index */
-    indexFilter.clear();
+    indexFilterBase.clear();
 
     return updateIndexFilter();
 }
@@ -492,8 +519,8 @@ bool QDltFile::updateIndexFilter()
     /* update index filter by starting from last found index in list */
 
     /* get lattest found index in filter list */
-    if(indexFilter.size()>0) {
-        index = indexFilter[indexFilter.size()-1] + 1;
+    if(indexFilterBase.size()>0) {
+        index = indexFilterBase[indexFilterBase.size()-1] + 1;
     }
     else {
         index = 0;
@@ -513,11 +540,13 @@ bool QDltFile::updateIndexFilter()
             msg.setMsg(buf,true,dltv2Support);
             msg.setIndex(num);
             if(checkFilter(msg)) {
-                indexFilter.append(num);
+                indexFilterBase.append(num);
             }
         }
 
     }
+
+    recomputeEffectiveIndexFilter();
 
     return true;
 }
@@ -545,13 +574,15 @@ void QDltFile::setFilterList(QDltFilterList &_filterList)
 void QDltFile::clearFilterIndex()
 {
     /* clear old index */
-    indexFilter.clear();
+    indexFilterBase.clear();
+    recomputeEffectiveIndexFilter();
 
 }
 
 void QDltFile::addFilterIndex (int index)
 {
-    indexFilter.append(index);
+    indexFilterBase.append(index);
+    recomputeEffectiveIndexFilter();
 
 }
 
@@ -825,9 +856,129 @@ QVector<qint64> QDltFile::getIndexFilter() const
 
 void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
-    indexFilter = _indexFilter;
+    indexFilterBase = std::move(_indexFilter);
+    recomputeEffectiveIndexFilter();
 }
 
+QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &markerSet) const
+{
+    // indexFilterBase comes from the indexer and may be sorted by time or timestamp.
+    // Do NOT assume it is sorted by message index. Preserve the base ordering and insert
+    // missing markers according to the current sort mode.
+
+    if(markerSet.isEmpty())
+        return indexFilterBase;
+
+    const qint64 maxIdx = static_cast<qint64>(size());
+
+    // Fast membership check: which indices are already present in the base filter output.
+    QSet<qint64> present;
+    present.reserve(indexFilterBase.size());
+    for(const auto &idx : indexFilterBase)
+        present.insert(idx);
+
+    QVector<qint64> missingMarkers;
+    missingMarkers.reserve(markerSet.size());
+    for(const auto &manualIdx : markerSet)
+    {
+        if(manualIdx < 0 || manualIdx >= maxIdx)
+            continue;
+        if(present.contains(manualIdx))
+            continue;
+        missingMarkers.append(manualIdx);
+    }
+
+    if(missingMarkers.isEmpty())
+        return indexFilterBase;
+
+    struct SortKey
+    {
+        qint64 primary;
+        quint32 secondary;
+        qint64 index;
+    };
+
+    QHash<qint64, SortKey> keyCache;
+    keyCache.reserve(indexFilterBase.size() + missingMarkers.size());
+
+    const bool sortByTime = sortByTimeFlag;
+    const bool sortByTimestamp = sortByTimestampFlag;
+
+    const auto keyForIndex = [&](qint64 idx) -> SortKey {
+        const auto it = keyCache.constFind(idx);
+        if(it != keyCache.constEnd())
+            return it.value();
+
+        SortKey key{idx, 0u, idx};
+
+        if(idx >= 0 && idx < maxIdx && (sortByTime || sortByTimestamp))
+        {
+            const QByteArray data = getMsg(static_cast<int>(idx));
+            if(!data.isEmpty())
+            {
+                QDltMsg msg;
+                if(msg.setMsg(data, true, dltv2Support))
+                {
+                    if(sortByTime)
+                    {
+                        key.primary = static_cast<qint64>(msg.getTime());
+                        key.secondary = msg.getMicroseconds();
+                    }
+                    else
+                    {
+                        key.primary = static_cast<qint64>(msg.getTimestamp());
+                        key.secondary = 0u;
+                    }
+                    key.index = idx;
+                }
+            }
+        }
+
+        keyCache.insert(idx, key);
+        return key;
+    };
+
+    const auto lessByCurrentSort = [&](qint64 lhs, qint64 rhs) -> bool {
+        const SortKey a = keyForIndex(lhs);
+        const SortKey b = keyForIndex(rhs);
+        if(a.primary != b.primary)
+            return a.primary < b.primary;
+        if(a.secondary != b.secondary)
+            return a.secondary < b.secondary;
+        return a.index < b.index;
+    };
+
+    // Sort missing markers once, then merge in a single linear pass.
+    std::sort(missingMarkers.begin(), missingMarkers.end(), lessByCurrentSort);
+
+    QVector<qint64> merged;
+    merged.reserve(indexFilterBase.size() + missingMarkers.size());
+
+    auto baseIt = indexFilterBase.constBegin();
+    auto baseEnd = indexFilterBase.constEnd();
+    auto markerIt = missingMarkers.constBegin();
+    auto markerEnd = missingMarkers.constEnd();
+
+    while(baseIt != baseEnd && markerIt != markerEnd)
+    {
+        if(lessByCurrentSort(*markerIt, *baseIt))
+            merged.append(*markerIt++);
+        else
+            merged.append(*baseIt++);
+    }
+
+    while(baseIt != baseEnd)
+        merged.append(*baseIt++);
+    while(markerIt != markerEnd)
+        merged.append(*markerIt++);
+
+    return merged;
+}
+
+void QDltFile::recomputeEffectiveIndexFilter()
+{
+    indexFilter = mergeIndexFilterBaseWithMarkers(manualMarkerIndices);
+}
 bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 {
 

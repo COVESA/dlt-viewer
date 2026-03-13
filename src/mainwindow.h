@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QVector>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -49,6 +50,8 @@
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
+#include "updatechecker.h"
+#include "crlffilterwindow.h"
 
 /**
  * @brief Namespace to contain the toolbar positions.
@@ -132,6 +135,10 @@ private:
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
+    //Maps to hold the filter values - findFilteredLines() & MarkedMessages
+    QMap<QString, int> filterCountMap;
+    int totalMessages;
+
     /* Status line items */
     QLabel *statusFilename;
     QLabel *statusFileError;
@@ -151,9 +158,14 @@ private:
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
+    /* CRLF Filter Window */
+    CrlfFilterWindow *crlfFilterWindow;
+
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
     QShortcut *markShortcut;
+    QShortcut *nextMarkedShortcut;
+    QShortcut *prevMarkedShortcut;
 
     /* Export */
     ExporterDialog exporterDialog;
@@ -161,6 +173,9 @@ private:
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
+
+    /* Update Checker class for automatic pop up for new updates*/
+    UpdateChecker *updChecker;
 
     /* injections */
     QString injectionAplicationId;
@@ -239,6 +254,17 @@ private:
     //values to carry the logLevel and traceStatus : Edit All Log Levels
     int logLevel = 0;
     int traceStatus = 0;
+    bool markedRowCacheValid = false;
+    QVector<int> markedRowsInView;
+
+    bool isLiveLoggingActive() const;
+
+    bool manualMarkerUnionEnabled() const;
+    void updateManualMarkerUnionInFilter();
+    void clearManualMarkerUnionInFilter();
+
+    void invalidateMarkedRowCache();
+    void rebuildMarkedRowCache();
 
     /* functions called in constructor */
     void initState();
@@ -322,7 +348,21 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
-    bool anyFiltersEnabled();
+    bool anyFiltersEnabled() const;
+    
+    /**
+     * @brief Determine if filter indexing should be used based on settings and filters.
+     * This is the single source of truth for this decision, used in both
+     * reloadLogFile() and reloadLogFileFinishFilter() to ensure consistency.
+     *
+     * @param filtersSettingEnabled Whether filters are enabled in settings
+     * @param sortByTimeEnabled Whether sorting by time is enabled
+     * @param sortByTimestampEnabled Whether sorting by timestamp is enabled
+     * @return true if filter index should be created and used, false otherwise
+     */
+    bool shouldUseFilterIndexing(bool filtersSettingEnabled, 
+                                 bool sortByTimeEnabled, 
+                                 bool sortByTimestampEnabled) const;
 
     bool openDltFile(QStringList fileName);
     bool openDlpFile(QString filename);
@@ -374,6 +414,10 @@ private:
 
     //File Splitting Settings
     QStringList outputFilePath;
+
+
+
+    void findFilteredLines();
 
 
 protected:
@@ -445,9 +489,12 @@ public slots:
     void on_actionFindNext();
     void mark_unmark_lines();
     void unmark_all_lines();
+    void goto_next_marked_line();
+    void goto_prev_marked_line();
     void filterIndexStart();
     void filterIndexEnd();
     void splitLogsEcuid();
+    void showCrlfMessages();
 
 private slots:
 
@@ -467,6 +514,7 @@ private slots:
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
     void on_actionShortcuts_List_triggered();
+    void on_actionCheck_For_Latest_Updates_triggered();
 
     // Config methods
     void on_action_menuConfig_Context_Delete_triggered();
@@ -519,6 +567,7 @@ private slots:
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_actionFiltered_Message_Count_triggered();
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();

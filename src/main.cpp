@@ -20,6 +20,7 @@
 #include <QModelIndex>
 #include <QApplication>
 #include <QStyleFactory>
+#include <QThread>
 
 #include <qdltoptmanager.h>
 
@@ -45,6 +46,8 @@ int main(int argc, char *argv[])
     }
 
     QApplication a(argc, argv);
+    // Keep the UI responsive under heavy background processing.
+    QThread::currentThread()->setPriority(QThread::HighestPriority);
     QDltOptManager::getInstance()->parse(a.arguments());
 
     MainWindow w;

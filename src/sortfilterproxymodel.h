@@ -36,9 +36,13 @@ public:
     void setEcuId(const QString& ecuId);
     void setEcuIdList(const QSet<QString> &ids);
     void setEcuColumn(int column);
+    
+    // Override data method to preserve original indices
+    QVariant data(const QModelIndex &index, int role) const override;
 
 protected:
     bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
+    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
     QString ecu;
