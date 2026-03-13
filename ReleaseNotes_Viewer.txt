@@ -2,7 +2,7 @@ DLT Viewer  - Release Notes
 ===========================
 Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Gernot Wirschal <Gernot.Wirschal@bmw.de>
-
+Shubham Shaha <Shubham.Shaha@bti.bmwgroup.com>
 Version
 -------
 Version 2.30.0 UNSTABLE
@@ -17,10 +17,17 @@ Changes
 
 2.30.0
 
+* Fix missing Qt6Concurrent.dll, TLS plugin, and OpenSSL DLLs in Windows installer
+* Improve live logging performance
+* Prevent opening save dialog when exporting empty search results
+* Fix persistent log level state not being reset correctly
+* Fix CRLF messages window: sort-by-timestamp and empty-export handling
+* Fix UI issues and restore multi-selection support in File Explorer
+* Export search results: crash fixes, concurrency guard, and progress dialog
+* Enable decoded DLT export and commandline decoding for non-verbose messages via dlt-commander & dlt-Viewer
 * Warn CRLF messages can be checked (#775)
 * Check for update feature added (#751)
 * Display Aggregate Filter Information (#672)
-* Start filter index after adding at least one filter condition or enabling sorting (#760)
 * Search optimization and multithreaded search (#760)
 * User marked (marker) logs feature update (#760)
 * Optimize toStringHeader and ToStringPayload (#760)
