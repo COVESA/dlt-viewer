@@ -100,6 +100,8 @@ add_executable(dlt-viewer
     searchform.ui
     settingsdialog.ui
     searchdialog.ui
+    updatechecker.h
+    updatechecker.cpp
 )
 
 target_link_libraries(dlt-viewer

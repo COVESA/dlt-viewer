@@ -52,6 +52,7 @@
 #include <QDir>
 #include <QDirIterator>
 #include <QThread>
+#include <QTableWidget>
 
 #if defined(_MSC_VER)
 #include <io.h>
@@ -78,7 +79,7 @@
 #include "qdltctrlmsg.h"
 #include <qdltmsgwrapper.h>
 #include "ecutree.h"
-
+#include "updatechecker.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -88,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) :
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
+
     dltIndexer = NULL;
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
@@ -111,7 +113,6 @@ MainWindow::MainWindow(QWidget *parent) :
     initSignalConnections();
 
     initFileHandling();
-
 
     /* Commands plugin after loading log file */
     qDebug() << "### Plugin commands after loading log file";
@@ -197,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug() << "Start minimzed as defined in the settings";
         this->setWindowState(Qt::WindowMinimized);
     }
+
 }
 
 MainWindow::~MainWindow()
@@ -286,6 +288,11 @@ void MainWindow::initState()
     settingsDlg = new SettingsDialog(&qfile,this);
     settingsDlg->assertSettingsVersion();
     settingsDlg->readSettings();
+
+    /* Update Checker call for timer to check if there is any new update*/
+    updChecker = new UpdateChecker(this);
+    updChecker->checkForUpdates(); //runs intervalPassed on start of DLT Viewer
+    updChecker->startAutoCheck();// keeps the periodic check for every 120 mins
 
     if (QDltSettingsManager::UI_Colour::UI_Dark == QDltSettingsManager::getInstance()->uiColour)
     {
@@ -621,6 +628,7 @@ void MainWindow::initView()
     addFilter->setShortcut((Qt::SHIFT | Qt::CTRL) | Qt::Key_A);
     connect(addFilter, SIGNAL(triggered()), this, SLOT(on_action_menuFilter_Add_triggered()));
     addAction(addFilter);
+
 }
 
 void MainWindow::initSignalConnections()
@@ -934,6 +942,7 @@ void MainWindow::initFileHandling()
             // normally load log file mutithreaded
             reloadLogFile();
     }
+
 }
 
 
@@ -2323,11 +2332,15 @@ void MainWindow::reloadLogFileFinishFilter()
             item->initFileFinish();
         }
     }
+    // Enable index-based view when filters are active or time-based sorting is requested.
+    const bool filtersSettingEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    const bool shouldUseFilterIndex = shouldUseFilterIndexing(filtersSettingEnabled, sortByTimeEnabled, sortByTimestampEnabled);
 
-    // enable filter if requested
-    qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    qfile.enableFilter(shouldUseFilterIndex);
+    qfile.enableSortByTime(sortByTimeEnabled);
+    qfile.enableSortByTimestamp(sortByTimestampEnabled);
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -2398,9 +2411,14 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // update indexFilter only if index already generated
+    const bool filtersSettingEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    const bool shouldIndexFilter = shouldUseFilterIndexing(filtersSettingEnabled, sortByTimeEnabled, sortByTimestampEnabled);
+
     if( true == update )
     {
-        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool())
+        if(shouldIndexFilter)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeFilter);
@@ -2415,7 +2433,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
     else // no update
     {
-        if(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool() || pluginsEnabled == true)
+        if(shouldIndexFilter || pluginsEnabled == true)
         {
             //qDebug() << "indexer with filter" << __LINE__;
             dltIndexer->setMode(DltFileIndexer::modeIndexAndFilter);
@@ -2511,9 +2529,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     // enable plugins
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    dltIndexer->setFiltersEnabled(filtersSettingEnabled );
+    dltIndexer->setSortByTimeEnabled(sortByTimeEnabled);
+    dltIndexer->setSortByTimestampEnabled(sortByTimestampEnabled);
     dltIndexer->setMultithreaded(multithreaded);
     dltIndexer->setFilterCacheEnabled(settings->filterCache);
 
@@ -2738,7 +2756,7 @@ void MainWindow::on_action_menuProject_Open_triggered()
 
 }
 
-bool MainWindow::anyFiltersEnabled()
+bool MainWindow::anyFiltersEnabled() const
 {
     if(!(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
     {
@@ -2755,6 +2773,16 @@ bool MainWindow::anyFiltersEnabled()
         }
     }
     return foundEnabledFilter;
+}
+
+bool MainWindow::shouldUseFilterIndexing(bool filtersSettingEnabled,
+                                          bool sortByTimeEnabled,
+                                          bool sortByTimestampEnabled) const
+{
+    // Use filter indexing if:
+    // 1. User has active filters (when filtersSettingEnabled is true), OR
+    // 2. User requested time-based sorting (when filtersSettingEnabled is true)
+    return filtersSettingEnabled && (anyFiltersEnabled() || sortByTimeEnabled || sortByTimestampEnabled);
 }
 
 bool MainWindow::openDlfFile(QString fileName,bool replace)
@@ -3683,6 +3711,13 @@ void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
     menu.addAction(action);
 
     menu.addSeparator();
+
+    action = new QAction("Marked Message Count", this);
+    if(list.size() != 1)
+        action->setEnabled(false);
+    else
+        connect(action, SIGNAL(triggered()), this, SLOT(on_actionFiltered_Message_Count_triggered()));
+    menu.addAction(action);
 
     if(list.size()>=1)
         action = new QAction("Set Selected Active", this);
@@ -5707,7 +5742,7 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     const QString shortcutNextMark = "F4";
     const QString shortcutPrevMark = "F5";
     const QString shortcutInfo = "F1";
-    const QString shortcutQuit = "Ctrl +- Q";
+    const QString shortcutQuit = "Ctrl + Q";
 
     // Store shortcuts dynamically using a list of pairs
     QList<QPair<QString, QString>> shortcutsList = {
@@ -5763,6 +5798,11 @@ void MainWindow::on_actionShortcuts_List_triggered(){
     shortcutDialog->setLayout(layout);
     shortcutDialog->exec();
     delete shortcutDialog;
+}
+
+
+void MainWindow::on_actionCheck_For_Latest_Updates_triggered(){
+    updChecker->linkToUrl();
 }
 
 void MainWindow::on_pluginWidget_itemSelectionChanged()
@@ -6976,8 +7016,135 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     if(item->filter.isMarker())
     {
         tableModel->modelChanged();
+        QVector<qint64> indices;
+        if(qfile.isFilter())
+        {
+            indices = qfile.getIndexFilter();
+        }
+        else
+        {
+            indices.reserve(qfile.size());
+            for(int i = 0; i < qfile.size(); i++)
+            {
+                indices.append(i);
+            }
+        }
+
+        dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
     }
 }
+
+//findFiltered Lines is used for segregating the number of lines filtered per filter.
+//previousFilterMap is used for checking if the same color is used for the same filter.
+//If same color is used it will not be counted else, it will check the count again.
+void MainWindow::findFilteredLines()
+{
+    filterCountMap.clear();
+
+    // Keep qfile filters synchronized with what is currently loaded in the UI tree.
+    filterUpdate();
+
+    QVector<qint64> indices;
+    if(qfile.isFilter())
+    {
+        indices = qfile.getIndexFilter();
+    }
+    else
+    {
+        indices.reserve(qfile.size());
+        for(int i = 0; i < qfile.size(); i++)
+        {
+            indices.append(i);
+        }
+    }
+
+    if(dltIndexer != nullptr)
+    {
+        QProgressDialog progress("Calculating marked message counts...", QString(), 0, indices.size(), this);
+        progress.setWindowModality(Qt::WindowModal);
+        progress.setMinimumDuration(0);
+        progress.setCancelButton(nullptr); // simple non-cancelable progress
+
+        QMetaObject::Connection c1 = connect(
+            dltIndexer, &DltFileIndexer::markerCountProgressMax,
+            &progress, &QProgressDialog::setMaximum);
+
+        QMetaObject::Connection c2 = connect(
+            dltIndexer, &DltFileIndexer::markerCountProgressValue,
+            this, [&](int v){
+                progress.setValue(v);
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+            });
+
+        progress.show();
+        dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
+        progress.setValue(progress.maximum());
+
+        disconnect(c1);
+        disconnect(c2);
+        const QMap<QString, int> markerCounts = dltIndexer->getMarkerCounts();
+
+        // Rebuild marker list from currently loaded filters (including .dlf loaded ones).
+        for(int num = 0; num < project.filter->topLevelItemCount(); num++)
+        {
+            FilterItem *item = static_cast<FilterItem *>(project.filter->topLevelItem(num));
+            if(item == nullptr)
+            {
+                continue;
+            }
+
+            if(item->filter.isMarker() && item->filter.enableFilter)
+            {
+                const QString &filterName = item->filter.name;
+                filterCountMap[filterName] = markerCounts.value(filterName, 0);
+            }
+        }
+    }
+
+    totalMessages = (ui->tableView->model() != nullptr) ? ui->tableView->model()->rowCount() : 0;
+}
+
+//The function is triggered when "Marked Message Count" is clicked in the filter's custom menu.
+//It checked the number of filtered message using findFilteredLines function and then
+//generates a dialog for displaying the marked messages count.
+void MainWindow::on_actionFiltered_Message_Count_triggered(){
+
+  findFilteredLines();
+
+  QDialog *dialog = new QDialog(this);
+     dialog->setWindowTitle("Filtered Message Counts");
+      dialog->resize(560, 300);
+
+     // Create layout and table widget
+     QVBoxLayout *layout = new QVBoxLayout(dialog);
+     QTableWidget *table = new QTableWidget(dialog);
+     table->setColumnCount(3);
+     table->setHorizontalHeaderLabels(QStringList() << "Filter Term" << "Marked Messages" << "Total Number of Messages");
+     table->horizontalHeader()->setStretchLastSection(true);
+    table->setColumnWidth(0, 180);
+    table->setColumnWidth(1, 170);
+    table->setColumnWidth(2, 210);
+     table->verticalHeader()->setVisible(false);
+     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+     // Set row count based on your map
+     table->setRowCount(filterCountMap.size());
+
+     // Fill the table with data
+     int row = 0;
+     for (auto it = filterCountMap.constBegin(); it != filterCountMap.constEnd(); ++it, ++row) {
+         table->setItem(row, 0, new QTableWidgetItem(it.key()));
+         table->setItem(row, 1, new QTableWidgetItem(QString::number(it.value())));
+         table->setItem(row, 2, new QTableWidgetItem(QString::number(totalMessages)));
+     }
+
+     layout->addWidget(table);
+     dialog->setLayout(layout);
+
+     dialog->exec();
+
+}
+
 
 void MainWindow::on_action_menuFilter_Duplicate_triggered() {
     QTreeWidget *widget;

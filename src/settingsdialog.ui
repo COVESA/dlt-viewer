@@ -1125,6 +1125,56 @@
            </layout>
           </widget>
          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_4">
+            <property name="title">
+            <string>DLT Viewer Latest Update</string>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_latestUpdate">
+            <item>
+             <widget class="QRadioButton" name="defaultRadioButton">
+              <property name="text">
+               <string>Default</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="customRadioButton">
+              <property name="text">
+               <string>Custom</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="intervalspinBox">
+              <property name="minimum">
+               <number>1</number>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="intervalUnit">
+              <property name="text">
+                   <string>month</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="horizontalSpacer_latestUpdate">
+              <property name="orientation">
+               <enum>Qt::Orientation::Horizontal</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+               <width>40</width>
+               <height>20</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            </layout>
+           </widget>
+          </item>
          <item>
           <spacer name="verticalSpacer_projectOther">
            <property name="orientation">

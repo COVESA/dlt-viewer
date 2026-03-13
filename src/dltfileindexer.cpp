@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <vector>
+#include <limits>
 
 #include "qdltoptmanager.h"
 
@@ -89,6 +90,18 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
 
 DltFileIndexer::~DltFileIndexer()
 {
+}
+
+static bool hasEnabledFilters(const QDltFilterList &filterList)
+{
+    for (const auto *filter : filterList.filters)
+    {
+        if (filter && filter->enableFilter)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool DltFileIndexer::index(int num)
@@ -383,6 +396,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // get filter list
     filterList = dltFile->getFilterList();
+    resetMarkerCounts(filterList);
     // clear index filter
     indexFilterList.clear();
     indexFilterListSorted.clear();
@@ -414,6 +428,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     {
         // loading filter index from filter is successful
         qDebug() << "Loaded filter index cache for files" << filenames;
+        computeMarkerCountsFromIndex(filterList, indexFilterList);
         return true;
     }
 
@@ -528,6 +543,79 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     qDebug() << "Create filter index: Finish";
 
     return true;
+}
+
+QMap<QString, int> DltFileIndexer::getMarkerCounts() const
+{
+    QMutexLocker locker(&markerCountLock);
+    return markerCounts;
+}
+
+void DltFileIndexer::addMarkerCount(const QString &filterName)
+{
+    if(filterName.isEmpty())
+    {
+        return;
+    }
+
+    QMutexLocker locker(&markerCountLock);
+    markerCounts[filterName] = markerCounts.value(filterName, 0) + 1;
+}
+
+void DltFileIndexer::recomputeMarkerCounts(const QDltFilterList &filterList, const QVector<qint64> &indices)
+{
+    emit markerCountProgressMax(indices.size());
+    emit markerCountProgressValue(0);
+
+    resetMarkerCounts(filterList);
+    computeMarkerCountsFromIndex(filterList, indices);
+
+    emit markerCountProgressValue(indices.size());
+}
+
+void DltFileIndexer::resetMarkerCounts(const QDltFilterList &filterList)
+{
+    QMutexLocker locker(&markerCountLock);
+    markerCounts.clear();
+
+    for(int numfilter=0; numfilter<filterList.filters.size(); numfilter++)
+    {
+        QDltFilter *filter = filterList.filters[numfilter];
+        if(filter != nullptr && filter->isMarker() && filter->enableFilter)
+        {
+            markerCounts.insert(filter->name, 0);
+        }
+    }
+}
+
+void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterList, const QVector<qint64> &indices)
+{
+    const int total = indices.size();
+    const int step = qMax(1, total / 200); // throttle UI updates
+
+    for(int i = 0; i < total; ++i)
+    {
+        const qint64 rawIndex = indices[i];
+        if(rawIndex < 0 || rawIndex > std::numeric_limits<int>::max())
+        {
+            continue;
+        }
+
+        QDltMsg msg;
+        if(!dltFile->getMsg(static_cast<int>(rawIndex), msg))
+        {
+            continue;
+        }
+
+        const QDltFilter *markerFilter = filterList.matchMarkerFilter(msg);
+        if(markerFilter != nullptr)
+        {
+            addMarkerCount(markerFilter->name);
+        }
+
+        if ((i % step) == 0 || i + 1 == total)
+            emit markerCountProgressValue(i + 1);
+    }
 }
 
 bool DltFileIndexer::indexDefaultFilter()
@@ -706,15 +794,21 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
+        const bool sortingEnabled = sortByTimeEnabled || sortByTimestampEnabled;
+        const bool shouldIndexFilters = filtersEnabled && (hasEnabledFilters(dltFile->getFilterList()) || sortingEnabled);
         QStringList filenames;
         for(int num=0;num<dltFile->getNumberOfFiles();num++)
             filenames.append(dltFile->getFileName(num));
-        if((mode != modeNone) && !indexFilter(filenames))
+        if(shouldIndexFilters && (mode != modeNone) && !indexFilter(filenames))
         {
             // error
             return;
         }
-        dltFile->enableFilter(filtersEnabled);
+        if(!shouldIndexFilters)
+        {
+            indexFilterList.clear();
+        }
+        dltFile->enableFilter(shouldIndexFilters);
         dltFile->setIndexFilter(indexFilterList);
         emit(finishFilter());
     }
