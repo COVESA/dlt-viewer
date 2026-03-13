@@ -43,7 +43,6 @@
  #define DAYLIGHT daylight
 #endif
 
-
 SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
 
     QDialog(parent), qFile(_qFile),
@@ -120,6 +119,22 @@ SettingsDialog::SettingsDialog(QDltFile *_qFile, QWidget *parent):
     QDltSettingsManager *settings = QDltSettingsManager::getInstance();
     settings->fmaxFileSizeMB = 0.0;
     settings->appendDateTime = 0;
+
+    loadUpdateSettings();
+
+    // Enable/disable spinbox based on selected radio button
+    connect(ui->defaultRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+        if (checked) {
+            ui->intervalspinBox->setEnabled(false);
+        }
+    });
+
+    connect(ui->customRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+        if (checked) {
+            ui->intervalspinBox->setEnabled(true);
+            ui->intervalUnit->setEnabled(true);
+        }
+    });
 }
 
 SettingsDialog::SettingsDialog(QWidget *parent) :
@@ -132,6 +147,31 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
 SettingsDialog::~SettingsDialog()
 {
     delete ui;
+}
+
+void SettingsDialog::loadUpdateSettings()
+{
+    QSettings settings("MyCompany", "DLTViewer");
+
+    bool isCustom = settings.value("updateCheck/useCustom", false).toBool();
+    int interval = settings.value("updateCheck/customMonths", DEFAULT_UPDATE_CHECK_MONTHS).toInt();
+
+    if (isCustom)
+        ui->customRadioButton->setChecked(true);
+    else
+        ui->defaultRadioButton->setChecked(true);
+
+    ui->intervalspinBox->setEnabled(isCustom);
+    ui->intervalspinBox->setValue(interval);
+
+}
+
+void SettingsDialog::saveUpdateSettings()
+{
+    QSettings settings("MyCompany", "DLTViewer");
+
+    settings.setValue("updateCheck/useCustom", ui->customRadioButton->isChecked());
+    settings.setValue("updateCheck/customMonths", ui->intervalspinBox->value());
 }
 
 void SettingsDialog::changeEvent(QEvent *e)
@@ -492,6 +532,7 @@ void SettingsDialog::readDlg()
                            QMessageBox::Ok);
         msgBox.exec();
     }
+    saveUpdateSettings();
 }
 
 void SettingsDialog::writeSettings(QMainWindow *mainwindow)

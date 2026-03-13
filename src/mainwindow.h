@@ -50,6 +50,7 @@
 #include "searchtablemodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
+#include "updatechecker.h"
 #include "crlffilterwindow.h"
 
 /**
@@ -134,6 +135,10 @@ private:
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
+    //Maps to hold the filter values - findFilteredLines() & MarkedMessages
+    QMap<QString, int> filterCountMap;
+    int totalMessages;
+
     /* Status line items */
     QLabel *statusFilename;
     QLabel *statusFileError;
@@ -168,6 +173,9 @@ private:
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
+
+    /* Update Checker class for automatic pop up for new updates*/
+    UpdateChecker *updChecker;
 
     /* injections */
     QString injectionAplicationId;
@@ -340,7 +348,21 @@ private:
 
     void sendUpdates(EcuItem* ecuitem);
 
-    bool anyFiltersEnabled();
+    bool anyFiltersEnabled() const;
+    
+    /**
+     * @brief Determine if filter indexing should be used based on settings and filters.
+     * This is the single source of truth for this decision, used in both
+     * reloadLogFile() and reloadLogFileFinishFilter() to ensure consistency.
+     *
+     * @param filtersSettingEnabled Whether filters are enabled in settings
+     * @param sortByTimeEnabled Whether sorting by time is enabled
+     * @param sortByTimestampEnabled Whether sorting by timestamp is enabled
+     * @return true if filter index should be created and used, false otherwise
+     */
+    bool shouldUseFilterIndexing(bool filtersSettingEnabled, 
+                                 bool sortByTimeEnabled, 
+                                 bool sortByTimestampEnabled) const;
 
     bool openDltFile(QStringList fileName);
     bool openDlpFile(QString filename);
@@ -389,6 +411,10 @@ private:
 
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
+
+
+
+    void findFilteredLines();
 
 
 protected:
@@ -485,6 +511,7 @@ private slots:
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
     void on_actionShortcuts_List_triggered();
+    void on_actionCheck_For_Latest_Updates_triggered();
 
     // Config methods
     void on_action_menuConfig_Context_Delete_triggered();
@@ -537,6 +564,7 @@ private slots:
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_actionFiltered_Message_Count_triggered();
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();

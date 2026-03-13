@@ -94,6 +94,7 @@
      <y>0</y>
      <width>1001</width>
      <height>23</height>
+
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -192,6 +193,7 @@
     <addaction name="actionToggle_FiltersEnabled"/>
     <addaction name="actionToggle_SortByTimeEnabled"/>
     <addaction name="actionSort_By_Timestamp"/>
+    <addaction name="actionFiltered_Message_Count"/>
    </widget>
    <widget class="QMenu" name="menuPlugin">
     <property name="title">
@@ -213,6 +215,7 @@
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
     <addaction name="actionShortcuts_List"/>
+    <addaction name="actionCheck_For_Latest_Updates"/>
    </widget>
    <widget class="QMenu" name="menuDLT">
     <property name="title">
@@ -1677,6 +1680,16 @@
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
+    </property>
+   </action>
+  <action name="actionFiltered_Message_Count">
+   <property name="text">
+    <string>Marked Message Count</string>
+   </property>
+  </action>
+  <action name="actionCheck_For_Latest_Updates">
+   <property name="text">
+    <string>Check For Latest Updates</string>
    </property>
   </action>
  </widget>
