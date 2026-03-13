@@ -1,5 +1,6 @@
 set(QT_LIBS
   ${QT_PREFIX}::Core
+    ${QT_PREFIX}::Concurrent
   ${QT_PREFIX}::Gui
   ${QT_PREFIX}::Network
   ${QT_PREFIX}::PrintSupport
