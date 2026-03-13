@@ -1,5 +1,6 @@
 set(QT_LIBS
   ${QT_PREFIX}::Core
+    ${QT_PREFIX}::Concurrent
   ${QT_PREFIX}::Gui
   ${QT_PREFIX}::Network
   ${QT_PREFIX}::PrintSupport
@@ -44,6 +45,27 @@ if("${QT_PREFIX}" STREQUAL "Qt5")
 install(FILES
     "${DLT_QT_LIB_DIR}/../plugins/styles/qwindowsvistastyle.dll"
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/styles"
+    COMPONENT qt_libraries)
+endif()
+
+# HTTPS requests (e.g. update checker) require a TLS backend plugin at runtime.
+# In dev environments this is often found via Qt install paths, but packaged
+# builds must carry the plugin inside the bundle.
+install(DIRECTORY
+    "${DLT_QT_LIB_DIR}/../plugins/tls"
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+    COMPONENT qt_libraries
+    OPTIONAL
+    FILES_MATCHING PATTERN "*.dll")
+ 
+# If Qt was built with OpenSSL backend, include runtime DLLs when present.
+file(GLOB QT_OPENSSL_RUNTIME_DLLS
+    "${DLT_QT_LIB_DIR}/libssl-*.dll"
+    "${DLT_QT_LIB_DIR}/libcrypto-*.dll")
+if(QT_OPENSSL_RUNTIME_DLLS)
+install(FILES
+    ${QT_OPENSSL_RUNTIME_DLLS}
+    DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
     COMPONENT qt_libraries)
 endif()
 
