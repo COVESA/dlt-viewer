@@ -23,7 +23,9 @@ class FileExplorerTab : public QWidget {
     void setSortingMode(SortFilterProxyModel::SortType type);
 
   private:
-     QString getPathFromModelIndex(const QModelIndex &index) const;
+    QString getPathFromModelIndex(const QModelIndex &index) const;
+    QStringList getMultiFilesFromSelection(const QModelIndexList &rows) const;
+    QStringList getAllFilesFromSelection(const QModelIndexList &rows) const;
 
   signals:
     void fileActivated(const QString& path);
