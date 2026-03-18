@@ -161,6 +161,25 @@ install(DIRECTORY "."
     PATTERN "tests/*" EXCLUDE)
 
 find_package(GTest)
+# If GTest is not installed, fall back to fetching it automatically via CMake FetchContent
+if(NOT GTest_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        v1.15.2
+        GIT_SHALLOW    TRUE
+    )
+    # Keep gtest/gmock from overriding our install targets
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+    set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    FetchContent_MakeAvailable(googletest)
+    # Create an alias so the rest of the CMake files use the same GTest::gtest_main target
+    if(NOT TARGET GTest::gtest_main)
+        add_library(GTest::gtest_main ALIAS gtest_main)
+    endif()
+    set(GTest_FOUND TRUE)
+endif()
 # configure unit tests only if gtest found on the system
 if (GTest_FOUND)
     message(STATUS "Tests enabled")
