@@ -18,8 +18,9 @@ else()
     QT5_ADD_RESOURCES(UI_RESOURCES_RCC resources/resource.qrc)
 endif()
 
-add_executable(dlt-viewer
-    main.cpp
+# Static library containing all UI logic — linked by both dlt-viewer executable and test targets.
+# main.cpp and platform resource file (dlt_viewer.rc) are intentionally excluded.
+add_library(dlt-viewer-lib STATIC
     mainwindow.h
     mainwindow.cpp
     project.h
@@ -81,7 +82,6 @@ add_executable(dlt-viewer
     crlffilterwindow.h
     crlffilterwindow.cpp
     ${UI_RESOURCES_RCC}
-    resources/dlt_viewer.rc
     ecutree.h
     ecutree.cpp
     fileexplorertab.ui
@@ -98,7 +98,6 @@ add_executable(dlt-viewer
     mainwindow.ui
     multiplecontextdialog.ui
     plugindialog.ui
-
     searchform.ui
     settingsdialog.ui
     searchdialog.ui
@@ -106,13 +105,27 @@ add_executable(dlt-viewer
     updatechecker.cpp
 )
 
+target_link_libraries(dlt-viewer-lib
+    PUBLIC
+        qdlt
+        ${QT_PREFIX}::Core
+        ${QT_PREFIX}::Network
+        ${QT_PREFIX}::Concurrent
+        ${QT_PREFIX}::Widgets
+        ${QT_PREFIX}::SerialPort)
+
+target_include_directories(dlt-viewer-lib PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/dlt-viewer-lib_autogen/include>
+)
+
+add_executable(dlt-viewer
+    main.cpp
+    resources/dlt_viewer.rc
+)
+
 target_link_libraries(dlt-viewer
-    qdlt
-    ${QT_PREFIX}::Core
-    ${QT_PREFIX}::Network
-    ${QT_PREFIX}::Concurrent
-    ${QT_PREFIX}::Widgets
-    ${QT_PREFIX}::SerialPort)
+    dlt-viewer-lib)
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
@@ -166,3 +179,11 @@ install(DIRECTORY
     COMPONENT dlt_viewer)
 
 include(cmake/${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)
+
+# QTest-based tests for src/ — enabled when Qt Test module is available
+find_package(${QT_PREFIX} QUIET COMPONENTS Test)
+if(${QT_PREFIX}Test_FOUND)
+    message(STATUS "Qt Test found — enabling src/ UI tests")
+    enable_testing()
+    add_subdirectory(tests)
+endif()
