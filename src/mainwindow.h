@@ -29,6 +29,7 @@
 #include <QComboBox>
 #include <QProgressBar>
 #include <QVector>
+#include <QPointer>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -109,6 +110,7 @@ namespace Ui {
 }
 
 struct EcuTree;
+class QDltExporter;
 
 class MainWindow : public QMainWindow
 {
@@ -169,6 +171,7 @@ private:
 
     /* Export */
     ExporterDialog exporterDialog;
+    QPointer<QDltExporter> activeExporterThread;
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
@@ -286,6 +289,9 @@ private:
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
     /* Exports search results from the search table view to clipboard or file in various formats. For clipboard operations: uses selected rows only and for file export operations: always exports all rows. */
     void exportSelection_searchTable(QDltExporter::DltExportFormat format, const QString& fileName = QString());
+    bool isExportInProgress() const;
+    bool startExportThread(QDltExporter *exporterThread, QModelIndexList *ownedSelection = nullptr);
+    void stopExportIfRunning();
 
     void ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id);
     void SendInjection(EcuItem* ecuitem);
