@@ -664,6 +664,12 @@ void QDltExporter::exportMessages()
 
     for(;starting<stoping;starting++)
     {
+        if(isInterruptionRequested())
+        {
+            qDebug() << "DLT export interrupted";
+            break;
+        }
+
         int percent = (( starting * 100.0 ) /stoping );
         if(percent>=progressCounter)
         {
