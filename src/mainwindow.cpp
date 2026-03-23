@@ -3300,6 +3300,10 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
 
         QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
 
+        // Capture selected values for next time dialog opens
+        logLevel = dlg.loglevel() + 1;
+        traceStatus = dlg.tracestatus() + 1;
+
         if(list.at(0)->type() == context_type){
             //Nothing to do
         }
@@ -3349,9 +3353,6 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
 
                     conitem->loglevel = dlg.loglevel();
                     conitem->tracestatus = dlg.tracestatus();
-
-                    logLevel = conitem->loglevel + 1;
-                    traceStatus = conitem->tracestatus +1;
 
                     /* update context item */
                     conitem->update();
