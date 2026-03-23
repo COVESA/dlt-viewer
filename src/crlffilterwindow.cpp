@@ -31,7 +31,7 @@ CrlfFilterWindow::CrlfFilterWindow(QObject* parent) : QObject(parent) {
     // Initialize debouncing mechanism
     rebuildTimer = new QTimer(this);
     rebuildTimer->setSingleShot(true);
-    rebuildTimer->setInterval(300);
+    rebuildTimer->setInterval(500);
     connect(rebuildTimer, &QTimer::timeout, this, &CrlfFilterWindow::onRebuildTimerTimeout);
     
     lastFilteredMessageCount = -1;
@@ -160,9 +160,7 @@ void CrlfFilterWindow::createCrlfWindow() {
             if (containsCrlf(rawPayload)) {
                 // Process payload for display like main table model
                 QString payload = rawPayload.simplified().remove(QChar::Null);
-                if (dltFile) {
-                    dltFile->applyRegExString(msg, payload);
-                }
+                dltFile->applyRegExString(msg, payload);
                 
                 // Create a row with the message data
                 QList<QStandardItem*> rowItems;
@@ -173,9 +171,12 @@ void CrlfFilterWindow::createCrlfWindow() {
                 indexItem->setData(i, Qt::UserRole + 1);      // For internal use
                 rowItems << indexItem;
                 
-                // Add all fields in the same order as FieldNames enum
-                rowItems << new QStandardItem(msg.getTimeString())
-                        << new QStandardItem(QString::number(msg.getTimestamp()))
+                // Add all fields in the same order as FieldNames enum - match main window formatting
+                QString timeDisplay = QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(), 6, 10, QLatin1Char('0'));
+                QString timestampDisplay = QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000, 4, 10, QLatin1Char('0'));
+                
+                rowItems << new QStandardItem(timeDisplay)
+                        << new QStandardItem(timestampDisplay)
                         << new QStandardItem(QString::number(msg.getMessageCounter()))
                         << new QStandardItem(msg.getEcuid())
                         << new QStandardItem(msg.getApid())
@@ -283,16 +284,16 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
         return;
     }
     
+    int rowCount = crlfFilterProxy->rowCount();
+    if (rowCount == 0) {
+        QMessageBox::information(crlfWindow, "Export", "No CRLF messages to export.");
+        return;
+    }
+    
     QString fileName = QFileDialog::getSaveFileName(crlfWindow, "Export CRLF Messages", 
                                                     "crlf_messages.dlt", 
                                                     "DLT Files (*.dlt);;All Files (*)");
     if (fileName.isEmpty()) {
-        return;
-    }
-
-    int rowCount = crlfFilterProxy->rowCount();
-    if (rowCount == 0) {
-        QMessageBox::information(crlfWindow, "Export", "No CRLF messages to export.");
         return;
     }
 
@@ -420,10 +421,8 @@ void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
     sourceModelOfDLT = model;
     
     if (sourceModelOfDLT) {
-        // Batch connect signals for better performance
         connect(sourceModelOfDLT, &QAbstractTableModel::modelReset, this, &CrlfFilterWindow::onSourceModelReset);
         connect(sourceModelOfDLT, &QAbstractTableModel::layoutChanged, this, &CrlfFilterWindow::onSourceModelDataChanged);
-        connect(sourceModelOfDLT, &QAbstractTableModel::dataChanged, this, &CrlfFilterWindow::onSourceModelDataChanged);
         
         // Connect to parent's dltFileLoaded signal for file changes
         if (QObject* parentObj = parent()) {
@@ -539,6 +538,20 @@ void CrlfFilterWindow::onSourceModelDataChanged() {
         return;
     }
     
+    // Additional validation: During model transitions, delay rebuild for stability
+    if (sourceModelOfDLT && sourceModelOfDLT->rowCount() != currentFilteredCount) {
+        // Model is in transition - schedule rebuild with delay for stability
+        if (!rebuildScheduled && !rebuildTimer->isActive() && !rebuildInProgress) {
+            rebuildScheduled = true;
+            rebuildTimer->setInterval(750); // Longer delay for stability during transitions
+            rebuildTimer->start();
+        }
+        return;
+    }
+    
+    // Reset normal timer interval
+    rebuildTimer->setInterval(500);
+    
     // Skip if no actual change in message count
     if (currentFilteredCount == lastFilteredMessageCount) {
         return;
@@ -562,22 +575,29 @@ void CrlfFilterWindow::onSourceModelReset() {
     }
     rebuildScheduled = false;
     rebuildInProgress = false;
-    lastFilteredMessageCount = 0;
+    lastFilteredMessageCount = -1;
     
     // Early return if window not visible or proxy not available
     if (!crlfWindow || !crlfWindow->isVisible() || !crlfFilterProxy) {
         return;
     }
     
-    // Clear and reset the model
-    crlfFilterProxy->clear();
-    crlfFilterProxy->setHorizontalHeaderLabels(createTableHeaders());
-    
-    // Apply settings and update UI
-    if (crlfTableView) {
-        applyColumnSettings();
+    // Don't show empty window during transitions - schedule rebuild instead
+    if (dltFile && dltFile->sizeFilter() > 0) {
+        // Schedule rebuild rather than showing empty window
+        rebuildScheduled = true;
+        rebuildTimer->start();
+    } else {
+        // Only clear if there's genuinely no data
+        crlfFilterProxy->clear();
+        crlfFilterProxy->setHorizontalHeaderLabels(createTableHeaders());
+        
+        // Apply settings and update UI
+        if (crlfTableView) {
+            applyColumnSettings();
+        }
+        updateMessageCount(0);
     }
-    updateMessageCount(0);
 }
 
 // Rebuild the CRLF data model with current DLT file data
@@ -633,9 +653,7 @@ void CrlfFilterWindow::rebuildCrlfModel() {
             if (containsCrlf(rawPayload)) {
                 // Process payload for display like main table model
                 QString payload = rawPayload.simplified().remove(QChar::Null);
-                if (dltFile) {
-                    dltFile->applyRegExString(msg, payload);
-                }
+                dltFile->applyRegExString(msg, payload);
                 
                 // Create a row with the message data
                 QList<QStandardItem*> rowItems;
@@ -646,9 +664,12 @@ void CrlfFilterWindow::rebuildCrlfModel() {
                 indexItem->setData(i, Qt::UserRole + 1);      // For internal use
                 rowItems << indexItem;
                 
-                // Add all fields in the same order as FieldNames enum
-                rowItems << new QStandardItem(msg.getTimeString())
-                        << new QStandardItem(QString::number(msg.getTimestamp()))
+                // Add all fields in the same order as FieldNames enum - match main window formatting
+                QString timeDisplay = QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(), 6, 10, QLatin1Char('0'));
+                QString timestampDisplay = QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000, 4, 10, QLatin1Char('0'));
+                
+                rowItems << new QStandardItem(timeDisplay)
+                        << new QStandardItem(timestampDisplay)
                         << new QStandardItem(QString::number(msg.getMessageCounter()))
                         << new QStandardItem(msg.getEcuid())
                         << new QStandardItem(msg.getApid())
