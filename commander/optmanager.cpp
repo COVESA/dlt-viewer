@@ -65,7 +65,6 @@ QString toString(const Split& split) {
 
 OptManager::OptManager()
 {
-    project = false;
     log = false;
     convert = false;
     filter = false;
@@ -100,10 +99,10 @@ void OptManager::printUsage()
 {
     QString executable;
 #if (WIN32)
-    qDebug()<<"\nUsage:\n\n dlt-commander.exe [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    qDebug()<<"\nUsage:\n\n dlt-commander.exe [OPTIONS] [logfile] [filterfile] [mf4file] [pcapfile]";
     executable = " dlt-commander.exe";
 #else
-    qDebug()<<"\nUsage:\n\n dlt-commander [OPTIONS] [logfile] [projectfile] [filterfile] [mf4file] [pcapfile]";
+    qDebug()<<"\nUsage:\n\n dlt-commander [OPTIONS] [logfile] [filterfile] [mf4file] [pcapfile]";
     executable = " dlt-commander";
 #endif
 
@@ -235,10 +234,6 @@ void OptManager::parse(QStringList *opt)
             const QString logFile = QString("%1").arg(opt->at(i));
             logFiles += logFile;
             qDebug()<< "DLT filename:" << logFile;
-        } else if (opt->at(i).endsWith(".dlp") || opt->at(i).endsWith(".DLP")) {
-            projectFile = QString("%1").arg(opt->at(i));
-            project = true;
-            qDebug()<< "Project filename:" << projectFile;
         } else if (opt->at(i).endsWith(".dlf") || opt->at(i).endsWith(".DLF")) {
             filterFiles += QString("%1").arg(opt->at(i));
             qDebug()<< "Filter filename:" << QString("%1").arg(opt->at(i));
@@ -271,7 +266,6 @@ QStringList OptManager::getLogFiles()const {return logFiles;}
 QStringList OptManager::getFilterFiles() const {return filterFiles;}
 QString OptManager::getConvertSourceFile() const {return convertSourceFile;}
 QString OptManager::getConvertDestFile()const {return convertDestFile;}
-QString OptManager::getProjectFile() const {return projectFile;}
 char OptManager::getDelimiter() const {return delimiter;}
 QString OptManager::getSignature() const {return signature;}
 
