@@ -68,7 +68,6 @@ public:
     QStringList getFilterFiles() const;
     QString getConvertSourceFile() const;
     QString getConvertDestFile() const;
-    QString getProjectFile() const;
     char getDelimiter() const;
     const std::optional<Split>& getSplit() const;
     QString getSignature() const;
@@ -79,7 +78,6 @@ public:
     const QStringList &getMf4Files() const;
 
 private:
-    bool project;
     bool log;
     bool filter;
     bool convert;
@@ -94,7 +92,6 @@ private:
     QStringList mf4Files;
     QStringList filterFiles;
     QStringList prePluginCommands;
-    QString projectFile;
     QString convertSourceFile;
     QString convertDestFile;
     char delimiter;
