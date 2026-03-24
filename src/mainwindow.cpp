@@ -7690,6 +7690,13 @@ void MainWindow::onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered()
 
 void MainWindow::onActionMenuConfigSearchTableExportDltTriggered()
 {
+    // Check if search results are empty before showing file dialog
+    if (!m_searchtableModel || m_searchtableModel->get_SearchResultListSize() == 0) {
+        QMessageBox::information(this, QString("DLT Viewer"),
+                                 QString("No search results to export."));
+        return;
+    }
+
     QString fileName = QFileDialog::getSaveFileName(
         this,
         tr("Export Search Results as DLT"),
