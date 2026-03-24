@@ -94,7 +94,6 @@
      <y>0</y>
      <width>1001</width>
      <height>23</height>
-
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -118,6 +117,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
+    <addaction name="actionSplitDLTFile"/>
     <addaction name="actionExport"/>
     <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
@@ -480,6 +480,73 @@
          <property name="bottomMargin">
           <number>2</number>
          </property>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <item>
+            <widget class="QLabel" name="labelExplorerSort">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Sort files:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortType">
+             <item>
+              <property name="text">
+               <string>By Filename</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>By Timestamp</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <widget class="QComboBox" name="comboBoxExplorerSortOrder">
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <item>
+              <property name="text">
+               <string>Asc.</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Desc.</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QTreeView" name="exploreView">
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
+           </property>
+           <property name="sortingEnabled">
+            <bool>true</bool>
+           </property>
+           <attribute name="headerVisible">
+            <bool>false</bool>
+           </attribute>
+          </widget>
+         </item>
         </layout>
        </widget>
        <widget class="QWidget" name="tabConfig">
@@ -1623,6 +1690,11 @@
   <action name="actionCheck_For_Latest_Updates">
    <property name="text">
     <string>Check For Latest Updates</string>
+   </property>
+  </action>
+  <action name="actionSplitDLTFile">
+   <property name="text">
+    <string>Split DLT File</string>
    </property>
   </action>
  </widget>
