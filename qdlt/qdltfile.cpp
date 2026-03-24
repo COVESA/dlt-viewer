@@ -582,8 +582,11 @@ void QDltFile::clearFilterIndex()
 void QDltFile::addFilterIndex (int index)
 {
     indexFilterBase.append(index);
-    recomputeEffectiveIndexFilter();
-
+    if (manualMarkerIndices.isEmpty()) {
+        indexFilter.append(index);
+    } else {
+        recomputeEffectiveIndexFilter();
+    }
 }
 
 #ifdef USECOLOR
