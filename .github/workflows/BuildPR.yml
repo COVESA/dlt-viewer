@@ -121,6 +121,10 @@ jobs:
           $env:CPACK_7Z="true";
           $env:CPACK_NSIS="true";
           ./build_sdk_windows_qt${{ matrix.qt }}_MSVC_cmake.bat
+      - name: Run tests (qdlt GTest + src QTest)
+        # GTest tests are in build/release (qdlt), QTest tests are also in build/release (src/tests)
+        # FetchContent ensures GTest is always present on Windows even without a system install.
+        run: ctest --test-dir build/release --output-on-failure
       - name: Archive artifact
         uses: actions/upload-artifact@v7
         if: ${{ success() }}
