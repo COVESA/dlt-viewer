@@ -120,6 +120,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    // Public methods for status checking
+    bool isBackgroundOperationInProgress() const;
+
 private:
     void setupSortByTimestampToolbarButton();
 

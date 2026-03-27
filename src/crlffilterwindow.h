@@ -8,6 +8,8 @@
 #include <QWidget>
 #include <QLabel>
 #include <QTimer>
+#include <QHash>
+#include <QVariantList>
 
 #include "qdltfile.h"
 #include "qdltpluginmanager.h"
@@ -74,6 +76,21 @@ private:
     void updateMessageCount(int count);
     void applyColumnSettings();
     
+    // Optimized data extraction method
+    QVariantList extractMessageData(int filteredIndex, bool suppressIndexBuilding = false);
+    
+    // Check if a message data is cached and valid
+    bool isMessageCacheValid(int currentFilteredCount, int totalMessages);
+    
+    // Clear cache when file structure changes
+    void invalidateCache();
+    
+    // Build bulk CRLF index for all messages (one-time expensive operation)
+    void buildBulkCrlfIndex();
+    
+    // Check if parent MainWindow has background operations in progress
+    bool isMainWindowBusy() const;
+    
     QStandardItemModel* crlfFilterProxy;
     QAbstractTableModel* sourceModelOfDLT;
     QWidget* crlfWindow;
@@ -81,6 +98,11 @@ private:
     QLabel* statusLabel;
     QDltFile* dltFile;
     QDltPluginManager* pluginManager;
+    
+    QHash<int, bool> crlfCache;  // Cache which absolute positions contain CRLF (positive + negative caching)
+    QHash<int, QVariantList> messageDataCache;  // Cache processed message data
+    int lastCacheValidCount;
+    bool bulkCrlfIndexBuilt;
     
     // Debouncing mechanism to prevent frequent updates
     QTimer* rebuildTimer;
