@@ -11,13 +11,9 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-if [[ $(uname -m) == 'arm64' ]]; then
-  Qt5_DIR="/opt/homebrew/opt/qt@5"
-  echo "Build with cmake $(uname -m) $Qt5_DIR"
-else
-  Qt5_DIR="/usr/local/opt/qt"
-  echo "Build with qmake $(uname -m) $Qt5_DIR"
-fi
+Qt6_DIR="/usr/local/opt/qt"
+echo "Build with qmake $(uname -m) $Qt6_DIR"
+
 
 #make
 
@@ -33,7 +29,7 @@ echo Build with CMake
 cmake -G Ninja \
   -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
   -DCMAKE_PREFIX_PATH=${Qt5_DIR}/lib/cmake \
-  -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 \
+  -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
   -DCMAKE_BUILD_TYPE=Release \
   -DDLT_USE_QT_RPATH=ON \
   -DDLT_PARSER=OFF \
@@ -45,18 +41,17 @@ cmake -G Ninja \
   "${SRC_DIR}"
 cmake --build "${BUILD_DIR}"
 
-# See src/cmake/Darwin.cmake and scripts/darwin/package.cmake
-#
-# CPack macOS "Bundle generator" and "DragNDrop Generator" are NOT used. Their functionality is replaced by macdeployqt.
-# - https://cmake.org/cmake/help/latest/cpack_gen/bundle.html
-# - https://cmake.org/cmake/help/latest/module/CPackDMG.html
-#
-# External CPack generator calls "cmake --install" and "macdeployqt"
-# - https://doc.qt.io/qt-5/macos-deployment.html
-#
-# CMake install takes care of proper macOs Application bundle setup. Each CMake target has a pre-configured path in bundle.
-# macdeployqt copies all used QT5 Frameworks into bundle and patches RPATH in project binaries.
-cpack -G External
+cd ${SRC_DIR}
+
+cmake --install build --prefix "${INSTALL_DIR}"
+ls -l build/install/DLTViewer.app
+otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
+echo "Deploying DLTViewer.app with macdeployqt"
+    ${QT_ROOT_DIR}"bin/macdeployqt" build/install/DLTViewer.app -verbose=1 -no-codesign \
+  -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
+  -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+
 
 cd "${BUILD_DIR}"
 FULL_VERSION=$(cat "${BUILD_DIR}/full_version.txt")
@@ -64,4 +59,3 @@ echo "FULL_VERSION=${FULL_VERSION}"
 
 mkdir -p dist
 cp ../scripts/darwin/install.md dist
-# tar -czvf "dist/DLTViewer-${FULL_VERSION}.tgz" -C ${INSTALL_DIR} .
