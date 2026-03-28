@@ -45,7 +45,7 @@ ls -l build/install/DLTViewer.app
 otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
 echo "Deploying DLTViewer.app with macdeployqt"
-${Qt6_DIR}"bin/macdeployqt" build/install/DLTViewer.app -verbose=1 -no-codesign \
+${Qt6_DIR}"/bin/macdeployqt" build/install/DLTViewer.app -verbose=1 -no-codesign \
   -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
   -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 
