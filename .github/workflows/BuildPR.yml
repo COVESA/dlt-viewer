@@ -9,66 +9,66 @@ on:
   pull_request:
 
 jobs:
-  buildMac:
-    name: Build ${{ matrix.macos }} (${{ matrix.abi }}) with Qt${{ matrix.qt }}
-    runs-on: ${{ matrix.macos }}
-    strategy:
-      fail-fast: false
-      matrix:
-        macos: [ macos-15-intel ]
-        abi: [ x86 ]
-        xcode: [ Xcode_26.0 ]
-        qt: [ 6 ]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-          submodules: true
-      - name: Investigate available XCode versions
-        run: ls -n /Applications/ | grep Xcode*
-      - name: Set XCode Version
-        run: |
-          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
-          xcodebuild -version
-          xcode-select --print-path
-      - name: Install build environment
-        run: scripts/darwin/install_qt${{ matrix.qt }}.sh
-      - name: Show cmake version
-        run: cmake --version
-      - name: Build project
-        run: scripts/darwin/build_cmake_qt${{ matrix.qt }}.sh
-      - name: Codesign app bundle
-        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
-        # Extract the secrets we defined earlier as environment variables
-        env:
-          MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
-          MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
-          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: scripts/darwin/codesign.sh
+#  buildMac:
+#    name: Build ${{ matrix.macos }} (${{ matrix.abi }}) with Qt${{ matrix.qt }}
+#    runs-on: ${{ matrix.macos }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        macos: [ macos-15-intel ]
+#        abi: [ x86 ]
+#        xcode: [ Xcode_26.0 ]
+#        qt: [ 6 ]
+#    steps:
+#      - name: Checkout
+#        uses: actions/checkout@v6
+#        with:
+#          fetch-depth: 0
+#          submodules: true
+#      - name: Investigate available XCode versions
+#        run: ls -n /Applications/ | grep Xcode*
+#      - name: Set XCode Version
+#        run: |
+#          sudo xcode-select -s /Applications/${{ matrix.xcode }}.app
+#          xcodebuild -version
+#          xcode-select --print-path
+#      - name: Install build environment
+#        run: scripts/darwin/install_qt${{ matrix.qt }}.sh
+#      - name: Show cmake version
+#        run: cmake --version
+#      - name: Build project
+#        run: scripts/darwin/build_cmake_qt${{ matrix.qt }}.sh
+#      - name: Codesign app bundle
+#        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+#        # Extract the secrets we defined earlier as environment variables
+#        env:
+#          MACOS_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+#          MACOS_CERTIFICATE_PWD: ${{ secrets.P12_PASSWORD }}
+#          MACOS_CERTIFICATE_NAME: ${{ secrets.APPLE_CERTIFICATE_NAME }}
+#          MACOS_CI_KEYCHAIN_PWD: ${{ secrets.KEYCHAIN_PASSWORD }}
+#        run: scripts/darwin/codesign.sh
 
-      - name: Notarize app bundle
-        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
-        env:
-          PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
-          PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
-          PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.APP_PASSWORD }}
-        run: scripts/darwin/notarize.sh
+#      - name: Notarize app bundle
+#        if: "! github.event.pull_request.head.repo.fork " # not running on a fork
+#        env:
+#          PROD_MACOS_NOTARIZATION_APPLE_ID: ${{ secrets.APPLE_ID }}
+#          PROD_MACOS_NOTARIZATION_TEAM_ID: ${{ secrets.TEAM_ID }}
+#          PROD_MACOS_NOTARIZATION_PWD: ${{ secrets.APP_PASSWORD }}
+#        run: scripts/darwin/notarize.sh
 
-      - name: Artifact Creation
-        run: |
-          cd /Users/runner/work/dlt-viewer/dlt-viewer/build
-          mkdir -p dist
-          cp ../scripts/darwin/install.md dist
-          tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
+#      - name: Artifact Creation
+#        run: |
+#          cd /Users/runner/work/dlt-viewer/dlt-viewer/build
+#          mkdir -p dist
+#          cp ../scripts/darwin/install.md dist
+#          tar -czvf "dist/DLTViewer.tgz" -C /Users/runner/work/dlt-viewer/dlt-viewer/build/install .
 
-      - name: Archive upload
-        uses: actions/upload-artifact@v7
-        if: ${{ success() }}
-        with:
-          name: DLT-Mac-${{ matrix.abi }}
-          path: build/dist/DLTViewer.tgz
+#      - name: Archive upload
+#        uses: actions/upload-artifact@v7
+#        if: ${{ success() }}
+#        with:
+#          name: DLT-Mac-${{ matrix.abi }}
+#          path: build/dist/DLTViewer.tgz
 
   buildUbuntu:
     name: Build ${{ matrix.ubuntu }}
@@ -137,7 +137,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ 14, 15 ]
+        osversion: [ 14, 15, 15-intel ]
 
     steps:
     - name: Checkout source
@@ -150,39 +150,10 @@ jobs:
         target: 'desktop'
         arch: 'clang_64'
         modules: 'qtserialport'
+      
 
-    - name: Configure project with CMake
-      run: |
-        mkdir build
-        cd build
-        echo "QT_ROOT_DIR=$QT_ROOT_DIR"
-        APP_DIR_NAME="DLTViewer.app"
-        cmake -G Ninja -DCMAKE_PREFIX_PATH=$QT_ROOT_DIR/lib/cmake \
-        -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DDLT_USE_QT_RPATH=OFF \
-        -DDLT_PARSER=OFF \
-        -DDLT_APP_DIR_NAME=${APP_DIR_NAME} \
-        -DDLT_LIBRARY_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Frameworks" \
-        -DDLT_EXECUTABLE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS" \
-        -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
-        -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
-        ..
-
-    - name: Build project
-      run: |
-        cmake --build build --parallel 4
-
-    - name: Install and deploy with macdeployqt
-      run: |
-        cmake --install build --prefix $(pwd)/build/install
-        ls -l build/install/DLTViewer.app
-        otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
-        otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
-        echo "Deploying DLTViewer.app with macdeployqt"
-        $QT_ROOT_DIR/bin/macdeployqt build/install/DLTViewer.app -verbose=2 -dmg \
-            -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
-            -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
+    - name: Build project and deploy using macdeployqt
+      run: scripts/darwin/build_cmake_qt6.sh
 
     - name: Codesign app bundle
       if: "! github.event.pull_request.head.repo.fork " # not running on a fork
@@ -218,7 +189,7 @@ jobs:
   createRelease:
     name: Create release
     runs-on: ubuntu-24.04
-    needs: [ buildMac, buildMacOSQt6, buildUbuntu, buildWindows ]
+    needs: [ buildMacOSQt6, buildUbuntu, buildWindows ]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
