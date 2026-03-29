@@ -19,6 +19,8 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
+echo 'export PATH="/Users/runner/work/dlt-viewer/Qt/6.8.3/macos:$PATH"' >> ~/.bash_profile
+
 echo Build with CMake
 # Installation paths configuration creates proper macOS Application bundle structure
 # https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
@@ -35,7 +37,7 @@ cmake -G Ninja \
   -DDLT_RESOURCE_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/Resources" \
   -DDLT_PLUGIN_INSTALLATION_PATH="${APP_DIR_NAME}/Contents/MacOS/plugins" \
   "${SRC_DIR}"
-cmake --build "${BUILD_DIR}"
+cmake --build "${BUILD_DIR}" -j$(sysctl -n hw.ncpu)
 
 cd ${SRC_DIR}
 
@@ -44,7 +46,7 @@ ls -l build/install/DLTViewer.app
 otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
 echo "Deploying DLTViewer.app with macdeployqt"
-${QT_ROOT_DIR}"/bin/macdeployqt" build/install/DLTViewer.app -verbose=2 \
+$QT_ROOT_DIR/bin/macdeployqt build/install/DLTViewer.app -verbose=2 -dmg \
   -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
   -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 
