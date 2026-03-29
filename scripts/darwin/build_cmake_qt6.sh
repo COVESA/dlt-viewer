@@ -11,8 +11,7 @@ rm -rf "${SRC_DIR}/build"
 mkdir -p "${BUILD_DIR}"
 cd "${BUILD_DIR}"
 
-Qt6_DIR="/usr/local/opt/qt"
-echo "Build with qmake $(uname -m) $Qt6_DIR"
+echo "QT_ROOT_DIR=$QT_ROOT_DIR"
 
 echo Cleanup
 rm -rf "${INSTALL_DIR}"
@@ -25,7 +24,7 @@ echo Build with CMake
 # https://developer.apple.com/library/archive/documentation/CoreFoundation/Conceptual/CFBundles/BundleTypes/BundleTypes.html
 cmake -G Ninja \
   -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-  -DCMAKE_PREFIX_PATH=${Qt6_DIR}/lib/cmake \
+  -DCMAKE_PREFIX_PATH=${QT_ROOT_DIR}/lib/cmake \
   -DCMAKE_OSX_DEPLOYMENT_TARGET=12.0 \
   -DCMAKE_BUILD_TYPE=Release \
   -DDLT_USE_QT_RPATH=ON \
@@ -45,7 +44,7 @@ ls -l build/install/DLTViewer.app
 otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
 echo "Deploying DLTViewer.app with macdeployqt"
-${Qt6_DIR}"/bin/macdeployqt" build/install/DLTViewer.app -verbose=1 -no-codesign \
+${QT_ROOT_DIR}"/bin/macdeployqt" build/install/DLTViewer.app -verbose=1 -no-codesign \
   -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
   -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
 
