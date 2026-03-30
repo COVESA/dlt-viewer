@@ -40,20 +40,3 @@ cmake -G Ninja \
 cmake --build "${BUILD_DIR}" -j$(sysctl -n hw.ncpu)
 
 cd ${SRC_DIR}
-
-cmake --install build --prefix "${INSTALL_DIR}"
-ls -l build/install/DLTViewer.app
-otool -L build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
-otool -l build/install/DLTViewer.app/Contents/MacOS/dlt-viewer | grep -A2 LC_RPATH
-echo "Deploying DLTViewer.app with macdeployqt"
-$QT_ROOT_DIR/bin/macdeployqt build/install/DLTViewer.app -verbose=2 -dmg \
-  -libpath=$(pwd)/build/install/DLTViewer.app/Contents/Frameworks \
-  -executable=$(pwd)/build/install/DLTViewer.app/Contents/MacOS/dlt-viewer
-
-
-cd "${BUILD_DIR}"
-FULL_VERSION=$(cat "${BUILD_DIR}/full_version.txt")
-echo "FULL_VERSION=${FULL_VERSION}"
-
-mkdir -p dist
-cp ../scripts/darwin/install.md dist
