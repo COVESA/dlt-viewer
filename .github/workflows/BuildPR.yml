@@ -174,7 +174,12 @@ jobs:
       #     name: DLT-Linux
       #   continue-on-error: true
         
-      - name: Download DLT macOS artifacts arm64
+      - name: Download DLT macOS 14 artifacts arm64
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-macos14-qt6
+
+      - name: Download DLT macOS 15 artifacts arm64
         uses: actions/download-artifact@v8
         with:
           name: DLTViewer-macos15-qt6
@@ -182,7 +187,7 @@ jobs:
       - name: Download DLT macOS artifacts x86
         uses: actions/download-artifact@v8
         with:
-          name: DLT-Mac-x86
+          name: DLTViewer-macos15-intel-qt6
 
       - name: Download DLT Windows artifacts
         uses: actions/download-artifact@v8
