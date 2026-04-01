@@ -1,4 +1,5 @@
 REM @echo off
+set ARCH=%PROCESSOR_ARCHITECTURE%
 
 REM Date     Version   Author                Changes
 REM 4.7.19   1.0       Alexander Wenzel      Update to Qt 5.12.4 and Visual Studio 2015
@@ -59,9 +60,19 @@ echo ************************************
 echo ***  Configure MSVC environment  ***
 echo ************************************
 
+if /i "%ARCH%"=="AMD64" (
+echo [RESULT] Architecture: x64 (Intel/AMD)
 call vcvarsall.bat x86_amd64
 if %ERRORLEVEL% NEQ 0 goto ERROR_HANDLER
 echo configuring was successful
+)
+
+if /i "%ARCH%"=="ARM64" (
+echo [RESULT] Architecture: ARM64 (Snapdragon/Qualcomm)
+call vcvarsall.bat arm64
+if %ERRORLEVEL% NEQ 0 goto ERROR_HANDLER
+echo configuring was successful
+)
 
 if exist %DLT_VIEWER_SDK_DIR% (
 echo ************************************
@@ -91,7 +102,6 @@ if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DDLT_PARSER=ON -DCMAKE_INSTALL_PREFIX=%DLT_VIEWER_SDK_DIR% ..\..
 if %ERRORLEVEL% NEQ 0 GOTO ERROR_HANDLER
 
-set ARCH=%PROCESSOR_ARCHITECTURE%
 if /i "%ARCH%"=="AMD64" (
 echo [RESULT] Architecture: x64 (Intel/AMD)
 for /f "skip=2 tokens=2 delims== " %%C in ('wmic cpu get NumberOfLogicalProcessors /value') do set /a PARALLEL=%%C-1
