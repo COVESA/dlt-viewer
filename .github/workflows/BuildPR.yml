@@ -121,8 +121,8 @@ jobs:
           name: DLTViewer-Ubuntu-24.04
           path: debtmp/covesa-dlt-viewer_*.deb
 
-  buildWindows:
-    name: Build Windows
+  buildWindows_x64:
+    name: Build Windows x86_64
     strategy:
       matrix:
         windows: [ windows-2022, windows-11-arm ]
@@ -154,12 +154,45 @@ jobs:
             build/dist/DLTViewer*.7z
             build/dist/DLTViewer*.exe
             build/dist/*.md
-   
-  
+
+  buildWindows_arm:
+      name: Build Windows ARM
+      strategy:
+        matrix:
+          windows: [ windows-11-arm ]
+          task: [ sdk ]
+          qt: [ 6 ]
+      runs-on: ${{ matrix.windows }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v6
+          with:
+            fetch-depth: 0
+            submodules: true
+        - name: Install qt
+          uses: jurplel/install-qt-action@v4
+          with:
+            modules: qtserialport
+        - name: Build with CMake ${{ matrix.task }}
+          run: >
+            $env:WORKSPACE=$env:GITHUB_WORKSPACE;
+            $env:CPACK_7Z="true";
+            $env:CPACK_NSIS="true";
+            ./build_sdk_windows_arm_qt${{ matrix.qt }}_MSVC_cmake.bat
+        - name: Archive artifact
+          uses: actions/upload-artifact@v7
+          if: ${{ success() }}
+          with:
+            name: DLTViewer-windows-x86_64
+            path: |
+              build/dist/DLTViewer*.7z
+              build/dist/DLTViewer*.exe
+              build/dist/*.md
+ 
   createRelease:
     name: Create release
     runs-on: ubuntu-24.04
-    needs: [ buildMac, buildUbuntu, buildWindows ]
+    needs: [ buildMac, buildUbuntu, buildWindows_x64, buildWindows_arm ]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
