@@ -183,7 +183,7 @@ jobs:
           uses: actions/upload-artifact@v7
           if: ${{ success() }}
           with:
-            name: DLTViewer-windows-x86_64
+            name: DLTViewer-windows-arm64
             path: |
               build/dist/DLTViewer*.7z
               build/dist/DLTViewer*.exe
@@ -227,6 +227,11 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: DLTViewer-windows-x86_64
+    
+      - name: Download DLT Windows arm artifacts
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-windows-arm64
 
       - name: Find Tag
         id: tagger
