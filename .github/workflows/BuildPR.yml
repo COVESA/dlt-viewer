@@ -125,7 +125,7 @@ jobs:
     name: Build Windows x86_64
     strategy:
       matrix:
-        windows: [ windows-2022, windows-11-arm ]
+        windows: [ windows-2022 ]
         task: [ sdk ]
         qt: [ 6 ]
     runs-on: ${{ matrix.windows }}
