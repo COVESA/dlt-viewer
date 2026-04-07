@@ -28,6 +28,8 @@
 #include <QColor>
 #include <QComboBox>
 #include <QProgressBar>
+#include <QVector>
+#include <QPointer>
 
 #include <QTableWidget>
 #include <QAbstractItemModel>
@@ -47,9 +49,10 @@
 #include "workingdirectory.h"
 #include "exporterdialog.h"
 #include "searchtablemodel.h"
-#include "sortfilterproxymodel.h"
 #include "ui_mainwindow.h"
 #include "searchform.h"
+#include "updatechecker.h"
+#include "crlffilterwindow.h"
 
 /**
  * @brief Namespace to contain the toolbar positions.
@@ -107,6 +110,7 @@ namespace Ui {
 }
 
 struct EcuTree;
+class QDltExporter;
 
 class MainWindow : public QMainWindow
 {
@@ -122,8 +126,7 @@ private:
     QTimer timer;
 
     /* Timer for draw Event */
-    QTimer draw_timer;
-    int draw_interval;
+    QTimer drawTimer;
 
     QDltControl qcontrol;
     QFile outputfile;
@@ -133,6 +136,10 @@ private:
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
+
+    //Maps to hold the filter values - findFilteredLines() & MarkedMessages
+    QMap<QString, int> filterCountMap;
+    int totalMessages;
 
     /* Status line items */
     QLabel *statusFilename;
@@ -153,16 +160,25 @@ private:
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
+    /* CRLF Filter Window */
+    CrlfFilterWindow *crlfFilterWindow;
+
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
     QShortcut *markShortcut;
+    QShortcut *nextMarkedShortcut;
+    QShortcut *prevMarkedShortcut;
 
     /* Export */
     ExporterDialog exporterDialog;
+    QPointer<QDltExporter> activeExporterThread;
 
     /* Settings dialog containing also the settings parameter itself */
     SettingsDialog *settingsDlg;
     QDltSettingsManager *settings;
+
+    /* Update Checker class for automatic pop up for new updates*/
+    UpdateChecker *updChecker;
 
     /* injections */
     QString injectionAplicationId;
@@ -238,8 +254,20 @@ private:
 
     QList<unsigned long int> selectedMarkerRows;
 
-    /**/
-    SortFilterProxyModel *sortProxyModel;
+    //values to carry the logLevel and traceStatus : Edit All Log Levels
+    int logLevel = 0;
+    int traceStatus = 0;
+    bool markedRowCacheValid = false;
+    QVector<int> markedRowsInView;
+
+    bool isLiveLoggingActive() const;
+
+    bool manualMarkerUnionEnabled() const;
+    void updateManualMarkerUnionInFilter();
+    void clearManualMarkerUnionInFilter();
+
+    void invalidateMarkedRowCache();
+    void rebuildMarkedRowCache();
 
     /* functions called in constructor */
     void initState();
@@ -250,17 +278,22 @@ private:
 
     /* general functions */
 
-    void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
+    void openSupportedFile(const QString& path);
 
+    void getSelectedItems(EcuItem **ecuitem,ApplicationItem** appitem,ContextItem** conitem);
     void reloadLogFile(bool update=false, bool multithreaded = true);
     void populateEcusTree(EcuTree&& ecuTree);
 
     void reloadLogFileDefaultFilter();
 
     void exportSelection(bool ascii,bool file,QDltExporter::DltExportFormat format);
-    void exportSelection_searchTable(QDltExporter::DltExportFormat format);
+    /* Exports search results from the search table view to clipboard or file in various formats. For clipboard operations: uses selected rows only and for file export operations: always exports all rows. */
+    void exportSelection_searchTable(QDltExporter::DltExportFormat format, const QString& fileName = QString());
+    bool isExportInProgress() const;
+    bool startExportThread(QDltExporter *exporterThread, QModelIndexList *ownedSelection = nullptr);
+    void stopExportIfRunning();
 
-    void ControlServiceRequest(EcuItem* ecuitem, int service_id );
+    void ControlServiceRequest(EcuItem* ecuitem, uint32_t service_id);
     void SendInjection(EcuItem* ecuitem);
 
     void controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &msg, QString appid, QString contid);
@@ -368,11 +401,12 @@ private:
     /* default filters */
     void resetDefaultFilter();
 
-    /* Get path from explorerView model index */
-    QString getPathFromExplorerViewIndexModel(const QModelIndex &proxyIndex);
-
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
+
+
+
+    void findFilteredLines();
 
 
 protected:
@@ -401,7 +435,12 @@ private slots:
     void on_pluginWidget_customContextMenuRequested(QPoint pos);
     void on_filterWidget_customContextMenuRequested(QPoint pos);
     void on_configWidget_customContextMenuRequested(QPoint pos);
-    void on_exploreView_customContextMenuRequested(QPoint pos);
+
+    // file explorer tab slots
+    void on_tabExplore_fileOpenRequested(const QString &path);
+    void on_tabExplore_fileAppendRequested(const QString &path);
+    void on_tabExplore_filesOpenRequest(const QStringList &dltPaths);
+    void on_tabExplore_filesAppendRequest(const QStringList &mf4AndPcapPaths);
 
     void on_configWidget_itemSelectionChanged();
     void on_pluginWidget_itemSelectionChanged();
@@ -425,6 +464,7 @@ private slots:
     void on_action_menuFile_Open_triggered();
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
+    void on_action_menuFile_DLTFilesize_triggered();
 
 
 public slots:
@@ -438,8 +478,12 @@ public slots:
     void on_actionFindNext();
     void mark_unmark_lines();
     void unmark_all_lines();
+    void goto_next_marked_line();
+    void goto_prev_marked_line();
     void filterIndexStart();
     void filterIndexEnd();
+    void splitLogsEcuid();
+    void showCrlfMessages();
 
 private slots:
 
@@ -459,6 +503,7 @@ private slots:
     void on_action_menuHelp_Info_triggered();
     void on_action_menuHelp_Command_Line_triggered();
     void on_actionShortcuts_List_triggered();
+    void on_actionCheck_For_Latest_Updates_triggered();
 
     // Config methods
     void on_action_menuConfig_Context_Delete_triggered();
@@ -483,6 +528,7 @@ private slots:
     void onActionMenuConfigSearchTableCopyPayloadToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraToClipboardTriggered();
     void onActionMenuConfigSearchTableCopyJiraHeadToClipboardTriggered();
+    void onActionMenuConfigSearchTableExportDltTriggered();
 
     void onActionMenuConfigSaveAllECUsTriggered();
 
@@ -510,6 +556,7 @@ private slots:
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_actionFiltered_Message_Count_triggered();
 
     // Plugin methods
     void on_action_menuPlugin_Hide_triggered();
@@ -528,7 +575,6 @@ private slots:
     void error(QAbstractSocket::SocketError);
     void readyRead();
     void timeout();
-    void draw_timeout();
     void connectAll();
     void disconnectAll();
     void applySettings();
@@ -568,12 +614,6 @@ private slots:
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
 
-    void on_exploreView_activated(const QModelIndex &index);
-
-    void on_comboBoxExplorerSortType_currentIndexChanged(int index);
-
-    void on_comboBoxExplorerSortOrder_currentIndexChanged(int index);
-
     void on_checkBoxFilterRange_stateChanged(int arg1);
 
     void on_lineEditFilterStart_textChanged(const QString &arg1);
@@ -583,7 +623,7 @@ private slots:
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
 
 public slots:
-
+    // this slot is required because it is implicitly used in qdltcontrol
     void sendInjection(int index,QString applicationId,QString contextId,int serviceId,QByteArray data);
     void filterOrderChanged();
     void filterCountChanged();
@@ -623,8 +663,11 @@ public:
     /* store startLoggingDateTime when logging first data */
     QDateTime startLoggingDateTime;
 
+    /* Getter for version string - used by plugins */
+    Q_INVOKABLE QString getTargetVersionString() const { return target_version_string; }
+
 signals:
-    void dltFileLoaded(const QStringList& paths);
+    void dltFileLoaded();
 };
 
 #endif // MAINWINDOW_H

@@ -30,13 +30,18 @@ function(add_plugin NAME)
 endfunction()
 
 add_subdirectory(dltdbusplugin)
-add_subdirectory(dltlogstorageplugin)
-add_subdirectory(dltsystemviewerplugin)
 add_subdirectory(dlttestrobotplugin)
 add_subdirectory(dltviewerplugin)
 add_subdirectory(filetransferplugin)
 add_subdirectory(nonverboseplugin)
-add_subdirectory(dltsegmentationplugin)
+
+option(DLT_NON_FUNCTIONAL_PLUGINS "Build Non Functional Plugins" OFF)
+if(DLT_NON_FUNCTIONAL_PLUGINS)
+   # Deprecated Plugins
+   add_subdirectory(dltlogstorageplugin)
+   add_subdirectory(dltsegmentationplugin)
+   add_subdirectory(dltsystemviewerplugin)
+endif()
 
 option(DLT_DUMMY_PLUGINS "Build Dummy plugins" OFF)
 if(DLT_DUMMY_PLUGINS)

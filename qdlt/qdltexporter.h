@@ -37,7 +37,7 @@ private:
 
     /* Write the first line of CSV. This is just the names of the fields
      * \param file outputfile to write to
-     * \return True if writing was succesfull, false if error occured
+     * \return True if writing was successful, false if error occurred
      */
     bool writeCSVHeader();
 
@@ -52,6 +52,7 @@ private:
     bool finish();
     bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
     bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf,QFile &to);
+    QByteArray createDltMessage(const QDltMsg &msg, const QString &payload);
 
 public:
 

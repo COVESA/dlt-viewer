@@ -34,6 +34,8 @@
 #include <QMutex>
 #include <time.h>
 #include <QCache>
+#include <QList>
+#include <QSet>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -94,11 +96,11 @@ public:
     /*!
       The DLT log file is parsed and a index of all DLT log messages is created.
       \param filename The DLT filename.
-      \return true if the file is successfully opened with no error, false if an error occured.
+      \return true if the file is successfully opened with no error, false if an error occurred.
     */
     bool open(QString _filename,bool append = false);
 
-    //! Close teh currently opened DLT log file.
+    //! Close the currently opened DLT log file.
     /*!
     */
     void close();
@@ -137,6 +139,13 @@ public:
       \return true if the operation was successful, false if an error occurred.
     */
     bool updateIndexFilter();
+
+    //! Set list of manually marked message indices (global message indices).
+    /*!
+      These indices will be included in the filtered view even if they don't match the current filter.
+      Intended for viewer-side manual row markers.
+    */
+    void setManualMarkerIndices(const QList<unsigned long int> &indices);
 
     //! Get one message of the DLT log file.
     /*!
@@ -275,6 +284,10 @@ public:
      **/
     QVector<qint64> getIndexFilter() const;
 
+    //! Get Index of all DLT messages matching filter by const reference.
+    /*! Avoids copying large vectors; reference stays valid until the filter index is recomputed. */
+    const QVector<qint64>& getIndexFilterRef() const { return indexFilter; }
+
     //! Set Index of all DLT messages matching filter
     /*!
      * \param _indexFilter List of file positions
@@ -309,9 +322,41 @@ public:
     */
     bool applyRegExStringMsg(QDltMsg &msg) const;
 
-protected:
+    //! Get the total storage size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total storage size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalStorageSize();
+
+    //! Get the total payload size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total payload size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalPayloadSize() ;
+
+    //! Get the total message size of all indexed DLT messages in bytes.
+    /*!
+    *  \return Total message size in bytes (octets), 0 if no messages indexed
+    **/
+    quint64 getTotalMessageSize();
+
+    //! Calculate DLT header size based on header type flags.
+    /*!
+    *  \return Total header size in bytes
+    **/
+    int calculateHeaderSize(quint8 htyp);
+
+    //! Align size to 4-byte boundary for DLT storage format.
+    /*!
+    *  \return Size rounded up to next 4-byte boundary
+    **/
+    quint32 alignedStorageSize(quint32 size);
+
 
 private:
+    // Calculates total storage, message, and payload sizes for all indexed DLT messages.
+    void calculateTotalSizes();
+
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;
 
@@ -323,6 +368,15 @@ private:
       Index contains positions of DLT messages in indexAll.
     */
     QVector<qint64> indexFilter;
+
+    //! Base index of messages matching the active filter (without manual markers).
+    QVector<qint64> indexFilterBase;
+
+    //! Manually marked message indices to always include in filtered view.
+    QSet<qint64> manualMarkerIndices;
+
+    QVector<qint64> mergeIndexFilterBaseWithMarkers(const QSet<qint64> &markerSet) const;
+    void recomputeEffectiveIndexFilter();
 
     //! This contains the list of filters.
     QDltFilterList filterList;
@@ -350,6 +404,11 @@ private:
 
     QCache<int,QDltMsg> cache;
     bool cacheEnable;
+
+    // Size calculation variables
+    quint64 totalStorageSize = 0;
+    quint64 totalMessageSize = 0;
+    quint64 totalPayloadSize = 0;
 
     //! DLTv2 Support.
     /*!

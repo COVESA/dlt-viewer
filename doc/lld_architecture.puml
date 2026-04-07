@@ -1,0 +1,41 @@
+@startuml LLD_Architecture
+title dlt-viewer — LLD Component & Sequence
+
+package "UI (Qt)" {
+  [MainWindow]
+  [TableModel]
+  [FilterUI]
+  [IndexerThread]
+}
+
+package "Core (qdlt)" {
+  [qdltfile]
+  [qdltmessagedecoder]
+  [FilterIndex]
+  [PluginInterface]
+  [LRUCache]
+}
+
+package "Plugins" {
+  [ViewerPlugin]
+  [DecoderPlugin]
+}
+
+' Detailed sequence sample
+actor User
+User -> MainWindow : openFile(path)
+MainWindow -> IndexerThread : start(file)
+IndexerThread -> qdltfile : readAndIndex()
+qdltfile -> qdltmessagedecoder : decodeFrame()
+qdltmessagedecoder -> PluginInterface : onDecode(message)
+qdltmessagedecoder -> DltMsgQueue : enqueue(message)
+DltMsgQueue -> TableModel : batchInsert()
+TableModel -> MainWindow : modelChanged()
+
+note right of qdltmessagedecoder
+ Decoding may happen on
+ worker threads; plugin
+ callbacks may run there
+end note
+
+@enduml

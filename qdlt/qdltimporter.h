@@ -173,6 +173,8 @@ public:
 
     void setOutputfile(QFile *newOutputfile);
 
+    void setPcapPorts(const QString &importPcapPorts);
+
     struct DltStorageHeaderTimestamp {
         quint32 sec;
         quint32 usec;
@@ -206,6 +208,8 @@ public:
 
     QFile *outputfile;
     QStringList fileNames;
+
+    QList<unsigned short> pcapPorts;
 
 signals:
 

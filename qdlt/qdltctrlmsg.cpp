@@ -2,6 +2,7 @@
 
 #include "dlt_common.h"
 
+#include <exception>
 #include <stdexcept>
 #include <cstring>
 #include <array>
@@ -24,7 +25,7 @@ QString asQString(IdType&& id) {
 template <typename T>
 T dltPayloadRead(const char *&dataPtr, int32_t &length, bool isBigEndian)
 {
-    if (sizeof(T) > static_cast<uint32_t>(length)) {
+    if (length < 0 || length < static_cast<int32_t>(sizeof(T))) {
         throw std::runtime_error("Invalid data length");
     }
 
@@ -46,7 +47,7 @@ T dltPayloadRead(const char *&dataPtr, int32_t &length, bool isBigEndian)
 
 IdType dltPayloadReadId(const char *&dataPtr, int32_t &length)
 {
-    if (DLT_ID_SIZE > length) {
+    if (length < 0 || length < DLT_ID_SIZE) {
         throw std::runtime_error("Invalid ID length");
     }
     IdType id{};
@@ -60,7 +61,7 @@ IdType dltPayloadReadId(const char *&dataPtr, int32_t &length)
 std::string dltPayloadReadString(const char *&dataPtr, int32_t &length, bool isBigEndian)
 {
     uint16_t strLength = dltPayloadRead<uint16_t>(dataPtr, length, isBigEndian);
-    if (strLength > length) {
+    if (length < 0 || strLength > length) {
         throw std::runtime_error(QString("Invalid string length %1 > %2").arg(strLength).arg(length).toStdString());
     }
     std::string str;
@@ -76,9 +77,11 @@ Type parse(const QByteArray& data, bool isBigEndian)
 {
     int32_t length = data.length();
     const char *dataPtr = data.data();
+    uint32_t serviceId = 0;
 
-    auto serviceId = dltPayloadRead<uint32_t>(dataPtr, length, isBigEndian);
-    switch (serviceId) {
+    try {
+        serviceId = dltPayloadRead<uint32_t>(dataPtr, length, isBigEndian);
+        switch (serviceId) {
         case DLT_SERVICE_ID_GET_LOG_INFO:
         {
             GetLogInfo msg;
@@ -140,9 +143,14 @@ Type parse(const QByteArray& data, bool isBigEndian)
             msg.ctxid = asQString(dltPayloadReadId(dataPtr, length));
             return msg;
         }
-    }
+        }
 
-    return Uninteresting{serviceId};
+        return Uninteresting{serviceId, false};
+    } catch (const std::exception&) {
+        return Uninteresting{serviceId, true};
+    } catch (...) {
+        return Uninteresting{serviceId, true};
+    }
 }
 
 }

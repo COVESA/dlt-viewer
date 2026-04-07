@@ -2,10 +2,10 @@ DLT Viewer  - Release Notes
 ===========================
 Alexander Wenzel <Alexander.AW.Wenzel@bmw.de>
 Gernot Wirschal <Gernot.Wirschal@bmw.de>
-
+Shubham Shaha <Shubham.Shaha@bti.bmwgroup.com>
 Version
 -------
-Version 2.28.0 RELEASE
+Version 2.30.0 UNSTABLE
 
 Known issues
 ------------
@@ -14,6 +14,94 @@ Known issues
 
 Changes
 -------
+
+2.30.0
+
+* Fix missing Qt6Concurrent.dll, TLS plugin, and OpenSSL DLLs in Windows installer
+* Improve live logging performance
+* Prevent opening save dialog when exporting empty search results
+* Fix persistent log level state not being reset correctly
+* Fix CRLF messages window: sort-by-timestamp and empty-export handling
+* Fix UI issues and restore multi-selection support in File Explorer
+* Export search results: crash fixes, concurrency guard, and progress dialog
+* Enable decoded DLT export and commandline decoding for non-verbose messages via dlt-commander & dlt-Viewer
+* Warn CRLF messages can be checked (#775)
+* Check for update feature added (#751)
+* Display Aggregate Filter Information (#672)
+* Search optimization and multithreaded search (#760)
+* User marked (marker) logs feature update (#760)
+* Optimize toStringHeader and ToStringPayload (#760)
+* Edit all log levels bug fix (#760)
+* Added documentation for SearchDialog (#760)
+* HLD and LLD documentation updates for DLT Viewer
+* Fix spelling errors in comments and documentation (#728)
+* Hide non-functional plugins
+* Option to remove filter pop-up dialog when quitting
+* Reduce noise in macOS release artifacts (#772)
+* Getter for version string (#769)
+* Display record size information (#671)
+* Fix crash in 2.28.0 (#763)
+* Fix live table updates when autoscroll is off (#745)
+* Search dialog cleanup and timestamp matching improvements (#745)
+* Fix export to DLT for non-verbose messages (#744)
+* Implement RAII wrapper for DltMessage and add tests (#740)
+* Mainwindow cleanup (#738)
+* Configurable UDP ports for DLT import from PCAP (#739)
+* Fix creating wrong index when loading empty files (#732)
+* Export search results into DLT file (#731)
+* Custom file explorer improvements (#720)
+* Filter and group DLT logs by ECU ID (#725)
+* Add DLTv2 support for raw files, synchronized time, and indexing statistics (#723)
+* Keep single pipeline definition for PR and release (#719)
+* Fix VERSION handling when zero (#714)
+* Remove obsolete scripts and qmake leftovers (#718)
+* Fix Debian build plugins path (#716)
+* Package desktop app icon for deb package (#713)
+* Fix noble Debian packaging (#712)
+* Include qdlt library in dlt-viewer deb package (#711)
+* Fix release pipeline for master (#709)
+* Update macOS Intel build and codesign workflow (#735)
+* Minor syntax correction in release/build scripts
+* Bump GitHub Actions checkout/download/upload artifacts (#722, #741, #742, #748, #752, #753, #776, #777)
+
+
+2.29.0-beta1
+
+* Archive Ubuntu artifacts (#709)
+* Fix Ubuntu release scripts and packaging pipeline steps (#708, #709)
+* Fix Windows release job (#710)
+* CMake deb packaging updates (#703)
+* Remove qmake project files (#603)
+* CI migration updates for Qt6 on Windows/macOS/deb builds (#670, #687, #693)
+
+2.29.0-alpha6
+
+* Update macOS x86 artifact name
+
+2.29.0-alpha5
+
+* Update macOS 13 artifact upload
+* Correct artifact uploading in pipeline
+
+2.29.0-alpha3
+
+* Adjust createRelease to match naming conventions
+* Keep single pipeline definition for PR and release
+* Remove obsolete scripts and qmake leftovers (#718)
+* Remove redundant installation artifacts (#718)
+* Fix Debian build plugins path (#716)
+* Package desktop app icon for deb package (#713)
+* Fix noble Debian packaging (#712)
+* Include qdlt library in dlt-viewer deb package (#711)
+* Fix release pipeline for master (#709)
+
+2.28.1
+
+* Prepare 2.28.1 release (#708)
+* Allow Ubuntu build to fail in release workflow (#708)
+* Update Ubuntu release scripts (#708)
+* Fix Ubuntu archive step for release pipeline (#708)
+* Merge fix-release-pipeline-rebased (#708)
 
 2.28.0
 
@@ -231,7 +319,7 @@ Changes
   to check in functions below if range is valid since otherwise
   that code cannot be even reached
 * implement matching for ctx and app Ids
-* use ctxid and appid match functionality in app
+* use ctxid and appid match functionality in app 
 * TimestampRange
 * use new timestamp filtering
 * text search using dltmessagematcher

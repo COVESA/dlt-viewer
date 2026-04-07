@@ -1,0 +1,46 @@
+@startuml HLD_BlockDiagram
+title dlt-viewer — Block Diagram
+
+package "UI (Qt)" <<Rectangle>> {
+  [MainWindow] as MW
+  [TableModel] as TM
+  [FilterUI] as FU
+  [IndexerThread] as IT
+}
+
+package "Core (qdlt)" <<Rectangle>> {
+  [qdltfile] as QF
+  [qdltmessagedecoder] as QD
+  [Filters / FilterIndex] as FI
+  [LRUCache] as LC
+  [PluginInterface] as PI
+}
+
+package "Plugins" <<Rectangle>> {
+  [ViewerPlugin] as VP
+  [DecoderPlugin] as DP
+}
+
+package "CLI Tools" <<Rectangle>> {
+  [parser] as CLIP
+  [commander] as CLIC
+}
+
+' Interactions
+MW --> IT : openFile(path)
+IT --> QF : read/index segments
+QF --> QD : provide raw frames
+QD --> PI : plugin callbacks
+QD --> TM : decoded messages (batches)
+TM --> FU : apply filters (proxy)
+QD --> LC : cache decoded payloads
+PI --> VP : load / notify
+CLIP --> QF : use core APIs
+CLIC --> QF : use core APIs
+
+note right of PI
+ Plugins register hooks
+ and optional UI panels
+end note
+
+@enduml

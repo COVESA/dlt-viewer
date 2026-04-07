@@ -95,6 +95,7 @@ public:
     int autoMarkFatalError; // local and local setting
     int autoMarkWarn; // project and local setting
     int autoMarkMarker; // project and local setting
+    int includeManualMarkersInFilter; // project and local setting
     int updateContextLoadingFile; // project and local setting
     int updateContextsUnregister; // project and local setting
     int loggingOnlyMode; // project and local setting
@@ -132,6 +133,9 @@ public:
     int dst; // project and local setting
 
     QStringList pluginExecutionPrio; //local setting
+
+    QString importerPcapPorts; //local setting
+    int filterCloseBehaviour; // local setting: 0=Ask, 1=Save, 2=Ignore
 };
 
 #endif // QDLTSETTINGSMANAGER_H
