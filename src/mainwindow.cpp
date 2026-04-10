@@ -1677,6 +1677,21 @@ bool MainWindow::isExportInProgress() const
     return activeExporterThread && activeExporterThread->isRunning();
 }
 
+bool MainWindow::isBackgroundOperationInProgress() const
+{
+    // Check if export is running
+    if (isExportInProgress()) {
+        return true;
+    }
+    
+    // Check if DLT indexing is running
+    if (dltIndexer && dltIndexer->isRunning()) {
+        return true;
+    }
+    
+    return false;
+}
+
 bool MainWindow::startExportThread(QDltExporter *exporterThread, QModelIndexList *ownedSelection)
 {
     if(!exporterThread)
