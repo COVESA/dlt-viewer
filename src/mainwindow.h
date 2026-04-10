@@ -140,6 +140,9 @@ private:
     //Maps to hold the filter values - findFilteredLines() & MarkedMessages
     QMap<QString, int> filterCountMap;
     int totalMessages;
+    QStandardItemModel* missingDataModel;
+
+    QStandardItemModel* missingDataModel;
 
     /* Status line items */
     QLabel *statusFilename;
