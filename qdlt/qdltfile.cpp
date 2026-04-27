@@ -1058,7 +1058,7 @@ void QDltFile::calculateTotalSizes()
                                          static_cast<quint8>(dltHeaderData[3]);
 
         // Validate message length
-        if (dltMessageLength == 0 || dltMessageLength > 65535 ||
+        if (dltMessageLength == 0 ||
             dltMessageLength > (msgDataSize - storageHeaderSize)) {
             msgSizeCache[msgIndex] = info;
             continue;

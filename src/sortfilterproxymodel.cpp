@@ -75,7 +75,8 @@ EcuIdFilterProxyModel::EcuIdFilterProxyModel(QObject *parent)
 // Sets a single ECU ID for filtering
 void EcuIdFilterProxyModel::setEcuId(const QString& ecuId) {
     ecu = ecuId;
-    this->invalidateFilter();
+    beginFilterChange();
+    endFilterChange();
 }
 
 
@@ -85,14 +86,16 @@ void EcuIdFilterProxyModel::setEcuIdList(const QSet<QString>& ids) {
     ecuIdList.clear();
     for (const QString& id : ids)
         ecuIdList.insert(id.trimmed().toLower());
-    invalidateFilter();
+    beginFilterChange();
+    endFilterChange();
     sort(-1);
 }
 
 // Sets the column index for ECU filtering
 void EcuIdFilterProxyModel::setEcuColumn(int column) {
     ecuColumn = column;
-    this->invalidateFilter();
+    beginFilterChange();
+    endFilterChange();
 }
 
 //Determines if a row should be accepted based on ECU filtering

@@ -806,7 +806,8 @@ DltStorageHeader QDltImporter::makeDltStorageHeader(std::optional<DltStorageHead
         result.seconds = static_cast<time_t>(ts->sec);
         result.microseconds = static_cast<int32_t>(ts->usec);
     } else {
-        if (struct timespec ts; timespec_get(&ts, TIME_UTC)) {
+        struct timespec ts;
+        if (clock_gettime(CLOCK_REALTIME, &ts) == 0) {
             result.seconds = static_cast<uint32_t>(ts.tv_sec);
             result.microseconds = static_cast<int32_t>(ts.tv_nsec / 1000);
         } else {

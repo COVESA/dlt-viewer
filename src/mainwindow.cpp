@@ -88,9 +88,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     timer(this),
     qcontrol(this),
+    crlfFilterWindow(nullptr),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false),
-    crlfFilterWindow(nullptr)
+    isSearchOngoing(false)
 {
 
     dltIndexer = NULL;
@@ -7945,7 +7945,8 @@ void MainWindow::onActionMenuConfigSaveAllECUsTriggered()
 {
     QString filename = QFileDialog::getSaveFileName(this, tr("Save DLT Filters"), workingDirectory.getDltDirectory(), tr("Save APID/CTID list (*.csv);;All files (*.*)"));
     QFile asciiFile(filename);
-    asciiFile.open(QIODevice::WriteOnly);
+    if(!asciiFile.open(QIODevice::WriteOnly))
+        return;
 
     // go over ECU Items
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
