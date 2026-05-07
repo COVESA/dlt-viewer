@@ -698,7 +698,7 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
         }
     case QVariant::Double:
         {
-        double bvalue = value.toInt();
+        double bvalue = value.toDouble();
         data = QByteArray((const char*)&bvalue,sizeof(double));
         typeInfo = QDltArgument::DltTypeInfoFloa;
         return true;
