@@ -939,7 +939,23 @@ bool QDltImporter::ipcFromEthernetFrame(QByteArray &record,int pos,quint16 ether
                    }
                    else
                    {
-                       arg3.setData(record.mid(pos+35,qFromBigEndian(plpHeaderData->length)-35));
+                       // plpHeaderData->length comes from the wire as a
+                       // uint16_t. If it's smaller than the 35-byte IPC
+                       // header, the subtraction below underflows and
+                       // QByteArray::mid() interprets the resulting
+                       // negative qsizetype as "to end of buffer", so
+                       // arg3 silently swallows the entire trailing
+                       // record instead of the intended slice. Skip the
+                       // malformed packet rather than emit garbage.
+                       const auto plp_length = qFromBigEndian(plpHeaderData->length);
+                       if (plp_length < 35)
+                       {
+                           qDebug() << "ipcFromEthernetFrame: plp length"
+                                    << plp_length
+                                    << "below IPC header size, skipping";
+                           break;
+                       }
+                       arg3.setData(record.mid(pos+35, plp_length-35));
                    }
                    msg.addArgument(arg3);
 
