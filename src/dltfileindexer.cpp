@@ -94,9 +94,11 @@ DltFileIndexer::~DltFileIndexer()
 
 bool DltFileIndexer::index(int num)
 {
-    // start performance counter
-    //QTime time(0,0,0,0);
-    // time.start();
+    if (!dltFile)
+    {
+        qWarning() << "DltFileIndexer::index called with null dltFile";
+        return false;
+    }
 
     // load filter index if enabled
     if(filterCacheEnabled && loadIndexCache(dltFile->getFileName(num)))
@@ -374,13 +376,16 @@ bool DltFileIndexer::index(int num)
 
 bool DltFileIndexer::indexFilter(QStringList filenames)
 {
+    if (!dltFile || !pluginManager)
+    {
+        qWarning() << "DltFileIndexer::indexFilter called with null dltFile or pluginManager";
+        return false;
+    }
+
     QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
-
-    // start performance counter
-    //time.start();
 
     // get filter list
     filterList = dltFile->getFilterList();
@@ -1070,7 +1075,7 @@ bool DltFileIndexer::saveIndex(QString filename, const QVector<qint64> &index)
     // open cache file
     if(!file.open(QFile::WriteOnly))
     {
-        // open file failed
+        qWarning() << "DltFileIndexer: Failed to save index cache to" << filename << ":" << file.errorString();
         return false;
     }
 
@@ -1103,7 +1108,7 @@ bool DltFileIndexer::loadIndex(QString filename, QVector<qint64> &index)
     // open cache file
     if(!file.open(QFile::ReadOnly))
     {
-        //qDebug() << "Loading index file " << filename << "failed !";
+        qWarning() << "DltFileIndexer: Failed to load index cache from" << filename << ":" << file.errorString();
         return false;
     }
 

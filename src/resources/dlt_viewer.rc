@@ -1,7 +1,7 @@
 // MSVC, Windows SDK
 #if defined(_WIN32)
 
-IDI_ICON1               ICON    DISCARDABLE     "icon\org.genivi.DLTViewer.ico"
+IDI_ICON1               ICON    DISCARDABLE     "icon/org.genivi.DLTViewer.ico"
 
 #include "../version.h"
 
