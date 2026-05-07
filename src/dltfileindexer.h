@@ -8,6 +8,7 @@
 #include <QPair>
 #include <QMutex>
 #include <QMap>
+#include <atomic>
 
 #include "qdltdefaultfilter.h"
 #include "qdltfile.h"
@@ -173,8 +174,8 @@ private:
     // DefaultFilter to be used
     QDltDefaultFilter *defaultFilter;
 
-    // stop flag
-    bool stopFlag;
+    // Atomic because stop() updates this from another thread while the indexer worker reads it.
+    std::atomic<bool> stopFlag;
 
     // active plugins
     QList<QDltPlugin*> activeViewerPlugins;

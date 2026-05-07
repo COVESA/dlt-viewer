@@ -10,6 +10,7 @@ extern "C" {
 #include "qdltmsg.h"
 #include "qdltimporter.h"
 
+#include <chrono>
 #include <time.h>
 
 QDltImporter::QDltImporter(QFile *outputfile, QStringList fileNames, QObject *parent) :
@@ -806,13 +807,12 @@ DltStorageHeader QDltImporter::makeDltStorageHeader(std::optional<DltStorageHead
         result.seconds = static_cast<time_t>(ts->sec);
         result.microseconds = static_cast<int32_t>(ts->usec);
     } else {
-        if (struct timespec ts; timespec_get(&ts, TIME_UTC)) {
-            result.seconds = static_cast<uint32_t>(ts.tv_sec);
-            result.microseconds = static_cast<int32_t>(ts.tv_nsec / 1000);
-        } else {
-            result.seconds = 0;
-            result.microseconds = 0;
-        }
+        const auto now = std::chrono::system_clock::now().time_since_epoch();
+        const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(now);
+        const auto microseconds = std::chrono::duration_cast<std::chrono::microseconds>(now - seconds);
+
+        result.seconds = static_cast<time_t>(seconds.count());
+        result.microseconds = static_cast<int32_t>(microseconds.count());
     }
 
     return result;

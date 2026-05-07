@@ -45,6 +45,8 @@ protected:
     bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
 
 private:
+    void updateFilter();
+
     QString ecu;
     QSet<QString> ecuIdList;
     int ecuColumn = 4;
