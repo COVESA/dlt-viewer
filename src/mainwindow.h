@@ -121,6 +121,8 @@ public:
     ~MainWindow();
 
 private:
+    void setupSortByTimestampToolbarButton();
+
     Ui::MainWindow *ui;
     /* Timer for connecting to ECUs */
     QTimer timer;
@@ -248,6 +250,9 @@ private:
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
+
+    /* flag for enabled / disabled status of filters */
+    bool filtersEnabled;
 
     /* keep the target version string submited by the target for internal use */
     QString target_version_string;
@@ -592,8 +597,6 @@ private slots:
     void on_actionDisconnectAll_triggered();
 
     // Config Items
-    void on_pluginsEnabled_toggled(bool checked);
-    void on_filtersEnabled_toggled(bool checked);
     void on_applyConfig_clicked();
     void on_tabWidget_currentChanged(int index);
 
@@ -603,15 +606,10 @@ private slots:
 
     void on_pushButtonDefaultFilterUpdateCache_clicked();
 
-    void on_checkBoxSortByTime_toggled(bool checked);
-    void on_checkBoxSortByTimestamp_toggled(bool checked);
-
     void on_actionMarker_triggered();
 
     void on_actionToggle_PluginsEnabled_triggered(bool checked);
     void on_actionToggle_FiltersEnabled_triggered(bool checked);
-
-    void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
 
     void on_checkBoxFilterRange_stateChanged(int arg1);
