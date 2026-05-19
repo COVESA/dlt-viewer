@@ -56,6 +56,7 @@
 #include <QThread>
 #include <QTableWidget>
 #include <QToolButton>
+#include <QPainter>
 
 #if defined(_MSC_VER)
 #include <io.h>
@@ -195,7 +196,10 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->actionToggle_FiltersEnabled->setChecked(filtersEnabled);
     ui->actionToggle_PluginsEnabled->setChecked(pluginsEnabled);
 
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
     const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    ui->actionToggle_SortByTimeEnabled->setEnabled(filtersEnabled);
+    ui->actionToggle_SortByTimeEnabled->setChecked(filtersEnabled && sortByTimeEnabled);
     ui->actionSort_By_Timestamp->setEnabled(filtersEnabled);
     ui->actionSort_By_Timestamp->setChecked(filtersEnabled && sortByTimestampEnabled);
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
@@ -218,9 +222,28 @@ void MainWindow::setupSortByTimestampToolbarButton()
 
     ui->actionSort_By_Timestamp->setIconVisibleInMenu(true);
 
-    // Replace the text-only toolbar presentation with an icon-only tool button.
     QToolBar* toolbar = ui->mainToolBar;
     QAction* action = ui->actionSort_By_Timestamp;
+
+    // Build a two-state icon: full opacity when ON (checked), faded when OFF (unchecked)
+    {
+        QPixmap normalPix(":/toolbar/png/sort-ts.png");
+
+        if(!normalPix.isNull())
+        {
+            QPixmap fadedPix(normalPix.size());
+            fadedPix.fill(Qt::transparent);
+            QPainter painter(&fadedPix);
+            painter.setOpacity(0.35);
+            painter.drawPixmap(0, 0, normalPix);
+            painter.end();
+
+            QIcon icon;
+            icon.addPixmap(normalPix, QIcon::Normal, QIcon::On);
+            icon.addPixmap(fadedPix,  QIcon::Normal, QIcon::Off);
+            action->setIcon(icon);
+        }
+    }
 
     const QList<QAction*> toolbarActions = toolbar->actions();
     int index = toolbarActions.indexOf(action);
@@ -228,6 +251,11 @@ void MainWindow::setupSortByTimestampToolbarButton()
     if(index >= 0 && index + 1 < toolbarActions.size())
     {
         beforeAction = toolbarActions.at(index + 1);
+    }
+
+    if(index < 0)
+    {
+        return;
     }
 
     toolbar->removeAction(action);
@@ -794,9 +822,8 @@ void MainWindow::initFileHandling()
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(filtersEnabled);
 
-    /* Sort-by-time is removed; keep it hard-disabled */
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
-    dltIndexer->setSortByTimeEnabled(false);
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
 
     const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
     dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
@@ -804,6 +831,18 @@ void MainWindow::initFileHandling()
     ui->checkBoxFilterRange->setEnabled(filtersEnabled);
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
     ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
 
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
@@ -2709,12 +2748,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(filtersEnabled);
 
-    /* Sort-by-time is removed; keep it hard-disabled */
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
-    dltIndexer->setSortByTimeEnabled(false);
-
     {
+        const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
         const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+        dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
         dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
     }
     dltIndexer->setMultithreaded(multithreaded);
@@ -2769,12 +2806,10 @@ void MainWindow::reloadLogFileDefaultFilter()
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     dltIndexer->setFiltersEnabled(filtersEnabled);
 
-    /* Sort-by-time is removed; keep it hard-disabled */
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
-    dltIndexer->setSortByTimeEnabled(false);
-
     {
+        const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
         const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+        dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
         dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
     }
 
@@ -8208,7 +8243,8 @@ void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
 
     if(!filtersEnabled)
     {
-        /* Timestamp sorting only makes sense with filters enabled */
+        /* Sorting only makes sense with filters enabled */
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
         QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", false);
     }
 
@@ -8216,7 +8252,35 @@ void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
     ui->checkBoxFilterRange->setEnabled(filtersEnabled);
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
     ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
 
+    syncCheckBoxesAndMenu();
+
+    ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
+    on_applyConfig_clicked();
+}
+
+void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
+{
+    if(!filtersEnabled)
+    {
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
+        syncCheckBoxesAndMenu();
+        return;
+    }
+
+    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
     syncCheckBoxesAndMenu();
 
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
@@ -8231,9 +8295,6 @@ void MainWindow::on_actionSort_By_Timestamp_triggered(bool checked)
         syncCheckBoxesAndMenu();
         return;
     }
-
-    /* Sort-by-time is removed; keep it hard-disabled */
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
 
     QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", checked);
     syncCheckBoxesAndMenu();
@@ -8290,11 +8351,27 @@ void MainWindow::syncCheckBoxesAndMenu()
     ui->actionToggle_FiltersEnabled->setChecked(filtersEnabled);
     ui->actionToggle_FiltersEnabled->setText(filtersEnabled ? "Disable Filters" : "Enable Filters");
 
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
     const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    ui->actionToggle_SortByTimeEnabled->setEnabled(filtersEnabled);
+    ui->actionToggle_SortByTimeEnabled->setChecked(filtersEnabled && sortByTimeEnabled);
     ui->actionSort_By_Timestamp->setEnabled(filtersEnabled);
     ui->actionSort_By_Timestamp->setChecked(filtersEnabled && sortByTimestampEnabled);
-
-
+    ui->checkBoxFilterRange->setEnabled(filtersEnabled);
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
 }
 
 void MainWindow::on_applyConfig_clicked()
@@ -8661,8 +8738,8 @@ void MainWindow::on_checkBoxFilterRange_stateChanged(int arg1)
 {
     applyConfigEnabled(true);
 
-    ui->lineEditFilterStart->setEnabled(arg1==Qt::Checked);
-    ui->lineEditFilterEnd->setEnabled(arg1==Qt::Checked);
+    ui->lineEditFilterStart->setEnabled(arg1==Qt::Checked && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(arg1==Qt::Checked && filtersEnabled);
 }
 
 void MainWindow::on_lineEditFilterStart_textChanged(const QString &arg1)

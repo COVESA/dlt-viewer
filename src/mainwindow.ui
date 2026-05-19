@@ -191,6 +191,7 @@
     <addaction name="actionDefault_Filter_Create_Index"/>
     <addaction name="separator"/>
     <addaction name="actionToggle_FiltersEnabled"/>
+    <addaction name="actionToggle_SortByTimeEnabled"/>
     <addaction name="actionSort_By_Timestamp"/>
     <addaction name="actionFiltered_Message_Count"/>
    </widget>
@@ -1524,6 +1525,17 @@
    </property>
    <property name="toolTip">
     <string>Toggle Plugins Enabled /Disabled</string>
+   </property>
+  </action>
+  <action name="actionToggle_SortByTimeEnabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Sort By Time</string>
+   </property>
+   <property name="toolTip">
+    <string>Toggle Sorted By Time</string>
    </property>
   </action>
   <action name="actionSort_By_Timestamp">
