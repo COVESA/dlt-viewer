@@ -282,7 +282,7 @@ bool QDltExporter::startExport()
             {
                 QFileInfo info(filename);
                 info.baseName();
-                QFile *file;
+                QFile *file = nullptr;
                 if(exportFormat == QDltExporter::FormatAscii)
                     file = new QFile(to.fileName()+"/"+info.baseName()+".txt");
                 else if(exportFormat == QDltExporter::FormatUTF8)
@@ -325,7 +325,7 @@ bool QDltExporter::startExport()
             {
                 QFileInfo info(filename);
                 info.baseName();
-                QFile *file;
+                QFile *file = nullptr;
                 file = new QFile(to.fileName()+"/"+info.baseName()+".dlt");
                 QDltFilterList *filterList = new QDltFilterList();
                 if(!filterList->LoadFilter(filename,true))

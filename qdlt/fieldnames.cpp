@@ -30,6 +30,7 @@ QString FieldNames::getName(Fields cn, QDltSettingsManager *settings)
         case 1:
              return QString("Apid Desc");
         }
+        [[fallthrough]];
     case ContextId:
         if(settings == NULL)
         {
@@ -41,6 +42,7 @@ QString FieldNames::getName(Fields cn, QDltSettingsManager *settings)
         case 1:
              return QString("Ctid Desc");
         }
+        [[fallthrough]];
     case SessionId:
         if(settings == NULL)
         {
@@ -52,6 +54,7 @@ QString FieldNames::getName(Fields cn, QDltSettingsManager *settings)
         case 1:
              return QString("SessionName");
         }
+        [[fallthrough]];
     case Type:
         return QString("Type");
     case Subtype:

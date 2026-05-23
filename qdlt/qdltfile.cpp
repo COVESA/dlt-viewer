@@ -769,14 +769,17 @@ QByteArray QDltFile::getMsgFilter(int index) const
 {
     if(filterFlag)
     {
-        /* check if index is in range */
-        if(index<0 || index>=indexFilter.size())
+        int msgIndex;
         {
-          qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
-          /* return empty data buffer */
-           return QByteArray();
+            QMutexLocker locker(&mutexQDlt);
+            if(index<0 || index>=indexFilter.size())
+            {
+                qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+                return QByteArray();
+            }
+            msgIndex = indexFilter[index];
         }
-        return getMsg(indexFilter[index]);
+        return getMsg(msgIndex);
     }
     else
     {
@@ -1058,7 +1061,7 @@ void QDltFile::calculateTotalSizes()
                                          static_cast<quint8>(dltHeaderData[3]);
 
         // Validate message length
-        if (dltMessageLength == 0 || dltMessageLength > 65535 ||
+        if (dltMessageLength == 0 ||
             dltMessageLength > (msgDataSize - storageHeaderSize)) {
             msgSizeCache[msgIndex] = info;
             continue;

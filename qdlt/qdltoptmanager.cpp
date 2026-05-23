@@ -137,7 +137,7 @@ void QDltOptManager::parse(const QStringList& args)
 
     if (m_parser.optionNames().isEmpty() && m_parser.positionalArguments().size() == 1)
     {
-        const QString& arg = m_parser.positionalArguments().at(0);
+        const QString arg = m_parser.positionalArguments().at(0);
         bool closeConsole = false;
         if(arg.endsWith(".dlp") || arg.endsWith(".DLP"))
         {

@@ -88,9 +88,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     timer(this),
     qcontrol(this),
+    crlfFilterWindow(nullptr),
     pulseButtonColor(255, 40, 40),
-    isSearchOngoing(false),
-    crlfFilterWindow(nullptr)
+    isSearchOngoing(false)
 {
 
     dltIndexer = NULL;
@@ -4547,7 +4547,9 @@ void MainWindow::read(EcuItem* ecuitem)
           ecuitem->ipcon.add(data);
           break;
       case EcuItem::INTERFACETYPE_UDP:
-          while(ecuitem->udpsocket.hasPendingDatagrams() && udpMessageCounter<100)
+          // Allow high-volume ECU bursts to be drained in one readyRead() cycle.
+          // The previous limit of 100 datagrams could leave a growing backlog during production ECU ingestion.
+          while(ecuitem->udpsocket.hasPendingDatagrams() && udpMessageCounter<10000)
           {
             data.resize(ecuitem->udpsocket.pendingDatagramSize());
             bytesRcvd = ecuitem->udpsocket.readDatagram( data.data(), data.size() );
@@ -4616,6 +4618,8 @@ void MainWindow::read(EcuItem* ecuitem)
           break;
       case EcuItem::INTERFACETYPE_SERIAL_DLT:
       case EcuItem::INTERFACETYPE_SERIAL_ASCII:
+          if (!ecuitem->m_serialport)
+              break;
           data = ecuitem->m_serialport->readAll();
           bytesRcvd = data.size();
           ecuitem->serialcon.add(data);
@@ -7945,7 +7949,8 @@ void MainWindow::onActionMenuConfigSaveAllECUsTriggered()
 {
     QString filename = QFileDialog::getSaveFileName(this, tr("Save DLT Filters"), workingDirectory.getDltDirectory(), tr("Save APID/CTID list (*.csv);;All files (*.*)"));
     QFile asciiFile(filename);
-    asciiFile.open(QIODevice::WriteOnly);
+    if(!asciiFile.open(QIODevice::WriteOnly))
+        return;
 
     // go over ECU Items
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)

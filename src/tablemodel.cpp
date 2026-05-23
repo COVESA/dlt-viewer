@@ -46,6 +46,8 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
 
  int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
+     if (!project || !project->settings)
+         return DLT_VIEWER_COLUMN_COUNT;
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
 
@@ -97,7 +99,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
        {
          if(index.column() == FieldNames::Index)
          {
-             return QString("%1").arg(qfile->getMsgFilterPos(index.row()));
+             return QString("%1").arg(filterposindex);
          }
          else if(index.column() == FieldNames::Payload)
          {
@@ -112,7 +114,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          {
          case FieldNames::Index:
              /* display index */
-             return QString("%L1").arg(qfile->getMsgFilterPos(index.row()));
+             return QString("%L1").arg(filterposindex);
          case FieldNames::Time:
              if( project->settings->automaticTimeSettings == 0 )
                 return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
@@ -134,10 +136,11 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     if(!ecuitem) continue;
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem->id == msg->getApid() && !appitem->description.isEmpty())
+                         if(appitem && appitem->id == msg->getApid() && !appitem->description.isEmpty())
                          {
                             return appitem->description;
                          }
@@ -158,17 +161,19 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
                    for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
                     {
                      EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                     if(!ecuitem) continue;
                      for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
                      {
                          ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+                         if(appitem && appitem->id == msg->getApid())
                          {
-                             ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-
-                             if(appitem->id == msg->getApid() && conitem->id == msg->getCtid()
-                                     && !conitem->description.isEmpty())
+                             for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
                              {
-                                return conitem->description;
+                                 ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+                                 if(conitem && conitem->id == msg->getCtid() && !conitem->description.isEmpty())
+                                 {
+                                    return conitem->description;
+                                 }
                              }
                          }
                      }
