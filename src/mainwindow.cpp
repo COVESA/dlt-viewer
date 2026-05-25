@@ -55,6 +55,8 @@
 #include <QDirIterator>
 #include <QThread>
 #include <QTableWidget>
+#include <QToolButton>
+#include <QPainter>
 
 #if defined(_MSC_VER)
 #include <io.h>
@@ -98,6 +100,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);
     setAcceptDrops(true);
+
+    setupSortByTimestampToolbarButton();
 
     target_version_string = "";
 
@@ -188,11 +192,16 @@ MainWindow::MainWindow(QWidget *parent) :
     /* update plugins again to hide plugins shown before after restoreState */
     updatePlugins();
 
-    /*sync checkboxes with action toolbar*/
-    ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
-    ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
-    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
-    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
+    /* sync toolbar with persisted state */
+    ui->actionToggle_FiltersEnabled->setChecked(filtersEnabled);
+    ui->actionToggle_PluginsEnabled->setChecked(pluginsEnabled);
+
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    ui->actionToggle_SortByTimeEnabled->setEnabled(filtersEnabled);
+    ui->actionToggle_SortByTimeEnabled->setChecked(filtersEnabled && sortByTimeEnabled);
+    ui->actionSort_By_Timestamp->setEnabled(filtersEnabled);
+    ui->actionSort_By_Timestamp->setChecked(filtersEnabled && sortByTimestampEnabled);
     ui->actionProject->setChecked(ui->dockWidgetContents->isVisible());
     ui->actionSearch_Results->setChecked(ui->dockWidgetSearchIndex->isVisible());
 
@@ -202,6 +211,63 @@ MainWindow::MainWindow(QWidget *parent) :
         this->setWindowState(Qt::WindowMinimized);
     }
 
+}
+
+void MainWindow::setupSortByTimestampToolbarButton()
+{
+    if(!ui || !ui->mainToolBar || !ui->actionSort_By_Timestamp)
+    {
+        return;
+    }
+
+    ui->actionSort_By_Timestamp->setIconVisibleInMenu(true);
+
+    QToolBar* toolbar = ui->mainToolBar;
+    QAction* action = ui->actionSort_By_Timestamp;
+
+    // Build a two-state icon: full opacity when ON (checked), faded when OFF (unchecked)
+    {
+        QPixmap normalPix(":/toolbar/png/sort-ts.png");
+
+        if(!normalPix.isNull())
+        {
+            QPixmap fadedPix(normalPix.size());
+            fadedPix.fill(Qt::transparent);
+            QPainter painter(&fadedPix);
+            painter.setOpacity(0.35);
+            painter.drawPixmap(0, 0, normalPix);
+            painter.end();
+
+            QIcon icon;
+            icon.addPixmap(normalPix, QIcon::Normal, QIcon::On);
+            icon.addPixmap(fadedPix,  QIcon::Normal, QIcon::Off);
+            action->setIcon(icon);
+        }
+    }
+
+    const QList<QAction*> toolbarActions = toolbar->actions();
+    int index = toolbarActions.indexOf(action);
+    QAction* beforeAction = nullptr;
+    if(index >= 0 && index + 1 < toolbarActions.size())
+    {
+        beforeAction = toolbarActions.at(index + 1);
+    }
+
+    if(index < 0)
+    {
+        return;
+    }
+
+    toolbar->removeAction(action);
+
+    auto* button = new QToolButton(toolbar);
+    button->setDefaultAction(action);
+    button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    button->setAutoRaise(true);
+    button->setFocusPolicy(Qt::NoFocus);
+    button->setAccessibleName(action->text());
+
+    toolbar->insertWidget(beforeAction, button);
 }
 
 MainWindow::~MainWindow()
@@ -749,19 +815,34 @@ void MainWindow::initFileHandling()
     connect(dltIndexer, SIGNAL(finished()), this, SLOT(indexDone()));
     connect(dltIndexer, SIGNAL(started()), this, SLOT(indexStart()));
 
-    /* Plugins/Filters enabled checkboxes */
+    /* Plugins/Filters enabled state (toolbar is the UI) */
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
-    dltIndexer->setPluginsEnabled(pluginsEnabled);
-    ui->pluginsEnabled->setChecked(pluginsEnabled);
+    filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
 
-    ui->filtersEnabled->setChecked(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    ui->checkBoxSortByTime->setEnabled(ui->filtersEnabled->isChecked());
-    ui->checkBoxSortByTime->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    ui->checkBoxSortByTimestamp->setEnabled(ui->filtersEnabled->isChecked());
-    ui->checkBoxSortByTimestamp->setChecked(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
-    ui->checkBoxFilterRange->setEnabled(ui->filtersEnabled->isChecked());
-    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
-    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && ui->filtersEnabled->isChecked());
+    dltIndexer->setPluginsEnabled(pluginsEnabled);
+    dltIndexer->setFiltersEnabled(filtersEnabled);
+
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
+
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
+
+    ui->checkBoxFilterRange->setEnabled(filtersEnabled);
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
 
     /* Process Project */
     if(QDltOptManager::getInstance()->isProjectFile())
@@ -2475,9 +2556,12 @@ void MainWindow::reloadLogFileFinishFilter()
     }
 
     // enable filter if requested
-    qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    qfile.enableSortByTime(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    qfile.enableSortByTimestamp(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    qfile.enableFilter(filtersEnabled);
+    qfile.enableSortByTime(false);
+    {
+        const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+        qfile.enableSortByTimestamp(filtersEnabled && sortByTimestampEnabled);
+    }
 
     // updateIndex, if messages are received in between
     updateIndex();
@@ -2658,12 +2742,18 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     statusFilename->setText(fm.elidedText(name, Qt::ElideLeft, statusFilename->width()));
     statusFilename->setToolTip(name);
 
-    // enable plugins
+    // enable plugins/filters
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    dltIndexer->setFiltersEnabled(filtersEnabled);
+
+    {
+        const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+        const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+        dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
+        dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
+    }
     dltIndexer->setMultithreaded(multithreaded);
     dltIndexer->setFilterCacheEnabled(settings->filterCache);
 
@@ -2710,12 +2800,18 @@ void MainWindow::reloadLogFileDefaultFilter()
     statusProgressBar->reset();
     statusProgressBar->show();
 
-    // enable plugins
+    // enable plugins/filters
     pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    filtersEnabled = QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool();
     dltIndexer->setPluginsEnabled(pluginsEnabled);
-    dltIndexer->setFiltersEnabled(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    dltIndexer->setSortByTimeEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool());
-    dltIndexer->setSortByTimestampEnabled(QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool());
+    dltIndexer->setFiltersEnabled(filtersEnabled);
+
+    {
+        const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+        const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+        dltIndexer->setSortByTimeEnabled(filtersEnabled && sortByTimeEnabled);
+        dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
+    }
 
     // start indexing
     dltIndexer->setPriority(QThread::NormalPriority);
@@ -8141,21 +8237,68 @@ void MainWindow::on_actionJump_To_triggered()
 
 void MainWindow::on_actionToggle_FiltersEnabled_triggered(bool checked)
 {
-    ui->filtersEnabled->setChecked(checked);
+    filtersEnabled = checked;
+    QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", filtersEnabled);
+    dltIndexer->setFiltersEnabled(filtersEnabled);
+
+    if(!filtersEnabled)
+    {
+        /* Sorting only makes sense with filters enabled */
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", false);
+    }
+
+    /* Update dependent UI controls */
+    ui->checkBoxFilterRange->setEnabled(filtersEnabled);
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
+
+    syncCheckBoxesAndMenu();
+
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     on_applyConfig_clicked();
 }
 
 void MainWindow::on_actionToggle_SortByTimeEnabled_triggered(bool checked)
 {
-    ui->checkBoxSortByTime->setChecked(checked);
+    if(!filtersEnabled)
+    {
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
+        syncCheckBoxesAndMenu();
+        return;
+    }
+
+    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
+    syncCheckBoxesAndMenu();
+
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     on_applyConfig_clicked();
 }
 
 void MainWindow::on_actionSort_By_Timestamp_triggered(bool checked)
 {
-    ui->checkBoxSortByTimestamp->setChecked(checked);
+    if(!filtersEnabled)
+    {
+        QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", false);
+        syncCheckBoxesAndMenu();
+        return;
+    }
+
+    QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", checked);
+    syncCheckBoxesAndMenu();
+
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     on_applyConfig_clicked();
 }
@@ -8188,61 +8331,10 @@ void MainWindow::on_actionDisconnectAll_triggered()
 void MainWindow::on_actionToggle_PluginsEnabled_triggered(bool checked)
 {
     pluginsEnabled = checked;
-    ui->pluginsEnabled->setChecked(pluginsEnabled); // set checkbox in UI
     QDltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled);
     dltIndexer->setPluginsEnabled(pluginsEnabled);
     ui->applyConfig->setFocus(); // have to set different focus first, so that scrollTo() works
     syncCheckBoxesAndMenu();
-    applyConfigEnabled(true);
-}
-
-/* This one is called when the checkbox "Plugins Enabled" is checked/unchecked */
-void MainWindow::on_pluginsEnabled_toggled(bool checked)
-{
-    pluginsEnabled = checked;
-    QDltSettingsManager::getInstance()->setValue("startup/pluginsEnabled", pluginsEnabled); // set settings
-    dltIndexer->setPluginsEnabled(pluginsEnabled); // inform indexer
-    // now we should correlate the "plugin menu entry to disable / enable"
-    syncCheckBoxesAndMenu();
-    applyConfigEnabled(true);
-}
-
-void MainWindow::on_filtersEnabled_toggled(bool checked)
-{
-    //QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
-    QDltSettingsManager::getInstance()->setValue("startup/filtersEnabled", checked);
-    ui->checkBoxSortByTime->setEnabled(checked);
-    ui->checkBoxSortByTimestamp->setEnabled(checked);
-    ui->checkBoxFilterRange->setEnabled(checked);
-    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
-    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() & checked);
-
-    applyConfigEnabled(true);
-}
-
-void MainWindow::on_checkBoxSortByTime_toggled(bool checked)
-{
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", checked);
-    if(checked)
-    {
-        QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", false);
-        ui->checkBoxSortByTimestamp->setChecked(false);
-    }
-    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
-    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
-    applyConfigEnabled(true);
-}
-
-void MainWindow::on_checkBoxSortByTimestamp_toggled(bool checked)
-{
-    if(checked)
-    {
-        QDltSettingsManager::getInstance()->setValue("startup/sortByTimeEnabled", false);
-        ui->checkBoxSortByTime->setChecked(false);
-    }
-    QDltSettingsManager::getInstance()->setValue("startup/sortByTimestampEnabled", checked);
-    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
-    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
     applyConfigEnabled(true);
 }
 
@@ -8253,30 +8345,33 @@ void MainWindow::syncCheckBoxesAndMenu()
     for(auto& plugin : pluginList)
         plugin->configurationChanged();
 
-    ui->actionToggle_SortByTimeEnabled->setChecked(ui->checkBoxSortByTime->isChecked());
-    ui->actionSort_By_Timestamp->setChecked(ui->checkBoxSortByTimestamp->isChecked());
+    ui->actionToggle_PluginsEnabled->setChecked(pluginsEnabled);
+    ui->actionToggle_PluginsEnabled->setText(pluginsEnabled ? "Disable Plugins" : "Enable Plugins");
 
-    ui->actionToggle_PluginsEnabled->setChecked(ui->pluginsEnabled->isChecked());
-    if (ui->pluginsEnabled->isChecked())
-        {
-            ui->actionToggle_PluginsEnabled->setText("Disable Plugins");
-        }
-        else
-        {
-            ui->actionToggle_PluginsEnabled->setText("Enable Plugins");
-        }
+    ui->actionToggle_FiltersEnabled->setChecked(filtersEnabled);
+    ui->actionToggle_FiltersEnabled->setText(filtersEnabled ? "Disable Filters" : "Enable Filters");
 
-    ui->actionToggle_FiltersEnabled->setChecked(ui->filtersEnabled->isChecked());
-    if (ui->filtersEnabled->isChecked())
-        {
-            ui->actionToggle_FiltersEnabled->setText("Disable Filters");
-        }
-        else
-        {
-            ui->actionToggle_FiltersEnabled->setText("Enable Filters");
-        }
-
-
+    const bool sortByTimeEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimeEnabled", false).toBool();
+    const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
+    ui->actionToggle_SortByTimeEnabled->setEnabled(filtersEnabled);
+    ui->actionToggle_SortByTimeEnabled->setChecked(filtersEnabled && sortByTimeEnabled);
+    ui->actionSort_By_Timestamp->setEnabled(filtersEnabled);
+    ui->actionSort_By_Timestamp->setChecked(filtersEnabled && sortByTimestampEnabled);
+    ui->checkBoxFilterRange->setEnabled(filtersEnabled);
+    ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
+    if(!filtersEnabled)
+    {
+        ui->checkBoxFilterRange->setStyleSheet("QCheckBox:disabled { color: gray; }");
+        ui->lineEditFilterStart->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+        ui->lineEditFilterEnd->setStyleSheet("QLineEdit:disabled { color: gray; background-color: #efefef; }");
+    }
+    else
+    {
+        ui->checkBoxFilterRange->setStyleSheet("");
+        ui->lineEditFilterStart->setStyleSheet("");
+        ui->lineEditFilterEnd->setStyleSheet("");
+    }
 }
 
 void MainWindow::on_applyConfig_clicked()
@@ -8643,8 +8738,8 @@ void MainWindow::on_checkBoxFilterRange_stateChanged(int arg1)
 {
     applyConfigEnabled(true);
 
-    ui->lineEditFilterStart->setEnabled(arg1==Qt::Checked);
-    ui->lineEditFilterEnd->setEnabled(arg1==Qt::Checked);
+    ui->lineEditFilterStart->setEnabled(arg1==Qt::Checked && filtersEnabled);
+    ui->lineEditFilterEnd->setEnabled(arg1==Qt::Checked && filtersEnabled);
 }
 
 void MainWindow::on_lineEditFilterStart_textChanged(const QString &arg1)
