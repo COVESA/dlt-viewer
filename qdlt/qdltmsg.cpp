@@ -28,6 +28,7 @@ extern "C"
 
 #include <QtEndian>
 #include <QDateTime>
+#include <QTimeZone>
 #include <QCache>
 #include <QHash>
 
@@ -271,7 +272,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
     if(!date.isValid() || !time.isValid())
         return QString("Invalid date");
 
-    QDateTime gmDateTime(date,time,Qt::UTC);
+    QDateTime gmDateTime(date, time, QTimeZone::utc());
 
     gmDateTime = gmDateTime.addSecs(offset);
 
@@ -439,7 +440,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
-    quint32 storageHeaderTimestampNanoseconds = 0;
+    quint32 storageHeaderTimestampNanoseconds = 0; Q_UNUSED(storageHeaderTimestampNanoseconds)
     quint64 storageHeaderTimestampSeconds = 0;
     QString storageHeaderEcuId;
 

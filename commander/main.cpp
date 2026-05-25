@@ -59,7 +59,8 @@ int main(int argc, char *argv[])
         {
             // open outputfile
             outputfile.setFileName(opt.getLogFiles()[0]);
-            outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate);
+            if(!outputfile.open(QIODevice::WriteOnly|QIODevice::Truncate))
+                qDebug() << "ERROR: Cannot open output file:" << outputfile.fileName();
             outputfile.close();
         }
     }

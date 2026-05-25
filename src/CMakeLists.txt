@@ -124,6 +124,15 @@ set_target_properties(dlt-viewer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
 
+if(WIN32)
+    add_custom_command(TARGET dlt-viewer POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:qdlt>
+            ${CMAKE_BINARY_DIR}/bin
+        COMMENT "Copying libqdlt.dll to bin/"
+    )
+endif()
+
     install(TARGETS dlt-viewer
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
     # Underscore for NSIS compatibility https://gitlab.kitware.com/cmake/cmake/-/issues/19982
