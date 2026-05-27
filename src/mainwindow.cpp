@@ -793,7 +793,7 @@ void MainWindow::initSearchTable()
 
 
     /* set table size and en */
-   for  (int col=0;col <= m_searchresultsTable->model()->columnCount();col++)
+     for  (int col=0;col < m_searchresultsTable->model()->columnCount();col++)
    {
      m_searchresultsTable->setColumnWidth(col,FieldNames::getColumnWidth((FieldNames::Fields)col,settings));
    }
@@ -8520,9 +8520,7 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
-    m_searchtableModel->modelChanged();
 }
-
 
 void MainWindow::searchtable_cellSelected( QModelIndex index)
 {
