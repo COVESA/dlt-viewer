@@ -824,11 +824,14 @@ void SearchDialog::findPreviousClicked()
 
 void SearchDialog::on_lineEditSearch_textEdited(QString newText)
 {
+        if (lineEdits.size() > 1)
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(0)!
             QSignalBlocker signalBlocker(lineEdits.at(1));
             lineEdits.at(1)->setText(newText);
         }
+        if (lineEdits.isEmpty())
+            return;
         for(int i=0; i<lineEdits.size();i++){
             if(lineEdits.at(0)->text().isEmpty())
                 setSearchColour(lineEdits.at(i),1);
@@ -836,7 +839,9 @@ void SearchDialog::on_lineEditSearch_textEdited(QString newText)
 }
 void SearchDialog::textEditedFromToolbar(QString newText)
 {
-        {
+        if (lineEdits.isEmpty())
+            return;
+    {
             // block signal so that it does not trigger a setText back on lineEdits->at(1)!
             QSignalBlocker signalBlocker(lineEdits.at(0));
             lineEdits.at(0)->setText(newText);
