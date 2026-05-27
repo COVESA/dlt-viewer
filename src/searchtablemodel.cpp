@@ -46,7 +46,7 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    if (index.row() >= m_searchResultList.size() && index.row()<0)
+    if (index.row() < 0 || index.row() >= m_searchResultList.size())
         return QVariant();
 
     if (role == Qt::DisplayRole)
@@ -323,7 +323,7 @@ void SearchTableModel::add_SearchResultEntries(const QList<unsigned long>& entri
 
 bool SearchTableModel::get_SearchResultEntry(int position, unsigned long &entry)
 {
-    if (position > m_searchResultList.size() || 0 > position )
+    if (position < 0 || position >= m_searchResultList.size())
     {
         return false;
     }
