@@ -4973,6 +4973,11 @@ void MainWindow::drawUpdatedView()
 void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
     Q_UNUSED(deselected);
+    if(m_suppressPluginSelectionRefresh)
+    {
+        return;
+    }
+
     if(selected.size()>0)
     {
         /* With Autoscroll= false the tableview doesn't jump to the right edge,
@@ -6779,6 +6784,16 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             if(item->getFilename() != dlg.getFilename())
                 callInitFile = true;
 
+            const bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
+            m_suppressPluginSelectionRefresh = reloadCurrentLog;
+
+            if (reloadCurrentLog)
+            {
+                clearSelection();
+                tableModel->setForceEmpty(true);
+                tableModel->modelChanged();
+            }
+
             item->setFilename( dlg.getFilename() );
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
@@ -6786,6 +6801,18 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             /* update plugin item */
             updatePlugin(item);
             item->savePluginModeToSettings();
+
+            if (reloadCurrentLog)
+            {
+                syncCheckBoxesAndMenu();
+                applyConfigEnabled(false);
+                filterUpdate();
+                reloadLogFile(false);
+                triggerPluginsAutoload();
+                callInitFile = false;
+            }
+
+            m_suppressPluginSelectionRefresh = false;
         }
         if(callInitFile)
         {
