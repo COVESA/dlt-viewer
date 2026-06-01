@@ -20,6 +20,35 @@ install(PROGRAMS
   DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}/.."
   COMPONENT dlt_viewer)
 
+# Install Qt offscreen platform plugin for silent/help mode on macOS.
+# dlt-viewer sets QT_QPA_PLATFORM=offscreen for -s/--silent and -h/--help,
+# so the plugin must be present in the standard Qt platform plugin bundle path.
+get_target_property(DLT_QMAKE_LOCATION ${QT_PREFIX}::qmake LOCATION)
+if(DLT_QMAKE_LOCATION)
+    execute_process(
+        COMMAND "${DLT_QMAKE_LOCATION}" -query QT_INSTALL_PLUGINS
+        OUTPUT_VARIABLE DLT_QT_PLUGIN_DIR
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
+if(NOT DLT_QT_PLUGIN_DIR)
+    set(DLT_QT_PLUGIN_DIR "${DLT_QT_LIB_DIR}/../plugins")
+endif()
+
+set(DLT_QT_OFFSCREEN_PLUGIN
+    "${DLT_QT_PLUGIN_DIR}/platforms/libqoffscreen.dylib")
+
+if(EXISTS "${DLT_QT_OFFSCREEN_PLUGIN}")
+    install(FILES
+        "${DLT_QT_OFFSCREEN_PLUGIN}"
+        DESTINATION "${DLT_APP_DIR_NAME}/Contents/PlugIns/platforms"
+        COMPONENT qt_libraries)
+else()
+    message(FATAL_ERROR
+        "Missing Qt offscreen platform plugin required for macOS silent/help mode: "
+        "${DLT_QT_OFFSCREEN_PLUGIN}")
+endif()
+
 # COMMAND ${MAC_DEPLOY_TOOL} $<TARGET_FILE_DIR:dlt-viewer>/../.. -always-overwrite
 
 # # enable high-DPI displays support
