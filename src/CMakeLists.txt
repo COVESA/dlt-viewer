@@ -38,6 +38,8 @@ add_executable(dlt-viewer
     settingsdialog.cpp
     injectiondialog.h
     injectiondialog.cpp
+    feedbacksubmission.h
+    feedbacksubmission.cpp
     searchdialog.h
     searchdialog.cpp
     multiplecontextdialog.h

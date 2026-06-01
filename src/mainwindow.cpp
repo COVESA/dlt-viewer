@@ -71,6 +71,7 @@
 #include "plugindialog.h"
 #include "settingsdialog.h"
 #include "injectiondialog.h"
+#include "feedbacksubmission.h"
 #include "version.h"
 #include "dltfileutils.h"
 #include "dltuiutils.h"
@@ -5898,30 +5899,6 @@ void MainWindow::controlMessage_UnregisterContext(QString ecuId,QString appId,QS
     }
 }
 
-void MainWindow::on_action_menuHelp_Support_triggered()
-{
-  QMessageBox msgBox(this);
-  msgBox.setWindowTitle("Mail-Support DLT");
-  msgBox.setTextFormat(Qt::RichText); //this is what makes the links clickable
-  QString text = "<a href='mailto:";
-  text.append(DLT_SUPPORT_MAIL_ADDRESS);
-  text.append("?Subject=DLT Question: [please add subject] ");//subject
-  text.append("&body=Please keep version information in mail:%0D%0ADLT Version: ").append(PACKAGE_VERSION).append("-");//body start
-  text.append(PACKAGE_VERSION_STATE);
-  text.append("-");
-  text.append(PACKAGE_REVISION);
-  text.append("%0D%0ABuild Date: ");
-  text.append(__DATE__);
-  text.append("-");
-  text.append(__TIME__).append("\nQt Version: ").append(QT_VERSION_STR);
-  text.append("'");//end body
-  text.append("><center>Mailto ").append(DLT_SUPPORT_NAME).append(" DLT-Viewer-Support:<br>");
-  text.append(DLT_SUPPORT_MAIL_ADDRESS).append("</center></a>");
-  msgBox.setText(text);
-  msgBox.setStandardButtons(QMessageBox::Ok);
-  msgBox.exec();
-}
-
 void MainWindow::on_action_menuHelp_Info_triggered()
 {
     QMessageBox::information(0, QString("DLT Viewer"),
@@ -5949,6 +5926,10 @@ void MainWindow::on_action_menuHelp_Info_triggered()
                              QString("Architecture: Little Endian\n\n")+
                          #endif
                              QString("(C) 2016,2025 BMW AG\n"));
+}
+
+void MainWindow::on_actionSubmit_Feedback_triggered(){
+    FeedbackSubmission::showDialog(this);
 }
 
 void MainWindow::on_action_menuHelp_Command_Line_triggered() {

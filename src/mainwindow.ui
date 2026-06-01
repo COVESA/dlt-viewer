@@ -93,8 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>23</height>
-
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -211,7 +210,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="action_menuHelp_Info"/>
-    <addaction name="action_menuHelp_Support"/>
+    <addaction name="actionSubmit_Feedback"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
     <addaction name="actionShortcuts_List"/>
@@ -1581,8 +1580,8 @@
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
-    </property>
-   </action>
+   </property>
+  </action>
   <action name="actionFiltered_Message_Count">
    <property name="text">
     <string>Marked Message Count</string>
@@ -1591,6 +1590,11 @@
   <action name="actionCheck_For_Latest_Updates">
    <property name="text">
     <string>Check For Latest Updates</string>
+   </property>
+  </action>
+  <action name="actionSubmit_Feedback">
+   <property name="text">
+    <string>Submit Feedback</string>
    </property>
   </action>
  </widget>
