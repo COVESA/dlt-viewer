@@ -12,7 +12,7 @@ qdlt::msg::payload::GetLogInfo makeGetLogInfo(
     int8_t logLevel = 1,
     int8_t traceStatus = 1)
 {
-    qdlt::msg::payload::GetLogInfo info;
+        qdlt::msg::payload::GetLogInfo info;
     info.status = 7;
 
     qdlt::msg::payload::GetLogInfo::App app;
@@ -39,16 +39,16 @@ TEST(EcuTree, PreservesContextsFromMultipleGetLogInfoMessagesForSameApp)
     tree.add("IDCE", makeGetLogInfo("APP1", "Application 1", "CTX1", "Context 1"));
     tree.add("IDCE", makeGetLogInfo("APP1", "Application 1", "CTX2", "Context 2"));
 
-    ASSERT_TRUE(tree.ecus.contains("IDCE"));
+    ASSERT_TRUE(tree.ecus.find("IDCE") != tree.ecus.end());
     const auto &apps = tree.ecus.at("IDCE");
 
-    ASSERT_TRUE(apps.contains("APP1"));
+    ASSERT_TRUE(apps.find("APP1") != apps.end());
     const auto &app = apps.at("APP1");
 
     EXPECT_EQ(app.description, "Application 1");
     EXPECT_EQ(app.contexts.size(), 2u);
-    EXPECT_TRUE(app.contexts.contains("CTX1"));
-    EXPECT_TRUE(app.contexts.contains("CTX2"));
+    EXPECT_TRUE(app.contexts.find("CTX1") != app.contexts.end());
+    EXPECT_TRUE(app.contexts.find("CTX2") != app.contexts.end());
     EXPECT_EQ(app.contexts.at("CTX1").description, "Context 1");
     EXPECT_EQ(app.contexts.at("CTX2").description, "Context 2");
 }
