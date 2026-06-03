@@ -20,18 +20,22 @@
 #include "feedbacksubmission.h"
 
 #include <QComboBox>
+#include <QDesktopServices>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QDir>
+#include <QFileInfo>
 #include <QFormLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QSysInfo>
 #include <QTextEdit>
 #include <QUrl>
 #include <QUrlQuery>
+#include <QPushButton>
 #include <QVBoxLayout>
-#include <qpushbutton.h>
 
 #include "version.h"
 
@@ -62,8 +66,9 @@ void FeedbackSubmission::showDialog(QWidget *parent)
     descriptionEdit->setMinimumHeight(120);
     formLayout->addRow("Description *", descriptionEdit);
 
+    const QString dltViewerVersion = QString::fromLatin1(PACKAGE_VERSION);
     QLineEdit *versionEdit = new QLineEdit(&feedbackDialog);
-    versionEdit->setText(PACKAGE_VERSION);
+    versionEdit->setText(dltViewerVersion);
     versionEdit->setReadOnly(true);
     formLayout->addRow("DLT Viewer Version *", versionEdit);
 
@@ -87,9 +92,9 @@ void FeedbackSubmission::showDialog(QWidget *parent)
     mainLayout->addWidget(buttonBox);
 
     QObject::connect(buttonBox, &QDialogButtonBox::accepted, &feedbackDialog, [&]() {
-        QString title = titleEdit->text().trimmed();
-        QString description = descriptionEdit->toPlainText().trimmed();
-        QString emailId = emailEdit->text().trimmed();
+        const QString title = titleEdit->text().trimmed();
+        const QString description = descriptionEdit->toPlainText().trimmed();
+        const QString emailId = emailEdit->text().trimmed();
 
         if (title.isEmpty() || description.isEmpty() || emailId.isEmpty()) {
             QMessageBox::warning(&feedbackDialog, "Submit Feedback",
@@ -97,22 +102,33 @@ void FeedbackSubmission::showDialog(QWidget *parent)
             return;
         }
 
-        QString category = categoryCombo->currentText();
-        QString version = versionEdit->text();
-        QString operatingSystem = osEdit->text();
-        QString severity = severityCombo->currentText();
+        const QRegularExpression emailRegex("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+        if (!emailRegex.match(emailId).hasMatch()) {
+            QMessageBox::warning(&feedbackDialog, "Submit Feedback",
+                                 "Please enter a valid email address.");
+            return;
+        }
 
-        QString body = "Feedback Category: " + category + "\n\n";
-        body += "Title: " + title + "\n\n";
-        body += "Description:\n" + description + "\n\n";
-        body += "DLT Version: " + version + "-" + PACKAGE_VERSION_STATE + "-" + PACKAGE_REVISION + "\n";
-        body += "Build Date: " + QString(__DATE__) + "-" + QString(__TIME__) + "\n";
-        body += "Qt Version: " + QString(QT_VERSION_STR) + "\n";
-        body += "Operating System: " + operatingSystem + "\n";
-        body += "Severity: " + severity + "\n";
-        body += "Submitted By: " + emailId + "\n";
+        const QString category = categoryCombo->currentText();
+        const QString operatingSystem = osEdit->text();
+        const QString severity = severityCombo->currentText();
 
-        QString subject = "DLT Viewer Feedback: " + title;
+        QString body = QString("Feedback Category: %1\n\n").arg(category);
+        body += QString("Title: %1\n\n").arg(title);
+        body += QString("Description:\n%1\n\n").arg(description);
+        body += QString("DLT Version: %1-%2-%3\n")
+                .arg(dltViewerVersion)
+                .arg(PACKAGE_VERSION_STATE)
+                .arg(PACKAGE_REVISION);
+        body += QString("Build Date: %1-%2\n")
+            .arg(QString(__DATE__))
+            .arg(QString(__TIME__));
+        body += QString("Qt Version: %1\n").arg(QString(QT_VERSION_STR));
+        body += QString("Operating System: %1\n").arg(operatingSystem);
+        body += QString("Severity: %1\n").arg(severity);
+        body += QString("Submitted By: %1\n").arg(emailId);
+
+        const QString subject = "DLT Viewer Feedback: " + title;
 
         QUrl mailToUrl;
         mailToUrl.setScheme("mailto");
@@ -123,20 +139,31 @@ void FeedbackSubmission::showDialog(QWidget *parent)
         query.addQueryItem("body", body);
         mailToUrl.setQuery(query);
 
-        const QString encodedMailto = mailToUrl.toString(QUrl::FullyEncoded);
+        const QDir sourceDir(QFileInfo(QString::fromLatin1(__FILE__)).absolutePath());
+        QString readmePath = sourceDir.filePath("README.md");
+        if (!QFileInfo::exists(readmePath)) {
+            readmePath = sourceDir.absoluteFilePath("../README.md");
+        }
+        const QString readmeUrl = QUrl::fromLocalFile(readmePath).toString(QUrl::FullyEncoded);
 
-        QMessageBox msgBox(parent);
-        msgBox.setWindowTitle("Mail-Support DLT");
-        msgBox.setTextFormat(Qt::RichText); //this is what makes the links clickable
-        QString text = "<a href=\"";
-        text.append(encodedMailto.toHtmlEscaped());
-        text.append("\"><center>Mailto ").append(QString(DLT_SUPPORT_NAME).toHtmlEscaped()).append(" DLT-Viewer-Support:<br>");
-        text.append(QString(DLT_SUPPORT_MAIL_ADDRESS).toHtmlEscaped()).append("</center></a>");
-        msgBox.setText(text);
-        msgBox.setStandardButtons(QMessageBox::Ok);
+        QMessageBox msgBox(&feedbackDialog);
+        msgBox.setWindowTitle("Information");
+        msgBox.setTextFormat(Qt::RichText); // this makes links clickable
+        msgBox.setTextInteractionFlags(Qt::TextBrowserInteraction);
+        msgBox.setText(QString("Support information can be found in <a href=\"%1\">ReadMe.md</a>")
+                   .arg(readmeUrl.toHtmlEscaped()));
+        if (QLabel *msgLabel = msgBox.findChild<QLabel *>("qt_msgbox_label")) {
+            msgLabel->setOpenExternalLinks(true);
+            msgLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        }
+        QPushButton *generateButton = msgBox.addButton("Generate", QMessageBox::AcceptRole);
+        msgBox.addButton(QMessageBox::Cancel);
         msgBox.exec();
 
-        feedbackDialog.accept();
+        if (msgBox.clickedButton() == generateButton) {
+            QDesktopServices::openUrl(mailToUrl);
+            feedbackDialog.accept();
+        }
     });
 
     QObject::connect(buttonBox, &QDialogButtonBox::rejected, &feedbackDialog, &QDialog::reject);

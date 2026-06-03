@@ -1232,11 +1232,6 @@
     <string>Ctrl+G</string>
    </property>
   </action>
-  <action name="action_menuHelp_Support">
-   <property name="text">
-    <string>Support...</string>
-   </property>
-  </action>
   <action name="actionNewDltFile">
    <property name="icon">
     <iconset resource="resources/resource.qrc">
