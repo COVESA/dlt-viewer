@@ -6795,6 +6795,11 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         dlg.setPluginInterfaceVersion(item->getPluginInterfaceVersion());
         dlg.setFilename(item->getFilename());
         dlg.setMode(item->getMode());
+        // Keep dialog filename in sync with the value currently shown in plugin view.
+        const QString displayedFilename = item->text(2);
+        if (item->getFilename() != displayedFilename) {
+            item->setFilename(displayedFilename);
+        }
         if(!item->getPlugin()->isViewer())
             dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->getType());
