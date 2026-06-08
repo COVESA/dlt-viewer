@@ -24,10 +24,8 @@
 #include <QCheckBox>
 #include <QColor>
 #include <QDateTime>
-#include <QElapsedTimer>
 #include <QHash>
 #include <QLineEdit>
-#include <QFutureWatcher>
 #include <QRegularExpression>
 #include <QStringList>
 #include <QTableView>
@@ -126,10 +124,6 @@ private:
     SearchTableModel *m_searchtablemodel{nullptr};
 
     std::atomic_bool isSearchCancelled{false};
-    QFutureWatcher<int> m_findAllWatcher;
-    QElapsedTimer m_findAllUiUpdateTimer;
-    qint64 m_findAllLastUiUpdateMs{0};
-    int m_findAllAddedSinceLastUiUpdate{0};
 
     long int startLine{-1};
     bool nextClicked{true};
@@ -200,11 +194,6 @@ private:
      * @brief Main function to perform search.
      * @return Result code.
      */
-    void startParallelFindAll(QRegularExpression searchTextRegExp);
-    void reportProgress(int progress);
-    void onFindAllFinished();
-    void appendFindAllMatchesChunk(const QList<unsigned long>& entries);
-
     int find();
 
     /**
