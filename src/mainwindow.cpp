@@ -2242,13 +2242,31 @@ void MainWindow::on_actionExport_triggered()
 //call for spliting the DLT File
 void MainWindow::on_actionSplitDLTFile_triggered(){
 
+    if (isLiveLoggingActive()) {
+        QMessageBox::warning(this, QString("DLT Viewer"),
+                             QString("Cannot Split During Live Logging"));
+        return;
+    }
+
+    if (outputfile.fileName().isEmpty() || outputfile.size() <= 0) {
+        QMessageBox::warning(this, QString("DLT Viewer"),
+                             QString("No DLT file opened"));
+        return;
+    }
+
     if (!outputfile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open Output File for File Splitting";
+        QMessageBox::warning(this, QString("DLT Viewer"),
+                             QString("No DLT file opened"));
         return;
     }
     FileSpliting *splitFile = new FileSpliting(this);
     splitFile->setFile(&outputfile);
-    splitFile->splitDLTFile_triggered(outputfile,outputFilePath);
+    splitFile->splitDLTFile_triggered(outputFilePath);
+
+    // Ensure split flow never leaves the output file in ReadOnly mode.
+    if (outputfile.isOpen()) {
+        outputfile.close();
+    }
 
 }
 

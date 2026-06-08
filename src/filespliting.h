@@ -12,7 +12,7 @@ class FileSpliting : public QWidget
 
     explicit FileSpliting(QWidget *parent = nullptr);
 
-    void splitDLTFile_triggered(QFile &file,QStringList path); //Split DLT Files
+    void splitDLTFile_triggered(QStringList path); //Split DLT Files
     void splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes, const QString &destinationFolder);
 
     void setFile(QFile *file);

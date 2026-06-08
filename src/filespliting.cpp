@@ -2,8 +2,10 @@
 #include <filespliting.h>
 
 #include "qmessagebox.h"
+#include <QApplication>
 #include <QDialog>
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <qboxlayout.h>
 #include <qlabel.h>
 #include <qlineedit.h>
@@ -21,12 +23,22 @@ void FileSpliting::setFile(QFile *file)
 
 
 //The function is triggered when Split DLT File is clicked which is under File Menu.
-//A dialog box asking for the splitting size is opened where the user can specify the size in KB,MB or GB.
+//A dialog box asking for the splitting size is opened where the user can specify the size in MB or GB.
 //The size is casted toqint64 and them parsed to splitOutputFile function.
 //The destination path can also be selected by user which will also be parsend to splitOutFile function.
 
-void FileSpliting::splitDLTFile_triggered(QFile &file,QStringList path){
+void FileSpliting::splitDLTFile_triggered(QStringList path){
     qDebug() << "Split File Triggered";
+
+    if (m_file == nullptr) {
+        QMessageBox::warning(this, "DLT Viewer", "No DLT file opened");
+        return;
+    }
+
+    if (path.isEmpty() || path.first().isEmpty()) {
+        QMessageBox::warning(this, "DLT Viewer", "No DLT file opened");
+        return;
+    }
 
     QDialog dialog(this);
     dialog.setWindowTitle("Enter Split Size");
@@ -37,7 +49,6 @@ void FileSpliting::splitDLTFile_triggered(QFile &file,QStringList path){
 
     QLabel *unitLabel = new QLabel("Unit:");
     QComboBox *unitCombo = new QComboBox();
-    unitCombo->addItem("KB");
     unitCombo->addItem("MB");
     unitCombo->addItem("GB");
 
@@ -64,12 +75,18 @@ void FileSpliting::splitDLTFile_triggered(QFile &file,QStringList path){
     connect(cancelButton, &QPushButton::clicked, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        double sizeValue = sizeEdit->text().toDouble();
+        const QString sizeText = sizeEdit->text().trimmed();
+        double sizeValue = sizeText.toDouble();
+
+        if (sizeText.isEmpty() || sizeValue <= 0.0) {
+            QMessageBox::warning(this, "Invalid Split Size", "Please enter a valid split size greater than 0.");
+            return;
+        }
+
         QString sizeUnit = unitCombo->currentText();
 
         qint64 multiplier = 1;
-        if (sizeUnit == "KB") multiplier = 1024LL;
-        else if (sizeUnit == "MB") multiplier = 1024LL * 1024;
+        if (sizeUnit == "MB") multiplier = 1024LL * 1024;
         else if (sizeUnit == "GB") multiplier = 1024LL * 1024 * 1024;
 
         qint64 maxChunkSizeBytes = static_cast<qint64>(sizeValue * multiplier);
@@ -87,12 +104,6 @@ void FileSpliting::splitDLTFile_triggered(QFile &file,QStringList path){
             return;
         }
 
-
-        if (folderPath.isEmpty()) {
-            QMessageBox::warning(this, "No Folder Selected", "Split operation canceled.");
-            return;
-        }
-
         splitOutputFile(path,maxChunkSizeBytes, folderPath);
     }
 }
@@ -101,6 +112,16 @@ void FileSpliting::splitDLTFile_triggered(QFile &file,QStringList path){
 //If the same files are splitted twice the olde files will be deleted.
 //chunk carry is done to avoid data loss
 void FileSpliting::splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes, const QString &destinationFolder){
+
+    if (m_file == nullptr) {
+        qWarning() << "No input file available for splitting";
+        return;
+    }
+
+    if (filePath.isEmpty() || filePath.first().isEmpty()) {
+        QMessageBox::warning(this, "DLT Viewer", "No DLT file opened");
+        return;
+    }
 
     if (!m_file->isOpen()) {
         qWarning() << "Failed to open Output File for File Splitting";
@@ -128,6 +149,17 @@ void FileSpliting::splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes
     int fileIndex = 1;
     qint64 accumulatedSize = 0;
     QByteArray buffer;
+        qint64 processedBytes = 0;
+
+        const qint64 totalBytes = m_file->size();
+        QProgressDialog progressDialog("Splitting DLT file...", QString(), 0, 100, this);
+        progressDialog.setWindowTitle("DLT Viewer");
+        progressDialog.setCancelButton(nullptr);
+        progressDialog.setWindowModality(Qt::ApplicationModal);
+        progressDialog.setMinimumDuration(0);
+        progressDialog.setValue(0);
+        progressDialog.show();
+        QApplication::processEvents();
 
            // Reset to start
     m_file->seek(0);
@@ -135,23 +167,25 @@ void FileSpliting::splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes
     while (!m_file->atEnd()) {
         // Read DLT standard header (first 4 bytes)
         QByteArray header = m_file->read(4);
+        processedBytes += header.size();
         if (header.size() < 4) {
             qDebug() << "Reached EOF while reading header.";
             break;
         }
 
-               // Extract payload length from bytes 2 and 3
+        // Extract payload length from bytes 2 and 3
         quint16 payloadLen = ((quint8)header[2] << 8) | (quint8)header[3];
         quint32 msgLen = payloadLen + 4;  // total = header + payload
 
-               // Check if enough bytes remain in file
+        // Check if enough bytes remain in file
         if (m_file->bytesAvailable() < (msgLen - 4)) {
             qWarning() << "Unexpected EOF: file ends before message fully read.";
             break;
         }
 
-               // Read payload
+        // Read payload
         QByteArray payload = m_file->read(msgLen - 4);
+        processedBytes += payload.size();
         QByteArray completeMessage = header + payload;
 
                // Check if adding this message exceeds current chunk size
@@ -181,6 +215,12 @@ void FileSpliting::splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes
                // Append message to buffer
         buffer.append(completeMessage);
         accumulatedSize += completeMessage.size();
+
+        if (totalBytes > 0) {
+            const int percent = static_cast<int>((processedBytes * 100) / totalBytes);
+            progressDialog.setValue(qMin(percent, 100));
+            QApplication::processEvents();
+        }
     }
 
            // Write remaining buffer if not empty
@@ -198,6 +238,8 @@ void FileSpliting::splitOutputFile(QStringList filePath,qint64 maxChunkSizeBytes
             qDebug() << "Written last split:" << QDir::toNativeSeparators(outputFileName);
         }
     }
+
+    progressDialog.setValue(100);
 
     m_file->close();
 }
