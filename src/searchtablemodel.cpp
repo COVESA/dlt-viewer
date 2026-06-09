@@ -23,6 +23,12 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
+namespace {
+bool needsDecodedMessage(int column)
+{
+    return column == FieldNames::Payload || column >= FieldNames::Arg0;
+}
+}
 
 
 SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
@@ -41,7 +47,6 @@ SearchTableModel::~SearchTableModel()
 QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 {
     QDltMsg msg;
-    QByteArray buf;
 
     if (!index.isValid())
         return QVariant();
@@ -51,28 +56,29 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole)
     {
+        if(index.column() == FieldNames::Index)
+        {
+            return QString("%L1").arg((m_searchResultList.at(index.row())));
+        }
+
         /* get the message with the selected item id */
         if(!qfile->getMsg(m_searchResultList.at(index.row()), msg))
         {
-            if(index.column() == FieldNames::Index)
-            {
-                return QString("%1").arg((m_searchResultList.at(index.row())));
-            }
-            else if(index.column() == FieldNames::Payload)
+            if(index.column() == FieldNames::Payload)
             {
                 return QString("!!CORRUPTED MESSAGE!!");
             }
             return QVariant();
         }
 
-        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        if(pluginManager && needsDecodedMessage(index.column()) &&
+                QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
             pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
         QString visu_data;
         switch(index.column())
         {
         case FieldNames::Index:
-            /* display index */            
             return QString("%L1").arg((m_searchResultList.at(index.row())));
         case FieldNames::Time:
             if( project->settings->automaticTimeSettings == 0 )
@@ -304,19 +310,6 @@ void SearchTableModel::add_SearchResultEntry(unsigned long entry)
     const int row = m_searchResultList.size();
     beginInsertRows(QModelIndex(), row, row);
     m_searchResultList.append(entry);
-    endInsertRows();
-}
-
-void SearchTableModel::add_SearchResultEntries(const QList<unsigned long>& entries)
-{
-    if (entries.isEmpty())
-        return;
-
-    const int firstRow = m_searchResultList.size();
-    const int lastRow = firstRow + entries.size() - 1;
-
-    beginInsertRows(QModelIndex(), firstRow, lastRow);
-    m_searchResultList.append(entries);
     endInsertRows();
 }
 
