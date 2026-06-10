@@ -43,6 +43,9 @@ QDltDefaultFilter::~QDltDefaultFilter()
 
 void QDltDefaultFilter::clear()
 {
+    malformedFilterFiles.clear();
+    malformedFilterErrors.clear();
+
     /* delete all filter list entries */
     QDltFilterList *t;
     foreach(t,defaultFilterList)
@@ -80,7 +83,15 @@ void QDltDefaultFilter::loadDirectory(QString path)
     {
         /* create filter list for every filter file and load the filter file */
         QDltFilterList *filterList = new QDltFilterList();
-        filterList->LoadFilter(dir.absolutePath()+"/"+fileName,true);
+        if(!filterList->LoadFilter(dir.absolutePath()+"/"+fileName,true))
+        {
+            const QString malformedFile = dir.absolutePath()+"/"+fileName;
+            qWarning() << "Skipping malformed default filter file" << malformedFile;
+            malformedFilterFiles.append(malformedFile);
+            malformedFilterErrors.append(filterList->getLastLoadError());
+            delete filterList;
+            continue;
+        }
         defaultFilterList.append(filterList);
 
         /* add empty index for every filter list */
