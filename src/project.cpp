@@ -1176,13 +1176,21 @@ bool Project::LoadFilter(QString filename, bool replace){
 
     if(!filterList.LoadFilter(filename,replace))
     {
+        QString errorMessage = QString("Loading DLT Filter file failed:\n%1")
+            .arg(filename);
+
+        if (!filterList.getLastLoadError().isEmpty())
+        {
+            errorMessage.append(QString("\n\n%1").arg(filterList.getLastLoadError()));
+        }
+
         if ( QDltOptManager::getInstance()->issilentMode() == false )
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+            QMessageBox::critical(0, QString("DLT Viewer"), errorMessage);
         }
         else
         {
-            qDebug() << "Loading" << filterList.getFilename() << " DLT Filter file failed !";
+            qDebug() << errorMessage;
         }
         return false;
     }
