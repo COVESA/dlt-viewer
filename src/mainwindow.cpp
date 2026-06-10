@@ -922,17 +922,6 @@ void MainWindow::initFileHandling()
                 filterUpdate();
                 setCurrentFilters(filter);
             }
-            else
-            {
-               if (QDltOptManager::getInstance()->issilentMode())
-                {
-                    qDebug() << "Loading DLT Filter file failed!";
-                }
-                else
-                {
-                    QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-                }
-            }
         }
     }
 
@@ -3012,10 +3001,6 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
         applyConfigEnabled(true);
         on_filterWidget_itemSelectionChanged();
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
-    }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
     }
     return true;
 }
@@ -8566,6 +8551,31 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
 
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
+
+    if(!QDltOptManager::getInstance()->issilentMode() && !defaultFilter.malformedFilterFiles.isEmpty())
+    {
+        QStringList malformedFilterDescriptions;
+        for (int numFilter = 0; numFilter < defaultFilter.malformedFilterFiles.size(); ++numFilter)
+        {
+            QString description = defaultFilter.malformedFilterFiles.at(numFilter);
+            if (numFilter < defaultFilter.malformedFilterErrors.size() && !defaultFilter.malformedFilterErrors.at(numFilter).isEmpty())
+            {
+                description.append(QString("
+  %1").arg(defaultFilter.malformedFilterErrors.at(numFilter)));
+            }
+            malformedFilterDescriptions.append(description);
+        }
+
+        QMessageBox::warning(
+            this,
+            QString("DLT Viewer"),
+            QString("The following default filter file(s) contain errors and were skipped:
+
+%1")
+                .arg(malformedFilterDescriptions.join("
+
+")));
+    }
 
     // default filter list update combobox
     for (const auto *filterList : defaultFilter.defaultFilterList) {
