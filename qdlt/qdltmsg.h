@@ -23,7 +23,6 @@
 #define QDLT_MSG_H
 
 #include <QString>
-#include <optional>
 
 #include "export_rules.h"
 #include "qdltbase.h"
@@ -78,7 +77,7 @@ public:
     /*!
       \param _time The time when the DLT message is logged.
     */
-    void setTime(unsigned int _time) { time = _time; invalidateTimeStringCache(); invalidateHeaderStringCache(); }
+    void setTime(unsigned int _time) { time = _time; invalidateHeaderStringCache(); }
 
     //! Get the time of the message as a formatted string.
     /*!
@@ -549,9 +548,8 @@ public:
 
 private:
 
-  void invalidateTimeStringCache() const;
-  void invalidateHeaderStringCache() const;
-  void invalidatePayloadStringCache() const;
+    void invalidateHeaderStringCache() const;
+    void invalidatePayloadStringCache() const;
 
     //! The header parameter ECU Id.
     QString ecuid;
@@ -649,9 +647,10 @@ private:
     //! Position of current file in a QDltFile
     int index;
 
-    mutable std::optional<QString> cachedTimeString;
-    mutable std::optional<QString> cachedHeaderString;
-    mutable std::optional<QString> cachedPayloadString;
+    mutable QString cachedHeaderString;
+    mutable QString cachedPayloadString;
+    mutable bool hasCachedHeaderString = false;
+    mutable bool hasCachedPayloadString = false;
 
 };
 
