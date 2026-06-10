@@ -28,9 +28,6 @@ extern "C"
 
 #include <QtEndian>
 #include <QDateTime>
-#include <QTimeZone>
-#include <QCache>
-#include <QHash>
 
 namespace {
     constexpr const char * const qDltMessageType[] = {"log","app_trace","nw_trace","control","","","",""};
@@ -45,129 +42,6 @@ namespace {
                                        "get_local_time","use_ecu_id","use_session_id","use_timestamp","use_extended_header","set_default_log_level","set_default_trace_status",
                                        "get_software_version","message_buffer_overflow"};
     constexpr const char * const qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
-
-    // Cache key for the non-time/counter part of QDltMsg::toStringHeader().
-    // Copies of QStrings are cheap (ref-counted), so this avoids allocations in the hot path.
-    struct HeaderSuffixKey
-    {
-        QString ecuid;
-        QString apid;
-        QString ctid;
-        unsigned int sessionid = 0;
-        int type = 0;
-        int subtype = 0;
-        int mode = 0;
-        int numberOfArguments = 0;
-    };
-
-    inline bool operator==(const HeaderSuffixKey &a, const HeaderSuffixKey &b)
-    {
-        return a.sessionid == b.sessionid &&
-               a.type == b.type &&
-               a.subtype == b.subtype &&
-               a.mode == b.mode &&
-               a.numberOfArguments == b.numberOfArguments &&
-               a.ecuid == b.ecuid &&
-               a.apid == b.apid &&
-               a.ctid == b.ctid;
-    }
-
-    inline size_t qHash(const HeaderSuffixKey &k, size_t seed = 0)
-    {
-        // Use Qt's global qHash overloads for the individual fields.
-        seed ^= ::qHash(k.ecuid, seed);
-        seed ^= ::qHash(k.apid, seed << 1);
-        seed ^= ::qHash(k.ctid, seed << 2);
-        seed ^= ::qHash(static_cast<quint32>(k.sessionid), seed << 3);
-        seed ^= ::qHash(k.type, seed << 4);
-        seed ^= ::qHash(k.subtype, seed << 5);
-        seed ^= ::qHash(k.mode, seed << 6);
-        seed ^= ::qHash(k.numberOfArguments, seed << 7);
-        return seed;
-    }
-
-    thread_local time_t g_lastTime = static_cast<time_t>(-1);
-    thread_local QString g_lastTimeStr;
-
-    thread_local QCache<HeaderSuffixKey, QString> g_headerSuffixCache;
-    thread_local bool g_headerSuffixCacheInitialized = false;
-
-    static QString formatLocalTime(time_t t)
-    {
-        char buf[256] = {0};
-#if defined(_MSC_VER)
-        struct tm tmBuf;
-        if (localtime_s(&tmBuf, &t) != 0) {
-            return QString();
-        }
-        strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", &tmBuf);
-#else
-        struct tm *time_tm = localtime(&t);
-        if (!time_tm) {
-            return QString();
-        }
-        strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", time_tm);
-#endif
-        return QString::fromLatin1(buf);
-    }
-
-    static const QString &cachedTimeString(time_t t)
-    {
-        const bool hit = (t == g_lastTime) && !g_lastTimeStr.isEmpty();
-        if (hit) {
-            return g_lastTimeStr;
-        }
-
-        g_lastTime = t;
-        g_lastTimeStr = formatLocalTime(t);
-        return g_lastTimeStr;
-    }
-
-    static const QString &cachedHeaderSuffix(const QDltMsg &msg)
-    {
-        // Per-thread cache to avoid locks; bounded to keep memory stable.
-        if (!g_headerSuffixCacheInitialized) {
-            g_headerSuffixCache.setMaxCost(4096);
-            g_headerSuffixCacheInitialized = true;
-        }
-
-        HeaderSuffixKey key;
-        key.ecuid = msg.getEcuid();
-        key.apid = msg.getApid();
-        key.ctid = msg.getCtid();
-        key.sessionid = msg.getSessionid();
-        key.type = static_cast<int>(msg.getType());
-        key.subtype = msg.getSubtype();
-        key.mode = static_cast<int>(msg.getMode());
-        key.numberOfArguments = msg.getNumberOfArguments();
-
-        if (auto *cached = g_headerSuffixCache.object(key)) {
-            return *cached;
-        }
-
-        // Build the stable suffix once and cache it.
-        auto *suffix = new QString();
-        suffix->reserve(96);
-        *suffix += ' ';
-        *suffix += msg.getEcuid();
-        *suffix += ' ';
-        *suffix += msg.getApid();
-        *suffix += ' ';
-        *suffix += msg.getCtid();
-        *suffix += ' ';
-        *suffix += QString::number(msg.getSessionid());
-        *suffix += ' ';
-        *suffix += msg.getTypeString();
-        *suffix += ' ';
-        *suffix += msg.getSubtypeString();
-        *suffix += ' ';
-        *suffix += msg.getModeString();
-        *suffix += ' ';
-        *suffix += QString::number(msg.getNumberOfArguments());
-
-        g_headerSuffixCache.insert(key, suffix, 1);
-        return *suffix;
-    }
 }
 
 QDltMsg::QDltMsg()
@@ -252,9 +126,31 @@ QString QDltMsg::getCtrlReturnTypeString() const
 {
     return QString(( ctrlReturnType<=8 )?qDltCtrlReturnType[ctrlReturnType]:"");
 }
+
+void QDltMsg::invalidateTimeStringCache() const
+{
+    cachedTimeString.reset();
+}
+
+void QDltMsg::invalidateHeaderStringCache() const
+{
+    cachedHeaderString.reset();
+}
+
 QString QDltMsg::getTimeString() const
 {
-    return cachedTimeString(time);
+    if (cachedTimeString) {
+        return *cachedTimeString;
+    }
+
+    char strtime[256];
+    struct tm *time_tm;
+    time_tm = localtime(&time);
+    if(time_tm)
+        strftime(strtime, 256, "%Y/%m/%d %H:%M:%S", time_tm);
+
+    cachedTimeString = QString(strtime);
+    return *cachedTimeString;
 }
 
 QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
@@ -272,7 +168,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
     if(!date.isValid() || !time.isValid())
         return QString("Invalid date");
 
-    QDateTime gmDateTime(date, time, QTimeZone::utc());
+    QDateTime gmDateTime(date,time,Qt::UTC);
 
     gmDateTime = gmDateTime.addSecs(offset);
 
@@ -440,7 +336,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
-    quint32 storageHeaderTimestampNanoseconds = 0; Q_UNUSED(storageHeaderTimestampNanoseconds)
+    quint32 storageHeaderTimestampNanoseconds = 0;
     quint64 storageHeaderTimestampSeconds = 0;
     QString storageHeaderEcuId;
 
@@ -684,6 +580,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         if(mode==DltModeVerbose) {
             offset = 0;
             arguments.clear();
+            invalidatePayloadStringCache();
             for(int num=0;num<numberOfArguments;num++) {
                 if(argument.setArgument(payload,offset,endianness)==false) {
                     /* There was an error parsing the arguments */
@@ -1009,6 +906,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         if(mode==DltModeVerbose && !withSegementation) {
             offset = 0;
             arguments.clear();
+            invalidatePayloadStringCache();
             for(int num=0;num<numberOfArguments;num++) {
                 if(argument.setArgument(payload,offset,endianness)==false) {
                     /* There was an error parsing the arguments */
@@ -1035,6 +933,7 @@ bool QDltMsg::parseArguments()
     /* get the arguments of the payload */
     if(mode==DltModeVerbose) {
         arguments.clear();
+        invalidatePayloadStringCache();
         for(int num=0;num<numberOfArguments;num++) {
             if(argument.setArgument(payload,offset,endianness)==false) {
                 /* There was an error parsing the arguments */
@@ -1063,9 +962,6 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
         if(!(arguments[num].getArgument(payload,mode==DltModeVerbose)))
             return false;
     }
-
-    // Reserve expected size to avoid repeated reallocations while building the message
-    buf.reserve(payload.size() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + 64);
 
     /* write storageheader */
     if(withStorageHeader)
@@ -1145,6 +1041,10 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
 
 void QDltMsg::clear()
 {
+    invalidateTimeStringCache();
+    invalidateHeaderStringCache();
+    invalidatePayloadStringCache();
+
     ecuid.clear();
     apid.clear();
     ctid.clear();
@@ -1203,6 +1103,7 @@ void QDltMsg::clear()
 void QDltMsg::clearArguments()
 {
     arguments.clear();
+    invalidatePayloadStringCache();
 }
 
 int QDltMsg::sizeArguments() const
@@ -1226,38 +1127,63 @@ void QDltMsg::addArgument(QDltArgument argument, int index)
         arguments.append(argument);
     else
         arguments.insert(index,argument);
+
+    invalidatePayloadStringCache();
 }
 
 void QDltMsg::removeArgument(int index)
 {
     arguments.removeAt(index);
+    invalidatePayloadStringCache();
+}
+
+void QDltMsg::invalidatePayloadStringCache() const
+{
+    cachedPayloadString.reset();
 }
 
 
 QString QDltMsg::toStringHeader() const
 {
+    return toStringHeaderRef();
+}
+
+const QString &QDltMsg::toStringHeaderRef() const
+{
+    if (cachedHeaderString) {
+        return *cachedHeaderString;
+    }
+
     QString text;
     text.reserve(1024);
 
-    // Build header string using optimized concatenation
-    text += getTimeString();
-    text += '.';
-    text += QString::number(getMicroseconds()).rightJustified(6, '0');
-    text += ' ';
-    text += QString::number(getTimestamp() / 10000);
-    text += '.';
-    text += QString::number(getTimestamp() % 10000).rightJustified(4, '0');
-    text += ' ';
-    text += QString::number(getMessageCounter());
+    text += QString("%1.%2").arg(getTimeString()).arg(getMicroseconds(),6,10,QLatin1Char('0'));
+    text += QString(" %1.%2").arg(getTimestamp()/10000).arg(getTimestamp()%10000,4,10,QLatin1Char('0'));
+    text += QString(" %1").arg(getMessageCounter());
+    text += QString(" %1").arg(getEcuid());
+    text += QString(" %1").arg(getApid());
+    text += QString(" %1").arg(getCtid());
+    text += QString(" %1").arg(getSessionid());
+    text += QString(" %2").arg(getTypeString());
+    text += QString(" %2").arg(getSubtypeString());
+    text += QString(" %2").arg(getModeString());
+    text += QString(" %1").arg(getNumberOfArguments());
 
-    // Cache the non-time/counter suffix across messages (ECU/APID/CTID/etc.).
-    text += cachedHeaderSuffix(*this);
-
-    return text;
+    cachedHeaderString = text;
+    return *cachedHeaderString;
 }
 
 QString QDltMsg::toStringPayload() const
 {
+    return toStringPayloadRef();
+}
+
+const QString &QDltMsg::toStringPayloadRef() const
+{
+    if (cachedPayloadString) {
+        return *cachedPayloadString;
+    }
+
     QString text;
     QDltArgument argument;
     QByteArray data;
@@ -1276,14 +1202,16 @@ QString QDltMsg::toStringPayload() const
             text += "|";
             text += QDlt::toAscii(data, false);
         }
-        return text;
+        cachedPayloadString = text;
+        return *cachedPayloadString;
     }
 
     if( getType()==QDltMsg::DltTypeControl && getSubtype()==QDltMsg::DltControlResponse) {
 
         if(getCtrlServiceId() == DLT_SERVICE_ID_MARKER)
         {
-            return "MARKER";
+            cachedPayloadString = QStringLiteral("MARKER");
+            return *cachedPayloadString;
         }
 
         text += QString("[%1 %2] ").arg(getCtrlServiceIdString()).arg(getCtrlReturnTypeString());
@@ -1345,7 +1273,8 @@ QString QDltMsg::toStringPayload() const
             text += QDlt::toAscii(data);
         }
 
-        return text;
+        cachedPayloadString = text;
+        return *cachedPayloadString;
     }
 
     if( getType()==QDltMsg::DltTypeControl) {
@@ -1353,7 +1282,8 @@ QString QDltMsg::toStringPayload() const
         data = payload.mid(4,(payload.size()>260)?256:(payload.size()-4));
         text += QDlt::toAscii(data);
 
-        return text;
+        cachedPayloadString = text;
+        return *cachedPayloadString;
     }
 
     if(withSegementation && arguments.isEmpty())
@@ -1374,7 +1304,8 @@ QString QDltMsg::toStringPayload() const
         {
             text += "Segmentation: Abort Frame with abort reason " + QString("%1").arg(segmentationAbortReason);;
         }
-        return text;
+        cachedPayloadString = text;
+        return *cachedPayloadString;
     }
 
     for(int num=0;num<arguments.size();num++) {
@@ -1387,7 +1318,8 @@ QString QDltMsg::toStringPayload() const
 
     }
 
-    return text;
+    cachedPayloadString = text;
+    return *cachedPayloadString;
 }
 
 uint8_t QDltMsg::getVersionNumber() const
@@ -1398,6 +1330,7 @@ uint8_t QDltMsg::getVersionNumber() const
 void QDltMsg::setVersionNumber(uint8_t newVersionNumber)
 {
     versionNumber = newVersionNumber;
+    invalidatePayloadStringCache();
 }
 
 bool QDltMsg::getWithSessionId() const
@@ -1488,6 +1421,7 @@ bool QDltMsg::getWithSegementation() const
 void QDltMsg::setWithSegementation(bool newWithSegementation)
 {
     withSegementation = newWithSegementation;
+    invalidatePayloadStringCache();
 }
 
 bool QDltMsg::getWithPrivacyLevel() const
@@ -1588,6 +1522,7 @@ quint8 QDltMsg::getSegmentationFrameType() const
 void QDltMsg::setSegmentationFrameType(quint8 newSegmentationFrameType)
 {
     segmentationFrameType = newSegmentationFrameType;
+    invalidatePayloadStringCache();
 }
 
 quint64 QDltMsg::getSegmentationTotalLength() const
@@ -1598,6 +1533,7 @@ quint64 QDltMsg::getSegmentationTotalLength() const
 void QDltMsg::setSegmentationTotalLength(quint64 newSegmentationTotalLength)
 {
     segmentationTotalLength = newSegmentationTotalLength;
+    invalidatePayloadStringCache();
 }
 
 quint32 QDltMsg::getSegmentationConsecutiveFrame() const
@@ -1608,6 +1544,7 @@ quint32 QDltMsg::getSegmentationConsecutiveFrame() const
 void QDltMsg::setSegmentationConsecutiveFrame(quint32 newSegmentationConsecutiveFrame)
 {
     segmentationConsecutiveFrame = newSegmentationConsecutiveFrame;
+    invalidatePayloadStringCache();
 }
 
 quint8 QDltMsg::getSegmentationAbortReason() const
@@ -1618,6 +1555,7 @@ quint8 QDltMsg::getSegmentationAbortReason() const
 void QDltMsg::setSegmentationAbortReason(quint8 newSegmentationAbortReason)
 {
     segmentationAbortReason = newSegmentationAbortReason;
+    invalidatePayloadStringCache();
 }
 
 int QDltMsg::getIndex() const
@@ -1639,6 +1577,7 @@ void QDltMsg::genMsg()
 
     // clear existing payload
     payload.clear();
+    invalidatePayloadStringCache();
 
     // Generate payload for all arguments
     for(int num=0;num<arguments.size();num++) {

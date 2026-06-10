@@ -163,15 +163,18 @@ bool QDltFilter::compileRegexps()
 
 bool QDltFilter::match(const QDltMsg &msg) const
 {
+    const QString &msgEcuid = msg.getEcuidRef();
+    const QString &msgApid = msg.getApidRef();
+    const QString &msgCtid = msg.getCtidRef();
 
-    if( (true == enableEcuid) && (msg.getEcuid() != ecuid))
+    if( (true == enableEcuid) && (msgEcuid != ecuid))
     {
         return false;
     }
 
     if( true == enableRegexp_Appid )
     {
-        if( (true == enableApid) && ( false == appidRegularExpression.match(msg.getApid()).hasMatch() ) )
+        if( (true == enableApid) && ( false == appidRegularExpression.match(msgApid).hasMatch() ) )
         {
             return false;
         }
@@ -179,7 +182,7 @@ bool QDltFilter::match(const QDltMsg &msg) const
     }
     else
     {
-        if( (true == enableApid) && (msg.getApid() != apid))
+        if( (true == enableApid) && (msgApid != apid))
         {
             return false;
         }
@@ -187,14 +190,14 @@ bool QDltFilter::match(const QDltMsg &msg) const
 
     if(true == enableRegexp_Context)
     {
-        if( (true == enableCtid) && ( false == contextRegularExpression.match(msg.getCtid()).hasMatch() ) )
+        if( (true == enableCtid) && ( false == contextRegularExpression.match(msgCtid).hasMatch() ) )
         {
             return false;
         }
     }
     else
     {
-        if( (true ==enableCtid) && ( false == msg.getCtid().contains(ctid) ) )
+        if( (true ==enableCtid) && ( false == msgCtid.contains(ctid) ) )
         {
             return false;
         }
@@ -202,14 +205,14 @@ bool QDltFilter::match(const QDltMsg &msg) const
 
     if(true == enableRegexp_Header)
     {
-        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader()).hasMatch() ) )
+        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeaderRef()).hasMatch() ) )
         {
             return false;
         }
     }
     else
     {
-        if( ( true == enableHeader ) && ( false == msg.toStringHeader().contains(header,ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive)) )
+        if( ( true == enableHeader ) && ( false == msg.toStringHeaderRef().contains(header,ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
         }
@@ -217,14 +220,14 @@ bool QDltFilter::match(const QDltMsg &msg) const
 
     if( true == enableRegexp_Payload)
     {
-        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload()).hasMatch() ) )
+        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayloadRef()).hasMatch() ) )
         {
             return false;
         }
     }
     else
     {
-        if( (true == enablePayload) && ( false == msg.toStringPayload().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
+        if( (true == enablePayload) && ( false == msg.toStringPayloadRef().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
         }

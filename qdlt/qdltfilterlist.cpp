@@ -19,6 +19,7 @@
  * @licence end@
  */
 
+#include <algorithm>
 #include <regex>
 #include <stdlib.h>
 
@@ -31,6 +32,63 @@
 extern "C"
 {
 #include "dlt_common.h"
+}
+
+namespace {
+int filterMatchCost(const QDltFilter *filter)
+{
+    int cost = 0;
+
+    if (filter->enableRegexp_Appid)
+        cost += 8;
+    if (filter->enableRegexp_Context)
+        cost += 8;
+    if (filter->enableHeader)
+        cost += 20;
+    if (filter->enableRegexp_Header)
+        cost += 20;
+    if (filter->enablePayload)
+        cost += 100;
+    if (filter->enableRegexp_Payload)
+        cost += 40;
+
+    return cost;
+}
+
+int filterSpecificity(const QDltFilter *filter)
+{
+    int specificity = 0;
+
+    if (filter->enableEcuid)
+        specificity += 4;
+    if (filter->enableApid)
+        specificity += 4;
+    if (filter->enableCtid)
+        specificity += 3;
+    if (filter->enableMessageId)
+        specificity += 2;
+    if (filter->enableCtrlMsgs)
+        specificity += 1;
+    if (filter->enableLogLevelMin || filter->enableLogLevelMax)
+        specificity += 1;
+
+    return specificity;
+}
+
+bool shouldPrioritizeFilter(const QDltFilter *lhs, const QDltFilter *rhs)
+{
+    const int lhsCost = filterMatchCost(lhs);
+    const int rhsCost = filterMatchCost(rhs);
+    if (lhsCost != rhsCost)
+        return lhsCost < rhsCost;
+
+    const int lhsSpecificity = filterSpecificity(lhs);
+    const int rhsSpecificity = filterSpecificity(rhs);
+    if (lhsSpecificity != rhsSpecificity)
+        return lhsSpecificity > rhsSpecificity;
+
+    return false;
+}
 }
 
 QDltFilterList::QDltFilterList()
@@ -128,20 +186,6 @@ QString QDltFilterList::checkMarker(const QDltMsg &msg)
 }
 
 #endif
-
-const QDltFilter* QDltFilterList::matchMarkerFilter(const QDltMsg &msg) const
-{
-    for(int numfilter=0;numfilter<mfilters.size();numfilter++)
-    {
-        QDltFilter *filter = mfilters[numfilter];
-        if(filter->match(msg))
-        {
-            return filter;
-        }
-    }
-
-    return nullptr;
-}
 
 bool QDltFilterList::applyRegExString(QDltMsg &msg,QString &text)
 {
@@ -389,5 +433,8 @@ void QDltFilterList::updateSortedFilter()
             nfilters.append(filter);
         }
     }
+
+    std::stable_sort(pfilters.begin(), pfilters.end(), shouldPrioritizeFilter);
+    std::stable_sort(nfilters.begin(), nfilters.end(), shouldPrioritizeFilter);
 
 }
