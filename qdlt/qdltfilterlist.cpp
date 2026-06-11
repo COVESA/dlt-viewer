@@ -33,6 +33,109 @@ extern "C"
 #include "dlt_common.h"
 }
 
+namespace {
+enum class FilterMatchState { Match, Reject, NeedsDecode };
+
+bool matchesMetadataOnly(const QDltFilter *filter, const QDltMsg &msg)
+{
+    const QString msgEcuid = msg.getEcuid();
+    const QString msgApid = msg.getApid();
+    const QString msgCtid = msg.getCtid();
+
+    if(filter->enableEcuid && (msgEcuid != filter->ecuid))
+    {
+        return false;
+    }
+
+    if(filter->enableRegexp_Appid)
+    {
+        if(filter->enableApid && !filter->appidRegularExpression.match(msgApid).hasMatch())
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if(filter->enableApid && (msgApid != filter->apid))
+        {
+            return false;
+        }
+    }
+
+    if(filter->enableRegexp_Context)
+    {
+        if(filter->enableCtid && !filter->contextRegularExpression.match(msgCtid).hasMatch())
+        {
+            return false;
+        }
+    }
+    else
+    {
+        if(filter->enableCtid && !msgCtid.contains(filter->ctid))
+        {
+            return false;
+        }
+    }
+
+    if(filter->enableMessageId)
+    {
+        if(filter->messageIdMax == 0)
+        {
+            if(msg.getMessageId() != filter->messageIdMin)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            if((msg.getMessageId() < filter->messageIdMin) ||
+               (msg.getMessageId() >= filter->messageIdMax))
+            {
+                return false;
+            }
+        }
+    }
+
+    if(filter->enableCtrlMsgs && (msg.getType() != QDltMsg::DltTypeControl))
+    {
+        return false;
+    }
+    if(filter->enableLogLevelMax && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() <= filter->logLevelMax)))
+    {
+        return false;
+    }
+    if(filter->enableLogLevelMin && !((msg.getType() == QDltMsg::DltTypeLog) && (msg.getSubtype() >= filter->logLevelMin)))
+    {
+        return false;
+    }
+
+    return true;
+}
+
+bool requiresDecodedText(const QDltFilter *filter)
+{
+    return filter->enableHeader ||
+           filter->enableRegexp_Header ||
+           filter->enablePayload ||
+           filter->enableRegexp_Payload;
+}
+
+FilterMatchState matchBeforeDecode(const QDltFilter *filter, const QDltMsg &msg)
+{
+    if(!matchesMetadataOnly(filter, msg))
+    {
+        return FilterMatchState::Reject;
+    }
+
+    if(requiresDecodedText(filter))
+    {
+        return FilterMatchState::NeedsDecode;
+    }
+
+    return FilterMatchState::Match;
+}
+}
+
 QDltFilterList::QDltFilterList()
 {
 
@@ -237,6 +340,63 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
       }
 
     return found;
+}
+
+QDltFilterList::PreDecodeDecision QDltFilterList::checkFilterBeforeDecode(const QDltMsg &msg) const
+{
+    const bool positiveFiltersActive = !pfilters.isEmpty();
+    bool positiveMatched = !positiveFiltersActive;
+    bool positiveNeedsDecode = false;
+
+    for(int numfilter = 0; numfilter < pfilters.size(); numfilter++)
+    {
+        switch(matchBeforeDecode(pfilters[numfilter], msg))
+        {
+        case FilterMatchState::Match:
+            positiveMatched = true;
+            break;
+        case FilterMatchState::NeedsDecode:
+            positiveNeedsDecode = true;
+            break;
+        case FilterMatchState::Reject:
+            break;
+        }
+
+        if(positiveMatched)
+        {
+            break;
+        }
+    }
+
+    bool negativeNeedsDecode = false;
+    if(positiveMatched || positiveNeedsDecode)
+    {
+        for(int numfilter = 0; numfilter < nfilters.size(); numfilter++)
+        {
+            switch(matchBeforeDecode(nfilters[numfilter], msg))
+            {
+            case FilterMatchState::Match:
+                return PreDecodeDecision::Reject;
+            case FilterMatchState::NeedsDecode:
+                negativeNeedsDecode = true;
+                break;
+            case FilterMatchState::Reject:
+                break;
+            }
+        }
+    }
+
+    if(!positiveMatched && !positiveNeedsDecode)
+    {
+        return PreDecodeDecision::Reject;
+    }
+
+    if(positiveMatched && !negativeNeedsDecode)
+    {
+        return PreDecodeDecision::Match;
+    }
+
+    return PreDecodeDecision::NeedsDecode;
 }
 
 bool QDltFilterList::SaveFilter(QString _filename)
