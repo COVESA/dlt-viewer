@@ -40,6 +40,8 @@ class QDLT_EXPORT QDltFilterList
 {
 public:
 
+  enum class PreDecodeDecision { Match, Reject, NeedsDecode };
+
     //! List of filters.
     QList<QDltFilter*> filters;
 
@@ -104,6 +106,10 @@ public:
       \return true if message will be displayed, false if message will be filtered out
     */
     bool checkFilter(QDltMsg &msg);
+
+    //! Check if message can already be accepted or rejected from raw metadata.
+    /*! Returns NeedsDecode if header or payload conditions still need the full matcher path. */
+    PreDecodeDecision checkFilterBeforeDecode(const QDltMsg &msg) const;
 
     //! Save the filter.
     /*!
