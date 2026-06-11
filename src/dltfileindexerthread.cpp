@@ -56,6 +56,12 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     bool pluginsEnabled = indexer->getPluginsEnabled();
     QDltPlugin *item;
     bool bool_result = false;
+    QDltFilterList::PreDecodeDecision preDecodeDecision = QDltFilterList::PreDecodeDecision::NeedsDecode;
+
+    if(mode == DltFileIndexer::modeIndexAndFilter)
+    {
+        preDecodeDecision = filterList->checkFilterBeforeDecode(*msg);
+    }
 
     /* check if it is a version messages and
     version string not already parsed */
@@ -117,13 +123,28 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     }
 
     /* Process all decoderplugins */
-    if ( pluginsEnabled == true )
-     {
-     (void) pluginManager->decodeMsg(*msg, silentMode);
-     }
+    const bool skipDecodeForRejectedMessage =
+        pluginsEnabled &&
+        activeViewerPlugins->isEmpty() &&
+        (preDecodeDecision == QDltFilterList::PreDecodeDecision::Reject);
 
+    if(pluginsEnabled && !skipDecodeForRejectedMessage)
+    {
+        (void) pluginManager->decodeMsg(*msg, silentMode);
+    }
 
-    bool_result = filterList->checkFilter(*msg);
+    switch(preDecodeDecision)
+    {
+    case QDltFilterList::PreDecodeDecision::Match:
+        bool_result = true;
+        break;
+    case QDltFilterList::PreDecodeDecision::Reject:
+        bool_result = false;
+        break;
+    case QDltFilterList::PreDecodeDecision::NeedsDecode:
+        bool_result = filterList->checkFilter(*msg);
+        break;
+    }
     if ( bool_result == true)
     {
         if(const QDltFilter *markerFilter = filterList->matchMarkerFilter(*msg); markerFilter != nullptr)
