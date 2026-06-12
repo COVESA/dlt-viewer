@@ -8560,8 +8560,7 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
             QString description = defaultFilter.malformedFilterFiles.at(numFilter);
             if (numFilter < defaultFilter.malformedFilterErrors.size() && !defaultFilter.malformedFilterErrors.at(numFilter).isEmpty())
             {
-                description.append(QString("
-  %1").arg(defaultFilter.malformedFilterErrors.at(numFilter)));
+                description.append(QString("\n  %1").arg(defaultFilter.malformedFilterErrors.at(numFilter)));
             }
             malformedFilterDescriptions.append(description);
         }
@@ -8569,12 +8568,8 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
         QMessageBox::warning(
             this,
             QString("DLT Viewer"),
-            QString("The following default filter file(s) contain errors and were skipped:
-
-%1")
-                .arg(malformedFilterDescriptions.join("
-
-")));
+            QString("The following default filter file(s) contain errors and were skipped:\n\n%1")
+                .arg(malformedFilterDescriptions.join("\n\n")));
     }
 
     // default filter list update combobox
