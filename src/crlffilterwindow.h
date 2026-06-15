@@ -79,9 +79,6 @@ private:
     // Optimized data extraction method
     QVariantList extractMessageData(int filteredIndex, bool suppressIndexBuilding = false);
     
-    // Check if a message data is cached and valid
-    bool isMessageCacheValid(int currentFilteredCount, int totalMessages);
-    
     // Clear cache when file structure changes
     void invalidateCache();
     
