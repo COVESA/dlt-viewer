@@ -177,14 +177,11 @@ QDltMsg::QDltMsg()
 
 QString QDltMsg::getStringFromId(const char *text)
 {
-    if(text[1]==0)
-        return QString(QByteArray(text,1));
-    else if(text[2]==0)
-        return QString(QByteArray(text,2));
-    else if(text[3]==0)
-        return QString(QByteArray(text,3));
-    else
-        return QString(QByteArray(text,4));
+    int len = 0;
+    while (len < 4 && text[len] != 0)
+        ++len;
+
+    return QString::fromLatin1(text, len);
 
 }
 
@@ -684,6 +681,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
         if(mode==DltModeVerbose) {
             offset = 0;
             arguments.clear();
+            arguments.reserve(numberOfArguments);
             for(int num=0;num<numberOfArguments;num++) {
                 if(argument.setArgument(payload,offset,endianness)==false) {
                     /* There was an error parsing the arguments */

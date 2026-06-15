@@ -41,11 +41,63 @@ QDltFile::QDltFile()
 
     cache.setMaxCost(1000);
     cacheEnable = true;
+
+    recentRequestedIndices.fill(-1);
 }
 
 QDltFile::~QDltFile()
 {
     clear();
+}
+
+bool QDltFile::shouldUseMessageCache(int index)
+{
+    if(lastRequestedMsgIndex < 0)
+    {
+        lastRequestedMsgIndex = index;
+        sequentialAccessStreak = 0;
+        sequentialScanMode = false;
+        return true;
+    }
+
+    const int step = index - lastRequestedMsgIndex;
+    lastRequestedMsgIndex = index;
+
+    // Bulk scans typically read strictly adjacent rows. Disable cache churn after a short warm-up.
+    if(step == 1 || step == -1)
+    {
+        if(sequentialAccessStreak < 1024)
+        {
+            ++sequentialAccessStreak;
+        }
+        if(sequentialAccessStreak >= 32)
+        {
+            sequentialScanMode = true;
+        }
+        return !sequentialScanMode;
+    }
+
+    // Any non-adjacent jump indicates random/semi-random access, where cache helps again.
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+    return true;
+}
+
+bool QDltFile::shouldAdmitCacheInsertLocked(int index)
+{
+    for(const int recentIndex : recentRequestedIndices)
+    {
+        if(recentIndex == index)
+        {
+            recentRequestedIndices[recentRequestedWritePos] = index;
+            recentRequestedWritePos = (recentRequestedWritePos + 1) % kRecentAccessWindow;
+            return true;
+        }
+    }
+
+    recentRequestedIndices[recentRequestedWritePos] = index;
+    recentRequestedWritePos = (recentRequestedWritePos + 1) % kRecentAccessWindow;
+    return false;
 }
 
 void QDltFile::setCacheSize(qsizetype cost)
@@ -60,6 +112,18 @@ void QDltFile::setCacheSize(qsizetype cost)
         cacheEnable = true;
         cache.setMaxCost(cost);
     }
+}
+
+void QDltFile::resetCacheAccessPattern()
+{
+    lastRequestedMsgIndex = -1;
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+}
+
+void QDltFile::setCacheSinglePassBypass(bool bypass)
+{
+    cacheSinglePassBypass = bypass;
 }
 
 void QDltFile::setDLTv2Support(bool _dltv2Support)
@@ -84,6 +148,11 @@ void QDltFile::clear()
     files.clear();
 
     cache.clear();
+    lastRequestedMsgIndex = -1;
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+    recentRequestedIndices.fill(-1);
+    recentRequestedWritePos = 0;
 
     indexFilter.clear();
     indexFilterBase.clear();
@@ -725,18 +794,35 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
     bool result;
     QDltMsg *cacheMsg;
+    bool useCache = false;
 
-    // check if msg is already in cache
+    // Single-pass scatter bypass: skip all cache I/O for one-pass workloads where
+    // every message is accessed once and cache alloc/evict is pure overhead.
+    if(cacheEnable && cacheSinglePassBypass)
+    {
+        QByteArray data = getMsg(index);
+        if(data.isEmpty())
+            return false;
+        bool r = msg.setMsg(data, true, dltv2Support);
+        msg.setIndex(index);
+        return r;
+    }
+
+    // Detect scan access patterns and avoid cache churn on sequential one-pass workloads.
     if(cacheEnable)
     {
         mutexQDlt.lock();
-        cacheMsg = cache[index];
-        if(cacheMsg)
+        useCache = shouldUseMessageCache(index);
+        if(useCache)
         {
-            // load from cache
-            msg = *cacheMsg;
-            mutexQDlt.unlock();
-            return true;
+            cacheMsg = cache[index];
+            if(cacheMsg)
+            {
+                // load from cache
+                msg = *cacheMsg;
+                mutexQDlt.unlock();
+                return true;
+            }
         }
         mutexQDlt.unlock();
     }
@@ -749,20 +835,35 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     msg.setIndex(index);
 
     // store msg in cache
-    if(cacheEnable && result)
+    if(cacheEnable && useCache && result)
     {
-        cacheMsg = new QDltMsg();
-        *cacheMsg = msg;
         mutexQDlt.lock();
-        if(!cache.insert(index,cacheMsg))
+        const bool admitInsert = shouldAdmitCacheInsertLocked(index);
+        if(admitInsert)
         {
-            // object deleted already by insert function
-            // delete cacheMsg;
+            cacheMsg = new QDltMsg();
+            *cacheMsg = msg;
+            if(!cache.insert(index,cacheMsg))
+            {
+                // object deleted already by insert function
+                // delete cacheMsg;
+            }
         }
         mutexQDlt.unlock();
     }
 
     return result;
+}
+
+bool QDltFile::messageAt(int index, QDltMsg &msg) const
+{
+    // getMsg updates internal cache state, so route through a const_cast wrapper.
+    return const_cast<QDltFile*>(this)->getMsg(index, msg);
+}
+
+QByteArray QDltFile::messageBytesAt(int index) const
+{
+    return getMsg(index);
 }
 
 QByteArray QDltFile::getMsgFilter(int index) const
@@ -818,6 +919,11 @@ int QDltFile::getMsgFilterPos(int index) const
         }
         return index;
     }
+}
+
+int QDltFile::filteredGlobalIndexAt(int index) const
+{
+    return getMsgFilterPos(index);
 }
 
 void QDltFile::clearFilter()

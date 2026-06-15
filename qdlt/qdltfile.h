@@ -36,6 +36,8 @@
 #include <QCache>
 #include <QList>
 #include <QSet>
+#include <atomic>
+#include <array>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -156,12 +158,18 @@ public:
     */
     bool getMsg(int index,QDltMsg &msg);
 
+    //! Service-oriented alias for loading a decoded message at a global index.
+    bool messageAt(int index, QDltMsg &msg) const;
+
     //! Get one DLT message of the DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number DLT messages in the file
       \return Byte array containing the complete DLT message.
     */
     QByteArray getMsg(int index) const;
+
+    //! Service-oriented alias for loading serialized message bytes at a global index.
+    QByteArray messageBytesAt(int index) const;
 
     //! Get one DLT message of the filtered DLT log file selected by index
     /*!
@@ -176,6 +184,9 @@ public:
       \return real position in log file, -1 if invalid.
     */
     int getMsgFilterPos(int index) const;
+
+    //! Service-oriented alias for resolving a filtered row to the global message index.
+    int filteredGlobalIndexAt(int index) const;
 
     //! Delete all filters and markers.
     /*!
@@ -300,6 +311,18 @@ public:
      **/
     void setCacheSize(qsizetype cost);
 
+    //! Resets cache access pattern detection for new bulk scan operations.
+    /*! Call this before starting a new scan (e.g., filter marker counting) to prevent
+     *  incorrect cache bypass logic when accessing scattered indices in sequential loop. **/
+    void resetCacheAccessPattern();
+
+    //! Enable or disable single-pass bypass mode.
+    /*! When enabled, all cache reads and writes are suppressed. Use this around
+     *  single-pass scatter iterations (e.g. filter marker counting) where every
+     *  message is accessed exactly once and cache would only add alloc/evict overhead.
+     *  Restore to false after the operation. **/
+    void setCacheSinglePassBypass(bool bypass);
+
     //! Sets DLTv2 support
     /*!
      * \param dltv2Support DLTv2 Support
@@ -357,6 +380,12 @@ private:
     // Calculates total storage, message, and payload sizes for all indexed DLT messages.
     void calculateTotalSizes();
 
+  // Returns true when cache lookup/insert should be used for this access pattern.
+  bool shouldUseMessageCache(int index);
+
+  // Returns true when this index has been seen recently and is worth admitting to cache.
+  bool shouldAdmitCacheInsertLocked(int index);
+
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;
 
@@ -404,6 +433,21 @@ private:
 
     QCache<int,QDltMsg> cache;
     bool cacheEnable;
+
+    // When true, all cache reads and writes are skipped entirely.
+    // Use for single-pass scatter workloads where cache provides no benefit
+    // but adds allocation and eviction overhead (e.g. filter marker counting).
+    std::atomic<bool> cacheSinglePassBypass{false};
+
+    // Sequential scan detection to avoid cache churn on one-pass bulk workloads.
+    int lastRequestedMsgIndex = -1;
+    int sequentialAccessStreak = 0;
+    bool sequentialScanMode = false;
+
+    // Recent access window used as cache admission policy to avoid one-off insert churn.
+    static constexpr int kRecentAccessWindow = 64;
+    std::array<int, kRecentAccessWindow> recentRequestedIndices{};
+    int recentRequestedWritePos = 0;
 
     // Size calculation variables
     quint64 totalStorageSize = 0;
