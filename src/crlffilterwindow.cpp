@@ -260,9 +260,6 @@ void CrlfFilterWindow::createCrlfWindow() {
 
     // Update window title and status with message count
     updateMessageCount(crlfFilterProxy->rowCount());
-    
-    // Apply column settings and initialize tracking state
-    applyColumnSettings();
     lastFilteredMessageCount = dltFile->sizeFilter();
 
     // Show window after everything is prepared
@@ -945,13 +942,6 @@ QVariantList CrlfFilterWindow::extractMessageData(int filteredIndex, bool suppre
     }
     
     return data;
-}
-
-// Check if message cache is valid for current filter state
-bool CrlfFilterWindow::isMessageCacheValid(int currentFilteredCount, int /*totalMessages*/) {
-    return (lastCacheValidCount == currentFilteredCount && 
-            !messageDataCache.isEmpty() && 
-            !crlfCache.isEmpty());
 }
 
 // Clear cache when file structure changes
