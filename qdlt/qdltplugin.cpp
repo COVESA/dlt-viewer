@@ -265,9 +265,22 @@ if(plugincontrolinterface)
 // decoder plugin interfaces
 bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    if(mode != ModeDisable && plugindecoderinterface && plugindecoderinterface->isMsg(msg,triggeredByUser))
+    if(mode != ModeDisable && plugindecoderinterface)
     {
-        return plugindecoderinterface->decodeMsg(msg,triggeredByUser);
+        // Phase 6 contract hardening:
+        // Decode stage behaves transactionally for a single plugin invocation.
+        // The original message is only replaced when a plugin both matches
+        // and decodes successfully.
+        QDltMsg candidate = msg;
+
+        if (!plugindecoderinterface->isMsg(candidate, triggeredByUser))
+            return false;
+
+        if (!plugindecoderinterface->decodeMsg(candidate, triggeredByUser))
+            return false;
+
+        msg = candidate;
+        return true;
     }
     return false;
 }

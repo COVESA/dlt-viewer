@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
@@ -159,13 +159,15 @@ bool File::isComplete(){
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    if((i-1) <= dltFileIndex->length())
+    // Package numbers are 1-based; i-1 must be a valid 0-based index into dltFileIndex.
+    // The old check (i-1) <= length() allowed i==0 (i-1==-1) and inserts past the end.
+    if(i >= 1 && dltFileIndex != nullptr && (unsigned int)(i-1) < packages)
     {
         dltFileIndex->insert(i-1, index);
     }
     else
     {
-        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is greater than dltFileIndex length" << dltFileIndex->length() << "FileSerialNumber" << fileSerialNumber;
+        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is out of range [1.." << packages << "] FileSerialNumber" << fileSerialNumber;
     }
     increaseReceivedPackages();
 }

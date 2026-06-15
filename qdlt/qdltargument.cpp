@@ -411,7 +411,7 @@ QString QDltArgument::toString(bool binary) const
     case DltTypeInfoStrg:
     case DltTypeInfoUtf8:
         if(data.size()) {
-            text += QString::fromUtf8(data);
+            text += QString::fromUtf8(data.constData(), data.size());
         }
         break;
     case DltTypeInfoBool:
@@ -549,7 +549,7 @@ QVariant QDltArgument::getValue() const
     case DltTypeInfoStrg:
     case DltTypeInfoUtf8:
         if(data.size()) {
-            return QVariant(QString::fromUtf8(data));
+            return QVariant(QString::fromUtf8(data.constData(), data.size()));
         }
         break;
     case DltTypeInfoBool:

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
@@ -102,6 +102,11 @@ bool QDltFile::shouldAdmitCacheInsertLocked(int index)
 
 void QDltFile::setCacheSize(qsizetype cost)
 {
+    // Needed: QCache uses QHash internally. When setMaxCost() evicts old entries,
+    // QHash::erase() internally shifts neighboring nodes (robin-hood hashing), which
+    // invalidates any live iterator held by DltFileIndexerThread. Without this lock,
+    // background thread crashes when dereferencing stale iterator after cache size reduction.
+    QMutexLocker locker(&mutexQDlt);
     if(cost==0)
     {
         cacheEnable = false;
@@ -606,10 +611,17 @@ bool QDltFile::updateIndexFilter()
 
         buf = getMsg(num);
         if(!buf.isEmpty()) {
-            msg.setMsg(buf,true,dltv2Support);
-            msg.setIndex(num);
-            if(checkFilter(msg)) {
-                indexFilterBase.append(num);
+            bool parsed = msg.setMsg(buf, true, dltv2Support);
+            if(!parsed && !dltv2Support)
+            {
+                parsed = msg.setMsg(buf, true, true);
+            }
+            if(parsed)
+            {
+                msg.setIndex(num);
+                if(checkFilter(msg)) {
+                    indexFilterBase.append(num);
+                }
             }
         }
 
@@ -804,6 +816,10 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
         if(data.isEmpty())
             return false;
         bool r = msg.setMsg(data, true, dltv2Support);
+        if(!r && !dltv2Support)
+        {
+            r = msg.setMsg(data, true, true);
+        }
         msg.setIndex(index);
         return r;
     }
@@ -832,6 +848,10 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     if(data.isEmpty())
         return false;
     result = msg.setMsg(data,true,dltv2Support);
+    if(!result && !dltv2Support)
+    {
+        result = msg.setMsg(data,true,true);
+    }
     msg.setIndex(index);
 
     // store msg in cache
@@ -1029,7 +1049,12 @@ QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &ma
             if(!data.isEmpty())
             {
                 QDltMsg msg;
-                if(msg.setMsg(data, true, dltv2Support))
+                bool parsed = msg.setMsg(data, true, dltv2Support);
+                if(!parsed && !dltv2Support)
+                {
+                    parsed = msg.setMsg(data, true, true);
+                }
+                if(parsed)
                 {
                     if(sortByTime)
                     {

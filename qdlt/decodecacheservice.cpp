@@ -86,7 +86,7 @@ bool CDecodeCacheService::decode(QDltPluginManager *pluginManager,
                                  QDltMsg &msg) const
 {
     if (!pluginManager)
-        return false;
+        return true;
 
     pluginManager->decodeMsg(msg, triggeredByUser);
     return true;
