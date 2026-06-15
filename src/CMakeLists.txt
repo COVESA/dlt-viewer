@@ -80,6 +80,8 @@ add_executable(dlt-viewer
     searchform.cpp
     filtergrouplogs.h
     filtergrouplogs.cpp
+    projectiontablemodel.h
+    projectiontablemodel.cpp
     crlffilterwindow.h
     crlffilterwindow.cpp
     ${UI_RESOURCES_RCC}
