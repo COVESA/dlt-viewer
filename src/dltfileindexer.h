@@ -260,6 +260,9 @@ signals:
     // complete index creation of default filter finished
     void finishDefaultFilter();
 
+    // emitted when run() finishes without producing the expected completion signal for the active mode
+    void runAborted();
+
     //signal for progress bar while displaying marked message count
     void markerCountProgressMax(int max);
     void markerCountProgressValue(int value);

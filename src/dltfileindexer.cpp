@@ -810,6 +810,7 @@ void DltFileIndexer::run()
         if((mode != modeNone) && !indexFilter(filenames))
         {
             // error
+            emit(runAborted());
             return;
         }
         dltFile->enableFilter(filtersEnabled);
@@ -823,6 +824,7 @@ void DltFileIndexer::run()
         if(false == indexDefaultFilter())
         {
             // error
+            emit(runAborted());
             return;
         }
         emit(finishDefaultFilter());

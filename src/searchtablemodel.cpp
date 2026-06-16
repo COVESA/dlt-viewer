@@ -304,16 +304,25 @@ int CSearchTableModel::rowCount(const QModelIndex & /*parent*/) const
 
 void CSearchTableModel::modelChanged()
 {    
-    if (!m_searchResultList.empty())
+    const int currentRowCount = rowCount(QModelIndex());
+    const int currentColumnCount = columnCount();
+    const bool firstModelNotification = (m_lastKnownColumnCount < 0);
+    const bool structuralInvalidation = firstModelNotification || (m_lastKnownColumnCount != currentColumnCount);
+
+    if (structuralInvalidation)
     {
-        if (rowCount() > 0 && columnCount() > 0)
-        {
-            const QModelIndex topLeft = index(0, 0);
-            const QModelIndex bottomRight = index(rowCount()-1, columnCount()-1);
-            emit dataChanged(topLeft, bottomRight);
-        }
+        beginResetModel();
+        endResetModel();
     }
-    emit layoutChanged();
+    else if (currentRowCount > 0 && currentColumnCount > 0)
+    {
+        const QModelIndex topLeft = index(0, 0);
+        const QModelIndex bottomRight = index(currentRowCount - 1, currentColumnCount - 1);
+        emit dataChanged(topLeft, bottomRight);
+    }
+
+    m_lastKnownRowCount = currentRowCount;
+    m_lastKnownColumnCount = currentColumnCount;
 }
 
 int CSearchTableModel::columnCount(const QModelIndex & /*parent*/) const
@@ -327,7 +336,8 @@ void CSearchTableModel::clear_SearchResults()
     m_searchResultList.clear();
     m_decodeCacheService.clearForFile(qfile);
     endResetModel();
-}
+    m_lastKnownRowCount = 0;
+    m_lastKnownColumnCount = columnCount();
 }
 
 void CSearchTableModel::add_SearchResultEntry(unsigned long entry)
@@ -336,6 +346,27 @@ void CSearchTableModel::add_SearchResultEntry(unsigned long entry)
     beginInsertRows(QModelIndex(), row, row);
     m_searchResultList.push_back(entry);
     endInsertRows();
+    m_lastKnownRowCount = static_cast<int>(m_searchResultList.size());
+    m_lastKnownColumnCount = columnCount();
+}
+
+void CSearchTableModel::add_SearchResultEntries(const std::vector<std::uint64_t> &entries)
+{
+    if (entries.empty())
+        return;
+
+    const int firstRow = static_cast<int>(m_searchResultList.size());
+    const int lastRow = firstRow + static_cast<int>(entries.size()) - 1;
+
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    m_searchResultList.reserve(m_searchResultList.size() + entries.size());
+    for (const std::uint64_t entry : entries)
+    {
+        m_searchResultList.push_back(static_cast<unsigned long>(entry));
+    }
+    endInsertRows();
+    m_lastKnownRowCount = static_cast<int>(m_searchResultList.size());
+    m_lastKnownColumnCount = columnCount();
 }
 
 

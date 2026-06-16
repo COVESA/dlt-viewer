@@ -85,6 +85,8 @@ public slots:
 public:
     std::vector<unsigned long> m_searchResultList;
     mutable CDecodeCacheService m_decodeCacheService;
+    int m_lastKnownRowCount = -1;
+    int m_lastKnownColumnCount = -1;
     
 };
 

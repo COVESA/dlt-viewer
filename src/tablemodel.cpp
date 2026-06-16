@@ -26,6 +26,8 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
+#include "indexservice.h"
+#include "qdltfileprojection.h"
 
 CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
@@ -37,6 +39,8 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      emptyForceFlag = false;
      loggingOnlyMode = false;
      searchhit = -1;
+     m_lastKnownRowCount = -1;
+     m_lastKnownColumnCount = -1;
  }
 
  CTableModel::~CTableModel()
@@ -76,18 +80,28 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
          return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
      }
 
-     long int filterposindex = qfile->getMsgFilterPos(index.row());
+    const int filterposindex = resolveGlobalIndexForRow(index.row());
+    if (filterposindex < 0)
+    {
+        return QVariant();
+    }
 
      std::optional<QDltMsg> msg;
      if (m_cache.exists(index.row())) {
          msg = m_cache.get(index.row());
      } else {
          QDltMsg omsg;
-         if (bool success = qfile->getMsg(filterposindex, omsg); success) {
-            msg = std::make_optional(omsg);
-            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
-                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
-            }
+         const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
+         if (m_decodeCacheService.message(qfile,
+                                          pluginManager,
+                                          filterposindex,
+                                          decodeEnabled,
+                                          triggeredByUser,
+                                          omsg,
+                                          true)) {
+             msg = std::make_optional(omsg);
          }
 
          m_cache.put(index.row(), msg);
@@ -324,24 +338,100 @@ QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
 
  void CTableModel::modelChanged()
  {
-     if(true == emptyForceFlag)
-     {
-         index(0, 1);
-         index(qfile->sizeFilter()-1, 0);
-         index(qfile->sizeFilter()-1, columnCount() - 1);
-     }
-     else
-     {
-         index(0, 1);
-         index(0, 0);
-         index(0, columnCount() - 1);
-     }
+     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
+     const int currentRowCount = rowCount();
+     const int currentColumnCount = columnCount();
+     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
+     const bool structuralInvalidation = firstModelNotification ||
+                                         (m_lastKnownColumnCount != currentColumnCount) ||
+                                         (previousRowCount != currentRowCount);
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
 
-     emit(layoutChanged());
+     if (structuralInvalidation)
+     {
+         m_filteredProjectionCache.clear();
+         m_decodeCacheService.clearForFile(qfile);
+         beginResetModel();
+         endResetModel();
+     }
+     else
+     {
+         notifyModelDelta(previousRowCount, currentRowCount, currentColumnCount);
+     }
+
+     m_lastKnownRowCount = currentRowCount;
+     m_lastKnownColumnCount = currentColumnCount;
  }
+
+ void CTableModel::liveDataAppended()
+ {
+     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
+     const int currentRowCount = rowCount();
+     const int currentColumnCount = columnCount();
+     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
+
+     /* last search index must be deleted because model changed */
+     lastSearchIndex = -1;
+
+     if(firstModelNotification || m_lastKnownColumnCount != currentColumnCount || currentRowCount < previousRowCount)
+     {
+         m_filteredProjectionCache.clear();
+         m_decodeCacheService.clearForFile(qfile);
+         beginResetModel();
+         endResetModel();
+     }
+    else
+    {
+        if(currentRowCount != previousRowCount)
+        {
+            emit layoutChanged();
+        }
+        else
+        {
+            notifyModelDelta(previousRowCount, currentRowCount, currentColumnCount);
+        }
+    }
+
+     m_lastKnownRowCount = currentRowCount;
+     m_lastKnownColumnCount = currentColumnCount;
+ }
+
+void CTableModel::notifyModelDelta(int previousRowCount, int currentRowCount, int currentColumnCount)
+{
+    if (currentRowCount > 0 && currentColumnCount > 0)
+    {
+        const QModelIndex topLeft = index(0, 0);
+        const QModelIndex bottomRight = index(currentRowCount - 1, currentColumnCount - 1);
+        emit dataChanged(topLeft, bottomRight);
+    }
+}
+
+int CTableModel::resolveGlobalIndexForRow(int row) const
+{
+    if (!qfile || row < 0)
+        return -1;
+    // Filter is OFF
+    if (!qfile->isFilter())
+    {
+        if (row >= qfile->size())
+            return -1;
+        return row;
+    }
+    // Filter is ON
+    if (m_filteredProjectionCache.size() != qfile->sizeFilter())
+    {
+        CIndexService indexService;
+        m_filteredProjectionCache =
+            indexService.snapshotProjection(buildActiveFilteredProjection(qfile));
+    }
+
+    if (row < m_filteredProjectionCache.size())
+        return m_filteredProjectionCache.at(row);
+
+    return -1;
+}
 
 int CTableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
 {
@@ -364,7 +454,7 @@ QColor CTableModel::searchBackgroundColor() const
     return hlColor;
 }
 
-void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void CHtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
@@ -393,7 +483,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
 }
 
-QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize CHtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
