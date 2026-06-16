@@ -93,7 +93,7 @@
      <x>0</x>
      <y>0</y>
      <width>1001</width>
-     <height>25</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -117,6 +117,7 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
+    <addaction name="actionSplitDLTFile"/>
     <addaction name="actionExport"/>
     <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
@@ -427,20 +428,6 @@
         <attribute name="title">
          <string>Explore</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_66">
-         <property name="leftMargin">
-          <number>2</number>
-         </property>
-         <property name="topMargin">
-          <number>2</number>
-         </property>
-         <property name="rightMargin">
-          <number>2</number>
-         </property>
-         <property name="bottomMargin">
-          <number>2</number>
-         </property>
-        </layout>
        </widget>
        <widget class="QWidget" name="tabConfig">
         <property name="focusPolicy">
@@ -1590,6 +1577,11 @@
   <action name="actionSubmit_Feedback">
    <property name="text">
     <string>Submit Feedback</string>
+   </property>
+  </action>
+  <action name="actionSplitDLTFile">
+   <property name="text">
+    <string>Split DLT File</string>
    </property>
   </action>
  </widget>
