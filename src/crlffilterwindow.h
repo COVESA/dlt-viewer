@@ -137,7 +137,6 @@ private:
     // Check if parent MainWindow has background operations in progress
     bool isMainWindowBusy() const;
     
-    QStandardItemModel* crlfFilterProxy;
     CrlfIndexViewModel* crlfFilterProxy;
     QAbstractTableModel* sourceModelOfDLT;
     QWidget* crlfWindow;

@@ -124,15 +124,24 @@ public:
     void setTimeRange(const QDateTime &min, const QDateTime &max);
     bool needTimeRangeReset() const;
 private:
+    /**
+     * @brief Scheduling priority for asynchronous Find-All jobs.
+     */
     enum class SearchPriority {
         Normal,
         Urgent
     };
 
+    /**
+     * @brief Stable row-to-message mapping snapshot used by worker tasks.
+     */
     struct StableRowMap {
         QVector<int> rowsToMsgIndex;
     };
 
+    /**
+     * @brief Deferred Find-All request queued while another search is running.
+     */
     struct PendingFindAllRequest {
         QRegularExpression regExp;
         SearchPriority priority;

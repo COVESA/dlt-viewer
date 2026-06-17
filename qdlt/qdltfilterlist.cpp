@@ -192,7 +192,7 @@ bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg) const
     return result;
 }
 
-bool QDltFilterList::checkFilter(QDltMsg &msg)
+bool QDltFilterList::checkFilter(QDltMsg &msg) const
 {
     QDltFilter *filter;
     bool found = false;

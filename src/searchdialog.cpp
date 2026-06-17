@@ -47,7 +47,9 @@ SearchDialog::SearchDialog(QWidget *parent) :
     const int idealThreads = QThread::idealThreadCount();
     const int workerCount = (idealThreads > 0) ? qMin(4, idealThreads) : 4;
     m_searchThreadPool.setMaxThreadCount(qMax(1, workerCount));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
     m_searchThreadPool.setThreadPriority(QThread::NormalPriority);
+#endif
 
     connect(&m_findAllWatcher, &QFutureWatcher<int>::finished,
             this, &SearchDialog::onFindAllFinished);
@@ -251,11 +253,15 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp, Sea
 
     if(priority == SearchPriority::Urgent)
     {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
         m_searchThreadPool.setThreadPriority(QThread::HighPriority);
+#endif
     }
     else
     {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
         m_searchThreadPool.setThreadPriority(QThread::NormalPriority);
+#endif
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
