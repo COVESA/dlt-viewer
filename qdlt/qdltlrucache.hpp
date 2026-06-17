@@ -50,6 +50,11 @@ public:
         return m_keyIteratorsMap.find(key) != m_keyIteratorsMap.end();
     }
 
+    void clear() {
+        m_cacheItems.clear();
+        m_keyIteratorsMap.clear();
+    }
+
 private:
     std::list<CacheEntry> m_cacheItems;
     std::unordered_map<Key, CacheListIterator> m_keyIteratorsMap;

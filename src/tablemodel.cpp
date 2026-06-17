@@ -22,6 +22,7 @@
 #include <qmessagebox.h>
 
 #include "tablemodel.h"
+#include "decodemanager.h"
 #include "fieldnames.h"
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
@@ -79,175 +80,30 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      long int filterposindex = qfile->getMsgFilterPos(index.row());
 
      std::optional<QDltMsg> msg;
-     if (m_cache.exists(index.row())) {
-         msg = m_cache.get(index.row());
+     if (m_cache.exists(filterposindex)) {
+         msg = m_cache.get(filterposindex);
      } else {
          QDltMsg omsg;
          if (bool success = qfile->getMsg(filterposindex, omsg); success) {
             msg = std::make_optional(omsg);
-            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
-                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
-            }
+                const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+                DecodeManager::instance().decode(pluginManager, *msg, decodeEnabled, !QDltOptManager::getInstance()->issilentMode());
          }
 
-         m_cache.put(index.row(), msg);
+         m_cache.put(filterposindex, msg);
      }
 
      if (role == Qt::DisplayRole)
      {
-       if (!msg.has_value())
-       {
-         if(index.column() == FieldNames::Index)
+         const quint64 cacheKey = renderCacheKey(index.row(), index.column());
+         if (m_renderCache.exists(cacheKey))
          {
-             return QString("%1").arg(filterposindex);
+             return m_renderCache.get(cacheKey);
          }
-         else if(index.column() == FieldNames::Payload)
-         {
-             qDebug() << "Corrupted message at index" << index.row();
-             return QString("!!CORRUPTED MESSAGE!!");
-         }
-         return QVariant();
-       }
 
-         QString visu_data;
-         switch(index.column())
-         {
-         case FieldNames::Index:
-             /* display index */
-             return QString("%L1").arg(filterposindex);
-         case FieldNames::Time:
-             if( project->settings->automaticTimeSettings == 0 )
-                return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
-             else
-                return QString("%1.%2").arg(msg->getTimeString()).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
-         case FieldNames::TimeStamp:
-             return QString("%1.%2").arg(msg->getTimestamp()/10000).arg(msg->getTimestamp()%10000,4,10,QLatin1Char('0'));
-         case FieldNames::Counter:
-             return QString("%1").arg(msg->getMessageCounter());
-         case FieldNames::EcuId:
-             return msg->getEcuid();
-         case FieldNames::AppId:
-             switch(project->settings->showApIdDesc)
-             {
-             case 0:
-                return msg->getApid();
-                 break;
-             case 1:
-                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
-                    {
-                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(!ecuitem) continue;
-                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-                     {
-                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem && appitem->id == msg->getApid() && !appitem->description.isEmpty())
-                         {
-                            return appitem->description;
-                         }
-                     }
-                    }
-                   return QString("Apid: %1 (No description)").arg(msg->getApid());
-                 break;
-              default:
-                 return msg->getApid();
-             }
-         case FieldNames::ContextId:
-             switch(project->settings->showCtIdDesc)
-             {
-             case 0:
-                 return msg->getCtid();
-                 break;
-             case 1:
-                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
-                    {
-                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(!ecuitem) continue;
-                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-                     {
-                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem && appitem->id == msg->getApid())
-                         {
-                             for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
-                             {
-                                 ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-                                 if(conitem && conitem->id == msg->getCtid() && !conitem->description.isEmpty())
-                                 {
-                                    return conitem->description;
-                                 }
-                             }
-                         }
-                     }
-                    }
-                   return  QString("Ctid: %1 (No description)").arg(msg->getCtid());
-                 break;
-              default:
-                 return msg->getCtid();
-             }
-         case FieldNames::SessionId:
-             switch(project->settings->showSessionName){
-             case 0:
-                 return QString("%1").arg(msg->getSessionid());
-                 break;
-             case 1:
-                 if(!msg->getSessionName().isEmpty())
-                 {
-                    return msg->getSessionName();
-                 }
-                else
-                 {
-                    return QString("%1").arg(msg->getSessionid());
-                 }
-                 break;
-              default:
-                 return QString("%1").arg(msg->getSessionid());
-             }
-         case FieldNames::Type:
-             return msg->getTypeString();
-         case FieldNames::Subtype:
-             return msg->getSubtypeString();
-         case FieldNames::Mode:
-             return msg->getModeString();
-         case FieldNames::ArgCount:
-             return QString("%1").arg(msg->getNumberOfArguments());
-         case FieldNames::Payload:
-             /* display payload */
-             visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
-             if(qfile) qfile->applyRegExString(*msg,visu_data);
-             /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
-             {
-                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
-                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
-                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
-                     }
-                 }
-             }*/
-
-             /* limit size of string to 1000 characters to speed up scrolling */
-             if(visu_data.size()>1000)
-             {
-                visu_data = visu_data.mid(0,1000);
-             }
-
-             return visu_data;
-         case FieldNames::MessageId:
-             return QString::asprintf(project->settings->msgIdFormat.toUtf8(), msg->getMessageId());
-         default:
-             if (index.column()>=FieldNames::Arg0)
-             {
-                 int col=index.column()-FieldNames::Arg0; //arguments a zero based
-                 QDltArgument arg;
-                 if (msg->getArgument(col,arg))
-                 {
-                     return arg.toString();
-                 }
-                 else
-                 {
-                  return QString(" - ");
-                 }
-
-             }
-         }
+         const QVariant displayData = buildDisplayData(index, msg, filterposindex);
+         m_renderCache.put(cacheKey, displayData);
+         return displayData;
      }
 
      if ( role == Qt::ForegroundRole )
@@ -283,7 +139,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
         return visu_data;
     }
 
-     return QVariant();
+    return QVariant();
  }
 
 QVariant TableModel::headerData(int section, Qt::Orientation orientation,
@@ -324,6 +180,9 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
  void TableModel::modelChanged()
  {
+     m_cache.clear();
+     m_renderCache.clear();
+
      if(true == emptyForceFlag)
      {
          index(0, 1);
@@ -342,6 +201,156 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
      emit(layoutChanged());
  }
+
+void TableModel::appendRows(int firstRow, int lastRow)
+{
+    if(firstRow < 0 || lastRow < firstRow)
+    {
+        return;
+    }
+
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    endInsertRows();
+}
+
+quint64 TableModel::renderCacheKey(int row, int column) const
+{
+    return (static_cast<quint64>(static_cast<quint32>(row)) << 32) |
+           static_cast<quint32>(column);
+}
+
+QVariant TableModel::buildDisplayData(const QModelIndex &index, std::optional<QDltMsg> &msg, long int filterposindex) const
+{
+    if (!msg.has_value())
+    {
+        if(index.column() == FieldNames::Index)
+        {
+            return QString("%1").arg(filterposindex);
+        }
+        if(index.column() == FieldNames::Payload)
+        {
+            qDebug() << "Corrupted message at index" << index.row();
+            return QString("!!CORRUPTED MESSAGE!!");
+        }
+        return QVariant();
+    }
+
+    QString visu_data;
+    switch(index.column())
+    {
+    case FieldNames::Index:
+        return QString("%L1").arg(filterposindex);
+    case FieldNames::Time:
+        if( project->settings->automaticTimeSettings == 0 )
+            return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
+        return QString("%1.%2").arg(msg->getTimeString()).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
+    case FieldNames::TimeStamp:
+        return QString("%1.%2").arg(msg->getTimestamp()/10000).arg(msg->getTimestamp()%10000,4,10,QLatin1Char('0'));
+    case FieldNames::Counter:
+        return QString("%1").arg(msg->getMessageCounter());
+    case FieldNames::EcuId:
+        return msg->getEcuid();
+    case FieldNames::AppId:
+        switch(project->settings->showApIdDesc)
+        {
+        case 0:
+            return msg->getApid();
+        case 1:
+            for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+            {
+                EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                if(!ecuitem) continue;
+                for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                {
+                    ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                    if(appitem && appitem->id == msg->getApid() && !appitem->description.isEmpty())
+                    {
+                        return appitem->description;
+                    }
+                }
+            }
+            return QString("Apid: %1 (No description)").arg(msg->getApid());
+        default:
+            return msg->getApid();
+        }
+    case FieldNames::ContextId:
+        switch(project->settings->showCtIdDesc)
+        {
+        case 0:
+            return msg->getCtid();
+        case 1:
+            for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+            {
+                EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                if(!ecuitem) continue;
+                for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                {
+                    ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                    if(appitem && appitem->id == msg->getApid())
+                    {
+                        for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+                        {
+                            ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+                            if(conitem && conitem->id == msg->getCtid() && !conitem->description.isEmpty())
+                            {
+                                return conitem->description;
+                            }
+                        }
+                    }
+                }
+            }
+            return  QString("Ctid: %1 (No description)").arg(msg->getCtid());
+        default:
+            return msg->getCtid();
+        }
+    case FieldNames::SessionId:
+        switch(project->settings->showSessionName){
+        case 0:
+            return QString("%1").arg(msg->getSessionid());
+        case 1:
+            if(!msg->getSessionName().isEmpty())
+            {
+                return msg->getSessionName();
+            }
+            return QString("%1").arg(msg->getSessionid());
+        default:
+            return QString("%1").arg(msg->getSessionid());
+        }
+    case FieldNames::Type:
+        return msg->getTypeString();
+    case FieldNames::Subtype:
+        return msg->getSubtypeString();
+    case FieldNames::Mode:
+        return msg->getModeString();
+    case FieldNames::ArgCount:
+        return QString("%1").arg(msg->getNumberOfArguments());
+    case FieldNames::Payload:
+        visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
+        if(qfile) qfile->applyRegExString(*msg,visu_data);
+
+        if(visu_data.size()>1000)
+        {
+            visu_data = visu_data.mid(0,1000);
+        }
+
+        return visu_data;
+    case FieldNames::MessageId:
+        return QString::asprintf(project->settings->msgIdFormat.toUtf8(), msg->getMessageId());
+    default:
+        if (index.column()>=FieldNames::Arg0)
+        {
+            int col=index.column()-FieldNames::Arg0;
+            QDltArgument arg;
+            if (msg->getArgument(col,arg))
+            {
+                return arg.toString();
+            }
+            return QString(" - ");
+        }
+    }
+
+    return QVariant();
+}
 
 int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
 {
