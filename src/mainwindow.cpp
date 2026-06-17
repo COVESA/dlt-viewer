@@ -57,6 +57,7 @@
 #include <QTableWidget>
 #include <QToolButton>
 #include <QPainter>
+#include <QtConcurrent/QtConcurrent>
 
 #if defined(_MSC_VER)
 #include <io.h>

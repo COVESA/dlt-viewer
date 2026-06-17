@@ -31,8 +31,10 @@
 #include <QRegularExpression>
 #include <QStringList>
 #include <QTableView>
+#include <QThreadPool>
 
 #include <atomic>
+#include <optional>
 
 #include "searchtablemodel.h"
 
@@ -122,6 +124,20 @@ public:
     void setTimeRange(const QDateTime &min, const QDateTime &max);
     bool needTimeRangeReset() const;
 private:
+    enum class SearchPriority {
+        Normal,
+        Urgent
+    };
+
+    struct StableRowMap {
+        QVector<int> rowsToMsgIndex;
+    };
+
+    struct PendingFindAllRequest {
+        QRegularExpression regExp;
+        SearchPriority priority;
+    };
+
     Ui::SearchDialog *ui{nullptr};
     SearchTableModel *m_searchtablemodel{nullptr};
 
@@ -130,6 +146,8 @@ private:
     QElapsedTimer m_findAllUiUpdateTimer;
     qint64 m_findAllLastUiUpdateMs{0};
     int m_findAllAddedSinceLastUiUpdate{0};
+    QThreadPool m_searchThreadPool;
+    std::optional<PendingFindAllRequest> m_pendingFindAllRequest;
 
     long int startLine{-1};
     bool nextClicked{true};
@@ -155,16 +173,51 @@ private:
     void setRegExp(bool regExp);
     /**
      * @brief Adds a found line to the search index.
-     * @param searchLine Line number.
+        * @param msgIndex Stable message index in the DLT file.
      */
-    void addToSearchIndex(long int searchLine);
+    void addToSearchIndex(unsigned long msgIndex);
     /**
      * @brief Iterates through messages and finds matches.
      * @param searchLine Start line.
      * @param searchBorder Border line.
      * @param searchTextRegExp Regular expression for search.
+    * @param stableRows Snapshot mapping from visible row to message index.
      */
-    void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
+    void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp, const StableRowMap &stableRows);
+
+    /**
+    * @brief Creates a stable row-to-message snapshot for current search run.
+    * @return Stable row map for deterministic traversal.
+    */
+    StableRowMap createStableRowMap() const;
+
+    /**
+    * @brief Checks if a stable row index is in valid range.
+    * @param row Candidate row index.
+    * @param stableRows Stable row map.
+    * @return True if row is valid.
+    */
+    bool isValidStableRow(int row, const StableRowMap &stableRows) const;
+
+    /**
+    * @brief Returns the count of rows in a stable row snapshot.
+    * @param stableRows Stable row map.
+    * @return Row count.
+    */
+    int stableRowCount(const StableRowMap &stableRows) const;
+
+    /**
+    * @brief Returns message index for one stable row.
+    * @param row Stable row index.
+    * @param stableRows Stable row map.
+    * @return Message index, or -1 when invalid.
+    */
+    int stableMsgIndexAt(int row, const StableRowMap &stableRows) const;
+
+    /**
+    * @brief Starts queued urgent Find-All request after current run completes.
+    */
+    void runPendingFindAllIfAny();
     /**
      * @brief Updates the color button icon.
      */
@@ -198,9 +251,10 @@ private:
 
     /**
      * @brief Main function to perform search.
-     * @return Result code.
+        * @param searchTextRegExp Compiled search regular expression.
+        * @param priority Scheduling priority for worker thread pool execution.
      */
-    void startParallelFindAll(QRegularExpression searchTextRegExp);
+    void startParallelFindAll(QRegularExpression searchTextRegExp, SearchPriority priority = SearchPriority::Normal);
     void reportProgress(int progress);
     void onFindAllFinished();
     void appendFindAllMatchesChunk(const QList<unsigned long>& entries);
@@ -248,9 +302,10 @@ private:
     /**
      * @brief Handles actions when a matching line is found.
      * @param searchLine Line number.
+        * @param msgIndex Stable message index for the matched row.
      * @return True to break search, false to continue.
      */
-    bool foundLine(long int searchLine);
+    bool foundLine(long int searchLine, unsigned long msgIndex);
     /**
      * @brief Gets the APID text.
      * @return APID as QString.
