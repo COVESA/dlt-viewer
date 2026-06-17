@@ -4,13 +4,13 @@
 #include <QObject>
 #include <QTableView>
 #include <QAbstractTableModel>
-#include <QStandardItemModel>
 #include <QWidget>
 #include <QLabel>
 #include <QTimer>
 #include <QHash>
 #include <QVariantList>
 
+#include "crlfindexviewmodel.h"
 #include "qdltfile.h"
 #include "qdltpluginmanager.h"
 
@@ -18,62 +18,111 @@ class CrlfFilterWindow : public QObject {
     Q_OBJECT
 
 public:
+    /**
+     * @brief Constructs the CRLF filter window controller.
+     * @param parent QObject parent.
+     */
     explicit CrlfFilterWindow(QObject* parent = nullptr);
     
-    // Sets the source model for DLT data
+    /**
+     * @brief Sets the source table model used to mirror viewer columns.
+     * @param model Source table model.
+     */
     void setSourceModel(QAbstractTableModel* model);
     
-    // Sets the DLT file reference
+    /**
+     * @brief Sets the DLT file used to resolve and read message data.
+     * @param dltFile DLT file instance.
+     */
     void setDltFile(QDltFile* dltFile);
     
-    // Sets the plugin manager reference
+    /**
+     * @brief Sets plugin manager used for optional message decoding.
+     * @param pluginManager Plugin manager instance.
+     */
     void setPluginManager(QDltPluginManager* pluginManager);
     
-    // Creates a single window displaying all CRLF messages
+    /**
+     * @brief Creates and shows the CRLF message window.
+     */
     void createCrlfWindow();
     
-    // Refresh the CRLF window with latest data
+    /**
+     * @brief Rebuilds CRLF content for currently loaded data.
+     */
     void refreshWindow();
     
-    // Show and activate the CRLF window
+    /**
+     * @brief Brings the CRLF window to foreground.
+     */
     void showAndActivate();
     
-    // Close the CRLF window
+    /**
+     * @brief Closes the CRLF window if open.
+     */
     void closeWindow();
     
-    // Exports all filtered CRLF DLT logs to a file
+    /**
+     * @brief Exports current CRLF result set to a DLT file.
+     */
     void onExportFilteredCrlfLogsClicked();
     
-    // Cleanup method to properly disconnect from models
+    /**
+     * @brief Disconnects model links and clears owned UI pointers.
+     */
     void cleanup();
 
 signals:
-    // Signal to request navigation to a specific message in the main window
+    /**
+     * @brief Requests navigation to a message index in main view.
+     * @param messageIndex Global message index.
+     */
     void jumpToMessageRequested(int messageIndex);
 
 private slots:
-    // Handle double-click on CRLF message row to navigate to main window
+    /**
+     * @brief Handles double click and asks main window to navigate.
+     * @param index Clicked proxy index.
+     */
     void onCrlfMessageDoubleClicked(const QModelIndex& index);
     
-    // Handle when source model data changes
+    /**
+     * @brief Handles source model data changes.
+     */
     void onSourceModelDataChanged();
     
-    // Handle when source model is reset/cleared
+    /**
+     * @brief Handles source model reset events.
+     */
     void onSourceModelReset();
     
-    // Debounced rebuild triggered by timer
+    /**
+     * @brief Timer callback used for debounced rebuild operations.
+     */
     void onRebuildTimerTimeout();
 
 private:
-    // Rebuild the CRLF data model with current DLT file data
+    /**
+     * @brief Rebuilds CRLF proxy rows from current filtered messages.
+     */
     void rebuildCrlfModel();
     
-    // Create headers for CRLF table model
-    QStringList createTableHeaders();
-    
-    // Helper methods for code reuse and optimization
+    /**
+     * @brief Checks if payload contains CR or LF line breaks.
+     * @param payload Message payload string.
+     * @return True when CRLF markers are present.
+     */
     bool containsCrlf(const QString& payload);
+
+    /**
+     * @brief Updates title and footer with number of CRLF messages.
+     * @param count Number of CRLF matches.
+     */
     void updateMessageCount(int count);
+
+    /**
+     * @brief Applies persisted column visibility/width settings.
+     */
     void applyColumnSettings();
     
     // Optimized data extraction method
@@ -89,6 +138,7 @@ private:
     bool isMainWindowBusy() const;
     
     QStandardItemModel* crlfFilterProxy;
+    CrlfIndexViewModel* crlfFilterProxy;
     QAbstractTableModel* sourceModelOfDLT;
     QWidget* crlfWindow;
     QTableView* crlfTableView;

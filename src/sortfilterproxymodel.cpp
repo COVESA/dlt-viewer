@@ -72,6 +72,40 @@ EcuIdFilterProxyModel::EcuIdFilterProxyModel(QObject *parent)
 {
 }
 
+void EcuIdFilterProxyModel::setSourceModel(QAbstractItemModel *sourceModel)
+{
+    if (this->sourceModel())
+    {
+        disconnect(this->sourceModel(), nullptr, this, nullptr);
+    }
+
+    QSortFilterProxyModel::setSourceModel(sourceModel);
+
+    acceptedRows.clear();
+    indexedRowCount = 0;
+    indexReady = false;
+    knownSourceRowCount = sourceModel ? sourceModel->rowCount() : 0;
+
+    if (!sourceModel)
+    {
+        return;
+    }
+
+    connect(sourceModel, &QAbstractItemModel::layoutChanged,
+            this, &EcuIdFilterProxyModel::onSourceLayoutChanged);
+    connect(sourceModel, &QAbstractItemModel::modelReset,
+            this, &EcuIdFilterProxyModel::onSourceModelReset);
+    connect(sourceModel, &QAbstractItemModel::rowsInserted, this,
+            [this](const QModelIndex &, int first, int last) {
+                if(first <= last)
+                {
+                    buildAcceptedRowsIncremental(first, last);
+                    knownSourceRowCount = this->sourceModel() ? this->sourceModel()->rowCount() : 0;
+                    updateFilter();
+                }
+            });
+}
+
 void EcuIdFilterProxyModel::updateFilter()
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 10, 0)
@@ -85,6 +119,9 @@ void EcuIdFilterProxyModel::updateFilter()
 // Sets a single ECU ID for filtering
 void EcuIdFilterProxyModel::setEcuId(const QString& ecuId) {
     ecu = ecuId;
+    acceptedRows.clear();
+    indexedRowCount = 0;
+    indexReady = false;
     updateFilter();
 }
 
@@ -95,6 +132,9 @@ void EcuIdFilterProxyModel::setEcuIdList(const QSet<QString>& ids) {
     ecuIdList.clear();
     for (const QString& id : ids)
         ecuIdList.insert(id.trimmed().toLower());
+    acceptedRows.clear();
+    indexedRowCount = 0;
+    indexReady = false;
     updateFilter();
     sort(-1);
 }
@@ -102,6 +142,9 @@ void EcuIdFilterProxyModel::setEcuIdList(const QSet<QString>& ids) {
 // Sets the column index for ECU filtering
 void EcuIdFilterProxyModel::setEcuColumn(int column) {
     ecuColumn = column;
+    acceptedRows.clear();
+    indexedRowCount = 0;
+    indexReady = false;
     updateFilter();
 }
 
@@ -109,26 +152,134 @@ void EcuIdFilterProxyModel::setEcuColumn(int column) {
 bool EcuIdFilterProxyModel::filterAcceptsRow(int row, const QModelIndex& parent) const {
     if (!sourceModel())
         return false;
-    
-    // Apply ECU filtering
-    if (!ecu.isEmpty() || !ecuIdList.isEmpty()) {
-        if (ecuColumn < 0)
-            return false;
-            
-        QModelIndex index = sourceModel()->index(row, ecuColumn, parent);
-        if (!index.isValid())
-            return false;
-        
-        QString value = sourceModel()->data(index).toString().trimmed().toLower();
-        
-        if (!ecuIdList.isEmpty()) {
-            return ecuIdList.contains(value);
-        } else if (!ecu.isEmpty()) {
-            return value == ecu.trimmed().toLower();
+
+    if (ecu.isEmpty() && ecuIdList.isEmpty())
+        return true;
+
+    if (!indexReady)
+    {
+        const_cast<EcuIdFilterProxyModel*>(this)->rebuildAcceptedRowsIndex();
+    }
+    else if (row >= indexedRowCount)
+    {
+        const_cast<EcuIdFilterProxyModel*>(this)->buildAcceptedRowsIncremental(indexedRowCount, row);
+    }
+
+    Q_UNUSED(parent);
+    return acceptedRows.contains(row);
+}
+
+bool EcuIdFilterProxyModel::rowMatchesCurrentEcuFilter(int row, const QModelIndex &parent) const
+{
+    if (!sourceModel() || ecuColumn < 0)
+        return false;
+
+    QModelIndex index = sourceModel()->index(row, ecuColumn, parent);
+    if (!index.isValid())
+        return false;
+
+    const QString value = sourceModel()->data(index).toString().trimmed().toLower();
+
+    if (!ecuIdList.isEmpty())
+    {
+        return ecuIdList.contains(value);
+    }
+
+    if (!ecu.isEmpty())
+    {
+        return value == ecu.trimmed().toLower();
+    }
+
+    return true;
+}
+
+void EcuIdFilterProxyModel::rebuildAcceptedRowsIndex()
+{
+    acceptedRows.clear();
+    indexedRowCount = 0;
+
+    if (!sourceModel())
+    {
+        indexReady = true;
+        knownSourceRowCount = 0;
+        return;
+    }
+
+    const int totalRows = sourceModel()->rowCount();
+    buildAcceptedRowsIncremental(0, totalRows - 1);
+    knownSourceRowCount = totalRows;
+    indexReady = true;
+}
+
+void EcuIdFilterProxyModel::buildAcceptedRowsIncremental(int fromRow, int toRow)
+{
+    if (!sourceModel() || fromRow > toRow)
+        return;
+
+    const int totalRows = sourceModel()->rowCount();
+    if (totalRows <= 0)
+    {
+        indexedRowCount = 0;
+        return;
+    }
+
+    const int start = qMax(0, fromRow);
+    const int end = qMin(toRow, totalRows - 1);
+    if (start > end)
+    {
+        indexedRowCount = qMax(indexedRowCount, totalRows);
+        return;
+    }
+
+    for (int row = start; row <= end; ++row)
+    {
+        if (rowMatchesCurrentEcuFilter(row, QModelIndex()))
+        {
+            acceptedRows.insert(row);
         }
     }
-    
-    return true;
+
+    indexedRowCount = qMax(indexedRowCount, end + 1);
+}
+
+void EcuIdFilterProxyModel::onSourceLayoutChanged()
+{
+    if (!sourceModel())
+    {
+        acceptedRows.clear();
+        indexedRowCount = 0;
+        knownSourceRowCount = 0;
+        indexReady = false;
+        return;
+    }
+
+    const int currentRows = sourceModel()->rowCount();
+    if (!indexReady)
+    {
+        rebuildAcceptedRowsIndex();
+        updateFilter();
+        return;
+    }
+
+    if (currentRows < knownSourceRowCount)
+    {
+        rebuildAcceptedRowsIndex();
+        updateFilter();
+        return;
+    }
+
+    if (currentRows > knownSourceRowCount)
+    {
+        buildAcceptedRowsIncremental(knownSourceRowCount, currentRows - 1);
+        knownSourceRowCount = currentRows;
+        updateFilter();
+    }
+}
+
+void EcuIdFilterProxyModel::onSourceModelReset()
+{
+    rebuildAcceptedRowsIndex();
+    updateFilter();
 }
 
 

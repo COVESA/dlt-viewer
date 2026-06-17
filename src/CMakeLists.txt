@@ -80,8 +80,12 @@ add_executable(dlt-viewer
     searchform.cpp
     filtergrouplogs.h
     filtergrouplogs.cpp
+    filterthreadworker.h
+    filterthreadworker.cpp
     indexthreadworker.h
     indexthreadworker.cpp
+    crlfindexviewmodel.h
+    crlfindexviewmodel.cpp
     crlffilterwindow.h
     crlffilterwindow.cpp
     decodemanager.h

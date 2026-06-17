@@ -16,6 +16,9 @@
 
 #include "crlffilterwindow.h"
 #include "mainwindow.h"
+
+#include "crlffilterwindow.h"
+#include "decodemanager.h"
 #include "fieldnames.h"
 #include "qdltfile.h"
 #include "qdltexporter.h"
@@ -76,27 +79,6 @@ void CrlfFilterWindow::applyColumnSettings() {
     }
 }
 
-// Create headers for CRLF table model
-QStringList CrlfFilterWindow::createTableHeaders() {
-    QStringList headers;
-    auto settings = QDltSettingsManager::getInstance();
-    headers << FieldNames::getName(FieldNames::Index, settings)
-            << FieldNames::getName(FieldNames::Time, settings)
-            << FieldNames::getName(FieldNames::TimeStamp, settings)
-            << FieldNames::getName(FieldNames::Counter, settings)
-            << FieldNames::getName(FieldNames::EcuId, settings)
-            << FieldNames::getName(FieldNames::AppId, settings)
-            << FieldNames::getName(FieldNames::ContextId, settings)
-            << FieldNames::getName(FieldNames::SessionId, settings)
-            << FieldNames::getName(FieldNames::Type, settings)
-            << FieldNames::getName(FieldNames::Subtype, settings)
-            << FieldNames::getName(FieldNames::Mode, settings)
-            << FieldNames::getName(FieldNames::MessageId, settings)
-            << FieldNames::getName(FieldNames::ArgCount, settings)
-            << FieldNames::getName(FieldNames::Payload, settings);
-    return headers;
-}
-
 // Creates a single window displaying all CRLF messages
 void CrlfFilterWindow::createCrlfWindow() {
     // Validate prerequisites
@@ -122,11 +104,11 @@ void CrlfFilterWindow::createCrlfWindow() {
     
     // Create the model if it doesn't exist
     if (!crlfFilterProxy) {
-        crlfFilterProxy = new QStandardItemModel(this);
-        crlfFilterProxy->setHorizontalHeaderLabels(createTableHeaders());
+        crlfFilterProxy = new CrlfIndexViewModel(this);
+        crlfFilterProxy->setSourceModel(sourceModelOfDLT);
+        crlfFilterProxy->setDltFile(dltFile);
     } else {
-        // Clear existing data
-        crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
+        crlfFilterProxy->clear();
     }
     
     // Check if no filtered messages exist
@@ -155,6 +137,13 @@ void CrlfFilterWindow::createCrlfWindow() {
             crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
             prepareProgress->close();
             delete prepareProgress;
+    QVector<int> sourceRowRefs;
+    sourceRowRefs.reserve(totalFilteredMessages);
+    const bool pluginsEnabled = pluginManager && QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    for (int i = 0; i < totalFilteredMessages; i++) {
+        if (prepareProgress.wasCanceled()) {
+            crlfFilterProxy->clear();
+            prepareProgress.close();
             return;
         }
         
@@ -184,6 +173,12 @@ void CrlfFilterWindow::createCrlfWindow() {
                     crlfFilterProxy->appendRow(rowItems);
                     addedCount++;
                 }
+        if (actualPos >= 0 && dltFile->getMsg(actualPos, msg)) {
+            DecodeManager::instance().decode(pluginManager, msg, pluginsEnabled, true);
+            
+            QString rawPayload = msg.toStringPayload();
+            if (containsCrlf(rawPayload)) {
+                sourceRowRefs.push_back(i);
             }
         }
         
@@ -195,9 +190,11 @@ void CrlfFilterWindow::createCrlfWindow() {
     }
     prepareProgress->close();
     delete prepareProgress;
+    prepareProgress.close();
+    crlfFilterProxy->setSourceRowRefs(std::move(sourceRowRefs));
     
     // Check if any CRLF messages were found
-    if (addedCount == 0) {
+    if (crlfFilterProxy->rowCount() == 0) {
         QMessageBox::information(parentWidget, "No CRLF Messages", 
             "No messages containing CRLF characters (\\r, \\n, or \\r\\n) were found in the current DLT file.");
         return;
@@ -302,23 +299,21 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
     }
 
     try {
-        QVector<qint64> messageIndices;
-        messageIndices.reserve(rowCount);  // Pre-allocate for better performance
-        
-        // Get actual message positions from UserRole data for proper export
+        QModelIndexList selectedIndices;
+        selectedIndices.reserve(rowCount);
+
         for (int row = 0; row < rowCount; ++row) {
             if (progress && progress->wasCanceled()) {
                 return;
             }
             
-            // Get the actual file position stored in UserRole during model building
             QModelIndex indexItem = crlfFilterProxy->index(row, 0);
             if (indexItem.isValid()) {
-                QVariant positionData = indexItem.data(Qt::UserRole);
-                if (positionData.isValid()) {
-                    int actualFilePosition = positionData.toInt();
-                    if (actualFilePosition >= 0) {
-                        messageIndices.append(actualFilePosition);
+                QVariant sourceRowData = indexItem.data(Qt::UserRole + 1);
+                if (sourceRowData.isValid() && sourceModelOfDLT) {
+                    int sourceRow = sourceRowData.toInt();
+                    if (sourceRow >= 0 && sourceRow < sourceModelOfDLT->rowCount()) {
+                        selectedIndices.append(sourceModelOfDLT->index(sourceRow, 0));
                     }
                 }
             }
@@ -343,71 +338,8 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
             return;
         }
 
-        // Create proper model indices by mapping absolute positions to filtered positions
-        QModelIndexList selectedIndices;
-        selectedIndices.reserve(messageIndices.size());
-        
-        // Update progress dialog for the mapping phase
-        if (progress) {
-            progress->setLabelText("Mapping messages to current view...");
-            progress->setRange(0, messageIndices.size());
-            progress->setValue(0);
-        }
-        QCoreApplication::processEvents();
-        
-        // Map our absolute positions to corresponding rows in the filtered model
-        // Skip any messages that are no longer available in the current filtered view
-        int totalFilteredMessages = dltFile->sizeFilter();
-        int foundMessages = 0;
-        
-        for (int msgIndex = 0; msgIndex < messageIndices.size(); ++msgIndex) {
-            if (progress && progress->wasCanceled()) {
-                if (progress) {
-                    delete progress;
-                }
-                return;
-            }
-            
-            qint64 targetAbsolutePos = messageIndices[msgIndex];
-            // Find which filtered row corresponds to this absolute position
-            for (int filteredRow = 0; filteredRow < totalFilteredMessages; ++filteredRow) {
-                int absolutePos = dltFile->getMsgFilterPos(filteredRow);
-                if (absolutePos == targetAbsolutePos) {
-                    // Found the matching filtered row - create model index for it
-                    if (sourceModelOfDLT && filteredRow < sourceModelOfDLT->rowCount()) {
-                        selectedIndices.append(sourceModelOfDLT->index(filteredRow, 0));
-                        foundMessages++;
-                    }
-                    break;
-                }
-            }
-            // If not found, message is no longer in current filtered view - skip it silently
-            
-            // Update progress more frequently during mapping
-            if (progress && (msgIndex % 5 == 0 || msgIndex == messageIndices.size() - 1)) {
-                progress->setValue(msgIndex + 1);
-                progress->setLabelText(QString("Mapping message %1 of %2...").arg(msgIndex + 1).arg(messageIndices.size()));
-                QCoreApplication::processEvents();
-            }
-        }
-        
-        if (selectedIndices.isEmpty()) {
-            if (progress) {
-                progress->close();
-                delete progress;
-            }
-            QMessageBox::warning(crlfWindow, "Export Warning", 
-                               "None of the CRLF messages are currently visible in the main window filter.\n"
-                               "Please adjust your main window filters and try again.");
-            return;
-        }
-        
-        // Inform user if some messages were skipped due to filtering
-        QString exportMessage = QString("Found %1 of %2 CRLF messages in current view")
-                               .arg(foundMessages).arg(messageIndices.size());
-        if (foundMessages < messageIndices.size()) {
-            exportMessage += "\n(Some messages filtered out by main window)";
-        }
+        QString exportMessage = QString("Found %1 CRLF messages in current view")
+                               .arg(selectedIndices.size());
         
         // Create and configure the exporter with proper DLT format support
         if (progress) {
@@ -445,7 +377,7 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
         }
         QMessageBox::information(crlfWindow, "Export Complete", 
                                QString("Successfully exported %1 CRLF messages to %2\n\n%3")
-                               .arg(foundMessages).arg(fileName).arg(exportMessage));
+                               .arg(selectedIndices.size()).arg(fileName).arg(exportMessage));
 
     } catch (const std::exception &e) {
         if (progress) {
@@ -470,6 +402,9 @@ void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
     }
     
     sourceModelOfDLT = model;
+    if (crlfFilterProxy) {
+        crlfFilterProxy->setSourceModel(sourceModelOfDLT);
+    }
     
     if (sourceModelOfDLT) {
         connect(sourceModelOfDLT, &QAbstractTableModel::modelReset, this, &CrlfFilterWindow::onSourceModelReset);
@@ -485,6 +420,9 @@ void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
 // Sets the DLT file reference
 void CrlfFilterWindow::setDltFile(QDltFile* file) {
     dltFile = file;
+    if (crlfFilterProxy) {
+        crlfFilterProxy->setDltFile(dltFile);
+    }
     lastFilteredMessageCount = -1;  // Reset tracking state
     
     // Update window if visible and file is available
@@ -663,7 +601,6 @@ void CrlfFilterWindow::onSourceModelReset() {
     } else {
         // Only clear if there's genuinely no data
         crlfFilterProxy->clear();
-        crlfFilterProxy->setHorizontalHeaderLabels(createTableHeaders());
         
         // Apply settings and update UI
         if (crlfTableView) {
@@ -681,13 +618,10 @@ void CrlfFilterWindow::rebuildCrlfModel() {
     
     if (!dltFile || dltFile->size() == 0) {
         // No file or empty file - clear the model
-        crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
+        crlfFilterProxy->clear();
         updateMessageCount(0);
         return;
     }
-    
-    // Clear existing data
-    crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
     
     // Check if no filtered messages exist
     int totalFilteredMessages = dltFile->sizeFilter();
@@ -718,47 +652,29 @@ void CrlfFilterWindow::rebuildCrlfModel() {
         buildProgress->show();
     }
     
-    int addedCount = 0;
-    
-    // Process only messages currently visible in filtered view
-    int processCount = 0;
+    QVector<int> sourceRowRefs;
+    sourceRowRefs.reserve(totalFilteredMessages);
+    const bool pluginsEnabled = pluginManager && QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     for (int i = 0; i < totalFilteredMessages; i++) {
         if (buildProgress && buildProgress->wasCanceled()) {
             // User cancelled - clear the model, set count to 0, and exit
-            crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
-            buildProgress->close();
-            delete buildProgress;
+            crlfFilterProxy->clear();
+            if (buildProgress) {
+                buildProgress->close();
+                delete buildProgress;
+        }
             updateMessageCount(0);
             lastFilteredMessageCount = totalFilteredMessages;
             return;
         }
         
         int actualPos = dltFile->getMsgFilterPos(i);
-        if (actualPos >= 0) {
-            // Check CRLF directly on this filtered message and suppress index building since we already built it above
-            QVariantList messageData = this->extractMessageData(i, true);
-            if (!messageData.isEmpty()) {
-                bool hasCrlf = messageData.last().toBool();
-                if (hasCrlf) {
-                    messageData.removeLast(); // Remove the CRLF flag
-                    
-                    // Create a row with the cached message data
-                    QList<QStandardItem*> rowItems;
-                    
-                    // Store the actual position as the display index
-                    QStandardItem* indexItem = new QStandardItem(QString::number(actualPos));
-                    indexItem->setData(actualPos, Qt::UserRole);  // For export and navigation
-                    indexItem->setData(i, Qt::UserRole + 1);      // For internal use
-                    rowItems << indexItem;
-                    
-                    // Use pre-processed data from cache
-                    for (int j = 1; j < messageData.size(); j++) { // Skip index (j=0)
-                        rowItems << new QStandardItem(messageData[j].toString());
-                    }
-                    
-                    crlfFilterProxy->appendRow(rowItems);
-                    addedCount++;
-                }
+        if (actualPos >= 0 && dltFile->getMsg(actualPos, msg)) {
+            DecodeManager::instance().decode(pluginManager, msg, pluginsEnabled, true);
+            
+            QString rawPayload = msg.toStringPayload();
+            if (containsCrlf(rawPayload)) {
+                sourceRowRefs.push_back(i);
             }
         }
         
@@ -774,9 +690,10 @@ void CrlfFilterWindow::rebuildCrlfModel() {
         buildProgress->close();
         delete buildProgress;
     }
+    crlfFilterProxy->setSourceRowRefs(std::move(sourceRowRefs));
     
     // Update UI with final count
-    updateMessageCount(addedCount);
+    updateMessageCount(crlfFilterProxy->rowCount());
     lastFilteredMessageCount = totalFilteredMessages;
     lastCacheValidCount = totalFilteredMessages;
     
