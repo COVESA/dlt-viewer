@@ -589,6 +589,32 @@ void QDltFile::addFilterIndex (int index)
     }
 }
 
+void QDltFile::addFilterIndices(const QVector<qint64> &indices)
+{
+    if(indices.isEmpty())
+    {
+        return;
+    }
+
+    indexFilterBase.reserve(indexFilterBase.size() + indices.size());
+    for(const qint64 idx : indices)
+    {
+        indexFilterBase.append(idx);
+    }
+
+    if(manualMarkerIndices.isEmpty())
+    {
+        indexFilter.reserve(indexFilter.size() + indices.size());
+        for(const qint64 idx : indices)
+        {
+            indexFilter.append(idx);
+        }
+        return;
+    }
+
+    recomputeEffectiveIndexFilter();
+}
+
 #ifdef USECOLOR
     QColor QDltFile::checkMarker(const QDltMsg &msg)
     {
@@ -621,12 +647,46 @@ QString QDltFile::getFileName(int num)
     return files[num]->infile.fileName();
 }
 
+qint64 QDltFile::getLastFileMessagePosition(int num) const
+{
+    if(num<0 || num>=files.size())
+    {
+        return -1;
+    }
+
+    const QVector<qint64> &indexAll = files[num]->indexAll;
+    if(indexAll.isEmpty())
+    {
+        return -1;
+    }
+
+    return indexAll.last();
+}
+
 int QDltFile::getFileMsgNumber(int num) const
 {
     if(num<0 || num>=files.size())
         return -1;
 
     return files[num]->indexAll.size();
+}
+
+void QDltFile::appendDltIndices(const QVector<qint64> &indices, int num)
+{
+    if(indices.isEmpty() || num<0 || num>=files.size())
+    {
+        return;
+    }
+
+    files[num]->indexAll.reserve(files[num]->indexAll.size() + indices.size());
+    for(const qint64 idx : indices)
+    {
+        files[num]->indexAll.append(idx);
+    }
+
+    totalStorageSize = 0;
+    totalPayloadSize = 0;
+    totalMessageSize = 0;
 }
 
 void QDltFile::close()
