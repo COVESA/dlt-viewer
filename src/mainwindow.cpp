@@ -1466,7 +1466,12 @@ bool MainWindow::openDltFile(QStringList fileNames)
         dlt_file_init(&importfile,0);
 
         /* open DLT stream file */
-        dlt_file_open(&importfile,fileNames.last().toLatin1(),0);
+        // fix can not open dlt file in chinese environment
+        if (QString::fromLatin1(fileNames.last().toLatin1()) == fileNames.last()) {
+            dlt_file_open(&importfile,fileNames.last().toLatin1(),0);
+        } else {
+            dlt_file_open(&importfile,fileNames.last().toLocal8Bit(),0);
+        }
         if(!tempfile.open())
         {
             qDebug() << "Failed opening WriteOnly" << outputfile.fileName();
@@ -1552,9 +1557,15 @@ void MainWindow::appendDltFile(const QString &fileName)
     progress.setModal(true);
     int num = 0;
 
+    int ret = 0;
     /* open DLT log file with same filename as output file */
-    if (dlt_file_open(&importfile,fileName.toLatin1() ,0)<0)
-    {
+    // fix can not open dlt file in chinese environment
+    if (QString::fromLatin1(fileName.toLatin1()) == fileName) {
+        ret = dlt_file_open(&importfile,fileName.toLatin1(),0);
+    } else {
+        ret = dlt_file_open(&importfile,fileName.toLocal8Bit(),0);
+    }
+    if (ret < 0) {
         return;
     }
 
@@ -1631,7 +1642,12 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_triggered()
     dlt_file_init(&importfile,0);
 
     /* open DLT stream file */
-    dlt_file_open(&importfile,fileName.toLatin1(),0);
+    // fix can not open dlt file in chinese environment
+    if (QString::fromLatin1(fileName.toLatin1()) == fileName) {
+        dlt_file_open(&importfile,fileName.toLatin1(),0);
+    } else {
+        dlt_file_open(&importfile,fileName.toLocal8Bit(),0);
+    }
 
     /* parse and build index of complete log file and show progress */
     if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
@@ -1677,7 +1693,12 @@ void MainWindow::on_action_menuFile_Import_DLT_Stream_with_Serial_Header_trigger
     dlt_file_init(&importfile,0);
 
     /* open DLT stream file */
-    dlt_file_open(&importfile,fileName.toLatin1(),0);
+    // fix can not open dlt file in chinese environment
+    if (QString::fromLatin1(fileName.toLatin1()) == fileName) {
+        dlt_file_open(&importfile,fileName.toLatin1(),0);
+    } else {
+        dlt_file_open(&importfile,fileName.toLocal8Bit(),0);
+    }
 
     /* parse and build index of complete log file and show progress */
     if(!outputfile.isOpen() && !outputfile.open(QIODevice::WriteOnly|QIODevice::Append))
@@ -3859,17 +3880,7 @@ void MainWindow::on_tabExplore_fileOpenRequested(const QString &path)
     qDebug() << "on_tabExplore_fileOpenRequested" << path;
     if (path.endsWith(".dlt", Qt::CaseInsensitive)) {
         onOpenTriggered(QStringList() << path);
-    } else if (path.endsWith(".pcap", Qt::CaseInsensitive)) {
-        on_action_menuFile_Clear_triggered();
-        QDltImporter* importerThread = new QDltImporter(&outputfile, path);
-        importerThread->setPcapPorts(settings->importerPcapPorts);
-        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
-        statusProgressBar->show();
-        importerThread->setPriority(QThread::LowPriority);
-        importerThread->start();
-    } else if (path.endsWith(".mf4", Qt::CaseInsensitive)) {
+    } else if (path.endsWith(".pcap", Qt::CaseInsensitive) || path.endsWith(".mf4", Qt::CaseInsensitive)) {
         on_action_menuFile_Clear_triggered();
         QDltImporter* importerThread = new QDltImporter(&outputfile, path);
         importerThread->setPcapPorts(settings->importerPcapPorts);
@@ -3909,15 +3920,30 @@ void MainWindow::on_tabExplore_filesOpenRequest(const QStringList& dltPaths) {
     outputfileIsTemporary = true;
 }
 
-void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& mf4AndPcapPaths) {
-    QDltImporter* importerThread = new QDltImporter(&outputfile, mf4AndPcapPaths);
-    importerThread->setPcapPorts(settings->importerPcapPorts);
-    connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
-    connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
-    connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
-    statusProgressBar->show();
-    importerThread->setPriority(QThread::LowPriority);
-    importerThread->start();
+void MainWindow::on_tabExplore_filesAppendRequest(const QStringList& paths) {
+    qDebug() << "on_tabExplore_filesAppendRequest" << paths;
+
+    QStringList importFilenames;
+    for (const auto &path : paths) {
+        if (path.endsWith(".dlt", Qt::CaseInsensitive)) {
+            appendDltFile(path);
+        } else if (path.endsWith(".pcap", Qt::CaseInsensitive) || path.endsWith(".mf4", Qt::CaseInsensitive)) {
+            importFilenames.append(path);
+        } else if (path.endsWith(".dlf", Qt::CaseInsensitive)) {
+            openDlfFile(path, false);
+        }
+    }
+
+    if (!importFilenames.isEmpty()) {
+        QDltImporter *importerThread = new QDltImporter(&outputfile,importFilenames);
+        importerThread->setPcapPorts(settings->importerPcapPorts);
+        connect(importerThread, &QDltImporter::progress, this, &MainWindow::progress);
+        connect(importerThread, &QDltImporter::resultReady, this, &MainWindow::handleImportResults);
+        connect(importerThread, &QDltImporter::finished, importerThread, &QObject::deleteLater);
+        statusProgressBar->show();
+        importerThread->setPriority(QThread::LowPriority);
+        importerThread->start();
+    }
 }
 
 void MainWindow::on_filterWidget_customContextMenuRequested(QPoint pos)
