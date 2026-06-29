@@ -19,7 +19,7 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
 
     - name: Install Qt 6 (Framework build)
       uses: jurplel/install-qt-action@v4
@@ -101,7 +101,7 @@ jobs:
     runs-on: ${{ matrix.ubuntu }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
@@ -131,7 +131,7 @@ jobs:
     runs-on: ${{ matrix.windows }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
@@ -165,7 +165,7 @@ jobs:
       runs-on: ${{ matrix.windows }}
       steps:
         - name: Checkout
-          uses: actions/checkout@v6
+          uses: actions/checkout@v7
           with:
             fetch-depth: 0
             submodules: true
@@ -196,7 +196,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
           submodules: true
