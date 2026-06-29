@@ -49,6 +49,7 @@ public:
 
     void setMessageIdFormat(const QString& msgIdFormat) {
         m_messageIdFormat = msgIdFormat;
+        m_messageIdFormatUtf8 = msgIdFormat.toUtf8();
     }
 
     bool match(const QDltMsg& message, const Pattern& pattern) const;
@@ -79,6 +80,7 @@ private:
     bool m_payloadSearchEnabled{true};
 
     std::optional<QString> m_messageIdFormat;
+    std::optional<QByteArray> m_messageIdFormatUtf8;
 };
 
 #endif // DLTMESSAGEMATCHER_H

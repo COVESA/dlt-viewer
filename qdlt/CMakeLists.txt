@@ -79,6 +79,12 @@ add_library(qdlt SHARED
     qdlt.h
     qdltmsgwrapper.h
     qdltmsgwrapper.cpp
+    messagestore.h
+    messagestore.cpp
+    indexservice.h
+    indexservice.cpp
+    qdltfileprojection.h
+    qdltfileprojection.cpp
 )
 
 target_compile_definitions(qdlt PRIVATE
