@@ -8676,7 +8676,6 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
-    m_searchtableModel->modelChanged();
 }
 
 

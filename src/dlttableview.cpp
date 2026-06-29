@@ -13,11 +13,7 @@ DltTableView::DltTableView(QWidget *parent) :
 */
 void DltTableView::paintEvent(QPaintEvent *event)
 {
-    if(paintMutex.tryLock())
-    {
-        QTableView::paintEvent(event);
-        paintMutex.unlock();
-    }
+    QTableView::paintEvent(event);
 }
 
 void DltTableView::wheelEvent(QWheelEvent *event)

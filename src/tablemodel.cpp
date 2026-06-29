@@ -60,7 +60,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          return QVariant();
      }
 
-     if (index.row() >= qfile->sizeFilter() && index.row()<0)
+     if (index.row() < 0 || index.row() >= qfile->sizeFilter())
      {
          return QVariant();
      }
@@ -183,17 +183,11 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      m_cache.clear();
      m_renderCache.clear();
 
-     if(true == emptyForceFlag)
+     const int rows = rowCount();
+     if(rows > 0)
      {
-         index(0, 1);
-         index(qfile->sizeFilter()-1, 0);
-         index(qfile->sizeFilter()-1, columnCount() - 1);
-     }
-     else
-     {
-         index(0, 1);
          index(0, 0);
-         index(0, columnCount() - 1);
+         index(rows - 1, columnCount() - 1);
      }
 
      /* last search index must be deleted because model changed */
@@ -205,6 +199,20 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 void TableModel::appendRows(int firstRow, int lastRow)
 {
     if(firstRow < 0 || lastRow < firstRow)
+    {
+        return;
+    }
+
+    const int currentRows = rowCount();
+    if(currentRows <= 0)
+    {
+        return;
+    }
+
+    // Live logging data is appended in the backing file model before this notification is emitted.
+    // If ranges are stale (e.g. active filter/search changes), skip this insert notification.
+    // Forcing a model change from here can re-enter painting and cause backing-store warnings.
+    if(firstRow >= currentRows || lastRow >= currentRows)
     {
         return;
     }
