@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file CSearchDialog.cpp
+ * \file SearchDialog.cpp
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -46,7 +46,7 @@
 
 CSearchDialog::CSearchDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::CSearchDialog)
+    ui(new Ui::SearchDialog)
 {
     ui->setupUi(this);
 
@@ -201,6 +201,11 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
+    
+    // Optimization: Increase cache size for search to improve hit rate for repeated random access.
+    // Search workload accesses many different messages multiple times; larger cache reduces parse overhead.
+    file->setCacheSize(5000);
+    
     m_decodeCacheService.clearForFile(file);
 
     m_findAllUiUpdateTimer.restart();
@@ -383,6 +388,10 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
 void CSearchDialog::onFindAllFinished()
 {
+    // Restore cache size to default after search completes
+    if (file)
+        file->setCacheSize(1000);
+
     // Ensure the last batch of incremental updates is reflected.
     emit refreshedSearchIndex();
 

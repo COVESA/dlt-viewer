@@ -41,18 +41,27 @@ CSearchTableModel::~CSearchTableModel()
 QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
 {
     QDltMsg msg;
-    QByteArray buf;
 
     if (!index.isValid())
         return QVariant();
 
-    if (index.row() >= m_searchResultList.size() && index.row()<0)
+    if (index.row() < 0 || index.row() >= static_cast<int>(m_searchResultList.size()))
         return QVariant();
 
     if (role == Qt::DisplayRole)
     {
+        const int globalIndex = static_cast<int>(m_searchResultList.at(index.row()));
+        const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+        const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
         /* get the message with the selected item id */
-        if(!qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        if(!m_decodeCacheService.message(qfile,
+                                         pluginManager,
+                                         globalIndex,
+                                         decodeEnabled,
+                                         triggeredByUser,
+                                         msg,
+                                         true))
         {
             if(index.column() == FieldNames::Index)
             {
@@ -64,9 +73,6 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
             }
             return QVariant();
         }
-
-        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
-            pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
         QString visu_data;
         switch(index.column())
@@ -195,7 +201,17 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::ForegroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        const int globalIndex = static_cast<int>(m_searchResultList.at(index.row()));
+        const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+        const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
+        if(m_decodeCacheService.message(qfile,
+                                        pluginManager,
+                                        globalIndex,
+                                        decodeEnabled,
+                                        triggeredByUser,
+                                        msg,
+                                        true))
         {
             /* Valid message found, calculate background color and find optimal forground color */
             return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
@@ -213,7 +229,17 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::BackgroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        const int globalIndex = static_cast<int>(m_searchResultList.at(index.row()));
+        const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+        const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
+        if(m_decodeCacheService.message(qfile,
+                                        pluginManager,
+                                        globalIndex,
+                                        decodeEnabled,
+                                        triggeredByUser,
+                                        msg,
+                                        true))
         {
             /* Valid message found, calculate background color */
             return QVariant(QBrush(getMsgBackgroundColor(msg)));
@@ -278,13 +304,16 @@ int CSearchTableModel::rowCount(const QModelIndex & /*parent*/) const
 
 void CSearchTableModel::modelChanged()
 {    
-    if (!m_searchResultList.isEmpty())
+    if (!m_searchResultList.empty())
     {
-        index(0, 1);
-        index(m_searchResultList.size()-1, 0);
-        index(m_searchResultList.size()-1, columnCount() - 1);
+        if (rowCount() > 0 && columnCount() > 0)
+        {
+            const QModelIndex topLeft = index(0, 0);
+            const QModelIndex bottomRight = index(rowCount()-1, columnCount()-1);
+            emit dataChanged(topLeft, bottomRight);
+        }
     }
-    emit(layoutChanged());
+    emit layoutChanged();
 }
 
 int CSearchTableModel::columnCount(const QModelIndex & /*parent*/) const
@@ -296,46 +325,35 @@ void CSearchTableModel::clear_SearchResults()
 {
     beginResetModel();
     m_searchResultList.clear();
+    m_decodeCacheService.clearForFile(qfile);
     endResetModel();
+}
 }
 
 void CSearchTableModel::add_SearchResultEntry(unsigned long entry)
 {
-    const int row = m_searchResultList.size();
+    const int row = static_cast<int>(m_searchResultList.size());
     beginInsertRows(QModelIndex(), row, row);
-    m_searchResultList.append(entry);
-    endInsertRows();
-}
-
-void SearchTableModel::add_SearchResultEntries(const QList<unsigned long>& entries)
-{
-    if (entries.isEmpty())
-        return;
-
-    const int firstRow = m_searchResultList.size();
-    const int lastRow = firstRow + entries.size() - 1;
-
-    beginInsertRows(QModelIndex(), firstRow, lastRow);
-    m_searchResultList.append(entries);
+    m_searchResultList.push_back(entry);
     endInsertRows();
 }
 
 
 bool CSearchTableModel::get_SearchResultEntry(int position, unsigned long &entry)
 {
-    if (position > m_searchResultList.size() || 0 > position )
+    if (position < 0 || position >= static_cast<int>(m_searchResultList.size()))
     {
         return false;
     }
 
-    entry = m_searchResultList.at(position);
+    entry = m_searchResultList.at(static_cast<std::size_t>(position));
     return true;
 }
 
 
 int CSearchTableModel::get_SearchResultListSize() const
 {
-    return m_searchResultList.size();
+    return static_cast<int>(m_searchResultList.size());
 }
 
 QColor CSearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const

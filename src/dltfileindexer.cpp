@@ -59,6 +59,8 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     filterIndexEnabled = false;
     filterIndexStart = 0;
     filterIndexEnd = 0;
+
+    messageStore.setFile(nullptr);
 }
 
 DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManager, QDltDefaultFilter *defaultFilter, QMainWindow *parent) :
@@ -86,6 +88,8 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     filterIndexEnabled = false;
     filterIndexStart = 0;
     filterIndexEnd = 0;
+
+    messageStore.setFile(dltFile);
 }
 
 DltFileIndexer::~DltFileIndexer()
@@ -456,6 +460,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 &indexFilterListSorted,
                 pluginManager,
                 &activeViewerPlugins,
+                dltFile,
+                &decodeCacheService,
                 silentMode
             );
 
@@ -476,7 +482,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     {
         msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
 
-        if(!dltFile->getMsg(ix, *msg))
+        if(!messageStore.message(static_cast<MessageId>(ix), *msg))
             continue; // Skip broken messages
 
         /*if(true == useIndexerThread)
@@ -586,6 +592,12 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
     const int total = indices.size();
     const int step = qMax(1, total / 200); // throttle UI updates
 
+    // Single-pass scatter scan: each filtered message is accessed exactly once.
+    // Bypass the cache entirely to avoid alloc/evict overhead on every access.
+    const QDltFile *file = messageStore.file();
+    if(file)
+        const_cast<QDltFile*>(file)->setCacheSinglePassBypass(true);
+
     for(int i = 0; i < total; ++i)
     {
         const qint64 rawIndex = indices[i];
@@ -595,7 +607,7 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
         }
 
         QDltMsg msg;
-        if(!dltFile->getMsg(static_cast<int>(rawIndex), msg))
+        if(!messageStore.message(static_cast<MessageId>(rawIndex), msg))
         {
             continue;
         }
@@ -609,6 +621,9 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
         if ((i % step) == 0 || i + 1 == total)
             emit markerCountProgressValue(i + 1);
     }
+
+    if(file)
+        const_cast<QDltFile*>(file)->setCacheSinglePassBypass(false);
 }
 
 bool DltFileIndexer::indexDefaultFilter()
@@ -641,6 +656,8 @@ bool DltFileIndexer::indexDefaultFilter()
             (
                 defaultFilter,
                 pluginManager,
+                dltFile,
+                &decodeCacheService,
                 silentMode
             );
 
@@ -655,7 +672,7 @@ bool DltFileIndexer::indexDefaultFilter()
     {
         msg = QSharedPointer<QDltMsg>::create();
         /* Fill message from file */
-        if(!dltFile->getMsg(ix, *msg))
+        if(!messageStore.message(static_cast<MessageId>(ix), *msg))
         {
             /* Skip broken messages */
             continue;

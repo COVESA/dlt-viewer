@@ -424,7 +424,7 @@ QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int
        return color;
     }
 
-    if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
+    if(lastSearchIndex != -1 && filterposindex == resolveGlobalIndexForRow(lastSearchIndex))
     {
         return searchBackgroundColor();
     }

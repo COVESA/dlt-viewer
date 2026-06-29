@@ -41,5 +41,6 @@
 #include "messagestore.h"
 #include "indexservice.h"
 #include "qdltfileprojection.h"
+#include "decodecacheservice.h"
 
 #endif // QDLT_H

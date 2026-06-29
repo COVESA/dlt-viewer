@@ -85,6 +85,8 @@ add_library(qdlt SHARED
     indexservice.cpp
     qdltfileprojection.h
     qdltfileprojection.cpp
+    decodecacheservice.h
+    decodecacheservice.cpp
 )
 
 target_compile_definitions(qdlt PRIVATE

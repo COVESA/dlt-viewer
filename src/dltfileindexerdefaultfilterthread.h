@@ -9,7 +9,7 @@ class DltFileIndexerDefaultFilterThread :public QThread
 {
     Q_OBJECT
 public:
-    DltFileIndexerDefaultFilterThread(QDltDefaultFilter *defaultFilter, QDltPluginManager *pluginManager, bool silentMode);
+    DltFileIndexerDefaultFilterThread(QDltDefaultFilter *defaultFilter, QDltPluginManager *pluginManager, QDltFile *dltFile, CDecodeCacheService *decodeCacheService, bool silentMode);
     ~DltFileIndexerDefaultFilterThread();
     void enqueueMessage(const QSharedPointer<QDltMsg> &msg, int index);
     void processMessage(QSharedPointer<QDltMsg> &msg, int index);
@@ -21,6 +21,8 @@ protected:
 private:
     QDltDefaultFilter *defaultFilter;
     QDltPluginManager *pluginManager;
+    QDltFile *dltFile;
+    CDecodeCacheService *decodeCacheService;
     bool silentMode;
 
     DltMsgQueue msgQueue;
