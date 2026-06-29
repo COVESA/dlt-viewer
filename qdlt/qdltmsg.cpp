@@ -28,7 +28,6 @@ extern "C"
 
 #include <QtEndian>
 #include <QDateTime>
-#include <QTimeZone>
 #include <QCache>
 #include <QHash>
 
@@ -46,8 +45,6 @@ namespace {
                                        "get_software_version","message_buffer_overflow"};
     constexpr const char * const qDltCtrlReturnType [] = {"ok","not_supported","error","3","4","5","6","7","no_matching_context_id"};
 
-    // Cache key for the non-time/counter part of QDltMsg::toStringHeader().
-    // Copies of QStrings are cheap (ref-counted), so this avoids allocations in the hot path.
     struct HeaderSuffixKey
     {
         QString ecuid;
@@ -72,17 +69,20 @@ namespace {
                a.ctid == b.ctid;
     }
 
-    inline size_t qHash(const HeaderSuffixKey &k, size_t seed = 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    inline size_t qHash(const HeaderSuffixKey &key, size_t seed = 0)
+#else
+    inline uint qHash(const HeaderSuffixKey &key, uint seed = 0)
+#endif
     {
-        // Use Qt's global qHash overloads for the individual fields.
-        seed ^= ::qHash(k.ecuid, seed);
-        seed ^= ::qHash(k.apid, seed << 1);
-        seed ^= ::qHash(k.ctid, seed << 2);
-        seed ^= ::qHash(static_cast<quint32>(k.sessionid), seed << 3);
-        seed ^= ::qHash(k.type, seed << 4);
-        seed ^= ::qHash(k.subtype, seed << 5);
-        seed ^= ::qHash(k.mode, seed << 6);
-        seed ^= ::qHash(k.numberOfArguments, seed << 7);
+        seed ^= ::qHash(key.ecuid, seed);
+        seed ^= ::qHash(key.apid, seed << 1);
+        seed ^= ::qHash(key.ctid, seed << 2);
+        seed ^= ::qHash(static_cast<quint32>(key.sessionid), seed << 3);
+        seed ^= ::qHash(key.type, seed << 4);
+        seed ^= ::qHash(key.subtype, seed << 5);
+        seed ^= ::qHash(key.mode, seed << 6);
+        seed ^= ::qHash(key.numberOfArguments, seed << 7);
         return seed;
     }
 
@@ -97,13 +97,15 @@ namespace {
         char buf[256] = {0};
 #if defined(_MSC_VER)
         struct tm tmBuf;
-        if (localtime_s(&tmBuf, &t) != 0) {
+        if(localtime_s(&tmBuf, &t) != 0)
+        {
             return QString();
         }
         strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", &tmBuf);
 #else
         struct tm *time_tm = localtime(&t);
-        if (!time_tm) {
+        if(!time_tm)
+        {
             return QString();
         }
         strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S", time_tm);
@@ -114,7 +116,8 @@ namespace {
     static const QString &cachedTimeString(time_t t)
     {
         const bool hit = (t == g_lastTime) && !g_lastTimeStr.isEmpty();
-        if (hit) {
+        if(hit)
+        {
             return g_lastTimeStr;
         }
 
@@ -125,8 +128,8 @@ namespace {
 
     static const QString &cachedHeaderSuffix(const QDltMsg &msg)
     {
-        // Per-thread cache to avoid locks; bounded to keep memory stable.
-        if (!g_headerSuffixCacheInitialized) {
+        if(!g_headerSuffixCacheInitialized)
+        {
             g_headerSuffixCache.setMaxCost(4096);
             g_headerSuffixCacheInitialized = true;
         }
@@ -141,11 +144,11 @@ namespace {
         key.mode = static_cast<int>(msg.getMode());
         key.numberOfArguments = msg.getNumberOfArguments();
 
-        if (auto *cached = g_headerSuffixCache.object(key)) {
+        if(auto *cached = g_headerSuffixCache.object(key))
+        {
             return *cached;
         }
 
-        // Build the stable suffix once and cache it.
         auto *suffix = new QString();
         suffix->reserve(96);
         *suffix += ' ';
@@ -272,7 +275,7 @@ QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
     if(!date.isValid() || !time.isValid())
         return QString("Invalid date");
 
-    QDateTime gmDateTime(date, time, QTimeZone::utc());
+    QDateTime gmDateTime(date,time,Qt::UTC);
 
     gmDateTime = gmDateTime.addSecs(offset);
 
@@ -440,7 +443,7 @@ bool QDltMsg::setMsg(const QByteArray& buf, bool withStorageHeader,bool supportD
     DltStandardHeaderExtra headerextra;
     unsigned int extra_size,headersize,datasize;
     int sizeStorageHeader = 0;
-    quint32 storageHeaderTimestampNanoseconds = 0; Q_UNUSED(storageHeaderTimestampNanoseconds)
+    quint32 storageHeaderTimestampNanoseconds = 0;
     quint64 storageHeaderTimestampSeconds = 0;
     QString storageHeaderEcuId;
 
@@ -1064,9 +1067,6 @@ bool QDltMsg::getMsg(QByteArray &buf,bool withStorageHeader) {
             return false;
     }
 
-    // Reserve expected size to avoid repeated reallocations while building the message
-    buf.reserve(payload.size() + sizeof(DltStorageHeader) + sizeof(DltStandardHeader) + sizeof(DltExtendedHeader) + 64);
-
     /* write storageheader */
     if(withStorageHeader)
     {
@@ -1239,7 +1239,6 @@ QString QDltMsg::toStringHeader() const
     QString text;
     text.reserve(1024);
 
-    // Build header string using optimized concatenation
     text += getTimeString();
     text += '.';
     text += QString::number(getMicroseconds()).rightJustified(6, '0');
@@ -1249,8 +1248,6 @@ QString QDltMsg::toStringHeader() const
     text += QString::number(getTimestamp() % 10000).rightJustified(4, '0');
     text += ' ';
     text += QString::number(getMessageCounter());
-
-    // Cache the non-time/counter suffix across messages (ECU/APID/CTID/etc.).
     text += cachedHeaderSuffix(*this);
 
     return text;

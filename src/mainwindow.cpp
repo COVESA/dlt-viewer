@@ -793,7 +793,7 @@ void MainWindow::initSearchTable()
 
 
     /* set table size and en */
-   for  (int col=0;col <= m_searchresultsTable->model()->columnCount();col++)
+     for  (int col=0;col < m_searchresultsTable->model()->columnCount();col++)
    {
      m_searchresultsTable->setColumnWidth(col,FieldNames::getColumnWidth((FieldNames::Fields)col,settings));
    }
@@ -5023,6 +5023,11 @@ void MainWindow::drawUpdatedView()
 void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
     Q_UNUSED(deselected);
+    if(m_suppressPluginSelectionRefresh)
+    {
+        return;
+    }
+
     if(selected.size()>0)
     {
         /* With Autoscroll= false the tableview doesn't jump to the right edge,
@@ -6809,6 +6814,16 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             if(item->getFilename() != dlg.getFilename())
                 callInitFile = true;
 
+            const bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
+            m_suppressPluginSelectionRefresh = reloadCurrentLog;
+
+            if (reloadCurrentLog)
+            {
+                clearSelection();
+                tableModel->setForceEmpty(true);
+                tableModel->modelChanged();
+            }
+
             item->setFilename( dlg.getFilename() );
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
@@ -6816,6 +6831,18 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             /* update plugin item */
             updatePlugin(item);
             item->savePluginModeToSettings();
+
+            if (reloadCurrentLog)
+            {
+                syncCheckBoxesAndMenu();
+                applyConfigEnabled(false);
+                filterUpdate();
+                reloadLogFile(false);
+                triggerPluginsAutoload();
+                callInitFile = false;
+            }
+
+            m_suppressPluginSelectionRefresh = false;
         }
         if(callInitFile)
         {
@@ -8520,9 +8547,7 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
-    m_searchtableModel->modelChanged();
 }
-
 
 void MainWindow::searchtable_cellSelected( QModelIndex index)
 {

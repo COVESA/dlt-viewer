@@ -3,7 +3,7 @@
 void EcuTree::add(const QString& ecuId, const qdlt::msg::payload::GetLogInfo& info)
 {
     for (const auto& app : info.apps) {
-        App appData;
+        auto &appData = ecus[ecuId][app.id];
         appData.description = app.description;
         for (const auto& ctx : app.ctxs) {
             Ctx ctxData;
@@ -12,6 +12,5 @@ void EcuTree::add(const QString& ecuId, const qdlt::msg::payload::GetLogInfo& in
             ctxData.traceStatus = ctx.traceStatus;
             appData.contexts[ctx.id] = std::move(ctxData);
         }
-        ecus[ecuId][app.id] = std::move(appData);
     }
 }
