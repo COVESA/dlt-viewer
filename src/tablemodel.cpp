@@ -27,7 +27,7 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
-TableModel::TableModel(const QString & /*data*/, QObject *parent)
+CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
      qfile = NULL;
@@ -39,12 +39,12 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      searchhit = -1;
  }
 
- TableModel::~TableModel()
+ CTableModel::~CTableModel()
  {
 
  }
 
- int TableModel::columnCount(const QModelIndex & /*parent*/) const
+ int CTableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      if (!project || !project->settings)
          return DLT_VIEWER_COLUMN_COUNT;
@@ -52,7 +52,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
  }
 
 
- QVariant TableModel::data(const QModelIndex &index, int role) const
+ QVariant CTableModel::data(const QModelIndex &index, int role) const
  {
      if (!index.isValid())
      {
@@ -286,7 +286,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      return QVariant();
  }
 
-QVariant TableModel::headerData(int section, Qt::Orientation orientation,
+QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
 {    
     if (orientation == Qt::Horizontal)
@@ -312,7 +312,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
- int TableModel::rowCount(const QModelIndex & /*parent*/) const
+ int CTableModel::rowCount(const QModelIndex & /*parent*/) const
  {
      if(true == emptyForceFlag)
          return 0;
@@ -322,7 +322,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          return qfile->sizeFilter();
  }
 
- void TableModel::modelChanged()
+ void CTableModel::modelChanged()
  {
      if(true == emptyForceFlag)
      {
@@ -343,21 +343,21 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
      emit(layoutChanged());
  }
 
-int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
+int CTableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
 {
 manualMarkerColor = hlcolor;
 this->selectedMarkerRows = selectedRows;
 return 0;
 }
 
-int TableModel::setMarker(long int lineindex, QColor hlcolor)
+int CTableModel::setMarker(long int lineindex, QColor hlcolor)
 {
   searchhit_higlightColor = hlcolor;
   searchhit = lineindex;
   return 0;
 }
 
-QColor TableModel::searchBackgroundColor() const
+QColor CTableModel::searchBackgroundColor() const
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor hlColor(color);
@@ -404,7 +404,7 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
     return QSize(doc.idealWidth(), doc.size().height());
 }
 
-QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
+QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
 {
     /* first check manual markers with highest priority */
     if ( selectedMarkerRows.contains(filterposindex) )
@@ -461,7 +461,7 @@ QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int 
     return brushColor; // this is the default background color
 }
 
-QString TableModel::getToolTipForFields(FieldNames::Fields cn)
+QString CTableModel::getToolTipForFields(FieldNames::Fields cn)
 {
     switch(cn){
     case(FieldNames::Time): return "Detailed representation of time and date when the log entry was recorded";
@@ -470,7 +470,7 @@ QString TableModel::getToolTipForFields(FieldNames::Fields cn)
     }
 }
 
-bool TableModel::eventFilter(QObject *obj, QEvent *event) {
+bool CTableModel::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::Enter || event->type() == QEvent::Leave){
         QHeaderView *header = qobject_cast<QHeaderView*>(obj);
         if(header){

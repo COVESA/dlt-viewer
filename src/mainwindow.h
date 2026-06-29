@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @licence app begin@
  * Copyright (C) 2011-2012  BMW AG
  *
@@ -44,6 +44,9 @@
 #include "tablemodel.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "decodecacheservice.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
@@ -137,8 +140,11 @@ private:
     QFile outputfile;
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
-    TableModel *tableModel;
-    SearchTableModel *m_searchtableModel;
+    CTableModel *m_tableModel;
+    CSearchTableModel *m_searchtableModel;
+    CQDltFileMessageStoreAdapter m_messageStore;
+    CIndexService m_indexService;
+    CDecodeCacheService m_decodeCacheService;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
@@ -160,13 +166,13 @@ private:
     unsigned long totalSyncFoundRcvd;
 
     /* Search */
-    SearchDialog *searchDlg;
+    CSearchDialog *m_searchDlg;
     QShortcut *m_shortcut_searchnext;
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
     /* CRLF Filter Window */
-    CrlfFilterWindow *crlfFilterWindow;
+    CrlfFilterWindow *m_crlfFilterWindow;
 
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;

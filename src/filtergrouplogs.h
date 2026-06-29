@@ -12,13 +12,13 @@
 #include "qdltpluginmanager.h"
 #include "sortfilterproxymodel.h"
 
-class filtergrouplogs : public QObject {
+class CFilterGroupLogs : public QObject {
     Q_OBJECT
 
 public:
-  
-  explicit filtergrouplogs(QObject* parent = nullptr);
-  // Extracts unique ECU IDs from a DLT file
+  //! Construct the ECU grouping helper.
+  explicit CFilterGroupLogs(QObject* parent = nullptr);
+  //! Extract unique ECU IDs from a DLT file path.
   QStringList extractEcuIds(const QString& dltFilePath);
   // Sets the source model for DLT data
   void setSourceModel(QAbstractTableModel* model);
@@ -38,21 +38,24 @@ public:
   void onExportFilteredLogsClicked();
 
   private :
-    EcuIdFilterProxyModel* ecuIdFilterProxy;
-    QAbstractTableModel* sourceModelOfDLT;
-    QTabWidget* mergedTabWidget;
+    QAbstractTableModel* m_sourceModelOfDLT;
+    QTabWidget* m_mergedTabWidget;
     QDltFile* dltFile;
     QDltPluginManager* pluginManager;
 
-    QMap<QString, QWidget*> mergedTabs;
-    QMap<QWidget*, QStringList> tabToSelectedIds;
-    QMap<int, QString> indexofMergedTabs;
-    QMap<QString, QTableView*> ecuTabViews;
+    QMap<QString, QWidget*> m_mergedTabs;
+    QMap<QWidget*, QStringList> m_tabToSelectedIds;
+    QMap<int, QString> m_indexOfMergedTabs;
+    QMap<QString, QTableView*> m_ecuTabViews;
+    std::map<QString, std::vector<int>> m_ecuSourceRowProjection;
 
-    QSet<QString> selectedEcuIdSet;
-    QStringList extractedEcuIds;
+    QSet<QString> m_selectedEcuIdSet;
+    QStringList m_extractedEcuIds;
 
-    int ecuColumnIndex = 4;
+    int m_ecuColumnIndex = 4;
 };
 
 #endif // FILTERGROUPLOGS_H
+
+
+

@@ -38,13 +38,15 @@
 
 #define DLT_VIEWER_COLUMN_COUNT FieldNames::Arg0
 
-class TableModel : public QAbstractTableModel
+class CTableModel : public QAbstractTableModel
 {
 Q_OBJECT
 
 public:
-    TableModel(const QString &data, QObject *parent = 0);
-    ~TableModel();
+    //! Construct the main table model.
+    CTableModel(const QString &data, QObject *parent = 0);
+    //! Destroy the main table model.
+    ~CTableModel();
 
     QVariant data(const QModelIndex &index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation,

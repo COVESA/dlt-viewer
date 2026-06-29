@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file searchdialog.h
+ * \file CSearchDialog.h
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -27,12 +27,14 @@
 
 #define DLT_VIEWER_SEARCHCOLUMN_COUNT FieldNames::Arg0
 
-class SearchTableModel : public QAbstractTableModel
+class CSearchTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    explicit SearchTableModel(const QString &data, QObject *parent = 0);
-    ~SearchTableModel();
+    //! Construct the search result model.
+    explicit CSearchTableModel(const QString &data, QObject *parent = 0);
+    //! Destroy the search result model.
+    ~CSearchTableModel();
 
     QVariant headerData(int section, Qt::Orientation orientation,
          int role = Qt::DisplayRole) const;

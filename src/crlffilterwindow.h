@@ -76,36 +76,31 @@ private:
     void updateMessageCount(int count);
     void applyColumnSettings();
     
-    // Optimized data extraction method
-    QVariantList extractMessageData(int filteredIndex, bool suppressIndexBuilding = false);
+    ProjectionTableModel* m_crlfProjectionModel;
+    QAbstractTableModel* m_sourceModelOfDLT;
+    QWidget* m_crlfWindow;
+    QTableView* m_crlfTableView;
+    QLabel* m_statusLabel;
+    QDltFile* m_dltFile;
+    QDltPluginManager* m_pluginManager;
+    CMessageStore *m_messageStore;
+    const CIndexService *m_indexService;
+    CDecodeCacheService *m_externalDecodeCacheService;
     
-    // Clear cache when file structure changes
-    void invalidateCache();
-    
-    // Build bulk CRLF index for all messages (one-time expensive operation)
-    void buildBulkCrlfIndex();
-    
-    // Check if parent MainWindow has background operations in progress
-    bool isMainWindowBusy() const;
-    
-    QStandardItemModel* crlfFilterProxy;
-    QAbstractTableModel* sourceModelOfDLT;
-    QWidget* crlfWindow;
-    QTableView* crlfTableView;
-    QLabel* statusLabel;
-    QDltFile* dltFile;
-    QDltPluginManager* pluginManager;
-    
-    QHash<int, bool> crlfCache;  // Cache which absolute positions contain CRLF (positive + negative caching)
-    QHash<int, QVariantList> messageDataCache;  // Cache processed message data
-    int lastCacheValidCount;
-    bool bulkCrlfIndexBuilt;
+    QHash<int, bool> m_crlfCache;  // Cache which absolute positions contain CRLF (positive + negative caching)
+    QHash<int, QVariantList> m_messageDataCache;  // Cache processed message data
+    int m_lastCacheValidCount;
+    bool m_bulkCrlfIndexBuilt;
     
     // Debouncing mechanism to prevent frequent updates
-    QTimer* rebuildTimer;
-    int lastFilteredMessageCount;
-    bool rebuildScheduled;
-    bool rebuildInProgress;
+    QTimer* m_rebuildTimer;
+    int m_lastFilteredMessageCount;
+    bool m_rebuildScheduled;
+    bool m_rebuildInProgress;
+    mutable CDecodeCacheService m_decodeCacheService;
 };
 
 #endif // CRLFFILTERWINDOW_H
+
+
+

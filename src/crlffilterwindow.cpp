@@ -22,13 +22,16 @@
 #include "qdltsettingsmanager.h"
 
 CrlfFilterWindow::CrlfFilterWindow(QObject* parent) : QObject(parent) {
-    sourceModelOfDLT = nullptr;
-    crlfFilterProxy = nullptr;
-    crlfWindow = nullptr;
-    crlfTableView = nullptr;
-    statusLabel = nullptr;
-    dltFile = nullptr;
-    pluginManager = nullptr;
+    m_sourceModelOfDLT = nullptr;
+    m_crlfProjectionModel = nullptr;
+    m_crlfWindow = nullptr;
+    m_crlfTableView = nullptr;
+    m_statusLabel = nullptr;
+    m_dltFile = nullptr;
+    m_pluginManager = nullptr;
+    m_messageStore = nullptr;
+    m_indexService = nullptr;
+    m_externalDecodeCacheService = nullptr;
     
     // Initialize debouncing mechanism
     rebuildTimer = new QTimer(this);
@@ -36,11 +39,22 @@ CrlfFilterWindow::CrlfFilterWindow(QObject* parent) : QObject(parent) {
     rebuildTimer->setInterval(500);
     connect(rebuildTimer, &QTimer::timeout, this, &CrlfFilterWindow::onRebuildTimerTimeout);
     
-    lastFilteredMessageCount = -1;
-    lastCacheValidCount = -1;
-    bulkCrlfIndexBuilt = false;
-    rebuildScheduled = false;
-    rebuildInProgress = false;
+    m_lastFilteredMessageCount = -1;
+    m_rebuildScheduled = false;
+    m_rebuildInProgress = false;
+}
+
+void CrlfFilterWindow::invalidateCache() {
+    m_crlfCache.clear();
+    m_messageDataCache.clear();
+    m_lastCacheValidCount = -1;
+    m_bulkCrlfIndexBuilt = false;
+    CDecodeCacheService *activeDecodeCache = m_externalDecodeCacheService ? m_externalDecodeCacheService : &m_decodeCacheService;
+    if (m_dltFile) {
+        activeDecodeCache->clearForFile(m_dltFile);
+    } else {
+        activeDecodeCache->clear();
+    }
 }
 
 // Check if a message contains CRLF characters
@@ -100,12 +114,12 @@ QStringList CrlfFilterWindow::createTableHeaders() {
 // Creates a single window displaying all CRLF messages
 void CrlfFilterWindow::createCrlfWindow() {
     // Validate prerequisites
-    if (!dltFile || dltFile->size() == 0) {
+    if (!m_dltFile || m_dltFile->size() == 0) {
         QMessageBox::information(nullptr, "No DLT file", "No DLT file is currently loaded.");
         return;
     }
     
-    if (!sourceModelOfDLT) {
+    if (!m_sourceModelOfDLT) {
         QMessageBox::critical(nullptr, "Error", "No source model available for CRLF filtering.");
         return;
     }
@@ -121,16 +135,13 @@ void CrlfFilterWindow::createCrlfWindow() {
     QWidget* parentWidget = qobject_cast<QWidget*>(parent());
     
     // Create the model if it doesn't exist
-    if (!crlfFilterProxy) {
-        crlfFilterProxy = new QStandardItemModel(this);
-        crlfFilterProxy->setHorizontalHeaderLabels(createTableHeaders());
-    } else {
-        // Clear existing data
-        crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
+    if (!m_crlfProjectionModel) {
+        m_crlfProjectionModel = new CProjectionTableModel(this);
     }
+    m_crlfProjectionModel->setSourceModel(m_sourceModelOfDLT);
     
     // Check if no filtered messages exist
-    int totalFilteredMessages = dltFile->sizeFilter();
+    int totalFilteredMessages = m_dltFile->sizeFilter();
     if (totalFilteredMessages == 0) {
         QMessageBox::information(parentWidget, "No Messages", "No messages are available for CRLF filtering.");
         return;
@@ -259,8 +270,11 @@ void CrlfFilterWindow::createCrlfWindow() {
     layout->addWidget(statusLabel);
 
     // Update window title and status with message count
-    updateMessageCount(crlfFilterProxy->rowCount());
-    lastFilteredMessageCount = dltFile->sizeFilter();
+    updateMessageCount(m_crlfProjectionModel->rowCount());
+    
+    // Apply column settings and initialize tracking state
+    applyColumnSettings();
+    m_lastFilteredMessageCount = m_dltFile->sizeFilter();
 
     // Show window after everything is prepared
     crlfWindow->show();
@@ -270,7 +284,7 @@ void CrlfFilterWindow::createCrlfWindow() {
 
 // Exports all filtered CRLF DLT logs to a file
 void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
-    if (!dltFile || !crlfFilterProxy || !crlfTableView || !crlfWindow) {
+    if (!m_dltFile || !m_crlfProjectionModel || !m_sourceModelOfDLT || !m_crlfTableView || !m_crlfWindow) {
         QMessageBox::information(nullptr, "Export Error", "No CRLF data available to export or window is not properly initialized.");
         return;
     }
@@ -310,17 +324,11 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
             if (progress && progress->wasCanceled()) {
                 return;
             }
-            
-            // Get the actual file position stored in UserRole during model building
-            QModelIndex indexItem = crlfFilterProxy->index(row, 0);
-            if (indexItem.isValid()) {
-                QVariant positionData = indexItem.data(Qt::UserRole);
-                if (positionData.isValid()) {
-                    int actualFilePosition = positionData.toInt();
-                    if (actualFilePosition >= 0) {
-                        messageIndices.append(actualFilePosition);
-                    }
-                }
+
+            const int sourceRow = m_crlfProjectionModel->sourceRowForRow(row);
+            const QModelIndex sourceIndex = m_sourceModelOfDLT->index(sourceRow, 0);
+            if (sourceIndex.isValid()) {
+                selectedIndices.append(sourceIndex);
             }
             
             // Update progress more frequently to ensure visibility
@@ -417,9 +425,9 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
         QCoreApplication::processEvents();
         
         QDltExporter* exporter = new QDltExporter(
-            dltFile,                                    // Source DLT file
+            m_dltFile,                                    // Source DLT file
             fileName,                                   // Output filepath
-            pluginManager,                              // Plugin manager (can be nullptr)
+            m_pluginManager,                              // Plugin manager (can be nullptr)
             QDltExporter::FormatDlt,                    // Export in DLT format
             QDltExporter::SelectionSelected,            // Export selected messages
             &selectedIndices,                           // List of valid model indices
@@ -465,15 +473,15 @@ void CrlfFilterWindow::onExportFilteredCrlfLogsClicked() {
 // Sets the source model for DLT data
 void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
     // Disconnect from previous model if any
-    if (sourceModelOfDLT) {
-        disconnect(sourceModelOfDLT, nullptr, this, nullptr);
+    if (m_sourceModelOfDLT) {
+        disconnect(m_sourceModelOfDLT, nullptr, this, nullptr);
     }
     
-    sourceModelOfDLT = model;
+    m_sourceModelOfDLT = model;
     
-    if (sourceModelOfDLT) {
-        connect(sourceModelOfDLT, &QAbstractTableModel::modelReset, this, &CrlfFilterWindow::onSourceModelReset);
-        connect(sourceModelOfDLT, &QAbstractTableModel::layoutChanged, this, &CrlfFilterWindow::onSourceModelDataChanged);
+    if (m_sourceModelOfDLT) {
+        connect(m_sourceModelOfDLT, &QAbstractTableModel::modelReset, this, &CrlfFilterWindow::onSourceModelReset);
+        connect(m_sourceModelOfDLT, &QAbstractTableModel::layoutChanged, this, &CrlfFilterWindow::onSourceModelDataChanged);
         
         // Connect to parent's dltFileLoaded signal for file changes
         if (QObject* parentObj = parent()) {
@@ -484,12 +492,12 @@ void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
 
 // Sets the DLT file reference
 void CrlfFilterWindow::setDltFile(QDltFile* file) {
-    dltFile = file;
-    lastFilteredMessageCount = -1;  // Reset tracking state
+    m_dltFile = file;
+    m_lastFilteredMessageCount = -1;  // Reset tracking state
     
     // Update window if visible and file is available
-    if (crlfWindow && crlfWindow->isVisible() && dltFile) {
-        if (dltFile->size() == 0) {
+    if (m_crlfWindow && m_crlfWindow->isVisible() && m_dltFile) {
+        if (m_dltFile->size() == 0) {
             onSourceModelReset();
         } else if (!rebuildScheduled && !rebuildTimer->isActive() && !rebuildInProgress) {
             rebuildScheduled = true;
@@ -500,7 +508,22 @@ void CrlfFilterWindow::setDltFile(QDltFile* file) {
 
 // Sets the plugin manager reference
 void CrlfFilterWindow::setPluginManager(QDltPluginManager* manager) {
-    pluginManager = manager;
+    m_pluginManager = manager;
+}
+
+void CrlfFilterWindow::setMessageStore(CMessageStore *messageStore)
+{
+    this->m_messageStore = messageStore;
+}
+
+void CrlfFilterWindow::setIndexService(const CIndexService *indexService)
+{
+    this->m_indexService = indexService;
+}
+
+void CrlfFilterWindow::setDecodeCacheService(CDecodeCacheService *decodeCacheService)
+{
+    m_externalDecodeCacheService = decodeCacheService;
 }
 
 // Cleanup method to properly disconnect from models/signals
@@ -515,8 +538,8 @@ void CrlfFilterWindow::cleanup() {
     }
     
     // Disconnect from source model to prevent further updates
-    if (sourceModelOfDLT) {
-        disconnect(sourceModelOfDLT, nullptr, this, nullptr);
+    if (m_sourceModelOfDLT) {
+        disconnect(m_sourceModelOfDLT, nullptr, this, nullptr);
     }
     
     // Clean up UI components - only detach model if both objects exist
@@ -530,18 +553,18 @@ void CrlfFilterWindow::cleanup() {
     }
     
     // Reset all pointers (no individual null checks needed)
-    crlfTableView = nullptr;
-    crlfFilterProxy = nullptr;
-    statusLabel = nullptr;
-    sourceModelOfDLT = nullptr;
-    crlfWindow = nullptr;
-    dltFile = nullptr;
-    pluginManager = nullptr;
+    m_crlfTableView = nullptr;
+    m_crlfProjectionModel = nullptr;
+    m_statusLabel = nullptr;
+    m_sourceModelOfDLT = nullptr;
+    m_crlfWindow = nullptr;
+    m_dltFile = nullptr;
+    m_pluginManager = nullptr;
 }
 
 // Handle double-click on CRLF message row to navigate to main window
 void CrlfFilterWindow::onCrlfMessageDoubleClicked(const QModelIndex& index) {
-    if (!index.isValid() || !crlfFilterProxy || !dltFile) {
+    if (!index.isValid() || !m_crlfProjectionModel || !m_dltFile) {
         return;
     }
     
@@ -550,15 +573,18 @@ void CrlfFilterWindow::onCrlfMessageDoubleClicked(const QModelIndex& index) {
     if (!firstColumnIndex.isValid()) {
         return;
     }
-    
-    // Get the absolute position from UserRole
-    QVariant absolutePositionData = firstColumnIndex.data(Qt::UserRole);
-    if (!absolutePositionData.isValid()) {
+
+    CIndexService localIndexService;
+    const CIndexService *activeIndexService = m_indexService ? m_indexService : &localIndexService;
+    const std::vector<int> filteredProjection =
+        activeIndexService->snapshotProjection(buildActiveFilteredProjection(m_dltFile));
+
+    if (sourceRow >= static_cast<int>(filteredProjection.size())) {
         return;
     }
-    
-    int absolutePosition = absolutePositionData.toInt();
-    if (absolutePosition < 0 || absolutePosition >= dltFile->size()) {
+
+    const int actualPosition = filteredProjection.at(static_cast<std::size_t>(sourceRow));
+    if (actualPosition < 0 || actualPosition >= m_dltFile->size()) {
         return;
     }    
     // Verify the message is still in the current filtered view before navigating
@@ -586,19 +612,17 @@ void CrlfFilterWindow::onCrlfMessageDoubleClicked(const QModelIndex& index) {
 // Handle when source model data changes
 void CrlfFilterWindow::onSourceModelDataChanged() {
     // Early returns for invalid states
-    if (!crlfWindow || !crlfWindow->isVisible() || !dltFile) {
-        if (!dltFile && crlfWindow && crlfWindow->isVisible()) {
-            this->invalidateCache();
+    if (!m_crlfWindow || !m_crlfWindow->isVisible() || !m_dltFile) {
+        if (!m_dltFile && m_crlfWindow && m_crlfWindow->isVisible()) {
             onSourceModelReset();
         }
         return;
     }
     
     // Handle empty file state immediately
-    int currentFilteredCount = dltFile->sizeFilter();
-    if (dltFile->size() == 0 || currentFilteredCount == 0) {
-        lastFilteredMessageCount = 0;
-        this->invalidateCache();
+    int currentFilteredCount = m_dltFile->sizeFilter();
+    if (m_dltFile->size() == 0 || currentFilteredCount == 0) {
+        m_lastFilteredMessageCount = 0;
         onSourceModelReset();
         return;
     }
@@ -614,7 +638,7 @@ void CrlfFilterWindow::onSourceModelDataChanged() {
     bool countChanged = (currentFilteredCount != lastFilteredMessageCount);
     
     // Additional validation: During model transitions, delay rebuild for stability
-    if (sourceModelOfDLT && sourceModelOfDLT->rowCount() != currentFilteredCount) {
+    if (m_sourceModelOfDLT && m_sourceModelOfDLT->rowCount() != currentFilteredCount) {
         // Model is in transition - schedule rebuild with delay for stability
         if (!rebuildScheduled && !rebuildTimer->isActive() && !rebuildInProgress) {
             rebuildScheduled = true;
@@ -656,7 +680,7 @@ void CrlfFilterWindow::onSourceModelReset() {
     }
     
     // Don't show empty window during transitions - schedule rebuild instead
-    if (dltFile && dltFile->sizeFilter() > 0) {
+    if (m_dltFile && m_dltFile->sizeFilter() > 0) {
         // Schedule rebuild rather than showing empty window
         rebuildScheduled = true;
         rebuildTimer->start();
@@ -679,7 +703,7 @@ void CrlfFilterWindow::rebuildCrlfModel() {
         return;
     }
     
-    if (!dltFile || dltFile->size() == 0) {
+    if (!m_dltFile || m_dltFile->size() == 0) {
         // No file or empty file - clear the model
         crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
         updateMessageCount(0);
@@ -690,7 +714,7 @@ void CrlfFilterWindow::rebuildCrlfModel() {
     crlfFilterProxy->removeRows(0, crlfFilterProxy->rowCount());
     
     // Check if no filtered messages exist
-    int totalFilteredMessages = dltFile->sizeFilter();
+    int totalFilteredMessages = m_dltFile->sizeFilter();
     if (totalFilteredMessages == 0) {
         updateMessageCount(0);
         lastFilteredMessageCount = 0;
@@ -797,7 +821,7 @@ void CrlfFilterWindow::onRebuildTimerTimeout() {
         return;
     }
     
-    if (!dltFile || dltFile->size() == 0) {
+    if (!m_dltFile || m_dltFile->size() == 0) {
         onSourceModelReset();
     } else {
         rebuildInProgress = true;
@@ -808,10 +832,10 @@ void CrlfFilterWindow::onRebuildTimerTimeout() {
 
 // Public method to refresh the CRLF window with latest data
 void CrlfFilterWindow::refreshWindow() {
-    if (crlfWindow && dltFile) {
-        // Window exists, just rebuild the model
+    if (m_crlfWindow && m_dltFile && m_crlfProjectionModel) {
+        m_crlfProjectionModel->setSourceModel(m_sourceModelOfDLT);
         rebuildCrlfModel();
-    } else if (!crlfWindow && dltFile) {
+    } else if (!m_crlfWindow && m_dltFile) {
         // Window was closed but object still exists - recreate the window
         createCrlfWindow();
     }
@@ -835,108 +859,59 @@ void CrlfFilterWindow::closeWindow() {
     }
 }
 
-// Optimized data extraction method leveraging table model cache when possible
-QVariantList CrlfFilterWindow::extractMessageData(int filteredIndex, bool suppressIndexBuilding) {
-    QVariantList data;
-    
-    if (!dltFile || filteredIndex < 0 || filteredIndex >= dltFile->sizeFilter()) {
-        return data;
-    }
-    
-    int actualPos = dltFile->getMsgFilterPos(filteredIndex);
-    if (actualPos < 0) {
-        return data;
-    }
-    
-    // Check cache first for performance
-    if (messageDataCache.contains(actualPos)) {
-        return messageDataCache[actualPos];
-    }
-    
-    // Build bulk CRLF index if not done yet (one-time expensive operation) But only if we're not suppressing index building
-    if (!bulkCrlfIndexBuilt && !suppressIndexBuilding) {
-        buildBulkCrlfIndex();
-    }
-    
-    // If index building was suppressed and index is not built, return empty data
-    if (!bulkCrlfIndexBuilt) {
-        return data;
-    }
-    
-    // Check if this message has CRLF using pre-built cache (positive + negative caching)
-    bool hasCrlf = crlfCache.value(actualPos, false);
-    if (!hasCrlf) {
-        return data; // Return empty data for non-CRLF messages
-    }
-    
-    // Access data through table model when available
-    if (sourceModelOfDLT && filteredIndex < sourceModelOfDLT->rowCount()) {
-        // Use table model which has optimized caching
-        data.reserve(14);
-        
-        data << QString::number(actualPos); // Index
-        
-        // Extract all column data through the optimized table model
-        for (int col = 1; col < 13; col++) {
-            QModelIndex modelIndex = sourceModelOfDLT->index(filteredIndex, col);
-            if (modelIndex.isValid()) {
-                data << sourceModelOfDLT->data(modelIndex, Qt::DisplayRole).toString();
-            } else {
-                data << QString(); // Empty string for invalid data
-            }
+std::vector<int> CrlfFilterWindow::buildCrlfProjectionRows(QWidget *progressParent,
+                                                           const QString &progressLabel,
+                                                           bool *wasCancelled)
+{
+    std::vector<int> rows;
+    if (wasCancelled)
+        *wasCancelled = false;
+
+    if (!m_dltFile)
+        return rows;
+
+    CIndexService localIndexService;
+    const CIndexService *activeIndexService = m_indexService ? m_indexService : &localIndexService;
+    const std::vector<int> filteredProjection =
+        activeIndexService->snapshotProjection(buildActiveFilteredProjection(m_dltFile));
+    const int totalFilteredMessages = static_cast<int>(filteredProjection.size());
+    rows.reserve(static_cast<std::size_t>(qMax(0, totalFilteredMessages / 8)));
+
+    const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
+    QProgressDialog buildProgress(progressLabel, "Cancel", 0, totalFilteredMessages, progressParent);
+    buildProgress.setWindowModality(Qt::WindowModal);
+    buildProgress.setMinimumDuration(0);
+    buildProgress.show();
+
+    CDecodeCacheService *activeDecodeCache = m_externalDecodeCacheService ? m_externalDecodeCacheService : &m_decodeCacheService;
+    QDltMsg msg;
+    for (int sourceRow = 0; sourceRow < totalFilteredMessages; ++sourceRow) {
+        if (buildProgress.wasCanceled()) {
+            if (wasCancelled)
+                *wasCancelled = true;
+            break;
         }
-        
-        QModelIndex payloadIndex = sourceModelOfDLT->index(filteredIndex, 13);
-        if (payloadIndex.isValid()) {
-            QString payload = sourceModelOfDLT->data(payloadIndex, Qt::DisplayRole).toString();
-            data << payload;
-            data << hasCrlf;
-        } else {
-            data << QString();
-            data << false;
+
+        const int globalIndex = filteredProjection.at(static_cast<std::size_t>(sourceRow));
+        if (globalIndex < 0)
+            continue;
+
+        bool gotMessage = false;
+        if (activeDecodeCache) {
+            gotMessage = activeDecodeCache->message(m_dltFile,
+                                                    m_pluginManager,
+                                                    globalIndex,
+                                                    decodeEnabled,
+                                                    triggeredByUser,
+                                                    msg,
+                                                    true);
         }
-        
-        // Cache the processed data for future use
-        messageDataCache[actualPos] = data;
-    } else {
-        // Fallback: Only process if we know it has CRLF (from bulk index)
-        if (actualPos >= 0 && actualPos < dltFile->size()) {
-            QDltMsg msg;
-            if (dltFile->getMsg(actualPos, msg)) {
-            if (pluginManager) {
-                pluginManager->decodeMsg(msg, true); // Silent mode
-            }
-            
-            QString rawPayload = msg.toStringPayload();
-            // Process payload for display like main table model
-            QString payload = rawPayload.simplified().remove(QChar::Null);
-            dltFile->applyRegExString(msg, payload);
-            
-            // Build data list manually
-            data.reserve(14);
-            data << QString::number(actualPos); // Index
-            
-            // Add all fields in the same order as FieldNames enum
-            QString timeDisplay = QString("%1.%2").arg(msg.getTimeString()).arg(msg.getMicroseconds(), 6, 10, QLatin1Char('0'));
-            QString timestampDisplay = QString("%1.%2").arg(msg.getTimestamp()/10000).arg(msg.getTimestamp()%10000, 4, 10, QLatin1Char('0'));
-            
-            data << timeDisplay
-                 << timestampDisplay
-                 << QString::number(msg.getMessageCounter())
-                 << msg.getEcuid()
-                 << msg.getApid()
-                 << msg.getCtid()
-                 << QString::number(msg.getSessionid())
-                 << msg.getTypeString()
-                 << msg.getSubtypeString()
-                 << msg.getModeString()
-                 << QString::number(msg.getMessageId())
-                 << QString::number(msg.getNumberOfArguments())
-                 << payload
-                 << hasCrlf;
-            
-            // Cache the processed data
-            messageDataCache[actualPos] = data;
+
+        if (!gotMessage && m_messageStore) {
+            const MessageId messageId = m_messageStore->messageIdForGlobalIndex(globalIndex);
+            gotMessage = (messageId != kInvalidMessageId) && m_messageStore->message(messageId, msg);
         }
         }
     }
@@ -1012,13 +987,4 @@ void CrlfFilterWindow::buildBulkCrlfIndex() {
     }
     
     bulkCrlfIndexBuilt = true;
-}
-
-// Check if parent MainWindow has background operations in progress
-bool CrlfFilterWindow::isMainWindowBusy() const {
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(parent());
-    if (mainWindow) {
-        return mainWindow->isBackgroundOperationInProgress();
-    }
-    return false;
 }

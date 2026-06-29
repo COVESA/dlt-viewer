@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file searchdialog.h
+ * \file CSearchDialog.h
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -35,6 +35,7 @@
 #include <atomic>
 
 #include "searchtablemodel.h"
+#include "decodecacheservice.h"
 
 namespace Ui {
 class SearchDialog;
@@ -44,25 +45,25 @@ class QDltFile;
 class QDltPluginManager;
 
 /**
- * @class SearchDialog
+ * @class CSearchDialog
  * @brief Provides a dialog for searching messages in DLT Viewer.
  *      * Handles search parameters, search execution, result highlighting, and search history.
  */
-class SearchDialog : public QDialog {
+class CSearchDialog : public QDialog {
     Q_OBJECT
 
 public:
 
     /**
-     * @brief Constructor for SearchDialog.
+     * @brief Constructor for CSearchDialog.
      * @param parent Parent widget.
      */
-    explicit SearchDialog(QWidget *parent = nullptr);
+    explicit CSearchDialog(QWidget *parent = nullptr);
     /**
-     * @brief Destructor for SearchDialog.
+     * @brief Destructor for CSearchDialog.
      */
 
-    ~SearchDialog();
+    ~CSearchDialog();
 
     /**
      * @brief Focuses the specified row in the table.
@@ -110,9 +111,9 @@ public:
 
     /**
      * @brief Registers the search table model.
-     * @param model Pointer to SearchTableModel.
+     * @param model Pointer to CSearchTableModel.
      */
-    void registerSearchTableModel(SearchTableModel *model);
+    void registerSearchTableModel(CSearchTableModel *model);
 
     QDltFile *file{nullptr};
     QTableView *table{nullptr};
@@ -123,7 +124,7 @@ public:
     bool needTimeRangeReset() const;
 private:
     Ui::SearchDialog *ui{nullptr};
-    SearchTableModel *m_searchtablemodel{nullptr};
+    CSearchTableModel *m_searchtablemodel{nullptr};
 
     std::atomic_bool isSearchCancelled{false};
     QFutureWatcher<int> m_findAllWatcher;
