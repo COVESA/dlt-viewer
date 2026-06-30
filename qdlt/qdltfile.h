@@ -248,6 +248,11 @@ public:
     */
     void addFilterIndex (int index);
 
+    //! Add multiple entries to the filter index in one step.
+    /*!\n      \param indices The positions of the messages in allIndex to be added
+    */
+    void addFilterIndices(const QVector<qint64> &indices);
+
     //! Check if message will be marked.
     /*!
       Colours used are:
@@ -272,11 +277,18 @@ public:
      **/
     QString getFileName(int num = 0);
 
+    //! Get the last indexed message position for a file.
+    /*! Returns -1 when the file has no indexed messages or the file number is invalid. */
+    qint64 getLastFileMessagePosition(int num = 0) const;
+
     //! Get number of messages of the underlying file object
     /*!
      * \return File size or -1 in case of "wrong "out of range" input index
      **/
     int getFileMsgNumber(int num = 0) const;
+
+    //! Append new message positions to a file-specific full index.
+    void appendDltIndices(const QVector<qint64> &indices, int num = 0);
 
     //! Get Index of all DLT messages matching filter
     /*!
