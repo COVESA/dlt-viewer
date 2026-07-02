@@ -13,6 +13,8 @@ DltFileIndexerThread::DltFileIndexerThread
         QMap<DltFileIndexerKey,qint64> *indexFilterListSorted,
         QDltPluginManager *pluginManager,
         QList<QDltPlugin*> *activeViewerPlugins,
+    QDltFile *dltFile,
+    CDecodeCacheService *decodeCacheService,
         bool silentMode
 )
     :indexer(indexer),
@@ -23,6 +25,8 @@ DltFileIndexerThread::DltFileIndexerThread
       indexFilterListSorted(indexFilterListSorted),
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
+    dltFile(dltFile),
+    decodeCacheService(decodeCacheService),
       silentMode(silentMode), msgQueue(1024)
 {
 
@@ -65,10 +69,14 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
        msg->getCtrlServiceId() == DLT_SERVICE_ID_GET_SOFTWARE_VERSION)
     {
         QByteArray payload = msg->getPayload();
-        QByteArray data = payload.mid(9, (payload.size() > 262) ? 256 : (payload.size() - 9));
-        QString version = QDlt::toAscii(data,true);
-        version = version.trimmed(); // remove all white spaces at beginning and end
-        indexer->versionString(msg->getEcuid(),version);
+        if (payload.size() > 9)
+        {
+            const int len = qMin(256, payload.size() - 9);
+            const QByteArray data = QByteArray::fromRawData(payload.constData() + 9, len);
+            QString version = QDlt::toAscii(data, true);
+            version = version.trimmed(); // remove all white spaces at beginning and end
+            indexer->versionString(msg->getEcuid(), version);
+        }
     }
 
     /* check if it is a timezone message */
@@ -117,10 +125,20 @@ void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int inde
     }
 
     /* Process all decoderplugins */
-    if ( pluginsEnabled == true )
-     {
-     (void) pluginManager->decodeMsg(*msg, silentMode);
-     }
+    if (pluginsEnabled && decodeCacheService && dltFile)
+    {
+        QDltMsg decoded;
+        if (decodeCacheService->message(dltFile,
+                                        pluginManager,
+                                        index,
+                                        true,
+                                        silentMode,
+                                        decoded,
+                                        true))
+        {
+            *msg = decoded;
+        }
+    }
 
 
     bool_result = filterList->checkFilter(*msg);

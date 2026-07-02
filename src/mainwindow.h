@@ -44,6 +44,9 @@
 #include "tablemodel.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "decodecacheservice.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
@@ -137,8 +140,11 @@ private:
     QFile outputfile;
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
-    TableModel *tableModel;
-    SearchTableModel *m_searchtableModel;
+    CTableModel *m_tableModel;
+    CSearchTableModel *m_searchtableModel;
+    CQDltFileMessageStoreAdapter m_messageStore;
+    CIndexService m_indexService;
+    CDecodeCacheService m_decodeCacheService;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
@@ -160,13 +166,13 @@ private:
     unsigned long totalSyncFoundRcvd;
 
     /* Search */
-    SearchDialog *searchDlg;
+    CSearchDialog *m_searchDlg;
     QShortcut *m_shortcut_searchnext;
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
     /* CRLF Filter Window */
-    CrlfFilterWindow *crlfFilterWindow;
+    CrlfFilterWindow *m_crlfFilterWindow;
 
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
@@ -250,6 +256,9 @@ private:
 
     /* DLT File opened only Read only */
     bool isDltFileReadOnly;
+
+    bool m_liveFilterRefreshInProgress{false};
+    bool m_resumeDrawTimerAfterFilter{false};
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
@@ -403,7 +412,7 @@ private:
 
     void clearSelection();
     void saveSelection();
-    void restoreSelection();
+    void restoreSelection(bool scrollToSelection = true);
     QList<int> previousSelection;
 
     /* default filters */
@@ -436,6 +445,7 @@ private slots:
     void reloadLogFileFinishIndex();
     void reloadLogFileFinishFilter();
     void reloadLogFileFinishDefaultFilter();
+    void onIndexerRunFinished();
     void triggerPluginsAutoload();
 
     void onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);

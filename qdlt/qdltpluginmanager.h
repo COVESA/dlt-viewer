@@ -20,6 +20,13 @@ class QMutex;
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
+  enum class PluginStage
+  {
+    Ingest,
+    Decode,
+    Enrich
+  };
+
     //! The number of plugins
     /*!
       \return the number of loaded plugins.
@@ -50,6 +57,9 @@ public:
       \param triggeredByUser Whether decode operation was triggered by the user or not
     */
     void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
+
+    //! Decode message through enabled decoder plugins and report if handled.
+    bool decodeMsgHandled(QDltMsg &msg, int triggeredByUser);
 
     //! Get the list of pointers to all loaded plugins
     QList<QDltPlugin*> getPlugins() const { return plugins; }
@@ -82,6 +92,7 @@ public:
 
 private:
     mutable QMutex pluginListMutex;
+    mutable QMutex m_decodeStageMutex;
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;

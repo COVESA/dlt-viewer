@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file searchdialog.cpp
+ * \file SearchDialog.cpp
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -21,6 +21,10 @@
 #include "ui_searchdialog.h"
 #include "qdltoptmanager.h"
 #include "tablemodel.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "qdltfileprojection.h"
+#include "decodecacheservice.h"
 
 #include <dltmessagematcher.h>
 
@@ -37,16 +41,17 @@
 #include <QDebug>
 #include <QtConcurrent/QtConcurrent>
 
+#include <cstdint>
 #include <mutex>
 
-SearchDialog::SearchDialog(QWidget *parent) :
+CSearchDialog::CSearchDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SearchDialog)
 {
     ui->setupUi(this);
 
     connect(&m_findAllWatcher, &QFutureWatcher<int>::finished,
-            this, &SearchDialog::onFindAllFinished);
+            this, &CSearchDialog::onFindAllFinished);
 
     regexpCheckBox = ui->checkBoxRegExp;
     match = false;
@@ -89,14 +94,14 @@ SearchDialog::SearchDialog(QWidget *parent) :
     });
 
     // OK button triggers find next
-    connect(this, &SearchDialog::accepted, this, &SearchDialog::findNextClicked);
+    connect(this, &CSearchDialog::accepted, this, &CSearchDialog::findNextClicked);
 
     fSilentMode = !QDltOptManager::getInstance()->issilentMode();
 
     updateColorbutton();
 }
 
-SearchDialog::~SearchDialog()
+CSearchDialog::~CSearchDialog()
 {
     // Avoid use-after-free if a background Find-All search is still running.
     if (m_findAllWatcher.isRunning())
@@ -110,49 +115,52 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::selectText() {
+void CSearchDialog::selectText() {
     ui->lineEditSearch->setFocus();
     ui->lineEditSearch->selectAll();
 }
 
-void SearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
-void SearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
-void SearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
-void SearchDialog::setRegExp(bool regExp) { ui->checkBoxRegExp->setCheckState(regExp?Qt::Checked:Qt::Unchecked);}
-void SearchDialog::setNextClicked(bool next){nextClicked = next;}
-void SearchDialog::setMatch(bool matched){match=matched;}
+void CSearchDialog::setHeader(bool header) { ui->checkBoxHeader->setCheckState(header?Qt::Checked:Qt::Unchecked);}
+void CSearchDialog::setPayload(bool payload) { ui->checkBoxPayload->setCheckState(payload?Qt::Checked:Qt::Unchecked);}
+void CSearchDialog::setCaseSensitive(bool caseSensitive) { ui->checkBoxCaseSensitive->setCheckState(caseSensitive?Qt::Checked:Qt::Unchecked);}
+void CSearchDialog::setRegExp(bool regExp) { ui->checkBoxRegExp->setCheckState(regExp?Qt::Checked:Qt::Unchecked);}
+void CSearchDialog::setNextClicked(bool next){nextClicked = next;}
+void CSearchDialog::setMatch(bool matched){match=matched;}
 
-void SearchDialog::setTimeRange(const QDateTime& min, const QDateTime& max) {
+void CSearchDialog::setTimeRange(const QDateTime& min, const QDateTime& max) {
     ui->dateTimeStart->setDateTimeRange(min, max);
     ui->dateTimeEnd->setDateTimeRange(min, max);
     ui->dateTimeStart->setDateTime(min);
     ui->dateTimeEnd->setDateTime(max);
 }
 
-bool SearchDialog::needTimeRangeReset() const { return m_timeRangeResetNeeded; }
+bool CSearchDialog::needTimeRangeReset() const { return m_timeRangeResetNeeded; }
 
-void SearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits.append(lineEdit);}
+void CSearchDialog::appendLineEdit(QLineEdit *lineEdit){ lineEdits.append(lineEdit);}
 
-QString SearchDialog::getText() { return ui->lineEditSearch->text(); }
+QString CSearchDialog::getText() { return ui->lineEditSearch->text(); }
 
-void SearchDialog::abortSearch()
+void CSearchDialog::abortSearch()
 {
     isSearchCancelled.store(true, std::memory_order_relaxed);
     if (m_findAllWatcher.isRunning())
+    {
         m_findAllWatcher.future().cancel();
+        m_findAllWatcher.waitForFinished();
+    }
 }
 
-void SearchDialog::reportProgress(int progress)
+void CSearchDialog::reportProgress(int progress)
 {
     emit searchProgressValueChanged(progress);
 }
 
-void SearchDialog::appendFindAllMatchesChunk(const QList<unsigned long>& entries)
+void CSearchDialog::appendFindAllMatchesChunk(const std::vector<std::uint64_t> &entries)
 {
     if (!m_searchtablemodel)
         return;
 
-    if (entries.isEmpty())
+    if (entries.empty())
         return;
 
     const bool wasEmpty = (m_searchtablemodel->get_SearchResultListSize() == 0);
@@ -163,7 +171,7 @@ void SearchDialog::appendFindAllMatchesChunk(const QList<unsigned long>& entries
     m_findAllAddedSinceLastUiUpdate += entries.size();
 
     // Throttle table refreshes to keep UI responsive.
-    const qint64 nowMs = m_findAllUiUpdateTimer.elapsed();
+    const std::int64_t nowMs = static_cast<std::int64_t>(m_findAllUiUpdateTimer.elapsed());
     const bool timeToUpdate = (nowMs - m_findAllLastUiUpdateMs) >= 200;
     const bool manyNewItems = m_findAllAddedSinceLastUiUpdate >= 2000;
 
@@ -175,7 +183,7 @@ void SearchDialog::appendFindAllMatchesChunk(const QList<unsigned long>& entries
     }
 }
 
-void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
+void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     Q_UNUSED(searchTextRegExp);
@@ -193,6 +201,12 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
+    
+    // Optimization: Increase cache size for search to improve hit rate for repeated random access.
+    // Search workload accesses many different messages multiple times; larger cache reduces parse overhead.
+    file->setCacheSize(5000);
+    
+    m_decodeCacheService.clearForFile(file);
 
     m_findAllUiUpdateTimer.restart();
     m_findAllLastUiUpdateMs = 0;
@@ -201,24 +215,26 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     m_searchtablemodel->clear_SearchResults();
     emit refreshedSearchIndex();
 
-    const int total = file->sizeFilter();
+    CQDltFileMessageStoreAdapter messageStore(file);
+    const auto &filteredMessageIds = messageStore.snapshotFilteredMessageIds();
+    std::vector<int> filteredProjectionRows;
+    filteredProjectionRows.reserve(filteredMessageIds.size());
+    for (const MessageId messageId : filteredMessageIds)
+    {
+        const int globalIndex = messageStore.globalIndexForMessageId(messageId);
+        if (globalIndex >= 0)
+            filteredProjectionRows.push_back(globalIndex);
+    }
+
+    CIndexService indexService;
+    auto filteredProjection = std::make_shared<std::vector<int>>(
+        indexService.snapshotProjection(filteredProjectionRows));
+
+    const int total = filteredProjection->size();
     if (total <= 0)
     {
         emit searchProgressChanged(false);
         return;
-    }
-
-
-    // Snapshot the current filter mapping once on the UI thread.
-    // QDltFile's filter index isn't guaranteed thread-safe for concurrent reads.
-    const bool useFilterSnapshot = file->isFilter();
-    std::shared_ptr<QVector<int>> filterPositions;
-    if (useFilterSnapshot)
-    {
-        filterPositions = std::make_shared<QVector<int>>();
-        filterPositions->reserve(total);
-        for (int i = 0; i < total; ++i)
-            filterPositions->push_back(file->getMsgFilterPos(i));
     }
 
     const bool msgIdEnabled = QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
@@ -283,12 +299,13 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     auto processed = std::make_shared<std::atomic<int>>(0);
-    const QPointer<SearchDialog> dlg(this);
+    const QPointer<CSearchDialog> dlg(this);
     QDltFile* filePtr = file;
     QDltPluginManager* pluginPtr = pluginManager;
+    CDecodeCacheService* decodeCache = &m_decodeCacheService;
 
-    auto mapFn = [=](const Chunk& chunk) -> QList<unsigned long> {
-        QList<unsigned long> matches;
+    auto mapFn = [=](const Chunk& chunk) -> std::vector<std::uint64_t> {
+        std::vector<std::uint64_t> matches;
         matches.reserve(qMax(0, chunk.end - chunk.begin + 1) / 16);
 
         DltMessageMatcher matcher;
@@ -312,24 +329,23 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
                 break;
 
-            const int msgIndex = (filterPositions ? filterPositions->at(i) : i);
+            const int msgIndex = filteredProjection->at(i);
             if (msgIndex < 0)
                 continue;
 
-            buf = filePtr->getMsg(msgIndex);
-            if (buf.isEmpty())
+            if (!decodeCache->message(filePtr,
+                                      pluginPtr,
+                                      msgIndex,
+                                      doDecode,
+                                      dlg ? dlg->fSilentMode : 0,
+                                      msg,
+                                      false))
                 continue;
-
-            msg.setMsg(buf);
-            msg.setIndex(msgIndex);
-
-            if (doDecode && pluginPtr)
-                pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
                                       : matcher.match(msg, searchText);
             if (ok)
-                matches.append(static_cast<unsigned long>(msgIndex));
+                matches.push_back(static_cast<std::uint64_t>(msgIndex));
 
             const int done = processed->fetch_add(1, std::memory_order_relaxed) + 1;
             if ((done % 2000) == 0)
@@ -348,9 +364,9 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         return matches;
     };
 
-    auto reduceFn = [dlg](int& matchCount, const QList<unsigned long>& matches) {
-        matchCount += matches.size();
-        if (dlg && !matches.isEmpty())
+    auto reduceFn = [dlg](int& matchCount, const std::vector<std::uint64_t> &matches) {
+        matchCount += static_cast<int>(matches.size());
+        if (dlg && !matches.empty())
         {
             QMetaObject::invokeMethod(dlg, [dlg, matches]() {
                 if (dlg)
@@ -370,8 +386,12 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 #endif
 }
 
-void SearchDialog::onFindAllFinished()
+void CSearchDialog::onFindAllFinished()
 {
+    // Restore cache size to default after search completes
+    if (file)
+        file->setCacheSize(1000);
+
     // Ensure the last batch of incremental updates is reflected.
     emit refreshedSearchIndex();
 
@@ -391,62 +411,62 @@ void SearchDialog::onFindAllFinished()
 
 }
 
-bool SearchDialog::getHeader()
+bool CSearchDialog::getHeader()
 {
     return (ui->checkBoxHeader->checkState() == Qt::Checked);
 }
 
-bool SearchDialog::getPayload()
+bool CSearchDialog::getPayload()
 {
     return (ui->checkBoxPayload->checkState() == Qt::Checked);
 }
 
-bool SearchDialog::getRegExp()
+bool CSearchDialog::getRegExp()
 {
     return (ui->checkBoxRegExp->checkState() == Qt::Checked);
 }
 
-bool SearchDialog::getNextClicked(){return nextClicked;}
+bool CSearchDialog::getNextClicked(){return nextClicked;}
 
-QString SearchDialog::getApIDText(){ return ui->lineEditApld->text();}
-QString SearchDialog::getCtIDText(){ return ui->lineEditCtid->text();}
+QString CSearchDialog::getApIDText(){ return ui->lineEditApld->text();}
+QString CSearchDialog::getCtIDText(){ return ui->lineEditCtid->text();}
 
-QString SearchDialog::getTimeStampStart()
+QString CSearchDialog::getTimeStampStart()
 {
     //qDebug() << "content of start time" << ui->timeStartlineEdit->text()<< __LINE__;
     return ui->lineEditTimestampStart->text();
 }
 
-QString SearchDialog::getTimeStampEnd()
+QString CSearchDialog::getTimeStampEnd()
 {
     //qDebug() << "content of end time" << ui->timeEndlineEdit->text() << __LINE__;
     return ui->lineEditTimestampEnd->text();
 }
 
-bool SearchDialog::getCaseSensitive()
+bool CSearchDialog::getCaseSensitive()
 {
     //qDebug() << "getCaseSensitive is" << ui->checkBoxCaseSensitive->checkState() << __LINE__;
     return (ui->checkBoxCaseSensitive->checkState() == Qt::Checked);
 }
 
-bool SearchDialog::searchtoIndex()
+bool CSearchDialog::searchtoIndex()
 {
     //qDebug() << "searchtoIndex is" << ui->checkBoxSearchIndex->checkState() << __LINE__;
     return (ui->checkBoxFindAll->checkState() == Qt::Checked);
 }
 
 
-bool SearchDialog::getSearchFromBeginning()
+bool CSearchDialog::getSearchFromBeginning()
 {
     return (ui->radioButtonPosBeginning->isChecked());
 }
 
-void SearchDialog::setStartLine(long int start)
+void CSearchDialog::setStartLine(long int start)
 {
   startLine=start;
 }
 
-void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
+void CSearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 {
     QPalette palette = lineEdit->palette();
     QColor text0 = QColor(255,255,255);
@@ -476,9 +496,9 @@ void SearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
     }
 }
 
-void SearchDialog::focusRow(long int searchLine)
+void CSearchDialog::focusRow(long int searchLine)
 {
-    TableModel *model = qobject_cast<TableModel *>(table->model());
+    CTableModel *model = qobject_cast<CTableModel *>(table->model());
     QModelIndex idx = model->index(searchLine, 0, QModelIndex());
     //qDebug() << "Focus row in message table window" << searchLine << __FILE__ << __LINE__;
 
@@ -492,7 +512,7 @@ void SearchDialog::focusRow(long int searchLine)
     model->modelChanged();
 }
 
-int SearchDialog::find()
+int CSearchDialog::find()
 {
     isSearchCancelled.store(false, std::memory_order_relaxed);
 
@@ -663,11 +683,10 @@ int SearchDialog::find()
     return 0;
 }
 
-void SearchDialog::findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp)
+void CSearchDialog::findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp)
 {
 
     QDltMsg msg;
-    QByteArray buf;
     int ctr = 0;
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
@@ -677,6 +696,26 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     }
 
     m_searchtablemodel->clear_SearchResults();
+
+    CQDltFileMessageStoreAdapter messageStore(file);
+    const auto &filteredMessageIds = messageStore.snapshotFilteredMessageIds();
+    std::vector<int> filteredProjectionRows;
+    filteredProjectionRows.reserve(filteredMessageIds.size());
+    for (const MessageId messageId : filteredMessageIds)
+    {
+        const int globalIndex = messageStore.globalIndexForMessageId(messageId);
+        if (globalIndex >= 0)
+            filteredProjectionRows.push_back(globalIndex);
+    }
+
+    CIndexService indexService;
+    const std::vector<int> filteredProjection =
+        indexService.snapshotProjection(filteredProjectionRows);
+    const int filteredSize = static_cast<int>(filteredProjection.size());
+    if (filteredSize == 0)
+    {
+        return;
+    }
 
     bool msgIdEnabled=QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
     QString msgIdFormat=QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
@@ -698,6 +737,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     }
     matcher.setHeaderSearchEnabled(getHeader());
     matcher.setPayloadSearchEnabled(getPayload());
+    const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
 
     do
     {
@@ -706,7 +746,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         if(getNextClicked() || searchtoIndex())
         {
             searchLine++;
-            if(searchLine >= file->sizeFilter())
+            if(searchLine >= filteredSize)
             {
                 searchLine = 0;
             }
@@ -716,7 +756,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             searchLine--;
             if(searchLine <= -1)
             {
-                searchLine = file->sizeFilter()-1;
+                searchLine = filteredSize-1;
             }
         }
 
@@ -727,19 +767,29 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             if (isSearchCancelled.load(std::memory_order_relaxed)) {
                 break;
             }
-            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / file->sizeFilter()));
+            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / filteredSize));
         }
 
-        /* get the message with the selected item id */
-        buf = file->getMsgFilter(searchLine);
-        msg.setMsg(buf);
-        msg.setIndex(file->getMsgFilterPos(searchLine));
-
-        /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
-        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        if(searchLine < 0 || searchLine >= filteredSize)
         {
-            //qDebug() << "Decode" << __LINE__;
-            pluginManager->decodeMsg(msg, fSilentMode);
+            continue;
+        }
+
+        const int globalIndex = filteredProjection.at(static_cast<std::size_t>(searchLine));
+        if(globalIndex < 0)
+        {
+            continue;
+        }
+
+        if(!m_decodeCacheService.message(file,
+                                         pluginManager,
+                                         globalIndex,
+                                         decodeEnabled,
+                                         fSilentMode,
+                                         msg,
+                                         true))
+        {
+            continue;
         }
 
         const bool matchFound = getRegExp() ? matcher.match(msg, searchTextRegExp) : matcher.match(msg, getText());
@@ -757,7 +807,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
     while( searchBorder != searchLine );
 }
 
-bool SearchDialog::foundLine(long int searchLine)
+bool CSearchDialog::foundLine(long int searchLine)
 {
     match = true;
 
@@ -776,7 +826,7 @@ bool SearchDialog::foundLine(long int searchLine)
     return false;//don't break search here
 }
 
-void SearchDialog::findNextClicked()
+void CSearchDialog::findNextClicked()
 {
     setNextClicked(true);
 
@@ -800,7 +850,7 @@ void SearchDialog::findNextClicked()
         setSearchColour(lineEdits.at(i),result);
 }
 
-void SearchDialog::findPreviousClicked()
+void CSearchDialog::findPreviousClicked()
 {
     setNextClicked(false);
 
@@ -822,7 +872,7 @@ void SearchDialog::findPreviousClicked()
         setSearchColour(lineEdits.at(i),result);
 }
 
-void SearchDialog::on_lineEditSearch_textEdited(QString newText)
+void CSearchDialog::on_lineEditSearch_textEdited(QString newText)
 {
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(0)!
@@ -834,7 +884,7 @@ void SearchDialog::on_lineEditSearch_textEdited(QString newText)
                 setSearchColour(lineEdits.at(i),1);
         }
 }
-void SearchDialog::textEditedFromToolbar(QString newText)
+void CSearchDialog::textEditedFromToolbar(QString newText)
 {
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(1)!
@@ -847,7 +897,7 @@ void SearchDialog::textEditedFromToolbar(QString newText)
         }
 }
 
-void SearchDialog::on_buttonHighlightColor_clicked()
+void CSearchDialog::on_buttonHighlightColor_clicked()
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor oldColor(color);
@@ -862,7 +912,7 @@ void SearchDialog::on_buttonHighlightColor_clicked()
     updateColorbutton();
 }
 
-void SearchDialog::updateColorbutton()
+void CSearchDialog::updateColorbutton()
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor lhlColor(color);
@@ -873,19 +923,24 @@ void SearchDialog::updateColorbutton()
 }
 
 
-void SearchDialog::addToSearchIndex(long int searchLine)
+void CSearchDialog::addToSearchIndex(long int searchLine)
 {
     //qDebug() << "Add hit line to search table" << searchLine << __LINE__;
-    m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));    
+    CIndexService indexService;
+    const std::vector<int> filteredProjection = buildActiveFilteredProjection(file);
+    const int globalIndex = indexService.globalIndexForFilteredRow(static_cast<int>(searchLine),
+                                                                   filteredProjection);
+    if(globalIndex >= 0)
+        m_searchtablemodel->add_SearchResultEntry(globalIndex);
  }
 
-void SearchDialog::registerSearchTableModel(SearchTableModel *model)
+void CSearchDialog::registerSearchTableModel(CSearchTableModel *model)
 {
     m_searchtablemodel = model;    
 }
 
 
-void SearchDialog::loadSearchHistory()
+void CSearchDialog::loadSearchHistory()
 {
     // getting text of the action button clicked to load search history.
     QAction *action = qobject_cast<QAction *>(sender());
@@ -896,14 +951,14 @@ void SearchDialog::loadSearchHistory()
     }
 
     // creating a local list to store the indexes related to the key retrieved from the cache.
-    QList <unsigned long> tmp ;
+    std::vector<unsigned long> tmp;
     if(cachedHistoryKey.size() > 0)
     {
         tmp = cachedHistoryKey[text];
 
         //deleting the previous search list and adding the cached search obtained to the model.
         m_searchtablemodel->clear_SearchResults();
-        for (int i = 0;i < tmp.size();i++)
+        for (std::size_t i = 0; i < tmp.size(); ++i)
         {
             m_searchtablemodel->add_SearchResultEntry(tmp.at(i));
         }
@@ -911,21 +966,21 @@ void SearchDialog::loadSearchHistory()
     emit refreshedSearchIndex();
 }
 
-void SearchDialog::cacheSearchHistory()
+void CSearchDialog::cacheSearchHistory()
 {
     // if it is a new search then add all the indexes of the search to a list(m_searchHistory).
     QString searchBoxText = getText();  
-    m_searchHistory.append(m_searchtablemodel->m_searchResultList);
-    cachedHistoryKey.insert(searchBoxText,m_searchHistory.last());    
+    m_searchHistory.push_back(m_searchtablemodel->m_searchResultList);
+    cachedHistoryKey.insert(searchBoxText, m_searchHistory.back());    
 }
 
-void SearchDialog::clearCacheHistory()
+void CSearchDialog::clearCacheHistory()
 {
     // obtaining the list of keys stored in cache
     cachedHistoryKey.clear();
 }
 
-void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
+void CSearchDialog::saveSearchHistory(QStringList& searchHistory) {
     //To save the search history
     QSettings settings("MyApp", "SearchHistory");
     settings.beginWriteArray("history");
@@ -937,7 +992,7 @@ void SearchDialog::saveSearchHistory(QStringList& searchHistory) {
     settings.endArray();
 }
 
-void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
+void CSearchDialog::loadSearchHistoryList(QStringList& searchHistory)
 {
   //To retrive the search history once DLT Viewer restarts
     QSettings settings("MyApp", "SearchHistory");
@@ -950,23 +1005,23 @@ void SearchDialog::loadSearchHistoryList(QStringList& searchHistory)
     settings.endArray();
 }
 
-void SearchDialog::on_checkBoxHeader_toggled(bool checked)
+void CSearchDialog::on_checkBoxHeader_toggled(bool checked)
 {
    QDltSettingsManager::getInstance()->setValue("other/search/checkBoxHeader", checked);
 }
 
-void SearchDialog::on_checkBoxFindAll_toggled(bool checked)
+void CSearchDialog::on_checkBoxFindAll_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxSearchIndex", checked);
     setStartLine(-1);
 }
 
-void SearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
+void CSearchDialog::on_checkBoxCaseSensitive_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxCasesensitive", checked);
 }
 
-void SearchDialog::on_checkBoxRegExp_toggled(bool checked)
+void CSearchDialog::on_checkBoxRegExp_toggled(bool checked)
 {
     QDltSettingsManager::getInstance()->setValue("other/search/checkBoxRegEx", checked);
 }

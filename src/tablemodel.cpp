@@ -26,8 +26,10 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
+#include "indexservice.h"
+#include "qdltfileprojection.h"
 
-TableModel::TableModel(const QString & /*data*/, QObject *parent)
+CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
      qfile = NULL;
@@ -37,14 +39,16 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      emptyForceFlag = false;
      loggingOnlyMode = false;
      searchhit = -1;
+     m_lastKnownRowCount = -1;
+     m_lastKnownColumnCount = -1;
  }
 
- TableModel::~TableModel()
+ CTableModel::~CTableModel()
  {
 
  }
 
- int TableModel::columnCount(const QModelIndex & /*parent*/) const
+ int CTableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      if (!project || !project->settings)
          return DLT_VIEWER_COLUMN_COUNT;
@@ -52,7 +56,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
  }
 
 
- QVariant TableModel::data(const QModelIndex &index, int role) const
+ QVariant CTableModel::data(const QModelIndex &index, int role) const
  {
      if (!index.isValid())
      {
@@ -76,18 +80,28 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
          return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
      }
 
-     long int filterposindex = qfile->getMsgFilterPos(index.row());
+    const int filterposindex = resolveGlobalIndexForRow(index.row());
+    if (filterposindex < 0)
+    {
+        return QVariant();
+    }
 
      std::optional<QDltMsg> msg;
      if (m_cache.exists(index.row())) {
          msg = m_cache.get(index.row());
      } else {
          QDltMsg omsg;
-         if (bool success = qfile->getMsg(filterposindex, omsg); success) {
-            msg = std::make_optional(omsg);
-            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
-                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
-            }
+         const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+
+         if (m_decodeCacheService.message(qfile,
+                                          pluginManager,
+                                          filterposindex,
+                                          decodeEnabled,
+                                          triggeredByUser,
+                                          omsg,
+                                          true)) {
+             msg = std::make_optional(omsg);
          }
 
          m_cache.put(index.row(), msg);
@@ -286,7 +300,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      return QVariant();
  }
 
-QVariant TableModel::headerData(int section, Qt::Orientation orientation,
+QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
 {    
     if (orientation == Qt::Horizontal)
@@ -312,7 +326,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
- int TableModel::rowCount(const QModelIndex & /*parent*/) const
+ int CTableModel::rowCount(const QModelIndex & /*parent*/) const
  {
      if(true == emptyForceFlag)
          return 0;
@@ -322,49 +336,125 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
          return qfile->sizeFilter();
  }
 
- void TableModel::modelChanged()
+ void CTableModel::modelChanged()
  {
-     if(true == emptyForceFlag)
-     {
-         index(0, 1);
-         index(qfile->sizeFilter()-1, 0);
-         index(qfile->sizeFilter()-1, columnCount() - 1);
-     }
-     else
-     {
-         index(0, 1);
-         index(0, 0);
-         index(0, columnCount() - 1);
-     }
+     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
+     const int currentRowCount = rowCount();
+     const int currentColumnCount = columnCount();
+     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
+     const bool structuralInvalidation = firstModelNotification ||
+                                         (m_lastKnownColumnCount != currentColumnCount) ||
+                                         (previousRowCount != currentRowCount);
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
 
-     emit(layoutChanged());
+     if (structuralInvalidation)
+     {
+         m_filteredProjectionCache.clear();
+         m_decodeCacheService.clearForFile(qfile);
+         beginResetModel();
+         endResetModel();
+     }
+     else
+     {
+         notifyModelDelta(previousRowCount, currentRowCount, currentColumnCount);
+     }
+
+     m_lastKnownRowCount = currentRowCount;
+     m_lastKnownColumnCount = currentColumnCount;
  }
 
-int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
+ void CTableModel::liveDataAppended()
+ {
+     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
+     const int currentRowCount = rowCount();
+     const int currentColumnCount = columnCount();
+     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
+
+     /* last search index must be deleted because model changed */
+     lastSearchIndex = -1;
+
+     if(firstModelNotification || m_lastKnownColumnCount != currentColumnCount || currentRowCount < previousRowCount)
+     {
+         m_filteredProjectionCache.clear();
+         m_decodeCacheService.clearForFile(qfile);
+         beginResetModel();
+         endResetModel();
+     }
+    else
+    {
+        if(currentRowCount != previousRowCount)
+        {
+            emit layoutChanged();
+        }
+        else
+        {
+            notifyModelDelta(previousRowCount, currentRowCount, currentColumnCount);
+        }
+    }
+
+     m_lastKnownRowCount = currentRowCount;
+     m_lastKnownColumnCount = currentColumnCount;
+ }
+
+void CTableModel::notifyModelDelta(int previousRowCount, int currentRowCount, int currentColumnCount)
+{
+    if (currentRowCount > 0 && currentColumnCount > 0)
+    {
+        const QModelIndex topLeft = index(0, 0);
+        const QModelIndex bottomRight = index(currentRowCount - 1, currentColumnCount - 1);
+        emit dataChanged(topLeft, bottomRight);
+    }
+}
+
+int CTableModel::resolveGlobalIndexForRow(int row) const
+{
+    if (!qfile || row < 0)
+        return -1;
+    // Filter is OFF
+    if (!qfile->isFilter())
+    {
+        if (row >= qfile->size())
+            return -1;
+        return row;
+    }
+    // Filter is ON
+    if (m_filteredProjectionCache.size() != qfile->sizeFilter())
+    {
+        CIndexService indexService;
+        m_filteredProjectionCache =
+            indexService.snapshotProjection(buildActiveFilteredProjection(qfile));
+    }
+
+    if (row < m_filteredProjectionCache.size())
+        return m_filteredProjectionCache.at(row);
+
+    return -1;
+}
+
+int CTableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
 {
 manualMarkerColor = hlcolor;
 this->selectedMarkerRows = selectedRows;
 return 0;
 }
 
-int TableModel::setMarker(long int lineindex, QColor hlcolor)
+int CTableModel::setMarker(long int lineindex, QColor hlcolor)
 {
   searchhit_higlightColor = hlcolor;
   searchhit = lineindex;
   return 0;
 }
 
-QColor TableModel::searchBackgroundColor() const
+QColor CTableModel::searchBackgroundColor() const
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor hlColor(color);
     return hlColor;
 }
 
-void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void CHtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
@@ -393,7 +483,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 
 }
 
-QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize CHtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
@@ -404,7 +494,7 @@ QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelInd
     return QSize(doc.idealWidth(), doc.size().height());
 }
 
-QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
+QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
 {
     /* first check manual markers with highest priority */
     if ( selectedMarkerRows.contains(filterposindex) )
@@ -424,7 +514,7 @@ QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int 
        return color;
     }
 
-    if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
+    if(lastSearchIndex != -1 && filterposindex == resolveGlobalIndexForRow(lastSearchIndex))
     {
         return searchBackgroundColor();
     }
@@ -461,7 +551,7 @@ QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int 
     return brushColor; // this is the default background color
 }
 
-QString TableModel::getToolTipForFields(FieldNames::Fields cn)
+QString CTableModel::getToolTipForFields(FieldNames::Fields cn)
 {
     switch(cn){
     case(FieldNames::Time): return "Detailed representation of time and date when the log entry was recorded";
@@ -470,7 +560,7 @@ QString TableModel::getToolTipForFields(FieldNames::Fields cn)
     }
 }
 
-bool TableModel::eventFilter(QObject *obj, QEvent *event) {
+bool CTableModel::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::Enter || event->type() == QEvent::Leave){
         QHeaderView *header = qobject_cast<QHeaderView*>(obj);
         if(header){

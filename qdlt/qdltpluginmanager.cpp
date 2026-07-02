@@ -9,6 +9,8 @@
 #include <QTextStream>
 #include <QString>
 
+#include <vector>
+
 #ifndef PLUGIN_INSTALLATION_PATH
 #define PLUGIN_INSTALLATION_PATH ""
 #endif
@@ -128,12 +130,36 @@ void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
 
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    QMutexLocker mutexLocker(&pluginListMutex);
-    for(auto* plugin : plugins)
+    (void)decodeMsgHandled(msg, triggeredByUser);
+}
+
+bool QDltPluginManager::decodeMsgHandled(QDltMsg &msg, int triggeredByUser)
+{
+    const int normalizedTriggeredByUser = (triggeredByUser != 0) ? 1 : 0;
+
+    std::vector<QDltPlugin*> decodePlugins;
     {
-        if(plugin->decodeMsg(msg,triggeredByUser))
-            break;
+        QMutexLocker mutexLocker(&pluginListMutex);
+        decodePlugins.reserve(static_cast<std::size_t>(plugins.size()));
+        for (auto* plugin : plugins)
+        {
+            if (plugin->isDecoder() && plugin->getMode() >= QDltPlugin::ModeEnable)
+                decodePlugins.push_back(plugin);
+        }
     }
+
+    // Phase 6 contract hardening:
+    // Decoder plugins are executed in the configured priority order,
+    // one at a time, to provide deterministic behavior and avoid
+    // cross-thread re-entrancy on non-thread-safe plugin implementations.
+    QMutexLocker decodeStageLocker(&m_decodeStageMutex);
+    for (auto* plugin : decodePlugins)
+    {
+        if (plugin->decodeMsg(msg, normalizedTriggeredByUser))
+            return true;
+    }
+
+    return false;
 }
 
 QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {

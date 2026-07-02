@@ -4,10 +4,14 @@ DltFileIndexerDefaultFilterThread::DltFileIndexerDefaultFilterThread
 (
         QDltDefaultFilter *defaultFilter,
         QDltPluginManager *pluginManager,
+    QDltFile *dltFile,
+    CDecodeCacheService *decodeCacheService,
         bool silentMode
 )
     : defaultFilter(defaultFilter),
       pluginManager(pluginManager),
+      dltFile(dltFile),
+      decodeCacheService(decodeCacheService),
       silentMode(silentMode),
       msgQueue(1024)
 {}
@@ -36,7 +40,20 @@ void DltFileIndexerDefaultFilterThread::run()
 void DltFileIndexerDefaultFilterThread::processMessage(QSharedPointer<QDltMsg> &msg, int index)
 {
     /* Process all decoderplugins */
-    pluginManager->decodeMsg(*msg, silentMode);
+    if (decodeCacheService && dltFile)
+    {
+        QDltMsg decoded;
+        if (decodeCacheService->message(dltFile,
+                                        pluginManager,
+                                        index,
+                                        true,
+                                        silentMode,
+                                        decoded,
+                                        true))
+        {
+            *msg = decoded;
+        }
+    }
 
     /* run through all default filter */
     for(int num = 0; num < defaultFilter->defaultFilterList.size(); num++)

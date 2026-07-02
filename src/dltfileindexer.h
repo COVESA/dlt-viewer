@@ -14,6 +14,9 @@
 #include "qdltfile.h"
 #include "qdltplugin.h"
 #include "qdltpluginmanager.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "decodecacheservice.h"
 
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 2
@@ -168,6 +171,11 @@ private:
     // File to work on
     QDltFile *dltFile;
 
+    // Shared service wrappers for message/index/decode access.
+    CQDltFileMessageStoreAdapter messageStore;
+    CIndexService indexService;
+    CDecodeCacheService decodeCacheService;
+
     // Plugins to be used
     QDltPluginManager *pluginManager;
 
@@ -251,6 +259,9 @@ signals:
 
     // complete index creation of default filter finished
     void finishDefaultFilter();
+
+    // emitted when run() finishes without producing the expected completion signal for the active mode
+    void runAborted();
 
     //signal for progress bar while displaying marked message count
     void markerCountProgressMax(int max);
