@@ -13,6 +13,7 @@ public:
     ~DltFileIndexerThread();
     void enqueueMessage(const QSharedPointer<QDltMsg> &msg, int index);
     void processMessage(QSharedPointer<QDltMsg> &msg, int index);
+    void processMessage(QDltMsg &msg, int index);
     void requestStop();
 
 protected:
