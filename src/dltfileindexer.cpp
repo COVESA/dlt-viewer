@@ -382,7 +382,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return false;
     }
 
-    QSharedPointer<QDltMsg> msg;
+    QDltMsg msg;
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
@@ -414,6 +414,11 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
             end = dltFile->size();
         if(start>end)
             start=end;
+    }
+
+    if(!sortByTimeEnabled && !sortByTimestampEnabled)
+    {
+        indexFilterList.reserve(static_cast<int>(end - start));
     }
 
     // load filter index, if enabled and not an initial loading of file
@@ -474,9 +479,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
-        msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
-
-        if(!dltFile->getMsg(ix, *msg))
+        if(!dltFile->getMsg(ix, msg))
             continue; // Skip broken messages
 
         /*if(true == useIndexerThread)
@@ -485,7 +488,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
         else
         {*/
-            indexerThread.processMessage(msg, ix);
+            indexerThread.processMessage(msg, static_cast<int>(ix));
         //}
 
         if((end-start)!=0)
@@ -750,9 +753,17 @@ void DltFileIndexer::run()
     msecsFilterCounter = 0;
     msecsDefaultFilterCounter = 0;
 
-    // get all active plugins
-    activeViewerPlugins = pluginManager->getViewerPlugins();
-    activeDecoderPlugins = pluginManager->getDecoderPlugins();
+    // get active plugins only when needed for index+filter pass
+    if(mode == modeIndexAndFilter)
+    {
+        activeViewerPlugins = pluginManager->getViewerPlugins();
+        activeDecoderPlugins = pluginManager->getDecoderPlugins();
+    }
+    else
+    {
+        activeViewerPlugins.clear();
+        activeDecoderPlugins.clear();
+    }
 
     // calculate runs
     if(mode == modeIndexAndFilter)

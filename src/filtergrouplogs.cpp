@@ -10,8 +10,8 @@
 #include <QMessageBox>
 #include <QProgressDialog>
 #include <QCoreApplication>
-#include <QProgressBar>
-#include <QThread>
+#include <QEventLoop>
+#include <algorithm>
 
 #include "filtergrouplogs.h"
 #include "fieldnames.h"
@@ -21,7 +21,6 @@
 
 filtergrouplogs::filtergrouplogs(QObject* parent) : QObject(parent) {
     sourceModelOfDLT = nullptr;
-    ecuIdFilterProxy = nullptr;
     mergedTabWidget = nullptr;
     dltFile = nullptr;
     pluginManager = nullptr;
@@ -29,32 +28,142 @@ filtergrouplogs::filtergrouplogs(QObject* parent) : QObject(parent) {
 
 // Extracts unique ECU IDs from a DLT file
 QStringList filtergrouplogs::extractEcuIds(const QString& dltFilePath) {
-    QDltFile dltFile;
-    QSet<QString> uniqueEcuIds;
-    if (!dltFile.open(dltFilePath)) {
-        return QStringList();
+    Q_UNUSED(dltFilePath);
+    rebuildGroupedIndex();
+    return extractedEcuIds;
+}
+
+void filtergrouplogs::rebuildGroupedIndex(QProgressDialog *progress)
+{
+    ecuRowReferences.clear();
+    extractedEcuIds.clear();
+
+    if(!sourceModelOfDLT)
+    {
+        return;
     }
-    if (!dltFile.createIndex()) {
-        dltFile.close();
-        return QStringList();
-    }
-    for (int i = 0; i < dltFile.size(); i++) {
-        QDltMsg msg;
-        if (dltFile.getMsg(i, msg)) {
-            QString ecuId = msg.getEcuid();
-            if (!ecuId.isEmpty()) {
-                uniqueEcuIds.insert(ecuId);
+
+    const int totalRows = sourceModelOfDLT->rowCount();
+    for(int row = 0; row < totalRows; ++row)
+    {
+        if(progress)
+        {
+            if(progress->wasCanceled())
+            {
+                ecuRowReferences.clear();
+                extractedEcuIds.clear();
+                return;
+            }
+
+            if((row % 100) == 0 || row + 1 == totalRows)
+            {
+                progress->setValue(row + 1);
+                QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
             }
         }
+
+        const QModelIndex ecuIndex = sourceModelOfDLT->index(row, ecuColumnIndex);
+        if(!ecuIndex.isValid())
+        {
+            continue;
+        }
+
+        const QString ecuId = sourceModelOfDLT->data(ecuIndex, Qt::DisplayRole).toString().trimmed();
+        if(ecuId.isEmpty())
+        {
+            continue;
+        }
+
+        ecuRowReferences[ecuId].append(row);
     }
-    dltFile.close();
-    extractedEcuIds = QStringList(uniqueEcuIds.begin(), uniqueEcuIds.end());
-    return extractedEcuIds;
+
+    extractedEcuIds = ecuRowReferences.keys();
+    extractedEcuIds.sort();
+}
+
+QVector<int> filtergrouplogs::rowsForEcuSet(const QSet<QString> &ecuIds) const
+{
+    QVector<int> rows;
+    for(const QString &ecuId : ecuIds)
+    {
+        rows += ecuRowReferences.value(ecuId);
+    }
+
+    std::sort(rows.begin(), rows.end());
+    rows.erase(std::unique(rows.begin(), rows.end()), rows.end());
+    return rows;
+}
+
+void filtergrouplogs::createOrUpdateTab(const QString &tabName, const QVector<int> &rows)
+{
+    if(!mergedTabWidget)
+    {
+        return;
+    }
+
+    if(!mergedTabs.contains(tabName))
+    {
+        IndexRowReferenceModel *model = new IndexRowReferenceModel(this);
+        model->setSourceModel(sourceModelOfDLT);
+        model->setRowReferences(rows);
+
+        QTableView *view = new QTableView;
+        view->setModel(model);
+        view->horizontalHeader()->setStretchLastSection(true);
+        view->setSelectionBehavior(QAbstractItemView::SelectRows);
+        view->resizeColumnsToContents();
+
+        auto settings = QDltSettingsManager::getInstance();
+        for(int col = 0; col < model->columnCount(); ++col)
+        {
+            const bool show = FieldNames::getColumnShown(static_cast<FieldNames::Fields>(col), settings);
+            view->setColumnHidden(col, !show);
+            if(show)
+            {
+                const int width = FieldNames::getColumnWidth(static_cast<FieldNames::Fields>(col), settings);
+                view->setColumnWidth(col, width);
+            }
+        }
+
+        const int tabIndex = mergedTabWidget->addTab(view, tabName);
+        mergedTabWidget->tabBar()->setTabButton(tabIndex, QTabBar::RightSide, nullptr);
+
+        mergedTabs[tabName] = view;
+        ecuTabViews[tabName] = view;
+        ecuTabModels[tabName] = model;
+    }
+    else
+    {
+        IndexRowReferenceModel *model = ecuTabModels.value(tabName, nullptr);
+        if(model)
+        {
+            model->setRowReferences(rows);
+        }
+    }
 }
 
 // Creates tabs for each ECU ID and sets up the tab window UI
 void filtergrouplogs::ecuIdTabs(){
+    const int totalRows = sourceModelOfDLT ? sourceModelOfDLT->rowCount() : 0;
+    QProgressDialog progress("Grouping DLT Logs by ECU ID...", "Cancel", 0, qMax(1, totalRows), nullptr);
+    progress.setWindowModality(Qt::ApplicationModal);
+    progress.setMinimumDuration(0);
+    progress.setValue(0);
+    progress.setWindowTitle("Grouping Progress");
+    progress.show();
+
+    rebuildGroupedIndex(&progress);
+    if(progress.wasCanceled())
+    {
+        return;
+    }
+
     QStringList availableEcuIds = extractedEcuIds;
+    if(availableEcuIds.isEmpty())
+    {
+        QMessageBox::information(nullptr, "No ECU IDs found", "The opened file does not contain any ECU IDs visible in the current table view.");
+        return;
+    }
 
     /* Main Tab Window */
     QWidget* tabWindow = new QWidget;
@@ -83,52 +192,33 @@ void filtergrouplogs::ecuIdTabs(){
     mergedTabWidget->setTabsClosable(true);
     connect(mergedTabWidget, &QTabWidget::tabCloseRequested, this, &filtergrouplogs::onTabCloseRequested);
 
-    int totalEcuIds = availableEcuIds.size();
-    // Show loading dialog before launching tab window
-    QProgressDialog loadingDialog("Preparing ECU ID tabs...", "Cancel", 0, 100, nullptr);
-    loadingDialog.setWindowModality(Qt::ApplicationModal);
-    loadingDialog.setMinimumDuration(0);
-    loadingDialog.setValue(0);
-    loadingDialog.setWindowTitle("Loading Tabs");
-    loadingDialog.show();
+    progress.setLabelText("Preparing ECU tabs...");
+    progress.setMaximum(qMax(1, availableEcuIds.size()));
+    progress.setValue(0);
+
     for (int i = 0; i < availableEcuIds.size(); ++i) {
-        if (loadingDialog.wasCanceled()) {
-            loadingDialog.close();
+        if(progress.wasCanceled())
+        {
+            tabWindow->deleteLater();
             return;
         }
-        const QString &ecuId = availableEcuIds[i];
-        int progressValue = ((i + 1) * 100) / totalEcuIds;
-        loadingDialog.setValue(progressValue);
-        QCoreApplication::processEvents();
-        QThread::msleep(30);
 
-        ecuIdFilterProxy = new EcuIdFilterProxyModel(this);
-        if (!ecuIdFilterProxy) {
-            continue;
+        const QString &ecuId = availableEcuIds[i];
+        createOrUpdateTab(ecuId, ecuRowReferences.value(ecuId));
+        tabToSelectedIds[ecuTabViews.value(ecuId)] = QStringList{ecuId};
+        if((i % 5) == 0 || i + 1 == availableEcuIds.size())
+        {
+            progress.setValue(i + 1);
+            QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
         }
-        ecuIdFilterProxy->setSourceModel(sourceModelOfDLT);
-        ecuIdFilterProxy->setEcuColumn(ecuColumnIndex);
-        ecuIdFilterProxy->setEcuId(ecuId);
-        QTableView* view = new QTableView;
-        view->setModel(ecuIdFilterProxy);
-        view->horizontalHeader()->setStretchLastSection(true);
-        view->setSelectionBehavior(QAbstractItemView::SelectRows);
-        view->resizeColumnsToContents();
-        // Hide unwanted columns
-        auto settings = QDltSettingsManager::getInstance();
-        for (int col = 0; col < ecuIdFilterProxy->columnCount(); ++col) {
-            bool show = FieldNames::getColumnShown(static_cast<FieldNames::Fields>(col), settings);
-            view->setColumnHidden(col, !show);
-            if (show) {
-                int width = FieldNames::getColumnWidth(static_cast<FieldNames::Fields>(col), settings);
-                view->setColumnWidth(col, width);
-            }
-        }
-        int tabIndex = mergedTabWidget->addTab(view, ecuId);
-        ecuTabViews[ecuId] = view;
-        mergedTabWidget->tabBar()->setTabButton(tabIndex, QTabBar::RightSide, nullptr);
     }
-    loadingDialog.close();
+
+    if(sourceModelOfDLT)
+    {
+        connect(sourceModelOfDLT, &QAbstractItemModel::layoutChanged, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
+        connect(sourceModelOfDLT, &QAbstractItemModel::modelReset, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
+    }
+
     tabWindow->setAttribute(Qt::WA_ShowModal, true);
     tabWindow->show();
 }
@@ -175,50 +265,12 @@ void filtergrouplogs::mergeTabs()
             mergedTabWidget->setCurrentIndex(existingIndex);
         return;
     }
-    QDialog* loadingDialog = new QDialog(mergedTabWidget);
-    loadingDialog->setWindowTitle("Merging Tabs");
-    loadingDialog->setWindowModality(Qt::ApplicationModal);
-
-    QVBoxLayout* loadingLayout = new QVBoxLayout(loadingDialog);
-    loadingLayout->addWidget(new QLabel("Merging selected ECU tabs...", loadingDialog));
-
-    QProgressBar* progressBar = new QProgressBar(loadingDialog);
-    progressBar->setRange(0, 100);
-    progressBar->setValue(0);
-    progressBar->setMinimumWidth(200);
-    loadingLayout->addWidget(progressBar);
-
-    loadingDialog->setLayout(loadingLayout);
-    loadingDialog->show();
-
-    for (int i = 0; i <= 100; i += 20) {
-        progressBar->setValue(i);
-        QCoreApplication::processEvents();
-        QThread::msleep(30);
-    }
-
-    ecuIdFilterProxy = new EcuIdFilterProxyModel(this);
-    ecuIdFilterProxy->setSourceModel(sourceModelOfDLT);
-    ecuIdFilterProxy->setEcuColumn(ecuColumnIndex);
-    ecuIdFilterProxy->setEcuIdList(QSet<QString>(selectedIds.begin(), selectedIds.end()));
-    QTableView* mergedView = new QTableView;
-    mergedView->setModel(ecuIdFilterProxy);
-    mergedView->horizontalHeader()->setStretchLastSection(true);
-    mergedView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    mergedView->resizeColumnsToContents();
-    auto settings = QDltSettingsManager::getInstance();
-    for (int col = 0; col < ecuIdFilterProxy->columnCount(); ++col) {
-        bool show = FieldNames::getColumnShown(static_cast<FieldNames::Fields>(col), settings);
-        mergedView->setColumnHidden(col, !show);
-    }
-    int mergedtabIndex = mergedTabWidget->addTab(mergedView, tabKey);
+    createOrUpdateTab(tabKey, rowsForEcuSet(QSet<QString>(selectedIds.begin(), selectedIds.end())));
+    int mergedtabIndex = mergedTabWidget->indexOf(mergedTabs.value(tabKey));
     mergedTabWidget->setCurrentIndex(mergedtabIndex);
     indexofMergedTabs[mergedtabIndex] = tabKey;
-    mergedTabs[tabKey] = mergedView;
-    tabToSelectedIds[mergedView] = selectedIds;
+    tabToSelectedIds[mergedTabs.value(tabKey)] = selectedIds;
     selectedEcuIdSet.clear();
-    loadingDialog->close();
-    loadingDialog->deleteLater();
 }
 
 // Handles closing of a tab and updates internal tab tracking
@@ -239,6 +291,8 @@ void filtergrouplogs::onTabCloseRequested(int index) {
     mergedTabWidget->removeTab(index);
     mergedTabs.remove(tabKey);
     tabToSelectedIds.remove(widget);
+    ecuTabModels.remove(tabKey);
+    ecuTabViews.remove(tabKey);
     widget->deleteLater();
     indexofMergedTabs.clear();
     // Rearrange tab indices once after deletion of any tab
@@ -289,8 +343,8 @@ void filtergrouplogs::onExportFilteredLogsClicked() {
         QMessageBox::critical(mergedTabWidget, "Export Error", "Could not find table view for selected tab.");
         return;
     }
-    EcuIdFilterProxyModel* proxyModel = qobject_cast<EcuIdFilterProxyModel*>(tableView->model());
-    if (!proxyModel) {
+    IndexRowReferenceModel* proxyModel = qobject_cast<IndexRowReferenceModel*>(tableView->model());
+    if (!proxyModel || !sourceModelOfDLT) {
         QMessageBox::critical(mergedTabWidget, "Export Error", "Could not access filtering model.");
         return;
     }
@@ -312,10 +366,10 @@ void filtergrouplogs::onExportFilteredLogsClicked() {
             if (progress.wasCanceled()) {
                 return;
             }
-            QModelIndex proxyIndex = proxyModel->index(row, 0);
-            QModelIndex sourceIndex = proxyModel->mapToSource(proxyIndex);
-            if (sourceIndex.isValid()) {
-                selectedIndices.append(sourceIndex);
+            const int sourceRow = proxyModel->sourceRowAt(row);
+            if(sourceRow >= 0 && sourceRow < sourceModelOfDLT->rowCount())
+            {
+                selectedIndices.append(sourceModelOfDLT->index(sourceRow, 0));
             }
             progress.setValue((row * 50) / rowCount);
             QCoreApplication::processEvents();
@@ -389,7 +443,18 @@ void filtergrouplogs::onExportFilteredLogsClicked() {
 
 // Sets the source model for DLT data
 void filtergrouplogs::setSourceModel(QAbstractTableModel* model) {
+    if(sourceModelOfDLT)
+    {
+        disconnect(sourceModelOfDLT, nullptr, this, nullptr);
+    }
+
     sourceModelOfDLT = model;
+
+    if(sourceModelOfDLT)
+    {
+        connect(sourceModelOfDLT, &QAbstractItemModel::layoutChanged, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
+        connect(sourceModelOfDLT, &QAbstractItemModel::modelReset, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
+    }
 }
 
 // Sets the DLT file reference
@@ -400,4 +465,25 @@ void filtergrouplogs::setDltFile(QDltFile* file) {
 // Sets the plugin manager reference
 void filtergrouplogs::setPluginManager(QDltPluginManager* manager) {
     pluginManager = manager;
+}
+
+void filtergrouplogs::onSourceModelChanged()
+{
+    rebuildGroupedIndex();
+
+    for(auto it = mergedTabs.begin(); it != mergedTabs.end(); ++it)
+    {
+        const QString tabName = it.key();
+        QWidget *tabWidget = it.value();
+        const QStringList selectedIds = tabToSelectedIds.value(tabWidget);
+
+        if(selectedIds.isEmpty())
+        {
+            createOrUpdateTab(tabName, ecuRowReferences.value(tabName));
+        }
+        else
+        {
+            createOrUpdateTab(tabName, rowsForEcuSet(QSet<QString>(selectedIds.begin(), selectedIds.end())));
+        }
+    }
 }
