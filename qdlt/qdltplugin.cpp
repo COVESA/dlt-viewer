@@ -120,6 +120,14 @@ QString QDltPlugin::pluginInterfaceVersion()
         return QString();
 }
 
+bool QDltPlugin::allowsMultipleFiles()
+{
+    if(plugininterface)
+        return plugininterface->allowsMultipleFiles();
+    else
+        return false;
+}
+
 QString QDltPlugin::error()
 {
     if(plugininterface)
