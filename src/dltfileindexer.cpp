@@ -382,10 +382,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return false;
     }
 
+    QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
-    const qint64 totalSize = dltFile->size();
 
     // get filter list
     filterList = dltFile->getFilterList();
@@ -400,18 +400,18 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(!filterIndexEnabled)
     {
         start = 0;
-        end = totalSize;
+        end = dltFile->size();
     }
     else
     {
-        if(filterIndexStart<=totalSize)
+        if(filterIndexStart<=dltFile->size())
             start = filterIndexStart;
         else
             start = 0;
-        if(filterIndexEnd<=totalSize)
+        if(filterIndexEnd<=dltFile->size())
             end = filterIndexEnd + 1;
         else
-            end = totalSize;
+            end = dltFile->size();
         if(start>end)
             start=end;
     }
@@ -427,7 +427,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // check if file is empty
 
-    if(totalSize == 0)
+    if(dltFile->size() == 0)
     {
         // No need to do anything here.
         return true;
@@ -456,14 +456,8 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 &indexFilterListSorted,
                 pluginManager,
                 &activeViewerPlugins,
-                &activeDecoderPlugins,
                 silentMode
             );
-
-    if(!sortByTimeEnabled && !sortByTimestampEnabled)
-    {
-        indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
-    }
 
     /*if(useIndexerThread)
     {
@@ -480,9 +474,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
-        QDltMsg msg;
+        msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
 
-        if(!dltFile->getMsg(static_cast<int>(ix), msg))
+        if(!dltFile->getMsg(ix, *msg))
             continue; // Skip broken messages
 
         /*if(true == useIndexerThread)
@@ -491,7 +485,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
         else
         {*/
-            indexerThread.processMessage(msg, static_cast<int>(ix));
+            indexerThread.processMessage(msg, ix);
         //}
 
         if((end-start)!=0)
