@@ -33,7 +33,9 @@
 #include <QTableView>
 
 #include <atomic>
+#include <memory>
 
+#include "searchsnapshot.h"
 #include "searchtablemodel.h"
 
 namespace Ui {
@@ -164,7 +166,7 @@ private:
      * @param searchBorder Border line.
      * @param searchTextRegExp Regular expression for search.
      */
-    void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
+    void findMessages(const std::shared_ptr<const SearchSnapshot> &snapshot, long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
     /**
      * @brief Updates the color button icon.
      */
@@ -273,6 +275,7 @@ private:
     QString getTimeStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
     QList<QLineEdit*> lineEdits;
+    SearchSnapshotManager m_searchSnapshotManager;
 
 private slots:
 

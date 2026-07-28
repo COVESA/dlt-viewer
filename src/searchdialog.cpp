@@ -18,6 +18,7 @@
  */
 
 #include "searchdialog.h"
+#include "searchthreadpool.h"
 #include "ui_searchdialog.h"
 #include "qdltoptmanager.h"
 #include "tablemodel.h"
@@ -31,6 +32,8 @@
 #include <QSignalBlocker>
 #include <QColorDialog>
 #include <QAction>
+#include <QFile>
+#include <QHash>
 #include <QPointer>
 #include <QThreadPool>
 #include <QThread>
@@ -38,6 +41,58 @@
 #include <QtConcurrent/QtConcurrent>
 
 #include <mutex>
+
+namespace {
+
+struct SnapshotReadState
+{
+    QHash<int, QFile*> openFiles;
+    int lastFileIndex{-1};
+    qint64 lastFileEnd{-1};
+};
+
+void closeSnapshotFiles(SnapshotReadState &state)
+{
+    qDeleteAll(state.openFiles);
+    state.openFiles.clear();
+    state.lastFileIndex = -1;
+    state.lastFileEnd = -1;
+}
+
+QByteArray readSnapshotRow(const SearchSnapshot &snapshot,
+                           const SearchSnapshotRow &row,
+                           SnapshotReadState &state)
+{
+    if(row.fileIndex < 0 || row.byteCount <= 0)
+        return QByteArray();
+
+    auto fileIt = state.openFiles.find(row.fileIndex);
+    if(fileIt == state.openFiles.end())
+    {
+        QFile *fileHandle = new QFile(snapshot.fileName(row.fileIndex));
+        if(!fileHandle->open(QIODevice::ReadOnly))
+        {
+            delete fileHandle;
+            return QByteArray();
+        }
+        fileIt = state.openFiles.insert(row.fileIndex, fileHandle);
+    }
+
+    QFile *fileHandle = fileIt.value();
+    const bool canReadSequentially = (state.lastFileIndex == row.fileIndex) && (state.lastFileEnd == row.filePosition);
+    if(!canReadSequentially && !fileHandle->seek(row.filePosition))
+        return QByteArray();
+
+    const QByteArray data = fileHandle->read(row.byteCount);
+    if(!data.isEmpty())
+    {
+        state.lastFileIndex = row.fileIndex;
+        state.lastFileEnd = row.filePosition + row.byteCount;
+    }
+    return data;
+}
+
+}
 
 SearchDialog::SearchDialog(QWidget *parent) :
     QDialog(parent),
@@ -201,25 +256,13 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     m_searchtablemodel->clear_SearchResults();
     emit refreshedSearchIndex();
 
-    const int total = file->sizeFilter();
-    if (total <= 0)
+    const auto snapshot = m_searchSnapshotManager.capture(file);
+    if (!snapshot || snapshot->isEmpty())
     {
         emit searchProgressChanged(false);
         return;
     }
-
-
-    // Snapshot the current filter mapping once on the UI thread.
-    // QDltFile's filter index isn't guaranteed thread-safe for concurrent reads.
-    const bool useFilterSnapshot = file->isFilter();
-    std::shared_ptr<QVector<int>> filterPositions;
-    if (useFilterSnapshot)
-    {
-        filterPositions = std::make_shared<QVector<int>>();
-        filterPositions->reserve(total);
-        for (int i = 0; i < total; ++i)
-            filterPositions->push_back(file->getMsgFilterPos(i));
-    }
+    const int total = snapshot->size();
 
     const bool msgIdEnabled = QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
     const QString msgIdFormat = QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
@@ -249,19 +292,9 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         int end;
     };
 
-    // Use a dedicated pool so Find-All doesn't consume the entire global pool.
-    // Also lets us cap concurrency deterministically.
-    QThreadPool* const findAllPool = []() -> QThreadPool* {
-        static QThreadPool pool;
-        static std::once_flag once;
-        std::call_once(once, []() {
-            const int ideal = QThread::idealThreadCount();
-            const int capped = (ideal > 0) ? qMin(4, ideal) : 4;
-            pool.setMaxThreadCount(qMax(1, capped));
-            pool.setThreadPriority(QThread::NormalPriority);
-        });
-        return &pool;
-    }();
+    // Interactive searches use the urgent pool so they do not compete with
+    // future background search jobs.
+    QThreadPool* const findAllPool = SearchThreadPool::instance().pool(SearchThreadPool::Priority::Urgent);
 
     const int maxThreads = qMax(1, findAllPool->maxThreadCount());
 
@@ -284,12 +317,12 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
     auto processed = std::make_shared<std::atomic<int>>(0);
     const QPointer<SearchDialog> dlg(this);
-    QDltFile* filePtr = file;
     QDltPluginManager* pluginPtr = pluginManager;
 
     auto mapFn = [=](const Chunk& chunk) -> QList<unsigned long> {
         QList<unsigned long> matches;
         matches.reserve(qMax(0, chunk.end - chunk.begin + 1) / 16);
+        SnapshotReadState state;
 
         DltMessageMatcher matcher;
         matcher.setCaseSentivity(caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive);
@@ -312,16 +345,13 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
                 break;
 
-            const int msgIndex = (filterPositions ? filterPositions->at(i) : i);
-            if (msgIndex < 0)
-                continue;
-
-            buf = filePtr->getMsg(msgIndex);
+            const SearchSnapshotRow &row = snapshot->rowAt(i);
+            buf = readSnapshotRow(*snapshot, row, state);
             if (buf.isEmpty())
                 continue;
 
             msg.setMsg(buf);
-            msg.setIndex(msgIndex);
+            msg.setIndex(row.messageIndex);
 
             if (doDecode && pluginPtr)
                 pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
@@ -329,7 +359,7 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
                                       : matcher.match(msg, searchText);
             if (ok)
-                matches.append(static_cast<unsigned long>(msgIndex));
+                matches.append(static_cast<unsigned long>(row.messageIndex));
 
             const int done = processed->fetch_add(1, std::memory_order_relaxed) + 1;
             if ((done % 2000) == 0)
@@ -344,6 +374,8 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                 }
             }
         }
+
+        closeSnapshotFiles(state);
 
         return matches;
     };
@@ -510,6 +542,13 @@ int SearchDialog::find()
         return 0;
     }
 
+    const auto snapshot = m_searchSnapshotManager.capture(file);
+    if(!snapshot || snapshot->isEmpty())
+    {
+        emit searchProgressChanged(false);
+        return 0;
+    }
+
    if( ( (match == true) || ( getSearchFromBeginning() == false )) && false == searchtoIndex() )
     {
         // single step search
@@ -560,7 +599,7 @@ int SearchDialog::find()
     {
         if(getNextClicked() || searchtoIndex())
         {
-            searchBorder = file->sizeFilter()==0?0:file->sizeFilter()-1;
+            searchBorder = snapshot->size()==0?0:snapshot->size()-1;
         }
         else
         {
@@ -642,7 +681,7 @@ int SearchDialog::find()
         startParallelFindAll(searchTextRegExpression);
         return 1;
     #else
-        findMessages(startLine, searchBorder, searchTextRegExpression);
+        findMessages(snapshot, startLine, searchBorder, searchTextRegExpression);
         emit refreshedSearchIndex();
         cacheSearchHistory();
         match = (m_searchtablemodel && m_searchtablemodel->get_SearchResultListSize() > 0);
@@ -651,7 +690,7 @@ int SearchDialog::find()
     #endif
     }
 
-    findMessages(startLine,searchBorder,searchTextRegExpression);
+    findMessages(snapshot, startLine,searchBorder,searchTextRegExpression);
 
     emit searchProgressChanged(false);
 
@@ -663,12 +702,13 @@ int SearchDialog::find()
     return 0;
 }
 
-void SearchDialog::findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp)
+void SearchDialog::findMessages(const std::shared_ptr<const SearchSnapshot> &snapshot, long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp)
 {
 
     QDltMsg msg;
     QByteArray buf;
     int ctr = 0;
+    SnapshotReadState state;
     Qt::CaseSensitivity is_Case_Sensitive = Qt::CaseInsensitive;
 
     if(getCaseSensitive() == true)
@@ -706,7 +746,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
         if(getNextClicked() || searchtoIndex())
         {
             searchLine++;
-            if(searchLine >= file->sizeFilter())
+            if(searchLine >= snapshot->size())
             {
                 searchLine = 0;
             }
@@ -716,7 +756,7 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             searchLine--;
             if(searchLine <= -1)
             {
-                searchLine = file->sizeFilter()-1;
+                searchLine = snapshot->size()-1;
             }
         }
 
@@ -727,13 +767,16 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             if (isSearchCancelled.load(std::memory_order_relaxed)) {
                 break;
             }
-            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / file->sizeFilter()));
+            emit searchProgressValueChanged(static_cast<int>(ctr * 100.0 / snapshot->size()));
         }
 
-        /* get the message with the selected item id */
-        buf = file->getMsgFilter(searchLine);
+        const SearchSnapshotRow &row = snapshot->rowAt(searchLine);
+        buf = readSnapshotRow(*snapshot, row, state);
+        if(buf.isEmpty())
+            continue;
+
         msg.setMsg(buf);
-        msg.setIndex(file->getMsgFilterPos(searchLine));
+        msg.setIndex(row.messageIndex);
 
         /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
@@ -755,6 +798,8 @@ void SearchDialog::findMessages(long int searchLine, long int searchBorder, QReg
             continue;
     }
     while( searchBorder != searchLine );
+
+    closeSnapshotFiles(state);
 }
 
 bool SearchDialog::foundLine(long int searchLine)

@@ -74,6 +74,7 @@ bool QDltFile::getDLTv2Support() const
 
 void QDltFile::clear()
 {
+    QMutexLocker locker(&mutexQDlt);
     for(int num=0;num<files.size();num++)
     {
         if(files[num]->infile.isOpen()) {
@@ -89,6 +90,7 @@ void QDltFile::clear()
     indexFilterBase.clear();
 
     manualMarkerIndices.clear();
+    bumpSearchSnapshotGenerationLocked();
 }
 
 int QDltFile::getNumberOfFiles() const
@@ -98,12 +100,14 @@ int QDltFile::getNumberOfFiles() const
 
 void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num)
 {
+    QMutexLocker locker(&mutexQDlt);
     if(num<0 || num>=files.size())
     {
         return;
     }
 
     files[num]->indexAll = _indexAll;
+    bumpSearchSnapshotGenerationLocked();
 }
 
 int QDltFile::size() const
@@ -133,10 +137,15 @@ qint64 QDltFile::fileSize() const
 
 int QDltFile::sizeFilter() const
 {
+    QMutexLocker locker(&mutexQDlt);
     if(filterFlag)
         return indexFilter.size();
-    else
-        return size();
+
+    int total = 0;
+    for(int num = 0; num < files.size(); ++num)
+        total += files[num]->indexAll.size();
+
+    return total;
 }
 
 int QDltFile::calculateHeaderSize(quint8 htyp)
@@ -171,13 +180,12 @@ void QDltFile::setManualMarkerIndices(const QList<unsigned long int> &indices)
         newSet.insert(static_cast<qint64>(idx));
     }
 
+    QMutexLocker locker(&mutexQDlt);
     if(newSet == manualMarkerIndices)
-    {
         return;
-    }
 
     manualMarkerIndices = std::move(newSet);
-    recomputeEffectiveIndexFilter();
+    recomputeEffectiveIndexFilterLocked();
 }
 
 bool QDltFile::open(QString _filename, bool append)
@@ -234,6 +242,7 @@ quint64 QDltFile::getTotalMessageSize() {
 
 void QDltFile::clearIndex()
 {
+    QMutexLocker locker(&mutexQDlt);
     for(int num=0;num<files.size();num++)
     {
         files[num]->indexAll.clear();
@@ -243,6 +252,7 @@ void QDltFile::clearIndex()
     totalStorageSize = 0;
     totalPayloadSize = 0;
     totalMessageSize = 0;
+    bumpSearchSnapshotGenerationLocked();
 }
 
 bool QDltFile::createIndex()
@@ -504,8 +514,11 @@ bool QDltFile::updateIndex()
 
 bool QDltFile::createIndexFilter()
 {
-    /* clear old index */
-    indexFilterBase.clear();
+    {
+        QMutexLocker locker(&mutexQDlt);
+        indexFilterBase.clear();
+        recomputeEffectiveIndexFilterLocked();
+    }
 
     return updateIndexFilter();
 }
@@ -514,16 +527,14 @@ bool QDltFile::updateIndexFilter()
 {
     QDltMsg msg;
     QByteArray buf;
-    int index;
+    QVector<qint64> newIndexFilterBase;
+    int index = 0;
 
-    /* update index filter by starting from last found index in list */
-
-    /* get lattest found index in filter list */
-    if(indexFilterBase.size()>0) {
-        index = indexFilterBase[indexFilterBase.size()-1] + 1;
-    }
-    else {
-        index = 0;
+    {
+        QMutexLocker locker(&mutexQDlt);
+        newIndexFilterBase = indexFilterBase;
+        if(!newIndexFilterBase.isEmpty())
+            index = static_cast<int>(newIndexFilterBase.last()) + 1;
     }
 
     quint8 progressNextCmdOutput=10;
@@ -540,13 +551,17 @@ bool QDltFile::updateIndexFilter()
             msg.setMsg(buf,true,dltv2Support);
             msg.setIndex(num);
             if(checkFilter(msg)) {
-                indexFilterBase.append(num);
+                newIndexFilterBase.append(num);
             }
         }
 
     }
 
-    recomputeEffectiveIndexFilter();
+    {
+        QMutexLocker locker(&mutexQDlt);
+        indexFilterBase = std::move(newIndexFilterBase);
+        recomputeEffectiveIndexFilterLocked();
+    }
 
     return true;
 }
@@ -573,20 +588,17 @@ void QDltFile::setFilterList(QDltFilterList &_filterList)
 
 void QDltFile::clearFilterIndex()
 {
-    /* clear old index */
+    QMutexLocker locker(&mutexQDlt);
     indexFilterBase.clear();
-    recomputeEffectiveIndexFilter();
+    recomputeEffectiveIndexFilterLocked();
 
 }
 
 void QDltFile::addFilterIndex (int index)
 {
+    QMutexLocker locker(&mutexQDlt);
     indexFilterBase.append(index);
-    if (manualMarkerIndices.isEmpty()) {
-        indexFilter.append(index);
-    } else {
-        recomputeEffectiveIndexFilter();
-    }
+    recomputeEffectiveIndexFilterLocked();
 }
 
 #ifdef USECOLOR
@@ -798,6 +810,7 @@ int QDltFile::getMsgFilterPos(int index) const
 {
     if(filterFlag)
     {
+        QMutexLocker locker(&mutexQDlt);
         /* check if index is in range */
         if(index<0 || index>=indexFilter.size())
         {
@@ -837,33 +850,137 @@ void QDltFile::updateSortedFilter()
 
 bool QDltFile::isFilter() const
 {
+    QMutexLocker locker(&mutexQDlt);
     return filterFlag;
 }
 
 void QDltFile::enableFilter(bool state)
 {
+    QMutexLocker locker(&mutexQDlt);
+    if(filterFlag == state)
+        return;
+
     filterFlag = state;
+    bumpSearchSnapshotGenerationLocked();
 }
 
 void QDltFile::enableSortByTime(bool state)
 {
+    QMutexLocker locker(&mutexQDlt);
     sortByTimeFlag = state;
+    if(!manualMarkerIndices.isEmpty())
+        recomputeEffectiveIndexFilterLocked();
 }
 
 void QDltFile::enableSortByTimestamp(bool state)
 {
+    QMutexLocker locker(&mutexQDlt);
     sortByTimestampFlag = state;
+    if(!manualMarkerIndices.isEmpty())
+        recomputeEffectiveIndexFilterLocked();
 }
 
 QVector<qint64> QDltFile::getIndexFilter() const
 {
+    QMutexLocker locker(&mutexQDlt);
     return indexFilter;
 }
 
 void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
+    QMutexLocker locker(&mutexQDlt);
     indexFilterBase = std::move(_indexFilter);
-    recomputeEffectiveIndexFilter();
+    recomputeEffectiveIndexFilterLocked();
+}
+
+SearchSnapshot QDltFile::captureSearchSnapshot() const
+{
+    QMutexLocker locker(&mutexQDlt);
+
+    SearchSnapshot snapshot;
+    snapshot.m_generation = searchSnapshotGeneration;
+    snapshot.m_fileNames.reserve(files.size());
+
+    QVector<int> fileBaseIndices;
+    fileBaseIndices.reserve(files.size());
+    QVector<int> fileEndIndices;
+    fileEndIndices.reserve(files.size());
+
+    int runningTotal = 0;
+    for(int fileIndex = 0; fileIndex < files.size(); ++fileIndex)
+    {
+        const QDltFileItem *item = files[fileIndex];
+        snapshot.m_fileNames.append(item->infile.fileName());
+        fileBaseIndices.append(runningTotal);
+        runningTotal += item->indexAll.size();
+        fileEndIndices.append(runningTotal);
+    }
+
+    if(filterFlag)
+    {
+        snapshot.m_rows.reserve(indexFilter.size());
+        for(const qint64 rowIndex : indexFilter)
+        {
+            const int globalIndex = static_cast<int>(rowIndex);
+            const auto endIt = std::upper_bound(fileEndIndices.constBegin(), fileEndIndices.constEnd(), globalIndex);
+            if(endIt == fileEndIndices.constEnd())
+                continue;
+
+            const int fileIndex = static_cast<int>(std::distance(fileEndIndices.constBegin(), endIt));
+            const int localIndex = globalIndex - fileBaseIndices.at(fileIndex);
+            const QVector<qint64> &fileIndexAll = files[fileIndex]->indexAll;
+            if(localIndex < 0 || localIndex >= fileIndexAll.size())
+                continue;
+
+            const qint64 startPos = fileIndexAll.at(localIndex);
+            const qint64 endPos = (localIndex + 1 < fileIndexAll.size())
+                                  ? fileIndexAll.at(localIndex + 1)
+                                  : files[fileIndex]->infile.size();
+            const qint64 byteCount = endPos - startPos;
+            if(byteCount <= 0)
+                continue;
+
+            SearchSnapshotRow row;
+            row.messageIndex = globalIndex;
+            row.fileIndex = fileIndex;
+            row.filePosition = startPos;
+            row.byteCount = byteCount;
+            snapshot.m_rows.append(row);
+        }
+
+        return snapshot;
+    }
+
+    snapshot.m_rows.reserve(runningTotal);
+    for(int fileIndex = 0; fileIndex < files.size(); ++fileIndex)
+    {
+        const QVector<qint64> &fileIndexAll = files[fileIndex]->indexAll;
+        for(int localIndex = 0; localIndex < fileIndexAll.size(); ++localIndex)
+        {
+            const qint64 startPos = fileIndexAll.at(localIndex);
+            const qint64 endPos = (localIndex + 1 < fileIndexAll.size())
+                                  ? fileIndexAll.at(localIndex + 1)
+                                  : files[fileIndex]->infile.size();
+            const qint64 byteCount = endPos - startPos;
+            if(byteCount <= 0)
+                continue;
+
+            SearchSnapshotRow row;
+            row.messageIndex = fileBaseIndices.at(fileIndex) + localIndex;
+            row.fileIndex = fileIndex;
+            row.filePosition = startPos;
+            row.byteCount = byteCount;
+            snapshot.m_rows.append(row);
+        }
+    }
+
+    return snapshot;
+}
+
+bool QDltFile::isSearchSnapshotCurrent(quint64 generation) const
+{
+    QMutexLocker locker(&mutexQDlt);
+    return searchSnapshotGeneration == generation;
 }
 
 QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &markerSet) const
@@ -981,9 +1098,21 @@ QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &ma
     return merged;
 }
 
-void QDltFile::recomputeEffectiveIndexFilter()
+void QDltFile::recomputeEffectiveIndexFilterLocked()
 {
     indexFilter = mergeIndexFilterBaseWithMarkers(manualMarkerIndices);
+    bumpSearchSnapshotGenerationLocked();
+}
+
+void QDltFile::bumpSearchSnapshotGenerationLocked()
+{
+    ++searchSnapshotGeneration;
+}
+
+void QDltFile::recomputeEffectiveIndexFilter()
+{
+    QMutexLocker locker(&mutexQDlt);
+    recomputeEffectiveIndexFilterLocked();
 }
 bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
 {

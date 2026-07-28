@@ -51,8 +51,10 @@ public:
         m_messageIdFormat = msgIdFormat;
     }
 
+    bool match(const QDltMsg& message, const QString& searchText) const;
     bool match(const QDltMsg& message, const Pattern& pattern) const;
 private:
+    bool matchText(const QDltMsg& message, const QString& searchText) const;
     bool matchAppId(const QString& appId) const;
     bool matchCtxId(const QString& ctxId) const;
     bool matchTimestampRange(unsigned int ts) const;
