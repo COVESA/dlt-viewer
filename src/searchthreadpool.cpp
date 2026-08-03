@@ -20,6 +20,7 @@
 #include "searchthreadpool.h"
 
 #include <QThread>
+#include <QtGlobal>
 
 namespace {
 
@@ -47,10 +48,14 @@ SearchThreadPool &SearchThreadPool::instance()
 SearchThreadPool::SearchThreadPool()
 {
     m_urgentPool.setMaxThreadCount(interactiveThreadCount());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_urgentPool.setThreadPriority(QThread::NormalPriority);
+#endif
 
     m_backgroundPool.setMaxThreadCount(backgroundThreadCount());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     m_backgroundPool.setThreadPriority(QThread::LowPriority);
+#endif
 }
 
 QThreadPool *SearchThreadPool::pool(Priority priority)
