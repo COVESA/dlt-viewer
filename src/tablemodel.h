@@ -28,6 +28,7 @@
 #include <QHeaderView>
 #include <QEvent>
 #include <QToolTip>
+#include <QVector>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
@@ -65,13 +66,27 @@ public:
     QString getToolTipForFields(FieldNames::Fields cn);
 
 private:
+    struct DecodeRenderCacheEntry
+    {
+        long int filterPosIndex;
+        unsigned long long generation;
+        QVector<QVariant> displayValues;
+    };
+
     long int lastSearchIndex;
     bool emptyForceFlag;
     bool loggingOnlyMode;
+    unsigned long long m_renderCacheGeneration;
 
-    // cache is used in data()-method to avoid decoding of the same message multiple times
-    // key is a message index in the qdltfile; message can fail to decode, in that case value is empty optional
-    mutable QDltLruCache<int, std::optional<QDltMsg>> m_cache{1};
+    // Decode cache keyed by absolute file position (filterposindex) — stable across filter changes.
+    // Message can fail to decode, in that case the value is an empty optional.
+    mutable QDltLruCache<long int, std::optional<QDltMsg>> m_cache{256};
+
+    // Cache preformatted DisplayRole values for recently rendered rows.
+    mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
+
+    QVariant buildDisplayValue(int column, long int filterPosIndex, std::optional<QDltMsg> &msg) const;
+    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(long int filterPosIndex, std::optional<QDltMsg> &msg) const;
 
     long int searchhit;
     QColor searchBackgroundColor() const;

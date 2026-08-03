@@ -21,6 +21,8 @@
 #define SEARCHTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QVector>
+#include <qdltlrucache.hpp>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
@@ -58,6 +60,22 @@ public:
     QDltFile *qfile;
     Project *project;
     QDltPluginManager *pluginManager;
+
+private:
+    struct DecodeRenderCacheEntry
+    {
+        unsigned long messageIndex;
+        unsigned long long generation;
+        QVector<QVariant> displayValues;
+    };
+
+    unsigned long long m_renderCacheGeneration;
+
+    // Cache preformatted DisplayRole values for recently rendered search result rows.
+    mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
+
+    QVariant buildDisplayValue(int column, unsigned long messageIndex, QDltMsg &msg) const;
+    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg) const;
     
 signals:
     
