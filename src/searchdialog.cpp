@@ -292,11 +292,15 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         int end;
     };
 
-    // Interactive searches use the urgent pool so they do not compete with
-    // future background search jobs.
-    QThreadPool* const findAllPool = SearchThreadPool::instance().pool(SearchThreadPool::Priority::Urgent);
+        // When decode is needed, search and live ingestion both go through plugin decode.
+        // Use a low-priority lane with a single worker to avoid starving live logs.
+        const SearchThreadPool::Priority poolPriority = doDecode
+            ? SearchThreadPool::Priority::Background
+            : SearchThreadPool::Priority::Urgent;
+        QThreadPool* const findAllPool = SearchThreadPool::instance().pool(poolPriority);
 
-    const int maxThreads = qMax(1, findAllPool->maxThreadCount());
+        const int configuredThreads = qMax(1, findAllPool->maxThreadCount());
+        const int maxThreads = doDecode ? 1 : configuredThreads;
 
     // Use more chunks than threads so some chunks complete early and we can show results sooner.
     // Keep it bounded to avoid too many tasks.
@@ -354,7 +358,7 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             msg.setIndex(row.messageIndex);
 
             if (doDecode && pluginPtr)
-                pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
+                (void)pluginPtr->decodeMsgTry(msg, dlg ? dlg->fSilentMode : 0);
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
                                       : matcher.match(msg, searchText);

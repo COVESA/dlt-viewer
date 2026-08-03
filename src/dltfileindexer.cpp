@@ -19,6 +19,25 @@ extern "C" {
     #include "dlt_common.h"
 }
 
+namespace {
+
+bool hasActivePositiveOrNegativeFilters(const QDltFilterList &filterList)
+{
+    for(const QDltFilter *filter : filterList.filters)
+    {
+        if(filter == nullptr)
+            continue;
+        if(!filter->enableFilter)
+            continue;
+        if(filter->isPositive() || filter->isNegative())
+            return true;
+    }
+
+    return false;
+}
+
+}
+
 DltFileIndexerKey::DltFileIndexerKey(time_t time, unsigned int microseconds, int index)
     : timestamp(0)
 {
@@ -787,15 +806,29 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        QStringList filenames;
-        for(int num=0;num<dltFile->getNumberOfFiles();num++)
-            filenames.append(dltFile->getFileName(num));
-        if((mode != modeNone) && !indexFilter(filenames))
+        const bool effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
+
+        if(effectiveFilteringEnabled)
         {
-            // error
-            return;
+            QStringList filenames;
+            for(int num=0;num<dltFile->getNumberOfFiles();num++)
+                filenames.append(dltFile->getFileName(num));
+            if((mode != modeNone) && !indexFilter(filenames))
+            {
+                // error
+                return;
+            }
         }
-        dltFile->enableFilter(filtersEnabled);
+        else
+        {
+            // No active filtering rules -> avoid full CFI pass.
+            // This keeps live log updates smooth when filters are effectively disabled.
+            indexFilterList.clear();
+            indexFilterListSorted.clear();
+            getLogInfoList.clear();
+        }
+
+        dltFile->enableFilter(effectiveFilteringEnabled);
         dltFile->setIndexFilter(indexFilterList);
         emit(finishFilter());
     }

@@ -436,6 +436,7 @@ private slots:
     void reloadLogFileFinishIndex();
     void reloadLogFileFinishFilter();
     void reloadLogFileFinishDefaultFilter();
+    void processPendingUpdateIndex();
     void triggerPluginsAutoload();
 
     void onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);

@@ -92,6 +92,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     timer(this),
+    drawTimer(this),
     qcontrol(this),
     crlfFilterWindow(nullptr),
     pulseButtonColor(255, 40, 40),
@@ -112,6 +113,10 @@ MainWindow::MainWindow(QWidget *parent) :
     filterIsChanged = false;
 
     initState();
+
+    drawTimer.setSingleShot(true);
+    drawTimer.setInterval(25);
+    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::processPendingUpdateIndex);
 
     /* Apply loaded settings */
     initSearchTable();
@@ -4859,13 +4864,23 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->serialcon.syncFound = 0;
          }
 
-     //if(outputfile.isOpen()) //&& ( settings->loggingOnlyMode == 0 )  )
-     //   {
-            if(false == dltIndexer->isRunning())
-            {
-                updateIndex();
-            }
-     //   }
+     // If the indexer is idle, coalesce live UI refreshes so bursts of control
+     // responses or log packets do not block the socket read path.
+     if(!drawTimer.isActive())
+     {
+         drawTimer.start();
+     }
+}
+
+void MainWindow::processPendingUpdateIndex()
+{
+    if (dltIndexer->isRunning())
+    {
+        drawTimer.start();
+        return;
+    }
+
+    updateIndex();
 }
 
 
@@ -5848,8 +5863,11 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
 void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription)
 {
     if (auto appitem = ecuitem->find(apid); appitem) {
-        appitem->description = appdescription;
-        appitem->update();
+        if(appitem->description != appdescription)
+        {
+            appitem->description = appdescription;
+            appitem->update();
+        }
     } else {
         appitem = new ApplicationItem(ecuitem);
         appitem->id = apid;
@@ -5874,13 +5892,31 @@ void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QStri
         if (!conitem) {
             conitem = new ContextItem(appitem);
             appitem->addChild(conitem);
+            conitem->id = ctid;
+            conitem->loglevel = log_level;
+            conitem->tracestatus = trace_status;
+            conitem->description = ctdescription;
+            conitem->status = ContextItem::valid;
+            conitem->update();
+            return;
         }
-        conitem->id = ctid;
-        conitem->loglevel = log_level;
-        conitem->tracestatus = trace_status;
-        conitem->description = ctdescription;
-        conitem->status = ContextItem::valid;
-        conitem->update();
+
+        const bool changed =
+                (conitem->id != ctid) ||
+                (conitem->loglevel != log_level) ||
+                (conitem->tracestatus != trace_status) ||
+                (conitem->description != ctdescription) ||
+                (conitem->status != ContextItem::valid);
+
+        if(changed)
+        {
+            conitem->id = ctid;
+            conitem->loglevel = log_level;
+            conitem->tracestatus = trace_status;
+            conitem->description = ctdescription;
+            conitem->status = ContextItem::valid;
+            conitem->update();
+        }
     } else {
         appitem = new ApplicationItem(ecuitem);
         appitem->id = apid;

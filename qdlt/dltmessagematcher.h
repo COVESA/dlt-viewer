@@ -51,6 +51,7 @@ public:
         m_messageIdFormat = msgIdFormat;
     }
 
+    bool match(const QDltMsg& message, const char* searchText) const;
     bool match(const QDltMsg& message, const QString& searchText) const;
     bool match(const QDltMsg& message, const Pattern& pattern) const;
 private:

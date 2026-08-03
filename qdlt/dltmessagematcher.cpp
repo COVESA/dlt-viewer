@@ -4,6 +4,11 @@
 
 DltMessageMatcher::DltMessageMatcher() {}
 
+bool DltMessageMatcher::match(const QDltMsg &msg, const char *searchText) const
+{
+    return matchText(msg, QString::fromUtf8(searchText ? searchText : ""));
+}
+
 bool DltMessageMatcher::match(const QDltMsg &msg, const QString &searchText) const
 {
     return matchText(msg, searchText);
