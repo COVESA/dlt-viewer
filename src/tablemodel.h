@@ -78,10 +78,6 @@ private:
     bool loggingOnlyMode;
     unsigned long long m_renderCacheGeneration;
 
-    // Decode cache keyed by absolute file position (filterposindex) — stable across filter changes.
-    // Message can fail to decode, in that case the value is an empty optional.
-    mutable QDltLruCache<long int, std::optional<QDltMsg>> m_cache{256};
-
     // Cache preformatted DisplayRole values for recently rendered rows.
     mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
 

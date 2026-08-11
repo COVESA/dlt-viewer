@@ -238,18 +238,14 @@ TableModel::DecodeRenderCacheEntry TableModel::buildDecodeRenderCacheEntry(long 
      long int filterposindex = qfile->getMsgFilterPos(index.row());
 
      std::optional<QDltMsg> msg;
-     if (m_cache.exists(filterposindex)) {
-         msg = m_cache.get(filterposindex);
-     } else {
-         QDltMsg omsg;
-         if (bool success = qfile->getMsg(filterposindex, omsg); success) {
-            msg = std::make_optional(omsg);
-            if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool()) {
-                pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
-            }
+     QDltMsg omsg;
+     if (bool success = qfile->getMsg(filterposindex, omsg); success)
+     {
+         msg = std::make_optional(omsg);
+         if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+         {
+             pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
          }
-
-         m_cache.put(filterposindex, msg);
      }
 
      if (role == Qt::DisplayRole)
