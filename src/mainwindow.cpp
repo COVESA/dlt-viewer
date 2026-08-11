@@ -5131,6 +5131,9 @@ void MainWindow::updateIndex()
 
 void MainWindow::updateIndexLiveAsync()
 {
+    if(generation != liveFilterGeneration)
+void MainWindow::updateIndexLiveAsync()
+{
     if(liveIndexWorker == nullptr)
     {
         updateIndex();
@@ -5159,11 +5162,22 @@ void MainWindow::onLiveIndexBatchStarted()
         QDltPlugin *item = activeViewerPlugins.at(i);
         if(item != nullptr)
         {
+            qfile.addFilterIndex(static_cast<int>(index));
+    const QList<QDltPlugin*> activeViewerPlugins = pluginManager.getViewerPlugins();
+    for(int i = 0; i < activeViewerPlugins.size(); ++i)
+    {
+        QDltPlugin *item = activeViewerPlugins.at(i);
+        if(item != nullptr)
+        {
             item->updateFileStart();
         }
     }
 }
 
+void MainWindow::onLiveIndexBatchFinished()
+{
+    if(!liveFilterWorker)
+}
 void MainWindow::onLiveIndexBatchFinished()
 {
     if(pluginsEnabled)
@@ -5215,6 +5229,18 @@ void MainWindow::postLiveBatchUpdateEvent()
         return;
     }
 
+    liveBatchEventQueued = true;
+    QCoreApplication::postEvent(this, new LiveBatchUpdateEvent());
+}
+
+void MainWindow::applyLiveBatchUpdate()
+{
+    liveBatchEventQueued = false;
+
+    if(liveBatchPendingEvents <= 0 && liveBatchPendingMatches <= 0)
+    {
+        return;
+    }
     liveBatchEventQueued = true;
     QCoreApplication::postEvent(this, new LiveBatchUpdateEvent());
 }

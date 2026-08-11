@@ -816,9 +816,6 @@ bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
         return false;
     }
 
-    // lock before touching files/indexAll, which can mutate concurrently (reload/clear)
-    mutexQDlt.lock();
-
     for(num = 0; num < files.size(); num++)
     {
         if(index < files[num]->indexAll.size())
@@ -829,7 +826,6 @@ bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
 
     if(num >= files.size())
     {
-        mutexQDlt.unlock();
         qDebug() << "getMsg: Index is out of range in" << __FILE__ << "line" << __LINE__;
         return false;
     }
@@ -837,9 +833,10 @@ bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
     if(false == files[num]->infile.isOpen())
     {
         qDebug() << "getMsg: Infile is not open" << files[num]->infile.fileName() << __FILE__ << "line" << __LINE__;
-        mutexQDlt.unlock();
         return false;
     }
+
+    mutexQDlt.lock();
 
     QDltFileItem* file = files[num];
     const QDltFileItem* const_file = file;

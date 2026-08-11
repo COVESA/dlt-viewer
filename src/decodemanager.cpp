@@ -30,12 +30,6 @@ void DecodeManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
         snapshot = decoderPlugins;
     }
 
-    if(pluginManager != nullptr)
-    {
-        pluginManager->decodeMsgUsingPlugins(snapshot, msg, triggeredByUser);
-        return;
-    }
-
     for(int i = 0; i < snapshot.size(); ++i)
     {
         QDltPlugin *plugin = snapshot.at(i);

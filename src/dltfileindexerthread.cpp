@@ -24,10 +24,10 @@ DltFileIndexerThread::DltFileIndexerThread
       indexFilterListSorted(indexFilterListSorted),
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
-      activeDecoderPlugins(activeDecoderPlugins),
-      silentMode(silentMode),
       filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
-      msgQueue(1024)
+      msgQueue(1024),
+      activeDecoderPlugins(activeDecoderPlugins),
+      silentMode(silentMode), msgQueue(1024)
 {
 
 }
@@ -126,30 +126,17 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
         }
     }
 
-    /*
-     * In modeFilter (pure CFI rebuild) skip decoder plugins only when no active filter
-     * inspects decoded header/payload text - otherwise CFI would filter on raw undecoded
-     * bytes and silently produce wrong matches for content-based filters.
-     */
-    if (pluginsEnabled &&
-        ((mode == DltFileIndexer::modeIndexAndFilter) || filterNeedsDecodedText))
-    /*
-     * In modeFilter (pure CFI rebuild) we only need filter matching and index generation.
-     * Running decoder plugins here is expensive and can dominate runtime on large files.
-     */
-    if ((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled)
-     {
-     (void) pluginManager->decodeMsg(msg, silentMode);
-     }
-
-    /* Process all decoder plugins.
-     * Use the pre-fetched active decoder list to avoid taking pluginManager's
-     * mutex once per message in the CFI hot loop. */
-    if (pluginsEnabled && activeDecoderPlugins)
     /* Process all decoderplugins using pre-snapshotted list to avoid lock contention in hot path */
-    if(pluginsEnabled && activeDecoderPlugins != nullptr && pluginManager != nullptr)
+    if(pluginsEnabled && activeDecoderPlugins != nullptr)
     {
-        pluginManager->decodeMsgUsingPlugins(*activeDecoderPlugins, msg, silentMode);
+        for(int idp = 0; idp < activeDecoderPlugins->size(); ++idp)
+        {
+            QDltPlugin *decoder = activeDecoderPlugins->at(idp);
+            if(decoder != nullptr && decoder->decodeMsg(msg, silentMode))
+            {
+                break;
+            }
+        }
     }
 
     bool_result = filterList->checkFilter(msg);

@@ -506,10 +506,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
-        if(!dltFile->getMsg(ix, msg))
-        QDltMsg msg;
-
-        if(!dltFile->getMsg(static_cast<int>(ix), msg))
         if(!dltFile->getMsgNoCache(ix, msg, msgBuffer))
             continue; // Skip broken messages
 
