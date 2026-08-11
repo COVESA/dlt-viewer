@@ -112,6 +112,8 @@ namespace Ui {
 struct EcuTree;
 class QDltExporter;
 class FilterThreadWorker;
+class IndexThreadWorker;
+class DecodeManager;
 
 class MainWindow : public QMainWindow
 {
@@ -133,6 +135,7 @@ private:
 
     /* Timer for draw Event */
     QTimer drawTimer;
+    QTimer liveBatchTimer;
 
     /* Timer to coalesce live-logging index/UI updates, independent of drawTimer's refresh-rate cadence */
     QTimer indexUpdateTimer;
@@ -162,6 +165,10 @@ private:
     unsigned long totalBytesRcvd;
     unsigned long totalByteErrorsRcvd;
     unsigned long totalSyncFoundRcvd;
+    int liveBatchPendingEvents;
+    int liveBatchPendingMatches;
+    int liveDisplayedRowCount;
+    bool liveBatchEventQueued;
 
     /* Search */
     SearchDialog *searchDlg;
@@ -248,6 +255,8 @@ private:
     DltFileIndexer *dltIndexer;
     FilterThreadWorker *liveFilterWorker;
     quint64 liveFilterGeneration;
+    IndexThreadWorker *liveIndexWorker;
+    DecodeManager *decodeManager;
 
     /* Color for blinking 'Apply changes'-button */
     QColor pulseButtonColor;
@@ -341,6 +350,9 @@ private:
     void checkConnectionState();
     void read(EcuItem *ecuitem);
     void updateIndex();
+    void updateIndexLiveAsync();
+    void postLiveBatchUpdateEvent();
+    void applyLiveBatchUpdate();
     void drawUpdatedView();
     void syncLiveFilterWorkerConfig();
     void resetLiveFilterGeneration();
@@ -429,6 +441,7 @@ private:
 
 
 protected:
+    bool event(QEvent *event) override;
     void keyPressEvent ( QKeyEvent * event ) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -636,6 +649,9 @@ private slots:
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
 
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
+    void onLiveIndexBatchStarted();
+    void onLiveIndexBatchFinished();
+    void onLiveIndexDecision(int index, bool matched, QString markerFilterName);
 
 public slots:
     // this slot is required because it is implicitly used in qdltcontrol

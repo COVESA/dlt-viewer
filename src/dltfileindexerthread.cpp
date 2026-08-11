@@ -54,7 +54,8 @@ void DltFileIndexerThread::run()
         processMessage(*msgPair.first, msgPair.second);
 }
 
-void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int index)
+
+void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
 {
     processMessage(*msg, index);
 }
@@ -145,12 +146,16 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
      * Use the pre-fetched active decoder list to avoid taking pluginManager's
      * mutex once per message in the CFI hot loop. */
     if (pluginsEnabled && activeDecoderPlugins)
+    /* Process all decoderplugins using pre-snapshotted list to avoid lock contention in hot path */
+    if(pluginsEnabled && activeDecoderPlugins != nullptr)
     {
-        for (int idp = 0; idp < activeDecoderPlugins->size(); ++idp)
+        for(int idp = 0; idp < activeDecoderPlugins->size(); ++idp)
         {
             QDltPlugin *decoder = activeDecoderPlugins->at(idp);
-            if(decoder && decoder->decodeMsg(msg, silentMode))
+            if(decoder != nullptr && decoder->decodeMsg(msg, silentMode))
+            {
                 break;
+            }
         }
     }
 
@@ -206,4 +211,13 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
             indexer->appendToGetLogInfoList(index);
         }
     }
+}
+
+void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int index)
+{
+    if(msg.isNull())
+    {
+        return;
+    }
+    processMessage(*msg, index);
 }

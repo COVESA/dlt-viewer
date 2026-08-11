@@ -157,6 +157,11 @@ public:
     */
     bool getMsg(int index,QDltMsg &msg);
 
+    //! Get one message of the DLT log file without populating the shared message cache.
+    /*! Intended for sequential indexing passes where cache insert overhead is wasted. */
+    bool getMsgNoCache(int index, QDltMsg &msg);
+    bool getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer);
+
     //! Get one DLT message of the DLT log file selected by index
     /*!
       \param index position of the DLT message in the log file up to the number DLT messages in the file
