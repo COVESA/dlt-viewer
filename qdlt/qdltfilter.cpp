@@ -163,6 +163,12 @@ bool QDltFilter::compileRegexps()
 
 bool QDltFilter::match(const QDltMsg &msg) const
 {
+    QDltFilterMatchCache cache;
+    return match(msg, cache);
+}
+
+bool QDltFilter::match(const QDltMsg &msg, QDltFilterMatchCache &cache) const
+{
 
     if( (true == enableEcuid) && (msg.getEcuid() != ecuid))
     {
@@ -202,14 +208,14 @@ bool QDltFilter::match(const QDltMsg &msg) const
 
     if(true == enableRegexp_Header)
     {
-        if( (true == enableHeader) && ( false == headerRegularExpression.match(msg.toStringHeader()).hasMatch() ) )
+        if( (true == enableHeader) && ( false == headerRegularExpression.match(cache.header(msg)).hasMatch() ) )
         {
             return false;
         }
     }
     else
     {
-        if( ( true == enableHeader ) && ( false == msg.toStringHeader().contains(header,ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive)) )
+        if( ( true == enableHeader ) && ( false == cache.header(msg).contains(header,ignoreCase_Header?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
         }
@@ -217,14 +223,14 @@ bool QDltFilter::match(const QDltMsg &msg) const
 
     if( true == enableRegexp_Payload)
     {
-        if( (true == enablePayload) && ( false == payloadRegularExpression.match(msg.toStringPayload()).hasMatch() ) )
+        if( (true == enablePayload) && ( false == payloadRegularExpression.match(cache.payload(msg)).hasMatch() ) )
         {
             return false;
         }
     }
     else
     {
-        if( (true == enablePayload) && ( false == msg.toStringPayload().contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
+        if( (true == enablePayload) && ( false == cache.payload(msg).contains(payload,ignoreCase_Payload?Qt::CaseInsensitive:Qt::CaseSensitive)) )
         {
             return false;
         }
