@@ -190,6 +190,8 @@ void filtergrouplogs::ecuIdTabs(){
     layout->addWidget(mergedTabWidget);
     mergedTabWidget->setTabsClosable(true);
     connect(mergedTabWidget, &QTabWidget::tabCloseRequested, this, &filtergrouplogs::onTabCloseRequested);
+    // mergedTabWidget is a child of tabWindow and is destroyed with it; clear our state then
+    connect(tabWindow, &QObject::destroyed, this, &filtergrouplogs::onTabWindowDestroyed);
 
     progress.setLabelText("Preparing ECU tabs...");
     progress.setMaximum(qMax(1, availableEcuIds.size()));
@@ -458,6 +460,20 @@ void filtergrouplogs::setDltFile(QDltFile* file) {
 // Sets the plugin manager reference
 void filtergrouplogs::setPluginManager(QDltPluginManager* manager) {
     pluginManager = manager;
+}
+
+void filtergrouplogs::onTabWindowDestroyed()
+{
+    mergedTabWidget = nullptr;
+
+    qDeleteAll(ecuTabModels);
+    ecuTabModels.clear();
+
+    mergedTabs.clear();
+    ecuTabViews.clear();
+    tabToSelectedIds.clear();
+    indexofMergedTabs.clear();
+    selectedEcuIdSet.clear();
 }
 
 void filtergrouplogs::onSourceModelChanged()

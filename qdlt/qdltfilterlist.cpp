@@ -131,10 +131,11 @@ QString QDltFilterList::checkMarker(const QDltMsg &msg)
 
 const QDltFilter* QDltFilterList::matchMarkerFilter(const QDltMsg &msg) const
 {
+    QDltFilterMatchCache cache;
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
         QDltFilter *filter = mfilters[numfilter];
-        if(filter->match(msg))
+        if(filter->match(msg, cache))
         {
             return filter;
         }
@@ -195,6 +196,7 @@ bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg) const
 bool QDltFilterList::checkFilter(QDltMsg &msg)
 {
     QDltFilter *filter;
+    QDltFilterMatchCache cache;
     bool found = false;
     bool filterActivated = false;
 
@@ -213,7 +215,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
     for(int numfilter=0;numfilter<pfilters.size();numfilter++)
     {
         filter = pfilters[numfilter];
-        found = filter->match(msg);
+        found = filter->match(msg, cache);
         if (found)
           break;
     }
@@ -227,7 +229,7 @@ bool QDltFilterList::checkFilter(QDltMsg &msg)
         for(int numfilter=0;numfilter<nfilters.size();numfilter++)
         {
             filter = nfilters[numfilter];
-            if (filter->match(msg))
+            if (filter->match(msg, cache))
             {
                 // a negative filter has matched -> found = false
                 found = false;

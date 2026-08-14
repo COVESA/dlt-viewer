@@ -39,6 +39,8 @@ public:
   void onExportFilteredLogsClicked();
 
   void onSourceModelChanged();
+  // Clears stale tab state once the ECU tab window is destroyed
+  void onTabWindowDestroyed();
 
   private :
     QAbstractTableModel* sourceModelOfDLT;

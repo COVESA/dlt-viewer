@@ -34,6 +34,27 @@
 #include "export_rules.h"
 #include "qdltmsg.h"
 
+// Caches per-message toStringHeader()/toStringPayload() across multiple match() calls on the same message
+class QDLT_EXPORT QDltFilterMatchCache
+{
+public:
+    const QString &header(const QDltMsg &msg)
+    {
+        if(!headerReady) { headerValue = msg.toStringHeader(); headerReady = true; }
+        return headerValue;
+    }
+    const QString &payload(const QDltMsg &msg)
+    {
+        if(!payloadReady) { payloadValue = msg.toStringPayload(); payloadReady = true; }
+        return payloadValue;
+    }
+
+private:
+    QString headerValue;
+    QString payloadValue;
+    bool headerReady = false;
+    bool payloadReady = false;
+};
 
 class QDLT_EXPORT QDltFilter
 {
@@ -130,6 +151,12 @@ public:
       \return true if filter matches the message, else false
     */
     bool match(const QDltMsg &msg) const;
+
+    //! Check if filter matches, reusing a cached header/payload string across multiple filters for the same message.
+    /*!
+      \return true if filter matches the message, else false
+    */
+    bool match(const QDltMsg &msg, QDltFilterMatchCache &cache) const;
 
     //! Save filter parameters in XML file.
     /*!
