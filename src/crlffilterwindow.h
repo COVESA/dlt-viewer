@@ -66,9 +66,6 @@ private:
     // Rebuild the CRLF data model with current DLT file data
     void rebuildCrlfModel();
     
-    // Create headers for CRLF table model
-    QStringList createTableHeaders();
-    
     // Helper methods for code reuse and optimization
     bool containsCrlf(const QString& payload);
     void updateMessageCount(int count);

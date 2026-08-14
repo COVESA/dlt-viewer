@@ -839,14 +839,14 @@ void MainWindow::initFileHandling()
     const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
     dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
 
-        liveFilterWorker = new FilterThreadWorker(this);
-        connect(liveFilterWorker,
-            &FilterThreadWorker::matchesReady,
-            this,
-            &MainWindow::onLiveFilterMatchesReady,
-            Qt::QueuedConnection);
-        liveFilterWorker->start(QThread::LowPriority);
-        syncLiveFilterWorkerConfig();
+    liveFilterWorker = new FilterThreadWorker(this);
+    connect(liveFilterWorker,
+        &FilterThreadWorker::matchesReady,
+        this,
+        &MainWindow::onLiveFilterMatchesReady,
+        Qt::QueuedConnection);
+    liveFilterWorker->start(QThread::LowPriority);
+    syncLiveFilterWorkerConfig();
 
     ui->checkBoxFilterRange->setEnabled(filtersEnabled);
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
@@ -2681,6 +2681,7 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
 void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
     resetLiveFilterGeneration();
+    syncLiveFilterWorkerConfig();
 
     qint64 fileerrors = 0;
     /* check if in logging only mode, then do not create index */
@@ -7100,6 +7101,7 @@ void MainWindow::showCrlfMessages()
     // Check if CRLF window already exists
     if (crlfFilterWindow) {
         crlfFilterWindow->refreshWindow();
+        crlfFilterWindow->showAndActivate();
         return;
     }
     // Create new CRLF window
