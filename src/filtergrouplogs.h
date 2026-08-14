@@ -20,7 +20,7 @@ public:
   
   explicit filtergrouplogs(QObject* parent = nullptr);
   // Extracts unique ECU IDs from a DLT file
-  QStringList extractEcuIds(const QString& dltFilePath);
+  QStringList extractEcuIds();
   // Sets the source model for DLT data
   void setSourceModel(QAbstractTableModel* model);
   // Sets the DLT file reference

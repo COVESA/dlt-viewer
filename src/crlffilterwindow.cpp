@@ -71,27 +71,6 @@ void CrlfFilterWindow::applyColumnSettings() {
     }
 }
 
-// Create headers for CRLF table model
-QStringList CrlfFilterWindow::createTableHeaders() {
-    QStringList headers;
-    auto settings = QDltSettingsManager::getInstance();
-    headers << FieldNames::getName(FieldNames::Index, settings)
-            << FieldNames::getName(FieldNames::Time, settings)
-            << FieldNames::getName(FieldNames::TimeStamp, settings)
-            << FieldNames::getName(FieldNames::Counter, settings)
-            << FieldNames::getName(FieldNames::EcuId, settings)
-            << FieldNames::getName(FieldNames::AppId, settings)
-            << FieldNames::getName(FieldNames::ContextId, settings)
-            << FieldNames::getName(FieldNames::SessionId, settings)
-            << FieldNames::getName(FieldNames::Type, settings)
-            << FieldNames::getName(FieldNames::Subtype, settings)
-            << FieldNames::getName(FieldNames::Mode, settings)
-            << FieldNames::getName(FieldNames::MessageId, settings)
-            << FieldNames::getName(FieldNames::ArgCount, settings)
-            << FieldNames::getName(FieldNames::Payload, settings);
-    return headers;
-}
-
 // Creates a single window displaying all CRLF messages
 void CrlfFilterWindow::createCrlfWindow() {
     if (!dltFile || dltFile->size() == 0) {
@@ -312,6 +291,7 @@ void CrlfFilterWindow::setSourceModel(QAbstractTableModel* model) {
         connect(sourceModelOfDLT, &QAbstractTableModel::layoutChanged, this, &CrlfFilterWindow::onSourceModelDataChanged);
         
         if (QObject* parentObj = parent()) {
+            disconnect(parentObj, SIGNAL(dltFileLoaded()), this, SLOT(onSourceModelDataChanged()));
             connect(parentObj, SIGNAL(dltFileLoaded()), this, SLOT(onSourceModelDataChanged()));
         }
     }
@@ -479,7 +459,6 @@ void CrlfFilterWindow::rebuildCrlfModel() {
         return;
     }
 
-    crlfFilterProxy->setSourceModel(sourceModelOfDLT);
     const int rowsToProcess = qMin(totalFilteredMessages, sourceModelOfDLT ? sourceModelOfDLT->rowCount() : 0);
 
     QVector<int> crlfRows;

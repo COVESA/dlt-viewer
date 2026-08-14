@@ -23,6 +23,10 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
+private slots:
+    void onSourceDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void onSourceHeaderDataChanged(Qt::Orientation orientation, int first, int last);
+
 private:
     QPointer<QAbstractItemModel> sourceModel;
     QVector<int> sourceRows;

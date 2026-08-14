@@ -27,8 +27,7 @@ filtergrouplogs::filtergrouplogs(QObject* parent) : QObject(parent) {
 }
 
 // Extracts unique ECU IDs from a DLT file
-QStringList filtergrouplogs::extractEcuIds(const QString& dltFilePath) {
-    Q_UNUSED(dltFilePath);
+QStringList filtergrouplogs::extractEcuIds() {
     rebuildGroupedIndex();
     return extractedEcuIds;
 }
@@ -213,12 +212,6 @@ void filtergrouplogs::ecuIdTabs(){
         }
     }
 
-    if(sourceModelOfDLT)
-    {
-        connect(sourceModelOfDLT, &QAbstractItemModel::layoutChanged, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
-        connect(sourceModelOfDLT, &QAbstractItemModel::modelReset, this, &filtergrouplogs::onSourceModelChanged, Qt::UniqueConnection);
-    }
-
     tabWindow->setAttribute(Qt::WA_ShowModal, true);
     tabWindow->show();
 }
@@ -291,7 +284,7 @@ void filtergrouplogs::onTabCloseRequested(int index) {
     mergedTabWidget->removeTab(index);
     mergedTabs.remove(tabKey);
     tabToSelectedIds.remove(widget);
-    ecuTabModels.remove(tabKey);
+    delete ecuTabModels.take(tabKey);
     ecuTabViews.remove(tabKey);
     widget->deleteLater();
     indexofMergedTabs.clear();
@@ -469,6 +462,11 @@ void filtergrouplogs::setPluginManager(QDltPluginManager* manager) {
 
 void filtergrouplogs::onSourceModelChanged()
 {
+    if(!mergedTabWidget || mergedTabs.isEmpty())
+    {
+        return;
+    }
+
     rebuildGroupedIndex();
 
     for(auto it = mergedTabs.begin(); it != mergedTabs.end(); ++it)
