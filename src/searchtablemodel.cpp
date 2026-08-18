@@ -150,15 +150,16 @@ QVariant SearchTableModel::buildDisplayValue(int column, unsigned long messageIn
     return QVariant();
 }
 
-SearchTableModel::DecodeRenderCacheEntry SearchTableModel::buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg) const
+SearchTableModel::DecodeRenderCacheEntry SearchTableModel::buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg, int columnCount) const
 {
     DecodeRenderCacheEntry entry;
     entry.messageIndex = messageIndex;
     entry.generation = m_renderCacheGeneration;
+    entry.messageValid = true;
+    entry.backgroundColor = getMsgBackgroundColor(msg);
 
-    const int currentColumnCount = columnCount();
-    entry.displayValues.reserve(currentColumnCount);
-    for (int column = 0; column < currentColumnCount; ++column)
+    entry.displayValues.reserve(columnCount);
+    for (int column = 0; column < columnCount; ++column)
     {
         entry.displayValues.push_back(buildDisplayValue(column, messageIndex, msg));
     }
@@ -176,10 +177,35 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
     if (index.row() >= m_searchResultList.size() || index.row()<0)
         return QVariant();
 
+    const int currentColumnCount = columnCount();
+
     if (role == Qt::DisplayRole)
     {
         /* get the message with the selected item id */
         unsigned long messageIndex = m_searchResultList.at(index.row());
+
+        DecodeRenderCacheEntry entry;
+        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
+        if (hasRenderCacheEntry)
+        {
+            entry = m_decodeRenderCache.get(index.row());
+        }
+
+        const bool isRenderCacheValid = hasRenderCacheEntry
+                                        && entry.messageIndex == messageIndex
+                                        && entry.generation == m_renderCacheGeneration
+                                        && entry.displayValues.size() == currentColumnCount;
+
+        if (isRenderCacheValid)
+        {
+            if (index.column() < 0 || index.column() >= entry.displayValues.size())
+            {
+                return QVariant();
+            }
+
+            return entry.displayValues.at(index.column());
+        }
+
         if(!qfile->getMsg(messageIndex, msg))
         {
             if(index.column() == FieldNames::Index)
@@ -196,23 +222,8 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
         if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
             pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
 
-        DecodeRenderCacheEntry entry;
-        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
-        if (hasRenderCacheEntry)
-        {
-            entry = m_decodeRenderCache.get(index.row());
-        }
-
-        const bool isRenderCacheValid = hasRenderCacheEntry
-                                        && entry.messageIndex == messageIndex
-                                        && entry.generation == m_renderCacheGeneration
-                                        && entry.displayValues.size() == columnCount();
-
-        if (!isRenderCacheValid)
-        {
-            entry = buildDecodeRenderCacheEntry(messageIndex, msg);
-            m_decodeRenderCache.put(index.row(), entry);
-        }
+        entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
+        m_decodeRenderCache.put(index.row(), entry);
 
         if (index.column() < 0 || index.column() >= entry.displayValues.size())
         {
@@ -224,10 +235,24 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::ForegroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        const unsigned long messageIndex = m_searchResultList.at(index.row());
+        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
+        if (hasRenderCacheEntry)
         {
-            /* Valid message found, calculate background color and find optimal forground color */
-            return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
+            const DecodeRenderCacheEntry entry = m_decodeRenderCache.get(index.row());
+            if (entry.messageIndex == messageIndex
+                    && entry.generation == m_renderCacheGeneration
+                    && entry.messageValid)
+            {
+                return QVariant(QBrush(DltUiUtils::optimalTextColor(entry.backgroundColor)));
+            }
+        }
+
+        if(qfile->getMsg(messageIndex, msg))
+        {
+            DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
+            m_decodeRenderCache.put(index.row(), entry);
+            return QVariant(QBrush(DltUiUtils::optimalTextColor(entry.backgroundColor)));
         }
         /* default return black forground color */
         QColor brushColor = QColor(0,0,0);
@@ -242,10 +267,24 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::BackgroundRole )
     {
-        if(qfile->getMsg(m_searchResultList.at(index.row()), msg))
+        const unsigned long messageIndex = m_searchResultList.at(index.row());
+        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
+        if (hasRenderCacheEntry)
         {
-            /* Valid message found, calculate background color */
-            return QVariant(QBrush(getMsgBackgroundColor(msg)));
+            const DecodeRenderCacheEntry entry = m_decodeRenderCache.get(index.row());
+            if (entry.messageIndex == messageIndex
+                    && entry.generation == m_renderCacheGeneration
+                    && entry.messageValid)
+            {
+                return QVariant(QBrush(entry.backgroundColor));
+            }
+        }
+
+        if(qfile->getMsg(messageIndex, msg))
+        {
+            DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
+            m_decodeRenderCache.put(index.row(), entry);
+            return QVariant(QBrush(entry.backgroundColor));
         }
         /* default return white background color */
         QColor brushColor = QColor(255,255,255);

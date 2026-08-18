@@ -66,6 +66,8 @@ private:
     {
         unsigned long messageIndex;
         unsigned long long generation;
+        bool messageValid = false;
+        QColor backgroundColor;
         QVector<QVariant> displayValues;
     };
 
@@ -75,7 +77,7 @@ private:
     mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
 
     QVariant buildDisplayValue(int column, unsigned long messageIndex, QDltMsg &msg) const;
-    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg) const;
+    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg, int columnCount) const;
     
 signals:
     

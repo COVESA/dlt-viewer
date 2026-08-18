@@ -237,15 +237,38 @@ TableModel::DecodeRenderCacheEntry TableModel::buildDecodeRenderCacheEntry(long 
 
      long int filterposindex = qfile->getMsgFilterPos(index.row());
 
-     std::optional<QDltMsg> msg;
-     QDltMsg omsg;
-     if (bool success = qfile->getMsg(filterposindex, omsg); success)
+     if (role == Qt::DisplayRole && m_decodeRenderCache.exists(index.row()))
      {
-         msg = std::make_optional(omsg);
-         if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+         const DecodeRenderCacheEntry& entry = m_decodeRenderCache.get(index.row());
+         if (entry.filterPosIndex == filterposindex
+             && entry.generation == m_renderCacheGeneration
+             && entry.displayValues.size() == columnCount())
          {
-             pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
+             if (index.column() < 0 || index.column() >= entry.displayValues.size())
+             {
+                 return QVariant();
+             }
+             return entry.displayValues.at(index.column());
          }
+     }
+
+     std::optional<QDltMsg> msg;
+     if (m_cache.exists(index.row()))
+     {
+         msg = m_cache.get(index.row());
+     }
+     else
+     {
+         QDltMsg omsg;
+         if (bool success = qfile->getMsg(filterposindex, omsg); success)
+         {
+             msg = std::make_optional(omsg);
+             if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+             {
+                 pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
+             }
+         }
+         m_cache.put(index.row(), msg);
      }
 
      if (role == Qt::DisplayRole)
@@ -255,23 +278,8 @@ TableModel::DecodeRenderCacheEntry TableModel::buildDecodeRenderCacheEntry(long 
              qDebug() << "Corrupted message at index" << index.row();
          }
 
-         DecodeRenderCacheEntry entry;
-         const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
-         if (hasRenderCacheEntry)
-         {
-             entry = m_decodeRenderCache.get(index.row());
-         }
-
-         const bool isRenderCacheValid = hasRenderCacheEntry
-                                         && entry.filterPosIndex == filterposindex
-                                         && entry.generation == m_renderCacheGeneration
-                                         && entry.displayValues.size() == columnCount();
-
-         if (!isRenderCacheValid)
-         {
-             entry = buildDecodeRenderCacheEntry(filterposindex, msg);
-             m_decodeRenderCache.put(index.row(), entry);
-         }
+         DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(filterposindex, msg);
+         m_decodeRenderCache.put(index.row(), entry);
 
          if (index.column() < 0 || index.column() >= entry.displayValues.size())
          {
