@@ -493,8 +493,15 @@ void CrlfFilterWindow::rebuildCrlfModel() {
                 QDltMsg msg;
                 if(dltFile->getMsg(absoluteRow, msg))
                 {
-                    const QString rawPayload = msg.toStringPayload();
-                    if(containsCrlf(rawPayload))
+                    msg.setIndex(absoluteRow);
+                    if(pluginManager &&
+                       QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+                    {
+                        pluginManager->decodeMsg(msg, false);
+                    }
+
+                    const QString decodedPayload = msg.toStringPayload();
+                    if(containsCrlf(decodedPayload))
                     {
                         crlfRows.append(i);
                     }
