@@ -19,8 +19,6 @@ class filtergrouplogs : public QObject {
 public:
   
   explicit filtergrouplogs(QObject* parent = nullptr);
-  // Extracts unique ECU IDs from a DLT file
-  QStringList extractEcuIds();
   // Sets the source model for DLT data
   void setSourceModel(QAbstractTableModel* model);
   // Sets the DLT file reference
@@ -50,7 +48,6 @@ public:
 
     QMap<QString, QWidget*> mergedTabs;
     QMap<QWidget*, QStringList> tabToSelectedIds;
-    QMap<int, QString> indexofMergedTabs;
     QMap<QString, QTableView*> ecuTabViews;
     QMap<QString, IndexRowReferenceModel*> ecuTabModels;
 

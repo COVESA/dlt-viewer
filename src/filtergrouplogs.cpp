@@ -26,12 +26,6 @@ filtergrouplogs::filtergrouplogs(QObject* parent) : QObject(parent) {
     pluginManager = nullptr;
 }
 
-// Extracts unique ECU IDs from a DLT file
-QStringList filtergrouplogs::extractEcuIds() {
-    rebuildGroupedIndex();
-    return extractedEcuIds;
-}
-
 void filtergrouplogs::rebuildGroupedIndex(QProgressDialog *progress)
 {
     ecuRowReferences.clear();
@@ -263,7 +257,6 @@ void filtergrouplogs::mergeTabs()
     createOrUpdateTab(tabKey, rowsForEcuSet(QSet<QString>(selectedIds.begin(), selectedIds.end())));
     int mergedtabIndex = mergedTabWidget->indexOf(mergedTabs.value(tabKey));
     mergedTabWidget->setCurrentIndex(mergedtabIndex);
-    indexofMergedTabs[mergedtabIndex] = tabKey;
     tabToSelectedIds[mergedTabs.value(tabKey)] = selectedIds;
     selectedEcuIdSet.clear();
 }
@@ -289,17 +282,6 @@ void filtergrouplogs::onTabCloseRequested(int index) {
     delete ecuTabModels.take(tabKey);
     ecuTabViews.remove(tabKey);
     widget->deleteLater();
-    indexofMergedTabs.clear();
-    // Rearrange tab indices once after deletion of any tab
-    for (int i = 0; i < mergedTabWidget->count(); ++i) {
-        QWidget* w = mergedTabWidget->widget(i);
-        for (auto it = mergedTabs.begin(); it != mergedTabs.end(); ++it) {
-            if (it.value() == w) {
-                indexofMergedTabs[i] = it.key();
-                break;
-            }
-        }
-    }
 }
 
 // Exports the filtered DLT logs from the selected tab to a file
@@ -472,7 +454,6 @@ void filtergrouplogs::onTabWindowDestroyed()
     mergedTabs.clear();
     ecuTabViews.clear();
     tabToSelectedIds.clear();
-    indexofMergedTabs.clear();
     selectedEcuIdSet.clear();
 }
 
