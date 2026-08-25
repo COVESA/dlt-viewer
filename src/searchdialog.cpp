@@ -388,14 +388,9 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
             if (doDecode)
             {
-                for(int decoderIndex = 0; decoderIndex < decoderPluginsSnapshot.size(); ++decoderIndex)
-                {
-                    QDltPlugin *decoder = decoderPluginsSnapshot.at(decoderIndex);
-                    if(decoder != nullptr && decoder->decodeMsg(msg, dlg ? dlg->fSilentMode : 0))
-                    {
-                        break;
-                    }
-                }
+                // Serialize the actual decode call across all search chunks/live worker; plugin state isn't thread-safe.
+                if (pluginManager)
+                    pluginManager->decodeMsgUsingPlugins(decoderPluginsSnapshot, msg, dlg ? dlg->fSilentMode : 0);
             }
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
@@ -836,16 +831,9 @@ void SearchDialog::findMessages(const std::shared_ptr<const SearchSnapshot> &sna
         }
 
         /* decode the message if desired - could this call be avoided as the message is already decoded elsewhere ? */
-        if(!decoderPlugins.isEmpty())
+        if(!decoderPlugins.isEmpty() && pluginManager)
         {
-            for(int decoderIndex = 0; decoderIndex < decoderPlugins.size(); ++decoderIndex)
-            {
-                QDltPlugin *decoder = decoderPlugins.at(decoderIndex);
-                if(decoder != nullptr && decoder->decodeMsg(msg, fSilentMode))
-                {
-                    break;
-                }
-            }
+            pluginManager->decodeMsgUsingPlugins(decoderPlugins, msg, fSilentMode);
         }
 
         const bool matchFound = getRegExp() ? matcher.match(msg, searchTextRegExp) : matcher.match(msg, getText());

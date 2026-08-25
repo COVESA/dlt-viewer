@@ -127,16 +127,9 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
     }
 
     /* Process all decoderplugins using pre-snapshotted list to avoid lock contention in hot path */
-    if(pluginsEnabled && activeDecoderPlugins != nullptr)
+    if(pluginsEnabled && activeDecoderPlugins != nullptr && pluginManager != nullptr)
     {
-        for(int idp = 0; idp < activeDecoderPlugins->size(); ++idp)
-        {
-            QDltPlugin *decoder = activeDecoderPlugins->at(idp);
-            if(decoder != nullptr && decoder->decodeMsg(msg, silentMode))
-            {
-                break;
-            }
-        }
+        pluginManager->decodeMsgUsingPlugins(*activeDecoderPlugins, msg, silentMode);
     }
 
     bool_result = filterList->checkFilter(msg);

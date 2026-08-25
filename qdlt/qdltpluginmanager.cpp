@@ -168,6 +168,17 @@ bool QDltPluginManager::decodeMsgTry(QDltMsg &msg, int triggeredByUser)
 
     pluginListMutex.unlock();
     return true;
+void QDltPluginManager::decodeMsgUsingPlugins(const QList<QDltPlugin*> &pluginsSnapshot, QDltMsg &msg, int triggeredByUser) const
+{
+    // Snapshotted plugin lists still point at shared, stateful plugin instances,
+    // so the actual decode call must be serialized here regardless of who took the snapshot.
+    QMutexLocker mutexLocker(&decodeMutex);
+    for(int i = 0; i < pluginsSnapshot.size(); ++i)
+    {
+        QDltPlugin *plugin = pluginsSnapshot.at(i);
+        if(plugin != nullptr && plugin->decodeMsg(msg, triggeredByUser))
+            break;
+    }
 }
 
 void QDltPluginManager::decodeMsgUsingPlugins(const QList<QDltPlugin*> &pluginsSnapshot, QDltMsg &msg, int triggeredByUser) const
