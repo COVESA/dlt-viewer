@@ -58,6 +58,11 @@ public:
     //! Try to decode without blocking when plugin list is currently busy.
     /*! Returns false when decode was skipped to avoid lock contention. */
     bool decodeMsgTry(QDltMsg &msg, int triggeredByUser);
+    //! Decode a message using a caller-supplied plugin snapshot, serialized against all other decode callers.
+    //! Callers (search workers, CFI, live worker) can snapshot the decoder list without a per-message list lock,
+    //! but must funnel the actual decodeMsg() invocation through here since plugin implementations are stateful
+    //! and are not safe to call concurrently from multiple threads.
+    void decodeMsgUsingPlugins(const QList<QDltPlugin*> &pluginsSnapshot, QDltMsg &msg, int triggeredByUser) const;
 
     //! Get the list of pointers to all loaded plugins
     QList<QDltPlugin*> getPlugins() const { return plugins; }
@@ -90,6 +95,9 @@ public:
 
 private:
     mutable QMutex pluginListMutex;
+
+    //! Serializes decodeMsg() invocation on plugins across all callers (search/CFI/live-worker snapshots)
+    mutable QMutex decodeMutex;
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;
