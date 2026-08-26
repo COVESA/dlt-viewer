@@ -598,7 +598,18 @@ void QDltFile::addFilterIndex (int index)
 {
     QMutexLocker locker(&mutexQDlt);
     indexFilterBase.append(index);
-    recomputeEffectiveIndexFilterLocked();
+    // Fast path: avoid aliasing indexFilter with indexFilterBase (which forces a full
+    // COW deep-copy of indexFilterBase on the next append) when there are no manual
+    // markers to merge in. This keeps live logging appends O(1) amortized.
+    if(manualMarkerIndices.isEmpty())
+    {
+        indexFilter.append(index);
+        bumpSearchSnapshotGenerationLocked();
+    }
+    else
+    {
+        recomputeEffectiveIndexFilterLocked();
+    }
 }
 
 #ifdef USECOLOR

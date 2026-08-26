@@ -65,6 +65,7 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
 
     pluginsEnabled = true;
     filtersEnabled = true;
+    effectiveFilteringEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = false;
     sortByTimestampEnabled = false;
@@ -91,6 +92,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
 
     pluginsEnabled = true;
     filtersEnabled = true;
+    effectiveFilteringEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = 0;
     sortByTimestampEnabled = 0;
@@ -806,7 +808,7 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        const bool effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
+        effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
 
         if(effectiveFilteringEnabled)
         {

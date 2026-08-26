@@ -2621,8 +2621,9 @@ void MainWindow::reloadLogFileFinishFilter()
         }
     }
 
-    // enable filter if requested
-    qfile.enableFilter(filtersEnabled);
+    // enable filter if requested; use the indexer's effective result (filtersEnabled
+    // AND active filter rules exist), otherwise an empty filter index would hide the log.
+    qfile.enableFilter(dltIndexer->getEffectiveFilteringEnabled());
     qfile.enableSortByTime(false);
     {
         const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();

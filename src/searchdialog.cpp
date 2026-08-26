@@ -153,12 +153,14 @@ SearchDialog::SearchDialog(QWidget *parent) :
 
 SearchDialog::~SearchDialog()
 {
-    // Avoid use-after-free if a background Find-All search is still running.
+    // Request cancellation but don't block closing on in-flight I/O/decode;
+    // mapFn/reduceFn only touch this dialog via a QPointer, so it's safe to
+    // let the watcher/future finish on their own in the background.
     if (m_findAllWatcher.isRunning())
     {
         isSearchCancelled.store(true, std::memory_order_relaxed);
+        m_findAllWatcher.disconnect(this);
         m_findAllWatcher.future().cancel();
-        m_findAllWatcher.waitForFinished();
     }
 
     clearCacheHistory();
@@ -358,7 +360,12 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             msg.setIndex(row.messageIndex);
 
             if (doDecode && pluginPtr)
-                (void)pluginPtr->decodeMsgTry(msg, dlg ? dlg->fSilentMode : 0);
+            {
+                // Fall back to a blocking decode so a busy lock never causes an
+                // undecoded message to be searched (would silently miss decode-dependent matches).
+                if (!pluginPtr->decodeMsgTry(msg, dlg ? dlg->fSilentMode : 0))
+                    pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
+            }
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
                                       : matcher.match(msg, searchText);
