@@ -40,7 +40,7 @@
 
 #define RECONNECT_TIMEOUT 3
 
-enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, plugin_type };
+enum dlt_item_type { ecu_type = QTreeWidgetItem::UserType, application_type, context_type, filter_type, filtergroup_type, plugin_type };
 
 class ApplicationItem;
 
@@ -213,6 +213,17 @@ public:
 
 private:
 
+};
+
+class FilterGroupItem : public QTreeWidgetItem
+{
+public:
+    FilterGroupItem(QTreeWidgetItem *parent = 0);
+    ~FilterGroupItem();
+
+    QString groupName;
+
+    void update();
 };
 
 //Forward declaration

@@ -119,13 +119,9 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
-    // Public methods for status checking
-    bool isBackgroundOperationInProgress() const;
+    bool isBackgroundOperationInProgress() const { return false; }
 
 private:
-    void setupSortByTimestampToolbarButton();
-
     Ui::MainWindow *ui;
     /* Timer for connecting to ECUs */
     QTimer timer;
@@ -141,6 +137,7 @@ private:
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
+    bool m_suppressPluginSelectionRefresh = false;
 
     //Maps to hold the filter values - findFilteredLines() & MarkedMessages
     QMap<QString, int> filterCountMap;
@@ -253,9 +250,6 @@ private:
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
-
-    /* flag for enabled / disabled status of filters */
-    bool filtersEnabled;
 
     /* keep the target version string submited by the target for internal use */
     QString target_version_string;
@@ -412,9 +406,6 @@ private:
     void writeDLTMessageToFile(const QByteArray& bufferHeader, std::string_view payload,
                                const EcuItem* ecuitem);
 
-    //File Splitting Settings
-    QStringList outputFilePath;
-
 
 
     void findFilteredLines();
@@ -476,7 +467,6 @@ private slots:
     void on_actionAppend_triggered();
     void on_actionExport_triggered();
     void on_action_menuFile_DLTFilesize_triggered();
-    void on_actionSplitDLTFile_triggered(); //Split DLT Files
 
 
 public slots:
@@ -511,8 +501,8 @@ private slots:
     void on_action_menuProject_New_triggered();
 
     // Help methods
+    void on_action_menuHelp_Support_triggered();
     void on_action_menuHelp_Info_triggered();
-    void on_actionSubmit_Feedback_triggered();
     void on_action_menuHelp_Command_Line_triggered();
     void on_actionShortcuts_List_triggered();
     void on_actionCheck_For_Latest_Updates_triggered();
@@ -563,11 +553,13 @@ private slots:
     void on_action_menuFilter_Delete_triggered();
     void on_action_menuFilter_Edit_triggered();
     void on_action_menuFilter_Add_triggered();
+    void on_action_menuFilter_AddGroup_triggered();
     void on_action_menuFilter_Clear_all_triggered();
     void on_action_menuFilter_Duplicate_triggered();
     void on_action_menuFilter_Append_Filters_triggered();
     void onactionmenuFilter_SetAllActiveTriggered();
     void onactionmenuFilter_SetAllInactiveTriggered();
+    void on_pushButtonEnableAllFilters_clicked(bool checked);
     void on_actionFiltered_Message_Count_triggered();
 
     // Plugin methods
@@ -604,6 +596,8 @@ private slots:
     void on_actionDisconnectAll_triggered();
 
     // Config Items
+    void on_pluginsEnabled_toggled(bool checked);
+    void on_filtersEnabled_toggled(bool checked);
     void on_applyConfig_clicked();
     void on_tabWidget_currentChanged(int index);
 
@@ -613,10 +607,14 @@ private slots:
 
     void on_pushButtonDefaultFilterUpdateCache_clicked();
 
+    void on_checkBoxSortByTime_toggled(bool checked);
+    void on_checkBoxSortByTimestamp_toggled(bool checked);
+
     void on_actionMarker_triggered();
 
     void on_actionToggle_PluginsEnabled_triggered(bool checked);
     void on_actionToggle_FiltersEnabled_triggered(bool checked);
+
     void on_actionToggle_SortByTimeEnabled_triggered(bool checked);
     void on_actionSort_By_Timestamp_triggered(bool checked);
 

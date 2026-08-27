@@ -42,6 +42,9 @@ public:
     void setName(QString name);
     QString getName();
 
+    void setGroup(QString groupName);
+    QString getGroup();
+
     void setActive(bool state);
     bool getEnableActive();
 
