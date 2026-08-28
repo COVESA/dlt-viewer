@@ -1,4 +1,5 @@
 #include "filtertreewidget.h"
+#include "project.h"
 #include <QDropEvent>
 #include <QMimeData>
 
@@ -9,11 +10,38 @@ FilterTreeWidget::FilterTreeWidget(QObject *parent) :
 
 void FilterTreeWidget::dragMoveEvent(QDragMoveEvent *event)
 {
+    // block dragging a FilterGroupItem onto another FilterGroupItem
+    QTreeWidgetItem *target = itemAt(event->pos());
+    if(target && target->type() == filtergroup_type)
+    {
+        for(auto *dragged : selectedItems())
+        {
+            if(dragged->type() == filtergroup_type)
+            {
+                event->ignore();
+                return;
+            }
+        }
+    }
     event->accept();
 }
 
 void FilterTreeWidget::dropEvent(QDropEvent *event)
 {
+    // block group-into-group nesting before Qt processes the drop
+    QTreeWidgetItem *target = itemAt(event->pos());
+    if(target && target->type() == filtergroup_type)
+    {
+        for(auto *dragged : selectedItems())
+        {
+            if(dragged->type() == filtergroup_type)
+            {
+                event->ignore();
+                return;
+            }
+        }
+    }
+
     QStringList types = event->mimeData()->formats();
     for(int i=0;i < types.size(); i++)
     {
@@ -32,26 +60,37 @@ void FilterTreeWidget::dropEvent(QDropEvent *event)
 
 void FilterTreeWidget::deleteSelected()
 {
-    // delete selected items
-    // and select the first item that replaces the first deleted item
-
+    // delete selected items (handles both top-level and child items)
     QList<QTreeWidgetItem *> list = selectedItems();
     if (list.size() == 0)
         return;
 
-    auto select_idx = this->indexOfTopLevelItem(list.at(0));
+    // Track first top-level index for post-delete selection
+    int select_idx = indexOfTopLevelItem(list.at(0));
+    if(select_idx < 0 && list.at(0)->parent())
+        select_idx = indexOfTopLevelItem(list.at(0)->parent());
+
     for (auto& item : list) {
-        auto idx = indexOfTopLevelItem(item);
-        delete takeTopLevelItem(idx);
+        QTreeWidgetItem *parent = item->parent();
+        if(parent)
+        {
+            parent->removeChild(item);
+            delete item;
+        }
+        else
+        {
+            int idx = indexOfTopLevelItem(item);
+            if(idx >= 0)
+                delete takeTopLevelItem(idx);
+        }
     }
 
-    // select the item that replaced the first deleted item,
-    // but handle the case where all following items were removed, in
-    // that case select the last item available
+    // select the item that replaced the first deleted item
     if (select_idx >= topLevelItemCount())
         select_idx = topLevelItemCount() - 1;
 
-    setCurrentItem(topLevelItem(select_idx));
+    if(select_idx >= 0)
+        setCurrentItem(topLevelItem(select_idx));
 
     emit filterCountChanged();
 }

@@ -18,6 +18,7 @@
  */
 
 #include <QFile>
+#include <QDir>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QMessageBox>
@@ -537,6 +538,22 @@ void FilterItem::update()
     setData(1,0,QString("%1 (%2)").arg(filter.name).arg(text));
 }
 
+FilterGroupItem::FilterGroupItem(QTreeWidgetItem *parent)
+    : QTreeWidgetItem(parent, filtergroup_type)
+{
+    groupName = "New Filter Group";
+    setCheckState(0, Qt::Checked);
+    setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsUserCheckable);
+}
+
+FilterGroupItem::~FilterGroupItem()
+{
+}
+
+void FilterGroupItem::update()
+{
+    setData(1, 0, QString("[Group] %1").arg(groupName));
+}
 
 MyPluginDockWidget::MyPluginDockWidget(){
     pluginitem = NULL;
@@ -703,6 +720,7 @@ bool Project::Load(QString filename)
     ApplicationItem *applicationitem = 0;
     ContextItem *contextitem = 0;
     FilterItem *filteritem = 0;
+    FilterGroupItem *filtergroupitem = 0;
     PluginItem *pluginitem = 0;
     PluginItem *pluginitemexist = 0;
 
@@ -743,6 +761,19 @@ bool Project::Load(QString filename)
               {
                   filteritem = new FilterItem();
 
+              }
+              if(xml.name() == QString("filtergroup"))
+              {
+                  filtergroupitem = new FilterGroupItem();
+              }
+              if(xml.name() == QString("groupname") && filtergroupitem && !filteritem)
+              {
+                  filtergroupitem->groupName = xml.readElementText();
+                  filtergroupitem->update();
+              }
+              if(xml.name() == QString("groupenabled") && filtergroupitem && !filteritem)
+              {
+                  filtergroupitem->setCheckState(0, xml.readElementText().toInt() ? Qt::Checked : Qt::Unchecked);
               }
               if(xml.name() == QString("plugin"))
               {
@@ -983,13 +1014,29 @@ bool Project::Load(QString filename)
               }
               if(xml.name() == QString("pfilter")) // this should be filter, but to be compatible keep it
               {
-                  if(filter && filteritem)
+                  if(filteritem)
                   {
-                    filter->addTopLevelItem(filteritem);
-                    filteritem->update();
+                      if(filtergroupitem)
+                      {
+                          filtergroupitem->addChild(filteritem);
+                      }
+                      else if(filter)
+                      {
+                          filter->addTopLevelItem(filteritem);
+                      }
+                      filteritem->update();
                   }
                   filteritem = 0;
 
+              }
+              if(xml.name() == QString("filtergroup"))
+              {
+                  if(filter && filtergroupitem)
+                  {
+                      filter->addTopLevelItem(filtergroupitem);
+                      filtergroupitem->update();
+                  }
+                  filtergroupitem = 0;
               }
               if(xml.name() == QString("plugin"))
               {
@@ -1123,12 +1170,31 @@ bool Project::Save(QString filename)
     /* Write Filter */
     for(int num = 0; num < filter->topLevelItemCount (); num++)
     {
-        FilterItem *item = (FilterItem*)filter->topLevelItem(num);
-        xml.writeStartElement("pfilter"); // this should be filter, but to be compatible keep it
+        QTreeWidgetItem *topItem = filter->topLevelItem(num);
+        if(topItem->type() == filtergroup_type)
+        {
+            FilterGroupItem *group = (FilterGroupItem*)topItem;
+            xml.writeStartElement("filtergroup");
+            xml.writeTextElement("groupname", group->groupName);
+            xml.writeTextElement("groupenabled", QString("%1").arg(group->checkState(0) == Qt::Checked ? 1 : 0));
+            for(int child = 0; child < group->childCount(); child++)
+            {
+                FilterItem *item = (FilterItem*)group->child(child);
+                xml.writeStartElement("pfilter");
+                item->filter.SaveFilterItem(xml);
+                xml.writeEndElement(); // pfilter
+            }
+            xml.writeEndElement(); // filtergroup
+        }
+        else
+        {
+            FilterItem *item = (FilterItem*)topItem;
+            xml.writeStartElement("pfilter"); // this should be filter, but to be compatible keep it
 
-        item->filter.SaveFilterItem(xml);
+            item->filter.SaveFilterItem(xml);
 
-        xml.writeEndElement(); // filter
+            xml.writeEndElement(); // filter
+        }
     }
 
     /* Write Plugin */
@@ -1157,48 +1223,159 @@ bool Project::Save(QString filename)
 
 bool Project::SaveFilter(QString filename)
 {
-    QDltFilterList filterList;
+    QFile file(filename);
+    if (!file.open(QFile::WriteOnly | QFile::Truncate | QFile::Text))
+        return false;
 
-    for(int num = 0; num < filter->topLevelItemCount (); num++)
+    QXmlStreamWriter xml(&file);
+    xml.setAutoFormatting(true);
+    xml.writeStartDocument();
+    xml.writeStartElement("dltfilter");
+
+    for(int num = 0; num < filter->topLevelItemCount(); num++)
     {
-        FilterItem *item = (FilterItem*)filter->topLevelItem(num);
-        QDltFilter *filter = new QDltFilter();
-        *filter = item->filter;
-        filterList.filters.append(filter);
-    }
-
-    return filterList.SaveFilter(filename);
-}
-
-bool Project::LoadFilter(QString filename, bool replace){
-
-    QDltFilterList filterList;
-
-    if(!filterList.LoadFilter(filename,replace))
-    {
-        if ( QDltOptManager::getInstance()->issilentMode() == false )
+        QTreeWidgetItem *topItem = filter->topLevelItem(num);
+        if(topItem->type() == filtergroup_type)
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+            FilterGroupItem *group = (FilterGroupItem*)topItem;
+            xml.writeStartElement("filtergroup");
+            xml.writeTextElement("groupname", group->groupName);
+            xml.writeTextElement("groupenabled", QString("%1").arg(group->checkState(0) == Qt::Checked ? 1 : 0));
+            for(int child = 0; child < group->childCount(); child++)
+            {
+                FilterItem *item = (FilterItem*)group->child(child);
+                xml.writeStartElement("filter");
+                item->filter.SaveFilterItem(xml);
+                xml.writeEndElement(); // filter
+            }
+            xml.writeEndElement(); // filtergroup
         }
         else
         {
-            qDebug() << "Loading" << filterList.getFilename() << " DLT Filter file failed !";
+            FilterItem *item = (FilterItem*)topItem;
+            xml.writeStartElement("filter");
+            item->filter.SaveFilterItem(xml);
+            xml.writeEndElement(); // filter
+        }
+    }
+
+    xml.writeEndElement(); // dltfilter
+    xml.writeEndDocument();
+    file.close();
+    return true;
+}
+
+bool Project::LoadFilter(QString filename, bool replace)
+{
+    QFile file(filename);
+    if (!file.open(QFile::ReadOnly | QFile::Text))
+    {
+        if(QDltOptManager::getInstance()->issilentMode() == false)
+        {
+            QMessageBox::critical(0, QString("DLT Viewer"),
+                QString("Loading DLT filter file failed:\n%1").arg(QDir::toNativeSeparators(filename)));
+        }
+        else
+        {
+            qDebug() << "Loading" << QDir::toNativeSeparators(filename) << "DLT filter file failed!";
         }
         return false;
     }
 
+    FilterGroupItem *filtergroupitem = nullptr;
+    FilterItem *filteritem = nullptr;
+
+    struct LoadedEntry {
+        FilterGroupItem *group = nullptr;
+        FilterItem *filter = nullptr;
+    };
+    QList<LoadedEntry> loadedEntries;
+
+    QXmlStreamReader xml(&file);
+    while(!xml.atEnd())
+    {
+        xml.readNext();
+        if(xml.isStartElement())
+        {
+            if(xml.name() == QString("filtergroup"))
+                filtergroupitem = new FilterGroupItem();
+            if(xml.name() == QString("filter"))
+                filteritem = new FilterItem();
+            if(xml.name() == QString("groupname") && filtergroupitem && !filteritem)
+            {
+                filtergroupitem->groupName = xml.readElementText();
+                filtergroupitem->update();
+            }
+            if(xml.name() == QString("groupenabled") && filtergroupitem && !filteritem)
+                filtergroupitem->setCheckState(0, xml.readElementText().toInt() ? Qt::Checked : Qt::Unchecked);
+            if(filteritem)
+                filteritem->filter.LoadFilterItem(xml);
+        }
+        if(xml.isEndElement())
+        {
+            if(xml.name() == QString("filter") && filteritem)
+            {
+                if(filtergroupitem)
+                {
+                    filtergroupitem->addChild(filteritem);
+                }
+                else
+                {
+                    LoadedEntry entry;
+                    entry.filter = filteritem;
+                    loadedEntries.append(entry);
+                }
+                filteritem = nullptr;
+            }
+            if(xml.name() == QString("filtergroup") && filtergroupitem)
+            {
+                LoadedEntry entry;
+                entry.group = filtergroupitem;
+                loadedEntries.append(entry);
+                filtergroupitem = nullptr;
+            }
+        }
+    }
+
+    if(xml.hasError())
+    {
+        if(QDltOptManager::getInstance()->issilentMode() == false)
+        {
+            QMessageBox::warning(0, QString("DLT Viewer"),
+                QString("Error parsing filter file:\n%1\nLine: %2")
+                    .arg(xml.errorString()).arg(xml.lineNumber()));
+        }
+        delete filteritem;
+        delete filtergroupitem;
+        for(auto &entry : loadedEntries)
+        {
+            delete entry.group;
+            delete entry.filter;
+        }
+        file.close();
+        return false;
+    }
+
+    file.close();
 
     if(replace)
         filter->clear();
 
-    for(int num=0;num<filterList.filters.size();num++)
+    for(auto &entry : loadedEntries)
     {
-        FilterItem *filteritem = new FilterItem();
-        filteritem->filter = *(filterList.filters[num]);
-        filter->addTopLevelItem(filteritem);
-        filteritem->update();
+        if(entry.group)
+        {
+            filter->addTopLevelItem(entry.group);
+            entry.group->update();
+            for(int i = 0; i < entry.group->childCount(); i++)
+                ((FilterItem*)entry.group->child(i))->update();
+        }
+        else if(entry.filter)
+        {
+            filter->addTopLevelItem(entry.filter);
+            entry.filter->update();
+        }
     }
 
     return true;
-
 }

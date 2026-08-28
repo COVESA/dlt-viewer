@@ -94,6 +94,7 @@
      <y>0</y>
      <width>1001</width>
      <height>23</height>
+
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -117,7 +118,6 @@
     <addaction name="action_menuFile_Import_DLT_Stream_with_Serial_Header"/>
     <addaction name="separator"/>
     <addaction name="action_menuConfig_Copy_to_clipboard"/>
-    <addaction name="actionSplitDLTFile"/>
     <addaction name="actionExport"/>
     <addaction name="action_menuFile_DLTFilesize"/>
     <addaction name="separator"/>
@@ -211,7 +211,7 @@
      <string>&amp;Help</string>
     </property>
     <addaction name="action_menuHelp_Info"/>
-    <addaction name="actionSubmit_Feedback"/>
+    <addaction name="action_menuHelp_Support"/>
     <addaction name="separator"/>
     <addaction name="action_menuHelp_Command_Line"/>
     <addaction name="actionShortcuts_List"/>
@@ -293,7 +293,6 @@
    <addaction name="actionApply_Configuration"/>
    <addaction name="actionToggle_FiltersEnabled"/>
    <addaction name="actionToggle_PluginsEnabled"/>
-  <addaction name="actionSort_By_Timestamp"/>
    <addaction name="separator"/>
   </widget>
   <widget class="QToolBar" name="searchToolbar">
@@ -353,6 +352,16 @@
         <enum>QFrame::Shadow::Plain</enum>
        </property>
        <layout class="QGridLayout" name="gridLayout">
+        <item row="2" column="1">
+         <widget class="QCheckBox" name="filtersEnabled">
+          <property name="text">
+           <string>Filters Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0" colspan="4">
          <widget class="QPushButton" name="applyConfig">
           <property name="enabled">
@@ -368,14 +377,44 @@
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="3" column="1">
+         <widget class="QCheckBox" name="checkBoxSortByTimestamp">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="text">
+           <string>Sorted by Timestamp</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QCheckBox" name="pluginsEnabled">
+          <property name="text">
+           <string>Plugins Enabled</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="checkBoxSortByTime">
+          <property name="text">
+           <string>Sorted by Time</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
          <widget class="QCheckBox" name="checkBoxFilterRange">
           <property name="text">
            <string>Filter Range</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="5" column="0">
          <widget class="QLineEdit" name="lineEditFilterStart">
           <property name="enabled">
            <bool>false</bool>
@@ -385,7 +424,7 @@
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="5" column="1">
          <widget class="QLineEdit" name="lineEditFilterEnd">
           <property name="enabled">
            <bool>false</bool>
@@ -428,6 +467,20 @@
         <attribute name="title">
          <string>Explore</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_66">
+         <property name="leftMargin">
+          <number>2</number>
+         </property>
+         <property name="topMargin">
+          <number>2</number>
+         </property>
+         <property name="rightMargin">
+          <number>2</number>
+         </property>
+         <property name="bottomMargin">
+          <number>2</number>
+         </property>
+        </layout>
        </widget>
        <widget class="QWidget" name="tabConfig">
         <property name="focusPolicy">
@@ -632,6 +685,28 @@
            </property>
           </widget>
          </item>
+         <item row="1" column="1">
+          <widget class="QPushButton" name="pushButtonEnableAllFilters">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="toolTip">
+            <string>Enable or disable all filters at once</string>
+           </property>
+           <property name="text">
+            <string>Enable All Filters</string>
+           </property>
+           <property name="checkable">
+            <bool>true</bool>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
          <item row="2" column="0" colspan="2">
           <widget class="FilterTreeWidget" name="filterWidget">
            <property name="sizePolicy">
@@ -659,10 +734,10 @@
             <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
            </property>
            <property name="rootIsDecorated">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="itemsExpandable">
-            <bool>false</bool>
+            <bool>true</bool>
            </property>
            <property name="headerHidden">
             <bool>true</bool>
@@ -1219,6 +1294,11 @@
     <string>Ctrl+G</string>
    </property>
   </action>
+  <action name="action_menuHelp_Support">
+   <property name="text">
+    <string>Support...</string>
+   </property>
+  </action>
   <action name="actionNewDltFile">
    <property name="icon">
     <iconset resource="resources/resource.qrc">
@@ -1523,16 +1603,9 @@
    <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon">
-    <iconset resource="resources/resource.qrc">
-     <normaloff>:/toolbar/png/sort-ts.png</normaloff>:/toolbar/png/sort-ts.png</iconset>
-   </property>
    <property name="text">
     <string>Sort By Timestamp</string>
    </property>
-    <property name="toolTip">
-     <string>Toggle Sorted By Timestamp</string>
-    </property>
   </action>
   <action name="actionImport_DLT_IPC_from_PCAP_MF4">
    <property name="text">
@@ -1562,8 +1635,8 @@
   <action name="actionShortcuts_List">
    <property name="text">
     <string>Shortcuts List</string>
-   </property>
-  </action>
+    </property>
+   </action>
   <action name="actionFiltered_Message_Count">
    <property name="text">
     <string>Marked Message Count</string>
@@ -1572,16 +1645,6 @@
   <action name="actionCheck_For_Latest_Updates">
    <property name="text">
     <string>Check For Latest Updates</string>
-   </property>
-  </action>
-  <action name="actionSubmit_Feedback">
-   <property name="text">
-    <string>Submit Feedback</string>
-   </property>
-  </action>
-  <action name="actionSplitDLTFile">
-   <property name="text">
-    <string>Split DLT File</string>
    </property>
   </action>
  </widget>
@@ -1612,6 +1675,8 @@
  <tabstops>
   <tabstop>tableView</tabstop>
   <tabstop>applyConfig</tabstop>
+  <tabstop>pluginsEnabled</tabstop>
+  <tabstop>filtersEnabled</tabstop>
   <tabstop>pluginWidget</tabstop>
   <tabstop>tabWidget</tabstop>
   <tabstop>configWidget</tabstop>

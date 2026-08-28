@@ -98,6 +98,16 @@ QString FilterDialog::getName()
     return ui->lineEditName->text();
 }
 
+void FilterDialog::setGroup(QString groupName)
+{
+    ui->lineEditGroup->setText(groupName);
+}
+
+QString FilterDialog::getGroup()
+{
+    return ui->lineEditGroup->text().trimmed();
+}
+
 void FilterDialog::setEnableRegexp_Appid(bool state)
 {
     ui->checkBoxRegexp_Appid->setChecked(state);
