@@ -3000,6 +3000,7 @@ void MainWindow::on_action_menuFile_Settings_triggered()
 
         // Apply settings to table
         applySettings();
+        m_searchtableModel->modelChanged();
 
         // reload multifilter list if changed
         if((defaultFilterPath != settings->defaultFilterPath)||(settings->defaultFilterPath && defaultFilterPathName != settings->defaultFilterPathName))
@@ -7425,6 +7426,7 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     if(item->filter.isMarker())
     {
         tableModel->modelChanged();
+        m_searchtableModel->modelChanged();
         QVector<qint64> indices;
         if(qfile.isFilter())
         {
