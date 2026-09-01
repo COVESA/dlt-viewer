@@ -16,10 +16,14 @@
 
 class QDltPlugin;
 class QMutex;
+class QPluginLoader;
 
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
+    QDltPluginManager() = default;
+    ~QDltPluginManager();
+
     //! The number of plugins
     /*!
       \return the number of loaded plugins.
@@ -89,6 +93,9 @@ private:
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;
+
+    //! Keep plugin loaders alive so plugins unload before QApplication shuts down.
+    QList<QPluginLoader*> pluginLoaders;
 
     //! Loads all plugins from a special directory
     QStringList loadPluginsPath(QDir &dir);
