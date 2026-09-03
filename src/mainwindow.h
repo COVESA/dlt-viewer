@@ -337,6 +337,9 @@ private:
     void updateIndex();
     void drawUpdatedView();
 
+    //! Start/stop the periodic live view refresh depending on connection state.
+    void updateDrawTimerState();
+
     void syncCheckBoxesAndMenu();
 
     void updateRecentFileActions();

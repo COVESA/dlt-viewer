@@ -180,14 +180,19 @@ MainWindow::MainWindow(QWidget *parent) :
         exit(0);
     }
 
+    /* start timer for autoconnect */
+    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout())); // we want to start the timer only when an ECU connection is active
+
+    /* periodic refresh of the live view; started only while an ECU connection is active */
+    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
+
     /* auto connect */
+    /* must happen after the timers above are wired up, otherwise the timers
+     * started by connectAll() would have no receiver connected yet */
     if( (settings->autoConnect != 0) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
     }
-
-    /* start timer for autoconnect */
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeout())); // we want to start the timer only when an ECU connection is active
 
     restoreGeometry(settings->geometry);
     restoreState(settings->windowState);
@@ -4083,17 +4088,10 @@ void MainWindow::connectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         connectECU(ecuitem);
     }
-
-    // periodically update table view to account for the new incoming messages
-    const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
-                                                         : 1000 / DEFAULT_REFRESH_RATE;
-    drawTimer.start(drawInterval);
-    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
 }
 
 void MainWindow::disconnectAll()
 {
-    drawTimer.stop();
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
@@ -4105,6 +4103,7 @@ void MainWindow::disconnectAll()
     if(settings && settings->includeManualMarkersInFilter && !isLiveLoggingActive())
         updateManualMarkerUnionInFilter();
 
+    updateDrawTimerState();
     checkConnectionState();
 }
 
@@ -4140,6 +4139,8 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
     // If this was the last active ECU, switch back to offline marker union (if enabled).
     if(settings && settings->includeManualMarkersInFilter && !isLiveLoggingActive())
         updateManualMarkerUnionInFilter();
+
+    updateDrawTimerState();
 }
 
 void MainWindow::on_action_menuConfig_Connect_triggered()
@@ -4204,6 +4205,8 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
         ecuitem->connected = false;
         ecuitem->update();
         on_configWidget_itemSelectionChanged();
+
+        updateDrawTimerState();
 
         /* reset receive buffer */
         ecuitem->totalBytesRcvd = 0;
@@ -5002,6 +5005,26 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins.at(i);
             item->updateFileFinish();
         }
+    }
+}
+
+void MainWindow::updateDrawTimerState()
+{
+    if(isLiveLoggingActive())
+    {
+        if(!drawTimer.isActive())
+        {
+            // periodically update table view to account for the new incoming messages
+            const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                                 : 1000 / DEFAULT_REFRESH_RATE;
+            drawTimer.start(drawInterval);
+        }
+    }
+    else if(drawTimer.isActive())
+    {
+        drawTimer.stop();
+        // render whatever arrived between the last tick and the disconnect
+        drawUpdatedView();
     }
 }
 
