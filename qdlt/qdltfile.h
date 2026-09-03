@@ -363,8 +363,12 @@ public:
 private:
     // Calculates total storage, message, and payload sizes for all indexed DLT messages.
     void calculateTotalSizes();
-  void recomputeEffectiveIndexFilterLocked();
-  void bumpSearchSnapshotGenerationLocked();
+    void recomputeEffectiveIndexFilterLocked();
+    void bumpSearchSnapshotGenerationLocked();
+    // Lock-free counterparts of size()/getMsg(int) for callers that already hold mutexQDlt
+    // (e.g. mergeIndexFilterBaseWithMarkers, invoked from the *Locked recompute path).
+    int sizeLocked() const;
+    QByteArray getMsgLocked(int index) const;
 
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;

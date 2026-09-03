@@ -16,51 +16,30 @@ bool DltMessageMatcher::match(const QDltMsg &msg, const QString &searchText) con
 
 bool DltMessageMatcher::match(const QDltMsg &msg, const Pattern& pattern) const
 {
-    if (!matchAppId(msg.getApid()) || !matchCtxId(msg.getCtid()))
+    if (!passesPreFilters(msg))
         return false;
 
-    if (!matchTimestampRange(msg.getTimestamp())) {
-        return false;
-    }
+    if (std::holds_alternative<QRegularExpression>(pattern))
+        return matchHeaderAndPayload(msg, std::get<QRegularExpression>(pattern));
 
-    if (m_timeRangeMs)
-    {
-        const qint64 timestampMSecsSinceEpoch = msg.getTime() * 1000 + msg.getMicroseconds() / 1000;
-        if (!matchTimeRangeMs(timestampMSecsSinceEpoch))
-            return false;
-    }
-
-    if (std::holds_alternative<QRegularExpression>(pattern)) {
-        bool matchFound = false;
-        if (m_headerSearchEnabled) {
-            auto header = msg.toStringHeader();
-            if (m_messageIdFormat)
-                header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8(), msg.getMessageId());
-            matchFound = header.contains(std::get<QRegularExpression>(pattern));
-        }
-
-        if (matchFound)
-            return true;
-
-        if (m_payloadSearchEnabled) {
-            const auto payload = msg.toStringPayload();
-            matchFound = payload.contains(std::get<QRegularExpression>(pattern));
-        }
-
-        return matchFound;
-    }
-
-    return matchText(msg, std::get<QString>(pattern));
+    return matchHeaderAndPayload(msg, std::get<QString>(pattern));
 }
 
 bool DltMessageMatcher::matchText(const QDltMsg &msg, const QString &searchText) const
 {
+    if (!passesPreFilters(msg))
+        return false;
+
+    return matchHeaderAndPayload(msg, searchText);
+}
+
+bool DltMessageMatcher::passesPreFilters(const QDltMsg &msg) const
+{
     if (!matchAppId(msg.getApid()) || !matchCtxId(msg.getCtid()))
         return false;
 
-    if (!matchTimestampRange(msg.getTimestamp())) {
+    if (!matchTimestampRange(msg.getTimestamp()))
         return false;
-    }
 
     if (m_timeRangeMs)
     {
@@ -69,6 +48,11 @@ bool DltMessageMatcher::matchText(const QDltMsg &msg, const QString &searchText)
             return false;
     }
 
+    return true;
+}
+
+bool DltMessageMatcher::matchHeaderAndPayload(const QDltMsg &msg, const QString &searchText) const
+{
     if (m_headerSearchEnabled) {
         auto header = msg.toStringHeader();
         if (m_messageIdFormat)
@@ -80,6 +64,24 @@ bool DltMessageMatcher::matchText(const QDltMsg &msg, const QString &searchText)
     if (m_payloadSearchEnabled) {
         const auto payload = msg.toStringPayload();
         return searchText.isEmpty() || payload.contains(searchText, m_caseSensitivity);
+    }
+
+    return false;
+}
+
+bool DltMessageMatcher::matchHeaderAndPayload(const QDltMsg &msg, const QRegularExpression &pattern) const
+{
+    if (m_headerSearchEnabled) {
+        auto header = msg.toStringHeader();
+        if (m_messageIdFormat)
+            header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8(), msg.getMessageId());
+        if (header.contains(pattern))
+            return true;
+    }
+
+    if (m_payloadSearchEnabled) {
+        const auto payload = msg.toStringPayload();
+        return payload.contains(pattern);
     }
 
     return false;

@@ -62,13 +62,3 @@ std::shared_ptr<const SearchSnapshot> SearchSnapshotManager::capture(const QDltF
     m_cachedSnapshot = snapshot;
     return snapshot;
 }
-
-void SearchSnapshotManager::invalidate(const QDltFile *file)
-{
-    QMutexLocker locker(&m_mutex);
-    if(file != nullptr && m_cachedFile != file)
-        return;
-
-    m_cachedFile = nullptr;
-    m_cachedSnapshot.reset();
-}

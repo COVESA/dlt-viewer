@@ -93,6 +93,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     timer(this),
     drawTimer(this),
+    indexUpdateTimer(this),
     qcontrol(this),
     crlfFilterWindow(nullptr),
     pulseButtonColor(255, 40, 40),
@@ -114,9 +115,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     initState();
 
-    drawTimer.setSingleShot(true);
-    drawTimer.setInterval(25);
-    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::processPendingUpdateIndex);
+    indexUpdateTimer.setSingleShot(true);
+    indexUpdateTimer.setInterval(25);
+    connect(&indexUpdateTimer, &QTimer::timeout, this, &MainWindow::processPendingUpdateIndex);
 
     /* Apply loaded settings */
     initSearchTable();
@@ -4111,6 +4112,7 @@ void MainWindow::connectAll()
 void MainWindow::disconnectAll()
 {
     drawTimer.stop();
+    indexUpdateTimer.stop();
     for(int num = 0; num < project.ecu->topLevelItemCount (); num++)
     {
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
@@ -4867,9 +4869,9 @@ void MainWindow::read(EcuItem* ecuitem)
 
      // If the indexer is idle, coalesce live UI refreshes so bursts of control
      // responses or log packets do not block the socket read path.
-     if(!drawTimer.isActive())
+     if(!indexUpdateTimer.isActive())
      {
-         drawTimer.start();
+         indexUpdateTimer.start();
      }
 }
 
@@ -4877,7 +4879,7 @@ void MainWindow::processPendingUpdateIndex()
 {
     if (dltIndexer->isRunning())
     {
-        drawTimer.start();
+        indexUpdateTimer.start();
         return;
     }
 

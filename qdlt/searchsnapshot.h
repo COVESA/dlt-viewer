@@ -61,7 +61,6 @@ class QDLT_EXPORT SearchSnapshotManager
 {
 public:
     std::shared_ptr<const SearchSnapshot> capture(const QDltFile *file);
-    void invalidate(const QDltFile *file = nullptr);
 
 private:
     mutable QMutex m_mutex;

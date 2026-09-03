@@ -159,7 +159,7 @@ private:
      * @brief Adds a found line to the search index.
      * @param searchLine Line number.
      */
-    void addToSearchIndex(long int searchLine);
+    void addToSearchIndex(int messageIndex);
     /**
      * @brief Iterates through messages and finds matches.
      * @param searchLine Start line.
@@ -252,7 +252,7 @@ private:
      * @param searchLine Line number.
      * @return True to break search, false to continue.
      */
-    bool foundLine(long int searchLine);
+    bool foundLine(long int searchLine, int messageIndex);
     /**
      * @brief Gets the APID text.
      * @return APID as QString.

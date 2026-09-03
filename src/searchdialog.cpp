@@ -294,15 +294,15 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         int end;
     };
 
-        // When decode is needed, search and live ingestion both go through plugin decode.
-        // Use a low-priority lane with a single worker to avoid starving live logs.
-        const SearchThreadPool::Priority poolPriority = doDecode
-            ? SearchThreadPool::Priority::Background
-            : SearchThreadPool::Priority::Urgent;
-        QThreadPool* const findAllPool = SearchThreadPool::instance().pool(poolPriority);
+    // When decode is needed, search and live ingestion both go through plugin decode.
+    // Use a low-priority lane with a single worker to avoid starving live logs.
+    const SearchThreadPool::Priority poolPriority = doDecode
+        ? SearchThreadPool::Priority::Background
+        : SearchThreadPool::Priority::Urgent;
+    QThreadPool* const findAllPool = SearchThreadPool::instance().pool(poolPriority);
 
-        const int configuredThreads = qMax(1, findAllPool->maxThreadCount());
-        const int maxThreads = doDecode ? 1 : configuredThreads;
+    const int configuredThreads = qMax(1, findAllPool->maxThreadCount());
+    const int maxThreads = doDecode ? 1 : configuredThreads;
 
     // Use more chunks than threads so some chunks complete early and we can show results sooner.
     // Keep it bounded to avoid too many tasks.
@@ -803,7 +803,7 @@ void SearchDialog::findMessages(const std::shared_ptr<const SearchSnapshot> &sna
             continue;
         }
 
-        if (foundLine(searchLine))
+        if (foundLine(searchLine, row.messageIndex))
             break;
         else
             continue;
@@ -813,13 +813,13 @@ void SearchDialog::findMessages(const std::shared_ptr<const SearchSnapshot> &sna
     closeSnapshotFiles(state);
 }
 
-bool SearchDialog::foundLine(long int searchLine)
+bool SearchDialog::foundLine(long int searchLine, int messageIndex)
 {
     match = true;
 
     if (searchtoIndex() == true)
     {
-        addToSearchIndex(searchLine);
+        addToSearchIndex(messageIndex);
         emit refreshedSearchIndex();
     }
     else
@@ -929,11 +929,12 @@ void SearchDialog::updateColorbutton()
 }
 
 
-void SearchDialog::addToSearchIndex(long int searchLine)
+void SearchDialog::addToSearchIndex(int messageIndex)
 {
-    //qDebug() << "Add hit line to search table" << searchLine << __LINE__;
-    m_searchtablemodel->add_SearchResultEntry(file->getMsgFilterPos(searchLine));    
- }
+    // Use the snapshot's message index, not a live re-query, to avoid a stale mapping
+    // if the file's filter/index changed since the snapshot was captured.
+    m_searchtablemodel->add_SearchResultEntry(messageIndex);
+}
 
 void SearchDialog::registerSearchTableModel(SearchTableModel *model)
 {

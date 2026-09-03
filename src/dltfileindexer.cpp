@@ -403,10 +403,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return false;
     }
 
-    QSharedPointer<QDltMsg> msg;
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
+    const qint64 totalSize = dltFile->size();
 
     // get filter list
     filterList = dltFile->getFilterList();
@@ -421,18 +421,18 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(!filterIndexEnabled)
     {
         start = 0;
-        end = dltFile->size();
+        end = totalSize;
     }
     else
     {
-        if(filterIndexStart<=dltFile->size())
+        if(filterIndexStart<=totalSize)
             start = filterIndexStart;
         else
             start = 0;
-        if(filterIndexEnd<=dltFile->size())
+        if(filterIndexEnd<=totalSize)
             end = filterIndexEnd + 1;
         else
-            end = dltFile->size();
+            end = totalSize;
         if(start>end)
             start=end;
     }
@@ -448,7 +448,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // check if file is empty
 
-    if(dltFile->size() == 0)
+    if(totalSize == 0)
     {
         // No need to do anything here.
         return true;
@@ -477,8 +477,14 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 &indexFilterListSorted,
                 pluginManager,
                 &activeViewerPlugins,
+                &activeDecoderPlugins,
                 silentMode
             );
+
+    if(!sortByTimeEnabled && !sortByTimestampEnabled)
+    {
+        indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
+    }
 
     /*if(useIndexerThread)
     {
@@ -495,9 +501,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
-        msg = QSharedPointer<QDltMsg>::create(); // create new instance to be filled by getMsg(), otherwise shared pointer would be empty or pointing to last message
+        QDltMsg msg;
 
-        if(!dltFile->getMsg(ix, *msg))
+        if(!dltFile->getMsg(static_cast<int>(ix), msg))
             continue; // Skip broken messages
 
         /*if(true == useIndexerThread)
@@ -506,7 +512,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         }
         else
         {*/
-            indexerThread.processMessage(msg, ix);
+            indexerThread.processMessage(msg, static_cast<int>(ix));
         //}
 
         if((end-start)!=0)
@@ -808,9 +814,17 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
+        // Whether a genuine positive/negative filter is active; drives dltFile->enableFilter().
         effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
 
-        if(effectiveFilteringEnabled)
+        // Always run the full CFI pass when opening a file (modeIndexAndFilter): it also drives
+        // marker/colour computation, ECU/App/Context discovery and viewer-plugin init hooks that
+        // must happen regardless of whether a positive/negative filter is active. For incremental
+        // live re-filters (modeFilter) skip the pass when there's nothing to filter, to keep live
+        // logging smooth.
+        const bool runCfi = (mode == modeIndexAndFilter) || effectiveFilteringEnabled;
+
+        if(runCfi)
         {
             QStringList filenames;
             for(int num=0;num<dltFile->getNumberOfFiles();num++)
@@ -823,8 +837,7 @@ void DltFileIndexer::run()
         }
         else
         {
-            // No active filtering rules -> avoid full CFI pass.
-            // This keeps live log updates smooth when filters are effectively disabled.
+            // No active filtering rules during live re-filter -> avoid full CFI pass.
             indexFilterList.clear();
             indexFilterListSorted.clear();
             getLogInfoList.clear();

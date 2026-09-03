@@ -133,6 +133,9 @@ private:
     /* Timer for draw Event */
     QTimer drawTimer;
 
+    /* Timer to coalesce live-logging index/UI updates, independent of drawTimer's refresh-rate cadence */
+    QTimer indexUpdateTimer;
+
     QDltControl qcontrol;
     QFile outputfile;
     bool outputfileIsTemporary;

@@ -56,6 +56,10 @@ public:
     bool match(const QDltMsg& message, const Pattern& pattern) const;
 private:
     bool matchText(const QDltMsg& message, const QString& searchText) const;
+    // Common appId/ctxId/timestamp/time-range checks shared by the regex and text match paths.
+    bool passesPreFilters(const QDltMsg& message) const;
+    bool matchHeaderAndPayload(const QDltMsg& message, const QString& searchText) const;
+    bool matchHeaderAndPayload(const QDltMsg& message, const QRegularExpression& pattern) const;
     bool matchAppId(const QString& appId) const;
     bool matchCtxId(const QString& ctxId) const;
     bool matchTimestampRange(unsigned int ts) const;

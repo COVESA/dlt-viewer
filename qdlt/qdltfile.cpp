@@ -110,7 +110,7 @@ void QDltFile::setDltIndex(QVector<qint64> &_indexAll, int num)
     bumpSearchSnapshotGenerationLocked();
 }
 
-int QDltFile::size() const
+int QDltFile::sizeLocked() const
 {
     int size=0;
     for(int num=0;num<files.size();num++)
@@ -122,8 +122,15 @@ int QDltFile::size() const
     return size;
 }
 
+int QDltFile::size() const
+{
+    QMutexLocker locker(&mutexQDlt);
+    return sizeLocked();
+}
+
 qint64 QDltFile::fileSize() const
 {
+    QMutexLocker locker(&mutexQDlt);
     qint64 size=0;
 
     for(int num=0;num<files.size();num++)
@@ -141,11 +148,7 @@ int QDltFile::sizeFilter() const
     if(filterFlag)
         return indexFilter.size();
 
-    int total = 0;
-    for(int num = 0; num < files.size(); ++num)
-        total += files[num]->indexAll.size();
-
-    return total;
+    return sizeLocked();
 }
 
 int QDltFile::calculateHeaderSize(quint8 htyp)
@@ -203,13 +206,20 @@ bool QDltFile::open(QString _filename, bool append)
 
     /* create new file item */
     QDltFileItem *item = new QDltFileItem();
-    files.append(item);
 
     /* set new filename */
     item->infile.setFileName(_filename);
 
     /* open the log file read only */
-    if(item->infile.open(QIODevice::ReadOnly)==false)
+    const bool opened = item->infile.open(QIODevice::ReadOnly);
+
+    {
+        QMutexLocker locker(&mutexQDlt);
+        files.append(item);
+        bumpSearchSnapshotGenerationLocked();
+    }
+
+    if(!opened)
     {
         /* open file failed */
         qWarning() << "open of file" << _filename << "failed";
@@ -638,6 +648,7 @@ void QDltFile::addFilterIndex (int index)
 
 QString QDltFile::getFileName(int num)
 {
+    QMutexLocker locker(&mutexQDlt);
     if(num<0 || num>=files.size())
         return QString();
 
@@ -646,6 +657,7 @@ QString QDltFile::getFileName(int num)
 
 int QDltFile::getFileMsgNumber(int num) const
 {
+    QMutexLocker locker(&mutexQDlt);
     if(num<0 || num>=files.size())
         return -1;
 
@@ -663,6 +675,12 @@ void QDltFile::close()
 }
 
 QByteArray QDltFile::getMsg(int index) const
+{
+    QMutexLocker locker(&mutexQDlt);
+    return getMsgLocked(index);
+}
+
+QByteArray QDltFile::getMsgLocked(int index) const
 {
     QByteArray buf;
     int num = 0;
@@ -702,8 +720,6 @@ QByteArray QDltFile::getMsg(int index) const
         return QByteArray();
     }
 
-    mutexQDlt.lock();
-
     QDltFileItem* file = files[num];
     const QDltFileItem* const_file = file;
     qint64 positionForIndex = const_file->indexAll[index];
@@ -712,7 +728,6 @@ QByteArray QDltFile::getMsg(int index) const
     if ( false == file->infile.seek(positionForIndex) )
     {
         qDebug() << "Seek error on " << positionForIndex << file->infile.fileName() << __FILE__ << __LINE__;
-        mutexQDlt.unlock();
         buf.clear();
         return buf;
     }
@@ -737,8 +752,6 @@ QByteArray QDltFile::getMsg(int index) const
         else
          buf = file->infile.read(cal_index);
     }
-
-    mutexQDlt.unlock();
 
     /* return DLT message buffer */
     return buf;
@@ -1003,7 +1016,8 @@ QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &ma
     if(markerSet.isEmpty())
         return indexFilterBase;
 
-    const qint64 maxIdx = static_cast<qint64>(size());
+    // Called under mutexQDlt via recomputeEffectiveIndexFilterLocked(); use lock-free helpers.
+    const qint64 maxIdx = static_cast<qint64>(sizeLocked());
 
     // Fast membership check: which indices are already present in the base filter output.
     QSet<qint64> present;
@@ -1047,7 +1061,7 @@ QVector<qint64> QDltFile::mergeIndexFilterBaseWithMarkers(const QSet<qint64> &ma
 
         if(idx >= 0 && idx < maxIdx && (sortByTime || sortByTimestamp))
         {
-            const QByteArray data = getMsg(static_cast<int>(idx));
+            const QByteArray data = getMsgLocked(static_cast<int>(idx));
             if(!data.isEmpty())
             {
                 QDltMsg msg;
