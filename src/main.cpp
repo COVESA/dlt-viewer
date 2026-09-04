@@ -31,6 +31,7 @@
 
 /* Custom message handler: writes qDebug to a log file for debugging */
 static QFile s_logFile;
+static QtMessageHandler s_defaultHandler = nullptr;
 void debugMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     if (s_logFile.isOpen()) {
@@ -46,6 +47,9 @@ void debugMessageHandler(QtMsgType type, const QMessageLogContext &context, cons
         s_logFile.write(txt.toUtf8());
         s_logFile.flush();
     }
+    /* forward to default handler so console output is preserved */
+    if (s_defaultHandler)
+        s_defaultHandler(type, context, msg);
 }
 
 int main(int argc, char *argv[])
@@ -77,7 +81,7 @@ int main(int argc, char *argv[])
         QString logPath = QCoreApplication::applicationDirPath() + "/debug_tcp_server.log";
         s_logFile.setFileName(logPath);
         if (s_logFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-            qInstallMessageHandler(debugMessageHandler);
+            s_defaultHandler = qInstallMessageHandler(debugMessageHandler);
             qDebug() << "Debug logging started ->" << logPath;
         }
     }

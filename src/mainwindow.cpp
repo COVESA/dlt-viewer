@@ -4111,7 +4111,38 @@ void MainWindow::disconnectAll()
 
 void MainWindow::disconnectECU(EcuItem *ecuitem)
 {
-    if( true == ecuitem->tryToConnect )
+    if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP_SERVER)
+    {
+        /* TCP Server cleanup must run regardless of tryToConnect */
+        ecuitem->tryToConnect = false;
+        ecuitem->connected = false;
+        ecuitem->connectError.clear();
+
+        /* clean up connected client socket synchronously (avoid double-free with parent delete) */
+        if(ecuitem->socket && ecuitem->socket != &ecuitem->tcpsocket)
+        {
+            disconnect(ecuitem->socket, nullptr, nullptr, nullptr);
+            ecuitem->socket->abort();
+            delete ecuitem->socket;
+        }
+        ecuitem->socket = &ecuitem->tcpsocket; /* restore default socket pointer */
+
+        /* stop and delete TCP server */
+        if(ecuitem->tcpServer)
+        {
+            if(ecuitem->tcpServer->isListening())
+                ecuitem->tcpServer->close();
+            disconnect(ecuitem->tcpServer, nullptr, nullptr, nullptr);
+            delete ecuitem->tcpServer;
+            ecuitem->tcpServer = nullptr;
+        }
+        qDebug() << "TCP Server stopped";
+
+        ecuitem->update();
+        on_configWidget_itemSelectionChanged();
+        ecuitem->InvalidAll();
+    }
+    else if( true == ecuitem->tryToConnect )
     {
         /* disconnect from host */
         ecuitem->tryToConnect = false;
@@ -4126,28 +4157,6 @@ void MainWindow::disconnectECU(EcuItem *ecuitem)
             /* TCP or UDP */
             if (ecuitem->socket->state()!=QAbstractSocket::UnconnectedState)
                 ecuitem->socket->disconnectFromHost();
-        }
-        else if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP_SERVER)
-        {
-            /* TCP Server */
-            if(ecuitem->socket && ecuitem->socket != &ecuitem->tcpsocket &&
-               ecuitem->socket->state() != QAbstractSocket::UnconnectedState)
-            {
-                disconnect(ecuitem->socket, nullptr, nullptr, nullptr);
-                ecuitem->socket->disconnectFromHost();
-                ecuitem->socket->deleteLater();
-            }
-            ecuitem->socket = &ecuitem->tcpsocket; /* restore default socket pointer */
-
-            if(ecuitem->tcpServer)
-            {
-                if(ecuitem->tcpServer->isListening())
-                    ecuitem->tcpServer->close();
-                disconnect(ecuitem->tcpServer, nullptr, nullptr, nullptr);
-                delete ecuitem->tcpServer;
-                ecuitem->tcpServer = nullptr;
-            }
-            qDebug() << "TCP Server stopped";
         }
         else
         {
@@ -4675,8 +4684,20 @@ void MainWindow::error(QAbstractSocket::SocketError /* socketError */)
             /* save error */
             ecuitem->connectError = ecuitem->socket->errorString();
             qDebug() << "Socket connection error" << ecuitem->socket->errorString() << "for" << ecuitem->getHostname() << "on" << ecuitem->getIpport();// << __LINE__ << __FILE__;
-            /* disconnect socket */
-            ecuitem->socket->disconnectFromHost();
+
+            if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP_SERVER)
+            {
+                /* TCP Server: clean up client socket BEFORE update() resets the pointer */
+                disconnect(ecuitem->socket, nullptr, nullptr, nullptr);
+                ecuitem->socket->abort();
+                ecuitem->socket->deleteLater();
+                ecuitem->socket = &ecuitem->tcpsocket;
+            }
+            else
+            {
+                /* TCP or UDP client */
+                ecuitem->socket->disconnectFromHost();
+            }
 
             /* update connection state */
             ecuitem->connected = false;
