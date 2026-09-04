@@ -276,6 +276,15 @@ void MainWindow::setupSortByTimestampToolbarButton()
 
 MainWindow::~MainWindow()
 {
+    /* Force-abort all ECU connections (sends RST instead of FIN) so that
+     * TIME_WAIT is avoided and the ECU can reconnect immediately on next launch. */
+    for (int i = 0; i < project.ecu->topLevelItemCount(); i++)
+    {
+        EcuItem *ecuitem = static_cast<EcuItem*>(project.ecu->topLevelItem(i));
+        if (ecuitem)
+            disconnectECU(ecuitem);
+    }
+
     timer.stop(); // stop the receive timeout timer in case it is running
     dltIndexer->stop(); // in case a thread is running we want to stop it
     /**
