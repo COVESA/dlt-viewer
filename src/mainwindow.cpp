@@ -4789,7 +4789,9 @@ void MainWindow::newTcpConnection()
 void MainWindow::readyRead()
 {
     /* signal emited when socket received data */
-    qDebug() << "readyRead() called, sender:" << sender() << "at" << QTime::currentTime().toString("hh:mm:ss.zzz");
+    #ifdef QT_DEBUG
+        qDebug() << "readyRead() called, sender:" << sender() << "at" << QTime::currentTime().toString("hh:mm:ss.zzz");
+    #endif
     /* Delay reading, if indexer is working on the dlt file */
     if(true == dltIndexer->tryLock())
     {
@@ -4799,17 +4801,21 @@ void MainWindow::readyRead()
             EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
             if( ecuitem && (ecuitem->socket == sender() || ecuitem->m_serialport == sender() || dltIndexer == sender() ) && ( true == ecuitem->connected || (ecuitem->interfacetype == EcuItem::INTERFACETYPE_UDP ) ) )
             {
+                #ifdef QT_DEBUG
                 qDebug() << "readyRead() -> calling read() for ECU" << ecuitem->id << "interfacetype=" << ecuitem->interfacetype;
+#endif
                 read(ecuitem);
             }
             else if(ecuitem)
             {
+                #ifdef QT_DEBUG
                 qDebug() << "readyRead() condition FAIL: ecuitem->socket=" << (void*)ecuitem->socket
                          << "sender()=" << (void*)sender()
                          << "serialport=" << (void*)ecuitem->m_serialport
                          << "connected=" << ecuitem->connected
                          << "interfacetype=" << ecuitem->interfacetype
                          << "ecuitem_ptr=" << (void*)ecuitem;
+#endif
             }
         }
         dltIndexer->unlock();
@@ -4896,7 +4902,9 @@ void MainWindow::read(EcuItem* ecuitem)
           /* TCP or TCP Server */
           data = ecuitem->socket->readAll();
           bytesRcvd = data.size();
+          #ifdef QT_DEBUG
           qDebug() << "read() TCP/TCP_SERVER bytes=" << bytesRcvd << "totalBytesRcvd=" << ecuitem->totalBytesRcvd;
+          #endif
           //qDebug() << "bytes received" << bytesRcvd;
           ecuitem->ipcon.add(data);
           break;
@@ -4998,7 +5006,9 @@ void MainWindow::read(EcuItem* ecuitem)
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
             parseCount++;
+            #ifdef QT_DEBUG
             qDebug() << "read() parsed message #" << parseCount << "type=" << qmsg.getType() << "subtype=" << qmsg.getSubtype() << "headerSize=" << qmsg.getHeaderSize() << "payloadSize=" << qmsg.getPayloadSize();
+            #endif
             /* analyse received message, check if DLT control message response */
             if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
             {
@@ -5037,8 +5047,10 @@ void MainWindow::read(EcuItem* ecuitem)
 
         } //end while
 
+     #ifdef QT_DEBUG
      if(parseCount > 0)
          qDebug() << "read() total parsed:" << parseCount << "bytesError=" << ecuitem->ipcon.bytesError << "syncFound=" << ecuitem->ipcon.syncFound;
+#endif
 
      if(ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP || ecuitem->interfacetype == EcuItem::INTERFACETYPE_TCP_SERVER)
         {
