@@ -141,6 +141,7 @@ private:
     SearchTableModel *m_searchtableModel;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
+    bool m_suppressPluginSelectionRefresh = false;
 
     //Maps to hold the filter values - findFilteredLines() & MarkedMessages
     QMap<QString, int> filterCountMap;
