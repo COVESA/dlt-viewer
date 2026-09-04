@@ -4399,7 +4399,7 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             {
                 qDebug() << "TCP Server listening on" << listenAddr << ":" << ecuitem->getIpport();
                 /* TCP Server receives raw DLT streams with DLS\x01 serial header */
-                ecuitem->ipcon.setSyncSerialHeader(true);
+                ecuitem->ipcon.setSyncSerialHeader(false);
                 /* TCP Server is a passive listener - no need for reconnect loop */
                 ecuitem->tryToConnect = false;
                 ecuitem->updateAutoReconnectTimestamp();
