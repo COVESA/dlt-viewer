@@ -30,6 +30,7 @@
 #include <QTreeWidget>
 #include <QDockWidget>
 #include <QTcpSocket>
+#include <QTcpServer>
 #include <QUdpSocket>
 #include <QObject>
 #include <QDateTime>
@@ -51,7 +52,8 @@ public:
         INTERFACETYPE_TCP,
         INTERFACETYPE_UDP,
         INTERFACETYPE_SERIAL_DLT,
-        INTERFACETYPE_SERIAL_ASCII
+        INTERFACETYPE_SERIAL_ASCII,
+        INTERFACETYPE_TCP_SERVER
     };
 
     EcuItem(QTreeWidgetItem *parent = 0);
@@ -81,6 +83,9 @@ public:
     QTcpSocket tcpsocket;
     QUdpSocket udpsocket;
     QAbstractSocket * socket;
+
+    /* TCP Server */
+    QTcpServer *tcpServer = nullptr;
 
     QSerialPort *m_serialport;
 

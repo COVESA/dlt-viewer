@@ -77,21 +77,22 @@ EcuItem::EcuItem(QTreeWidgetItem *parent)
     autoReconnectTimestamp = QDateTime::currentDateTime();
 
     writeDLTv2StorageHeader = false;
+
+    tcpServer = nullptr;
 }
 
 EcuItem::~EcuItem()
 {
-
+    delete tcpServer;
 }
 
 void EcuItem::update()
 {
-    if( ( true == tryToConnect ) && ( true == connected ))
+    if( connected )
     {
         setData(0,Qt::DisplayRole,id + " online");
         setForeground(0,QBrush(QColor(Qt::black)));
         setBackground(0,QBrush(QColor(Qt::green)));
-        //qDebug() << "green";
     }
     else if( ( true == tryToConnect )  && ( false == connected ))
     {
@@ -150,6 +151,12 @@ void EcuItem::update()
         case EcuItem::INTERFACETYPE_SERIAL_ASCII:
             setData(1,Qt::DisplayRole,QString("%1 [%2]").arg(description).arg(port));
             socket = 0;
+            break;
+        case EcuItem::INTERFACETYPE_TCP_SERVER:
+            setData(1,Qt::DisplayRole,QString("%1 [TCP Server %2:%3]").arg(description).arg(hostname).arg(ipport));
+            /* only reset socket to default if no client is connected */
+            if (!connected)
+                socket = &tcpsocket;
             break;
     }
 
