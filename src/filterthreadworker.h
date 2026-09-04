@@ -44,7 +44,8 @@ private:
     QQueue<PendingMessage> queue;
     bool stopRequested;
 
-    QDltFilterList currentFilterList;
+    // Shared immutable snapshot: swapped (not copied) per message so filter changes only deep-copy once.
+    QSharedPointer<QDltFilterList> currentFilterList;
     bool currentFiltersEnabled;
 
     static const int kBatchSize = 256;

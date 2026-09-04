@@ -23,7 +23,9 @@ DltFileIndexerThread::DltFileIndexerThread
       indexFilterListSorted(indexFilterListSorted),
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
-      silentMode(silentMode), msgQueue(1024)
+      silentMode(silentMode),
+      filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
+      msgQueue(1024)
 {
 
 }
@@ -122,10 +124,12 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
     }
 
     /*
-     * In modeFilter (pure CFI rebuild) we only need filter matching and index generation.
-     * Running decoder plugins here is expensive and can dominate runtime on large files.
+     * In modeFilter (pure CFI rebuild) skip decoder plugins only when no active filter
+     * inspects decoded header/payload text - otherwise CFI would filter on raw undecoded
+     * bytes and silently produce wrong matches for content-based filters.
      */
-    if ((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled)
+    if (pluginsEnabled &&
+        ((mode == DltFileIndexer::modeIndexAndFilter) || filterNeedsDecodedText))
      {
      (void) pluginManager->decodeMsg(msg, silentMode);
      }

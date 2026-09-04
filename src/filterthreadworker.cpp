@@ -16,8 +16,11 @@ FilterThreadWorker::~FilterThreadWorker()
 
 void FilterThreadWorker::setFilterConfiguration(const QDltFilterList &filterList, bool filtersEnabled)
 {
+    // Deep-copy happens here only, i.e. once per filter change, not once per message.
+    auto snapshot = QSharedPointer<QDltFilterList>::create(filterList);
+
     QMutexLocker locker(&queueMutex);
-    currentFilterList = filterList;
+    currentFilterList = snapshot;
     currentFiltersEnabled = filtersEnabled;
 }
 
@@ -72,7 +75,7 @@ void FilterThreadWorker::run()
     while(true)
     {
         PendingMessage pendingMessage;
-        QDltFilterList filterList;
+        QSharedPointer<QDltFilterList> filterList;
         bool filtersEnabled = true;
         bool queueIsEmptyAfterPop = false;
 
@@ -89,12 +92,12 @@ void FilterThreadWorker::run()
             }
 
             pendingMessage = queue.dequeue();
-            filterList = currentFilterList;
+            filterList = currentFilterList; // atomic ref-count bump, no deep copy
             filtersEnabled = currentFiltersEnabled;
             queueIsEmptyAfterPop = queue.isEmpty();
         }
 
-        const bool isMatch = !filtersEnabled || filterList.checkFilter(*pendingMessage.msg);
+        const bool isMatch = !filtersEnabled || !filterList || filterList->checkFilter(*pendingMessage.msg);
         if(!isMatch)
         {
             if(queueIsEmptyAfterPop && !matchedIndices.isEmpty())

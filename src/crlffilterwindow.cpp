@@ -443,6 +443,17 @@ void CrlfFilterWindow::rebuildCrlfModel() {
         return;
     }
 
+    // Guards every call path (direct calls from createCrlfWindow()/refreshWindow() included,
+    // not just the debounced timer) against reentrancy via processEvents() pumped below.
+    if (rebuildInProgress) {
+        return;
+    }
+    struct InProgressGuard {
+        bool &flag;
+        explicit InProgressGuard(bool &f) : flag(f) { flag = true; }
+        ~InProgressGuard() { flag = false; }
+    } inProgressGuard(rebuildInProgress);
+
     lastBuildCanceled = false;
 
     if (!dltFile || dltFile->size() == 0) {
@@ -544,9 +555,7 @@ void CrlfFilterWindow::onRebuildTimerTimeout() {
     if (!dltFile || dltFile->size() == 0) {
         onSourceModelReset();
     } else {
-        rebuildInProgress = true;
         rebuildCrlfModel();
-        rebuildInProgress = false;
     }
 }
 

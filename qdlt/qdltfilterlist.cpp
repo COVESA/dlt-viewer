@@ -193,6 +193,19 @@ bool QDltFilterList::applyRegExStringMsg(QDltMsg &msg) const
     return result;
 }
 
+bool QDltFilterList::needsDecodedText() const
+{
+    for(int numfilter = 0; numfilter < filters.size(); numfilter++)
+    {
+        const QDltFilter *filter = filters[numfilter];
+        if(filter->enableFilter && (filter->enableHeader || filter->enablePayload))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool QDltFilterList::checkFilter(QDltMsg &msg)
 {
     QDltFilter *filter;
