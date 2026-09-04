@@ -36,7 +36,6 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      lastSearchIndex = -1;
      emptyForceFlag = false;
      loggingOnlyMode = false;
-     m_renderCacheGeneration = 0;
      searchhit = -1;
  }
 
@@ -194,25 +193,40 @@ QVariant TableModel::buildDisplayValue(int column, long int filterPosIndex, std:
     return QVariant();
 }
 
-TableModel::DecodeRenderCacheEntry TableModel::buildDecodeRenderCacheEntry(long int filterPosIndex, std::optional<QDltMsg> &msg) const
-{
-    DecodeRenderCacheEntry entry;
-    entry.filterPosIndex = filterPosIndex;
-    entry.generation = m_renderCacheGeneration;
 
-    const int currentColumnCount = columnCount();
-    entry.displayValues.reserve(currentColumnCount);
-    for (int column = 0; column < currentColumnCount; ++column)
+std::optional<QDltMsg> TableModel::getDecodedMsg(int row, long int filterposindex) const
+{
+    DecodedMsgCacheEntry* msgEntry = m_cache.getPtr(row);
+    if (msgEntry && msgEntry->filterPosIndex == filterposindex)
     {
-        entry.displayValues.push_back(buildDisplayValue(column, filterPosIndex, msg));
+        return msgEntry->msg;
     }
 
-    return entry;
+    DecodedMsgCacheEntry newMsgEntry;
+    newMsgEntry.filterPosIndex = filterposindex;
+
+    QDltMsg omsg;
+    if (bool success = qfile->getMsg(filterposindex, omsg); success)
+    {
+        newMsgEntry.msg = std::make_optional(omsg);
+        if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        {
+            pluginManager->decodeMsg(*newMsgEntry.msg, !QDltOptManager::getInstance()->issilentMode());
+        }
+    }
+
+    m_cache.put(row, newMsgEntry);
+    return newMsgEntry.msg;
 }
 
 
  QVariant TableModel::data(const QModelIndex &index, int role) const
  {
+     if (!qfile)
+     {
+         return QVariant();
+     }
+
      if (!index.isValid())
      {
          return QVariant();
@@ -237,68 +251,21 @@ TableModel::DecodeRenderCacheEntry TableModel::buildDecodeRenderCacheEntry(long 
 
      long int filterposindex = qfile->getMsgFilterPos(index.row());
 
-     if (role == Qt::DisplayRole && m_decodeRenderCache.exists(index.row()))
-     {
-         const DecodeRenderCacheEntry& entry = m_decodeRenderCache.get(index.row());
-         if (entry.filterPosIndex == filterposindex
-             && entry.generation == m_renderCacheGeneration
-             && entry.displayValues.size() == columnCount())
-         {
-             if (index.column() < 0 || index.column() >= entry.displayValues.size())
-             {
-                 return QVariant();
-             }
-             return entry.displayValues.at(index.column());
-         }
-     }
-
-     std::optional<QDltMsg> msg;
-     if (m_cache.exists(index.row()))
-     {
-         msg = m_cache.get(index.row());
-     }
-     else
-     {
-         QDltMsg omsg;
-         if (bool success = qfile->getMsg(filterposindex, omsg); success)
-         {
-             msg = std::make_optional(omsg);
-             if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
-             {
-                 pluginManager->decodeMsg(*msg, !QDltOptManager::getInstance()->issilentMode());
-             }
-         }
-         m_cache.put(index.row(), msg);
-     }
+     std::optional<QDltMsg> msg = getDecodedMsg(index.row(), filterposindex);
 
      if (role == Qt::DisplayRole)
      {
-         if (!msg.has_value())
-         {
-             qDebug() << "Corrupted message at index" << index.row();
-         }
-
-         DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(filterposindex, msg);
-         m_decodeRenderCache.put(index.row(), entry);
-
-         if (index.column() < 0 || index.column() >= entry.displayValues.size())
-         {
-             return QVariant();
-         }
-
-         return entry.displayValues.at(index.column());
+         return buildDisplayValue(index.column(), filterposindex, msg);
      }
 
      if ( role == Qt::ForegroundRole )
      {
-         /* Calculate background color and find optimal foreground color */
-         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(),filterposindex)));
+         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(), filterposindex)));
      }
 
      if ( role == Qt::BackgroundRole )
      {
-         /* Calculate background color */
-         return QBrush(getMsgBackgroundColor(msg, index.row(),filterposindex));
+         return QBrush(getMsgBackgroundColor(msg, index.row(), filterposindex));
      }
 
     if ( role == Qt::ToolTipRole )
@@ -378,7 +345,6 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
-     ++m_renderCacheGeneration;
 
      emit(layoutChanged());
  }

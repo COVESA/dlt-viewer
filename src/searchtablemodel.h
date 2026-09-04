@@ -62,22 +62,18 @@ public:
     QDltPluginManager *pluginManager;
 
 private:
-    struct DecodeRenderCacheEntry
+    struct DecodedMsgCacheEntry
     {
         unsigned long messageIndex;
-        unsigned long long generation;
-        bool messageValid = false;
-        QColor backgroundColor;
-        QVector<QVariant> displayValues;
+        bool hasMsg = false;
+        QDltMsg msg;
     };
 
-    unsigned long long m_renderCacheGeneration;
+    // Dedup getMsg()/decodeMsg() across roles and columns for recently rendered search result rows.
+    mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
 
-    // Cache preformatted DisplayRole values for recently rendered search result rows.
-    mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
-
+    bool getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const;
     QVariant buildDisplayValue(int column, unsigned long messageIndex, QDltMsg &msg) const;
-    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg, int columnCount) const;
     
 signals:
     

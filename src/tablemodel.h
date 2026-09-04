@@ -66,27 +66,21 @@ public:
     QString getToolTipForFields(FieldNames::Fields cn);
 
 private:
-    struct DecodeRenderCacheEntry
+    struct DecodedMsgCacheEntry
     {
         long int filterPosIndex;
-        unsigned long long generation;
-        QVector<QVariant> displayValues;
+        std::optional<QDltMsg> msg;
     };
 
     long int lastSearchIndex;
     bool emptyForceFlag;
     bool loggingOnlyMode;
-    unsigned long long m_renderCacheGeneration;
 
-    // Cache preformatted DisplayRole values for recently rendered rows.
-    mutable QDltLruCache<int, DecodeRenderCacheEntry> m_decodeRenderCache{512};
+    // Dedup getMsg()/decodeMsg() across roles and columns for recently rendered rows.
+    mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
 
-    // Dedup getMsg()/decodeMsg() across the Display/Foreground/Background/ToolTip
-    // role queries Qt issues for the same row during a single paint pass.
-    mutable QDltLruCache<int, std::optional<QDltMsg>> m_cache{1};
-
+    std::optional<QDltMsg> getDecodedMsg(int row, long int filterposindex) const;
     QVariant buildDisplayValue(int column, long int filterPosIndex, std::optional<QDltMsg> &msg) const;
-    DecodeRenderCacheEntry buildDecodeRenderCacheEntry(long int filterPosIndex, std::optional<QDltMsg> &msg) const;
 
     long int searchhit;
     QColor searchBackgroundColor() const;

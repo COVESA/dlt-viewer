@@ -31,7 +31,6 @@ SearchTableModel::SearchTableModel(const QString &,QObject *parent) :
     qfile = NULL;
     project = NULL;
     pluginManager = NULL;
-    m_renderCacheGeneration = 0;
 }
 
 SearchTableModel::~SearchTableModel()
@@ -150,21 +149,37 @@ QVariant SearchTableModel::buildDisplayValue(int column, unsigned long messageIn
     return QVariant();
 }
 
-SearchTableModel::DecodeRenderCacheEntry SearchTableModel::buildDecodeRenderCacheEntry(unsigned long messageIndex, QDltMsg &msg, int columnCount) const
+bool SearchTableModel::getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const
 {
-    DecodeRenderCacheEntry entry;
-    entry.messageIndex = messageIndex;
-    entry.generation = m_renderCacheGeneration;
-    entry.messageValid = true;
-    entry.backgroundColor = getMsgBackgroundColor(msg);
-
-    entry.displayValues.reserve(columnCount);
-    for (int column = 0; column < columnCount; ++column)
+    DecodedMsgCacheEntry* entry = m_cache.getPtr(row);
+    if (entry && entry->messageIndex == messageIndex)
     {
-        entry.displayValues.push_back(buildDisplayValue(column, messageIndex, msg));
+        if (entry->hasMsg)
+        {
+            msgOut = entry->msg;
+            return true;
+        }
+        return false;
     }
 
-    return entry;
+    DecodedMsgCacheEntry newEntry;
+    newEntry.messageIndex = messageIndex;
+
+    if (qfile && qfile->getMsg(messageIndex, newEntry.msg))
+    {
+        if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        {
+            pluginManager->decodeMsg(newEntry.msg, !QDltOptManager::getInstance()->issilentMode());
+        }
+        newEntry.hasMsg = true;
+        msgOut = newEntry.msg;
+        m_cache.put(row, newEntry);
+        return true;
+    }
+
+    newEntry.hasMsg = false;
+    m_cache.put(row, newEntry);
+    return false;
 }
 
 QVariant SearchTableModel::data(const QModelIndex &index, int role) const
@@ -177,36 +192,11 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
     if (index.row() >= m_searchResultList.size() || index.row()<0)
         return QVariant();
 
-    const int currentColumnCount = columnCount();
+    unsigned long messageIndex = m_searchResultList.at(index.row());
 
     if (role == Qt::DisplayRole)
     {
-        /* get the message with the selected item id */
-        unsigned long messageIndex = m_searchResultList.at(index.row());
-
-        DecodeRenderCacheEntry entry;
-        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
-        if (hasRenderCacheEntry)
-        {
-            entry = m_decodeRenderCache.get(index.row());
-        }
-
-        const bool isRenderCacheValid = hasRenderCacheEntry
-                                        && entry.messageIndex == messageIndex
-                                        && entry.generation == m_renderCacheGeneration
-                                        && entry.displayValues.size() == currentColumnCount;
-
-        if (isRenderCacheValid)
-        {
-            if (index.column() < 0 || index.column() >= entry.displayValues.size())
-            {
-                return QVariant();
-            }
-
-            return entry.displayValues.at(index.column());
-        }
-
-        if(!qfile->getMsg(messageIndex, msg))
+        if(!getDecodedMsg(index.row(), messageIndex, msg))
         {
             if(index.column() == FieldNames::Index)
             {
@@ -219,40 +209,14 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
             return QVariant();
         }
 
-        if(QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
-            pluginManager->decodeMsg(msg,!QDltOptManager::getInstance()->issilentMode());
-
-        entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
-        m_decodeRenderCache.put(index.row(), entry);
-
-        if (index.column() < 0 || index.column() >= entry.displayValues.size())
-        {
-            return QVariant();
-        }
-
-        return entry.displayValues.at(index.column());
+        return buildDisplayValue(index.column(), messageIndex, msg);
     }
 
     if ( role == Qt::ForegroundRole )
     {
-        const unsigned long messageIndex = m_searchResultList.at(index.row());
-        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
-        if (hasRenderCacheEntry)
+        if(getDecodedMsg(index.row(), messageIndex, msg))
         {
-            const DecodeRenderCacheEntry entry = m_decodeRenderCache.get(index.row());
-            if (entry.messageIndex == messageIndex
-                    && entry.generation == m_renderCacheGeneration
-                    && entry.messageValid)
-            {
-                return QVariant(QBrush(DltUiUtils::optimalTextColor(entry.backgroundColor)));
-            }
-        }
-
-        if(qfile->getMsg(messageIndex, msg))
-        {
-            DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
-            m_decodeRenderCache.put(index.row(), entry);
-            return QVariant(QBrush(DltUiUtils::optimalTextColor(entry.backgroundColor)));
+            return QVariant(QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg))));
         }
         /* default return black forground color */
         QColor brushColor = QColor(0,0,0);
@@ -267,24 +231,9 @@ QVariant SearchTableModel::data(const QModelIndex &index, int role) const
 
     if ( role == Qt::BackgroundRole )
     {
-        const unsigned long messageIndex = m_searchResultList.at(index.row());
-        const bool hasRenderCacheEntry = m_decodeRenderCache.exists(index.row());
-        if (hasRenderCacheEntry)
+        if(getDecodedMsg(index.row(), messageIndex, msg))
         {
-            const DecodeRenderCacheEntry entry = m_decodeRenderCache.get(index.row());
-            if (entry.messageIndex == messageIndex
-                    && entry.generation == m_renderCacheGeneration
-                    && entry.messageValid)
-            {
-                return QVariant(QBrush(entry.backgroundColor));
-            }
-        }
-
-        if(qfile->getMsg(messageIndex, msg))
-        {
-            DecodeRenderCacheEntry entry = buildDecodeRenderCacheEntry(messageIndex, msg, currentColumnCount);
-            m_decodeRenderCache.put(index.row(), entry);
-            return QVariant(QBrush(entry.backgroundColor));
+            return QVariant(QBrush(getMsgBackgroundColor(msg)));
         }
         /* default return white background color */
         QColor brushColor = QColor(255,255,255);
@@ -352,7 +301,6 @@ void SearchTableModel::modelChanged()
         index(m_searchResultList.size()-1, 0);
         index(m_searchResultList.size()-1, columnCount() - 1);
     }
-    ++m_renderCacheGeneration;
     emit(layoutChanged());
 }
 
@@ -365,7 +313,6 @@ void SearchTableModel::clear_SearchResults()
 {
     beginResetModel();
     m_searchResultList.clear();
-    ++m_renderCacheGeneration;
     endResetModel();
 }
 
