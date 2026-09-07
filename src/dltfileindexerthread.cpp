@@ -24,11 +24,10 @@ DltFileIndexerThread::DltFileIndexerThread
       indexFilterListSorted(indexFilterListSorted),
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
+      activeDecoderPlugins(activeDecoderPlugins),
       silentMode(silentMode),
       filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
       msgQueue(1024)
-      activeDecoderPlugins(activeDecoderPlugins),
-      silentMode(silentMode), msgQueue(1024)
 {
 
 }
