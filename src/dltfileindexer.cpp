@@ -403,6 +403,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         return false;
     }
 
+    QDltMsg msg;
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
@@ -435,6 +436,11 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
             end = totalSize;
         if(start>end)
             start=end;
+    }
+
+    if(!sortByTimeEnabled && !sortByTimestampEnabled)
+    {
+        indexFilterList.reserve(static_cast<int>(end - start));
     }
 
     // load filter index, if enabled and not an initial loading of file
@@ -501,6 +507,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
+        if(!dltFile->getMsg(ix, msg))
         QDltMsg msg;
 
         if(!dltFile->getMsg(static_cast<int>(ix), msg))
@@ -777,9 +784,17 @@ void DltFileIndexer::run()
     msecsFilterCounter = 0;
     msecsDefaultFilterCounter = 0;
 
-    // get all active plugins
-    activeViewerPlugins = pluginManager->getViewerPlugins();
-    activeDecoderPlugins = pluginManager->getDecoderPlugins();
+    // get active plugins only when needed for index+filter pass
+    if(mode == modeIndexAndFilter)
+    {
+        activeViewerPlugins = pluginManager->getViewerPlugins();
+        activeDecoderPlugins = pluginManager->getDecoderPlugins();
+    }
+    else
+    {
+        activeViewerPlugins.clear();
+        activeDecoderPlugins.clear();
+    }
 
     // calculate runs
     if(mode == modeIndexAndFilter)

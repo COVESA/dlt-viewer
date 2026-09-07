@@ -25,7 +25,9 @@ DltFileIndexerThread::DltFileIndexerThread
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
       activeDecoderPlugins(activeDecoderPlugins),
-      silentMode(silentMode), msgQueue(1024)
+      silentMode(silentMode),
+      filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
+      msgQueue(1024)
 {
 
 }
@@ -122,6 +124,22 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
             item->initMsg(index, msg);
         }
     }
+
+    /*
+     * In modeFilter (pure CFI rebuild) skip decoder plugins only when no active filter
+     * inspects decoded header/payload text - otherwise CFI would filter on raw undecoded
+     * bytes and silently produce wrong matches for content-based filters.
+     */
+    if (pluginsEnabled &&
+        ((mode == DltFileIndexer::modeIndexAndFilter) || filterNeedsDecodedText))
+    /*
+     * In modeFilter (pure CFI rebuild) we only need filter matching and index generation.
+     * Running decoder plugins here is expensive and can dominate runtime on large files.
+     */
+    if ((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled)
+     {
+     (void) pluginManager->decodeMsg(msg, silentMode);
+     }
 
     /* Process all decoder plugins.
      * Use the pre-fetched active decoder list to avoid taking pluginManager's

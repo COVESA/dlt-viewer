@@ -76,6 +76,8 @@ add_executable(dlt-viewer
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.h
     dltfileindexerdefaultfilterthread.cpp
+    filterthreadworker.h
+    filterthreadworker.cpp
     sortfilterproxymodel.h
     sortfilterproxymodel.cpp
     searchform.h
@@ -84,6 +86,8 @@ add_executable(dlt-viewer
     filtergrouplogs.cpp
     crlffilterwindow.h
     crlffilterwindow.cpp
+    indexrowreferencemodel.h
+    indexrowreferencemodel.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc
     ecutree.h

@@ -140,6 +140,12 @@ public:
     */
     bool applyRegExStringMsg(QDltMsg &msg) const;
 
+    //! True if any enabled filter matches on decoded header/payload text (toStringHeader()/toStringPayload()).
+    /*!
+      Used to decide whether skipping decoder-plugin invocation before filtering is safe.
+    */
+    bool needsDecodedText() const;
+
 protected:
 private:
 

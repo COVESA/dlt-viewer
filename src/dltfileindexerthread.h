@@ -33,6 +33,9 @@ private:
     QList<QDltPlugin*> *activeDecoderPlugins;
     bool silentMode;
 
+    // Cached once: whether any active filter inspects decoded header/payload text.
+    bool filterNeedsDecodedText;
+
     DltMsgQueue msgQueue;
 };
 

@@ -86,6 +86,7 @@
 #include "ecutree.h"
 #include "updatechecker.h"
 #include "filespliting.h"
+#include "filterthreadworker.h"
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -96,6 +97,8 @@ MainWindow::MainWindow(QWidget *parent) :
     indexUpdateTimer(this),
     qcontrol(this),
     crlfFilterWindow(nullptr),
+    liveFilterWorker(nullptr),
+    liveFilterGeneration(1),
     pulseButtonColor(255, 40, 40),
     isSearchOngoing(false)
 {
@@ -283,6 +286,10 @@ MainWindow::~MainWindow()
 {
     timer.stop(); // stop the receive timeout timer in case it is running
     dltIndexer->stop(); // in case a thread is running we want to stop it
+    if(liveFilterWorker)
+    {
+        liveFilterWorker->stopWorker();
+    }
     /**
      * All plugin dockwidgets must be removed from the layout manually and
      * then deleted. This has to be done here, because they contain
@@ -342,6 +349,7 @@ MainWindow::~MainWindow()
     delete tableModel;
     delete searchDlg;
     delete dltIndexer;
+    delete liveFilterWorker;
     delete m_shortcut_searchnext;
     delete m_shortcut_searchprev;
     delete crlfFilterWindow;
@@ -836,6 +844,15 @@ void MainWindow::initFileHandling()
 
     const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
     dltIndexer->setSortByTimestampEnabled(filtersEnabled && sortByTimestampEnabled);
+
+    liveFilterWorker = new FilterThreadWorker(this);
+    connect(liveFilterWorker,
+        &FilterThreadWorker::matchesReady,
+        this,
+        &MainWindow::onLiveFilterMatchesReady,
+        Qt::QueuedConnection);
+    liveFilterWorker->start(QThread::LowPriority);
+    syncLiveFilterWorkerConfig();
 
     ui->checkBoxFilterRange->setEnabled(filtersEnabled);
     ui->lineEditFilterStart->setEnabled(ui->checkBoxFilterRange->isChecked() && filtersEnabled);
@@ -2385,6 +2402,7 @@ void MainWindow::onSaveAsTriggered(QString fileName)
 void MainWindow::on_action_menuFile_Clear_triggered()
 {
     //qDebug() << "MainWindow::on_action_menuFile_Clear_triggered()" << outputfile.fileName() << __FILE__ <<  __LINE__;
+    resetLiveFilterGeneration();
     dltIndexer->stop(); // in case an indexer thread is running right now we need to stop it
 
     QString fn = DltFileUtils::createTempFile(DltFileUtils::getTempPath(QDltOptManager::getInstance()->issilentMode()), QDltOptManager::getInstance()->issilentMode());
@@ -2680,6 +2698,9 @@ void MainWindow::reloadLogFileFinishDefaultFilter()
 
 void MainWindow::reloadLogFile(bool update, bool multithreaded)
 {
+    resetLiveFilterGeneration();
+    syncLiveFilterWorkerConfig();
+
     qint64 fileerrors = 0;
     /* check if in logging only mode, then do not create index */
     tableModel->setLoggingOnlyMode(settings->loggingOnlyMode);
@@ -2745,15 +2766,21 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     }
 
     // clear all tables
-    ui->tableView->selectionModel()->clear();
+    if(!update)
+    {
+        ui->tableView->selectionModel()->clear();
+    }
     m_searchtableModel->clear_SearchResults();
 
     QString title = "Search Results";
     ui->dockWidgetSearchIndex->setWindowTitle(title);
 
-    // force empty table
-    tableModel->setForceEmpty(true);
-    tableModel->modelChanged();
+    // Keep current rows visible during filter-only update to avoid table freeze.
+    if(!update)
+    {
+        tableModel->setForceEmpty(true);
+        tableModel->modelChanged();
+    }
 
     // Per-file UI state must not leak across opened files.
     // Clear manual markers (and dependent filter inclusion) when doing a full reload.
@@ -2768,7 +2795,10 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         qfile.setManualMarkerIndices(QList<unsigned long int>());
     }
 
-    qfile.setIndexFilter(QVector<qint64>());
+    if(!update)
+    {
+        qfile.setIndexFilter(QVector<qint64>());
+    }
 
     // stop last indexing process, if any
     dltIndexer->stop();
@@ -4971,6 +5001,7 @@ void MainWindow::updateIndex()
     activeDecoderPlugins = pluginManager.getDecoderPlugins();
     activeViewerPlugins = pluginManager.getViewerPlugins();
     pluginsEnabled = dltIndexer->getPluginsEnabled();
+    const quint64 generation = liveFilterGeneration;
 
     /* read received messages in DLT file parser and update DLT message list view */
     /* update indexes  and table view */
@@ -5008,10 +5039,15 @@ void MainWindow::updateIndex()
         pluginManager.decodeMsg(qmsg,silentMode);
       }
 
-     if(qfile.checkFilter(qmsg))
-      {
-            qfile.addFilterIndex(num);
-      }
+     if(liveFilterWorker)
+     {
+         QSharedPointer<QDltMsg> queuedMsg = QSharedPointer<QDltMsg>::create(qmsg);
+         liveFilterWorker->enqueueMessage(queuedMsg, num, generation);
+     }
+     else if(qfile.checkFilter(qmsg))
+     {
+         qfile.addFilterIndex(num);
+     }
 
      if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
      {
@@ -5031,6 +5067,41 @@ void MainWindow::updateIndex()
             item = activeViewerPlugins.at(i);
             item->updateFileFinish();
         }
+    }
+}
+
+void MainWindow::onLiveFilterMatchesReady(const QVector<qint64> &indices, quint64 generation)
+{
+    if(generation != liveFilterGeneration)
+    {
+        return;
+    }
+
+    for(const qint64 index : indices)
+    {
+        if(index >= 0 && index < qfile.size())
+        {
+            qfile.addFilterIndex(static_cast<int>(index));
+        }
+    }
+}
+
+void MainWindow::syncLiveFilterWorkerConfig()
+{
+    if(!liveFilterWorker)
+    {
+        return;
+    }
+
+    liveFilterWorker->setFilterConfiguration(qfile.getFilterList(), filtersEnabled);
+}
+
+void MainWindow::resetLiveFilterGeneration()
+{
+    ++liveFilterGeneration;
+    if(liveFilterWorker)
+    {
+        liveFilterWorker->clearPending();
     }
 }
 
@@ -7049,34 +7120,14 @@ void MainWindow::filterIndexEnd()
 void MainWindow::splitLogsEcuid()
 {
     QAbstractTableModel* sourceModel = qobject_cast<QAbstractTableModel*>(ui->tableView->model());
-    int rowCount = sourceModel->rowCount();
+    if(sourceModel == nullptr)
+    {
+        QMessageBox::warning(this, "Warning", "No table model is currently available.");
+        return;
+    }
+
     if (qfile.getNumberOfFiles() > 0) {
         filtergrouplogs *filterLogsEcuid = new filtergrouplogs(this);
-        // Get the path of the currently loaded DLT file
-        QString currentFilePath = qfile.getFileName(0);
-        QStringList ecuIds = filterLogsEcuid->extractEcuIds(currentFilePath);
-        if (ecuIds.isEmpty()) {
-            QMessageBox::information(this, "No DLT file found", "No DLT file is opened... Open a DLT File.");
-            delete filterLogsEcuid;
-            return;
-        }
-
-        /* Progress dialog */
-        QProgressDialog progress("Grouping DLT Logs by ECU ID...", "Cancel", 0, rowCount, this);
-        progress.setWindowModality(Qt::ApplicationModal);
-        progress.setMinimumDuration(0);
-        progress.setValue(0);
-        progress.setWindowTitle("Grouping Progress");
-        progress.show();
-        for (int i = 0; i < rowCount; ++i) {
-            progress.setValue(i + 1);
-            QCoreApplication::processEvents();
-            if (progress.wasCanceled()) {
-                delete filterLogsEcuid;
-                return;
-            }
-        }
-
         // Set up all necessary references
         filterLogsEcuid->setSourceModel(sourceModel);
         filterLogsEcuid->setDltFile(&qfile);
@@ -7712,6 +7763,7 @@ void MainWindow::filterUpdate()
         qfile.addFilter(filter);
     }
     qfile.updateSortedFilter();
+    syncLiveFilterWorkerConfig();
 }
 
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
