@@ -56,6 +56,8 @@ add_library(qdlt SHARED
     qdltpluginmanager.cpp
     qdltplugin.h
     qdltplugin.cpp
+    searchsnapshot.h
+    searchsnapshot.cpp
     qdltsegmentedmsg.h
     qdltsegmentedmsg.cpp
     qdltoptmanager.h

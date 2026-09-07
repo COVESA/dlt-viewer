@@ -33,7 +33,9 @@
 #include <QTableView>
 
 #include <atomic>
+#include <memory>
 
+#include "searchsnapshot.h"
 #include "searchtablemodel.h"
 
 namespace Ui {
@@ -157,14 +159,14 @@ private:
      * @brief Adds a found line to the search index.
      * @param searchLine Line number.
      */
-    void addToSearchIndex(long int searchLine);
+    void addToSearchIndex(int messageIndex);
     /**
      * @brief Iterates through messages and finds matches.
      * @param searchLine Start line.
      * @param searchBorder Border line.
      * @param searchTextRegExp Regular expression for search.
      */
-    void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
+    void findMessages(const std::shared_ptr<const SearchSnapshot> &snapshot, long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
     /**
      * @brief Updates the color button icon.
      */
@@ -250,7 +252,7 @@ private:
      * @param searchLine Line number.
      * @return True to break search, false to continue.
      */
-    bool foundLine(long int searchLine);
+    bool foundLine(long int searchLine, int messageIndex);
     /**
      * @brief Gets the APID text.
      * @return APID as QString.
@@ -273,6 +275,7 @@ private:
     QString getTimeStampEnd();
     QList < QList <unsigned long>> m_searchHistory;
     QList<QLineEdit*> lineEdits;
+    SearchSnapshotManager m_searchSnapshotManager;
 
 private slots:
 

@@ -51,6 +51,10 @@ public:
     */
     void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
 
+    //! Try to decode without blocking when plugin list is currently busy.
+    /*! Returns false when decode was skipped to avoid lock contention. */
+    bool decodeMsgTry(QDltMsg &msg, int triggeredByUser);
+
     //! Get the list of pointers to all loaded plugins
     QList<QDltPlugin*> getPlugins() const { return plugins; }
 
