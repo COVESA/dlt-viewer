@@ -111,6 +111,9 @@ public:
     void setFiltersEnabled(bool enable) { filtersEnabled = enable; }
     bool getFiltersEnabled() { return filtersEnabled; }
 
+    // whether the last indexFilter pass actually applied filtering (filtersEnabled AND active filter rules exist)
+    bool getEffectiveFilteringEnabled() { return effectiveFilteringEnabled; }
+
     // enable/disable sort by time
     void setSortByTimeEnabled(bool enable) { sortByTimeEnabled = enable; }
     bool setSortByTimeEnabled() { return sortByTimeEnabled; }
@@ -194,6 +197,7 @@ private:
     // some flags
     bool pluginsEnabled;
     bool filtersEnabled;
+    bool effectiveFilteringEnabled;
     bool multithreaded;
     bool sortByTimeEnabled;
     bool sortByTimestampEnabled;

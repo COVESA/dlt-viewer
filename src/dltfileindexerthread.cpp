@@ -13,6 +13,7 @@ DltFileIndexerThread::DltFileIndexerThread
         QMap<DltFileIndexerKey,qint64> *indexFilterListSorted,
         QDltPluginManager *pluginManager,
         QList<QDltPlugin*> *activeViewerPlugins,
+        QList<QDltPlugin*> *activeDecoderPlugins,
         bool silentMode
 )
     :indexer(indexer),
@@ -26,6 +27,8 @@ DltFileIndexerThread::DltFileIndexerThread
       silentMode(silentMode),
       filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
       msgQueue(1024)
+      activeDecoderPlugins(activeDecoderPlugins),
+      silentMode(silentMode), msgQueue(1024)
 {
 
 }
@@ -49,7 +52,7 @@ void DltFileIndexerThread::run()
 {
     QPair<QSharedPointer<QDltMsg>, int> msgPair;
     while(msgQueue.dequeue(msgPair))
-        processMessage(msgPair.first, msgPair.second);
+        processMessage(*msgPair.first, msgPair.second);
 }
 
 void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int index)
@@ -139,10 +142,27 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
      (void) pluginManager->decodeMsg(msg, silentMode);
      }
 
+    /* Process all decoder plugins.
+     * Use the pre-fetched active decoder list to avoid taking pluginManager's
+     * mutex once per message in the CFI hot loop. */
+    if (pluginsEnabled && activeDecoderPlugins)
+    {
+        for (int idp = 0; idp < activeDecoderPlugins->size(); ++idp)
+        {
+            QDltPlugin *decoder = activeDecoderPlugins->at(idp);
+            if(decoder && decoder->decodeMsg(msg, silentMode))
+                break;
+        }
+    }
 
     bool_result = filterList->checkFilter(msg);
     if ( bool_result == true)
     {
+        if(const QDltFilter *markerFilter = filterList->matchMarkerFilter(msg); markerFilter != nullptr)
+        {
+            indexer->addMarkerCount(markerFilter->name);
+        }
+
         if(sortByTimeEnabled)
          {
             indexFilterListSorted->insert(DltFileIndexerKey(msg.getTime(), msg.getMicroseconds(), index), index);

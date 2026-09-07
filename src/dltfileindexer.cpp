@@ -19,6 +19,25 @@ extern "C" {
     #include "dlt_common.h"
 }
 
+namespace {
+
+bool hasActivePositiveOrNegativeFilters(const QDltFilterList &filterList)
+{
+    for(const QDltFilter *filter : filterList.filters)
+    {
+        if(filter == nullptr)
+            continue;
+        if(!filter->enableFilter)
+            continue;
+        if(filter->isPositive() || filter->isNegative())
+            return true;
+    }
+
+    return false;
+}
+
+}
+
 DltFileIndexerKey::DltFileIndexerKey(time_t time, unsigned int microseconds, int index)
     : timestamp(0)
 {
@@ -46,6 +65,7 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
 
     pluginsEnabled = true;
     filtersEnabled = true;
+    effectiveFilteringEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = false;
     sortByTimestampEnabled = false;
@@ -72,6 +92,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
 
     pluginsEnabled = true;
     filtersEnabled = true;
+    effectiveFilteringEnabled = true;
     multithreaded = true;
     sortByTimeEnabled = 0;
     sortByTimestampEnabled = 0;
@@ -386,6 +407,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     QDltFilterList filterList;
     quint64 ix = 0;
     unsigned int iPercent = 0;
+    const qint64 totalSize = dltFile->size();
 
     // get filter list
     filterList = dltFile->getFilterList();
@@ -400,18 +422,18 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     if(!filterIndexEnabled)
     {
         start = 0;
-        end = dltFile->size();
+        end = totalSize;
     }
     else
     {
-        if(filterIndexStart<=dltFile->size())
+        if(filterIndexStart<=totalSize)
             start = filterIndexStart;
         else
             start = 0;
-        if(filterIndexEnd<=dltFile->size())
+        if(filterIndexEnd<=totalSize)
             end = filterIndexEnd + 1;
         else
-            end = dltFile->size();
+            end = totalSize;
         if(start>end)
             start=end;
     }
@@ -432,7 +454,7 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // check if file is empty
 
-    if(dltFile->size() == 0)
+    if(totalSize == 0)
     {
         // No need to do anything here.
         return true;
@@ -461,8 +483,14 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                 &indexFilterListSorted,
                 pluginManager,
                 &activeViewerPlugins,
+                &activeDecoderPlugins,
                 silentMode
             );
+
+    if(!sortByTimeEnabled && !sortByTimestampEnabled)
+    {
+        indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
+    }
 
     /*if(useIndexerThread)
     {
@@ -480,6 +508,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     for(ix=start;ix<end;ix++)
     {
         if(!dltFile->getMsg(ix, msg))
+        QDltMsg msg;
+
+        if(!dltFile->getMsg(static_cast<int>(ix), msg))
             continue; // Skip broken messages
 
         /*if(true == useIndexerThread)
@@ -798,15 +829,36 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        QStringList filenames;
-        for(int num=0;num<dltFile->getNumberOfFiles();num++)
-            filenames.append(dltFile->getFileName(num));
-        if((mode != modeNone) && !indexFilter(filenames))
+        // Whether a genuine positive/negative filter is active; drives dltFile->enableFilter().
+        effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
+
+        // Always run the full CFI pass when opening a file (modeIndexAndFilter): it also drives
+        // marker/colour computation, ECU/App/Context discovery and viewer-plugin init hooks that
+        // must happen regardless of whether a positive/negative filter is active. For incremental
+        // live re-filters (modeFilter) skip the pass when there's nothing to filter, to keep live
+        // logging smooth.
+        const bool runCfi = (mode == modeIndexAndFilter) || effectiveFilteringEnabled;
+
+        if(runCfi)
         {
-            // error
-            return;
+            QStringList filenames;
+            for(int num=0;num<dltFile->getNumberOfFiles();num++)
+                filenames.append(dltFile->getFileName(num));
+            if((mode != modeNone) && !indexFilter(filenames))
+            {
+                // error
+                return;
+            }
         }
-        dltFile->enableFilter(filtersEnabled);
+        else
+        {
+            // No active filtering rules during live re-filter -> avoid full CFI pass.
+            indexFilterList.clear();
+            indexFilterListSorted.clear();
+            getLogInfoList.clear();
+        }
+
+        dltFile->enableFilter(effectiveFilteringEnabled);
         dltFile->setIndexFilter(indexFilterList);
         emit(finishFilter());
     }
