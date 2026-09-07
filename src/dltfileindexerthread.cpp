@@ -25,7 +25,6 @@ DltFileIndexerThread::DltFileIndexerThread
       pluginManager(pluginManager),
       activeViewerPlugins(activeViewerPlugins),
       filterNeedsDecodedText(filterList ? filterList->needsDecodedText() : false),
-      msgQueue(1024),
       activeDecoderPlugins(activeDecoderPlugins),
       silentMode(silentMode), msgQueue(1024)
 {
@@ -54,11 +53,6 @@ void DltFileIndexerThread::run()
         processMessage(*msgPair.first, msgPair.second);
 }
 
-
-void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
-{
-    processMessage(*msg, index);
-}
 
 void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
 {

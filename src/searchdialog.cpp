@@ -379,18 +379,6 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                 // undecoded message to be searched (would silently miss decode-dependent matches).
                 if (!pluginPtr->decodeMsgTry(msg, dlg ? dlg->fSilentMode : 0))
                     pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
-            const int msgIndex = filterPositions ? static_cast<int>(filterPositions->at(i)) : i;
-            if (msgIndex < 0)
-                continue;
-
-            if (!filePtr->getMsgNoCache(msgIndex, msg, buf))
-                continue;
-
-            if (doDecode)
-            {
-                // Serialize the actual decode call across all search chunks/live worker; plugin state isn't thread-safe.
-                if (pluginManager)
-                    pluginManager->decodeMsgUsingPlugins(decoderPluginsSnapshot, msg, dlg ? dlg->fSilentMode : 0);
             }
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
