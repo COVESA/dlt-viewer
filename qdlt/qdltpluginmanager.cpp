@@ -136,6 +136,21 @@ void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
     }
 }
 
+bool QDltPluginManager::decodeMsgTry(QDltMsg &msg, int triggeredByUser)
+{
+    if(!pluginListMutex.tryLock())
+        return false;
+
+    for(auto* plugin : plugins)
+    {
+        if(plugin->decodeMsg(msg,triggeredByUser))
+            break;
+    }
+
+    pluginListMutex.unlock();
+    return true;
+}
+
 QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {
 
     QMutexLocker mutexLocker(&pluginListMutex);
