@@ -829,10 +829,17 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        // Always rebuild the filter index.  An empty filter list means "show all",
-        // but the index still drives markers, sorting, and context discovery.
-        effectiveFilteringEnabled = filtersEnabled;
+        // Whether a genuine positive/negative filter is active; drives dltFile->enableFilter().
+        effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
 
+        // Always run the full CFI pass when opening a file (modeIndexAndFilter): it also drives
+        // marker/colour computation, ECU/App/Context discovery and viewer-plugin init hooks that
+        // must happen regardless of whether a positive/negative filter is active. For incremental
+        // live re-filters (modeFilter) skip the pass when there's nothing to filter, to keep live
+        // logging smooth.
+        const bool runCfi = (mode == modeIndexAndFilter) || effectiveFilteringEnabled;
+
+        if(runCfi)
         {
             QStringList filenames;
             for(int num=0;num<dltFile->getNumberOfFiles();num++)
@@ -842,6 +849,13 @@ void DltFileIndexer::run()
                 // error
                 return;
             }
+        }
+        else
+        {
+            // No active filtering rules during live re-filter -> avoid full CFI pass.
+            indexFilterList.clear();
+            indexFilterListSorted.clear();
+            getLogInfoList.clear();
         }
 
         dltFile->enableFilter(effectiveFilteringEnabled);
