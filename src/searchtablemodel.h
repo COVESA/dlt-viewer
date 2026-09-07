@@ -21,6 +21,8 @@
 #define SEARCHTABLEMODEL_H
 
 #include <QAbstractTableModel>
+#include <QVector>
+#include <qdltlrucache.hpp>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
@@ -52,12 +54,26 @@ public:
     int get_SearchResultListSize() const;
     bool get_SearchResultEntry(int position, unsigned long &entry);
 
-    QColor getMsgBackgroundColor(QDltMsg &msg) const;
+    QColor getMsgBackgroundColor(const QDltMsg &msg) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;
     Project *project;
     QDltPluginManager *pluginManager;
+
+private:
+    struct DecodedMsgCacheEntry
+    {
+        unsigned long messageIndex;
+        bool hasMsg = false;
+        QDltMsg msg;
+    };
+
+    // Dedup getMsg()/decodeMsg() across roles and columns for recently rendered search result rows.
+    mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
+
+    bool getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const;
+    QVariant buildDisplayValue(int column, unsigned long messageIndex, const QDltMsg &msg) const;
     
 signals:
     

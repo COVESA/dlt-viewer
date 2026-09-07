@@ -46,8 +46,26 @@ public:
         return it->second->value;
     }
 
+    // Read-only view; use put() to modify. Pointer is invalidated by any later
+    // put()/clear() call (key replacement or LRU eviction erases the entry), so
+    // don't retain it across such calls.
+    const Value* getPtr(const Key& key) {
+        auto it = m_keyIteratorsMap.find(key);
+        if (it == m_keyIteratorsMap.end()) {
+            return nullptr;
+        }
+
+        m_cacheItems.splice(m_cacheItems.begin(), m_cacheItems, it->second);
+        return &(it->second->value);
+    }
+
     bool exists(const Key& key) const {
         return m_keyIteratorsMap.find(key) != m_keyIteratorsMap.end();
+    }
+
+    void clear() {
+        m_cacheItems.clear();
+        m_keyIteratorsMap.clear();
     }
 
 private:

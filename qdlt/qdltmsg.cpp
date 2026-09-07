@@ -257,7 +257,7 @@ QString QDltMsg::getTimeString() const
     return cachedTimeString(time);
 }
 
-QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst)
+QString QDltMsg::getGmTimeWithOffsetString(qlonglong offset, bool dst) const
 {
     struct tm *time_tm;
     time_tm = gmtime(&time);
