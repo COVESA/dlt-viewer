@@ -75,7 +75,7 @@ void FilterThreadWorker::run()
     while(true)
     {
         PendingMessage pendingMessage;
-        QSharedPointer<QDltFilterList> filterList;
+        QSharedPointer<QDltFilterList> filterListSnapshot;
         bool filtersEnabled = true;
         bool queueIsEmptyAfterPop = false;
 
@@ -92,10 +92,13 @@ void FilterThreadWorker::run()
             }
 
             pendingMessage = queue.dequeue();
-            filterList = currentFilterList; // atomic ref-count bump, no deep copy
+            filterListSnapshot = currentFilterList; // atomic ref-count bump, no deep copy
             filtersEnabled = currentFiltersEnabled;
             queueIsEmptyAfterPop = queue.isEmpty();
         }
+
+        // const: guarantees the snapshot read under the lock can't be reassigned below
+        const QSharedPointer<QDltFilterList> filterList = filterListSnapshot;
 
         const bool isMatch = !filtersEnabled || !filterList || filterList->checkFilter(*pendingMessage.msg);
         if(!isMatch)
