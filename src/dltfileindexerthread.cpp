@@ -130,6 +130,11 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
      */
     if (pluginsEnabled &&
         ((mode == DltFileIndexer::modeIndexAndFilter) || filterNeedsDecodedText))
+    /*
+     * In modeFilter (pure CFI rebuild) we only need filter matching and index generation.
+     * Running decoder plugins here is expensive and can dominate runtime on large files.
+     */
+    if ((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled)
      {
      (void) pluginManager->decodeMsg(msg, silentMode);
      }
