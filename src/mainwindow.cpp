@@ -92,6 +92,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     timer(this),
+    drawTimer(this),
+    indexUpdateTimer(this),
     qcontrol(this),
     crlfFilterWindow(nullptr),
     pulseButtonColor(255, 40, 40),
@@ -112,6 +114,10 @@ MainWindow::MainWindow(QWidget *parent) :
     filterIsChanged = false;
 
     initState();
+
+    indexUpdateTimer.setSingleShot(true);
+    indexUpdateTimer.setInterval(25);
+    connect(&indexUpdateTimer, &QTimer::timeout, this, &MainWindow::processPendingUpdateIndex);
 
     /* Apply loaded settings */
     initSearchTable();
@@ -1145,19 +1151,33 @@ void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList
         exit(-1);
     }
 
-    // Special handling for the non-verbose decoder plugin when used from
-    // the command line:
-    //
-    // The "fibex_path" command only stores the configured path inside the
-    // plugin. To actually load and parse the Fibex data before any
-    // decoding or exporting happens, we need to trigger its loadConfig()
-    // once the command has been processed. Passing an empty filename lets
-    // the plugin use the path set via the command.
     if (plugin->isDecoder()
-            && plugin->name() == QLatin1String("Non Verbose Mode Plugin")
             && cmd.compare(QLatin1String("fibex_path"), Qt::CaseInsensitive) == 0)
     {
-        plugin->loadConfig(QString());
+        const QString configPath = params.isEmpty() ? QString() : params.at(0);
+        // Non Verbose plugin stores the path without parsing it in command(), other decoder plugins already loaded it above.
+        if (plugin->name() == QLatin1String("Non Verbose Mode Plugin")
+                && !plugin->loadConfig(QString()))
+        {
+            QString msg("Error: ");
+            msg.append(name);
+            msg.append(plugin->error());
+            ErrorMessage(QMessageBox::Warning,name, msg);
+            exit(-1);
+        }
+
+        if (configPath.isEmpty())
+            return;
+
+        for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+        {
+            PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
+            if(pluginitem->getPlugin() == plugin)
+            {
+                pluginitem->setFilename(configPath);
+                break;
+            }
+        }
     }
 }
 
@@ -1490,17 +1510,14 @@ bool MainWindow::openDltFile(QStringList fileNames)
     /* open existing file and append new data */
     outputfile.setFileName(fileNames.last());
     setCurrentFile(fileNames.last());
-    if( true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append) )
+    // CLI mode stays read-only to avoid interfering with the indexer's Windows size query.
+    if( !QDltOptManager::getInstance()->isCommandlineMode()
+            && true == outputfile.open(QIODevice::WriteOnly|QIODevice::Append) )
     {
         openFileNames = fileNames;
         isDltFileReadOnly = false;
         //qDebug() << "Opening file(s) wo" << outputfile.fileName() << __FILE__ << __LINE__;
-        if(QDltOptManager::getInstance()->isCommandlineMode())
-            // if dlt viewer started as converter or with plugin option load file non multithreaded
-            reloadLogFile(false,false);
-        else
-            // normally load log file mutithreaded
-            reloadLogFile();
+        reloadLogFile();
         outputfile.close(); // open later again when writing
         ret = true;
     }
@@ -1524,13 +1541,13 @@ bool MainWindow::openDltFile(QStringList fileNames)
         else
         {
             if (QDltOptManager::getInstance()->issilentMode())
-              {
+            {
                 qDebug() << "Accessing logfile error" << fileNames.last() << outputfile.errorString();
-              }
+            }
             else
-              {
+            {
                 QMessageBox::critical(0, QString("DLT Viewer"), QString("Cannot open log file \"%1\"\n%2").arg(fileNames.last()).arg(outputfile.errorString()));
-              }
+            }
             ret = false;
         }
     }
@@ -2610,8 +2627,9 @@ void MainWindow::reloadLogFileFinishFilter()
         }
     }
 
-    // enable filter if requested
-    qfile.enableFilter(filtersEnabled);
+    // enable filter if requested; use the indexer's effective result (filtersEnabled
+    // AND active filter rules exist), otherwise an empty filter index would hide the log.
+    qfile.enableFilter(dltIndexer->getEffectiveFilteringEnabled());
     qfile.enableSortByTime(false);
     {
         const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
@@ -4851,13 +4869,23 @@ void MainWindow::read(EcuItem* ecuitem)
             ecuitem->serialcon.syncFound = 0;
          }
 
-     //if(outputfile.isOpen()) //&& ( settings->loggingOnlyMode == 0 )  )
-     //   {
-            if(false == dltIndexer->isRunning())
-            {
-                updateIndex();
-            }
-     //   }
+     // If the indexer is idle, coalesce live UI refreshes so bursts of control
+     // responses or log packets do not block the socket read path.
+     if(!indexUpdateTimer.isActive())
+     {
+         indexUpdateTimer.start();
+     }
+}
+
+void MainWindow::processPendingUpdateIndex()
+{
+    if (dltIndexer->isRunning())
+    {
+        indexUpdateTimer.start();
+        return;
+    }
+
+    updateIndex();
 }
 
 
@@ -5020,11 +5048,23 @@ void MainWindow::updateDrawTimerState()
             drawTimer.start(drawInterval);
         }
     }
-    else if(drawTimer.isActive())
+    else
     {
-        drawTimer.stop();
+        if(indexUpdateTimer.isActive())
+        {
+            indexUpdateTimer.stop();
+            if(!dltIndexer->isRunning())
+            {
+                updateIndex();
+            }
+        }
+
         // render whatever arrived between the last tick and the disconnect
-        drawUpdatedView();
+        if(drawTimer.isActive())
+        {
+            drawTimer.stop();
+            drawUpdatedView();
+        }
     }
 }
 
@@ -5860,8 +5900,11 @@ void MainWindow::on_action_menuDLT_Send_Injection_triggered()
 void MainWindow::controlMessage_SetApplication(EcuItem *ecuitem, QString apid, QString appdescription)
 {
     if (auto appitem = ecuitem->find(apid); appitem) {
-        appitem->description = appdescription;
-        appitem->update();
+        if(appitem->description != appdescription)
+        {
+            appitem->description = appdescription;
+            appitem->update();
+        }
     } else {
         appitem = new ApplicationItem(ecuitem);
         appitem->id = apid;
@@ -5886,13 +5929,31 @@ void MainWindow::controlMessage_SetContext(EcuItem *ecuitem, QString apid, QStri
         if (!conitem) {
             conitem = new ContextItem(appitem);
             appitem->addChild(conitem);
+            conitem->id = ctid;
+            conitem->loglevel = log_level;
+            conitem->tracestatus = trace_status;
+            conitem->description = ctdescription;
+            conitem->status = ContextItem::valid;
+            conitem->update();
+            return;
         }
-        conitem->id = ctid;
-        conitem->loglevel = log_level;
-        conitem->tracestatus = trace_status;
-        conitem->description = ctdescription;
-        conitem->status = ContextItem::valid;
-        conitem->update();
+
+        const bool changed =
+                (conitem->id != ctid) ||
+                (conitem->loglevel != log_level) ||
+                (conitem->tracestatus != trace_status) ||
+                (conitem->description != ctdescription) ||
+                (conitem->status != ContextItem::valid);
+
+        if(changed)
+        {
+            conitem->id = ctid;
+            conitem->loglevel = log_level;
+            conitem->tracestatus = trace_status;
+            conitem->description = ctdescription;
+            conitem->status = ContextItem::valid;
+            conitem->update();
+        }
     } else {
         appitem = new ApplicationItem(ecuitem);
         appitem->id = apid;

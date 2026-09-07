@@ -26,6 +26,7 @@
 #include "qdltfilter.h"
 #include "qdltfilterlist.h"
 #include "qdltmsg.h"
+#include "searchsnapshot.h"
 
 #include <QObject>
 #include <QString>
@@ -288,6 +289,12 @@ public:
     /*! Avoids copying large vectors; reference stays valid until the filter index is recomputed. */
     const QVector<qint64>& getIndexFilterRef() const { return indexFilter; }
 
+    //! Capture a stable copy of the currently searchable rows.
+    SearchSnapshot captureSearchSnapshot() const;
+
+    //! Check whether a snapshot generation still matches current searchable rows.
+    bool isSearchSnapshotCurrent(quint64 generation) const;
+
     //! Set Index of all DLT messages matching filter
     /*!
      * \param _indexFilter List of file positions
@@ -356,6 +363,12 @@ public:
 private:
     // Calculates total storage, message, and payload sizes for all indexed DLT messages.
     void calculateTotalSizes();
+    void recomputeEffectiveIndexFilterLocked();
+    void bumpSearchSnapshotGenerationLocked();
+    // Lock-free counterparts of size()/getMsg(int) for callers that already hold mutexQDlt
+    // (e.g. mergeIndexFilterBaseWithMarkers, invoked from the *Locked recompute path).
+    int sizeLocked() const;
+    QByteArray getMsgLocked(int index) const;
 
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;
@@ -374,6 +387,8 @@ private:
 
     //! Manually marked message indices to always include in filtered view.
     QSet<qint64> manualMarkerIndices;
+
+    quint64 searchSnapshotGeneration{1};
 
     QVector<qint64> mergeIndexFilterBaseWithMarkers(const QSet<qint64> &markerSet) const;
     void recomputeEffectiveIndexFilter();
