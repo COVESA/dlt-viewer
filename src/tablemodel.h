@@ -80,7 +80,7 @@ private:
     mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
 
     std::optional<QDltMsg> getDecodedMsg(int row, long int filterposindex) const;
-    QVariant buildDisplayValue(int column, long int filterPosIndex, std::optional<QDltMsg> &msg) const;
+    QVariant buildDisplayValue(int column, long int filterPosIndex, const std::optional<QDltMsg> &msg) const;
 
     long int searchhit;
     QColor searchBackgroundColor() const;

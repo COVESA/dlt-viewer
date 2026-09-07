@@ -46,7 +46,10 @@ public:
         return it->second->value;
     }
 
-    Value* getPtr(const Key& key) {
+    // Read-only view; use put() to modify. Pointer is invalidated by any later
+    // put()/clear() call (key replacement or LRU eviction erases the entry), so
+    // don't retain it across such calls.
+    const Value* getPtr(const Key& key) {
         auto it = m_keyIteratorsMap.find(key);
         if (it == m_keyIteratorsMap.end()) {
             return nullptr;
@@ -58,6 +61,11 @@ public:
 
     bool exists(const Key& key) const {
         return m_keyIteratorsMap.find(key) != m_keyIteratorsMap.end();
+    }
+
+    void clear() {
+        m_cacheItems.clear();
+        m_keyIteratorsMap.clear();
     }
 
 private:

@@ -1139,7 +1139,7 @@ void QDltFile::recomputeEffectiveIndexFilter()
     QMutexLocker locker(&mutexQDlt);
     recomputeEffectiveIndexFilterLocked();
 }
-bool QDltFile::applyRegExString(QDltMsg &msg,QString &text)
+bool QDltFile::applyRegExString(const QDltMsg &msg,QString &text)
 {
 
     return filterList.applyRegExString(msg,text);

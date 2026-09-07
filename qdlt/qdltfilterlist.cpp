@@ -144,7 +144,7 @@ const QDltFilter* QDltFilterList::matchMarkerFilter(const QDltMsg &msg) const
     return nullptr;
 }
 
-bool QDltFilterList::applyRegExString(QDltMsg &msg,QString &text)
+bool QDltFilterList::applyRegExString(const QDltMsg &msg,QString &text)
 {
     QDltFilter *filter;
     bool result = false;

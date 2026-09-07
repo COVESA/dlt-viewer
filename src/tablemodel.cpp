@@ -51,7 +51,7 @@ TableModel::TableModel(const QString & /*data*/, QObject *parent)
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
 
-QVariant TableModel::buildDisplayValue(int column, long int filterPosIndex, std::optional<QDltMsg> &msg) const
+QVariant TableModel::buildDisplayValue(int column, long int filterPosIndex, const std::optional<QDltMsg> &msg) const
 {
     if (!msg.has_value())
     {
@@ -196,7 +196,7 @@ QVariant TableModel::buildDisplayValue(int column, long int filterPosIndex, std:
 
 std::optional<QDltMsg> TableModel::getDecodedMsg(int row, long int filterposindex) const
 {
-    DecodedMsgCacheEntry* msgEntry = m_cache.getPtr(row);
+    const DecodedMsgCacheEntry* msgEntry = m_cache.getPtr(row);
     if (msgEntry && msgEntry->filterPosIndex == filterposindex)
     {
         return msgEntry->msg;
@@ -345,6 +345,10 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation,
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
+
+     /* row->filterPosIndex mapping may now point to different messages (new file, filter,
+      * settings or plugin changes), so cached decoded messages would otherwise be stale */
+     m_cache.clear();
 
      emit(layoutChanged());
  }

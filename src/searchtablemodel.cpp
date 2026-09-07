@@ -38,7 +38,7 @@ SearchTableModel::~SearchTableModel()
 
 }
 
-QVariant SearchTableModel::buildDisplayValue(int column, unsigned long messageIndex, QDltMsg &msg) const
+QVariant SearchTableModel::buildDisplayValue(int column, unsigned long messageIndex, const QDltMsg &msg) const
 {
     QString visu_data;
     switch(column)
@@ -151,7 +151,7 @@ QVariant SearchTableModel::buildDisplayValue(int column, unsigned long messageIn
 
 bool SearchTableModel::getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const
 {
-    DecodedMsgCacheEntry* entry = m_cache.getPtr(row);
+    const DecodedMsgCacheEntry* entry = m_cache.getPtr(row);
     if (entry && entry->messageIndex == messageIndex)
     {
         if (entry->hasMsg)
@@ -301,6 +301,10 @@ void SearchTableModel::modelChanged()
         index(m_searchResultList.size()-1, 0);
         index(m_searchResultList.size()-1, columnCount() - 1);
     }
+
+    /* new file, settings or plugin changes can make row->messageIndex mapping stale */
+    m_cache.clear();
+
     emit(layoutChanged());
 }
 
@@ -313,6 +317,7 @@ void SearchTableModel::clear_SearchResults()
 {
     beginResetModel();
     m_searchResultList.clear();
+    m_cache.clear();
     endResetModel();
 }
 
@@ -355,7 +360,7 @@ int SearchTableModel::get_SearchResultListSize() const
     return m_searchResultList.size();
 }
 
-QColor SearchTableModel::getMsgBackgroundColor(QDltMsg &msg) const
+QColor SearchTableModel::getMsgBackgroundColor(const QDltMsg &msg) const
 {
     /* get check marker color */
     QColor color = qfile->checkMarker(msg);

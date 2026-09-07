@@ -54,7 +54,7 @@ public:
     int get_SearchResultListSize() const;
     bool get_SearchResultEntry(int position, unsigned long &entry);
 
-    QColor getMsgBackgroundColor(QDltMsg &msg) const;
+    QColor getMsgBackgroundColor(const QDltMsg &msg) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;
@@ -73,7 +73,7 @@ private:
     mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
 
     bool getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const;
-    QVariant buildDisplayValue(int column, unsigned long messageIndex, QDltMsg &msg) const;
+    QVariant buildDisplayValue(int column, unsigned long messageIndex, const QDltMsg &msg) const;
     
 signals:
     

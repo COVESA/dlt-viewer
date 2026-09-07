@@ -322,7 +322,7 @@ public:
     //! Apply RegEx Replace to the string, if any active in the filters
     /*!
     */
-    bool applyRegExString(QDltMsg &msg,QString &text);
+    bool applyRegExString(const QDltMsg &msg,QString &text);
 
     //! Apply RegEx Replace to the arguments of a message, if any active in the filters
     /*!
