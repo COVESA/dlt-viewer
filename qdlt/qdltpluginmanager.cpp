@@ -8,6 +8,8 @@
 #include <QMutex>
 #include <QTextStream>
 #include <QString>
+#include <QtAlgorithms>
+#include <utility>
 
 #ifndef PLUGIN_INSTALLATION_PATH
 #define PLUGIN_INSTALLATION_PATH ""
@@ -17,6 +19,22 @@ int QDltPluginManager::size() const
 {
     return plugins.size();
 }
+
+QDltPluginManager::~QDltPluginManager()
+{
+    // Delete the plugin objects.
+    qDeleteAll(plugins);
+    // Remove the deleted pointers from the container.
+    plugins.clear();
+
+    for (QPluginLoader *pluginLoader : std::as_const(pluginLoaders))
+    {
+        pluginLoader->unload();
+        delete pluginLoader;
+    }
+    pluginLoaders.clear();
+}
+
 
 QStringList QDltPluginManager::loadPlugins(const QString &settingsPluginPath)
 {
@@ -68,8 +86,9 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
     /* iterate through all plugins */
     foreach (QString fileName, dir.entryList(QDir::Files))
     {
-        QPluginLoader pluginLoader(dir.absoluteFilePath(fileName));
-        QObject *plugin = pluginLoader.instance();
+        QPluginLoader *pluginLoader = new QPluginLoader(dir.absoluteFilePath(fileName));
+        pluginLoaders.append(pluginLoader);
+        QObject *plugin = pluginLoader->instance();
         if (plugin)
         {
             QDLTPluginInterface *plugininterface = qobject_cast<QDLTPluginInterface *>(plugin);
@@ -110,7 +129,7 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
             QTextStream  errStr(&s);
             errStr << "-------------"
                     << "The plugin " << dir.absoluteFilePath(fileName) << "cannot be loaded.\n\n"
-                    << "Error: " << pluginLoader.errorString() << "\n";
+                    << "Error: " << pluginLoader->errorString() << "\n";
             errorStrings.append(s);
 
         }
