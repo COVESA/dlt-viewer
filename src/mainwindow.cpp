@@ -18,6 +18,7 @@
  */
 
 #include "filtergrouplogs.h"
+#include "ui_mainwindow.h"
 #include <algorithm>
 #include <QMimeData>
 #include <QTreeView>
@@ -5132,6 +5133,19 @@ void MainWindow::updateIndex()
 void MainWindow::updateIndexLiveAsync()
 {
     if(generation != liveFilterGeneration)
+    {
+        return;
+    }
+
+    for(const qint64 index : indices)
+    {
+        if(index >= 0 && index < qfile.size())
+        {
+            qfile.addFilterIndex(static_cast<int>(index));
+        }
+    }
+}
+
 void MainWindow::updateIndexLiveAsync()
 {
     if(liveIndexWorker == nullptr)
@@ -5162,13 +5176,6 @@ void MainWindow::onLiveIndexBatchStarted()
         QDltPlugin *item = activeViewerPlugins.at(i);
         if(item != nullptr)
         {
-            qfile.addFilterIndex(static_cast<int>(index));
-    const QList<QDltPlugin*> activeViewerPlugins = pluginManager.getViewerPlugins();
-    for(int i = 0; i < activeViewerPlugins.size(); ++i)
-    {
-        QDltPlugin *item = activeViewerPlugins.at(i);
-        if(item != nullptr)
-        {
             item->updateFileStart();
         }
     }
@@ -5177,7 +5184,13 @@ void MainWindow::onLiveIndexBatchStarted()
 void MainWindow::onLiveIndexBatchFinished()
 {
     if(!liveFilterWorker)
+    {
+        return;
+    }
+
+    liveFilterWorker->setFilterConfiguration(qfile.getFilterList(), filtersEnabled);
 }
+
 void MainWindow::onLiveIndexBatchFinished()
 {
     if(pluginsEnabled)

@@ -265,16 +265,6 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
     const int total = snapshot->size();
 
-
-    // Snapshot the current filter mapping once on the UI thread.
-    // QDltFile's filter index isn't guaranteed thread-safe for concurrent reads.
-    const bool useFilterSnapshot = file->isFilter();
-    std::shared_ptr<QVector<qint64>> filterPositions;
-    if (useFilterSnapshot)
-    {
-        filterPositions = std::make_shared<QVector<qint64>>(file->getIndexFilter());
-    }
-
     const bool msgIdEnabled = QDltSettingsManager::getInstance()->value("startup/showMsgId", true).toBool();
     const QString msgIdFormat = QDltSettingsManager::getInstance()->value("startup/msgIdFormat", "0x%x").toString();
     const bool pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
@@ -335,8 +325,6 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
     auto processed = std::make_shared<std::atomic<int>>(0);
     const QPointer<SearchDialog> dlg(this);
-    QDltPluginManager* pluginPtr = pluginManager;
-    QDltFile* filePtr = file;
     const QList<QDltPlugin*> decoderPluginsSnapshot = decoderPlugins;
 
     auto mapFn = [=](const Chunk& chunk) -> QList<unsigned long> {
@@ -373,12 +361,11 @@ void SearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             msg.setMsg(buf);
             msg.setIndex(row.messageIndex);
 
-            if (doDecode && pluginPtr)
+            if (doDecode)
             {
-                // Fall back to a blocking decode so a busy lock never causes an
-                // undecoded message to be searched (would silently miss decode-dependent matches).
-                if (!pluginPtr->decodeMsgTry(msg, dlg ? dlg->fSilentMode : 0))
-                    pluginPtr->decodeMsg(msg, dlg ? dlg->fSilentMode : 0);
+                // Serialize the actual decode call across all search chunks/live worker; plugin state isn't thread-safe.
+                if (pluginManager)
+                    pluginManager->decodeMsgUsingPlugins(decoderPluginsSnapshot, msg, dlg ? dlg->fSilentMode : 0);
             }
 
             const bool ok = useRegExp ? matcher.match(msg, searchTextRegExp)
