@@ -5132,22 +5132,6 @@ void MainWindow::updateIndex()
 
 void MainWindow::updateIndexLiveAsync()
 {
-    if(generation != liveFilterGeneration)
-    {
-        return;
-    }
-
-    for(const qint64 index : indices)
-    {
-        if(index >= 0 && index < qfile.size())
-        {
-            qfile.addFilterIndex(static_cast<int>(index));
-        }
-    }
-}
-
-void MainWindow::updateIndexLiveAsync()
-{
     if(liveIndexWorker == nullptr)
     {
         updateIndex();
@@ -5181,7 +5165,7 @@ void MainWindow::onLiveIndexBatchStarted()
     }
 }
 
-void MainWindow::onLiveIndexBatchFinished()
+void MainWindow::syncLiveFilterWorkerConfig()
 {
     if(!liveFilterWorker)
     {
@@ -5235,6 +5219,43 @@ void MainWindow::onLiveIndexDecision(int index, bool matched, QString markerFilt
     }
 }
 
+void MainWindow::onLiveFilterMatchesReady(const QVector<qint64> &indices, quint64 generation)
+{
+    // Batch may have been produced against a filter/file state that no longer applies.
+    if(generation != liveFilterGeneration)
+    {
+        return;
+    }
+
+    for(qint64 index : indices)
+    {
+        qfile.addFilterIndex(static_cast<int>(index));
+    }
+
+    liveBatchPendingMatches += indices.size();
+    ++liveBatchPendingEvents;
+
+    if(liveBatchPendingEvents >= 1000)
+    {
+        postLiveBatchUpdateEvent();
+        return;
+    }
+
+    if(!liveBatchTimer.isActive())
+    {
+        liveBatchTimer.start(100);
+    }
+}
+
+void MainWindow::resetLiveFilterGeneration()
+{
+    ++liveFilterGeneration;
+    if(liveFilterWorker)
+    {
+        liveFilterWorker->clearPending();
+    }
+}
+
 void MainWindow::postLiveBatchUpdateEvent()
 {
     if(liveBatchEventQueued)
@@ -5242,18 +5263,6 @@ void MainWindow::postLiveBatchUpdateEvent()
         return;
     }
 
-    liveBatchEventQueued = true;
-    QCoreApplication::postEvent(this, new LiveBatchUpdateEvent());
-}
-
-void MainWindow::applyLiveBatchUpdate()
-{
-    liveBatchEventQueued = false;
-
-    if(liveBatchPendingEvents <= 0 && liveBatchPendingMatches <= 0)
-    {
-        return;
-    }
     liveBatchEventQueued = true;
     QCoreApplication::postEvent(this, new LiveBatchUpdateEvent());
 }

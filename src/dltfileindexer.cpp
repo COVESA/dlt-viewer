@@ -490,7 +490,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
     }
 
-    /*if(useIndexerThread)
     if(useIndexerThread)
     {
         indexerThread.start(); // thread starts reading its queue
