@@ -407,6 +407,7 @@ private:
     QStringList getAvailableIPPorts() {return { "3490"};} // DLT standard port
     QStringList getAvailableUDPPorts() {return { "3490"};} // DLT standard port
     QStringList getAvailableNetworkInterfaces();
+    QString resolveInterfaceIPv4(const QString &ifName);
 
     void deleteactualFile();
 

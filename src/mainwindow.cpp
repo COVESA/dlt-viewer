@@ -3293,6 +3293,27 @@ QStringList MainWindow::getAvailableNetworkInterfaces()
     return network_interface_namelist;
 }
 
+// the ECU dialog offers adapter names (humanReadableName), but binding a socket requires an IP address
+QString MainWindow::resolveInterfaceIPv4(const QString &ifName)
+{
+    QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();
+    for (int num = 0; num < interfaces.length(); num++)
+    {
+        if (interfaces[num].humanReadableName() == ifName)
+        {
+            const QList<QNetworkAddressEntry> entries = interfaces[num].addressEntries();
+            for (const QNetworkAddressEntry &entry : entries)
+            {
+                if (entry.ip().protocol() == QAbstractSocket::IPv4Protocol)
+                {
+                    return entry.ip().toString();
+                }
+            }
+        }
+    }
+    return QString(); // no matching interface / no IPv4 address found
+}
+
 
 void MainWindow::on_action_menuConfig_ECU_Add_triggered()
 {
@@ -4344,6 +4365,20 @@ void MainWindow::connectECU(EcuItem* ecuitem,bool force)
             if ( ecuitem->getEthIF() == "AnyIP")
             {
                 connectIPaddress = "0.0.0.0"; // we need to translate AnyIP to 0.0.0.0 on Linux ...
+            }
+            else
+            {
+                // the interface dropdown stores the adapter name, but bind() needs an IP address
+                QString resolvedIP = resolveInterfaceIPv4(connectIPaddress);
+                if (resolvedIP.isEmpty())
+                {
+                    qDebug() << "Error - could not resolve IPv4 address for interface" << connectIPaddress;
+                    ecuitem->connectError.append("Interface not found");
+                    ecuitem->connected = false;
+                    ecuitem->update();
+                    return;
+                }
+                connectIPaddress = resolvedIP;
             }
 
            /* connect socket signals with window slots */
