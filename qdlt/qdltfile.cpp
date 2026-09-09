@@ -778,11 +778,9 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
     }
 
     // load message from DLT file
-    QByteArray data = getMsg(index);
-    if(data.isEmpty())
+    result = getMsgNoCache(index, msg);
+    if(!result)
         return false;
-    result = msg.setMsg(data,true,dltv2Support);
-    msg.setIndex(index);
 
     // store msg in cache
     if(cacheEnable && result)
@@ -798,6 +796,96 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
         mutexQDlt.unlock();
     }
 
+    return result;
+}
+
+bool QDltFile::getMsgNoCache(int index, QDltMsg &msg)
+{
+    QByteArray buffer;
+    return getMsgNoCache(index, msg, buffer);
+}
+
+bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
+{
+    const int originalIndex = index;
+    int num = 0;
+
+    if(index < 0)
+    {
+        qDebug() << "getMsg: Index is out of range" << __FILE__ << "line" << __LINE__;
+        return false;
+    }
+
+    // lock before touching files/indexAll, which can mutate concurrently (reload/clear)
+    mutexQDlt.lock();
+
+    for(num = 0; num < files.size(); num++)
+    {
+        if(index < files[num]->indexAll.size())
+            break;
+        else
+            index -= files[num]->indexAll.size();
+    }
+
+    if(num >= files.size())
+    {
+        mutexQDlt.unlock();
+        qDebug() << "getMsg: Index is out of range in" << __FILE__ << "line" << __LINE__;
+        return false;
+    }
+
+    if(false == files[num]->infile.isOpen())
+    {
+        qDebug() << "getMsg: Infile is not open" << files[num]->infile.fileName() << __FILE__ << "line" << __LINE__;
+        mutexQDlt.unlock();
+        return false;
+    }
+
+    QDltFileItem* file = files[num];
+    const QDltFileItem* const_file = file;
+    qint64 positionForIndex = const_file->indexAll[index];
+
+    if(false == file->infile.seek(positionForIndex))
+    {
+        qDebug() << "Seek error on " << positionForIndex << file->infile.fileName() << __FILE__ << __LINE__;
+        mutexQDlt.unlock();
+        return false;
+    }
+
+    qint64 readLength = 0;
+    if(index == (file->indexAll.size()-1))
+    {
+        readLength = file->infile.size() - positionForIndex;
+    }
+    else
+    {
+        readLength = const_file->indexAll[index+1] - positionForIndex;
+    }
+
+    if(readLength < 0)
+    {
+        qDebug() << "Negative read length" << readLength << index << "in" << file->infile.fileName() << __LINE__ << "of" << __FILE__;
+        mutexQDlt.unlock();
+        return false;
+    }
+
+    buffer.resize(static_cast<int>(readLength));
+    const qint64 bytesRead = file->infile.read(buffer.data(), readLength);
+    mutexQDlt.unlock();
+
+    if(bytesRead != readLength)
+    {
+        if(bytesRead < 0)
+            buffer.clear();
+        else
+            buffer.resize(static_cast<int>(bytesRead));
+    }
+
+    if(buffer.isEmpty())
+        return false;
+
+    bool result = msg.setMsg(buffer,true,dltv2Support);
+    msg.setIndex(originalIndex);
     return result;
 }
 

@@ -148,6 +148,9 @@ void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
     QMutexLocker mutexLocker(&pluginListMutex);
+    // decodeMutex must also be held here: plugin instances are shared and stateful,
+    // so this call must be serialized against decodeMsgUsingPlugins() callers too.
+    QMutexLocker decodeLocker(&decodeMutex);
     for(auto* plugin : plugins)
     {
         if(plugin->decodeMsg(msg,triggeredByUser))
@@ -160,14 +163,30 @@ bool QDltPluginManager::decodeMsgTry(QDltMsg &msg, int triggeredByUser)
     if(!pluginListMutex.tryLock())
         return false;
 
-    for(auto* plugin : plugins)
     {
-        if(plugin->decodeMsg(msg,triggeredByUser))
-            break;
+        QMutexLocker decodeLocker(&decodeMutex);
+        for(auto* plugin : plugins)
+        {
+            if(plugin->decodeMsg(msg,triggeredByUser))
+                break;
+        }
     }
 
     pluginListMutex.unlock();
     return true;
+}
+
+void QDltPluginManager::decodeMsgUsingPlugins(const QList<QDltPlugin*> &pluginsSnapshot, QDltMsg &msg, int triggeredByUser) const
+{
+    // Snapshotted plugin lists still point at shared, stateful plugin instances,
+    // so the actual decode call must be serialized here regardless of who took the snapshot.
+    QMutexLocker mutexLocker(&decodeMutex);
+    for(int i = 0; i < pluginsSnapshot.size(); ++i)
+    {
+        QDltPlugin *plugin = pluginsSnapshot.at(i);
+        if(plugin != nullptr && plugin->decodeMsg(msg, triggeredByUser))
+            break;
+    }
 }
 
 QDltPlugin* QDltPluginManager::findPlugin(const QString& name) const {

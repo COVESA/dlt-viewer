@@ -58,9 +58,11 @@ public:
     Project *project;
     QDltPluginManager *pluginManager;
     void modelChanged();
+    void appendRows(int firstRow, int lastRow);
     int setMarker(long int lineindex, QColor hlcolor); //used in search functionality
     int setManualMarker(QList<unsigned long int> selectedMarkerRows, QColor hlcolor); //used in mainwindow
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
+    bool isForceEmpty() const { return emptyForceFlag; }
     void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
     QString getToolTipForFields(FieldNames::Fields cn);
