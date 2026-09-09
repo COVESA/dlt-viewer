@@ -148,6 +148,9 @@ void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
     QMutexLocker mutexLocker(&pluginListMutex);
+    // decodeMutex must also be held here: plugin instances are shared and stateful,
+    // so this call must be serialized against decodeMsgUsingPlugins() callers too.
+    QMutexLocker decodeLocker(&decodeMutex);
     for(auto* plugin : plugins)
     {
         if(plugin->decodeMsg(msg,triggeredByUser))
@@ -160,10 +163,13 @@ bool QDltPluginManager::decodeMsgTry(QDltMsg &msg, int triggeredByUser)
     if(!pluginListMutex.tryLock())
         return false;
 
-    for(auto* plugin : plugins)
     {
-        if(plugin->decodeMsg(msg,triggeredByUser))
-            break;
+        QMutexLocker decodeLocker(&decodeMutex);
+        for(auto* plugin : plugins)
+        {
+            if(plugin->decodeMsg(msg,triggeredByUser))
+                break;
+        }
     }
 
     pluginListMutex.unlock();

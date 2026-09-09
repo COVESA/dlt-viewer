@@ -96,7 +96,9 @@ public:
 private:
     mutable QMutex pluginListMutex;
 
-    //! Serializes decodeMsg() invocation on plugins across all callers (search/CFI/live-worker snapshots)
+    //! Serializes the actual plugin->decodeMsg() invocation across every entry point
+    //! (decodeMsg(), decodeMsgTry(), decodeMsgUsingPlugins()), since plugin instances
+    //! are shared and stateful and must never be called concurrently.
     mutable QMutex decodeMutex;
 
     //! The list of pointers to all loaded plugins

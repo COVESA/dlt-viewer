@@ -4966,14 +4966,9 @@ void MainWindow::processPendingUpdateIndex()
         return;
     }
 
-    updateIndex();
-     //if(outputfile.isOpen()) //&& ( settings->loggingOnlyMode == 0 )  )
-     //   {
-            if(false == dltIndexer->isRunning())
-            {
-                updateIndexLiveAsync();
-            }
-     //   }
+    // Delegate to the async worker; it falls back to the synchronous updateIndex()
+    // itself when liveIndexWorker isn't available, so no unconditional call is needed here.
+    updateIndexLiveAsync();
 }
 
 
