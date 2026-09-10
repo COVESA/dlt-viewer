@@ -44,6 +44,9 @@
 #include "tablemodel.h"
 #include "settingsdialog.h"
 #include "searchdialog.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "decodecacheservice.h"
 #include "filterdialog.h"
 #include "dltfileindexer.h"
 #include "workingdirectory.h"
@@ -111,9 +114,6 @@ namespace Ui {
 
 struct EcuTree;
 class QDltExporter;
-class FilterThreadWorker;
-class IndexThreadWorker;
-class DecodeManager;
 
 class MainWindow : public QMainWindow
 {
@@ -135,17 +135,16 @@ private:
 
     /* Timer for draw Event */
     QTimer drawTimer;
-    QTimer liveBatchTimer;
-
-    /* Timer to coalesce live-logging index/UI updates, independent of drawTimer's refresh-rate cadence */
-    QTimer indexUpdateTimer;
 
     QDltControl qcontrol;
     QFile outputfile;
     bool outputfileIsTemporary;
     bool outputfileIsFromCLI;
-    TableModel *tableModel;
-    SearchTableModel *m_searchtableModel;
+    CTableModel *m_tableModel;
+    CSearchTableModel *m_searchtableModel;
+    CQDltFileMessageStoreAdapter m_messageStore;
+    CIndexService m_indexService;
+    CDecodeCacheService m_decodeCacheService;
     WorkingDirectory workingDirectory;
     bool filterIsChanged;
 
@@ -165,19 +164,15 @@ private:
     unsigned long totalBytesRcvd;
     unsigned long totalByteErrorsRcvd;
     unsigned long totalSyncFoundRcvd;
-    int liveBatchPendingEvents;
-    int liveBatchPendingMatches;
-    int liveDisplayedRowCount;
-    bool liveBatchEventQueued;
 
     /* Search */
-    SearchDialog *searchDlg;
+    CSearchDialog *m_searchDlg;
     QShortcut *m_shortcut_searchnext;
     QShortcut *m_shortcut_searchprev;
     SearchForm* searchInput;
 
     /* CRLF Filter Window */
-    CrlfFilterWindow *crlfFilterWindow;
+    CrlfFilterWindow *m_crlfFilterWindow;
 
     /* Shortcuts */
     QShortcut *copyPayloadShortcut;
@@ -253,10 +248,6 @@ private:
 
     /* dlt-file Indexer with cancel cabability */
     DltFileIndexer *dltIndexer;
-    FilterThreadWorker *liveFilterWorker;
-    quint64 liveFilterGeneration;
-    IndexThreadWorker *liveIndexWorker;
-    DecodeManager *decodeManager;
 
     /* Color for blinking 'Apply changes'-button */
     QColor pulseButtonColor;
@@ -265,6 +256,9 @@ private:
 
     /* DLT File opened only Read only */
     bool isDltFileReadOnly;
+
+    bool m_liveFilterRefreshInProgress{false};
+    bool m_resumeDrawTimerAfterFilter{false};
 
     /* flag for enabled / disabled status of plugins */
     bool pluginsEnabled;
@@ -350,12 +344,7 @@ private:
     void checkConnectionState();
     void read(EcuItem *ecuitem);
     void updateIndex();
-    void updateIndexLiveAsync();
-    void postLiveBatchUpdateEvent();
-    void applyLiveBatchUpdate();
     void drawUpdatedView();
-    void syncLiveFilterWorkerConfig();
-    void resetLiveFilterGeneration();
 
     void syncCheckBoxesAndMenu();
 
@@ -423,7 +412,7 @@ private:
 
     void clearSelection();
     void saveSelection();
-    void restoreSelection();
+    void restoreSelection(bool scrollToSelection = true);
     QList<int> previousSelection;
 
     /* default filters */
@@ -441,7 +430,6 @@ private:
 
 
 protected:
-    bool event(QEvent *event) override;
     void keyPressEvent ( QKeyEvent * event ) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
     void dropEvent(QDropEvent *event) override;
@@ -457,7 +445,7 @@ private slots:
     void reloadLogFileFinishIndex();
     void reloadLogFileFinishFilter();
     void reloadLogFileFinishDefaultFilter();
-    void processPendingUpdateIndex();
+    void onIndexerRunFinished();
     void triggerPluginsAutoload();
 
     void onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected);
@@ -649,9 +637,6 @@ private slots:
     void on_lineEditFilterEnd_textChanged(const QString &arg1);
 
     void on_comboBoxFilterSelection_currentTextChanged(const QString &arg1);
-    void onLiveIndexBatchStarted();
-    void onLiveIndexBatchFinished();
-    void onLiveIndexDecision(int index, bool matched, QString markerFilterName);
 
 public slots:
     // this slot is required because it is implicitly used in qdltcontrol
@@ -675,7 +660,6 @@ public slots:
 
     void handleImportResults(const QString &);
     void handleExportResults(const QString &);
-    void onLiveFilterMatchesReady(const QVector<qint64> &indices, quint64 generation);
 
 public:
 
