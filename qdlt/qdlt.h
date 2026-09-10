@@ -38,5 +38,9 @@
 #include "qdltudpconnection.h"
 #include "qdltserialconnection.h"
 #include "qdltmessagedecoder.h"
+#include "messagestore.h"
+#include "indexservice.h"
+#include "qdltfileprojection.h"
+#include "decodecacheservice.h"
 
 #endif // QDLT_H

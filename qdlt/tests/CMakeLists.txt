@@ -3,6 +3,8 @@ add_executable(test_qdlt
     test_dltctrlmsg.cpp
     test_qdltargument.cpp
     test_qdltmsgwrapper.cpp
+    test_qdltfile.cpp
+    test_qdltpluginmanager.cpp
 )
 target_link_libraries(
   test_qdlt

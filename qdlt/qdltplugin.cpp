@@ -6,6 +6,8 @@
 
 #include <QPluginLoader>
 
+#include <utility>
+
 QDltPlugin::QDltPlugin()
 {
     plugininterface = 0;
@@ -26,7 +28,11 @@ int QDltPlugin::getMode()
 void QDltPlugin::setMode(QDltPlugin::Mode _mode)
 {
     //return QDltSettingsManager::getInstance()->value("plugin/pluginmodefor"+getName(),QVariant(QDltPlugin::ModeDisable)).toInt();
+    if (mode == _mode)
+        return;
+
     mode = _mode;
+    notifyDecodePipelineChanged();
 }
 
 void QDltPlugin::setFilename(QString _filename)
@@ -34,6 +40,7 @@ void QDltPlugin::setFilename(QString _filename)
     filename = _filename;
     if(plugininterface)
         plugininterface->loadConfig(_filename);
+    notifyDecodePipelineChanged();
     setMode(ModeEnable);
 
 }
@@ -73,6 +80,17 @@ void QDltPlugin::loadPlugin(QObject *plugin)
     plugincommandinterface = qobject_cast<QDltPluginCommandInterface *>(plugin);
     //item->update();
 
+}
+
+void QDltPlugin::setDecodePipelineChangedCallback(std::function<void()> callback)
+{
+    m_decodePipelineChangedCallback = std::move(callback);
+}
+
+void QDltPlugin::notifyDecodePipelineChanged()
+{
+    if (m_decodePipelineChangedCallback)
+        m_decodePipelineChangedCallback();
 }
 
 bool QDltPlugin::isDecoder()
@@ -131,7 +149,12 @@ QString QDltPlugin::error()
 bool QDltPlugin::loadConfig(QString filename)
 {
     if(plugininterface)
-        return plugininterface->loadConfig(filename);
+    {
+        const bool result = plugininterface->loadConfig(filename);
+        if (result)
+            notifyDecodePipelineChanged();
+        return result;
+    }
     else
         return false;
 }
@@ -259,15 +282,28 @@ if(plugincontrolinterface)
 void QDltPlugin::configurationChanged()
 {
 if(plugincontrolinterface)
+{
     plugincontrolinterface->configurationChanged();
+    notifyDecodePipelineChanged();
+}
 }
 
 // decoder plugin interfaces
 bool QDltPlugin::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    if(mode != ModeDisable && plugindecoderinterface && plugindecoderinterface->isMsg(msg,triggeredByUser))
+    if(mode != ModeDisable && plugindecoderinterface)
     {
-        return plugindecoderinterface->decodeMsg(msg,triggeredByUser);
+        // Decode transactionally: replace the original message only after a successful match and decode.
+        QDltMsg candidate = msg;
+
+        if (!plugindecoderinterface->isMsg(candidate, triggeredByUser))
+            return false;
+
+        if (!plugindecoderinterface->decodeMsg(candidate, triggeredByUser))
+            return false;
+
+        msg = candidate;
+        return true;
     }
     return false;
 }
@@ -282,7 +318,10 @@ bool QDltPlugin::command(QString cmd,QList<QString> params)
             setMode(ModeEnable);
 
         // execute command
-        return plugincommandinterface->command(cmd,params);
+        const bool result = plugincommandinterface->command(cmd,params);
+        if (result)
+            notifyDecodePipelineChanged();
+        return result;
     }
     else
         return false;
