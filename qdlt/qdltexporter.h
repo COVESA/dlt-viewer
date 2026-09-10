@@ -10,6 +10,8 @@
 #include "qdltfile.h"
 #include "qdltmsg.h"
 #include "qdltpluginmanager.h"
+#include "messagestore.h"
+#include "decodecacheservice.h"
 
 
 #define QDLT_DEFAULT_EXPORT_SIGNATURE "ITSOEACNYUMRP"
@@ -53,6 +55,7 @@ private:
     bool getMsg(unsigned long int num, QDltMsg &msg, QByteArray &buf);
     bool exportMsg(unsigned long int num, QDltMsg &msg,QByteArray &buf,QFile &to);
     QByteArray createDltMessage(const QDltMsg &msg, const QString &payload);
+    int globalIndexForSelectionRow(unsigned long int num) const;
 
 public:
 
@@ -116,6 +119,8 @@ private:
     QList<QFile*> multifilterFilesList;
     QList<QDltFilterList*> multifilterFilterList;
     QString signature;
+    CQDltFileMessageStoreAdapter messageStore;
+    CDecodeCacheService decodeCacheService;
 };
 
 #endif // QDLTEXPORTER_H
