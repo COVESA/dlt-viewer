@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file searchdialog.h
+ * \file CSearchDialog.h
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -33,10 +33,11 @@
 #include <QTableView>
 
 #include <atomic>
-#include <memory>
+#include <cstdint>
+#include <vector>
 
-#include "searchsnapshot.h"
 #include "searchtablemodel.h"
+#include "decodecacheservice.h"
 
 namespace Ui {
 class SearchDialog;
@@ -46,25 +47,25 @@ class QDltFile;
 class QDltPluginManager;
 
 /**
- * @class SearchDialog
+ * @class CSearchDialog
  * @brief Provides a dialog for searching messages in DLT Viewer.
  *      * Handles search parameters, search execution, result highlighting, and search history.
  */
-class SearchDialog : public QDialog {
+class CSearchDialog : public QDialog {
     Q_OBJECT
 
 public:
 
     /**
-     * @brief Constructor for SearchDialog.
+     * @brief Constructor for CSearchDialog.
      * @param parent Parent widget.
      */
-    explicit SearchDialog(QWidget *parent = nullptr);
+    explicit CSearchDialog(QWidget *parent = nullptr);
     /**
-     * @brief Destructor for SearchDialog.
+     * @brief Destructor for CSearchDialog.
      */
 
-    ~SearchDialog();
+    ~CSearchDialog();
 
     /**
      * @brief Focuses the specified row in the table.
@@ -112,25 +113,31 @@ public:
 
     /**
      * @brief Registers the search table model.
-     * @param model Pointer to SearchTableModel.
+     * @param model Pointer to CSearchTableModel.
      */
-    void registerSearchTableModel(SearchTableModel *model);
+    void registerSearchTableModel(CSearchTableModel *model);
+    //! Invalidate decoded messages when the active file contents are replaced.
+    void invalidateDecodeCache();
+    //! Inject the shared decode cache instance owned by MainWindow.
+    void setDecodeCacheService(CDecodeCacheService *service) { m_decodeCacheService = service; }
 
     QDltFile *file{nullptr};
     QTableView *table{nullptr};
     QDltPluginManager *pluginManager{nullptr};
     QCheckBox *regexpCheckBox{nullptr};
 
+    //! Set inclusive UI time range constraints for timestamp search.
     void setTimeRange(const QDateTime &min, const QDateTime &max);
+    //! Return whether timestamp range controls should be reset.
     bool needTimeRangeReset() const;
 private:
     Ui::SearchDialog *ui{nullptr};
-    SearchTableModel *m_searchtablemodel{nullptr};
+    CSearchTableModel *m_searchtablemodel{nullptr};
 
     std::atomic_bool isSearchCancelled{false};
-    QFutureWatcher<int> m_findAllWatcher;
+    QFutureWatcher<std::vector<std::uint64_t>> m_findAllWatcher;
     QElapsedTimer m_findAllUiUpdateTimer;
-    qint64 m_findAllLastUiUpdateMs{0};
+    std::int64_t m_findAllLastUiUpdateMs{0};
     int m_findAllAddedSinceLastUiUpdate{0};
 
     long int startLine{-1};
@@ -148,7 +155,8 @@ private:
 
     QColor highlightColor;
 
-    QHash<QString, QList <unsigned long>> cachedHistoryKey;
+    QHash<QString, std::vector<unsigned long>> cachedHistoryKey;
+    CDecodeCacheService *m_decodeCacheService = nullptr;
 
     /**
      * @brief Sets the regular expression checkbox state.
@@ -157,16 +165,16 @@ private:
     void setRegExp(bool regExp);
     /**
      * @brief Adds a found line to the search index.
-     * @param searchLine Line number.
+        * @param globalIndex Global message index.
      */
-    void addToSearchIndex(int messageIndex);
+        void addToSearchIndex(int globalIndex);
     /**
      * @brief Iterates through messages and finds matches.
      * @param searchLine Start line.
      * @param searchBorder Border line.
      * @param searchTextRegExp Regular expression for search.
      */
-    void findMessages(const std::shared_ptr<const SearchSnapshot> &snapshot, long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
+    void findMessages(long int searchLine, long int searchBorder, QRegularExpression &searchTextRegExp);
     /**
      * @brief Updates the color button icon.
      */
@@ -203,10 +211,14 @@ private:
      * @return Result code.
      */
     void startParallelFindAll(QRegularExpression searchTextRegExp);
+    //! Update find-all progress in the UI.
     void reportProgress(int progress);
+    //! Append a batch of matches found so far to the search table, live during the search.
+    void publishPartialMatches(const std::vector<std::uint64_t> &matches);
+    //! Finalize UI state after async find-all completion.
     void onFindAllFinished();
-    void appendFindAllMatchesChunk(const QList<unsigned long>& entries);
 
+    //! Execute single-step find next/previous operation.
     int find();
 
     /**
@@ -239,6 +251,7 @@ private:
      * @return True if next, false if previous.
      */
     bool getNextClicked();
+    //! Return whether the search button was clicked at least once.
     bool getClicked();
 
     /**
@@ -250,9 +263,10 @@ private:
     /**
      * @brief Handles actions when a matching line is found.
      * @param searchLine Line number.
+        * @param globalIndex Global message index.
      * @return True to break search, false to continue.
      */
-    bool foundLine(long int searchLine, int messageIndex);
+        bool foundLine(long int searchLine, int globalIndex);
     /**
      * @brief Gets the APID text.
      * @return APID as QString.
@@ -273,14 +287,15 @@ private:
      * @return End timestamp as QString.
      */
     QString getTimeStampEnd();
-    QList < QList <unsigned long>> m_searchHistory;
+    std::vector<std::vector<unsigned long>> m_searchHistory;
     QList<QLineEdit*> lineEdits;
-    SearchSnapshotManager m_searchSnapshotManager;
 
 private slots:
-
+    //! React to search text edits in the dialog.
     void on_lineEditSearch_textEdited(QString newText);
+    //! Open color picker for match highlight color.
     void on_buttonHighlightColor_clicked();
+    //! Toggle asynchronous find-all mode.
     void on_checkBoxFindAll_toggled(bool checked);
 
     /**

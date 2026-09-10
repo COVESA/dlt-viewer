@@ -28,75 +28,92 @@
 #include <QHeaderView>
 #include <QEvent>
 #include <QToolTip>
-#include <QVector>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
 #include "fieldnames.h"
-#include <qdltlrucache.hpp>
+#include "decodecacheservice.h"
 
 #include <optional>
+#include <vector>
 
 #define DLT_VIEWER_COLUMN_COUNT FieldNames::Arg0
 
-class TableModel : public QAbstractTableModel
+class CTableModel : public QAbstractTableModel
 {
 Q_OBJECT
 
 public:
-    TableModel(const QString &data, QObject *parent = 0);
-    ~TableModel();
+    //! Construct the main table model.
+    CTableModel(const QString &data, QObject *parent = 0);
+    //! Destroy the main table model.
+    ~CTableModel();
 
+    //! Return data for a table cell.
     QVariant data(const QModelIndex &index, int role) const;
+    //! Return header data for a column or row.
     QVariant headerData(int section, Qt::Orientation orientation,
          int role = Qt::DisplayRole) const;
+    //! Return current row count for the active view.
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    //! Return number of visible columns.
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;
     Project *project;
     QDltPluginManager *pluginManager;
+    //! Notify attached views that the model content changed semantically.
     void modelChanged();
-    void appendRows(int firstRow, int lastRow);
+    //! Notify attached views about a visual-only change without invalidating message caches.
+    void refreshVisualData();
+    //! Notify attached views that live logging appended new rows.
+    void liveDataAppended();
+    //! Set marker highlight at a specific row.
     int setMarker(long int lineindex, QColor hlcolor); //used in search functionality
+    //! Set manual marker highlight for selected rows.
     int setManualMarker(QList<unsigned long int> selectedMarkerRows, QColor hlcolor); //used in mainwindow
     void setForceEmpty(bool emptyForceFlag) { this->emptyForceFlag = emptyForceFlag; }
-    bool isForceEmpty() const { return emptyForceFlag; }
     void setLoggingOnlyMode(bool loggingOnlyMode) { this->loggingOnlyMode = loggingOnlyMode; }
     void setLastSearchIndex(int idx) {this->lastSearchIndex = idx;}
+    //! Return tooltip text for a given field/column.
     QString getToolTipForFields(FieldNames::Fields cn);
+    //! Inject the shared decode cache instance owned by MainWindow.
+    void setDecodeCacheService(CDecodeCacheService *service) { m_decodeCacheService = service; }
 
 private:
-    struct DecodedMsgCacheEntry
-    {
-        long int filterPosIndex;
-        std::optional<QDltMsg> msg;
-    };
-
     long int lastSearchIndex;
     bool emptyForceFlag;
     bool loggingOnlyMode;
+    int m_lastKnownRowCount;
+    int m_lastKnownColumnCount;
 
-    // Dedup getMsg()/decodeMsg() across roles and columns for recently rendered rows.
-    mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
-
-    std::optional<QDltMsg> getDecodedMsg(int row, long int filterposindex) const;
-    QVariant buildDisplayValue(int column, long int filterPosIndex, const std::optional<QDltMsg> &msg) const;
+    mutable std::vector<int> m_filteredProjectionCache;
+    CDecodeCacheService *m_decodeCacheService = nullptr;
 
     long int searchhit;
     QColor searchBackgroundColor() const;
     QColor searchhit_higlightColor;
     QColor manualMarkerColor;
     QList<unsigned long int> selectedMarkerRows;
+    //! Resolve model row index to global message index.
+    int resolveGlobalIndexForRow(int row) const;
+    //! Clear all caches whose entries depend on the current file/filter row mapping.
+    void invalidateMessageCaches(bool clearDecodedMessages);
+    //! Notify Qt views about row/column delta updates.
+    void notifyModelDelta(int currentRowCount, int currentColumnCount);
+    //! Compute message background color for a row.
     QColor getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const;
+    //! Handle tooltip and related item-view events.
     bool eventFilter(QObject *obj, QEvent *event);
 };
 
-class HtmlDelegate : public QStyledItemDelegate
+class CHtmlDelegate : public QStyledItemDelegate
 {
 protected:
+    //! Paint rich-text content in item delegates.
     void paint ( QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index ) const;
+    //! Return rich-text item size hint.
     QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const;
 };
 

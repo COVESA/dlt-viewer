@@ -55,8 +55,10 @@ bool DltMessageMatcher::matchHeaderAndPayload(const QDltMsg &msg, const QString 
 {
     if (m_headerSearchEnabled) {
         auto header = msg.toStringHeader();
-        if (m_messageIdFormat)
-            header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8(), msg.getMessageId());
+        if (m_messageIdFormatUtf8)
+            header += ' ' + QString::asprintf(m_messageIdFormatUtf8->constData(), msg.getMessageId());
+        else if (m_messageIdFormat)
+            header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8().constData(), msg.getMessageId());
         if (searchText.isEmpty() || header.contains(searchText, m_caseSensitivity))
             return true;
     }
@@ -73,8 +75,10 @@ bool DltMessageMatcher::matchHeaderAndPayload(const QDltMsg &msg, const QRegular
 {
     if (m_headerSearchEnabled) {
         auto header = msg.toStringHeader();
-        if (m_messageIdFormat)
-            header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8(), msg.getMessageId());
+        if (m_messageIdFormatUtf8)
+            header += ' ' + QString::asprintf(m_messageIdFormatUtf8->constData(), msg.getMessageId());
+        else if (m_messageIdFormat)
+            header += ' ' + QString::asprintf(m_messageIdFormat->toUtf8().constData(), msg.getMessageId());
         if (header.contains(pattern))
             return true;
     }
