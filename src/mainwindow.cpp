@@ -7132,6 +7132,9 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
         if(!item->getPlugin()->isViewer())
             dlg.removeMode(2); // remove show mode, if no viewer plugin
         dlg.setType(item->getType());
+        // Multiple file/directory selection is disabled by default; only
+        // enable it for plugins that explicitly opted in.
+        dlg.setMultiSelectionEnabled(item->getPlugin()->allowsMultipleFiles());
         if(dlg.exec()) {
             /* Check if there was a change that requires a refresh */
             if(item->getMode() != dlg.getMode())

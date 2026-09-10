@@ -79,6 +79,13 @@ public:
     QStringList infoConfig();
 
     // viewer plugin interfaces
+    /*!
+      Disabled by default; plugins must opt in via QDLTPluginInterface::allowsMultipleFiles().
+      \return True if the plugin supports multiple files/directories.
+    */
+    bool allowsMultipleFiles();
+
+    // viewer plugin interfaces
     QWidget* initViewer();
     void initFileStart(QDltFile *file);
     void initMsg(int index, QDltMsg &msg);
