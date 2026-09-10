@@ -79,6 +79,8 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     filterIndexEnabled = false;
     filterIndexStart = 0;
     filterIndexEnd = 0;
+
+    messageStore.setFile(nullptr);
 }
 
 DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManager, QDltDefaultFilter *defaultFilter, QMainWindow *parent) :
@@ -107,6 +109,8 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     filterIndexEnabled = false;
     filterIndexStart = 0;
     filterIndexEnd = 0;
+
+    messageStore.setFile(dltFile);
 }
 
 DltFileIndexer::~DltFileIndexer()
@@ -502,6 +506,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     unsigned int progressCounter = 1;
     emit progress(0);
 
+    // Single-pass scan optimization: skip cache bookkeeping during full CFI traversal.
+    if(dltFile)
+        dltFile->setCacheSinglePassBypass(true);
+
     // Start reading messages
     for(ix=start;ix<end;ix++)
     {
@@ -531,6 +539,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
         // stop if requested
         if(stopFlag)
         {
+            if(dltFile)
+                dltFile->setCacheSinglePassBypass(false);
+
             if(useIndexerThread)
             {
                 indexerThread.requestStop();
@@ -540,6 +551,10 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
             return false;
         }
     }
+
+    if(dltFile)
+        dltFile->setCacheSinglePassBypass(false);
+
     emit(progress(100));
     qDebug() << "CFI:" << 100 << "%";
     // destroy threads
@@ -616,6 +631,10 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
     const int total = indices.size();
     const int step = qMax(1, total / 200); // throttle UI updates
 
+    // Bypass the cache because each filtered message is accessed only once.
+    if(dltFile)
+        dltFile->setCacheSinglePassBypass(true);
+
     for(int i = 0; i < total; ++i)
     {
         const qint64 rawIndex = indices[i];
@@ -639,6 +658,9 @@ void DltFileIndexer::computeMarkerCountsFromIndex(const QDltFilterList &filterLi
         if ((i % step) == 0 || i + 1 == total)
             emit markerCountProgressValue(i + 1);
     }
+
+    if(dltFile)
+        dltFile->setCacheSinglePassBypass(false);
 }
 
 bool DltFileIndexer::indexDefaultFilter()
@@ -843,6 +865,7 @@ void DltFileIndexer::run()
             if((mode != modeNone) && !indexFilter(filenames))
             {
                 // error
+                emit(runAborted());
                 return;
             }
         }
@@ -865,6 +888,7 @@ void DltFileIndexer::run()
         if(false == indexDefaultFilter())
         {
             // error
+            emit(runAborted());
             return;
         }
         emit(finishDefaultFilter());
