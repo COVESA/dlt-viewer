@@ -8,6 +8,8 @@
 #include "export_rules.h"
 
 #include <QDir>
+#include <atomic>
+#include <cstdint>
 
 //! Manage all DLT Plugins
 /*!
@@ -21,6 +23,13 @@ class QPluginLoader;
 class QDLT_EXPORT QDltPluginManager : public QDltMessageDecoder
 {
 public:
+    enum class PluginStage
+    {
+        Ingest,
+        Decode,
+        Enrich
+    };
+
     QDltPluginManager() = default;
     ~QDltPluginManager();
 
@@ -54,6 +63,14 @@ public:
       \param triggeredByUser Whether decode operation was triggered by the user or not
     */
     void decodeMsg(QDltMsg &msg,int triggeredByUser) override;
+
+    //! Decode message through enabled decoder plugins and report if handled.
+    bool decodeMsgHandled(QDltMsg &msg, int triggeredByUser);
+
+    //! Return the generation identifying the current decoder pipeline state.
+    std::uint64_t decodePipelineGeneration() const noexcept;
+    //! Mark decoder order, mode, or configuration as changed.
+    void invalidateDecodePipeline() noexcept;
 
     //! Try to decode without blocking when plugin list is currently busy.
     /*! Returns false when decode was skipped to avoid lock contention. */
@@ -100,6 +117,7 @@ private:
     //! (decodeMsg(), decodeMsgTry(), decodeMsgUsingPlugins()), since plugin instances
     //! are shared and stateful and must never be called concurrently.
     mutable QMutex decodeMutex;
+    std::atomic<std::uint64_t> m_decodePipelineGeneration{1};
 
     //! The list of pointers to all loaded plugins
     QList<QDltPlugin*> plugins;
