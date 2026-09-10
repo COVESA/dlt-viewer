@@ -192,12 +192,12 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset, QDlt::D
     {
         if((unsigned int)payload.size()<(offset+length))
             return false;
-        data = payload.mid(offset,length);
+        data = payload.mid(offset, static_cast<int>(length));
         offset += length;
     }
     else if(typeInfo == DltTypeInfoBool)
     {
-        data = payload.mid(offset,1);
+        data = payload.mid(offset, 1);
         offset += 1;
     }
     else if(typeInfo == DltTypeInfoSInt || typeInfo == DltTypeInfoUInt)
@@ -206,31 +206,31 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset, QDlt::D
         {
             case DLT_TYLE_8BIT:
             {
-                data = payload.mid(offset,1);
+                data = payload.mid(offset, 1);
                 offset += 1;
                 break;
             }
             case DLT_TYLE_16BIT:
             {
-                data = payload.mid(offset,2);
+                data = payload.mid(offset, 2);
                 offset += 2;
                 break;
             }
             case DLT_TYLE_32BIT:
             {
-                data = payload.mid(offset,4);
+                data = payload.mid(offset, 4);
                 offset += 4;
                 break;
             }
             case DLT_TYLE_64BIT:
             {
-                data = payload.mid(offset,8);
+                data = payload.mid(offset, 8);
                 offset += 8;
                 break;
             }
             case DLT_TYLE_128BIT:
             {
-                data = payload.mid(offset,16);
+                data = payload.mid(offset, 16);
                 offset += 16;
                 break;
             }
@@ -247,31 +247,31 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset, QDlt::D
         {
             case DLT_TYLE_8BIT:
             {
-                data = payload.mid(offset,1);
+                data = payload.mid(offset, 1);
                 offset += 1;
                 break;
             }
             case DLT_TYLE_16BIT:
              {
-                data = payload.mid(offset,2);
+                data = payload.mid(offset, 2);
                 offset += 2;
                 break;
             }
             case DLT_TYLE_32BIT:
             {
-                data = payload.mid(offset,4);
+                data = payload.mid(offset, 4);
                 offset += 4;
                 break;
             }
             case DLT_TYLE_64BIT:
             {
-                data = payload.mid(offset,8);
+                data = payload.mid(offset, 8);
                 offset += 8;
                 break;
             }
             case DLT_TYLE_128BIT:
             {
-                data = payload.mid(offset,16);
+                data = payload.mid(offset, 16);
                 offset += 16;
                 break;
             }
@@ -405,13 +405,11 @@ QString QDltArgument::toString(bool binary) const
     case DltTypeInfoUnknown:
         text += QString("?");
         break;
-    // for legacy reasons dlt-viewer does not make a difference between formally ASCII-only and UTF8 strings
-    // both are handled as UTF8-encoded
-    // see https://github.com/COVESA/dlt-viewer/issues/657
+    // Treat legacy ASCII-only and UTF-8 strings alike for compatibility.
     case DltTypeInfoStrg:
     case DltTypeInfoUtf8:
         if(data.size()) {
-            text += QString::fromUtf8(data);
+            text += QString::fromUtf8(data.constData(), data.size());
         }
         break;
     case DltTypeInfoBool:
@@ -549,7 +547,7 @@ QVariant QDltArgument::getValue() const
     case DltTypeInfoStrg:
     case DltTypeInfoUtf8:
         if(data.size()) {
-            return QVariant(QString::fromUtf8(data));
+            return QVariant(QString::fromUtf8(data.constData(), data.size()));
         }
         break;
     case DltTypeInfoBool:
