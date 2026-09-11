@@ -39,6 +39,7 @@ QDltFile::QDltFile()
     sortByTimeFlag = false;
     sortByTimestampFlag = false;
 
+    recentRequestedIndices.fill(-1);
     cache.setMaxCost(1000);
     cacheEnable = true;
 }
@@ -46,6 +47,56 @@ QDltFile::QDltFile()
 QDltFile::~QDltFile()
 {
     clear();
+}
+
+bool QDltFile::shouldUseMessageCache(int index) const
+{
+    if(lastRequestedMsgIndex < 0)
+    {
+        lastRequestedMsgIndex = index;
+        sequentialAccessStreak = 0;
+        sequentialScanMode = false;
+        return true;
+    }
+
+    const int step = index - lastRequestedMsgIndex;
+    lastRequestedMsgIndex = index;
+
+    // Bulk scans typically read strictly adjacent rows. Disable cache churn after a short warm-up.
+    if(step == 1 || step == -1)
+    {
+        if(sequentialAccessStreak < 1024)
+        {
+            ++sequentialAccessStreak;
+        }
+        if(sequentialAccessStreak >= 32)
+        {
+            sequentialScanMode = true;
+        }
+        return !sequentialScanMode;
+    }
+
+    // Any non-adjacent jump indicates random/semi-random access, where cache helps again.
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+    return true;
+}
+
+bool QDltFile::shouldAdmitCacheInsertLocked(int index) const
+{
+    for(const int recentIndex : recentRequestedIndices)
+    {
+        if(recentIndex == index)
+        {
+            recentRequestedIndices[recentRequestedWritePos] = index;
+            recentRequestedWritePos = (recentRequestedWritePos + 1) % kRecentAccessWindow;
+            return true;
+        }
+    }
+
+    recentRequestedIndices[recentRequestedWritePos] = index;
+    recentRequestedWritePos = (recentRequestedWritePos + 1) % kRecentAccessWindow;
+    return false;
 }
 
 void QDltFile::setCacheSize(qsizetype cost)
@@ -60,6 +111,19 @@ void QDltFile::setCacheSize(qsizetype cost)
         cacheEnable = true;
         cache.setMaxCost(cost);
     }
+}
+
+void QDltFile::resetCacheAccessPattern()
+{
+    lastRequestedMsgIndex = -1;
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+}
+
+void QDltFile::setCacheSinglePassBypass(bool enabled)
+{
+    // Atomic store: no lock needed, getMsg() reads this flag without holding mutexQDlt.
+    cacheSinglePassBypass.store(enabled, std::memory_order_relaxed);
 }
 
 void QDltFile::setDLTv2Support(bool _dltv2Support)
@@ -85,6 +149,11 @@ void QDltFile::clear()
     files.clear();
 
     cache.clear();
+    lastRequestedMsgIndex = -1;
+    sequentialAccessStreak = 0;
+    sequentialScanMode = false;
+    recentRequestedIndices.fill(-1);
+    recentRequestedWritePos = 0;
 
     indexFilter.clear();
     indexFilterBase.clear();
@@ -625,22 +694,12 @@ void QDltFile::addFilterIndex (int index)
 #ifdef USECOLOR
     QColor QDltFile::checkMarker(const QDltMsg &msg)
     {
-        if(!filterFlag)
-        {
-            return QColor();
-        }
-
         return filterList.checkMarker(msg);
     }
 
 #else
  QString QDltFile::checkMarker(const QDltMsg &msg)
  {
-     if(!filterFlag)
-     {
-         return QString(""); // invalid colour
-     }
-
      return filterList.checkMarker(msg);
  }
 #endif
@@ -761,18 +820,23 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
 {
     bool result;
     QDltMsg *cacheMsg;
+    bool useCache = false;
 
-    // check if msg is already in cache
-    if(cacheEnable)
+    // Detect scan access patterns and avoid cache churn on sequential one-pass workloads.
+    if(cacheEnable && !cacheSinglePassBypass)
     {
         mutexQDlt.lock();
-        cacheMsg = cache[index];
-        if(cacheMsg)
+        useCache = shouldUseMessageCache(index);
+        if(useCache)
         {
-            // load from cache
-            msg = *cacheMsg;
-            mutexQDlt.unlock();
-            return true;
+            cacheMsg = cache[index];
+            if(cacheMsg)
+            {
+                // load from cache
+                msg = *cacheMsg;
+                mutexQDlt.unlock();
+                return true;
+            }
         }
         mutexQDlt.unlock();
     }
@@ -783,15 +847,16 @@ bool QDltFile::getMsg(int index,QDltMsg &msg)
         return false;
 
     // store msg in cache
-    if(cacheEnable && result)
+    if(cacheEnable && !cacheSinglePassBypass && useCache && result)
     {
-        cacheMsg = new QDltMsg();
-        *cacheMsg = msg;
         mutexQDlt.lock();
-        if(!cache.insert(index,cacheMsg))
+        const bool admitInsert = shouldAdmitCacheInsertLocked(index);
+        if(admitInsert)
         {
-            // object deleted already by insert function
-            // delete cacheMsg;
+            cacheMsg = new QDltMsg();
+            *cacheMsg = msg;
+            // QCache takes ownership; on failed insert it deletes cacheMsg itself, no cleanup needed here.
+            cache.insert(index,cacheMsg);
         }
         mutexQDlt.unlock();
     }
@@ -889,6 +954,85 @@ bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
     return result;
 }
 
+QByteArray QDltFile::getMsg(int index, QFile &reader)
+{
+    if (index < 0)
+        return {};
+
+    QString fileName;
+    qint64 position = 0;
+    qint64 length = 0;
+
+    {
+        QMutexLocker locker(&mutexQDlt);
+        int localIndex = index;
+        int fileIndex = 0;
+        for (; fileIndex < files.size(); ++fileIndex)
+        {
+            if (localIndex < files[fileIndex]->indexAll.size())
+                break;
+            localIndex -= files[fileIndex]->indexAll.size();
+        }
+
+        if (fileIndex >= files.size())
+            return {};
+
+        const QDltFileItem *file = files[fileIndex];
+        if (!file->infile.isOpen())
+            return {};
+
+        position = file->indexAll[localIndex];
+        const qint64 endPosition = (localIndex + 1 < file->indexAll.size())
+            ? file->indexAll[localIndex + 1]
+            : file->infile.size();
+        length = endPosition - position;
+        fileName = file->infile.fileName();
+    }
+
+    if (length < 0)
+        return {};
+
+    if (reader.fileName() != fileName)
+    {
+        if (reader.isOpen())
+            reader.close();
+        reader.setFileName(fileName);
+        if (!reader.open(QIODevice::ReadOnly))
+        {
+            // Ensure reader is left in clean state on error
+            if (reader.isOpen())
+                reader.close();
+            return {};
+        }
+    }
+
+    if (!reader.seek(position))
+        return {};
+
+    return reader.read(length);
+}
+
+bool QDltFile::messageAt(int index, QDltMsg &msg, bool useCache) const
+{
+    if (useCache)
+        return const_cast<QDltFile*>(this)->getMsg(index, msg);
+
+    const QByteArray data = getMsg(index);
+    if (data.isEmpty())
+        return false;
+
+    bool parsed = msg.setMsg(data, true, dltv2Support);
+    if (!parsed && !dltv2Support)
+        parsed = msg.setMsg(data, true, true);
+    msg.setIndex(index);
+    return parsed;
+}
+
+QByteArray QDltFile::messageBytesAt(int index) const
+{
+    return getMsg(index);
+}
+
 QByteArray QDltFile::getMsgFilter(int index) const
 {
     if(filterFlag)
@@ -943,6 +1087,11 @@ int QDltFile::getMsgFilterPos(int index) const
         }
         return index;
     }
+}
+
+int QDltFile::filteredGlobalIndexAt(int index) const
+{
+    return getMsgFilterPos(index);
 }
 
 void QDltFile::clearFilter()

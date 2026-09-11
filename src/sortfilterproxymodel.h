@@ -27,29 +27,4 @@ private:
     SortType sort_type = ALPHABETICALLY;
 };
 
-class EcuIdFilterProxyModel : public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    explicit EcuIdFilterProxyModel(QObject* parent = nullptr);
-
-    void setEcuId(const QString& ecuId);
-    void setEcuIdList(const QSet<QString> &ids);
-    void setEcuColumn(int column);
-    
-    // Override data method to preserve original indices
-    QVariant data(const QModelIndex &index, int role) const override;
-
-protected:
-    bool filterAcceptsRow(int row, const QModelIndex& parent) const override;
-    bool lessThan(const QModelIndex &left, const QModelIndex &right) const override;
-
-private:
-    void updateFilter();
-
-    QString ecu;
-    QSet<QString> ecuIdList;
-    int ecuColumn = 4;
-};
-
 #endif // SORTFILTERPROXYMODEL_H
