@@ -94,7 +94,6 @@ void QDltFilterList::addFilter(QDltFilter *_filter)
 QColor QDltFilterList::checkMarker(const QDltMsg &msg)
 {
     QDltFilter *filter;
-    QColor color;
 
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
@@ -102,17 +101,16 @@ QColor QDltFilterList::checkMarker(const QDltMsg &msg)
 
         if(filter->match(msg))
         {
-            color = filter->filterColour;
-            break;
+            return filter->filterColour;
         }
     }
-    return color;
+
+    return QColor();
 }
 #else
 QString QDltFilterList::checkMarker(const QDltMsg &msg)
 {
     QDltFilter *filter;
-    QString color=""; // invalid colour
 
     for(int numfilter=0;numfilter<mfilters.size();numfilter++)
     {
@@ -120,11 +118,11 @@ QString QDltFilterList::checkMarker(const QDltMsg &msg)
 
         if(filter->match(msg))
         {
-            color = filter->filterColour;
-            break;
+            return filter->filterColour;
         }
     }
-    return color;
+
+    return QString("");
 }
 
 #endif

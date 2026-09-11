@@ -3152,8 +3152,7 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
     {
         workingDirectory.setDlfDirectory(QFileInfo(fileName).absolutePath());
         setCurrentFilters(fileName);
-        applyConfigEnabled(true);
-        on_filterWidget_itemSelectionChanged();
+        filterCountChanged();
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
     }
     else
@@ -7242,6 +7241,7 @@ void MainWindow::filterAddTable() {
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
         filterIsChanged = true;
+        filterCountChanged();
     }
 }
 
@@ -7296,6 +7296,7 @@ void MainWindow::filterAdd()
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
         filterIsChanged = true;
+        filterCountChanged();
     }
 }
 
@@ -7345,6 +7346,7 @@ void MainWindow::on_action_menuFilter_Add_triggered() {
         project.filter->addTopLevelItem(item);
         filterDialogRead(dlg,item);
         filterIsChanged = true;
+        filterCountChanged();
     }
 }
 
@@ -7602,6 +7604,7 @@ void MainWindow::on_action_menuFilter_Duplicate_triggered() {
             project.filter->addTopLevelItem(newitem);
             filterDialogRead(dlg,newitem);
             filterIsChanged = true;
+            filterCountChanged();
         }
     }
     else {
@@ -7633,6 +7636,7 @@ void MainWindow::on_action_menuFilter_Edit_triggered()
         {
             filterDialogRead(dlg,item);
             filterIsChanged = true;
+            filterCountChanged();
         }
     }
     else {
@@ -7683,9 +7687,7 @@ void MainWindow::onactionmenuFilter_SetAllActiveTriggered()
         }
     }
 
-    applyConfigEnabled(true);
-
-    on_filterWidget_itemSelectionChanged();
+    filterCountChanged();
 }
 
 void MainWindow::onactionmenuFilter_SetAllInactiveTriggered()
@@ -7718,16 +7720,14 @@ void MainWindow::onactionmenuFilter_SetAllInactiveTriggered()
         }
     }
 
-    applyConfigEnabled(true);
-
-    on_filterWidget_itemSelectionChanged();
+    filterCountChanged();
 }
 
 void MainWindow::on_action_menuFilter_Clear_all_triggered()
 {
     /* delete complete filter list */
     project.filter->clear();
-    applyConfigEnabled(true);
+    filterCountChanged();
     filterIsChanged = false;
 }
 
@@ -8177,8 +8177,6 @@ void MainWindow::on_pluginWidget_itemExpanded(QTreeWidgetItem* item)
 
 void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
 {
-    on_filterWidget_itemSelectionChanged();
-
     if(column == 0)
     {
         FilterItem *tmp = (FilterItem*)item;
@@ -8190,7 +8188,11 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         {
             tmp->filter.enableFilter = true;
         }
-        applyConfigEnabled(true);
+        filterCountChanged();
+    }
+    else
+    {
+        on_filterWidget_itemSelectionChanged();
     }
 }
 

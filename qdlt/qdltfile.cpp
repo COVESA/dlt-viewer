@@ -723,22 +723,12 @@ void QDltFile::addFilterIndices(const QVector<qint64> &indices)
 #ifdef USECOLOR
     QColor QDltFile::checkMarker(const QDltMsg &msg)
     {
-        if(!filterFlag)
-        {
-            return QColor();
-        }
-
         return filterList.checkMarker(msg);
     }
 
 #else
  QString QDltFile::checkMarker(const QDltMsg &msg)
  {
-     if(!filterFlag)
-     {
-         return QString(""); // invalid colour
-     }
-
      return filterList.checkMarker(msg);
  }
 #endif

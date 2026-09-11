@@ -283,7 +283,7 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
         {
             for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
                 FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
-                if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
+                if(item && item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
                     visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
                 }
             }
