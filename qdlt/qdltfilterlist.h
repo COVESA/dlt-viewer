@@ -103,7 +103,7 @@ public:
       \param msg The message to be checked
       \return true if message will be displayed, false if message will be filtered out
     */
-    bool checkFilter(QDltMsg &msg);
+    bool checkFilter(QDltMsg &msg) const;
 
     //! Save the filter.
     /*!
