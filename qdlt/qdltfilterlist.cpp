@@ -206,7 +206,7 @@ bool QDltFilterList::needsDecodedText() const
     return false;
 }
 
-bool QDltFilterList::checkFilter(QDltMsg &msg)
+bool QDltFilterList::checkFilter(QDltMsg &msg) const
 {
     QDltFilter *filter;
     QDltFilterMatchCache cache;

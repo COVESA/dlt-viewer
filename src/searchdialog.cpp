@@ -617,6 +617,24 @@ void CSearchDialog::setSearchColour(QLineEdit *lineEdit,int result)
 void CSearchDialog::focusRow(long int searchLine)
 {
     CTableModel *model = qobject_cast<CTableModel *>(table->model());
+    if(!model || !table)
+    {
+        return;
+    }
+
+    if(searchLine < 0 || searchLine >= model->rowCount())
+    {
+        // Clear marker state without trying to navigate to an invalid model index.
+        model->setMarker(-1, highlightColor);
+        model->setLastSearchIndex(-1);
+        if(table->selectionModel())
+        {
+            table->selectionModel()->clear();
+        }
+        table->viewport()->update();
+        return;
+    }
+
     QModelIndex idx = model->index(searchLine, 0, QModelIndex());
     //qDebug() << "Focus row in message table window" << searchLine << __FILE__ << __LINE__;
 
@@ -626,8 +644,11 @@ void CSearchDialog::focusRow(long int searchLine)
     model->setMarker(searchLine, highlightColor);
 
     model->setLastSearchIndex(searchLine);
-    table->selectionModel()->clear();
-    model->refreshVisualData();
+    if(table->selectionModel())
+    {
+        table->selectionModel()->clear();
+    }
+    table->viewport()->update();
 }
 
 int CSearchDialog::find()

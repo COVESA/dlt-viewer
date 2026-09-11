@@ -2641,11 +2641,11 @@ void MainWindow::reloadLogFileFinishFilter()
     }
 
     // enable filter if requested
-    qfile.enableFilter(filtersEnabled);
+    qfile.enableFilter(dltIndexer->getEffectiveFilteringEnabled());
     qfile.enableSortByTime(false);
     {
         const bool sortByTimestampEnabled = QDltSettingsManager::getInstance()->value("startup/sortByTimestampEnabled", false).toBool();
-        qfile.enableSortByTimestamp(filtersEnabled && sortByTimestampEnabled);
+        qfile.enableSortByTimestamp(dltIndexer->getEffectiveFilteringEnabled() && sortByTimestampEnabled);
     }
 
     // updateIndex, if messages are received in between
@@ -8680,7 +8680,6 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
-    m_searchtableModel->modelChanged();
 }
 
 
