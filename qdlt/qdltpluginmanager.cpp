@@ -99,13 +99,9 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
                     QDltPlugin* item = new QDltPlugin();
                     item->loadPlugin(plugin);
                     item->initMessageDecoder(this);
-                    item->setDecodePipelineChangedCallback([this]() {
-                        invalidateDecodePipeline();
-                    });
                     pluginListMutex.lock();
                     plugins.append(item);
                     pluginListMutex.unlock();
-                    invalidateDecodePipeline();
 
                     //project.plugin->addTopLevelItem(item);
 
@@ -147,36 +143,19 @@ void QDltPluginManager::loadConfig(QString pluginName, QString filename) {
         if (plugin->name() == pluginName)
             plugin->setFilename(filename);
     });
-    invalidateDecodePipeline();
 }
 
 void QDltPluginManager::decodeMsg(QDltMsg &msg, int triggeredByUser)
 {
-    (void)decodeMsgHandled(msg, triggeredByUser);
-}
-
-bool QDltPluginManager::decodeMsgHandled(QDltMsg &msg, int triggeredByUser)
-{
-    const int normalizedTriggeredByUser = (triggeredByUser != 0) ? 1 : 0;
-    const QList<QDltPlugin*> decodePlugins = getDecoderPlugins();
-
+    QMutexLocker mutexLocker(&pluginListMutex);
+    // decodeMutex must also be held here: plugin instances are shared and stateful,
+    // so this call must be serialized against decodeMsgUsingPlugins() callers too.
     QMutexLocker decodeLocker(&decodeMutex);
-    for (auto* plugin : decodePlugins)
+    for(auto* plugin : plugins)
     {
-        if (plugin && plugin->decodeMsg(msg, normalizedTriggeredByUser))
-            return true;
+        if(plugin->decodeMsg(msg,triggeredByUser))
+            break;
     }
-    return false;
-}
-
-std::uint64_t QDltPluginManager::decodePipelineGeneration() const noexcept
-{
-    return m_decodePipelineGeneration.load(std::memory_order_relaxed);
-}
-
-void QDltPluginManager::invalidateDecodePipeline() noexcept
-{
-    m_decodePipelineGeneration.fetch_add(1, std::memory_order_relaxed);
 }
 
 bool QDltPluginManager::decodeMsgTry(QDltMsg &msg, int triggeredByUser)
@@ -246,7 +225,6 @@ bool QDltPluginManager::decreasePluginPriority(const QString &name)
                 qDebug() << "decrease prio of" << name << "from" << num << "to" << num+1;
                 plugins.move(num, num+1);
                 result = true;
-                invalidateDecodePipeline();
                 break;
             }
         }
@@ -268,7 +246,6 @@ bool QDltPluginManager::raisePluginPriority(const QString &name)
                 qDebug() << "raise prio of" << name << "from" << num << "to" << num-1;
                 plugins.move(num, num-1);
                 result = true;
-                invalidateDecodePipeline();
                 break;
             }
         }
@@ -295,7 +272,6 @@ bool QDltPluginManager::setPluginPriority(const QString& name, int prio)
                     plugins.move(num, prio);
                 }
                 result = true;
-                invalidateDecodePipeline();
                 break;
             }
         }

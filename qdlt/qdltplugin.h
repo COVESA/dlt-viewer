@@ -7,8 +7,6 @@
 
 #include "export_rules.h"
 
-#include <functional>
-
 
 //! Access class to a DLT Plugin to decode, view and control DLT messages
 /*!
@@ -29,9 +27,6 @@ public:
 
     //! Load the plugin by attaching the interfaces
     void loadPlugin(QObject *plugin);
-
-    //! Register a callback invoked when plugin state can affect decoded output.
-    void setDecodePipelineChangedCallback(std::function<void()> callback);
 
     //! Get the running status of the plugin
     /*!
@@ -129,10 +124,6 @@ private:
     QDltPluginViewerInterface  *pluginviewerinterface;
     QDltPluginControlInterface *plugincontrolinterface;
     QDltPluginCommandInterface *plugincommandinterface;
-
-    std::function<void()> m_decodePipelineChangedCallback;
-
-    void notifyDecodePipelineChanged();
 
 };
 
