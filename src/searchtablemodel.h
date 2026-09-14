@@ -12,7 +12,7 @@
  * Mozilla Public License, v. 2.0. If a  copy of the MPL was not distributed with
  * this file, You can obtain one at http://mozilla.org/MPL/2.0/.
  *
- * \file CSearchDialog.h
+ * \file searchdialog.h
  * For further information see http://www.covesa.global/.
  * @licence end@
  */
@@ -21,69 +21,59 @@
 #define SEARCHTABLEMODEL_H
 
 #include <QAbstractTableModel>
-
-#include <cstdint>
-#include <cstddef>
-#include <vector>
+#include <QVector>
+#include <qdltlrucache.hpp>
 
 #include "project.h"
 #include "qdltpluginmanager.h"
-#include "decodecacheservice.h"
 
 #define DLT_VIEWER_SEARCHCOLUMN_COUNT FieldNames::Arg0
 
-/**
- * @brief Table model containing message indexes returned by a search.
- *
- * Search entries are stored as global message indexes and are exposed through
- * the model's row interface for display and activation by the viewer.
- */
-class CSearchTableModel : public QAbstractTableModel
+class SearchTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    //! Construct the search result model.
-    explicit CSearchTableModel(QObject *parent = 0);
-    //! Destroy the search result model.
-    ~CSearchTableModel();
+    explicit SearchTableModel(const QString &data, QObject *parent = 0);
+    ~SearchTableModel();
 
-    //! Return column header text and metadata.
     QVariant headerData(int section, Qt::Orientation orientation,
          int role = Qt::DisplayRole) const;
 
-    //! Return model data for a search result row.
     QVariant data(const QModelIndex &index, int role) const;
 
-    //! Return the number of search result rows.
     int rowCount(const QModelIndex & /*parent*/) const;
-    //! Return the number of display columns.
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-    //! Notify views that model contents changed.
     void modelChanged();
 
-    //! Remove all search results.
     void clear_SearchResults();
-    //! Invalidate decoded message cache for the current file.
-    void invalidateDecodeCache();
-    //! Append a single search hit.
     void add_SearchResultEntry(unsigned long entry);
-    //! Append multiple search hits.
-    void add_SearchResultEntries(const std::vector<std::uint64_t> &entries);
+    void add_SearchResultEntries(const QList<unsigned long>& entries);
 
 
-    //! Return the current number of search hits.
     int get_SearchResultListSize() const;
-    //! Read one search hit by position.
     bool get_SearchResultEntry(int position, unsigned long &entry);
 
-    //! Determine background color for a decoded message.
-    QColor getMsgBackgroundColor(QDltMsg &msg) const;
+    QColor getMsgBackgroundColor(const QDltMsg &msg) const;
 
     /* pointer to the current loaded file */
     QDltFile *qfile;
     Project *project;
     QDltPluginManager *pluginManager;
+
+private:
+    struct DecodedMsgCacheEntry
+    {
+        unsigned long messageIndex;
+        bool hasMsg = false;
+        QDltMsg msg;
+    };
+
+    // Dedup getMsg()/decodeMsg() across roles and columns for recently rendered search result rows.
+    mutable QDltLruCache<int, DecodedMsgCacheEntry> m_cache{512};
+
+    bool getDecodedMsg(int row, unsigned long messageIndex, QDltMsg &msgOut) const;
+    QVariant buildDisplayValue(int column, unsigned long messageIndex, const QDltMsg &msg) const;
     
 signals:
     
@@ -91,10 +81,7 @@ public slots:
 
 
 public:
-    std::vector<unsigned long> m_searchResultList;
-    CDecodeCacheService *m_decodeCacheService = nullptr;
-    int m_lastKnownRowCount = -1;
-    int m_lastKnownColumnCount = -1;
+    QList <unsigned long> m_searchResultList;
     
 };
 
