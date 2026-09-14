@@ -26,10 +26,8 @@
 #include "dltuiutils.h"
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
-#include "indexservice.h"
-#include "qdltfileprojection.h"
 
-CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
+TableModel::TableModel(const QString & /*data*/, QObject *parent)
      : QAbstractTableModel(parent)
  {
      qfile = NULL;
@@ -39,31 +37,202 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      emptyForceFlag = false;
      loggingOnlyMode = false;
      searchhit = -1;
-     m_lastKnownRowCount = -1;
-     m_lastKnownColumnCount = -1;
  }
 
- CTableModel::~CTableModel()
+ TableModel::~TableModel()
  {
 
  }
 
- int CTableModel::columnCount(const QModelIndex & /*parent*/) const
+ int TableModel::columnCount(const QModelIndex & /*parent*/) const
  {
      if (!project || !project->settings)
          return DLT_VIEWER_COLUMN_COUNT;
      return DLT_VIEWER_COLUMN_COUNT+project->settings->showArguments;
  }
 
+QVariant TableModel::buildDisplayValue(int column, long int filterPosIndex, const std::optional<QDltMsg> &msg) const
+{
+    if (!msg.has_value())
+    {
+        if(column == FieldNames::Index)
+        {
+            return QString("%1").arg(filterPosIndex);
+        }
+        else if(column == FieldNames::Payload)
+        {
+            return QString("!!CORRUPTED MESSAGE!!");
+        }
+        return QVariant();
+    }
 
- QVariant CTableModel::data(const QModelIndex &index, int role) const
+    QString visu_data;
+    switch(column)
+    {
+    case FieldNames::Index:
+        /* display index */
+        return QString("%L1").arg(filterPosIndex);
+    case FieldNames::Time:
+        if( project->settings->automaticTimeSettings == 0 )
+            return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
+        else
+            return QString("%1.%2").arg(msg->getTimeString()).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
+    case FieldNames::TimeStamp:
+        return QString("%1.%2").arg(msg->getTimestamp()/10000).arg(msg->getTimestamp()%10000,4,10,QLatin1Char('0'));
+    case FieldNames::Counter:
+        return QString("%1").arg(msg->getMessageCounter());
+    case FieldNames::EcuId:
+        return msg->getEcuid();
+    case FieldNames::AppId:
+        switch(project->settings->showApIdDesc)
+        {
+        case 0:
+            return msg->getApid();
+        case 1:
+            for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+            {
+                EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                if(!ecuitem) continue;
+                for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                {
+                    ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                    if(appitem && appitem->id == msg->getApid() && !appitem->description.isEmpty())
+                    {
+                        return appitem->description;
+                    }
+                }
+            }
+            return QString("Apid: %1 (No description)").arg(msg->getApid());
+        default:
+            return msg->getApid();
+        }
+    case FieldNames::ContextId:
+        switch(project->settings->showCtIdDesc)
+        {
+        case 0:
+            return msg->getCtid();
+        case 1:
+            for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
+            {
+                EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
+                if(!ecuitem) continue;
+                for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
+                {
+                    ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
+                    if(appitem && appitem->id == msg->getApid())
+                    {
+                        for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
+                        {
+                            ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
+                            if(conitem && conitem->id == msg->getCtid() && !conitem->description.isEmpty())
+                            {
+                                return conitem->description;
+                            }
+                        }
+                    }
+                }
+            }
+            return  QString("Ctid: %1 (No description)").arg(msg->getCtid());
+        default:
+            return msg->getCtid();
+        }
+    case FieldNames::SessionId:
+        switch(project->settings->showSessionName){
+        case 0:
+            return QString("%1").arg(msg->getSessionid());
+        case 1:
+            if(!msg->getSessionName().isEmpty())
+            {
+                return msg->getSessionName();
+            }
+            else
+            {
+                return QString("%1").arg(msg->getSessionid());
+            }
+        default:
+            return QString("%1").arg(msg->getSessionid());
+        }
+    case FieldNames::Type:
+        return msg->getTypeString();
+    case FieldNames::Subtype:
+        return msg->getSubtypeString();
+    case FieldNames::Mode:
+        return msg->getModeString();
+    case FieldNames::ArgCount:
+        return QString("%1").arg(msg->getNumberOfArguments());
+    case FieldNames::Payload:
+        /* display payload */
+        visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
+        if(qfile) qfile->applyRegExString(*msg,visu_data);
+
+        /* limit size of string to 1000 characters to speed up scrolling */
+        if(visu_data.size()>1000)
+        {
+            visu_data = visu_data.mid(0,1000);
+        }
+
+        return visu_data;
+    case FieldNames::MessageId:
+        return QString::asprintf(project->settings->msgIdFormat.toUtf8(), msg->getMessageId());
+    default:
+        if (column>=FieldNames::Arg0)
+        {
+            int col=column-FieldNames::Arg0; //arguments a zero based
+            QDltArgument arg;
+            if (msg->getArgument(col,arg))
+            {
+                return arg.toString();
+            }
+            else
+            {
+                return QString(" - ");
+            }
+        }
+    }
+
+    return QVariant();
+}
+
+
+std::optional<QDltMsg> TableModel::getDecodedMsg(int row, long int filterposindex) const
+{
+    const DecodedMsgCacheEntry* msgEntry = m_cache.getPtr(row);
+    if (msgEntry && msgEntry->filterPosIndex == filterposindex)
+    {
+        return msgEntry->msg;
+    }
+
+    DecodedMsgCacheEntry newMsgEntry;
+    newMsgEntry.filterPosIndex = filterposindex;
+
+    QDltMsg omsg;
+    if (bool success = qfile->getMsg(filterposindex, omsg); success)
+    {
+        newMsgEntry.msg = std::make_optional(omsg);
+        if (QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool())
+        {
+            pluginManager->decodeMsg(*newMsgEntry.msg, !QDltOptManager::getInstance()->issilentMode());
+        }
+    }
+
+    m_cache.put(row, newMsgEntry);
+    return newMsgEntry.msg;
+}
+
+
+ QVariant TableModel::data(const QModelIndex &index, int role) const
  {
+     if (!qfile)
+     {
+         return QVariant();
+     }
+
      if (!index.isValid())
      {
          return QVariant();
      }
 
-     if (index.row() >= qfile->sizeFilter() && index.row()<0)
+    if (index.row() >= qfile->sizeFilter() || index.row()<0)
      {
          return QVariant();
      }
@@ -80,195 +249,23 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
          return FieldNames::getColumnAlignment((FieldNames::Fields)index.column(),project->settings);
      }
 
-    const int filterposindex = resolveGlobalIndexForRow(index.row());
-    if (filterposindex < 0)
-    {
-        return QVariant();
-    }
+     long int filterposindex = qfile->getMsgFilterPos(index.row());
 
-     std::optional<QDltMsg> msg;
-     QDltMsg omsg;
-     const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
-     const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
-
-    // CDecodeCacheService owns the complete decode identity, including plugin-pipeline generation.
-     if (m_decodeCacheService && m_decodeCacheService->message(qfile,
-                                      pluginManager,
-                                      filterposindex,
-                                      decodeEnabled,
-                                      triggeredByUser,
-                                      omsg,
-                                      true)) {
-         msg = std::make_optional(omsg);
-     }
+     std::optional<QDltMsg> msg = getDecodedMsg(index.row(), filterposindex);
 
      if (role == Qt::DisplayRole)
      {
-       if (!msg.has_value())
-       {
-         if(index.column() == FieldNames::Index)
-         {
-             return QString("%1").arg(filterposindex);
-         }
-         else if(index.column() == FieldNames::Payload)
-         {
-             qDebug() << "Corrupted message at index" << index.row();
-             return QString("!!CORRUPTED MESSAGE!!");
-         }
-         return QVariant();
-       }
-
-         QString visu_data;
-         switch(index.column())
-         {
-         case FieldNames::Index:
-             /* display index */
-             return QString("%L1").arg(filterposindex);
-         case FieldNames::Time:
-             if( project->settings->automaticTimeSettings == 0 )
-                return QString("%1.%2").arg(msg->getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
-             else
-                return QString("%1.%2").arg(msg->getTimeString()).arg(msg->getMicroseconds(),6,10,QLatin1Char('0'));
-         case FieldNames::TimeStamp:
-             return QString("%1.%2").arg(msg->getTimestamp()/10000).arg(msg->getTimestamp()%10000,4,10,QLatin1Char('0'));
-         case FieldNames::Counter:
-             return QString("%1").arg(msg->getMessageCounter());
-         case FieldNames::EcuId:
-             return msg->getEcuid();
-         case FieldNames::AppId:
-             switch(project->settings->showApIdDesc)
-             {
-             case 0:
-                return msg->getApid();
-                 break;
-             case 1:
-                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
-                    {
-                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(!ecuitem) continue;
-                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-                     {
-                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem && appitem->id == msg->getApid() && !appitem->description.isEmpty())
-                         {
-                            return appitem->description;
-                         }
-                     }
-                    }
-                   return QString("Apid: %1 (No description)").arg(msg->getApid());
-                 break;
-              default:
-                 return msg->getApid();
-             }
-         case FieldNames::ContextId:
-             switch(project->settings->showCtIdDesc)
-             {
-             case 0:
-                 return msg->getCtid();
-                 break;
-             case 1:
-                   for(int num = 0; num < project->ecu->topLevelItemCount (); num++)
-                    {
-                     EcuItem *ecuitem = (EcuItem*)project->ecu->topLevelItem(num);
-                     if(!ecuitem) continue;
-                     for(int numapp = 0; numapp < ecuitem->childCount(); numapp++)
-                     {
-                         ApplicationItem * appitem = (ApplicationItem *) ecuitem->child(numapp);
-                         if(appitem && appitem->id == msg->getApid())
-                         {
-                             for(int numcontext = 0; numcontext < appitem->childCount(); numcontext++)
-                             {
-                                 ContextItem * conitem = (ContextItem *) appitem->child(numcontext);
-                                 if(conitem && conitem->id == msg->getCtid() && !conitem->description.isEmpty())
-                                 {
-                                    return conitem->description;
-                                 }
-                             }
-                         }
-                     }
-                    }
-                   return  QString("Ctid: %1 (No description)").arg(msg->getCtid());
-                 break;
-              default:
-                 return msg->getCtid();
-             }
-         case FieldNames::SessionId:
-             switch(project->settings->showSessionName){
-             case 0:
-                 return QString("%1").arg(msg->getSessionid());
-                 break;
-             case 1:
-                 if(!msg->getSessionName().isEmpty())
-                 {
-                    return msg->getSessionName();
-                 }
-                else
-                 {
-                    return QString("%1").arg(msg->getSessionid());
-                 }
-                 break;
-              default:
-                 return QString("%1").arg(msg->getSessionid());
-             }
-         case FieldNames::Type:
-             return msg->getTypeString();
-         case FieldNames::Subtype:
-             return msg->getSubtypeString();
-         case FieldNames::Mode:
-             return msg->getModeString();
-         case FieldNames::ArgCount:
-             return QString("%1").arg(msg->getNumberOfArguments());
-         case FieldNames::Payload:
-             /* display payload */
-             visu_data = msg->toStringPayload().simplified().remove(QChar::Null);
-             if(qfile) qfile->applyRegExString(*msg,visu_data);
-             /*if((QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool()))
-             {
-                 for(int num = 0; num < project->filter->topLevelItemCount (); num++) {
-                     FilterItem *item = (FilterItem*)project->filter->topLevelItem(num);
-                     if(item->checkState(0) == Qt::Checked && item->filter.enableRegexSearchReplace) {
-                         visu_data.replace(QRegularExpression(item->filter.regex_search), item->filter.regex_replace);
-                     }
-                 }
-             }*/
-
-             /* limit size of string to 1000 characters to speed up scrolling */
-             if(visu_data.size()>1000)
-             {
-                visu_data = visu_data.mid(0,1000);
-             }
-
-             return visu_data;
-         case FieldNames::MessageId:
-             return QString::asprintf(project->settings->msgIdFormat.toUtf8(), msg->getMessageId());
-         default:
-             if (index.column()>=FieldNames::Arg0)
-             {
-                 int col=index.column()-FieldNames::Arg0; //arguments a zero based
-                 QDltArgument arg;
-                 if (msg->getArgument(col,arg))
-                 {
-                     return arg.toString();
-                 }
-                 else
-                 {
-                  return QString(" - ");
-                 }
-
-             }
-         }
+         return buildDisplayValue(index.column(), filterposindex, msg);
      }
 
      if ( role == Qt::ForegroundRole )
      {
-         /* Calculate background color and find optimal foreground color */
-         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(),filterposindex)));
+         return QBrush(DltUiUtils::optimalTextColor(getMsgBackgroundColor(msg, index.row(), filterposindex)));
      }
 
      if ( role == Qt::BackgroundRole )
      {
-         /* Calculate background color */
-         return QBrush(getMsgBackgroundColor(msg, index.row(),filterposindex));
+         return QBrush(getMsgBackgroundColor(msg, index.row(), filterposindex));
      }
 
     if ( role == Qt::ToolTipRole )
@@ -295,7 +292,7 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      return QVariant();
  }
 
-QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
+QVariant TableModel::headerData(int section, Qt::Orientation orientation,
                                 int role) const
 {    
     if (orientation == Qt::Horizontal)
@@ -321,7 +318,7 @@ QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
     return QVariant();
 }
 
- int CTableModel::rowCount(const QModelIndex & /*parent*/) const
+ int TableModel::rowCount(const QModelIndex & /*parent*/) const
  {
      if(true == emptyForceFlag)
          return 0;
@@ -331,143 +328,64 @@ QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
          return qfile->sizeFilter();
  }
 
- void CTableModel::modelChanged()
+ void TableModel::modelChanged()
  {
-     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
-     const int currentRowCount = rowCount();
-     const int currentColumnCount = columnCount();
-     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
-     const bool structuralInvalidation = firstModelNotification ||
-                                         (m_lastKnownColumnCount != currentColumnCount) ||
-                                         (previousRowCount != currentRowCount);
-
-     /* last search index must be deleted because model changed */
-     lastSearchIndex = -1;
-
-    // Invalidate row-dependent caches because row count alone is not a valid cache identity.
-     invalidateMessageCaches(true);
-
-     if (structuralInvalidation)
+     if(true == emptyForceFlag)
      {
-         beginResetModel();
-         endResetModel();
+         index(0, 1);
+         index(qfile->sizeFilter()-1, 0);
+         index(qfile->sizeFilter()-1, columnCount() - 1);
      }
      else
      {
-         notifyModelDelta(currentRowCount, currentColumnCount);
+         index(0, 1);
+         index(0, 0);
+         index(0, columnCount() - 1);
      }
-
-     m_lastKnownRowCount = currentRowCount;
-     m_lastKnownColumnCount = currentColumnCount;
- }
-
- void CTableModel::refreshVisualData()
- {
-    notifyModelDelta(rowCount(), columnCount());
- }
-
- void CTableModel::liveDataAppended()
- {
-     const int previousRowCount = (m_lastKnownRowCount < 0) ? 0 : m_lastKnownRowCount;
-     const int currentRowCount = rowCount();
-     const int currentColumnCount = columnCount();
-     const bool firstModelNotification = (m_lastKnownColumnCount < 0);
 
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
 
-    // Rebuild the projection snapshot because appended rows can reorder filtered or sorted views.
-     invalidateMessageCaches(false);
+     /* row->filterPosIndex mapping may now point to different messages (new file, filter,
+      * settings or plugin changes), so cached decoded messages would otherwise be stale */
+     m_cache.clear();
 
-     if(firstModelNotification || m_lastKnownColumnCount != currentColumnCount || currentRowCount < previousRowCount)
-     {
-         if (m_decodeCacheService)
-             m_decodeCacheService->clearForFile(qfile);
-         beginResetModel();
-         endResetModel();
-     }
-    else
-    {
-        if(currentRowCount != previousRowCount)
-        {
-            emit layoutChanged();
-        }
-        else
-        {
-            notifyModelDelta(currentRowCount, currentColumnCount);
-        }
-    }
-
-     m_lastKnownRowCount = currentRowCount;
-     m_lastKnownColumnCount = currentColumnCount;
+     emit(layoutChanged());
  }
 
-void CTableModel::invalidateMessageCaches(bool clearDecodedMessages)
+void TableModel::appendRows(int firstRow, int lastRow)
 {
-    m_filteredProjectionCache.clear();
-
-    if (clearDecodedMessages && m_decodeCacheService)
-        m_decodeCacheService->clearForFile(qfile);
-}
-
-void CTableModel::notifyModelDelta(int currentRowCount, int currentColumnCount)
-{
-    if (currentRowCount > 0 && currentColumnCount > 0)
+    if(firstRow < 0 || lastRow < firstRow)
     {
-        const QModelIndex topLeft = index(0, 0);
-        const QModelIndex bottomRight = index(currentRowCount - 1, currentColumnCount - 1);
-        emit dataChanged(topLeft, bottomRight);
-    }
-}
-
-int CTableModel::resolveGlobalIndexForRow(int row) const
-{
-    if (!qfile || row < 0)
-        return -1;
-    // Filter is OFF
-    if (!qfile->isFilter())
-    {
-        if (row >= qfile->size())
-            return -1;
-        return row;
-    }
-    // Filter is ON
-    if (m_filteredProjectionCache.size() !=
-        static_cast<std::vector<int>::size_type>(qfile->sizeFilter()))
-    {
-        CIndexService indexService;
-        m_filteredProjectionCache =
-            indexService.snapshotProjection(buildActiveFilteredProjection(qfile));
+        return;
     }
 
-    if (static_cast<std::vector<int>::size_type>(row) < m_filteredProjectionCache.size())
-        return m_filteredProjectionCache.at(row);
-
-    return -1;
+    beginInsertRows(QModelIndex(), firstRow, lastRow);
+    endInsertRows();
 }
 
-int CTableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
+int TableModel::setManualMarker(QList<unsigned long int> selectedRows, QColor hlcolor) //used in mainwindow
 {
 manualMarkerColor = hlcolor;
 this->selectedMarkerRows = selectedRows;
 return 0;
 }
 
-int CTableModel::setMarker(long int lineindex, QColor hlcolor)
+int TableModel::setMarker(long int lineindex, QColor hlcolor)
 {
   searchhit_higlightColor = hlcolor;
   searchhit = lineindex;
   return 0;
 }
 
-QColor CTableModel::searchBackgroundColor() const
+QColor TableModel::searchBackgroundColor() const
 {
     QString color = QDltSettingsManager::getInstance()->value("other/searchResultColor", QString("#00AAFF")).toString();
     QColor hlColor(color);
     return hlColor;
 }
 
-void CHtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
@@ -496,7 +414,7 @@ void CHtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 
 }
 
-QSize CHtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
@@ -507,7 +425,7 @@ QSize CHtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIn
     return QSize(doc.idealWidth(), doc.size().height());
 }
 
-QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
+QColor TableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int index, long int filterposindex) const
 {
     /* first check manual markers with highest priority */
     if ( selectedMarkerRows.contains(filterposindex) )
@@ -527,7 +445,7 @@ QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int
        return color;
     }
 
-    if(lastSearchIndex != -1 && filterposindex == resolveGlobalIndexForRow(lastSearchIndex))
+    if(lastSearchIndex != -1 && filterposindex == qfile->getMsgFilterPos(lastSearchIndex))
     {
         return searchBackgroundColor();
     }
@@ -564,7 +482,7 @@ QColor CTableModel::getMsgBackgroundColor(const std::optional<QDltMsg>& msg, int
     return brushColor; // this is the default background color
 }
 
-QString CTableModel::getToolTipForFields(FieldNames::Fields cn)
+QString TableModel::getToolTipForFields(FieldNames::Fields cn)
 {
     switch(cn){
     case(FieldNames::Time): return "Detailed representation of time and date when the log entry was recorded";
@@ -573,7 +491,7 @@ QString CTableModel::getToolTipForFields(FieldNames::Fields cn)
     }
 }
 
-bool CTableModel::eventFilter(QObject *obj, QEvent *event) {
+bool TableModel::eventFilter(QObject *obj, QEvent *event) {
     if(event->type() == QEvent::Enter || event->type() == QEvent::Leave){
         QHeaderView *header = qobject_cast<QHeaderView*>(obj);
         if(header){
