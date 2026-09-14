@@ -1,4 +1,4 @@
-﻿#ifndef FILTERGROUPLOGS_H
+#ifndef FILTERGROUPLOGS_H
 #define FILTERGROUPLOGS_H
 
 #include <QObject>
@@ -8,67 +8,58 @@
 #include <QTableView>
 #include <QAbstractTableModel>
 
-#include <map>
-#include <vector>
-
 #include "qdltfile.h"
 #include "qdltpluginmanager.h"
-#include "projectiontablemodel.h"
-#include "messagestore.h"
-#include "indexservice.h"
-#include "decodecacheservice.h"
+#include "sortfilterproxymodel.h"
+#include "indexrowreferencemodel.h"
 
-class CFilterGroupLogs : public QObject {
+class filtergrouplogs : public QObject {
     Q_OBJECT
 
 public:
-  //! Construct the ECU grouping helper.
-  explicit CFilterGroupLogs(QObject* parent = nullptr);
-  //! Extract unique ECU IDs from a DLT file path.
-  QStringList extractEcuIds(const QString& dltFilePath);
-  //! Set the source DLT table model.
+  
+  explicit filtergrouplogs(QObject* parent = nullptr);
+  // Sets the source model for DLT data
   void setSourceModel(QAbstractTableModel* model);
-  //! Set the active QDltFile instance.
+  // Sets the DLT file reference
   void setDltFile(QDltFile* dltFile);
-  //! Set the plugin manager used for decoding.
+  // Sets the plugin manager reference
   void setPluginManager(QDltPluginManager* pluginManager);
-  //! Set the message store service used for message access.
-  void setMessageStore(CMessageStore *messageStore);
-  //! Set the shared index service.
-  void setIndexService(const CIndexService *indexService);
-  //! Set the shared decode cache service.
-  void setDecodeCacheService(CDecodeCacheService *decodeCacheService);
-  //! Build one tab per ECU ID.
+  // Creates tabs for each ECU ID and sets up the tab window UI
   void ecuIdTabs();
-  //! Open merge dialog for selecting ECU tabs.
+  // Opens a dialog to select and merge multiple ECU tabs
   void openMergeTabsDialog();
-  //! Merge selected ECU tabs into one combined tab.
+  // Merges selected ECU tabs into a single tab
   void mergeTabs();
-  //! Handle tab close and update tracking state.
+  // Handles closing of a tab and updates internal tab tracking
   void onTabCloseRequested(int index);
-  //! Export the currently selected filtered ECU logs.
+  // Exports the filtered DLT logs from the selected tab to a file
   void onExportFilteredLogsClicked();
 
+  void onSourceModelChanged();
+  // Clears stale tab state once the ECU tab window is destroyed
+  void onTabWindowDestroyed();
+
   private :
-    QAbstractTableModel* m_sourceModelOfDLT;
-    QTabWidget* m_mergedTabWidget;
+    QAbstractTableModel* sourceModelOfDLT;
+    QTabWidget* mergedTabWidget;
     QDltFile* dltFile;
     QDltPluginManager* pluginManager;
-    CMessageStore *messageStore;
-    const CIndexService *indexService;
-    CDecodeCacheService *decodeCacheService;
 
-    QMap<QString, QWidget*> m_mergedTabs;
-    QMap<QWidget*, QStringList> m_tabToSelectedIds;
-    QMap<int, QString> m_indexOfMergedTabs;
-    QMap<QString, QTableView*> m_ecuTabViews;
-    std::map<QString, std::vector<int>> m_ecuSourceRowProjection;
+    QMap<QString, QWidget*> mergedTabs;
+    QMap<QWidget*, QStringList> tabToSelectedIds;
+    QMap<QString, QTableView*> ecuTabViews;
+    QMap<QString, IndexRowReferenceModel*> ecuTabModels;
 
-    QSet<QString> m_selectedEcuIdSet;
-    QStringList m_extractedEcuIds;
+    QSet<QString> selectedEcuIdSet;
+    QStringList extractedEcuIds;
+    QMap<QString, QVector<int>> ecuRowReferences;
+
+    int ecuColumnIndex = 4;
+
+    void rebuildGroupedIndex(QProgressDialog *progress = nullptr);
+    QVector<int> rowsForEcuSet(const QSet<QString> &ecuIds) const;
+    void createOrUpdateTab(const QString &tabName, const QVector<int> &rows);
 };
 
 #endif // FILTERGROUPLOGS_H
-
-
-
