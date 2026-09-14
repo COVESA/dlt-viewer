@@ -38,7 +38,6 @@ void SearchForm::setState(State state)
         ui->stackedWidget->setCurrentIndex(0);
         break;
     case State::PROGRESS:
-        ui->progressBar->setValue(0);
         ui->stackedWidget->setCurrentIndex(1);
         break;
     }
