@@ -11,8 +11,7 @@
 QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                            QDltExporter::DltExportFormat exportFormat,
                            QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char delimiter,QString signature,QObject *parent) :
-    QThread(parent),
-    messageStore(from)
+    QThread(parent)
 {
     size = 0;
     starting_index=0;
@@ -31,32 +30,6 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     this->selection = selection;
 
     this->signature = signature;
-}
-
-int QDltExporter::globalIndexForSelectionRow(unsigned long int num) const
-{
-    if (!from)
-        return -1;
-
-    if (exportSelection == QDltExporter::SelectionAll)
-        return static_cast<int>(num);
-
-    if (exportSelection == QDltExporter::SelectionFiltered)
-    {
-        const MessageId messageId = messageStore.messageIdForFilteredRow(static_cast<int>(num));
-        return (messageId == kInvalidMessageId) ? -1 : messageStore.globalIndexForMessageId(messageId);
-    }
-
-    if (exportSelection == QDltExporter::SelectionSelected)
-    {
-        if (num >= static_cast<unsigned long int>(selectedRows.size()))
-            return -1;
-
-        const MessageId messageId = messageStore.messageIdForFilteredRow(selectedRows[static_cast<int>(num)]);
-        return (messageId == kInvalidMessageId) ? -1 : messageStore.globalIndexForMessageId(messageId);
-    }
-
-    return -1;
 }
 
 void QDltExporter::run()
@@ -461,65 +434,40 @@ bool QDltExporter::finish()
 
 bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
 {
-    bool result = false;
+    bool result;
     buf.clear();
     if(exportSelection == QDltExporter::SelectionAll)
     {
-        const MessageId messageId = messageStore.messageIdForGlobalIndex(static_cast<int>(num));
-        if (messageId == kInvalidMessageId)
+        buf = from->getMsg(num);
+        if( true == buf.isEmpty())
         {
-            qDebug() << "Message id resolution failed in" << __FILE__ << __LINE__;
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
             return false;
         }
-
-        result = messageStore.message(messageId, msg);
-        if (!result)
-        {
-            qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
-            return false;
-        }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
-        msg.setIndex(static_cast<int>(num));
+        result =  msg.setMsg(buf);
+        msg.setIndex(num);
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
     {
-        const MessageId messageId = messageStore.messageIdForFilteredRow(static_cast<int>(num));
-        if (messageId == kInvalidMessageId)
+        buf = from->getMsgFilter(num);
+        if( true == buf.isEmpty())
         {
-            qDebug() << "Message id resolution failed in" << __FILE__ << __LINE__;
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
             return false;
         }
-
-        result = messageStore.message(messageId, msg);
-        if (!result)
-        {
-            qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
-            return false;
-        }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
-        msg.setIndex(messageStore.globalIndexForMessageId(messageId));
+        result =  msg.setMsg(buf);
+        msg.setIndex(from->getMsgFilterPos(num));
     }
     else if(exportSelection == QDltExporter::SelectionSelected)
     {
-        const int selectedRow = selectedRows[static_cast<int>(num)];
-        const MessageId messageId = messageStore.messageIdForFilteredRow(selectedRow);
-        if (messageId == kInvalidMessageId)
+        buf = from->getMsgFilter(selectedRows[num]);
+        if( true == buf.isEmpty())
         {
-            qDebug() << "Message id resolution failed in" << __FILE__ << __LINE__;
+            qDebug() << "Buffer empty in" << __FILE__ << __LINE__;
             return false;
         }
-
-        result = messageStore.message(messageId, msg);
-        if (!result)
-        {
-            qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
-            return false;
-        }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
-        msg.setIndex(messageStore.globalIndexForMessageId(messageId));
+        result =  msg.setMsg(buf);
+        msg.setIndex(from->getMsgFilterPos(selectedRows[num]));
     }
     else
     {
@@ -571,9 +519,9 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
             if(exportSelection == QDltExporter::SelectionAll)
                 text += QString("%1 ").arg(num);
             else if(exportSelection == QDltExporter::SelectionFiltered)
-                text += QString("%1 ").arg(globalIndexForSelectionRow(num));
+                text += QString("%1 ").arg(from->getMsgFilterPos(num));
             else if(exportSelection == QDltExporter::SelectionSelected)
-                text += QString("%1 ").arg(globalIndexForSelectionRow(num));
+                text += QString("%1 ").arg(from->getMsgFilterPos(selectedRows[num]));
             else
                 return false;
             if( automaticTimeSettings == 0 )
@@ -617,9 +565,9 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             writeCSVLine(num, msg,to);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            writeCSVLine(globalIndexForSelectionRow(num), msg,to);
+            writeCSVLine(from->getMsgFilterPos(num), msg,to);
         else if(exportSelection == QDltExporter::SelectionSelected)
-            writeCSVLine(globalIndexForSelectionRow(num), msg,to);
+            writeCSVLine(from->getMsgFilterPos(selectedRows[num]), msg,to);
         else
             return false;
     }
@@ -631,9 +579,9 @@ bool QDltExporter::exportMsg(unsigned long int num, QDltMsg &msg, QByteArray &bu
         if(exportSelection == QDltExporter::SelectionAll)
             text += QString("%1").arg(num);
         else if(exportSelection == QDltExporter::SelectionFiltered)
-            text += QString("%1").arg(globalIndexForSelectionRow(num));
+            text += QString("%1").arg(from->getMsgFilterPos(num));
         else if(exportSelection == QDltExporter::SelectionSelected)
-            text += QString("%1").arg(globalIndexForSelectionRow(num));
+            text += QString("%1").arg(from->getMsgFilterPos(selectedRows[num]));
         else
             return false;
 
@@ -747,26 +695,7 @@ void QDltExporter::exportMessages()
         {
             //FIXME: The following does not work for non verbose messages, must be fixed
             if(pluginManager)
-            {
-                QDltMsg decoded;
-                const bool decodeEnabled = true;
-                const int index = msg.getIndex();
-                const bool hasGlobalIndex = (from != nullptr) && index >= 0;
-                if (hasGlobalIndex && decodeCacheService.message(from,
-                                                                 pluginManager,
-                                                                 index,
-                                                                 decodeEnabled,
-                                                                 silentMode,
-                                                                 decoded,
-                                                                 true))
-                {
-                    msg = decoded;
-                }
-                else
-                {
-                    (void)decodeCacheService.decode(pluginManager, silentMode, msg);
-                }
-            }
+                pluginManager->decodeMsg(msg,silentMode);
             if (exportFormat == QDltExporter::FormatDltDecoded)
             {
                 msg.setNumberOfArguments(msg.sizeArguments());
