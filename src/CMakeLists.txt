@@ -42,6 +42,8 @@ add_executable(dlt-viewer
     feedbacksubmission.cpp
     searchdialog.h
     searchdialog.cpp
+    searchthreadpool.h
+    searchthreadpool.cpp
     multiplecontextdialog.h
     multiplecontextdialog.cpp
     tablemodel.h
@@ -74,6 +76,12 @@ add_executable(dlt-viewer
     dltfileindexerthread.cpp
     dltfileindexerdefaultfilterthread.h
     dltfileindexerdefaultfilterthread.cpp
+    filterthreadworker.h
+    filterthreadworker.cpp
+    decodemanager.h
+    decodemanager.cpp
+    indexthreadworker.h
+    indexthreadworker.cpp
     sortfilterproxymodel.h
     sortfilterproxymodel.cpp
     searchform.h
@@ -82,8 +90,8 @@ add_executable(dlt-viewer
     filtergrouplogs.cpp
     crlffilterwindow.h
     crlffilterwindow.cpp
-    projectiontablemodel.h
-    projectiontablemodel.cpp
+    indexrowreferencemodel.h
+    indexrowreferencemodel.cpp
     ${UI_RESOURCES_RCC}
     resources/dlt_viewer.rc
     ecutree.h
