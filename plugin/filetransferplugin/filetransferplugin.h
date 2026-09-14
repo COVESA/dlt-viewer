@@ -104,4 +104,4 @@ private:
 
 };
 
-#endif // FILETRANSFERPLUGIN_H
+#endif // DLTVIEWERPLUGIN_H
