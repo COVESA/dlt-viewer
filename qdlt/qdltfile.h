@@ -37,8 +37,6 @@
 #include <QCache>
 #include <QList>
 #include <QSet>
-#include <atomic>
-#include <array>
 
 class QDLT_EXPORT QDltFileItem
 {
@@ -159,9 +157,6 @@ public:
     */
     bool getMsg(int index,QDltMsg &msg);
 
-    //! Service-oriented alias for loading a decoded message at a global index.
-    bool messageAt(int index, QDltMsg &msg, bool useCache = true) const;
-
     //! Get one message of the DLT log file without populating the shared message cache.
     /*! Intended for sequential indexing passes where cache insert overhead is wasted. */
     bool getMsgNoCache(int index, QDltMsg &msg);
@@ -173,20 +168,6 @@ public:
       \return Byte array containing the complete DLT message.
     */
     QByteArray getMsg(int index) const;
-
-    //! Read one message using a caller-owned file handle.
-    /*! Allows parallel message loads using separate file handles per thread.
-     *  \param index Global message index
-     *  \param reader Caller-owned QFile for I/O. May be opened/closed/seeked by this method.
-     *              Must not be accessed concurrently from other threads.
-     *  \return Byte array containing the complete DLT message, or empty on error
-     *  \warning Thread-unsafe: reader must be thread-local or caller-synchronized.
-     *           Typical usage: each thread maintains its own QFile reader to avoid lock contention.
-     */
-    QByteArray getMsg(int index, QFile &reader);
-
-    //! Service-oriented alias for loading serialized message bytes at a global index.
-    QByteArray messageBytesAt(int index) const;
 
     //! Get one DLT message of the filtered DLT log file selected by index
     /*!
@@ -201,9 +182,6 @@ public:
       \return real position in log file, -1 if invalid.
     */
     int getMsgFilterPos(int index) const;
-
-    //! Service-oriented alias for resolving a filtered row to the global message index.
-    int filteredGlobalIndexAt(int index) const;
 
     //! Delete all filters and markers.
     /*!
@@ -334,18 +312,6 @@ public:
      **/
     void setCacheSize(qsizetype cost);
 
-    //! Resets cache access pattern detection for new bulk scan operations.
-    /*! Call this before starting a new scan (e.g., filter marker counting) to prevent
-     *  incorrect cache bypass logic when accessing scattered indices in sequential loop. **/
-    void resetCacheAccessPattern();
-
-    //! Enable or disable single-pass bypass mode.
-    /*! When enabled, all cache reads and writes are suppressed. Use this around
-     *  single-pass scatter iterations (e.g. filter marker counting) where every
-     *  message is accessed exactly once and cache would only add alloc/evict overhead.
-     *  Restore to false after the operation. **/
-    void setCacheSinglePassBypass(bool enabled);
-
     //! Sets DLTv2 support
     /*!
      * \param dltv2Support DLTv2 Support
@@ -409,12 +375,6 @@ private:
     int sizeLocked() const;
     QByteArray getMsgLocked(int index) const;
 
-    // Returns true when cache lookup/insert should be used for this access pattern.
-    bool shouldUseMessageCache(int index) const;
-
-    // Returns true when this index has been seen recently and is worth admitting to cache.
-    bool shouldAdmitCacheInsertLocked(int index) const;
-
     //! Mutex to lock critical path for infile
     mutable QMutex mutexQDlt;
 
@@ -462,25 +422,8 @@ private:
     */
     bool sortByTimestampFlag;
 
-    mutable QCache<int,QDltMsg> cache;
-    // Atomic: read without holding mutexQDlt on the getMsg() hot path.
-    std::atomic<bool> cacheEnable{false};
-
-    // When true, all cache reads and writes are skipped entirely.
-    // Use for single-pass scatter workloads where cache provides no benefit
-    // but adds allocation and eviction overhead (e.g. filter marker counting).
-    // Atomic: read without holding mutexQDlt on the getMsg() hot path.
-    std::atomic<bool> cacheSinglePassBypass{false};
-
-    // Sequential scan detection to avoid cache churn on one-pass bulk workloads.
-    mutable int lastRequestedMsgIndex = -1;
-    mutable int sequentialAccessStreak = 0;
-    mutable bool sequentialScanMode = false;
-
-    // Recent access window used as cache admission policy to avoid one-off insert churn.
-    static constexpr int kRecentAccessWindow = 64;
-    mutable std::array<int, kRecentAccessWindow> recentRequestedIndices{};
-    mutable int recentRequestedWritePos = 0;
+    QCache<int,QDltMsg> cache;
+    bool cacheEnable;
 
     // Size calculation variables
     quint64 totalStorageSize = 0;
