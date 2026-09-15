@@ -46,12 +46,24 @@ public:
     void setType(int type);
     void setFilename(QString filename);
 
+    //! Enable selecting multiple files/directories in the browse dialog.
+    /*!
+      Disabled by default. Callers should enable this only for plugins that
+      declare support for it (see QDLTPluginInterface::allowsMultipleFiles()).
+      When enabled, multiple files can be picked at once and are joined with
+      '|'; directories are accumulated across repeated clicks of the browse
+      button, also joined with '|'.
+      \param enabled True to allow multiple files/directories to be selected.
+    */
+    void setMultiSelectionEnabled(bool enabled);
+
     int getMode();
     int getType();
     QString getFilename();
 
 private:
     Ui::PluginDialog *ui;
+    bool multiSelectEnabled;
 
 private slots:
     void on_toolButton_clicked();
