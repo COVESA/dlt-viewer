@@ -151,7 +151,19 @@ int QDltSegmentedMsg::add(QDltMsg &msg)
             error = "Invalid Type in chunk segment message";
             return -1;
         }
-        payload.replace(sequence*chunkSize,chunkSize,argument.getData());
+
+        // Compute the chunk's absolute offset in 64-bit so that
+        // sequence * chunkSize cannot wrap as uint32_t for crafted
+        // start-segment messages, then reject any chunk whose end
+        // would extend past the (already-resized) payload buffer.
+        const quint64 chunk_offset = static_cast<quint64>(sequence) * static_cast<quint64>(chunkSize);
+        if (chunk_offset + chunkSize > static_cast<quint64>(payload.size()))
+        {
+            error = QString("Chunk extends past payload: sequence=%1 offset=%2 chunkSize=%3 payloadSize=%4")
+                        .arg(sequence).arg(chunk_offset).arg(chunkSize).arg(payload.size());
+            return -1;
+        }
+        payload.replace(static_cast<int>(chunk_offset),chunkSize,argument.getData());
 
         chunksAdded += 1;
     }
