@@ -22,7 +22,7 @@ TEST(CtrlPayload, parse) {
 
     auto ctx = app.ctxs[0];
     EXPECT_EQ(ctx.id, "MGR");
-    EXPECT_EQ(ctx.logLevel, '\xff');
-    EXPECT_EQ(ctx.traceStatus, '\xff');
+    EXPECT_EQ(ctx.logLevel, -1);
+    EXPECT_EQ(ctx.traceStatus, -1);
     EXPECT_EQ(ctx.description, "Context of main dlt system manager");
 }
