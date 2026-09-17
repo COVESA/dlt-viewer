@@ -312,10 +312,6 @@ public:
      **/
     QVector<qint64> getIndexFilter() const;
 
-    //! Get Index of all DLT messages matching filter by const reference.
-    /*! Avoids copying large vectors; reference stays valid until the filter index is recomputed. */
-    const QVector<qint64>& getIndexFilterRef() const { return indexFilter; }
-
     //! Capture a stable copy of the currently searchable rows.
     SearchSnapshot captureSearchSnapshot() const;
 

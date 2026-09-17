@@ -101,6 +101,17 @@ static QThreadPool &findAllThreadPool()
     });
     return pool;
 }
+
+// Pool-lifetime-scoped, one instance shared by every "Find All" run: pool worker
+// threads are long-lived and reused across searches, so a per-call QThreadStorage
+// would leak (Qt only reclaims per-thread data when the *thread* exits, not when
+// the QThreadStorage object owning it is destroyed). Sharing one instance here
+// means the per-thread QFile handles are reused/cleaned up correctly instead.
+static QThreadStorage<QFile*> &findAllWorkerReaders()
+{
+    static QThreadStorage<QFile*> workerReaders;
+    return workerReaders;
+}
 #endif
 
 } // namespace
@@ -408,7 +419,7 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         const int chunkCount = qMax(1, qMax(qMin(total, workerCount * 8),
                                              (total + maxChunkSize - 1) / maxChunkSize));
         const int chunkSize = qMax(1, (total + chunkCount - 1) / chunkCount);
-        QThreadStorage<QFile*> workerReaders;
+        QThreadStorage<QFile*> &workerReaders = findAllWorkerReaders();
 
         for (int begin = 0; begin < total; begin += chunkSize)
         {
@@ -905,7 +916,7 @@ void CSearchDialog::findMessages(long int searchLine, long int searchBorder, QRe
             continue;
         }
 
-        if(!m_decodeCacheService->message(file,
+        if(!m_decodeCacheService || !m_decodeCacheService->message(file,
                                          pluginManager,
                                          globalIndex,
                                          decodeEnabled,

@@ -119,5 +119,5 @@ bool DltMessageMatcher::matchTimeRangeMs(qint64 msSinceEpoch) const
     if (!m_timeRangeMs)
         return true;
 
-    return (m_timeRangeMs->startMsSinceEpoch < msSinceEpoch) && (msSinceEpoch < m_timeRangeMs->endMsSinceEpoch);
+    return (m_timeRangeMs->startMsSinceEpoch <= msSinceEpoch) && (msSinceEpoch <= m_timeRangeMs->endMsSinceEpoch);
 }

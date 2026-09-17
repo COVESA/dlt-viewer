@@ -132,7 +132,7 @@ std::vector<MessageId> CQDltFileMessageStoreAdapter::snapshotFilteredMessageIds(
         return snapshotAllMessageIds();
 
     std::vector<MessageId> ids;
-    const auto &filterRef = m_file->getIndexFilterRef();
+    const QVector<qint64> filterRef = m_file->getIndexFilter();
     ids.reserve(filterRef.size());
     for (const auto &index : filterRef)
     {

@@ -90,16 +90,32 @@ CTableModel::CTableModel(const QString & /*data*/, QObject *parent)
      QDltMsg omsg;
      const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
      const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
+     const std::uint64_t pipelineGeneration = pluginManager ? pluginManager->decodePipelineGeneration() : 0;
 
-    // CDecodeCacheService owns the complete decode identity, including plugin-pipeline generation.
-     if (m_decodeCacheService && m_decodeCacheService->message(qfile,
-                                      pluginManager,
-                                      filterposindex,
-                                      decodeEnabled,
-                                      triggeredByUser,
-                                      omsg,
-                                      true)) {
+    // Reuse the last decoded row across the multiple roles/columns Qt requests
+    // per paint pass instead of re-entering the shared, mutex-protected cache.
+    if (m_lastRowCacheValid &&
+        m_lastRowCacheGlobalIndex == filterposindex &&
+        m_lastRowCacheDecodeEnabled == decodeEnabled &&
+        m_lastRowCacheTriggeredByUser == triggeredByUser &&
+        m_lastRowCachePipelineGeneration == pipelineGeneration)
+    {
+        msg = std::make_optional(m_lastRowCacheMsg);
+    }
+    else if (m_decodeCacheService && m_decodeCacheService->message(qfile,
+                                     pluginManager,
+                                     filterposindex,
+                                     decodeEnabled,
+                                     triggeredByUser,
+                                     omsg,
+                                     true)) {
          msg = std::make_optional(omsg);
+         m_lastRowCacheGlobalIndex = filterposindex;
+         m_lastRowCacheDecodeEnabled = decodeEnabled;
+         m_lastRowCacheTriggeredByUser = triggeredByUser;
+         m_lastRowCachePipelineGeneration = pipelineGeneration;
+         m_lastRowCacheMsg = omsg;
+         m_lastRowCacheValid = true;
      }
 
      if (role == Qt::DisplayRole)
@@ -405,6 +421,7 @@ QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
 void CTableModel::invalidateMessageCaches(bool clearDecodedMessages)
 {
     m_filteredProjectionCache.clear();
+    m_lastRowCacheValid = false;
 
     if (clearDecodedMessages && m_decodeCacheService)
         m_decodeCacheService->clearForFile(qfile);

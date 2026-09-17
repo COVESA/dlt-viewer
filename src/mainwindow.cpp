@@ -2011,7 +2011,7 @@ void MainWindow::rebuildMarkedRowCache()
         for(const auto &idx : selectedMarkerRows)
             marked.insert(static_cast<qint64>(idx));
 
-        const QVector<qint64> &viewIndices = qfile.getIndexFilterRef();
+        const QVector<qint64> viewIndices = qfile.getIndexFilter();
         const int limit = qMin(rowCount, viewIndices.size());
 
         markedRowsInView.reserve(marked.size());
