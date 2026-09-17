@@ -412,6 +412,8 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         }
 
         // File loading and parsing are parallel; shared decoder plugins remain serialized.
+        // Pipeline the two: chunk N+1's file read + parse runs in parallel while chunk N
+        // is being decoded/matched, instead of loading and decoding each chunk in lockstep.
         std::vector<std::uint64_t> matches;
         matches.reserve(qMax(1, total / 16));
         const int workerCount = findAllPool->maxThreadCount();
@@ -421,9 +423,7 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
         const int chunkSize = qMax(1, (total + chunkCount - 1) / chunkCount);
         QThreadStorage<QFile*> &workerReaders = findAllWorkerReaders();
 
-        for (int begin = 0; begin < total; begin += chunkSize)
-        {
-            const int end = qMin(begin + chunkSize, total);
+        auto loadChunk = [=, &workerReaders](int begin, int end) {
             QVector<int> rows;
             rows.reserve(end - begin);
             for (int row = begin; row < end; ++row)
@@ -459,20 +459,33 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                     result.push_back(loaded);
             };
 
-            const auto loadedMessages = QtConcurrent::blockingMappedReduced<std::vector<LoadedSearchMessage>>(
+            return QtConcurrent::mappedReduced<std::vector<LoadedSearchMessage>>(
                 findAllPool, rows, loadMessage, appendLoaded,
                 QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce);
+        };
+
+        QFuture<std::vector<LoadedSearchMessage>> nextChunkFuture = loadChunk(0, qMin(chunkSize, total));
+
+        for (int begin = 0; begin < total; begin += chunkSize)
+        {
+            const int end = qMin(begin + chunkSize, total);
+
+            // Blocks only until this chunk's load (already in flight) finishes.
+            std::vector<LoadedSearchMessage> loadedMessages = nextChunkFuture.result();
+
+            // Start the next chunk's load now so it overlaps with this chunk's decode below.
+            if (end < total && !(dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed)))
+                nextChunkFuture = loadChunk(end, qMin(end + chunkSize, total));
 
             DltMessageMatcher matcher = createMatcher();
             const std::size_t matchesBeforeChunk = matches.size();
-            for (const LoadedSearchMessage &loaded : loadedMessages)
+            for (LoadedSearchMessage &loaded : loadedMessages)
             {
                 if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
                     break;
 
-                QDltMsg message = loaded.message;
-                decodeCache->decode(pluginPtr, dlg ? dlg->fSilentMode : 0, message);
-                if (matcher.match(message, searchPattern))
+                decodeCache->decode(pluginPtr, dlg ? dlg->fSilentMode : 0, loaded.message);
+                if (matcher.match(loaded.message, searchPattern))
                     matches.push_back(loaded.index);
             }
 
@@ -871,7 +884,10 @@ void CSearchDialog::findMessages(long int searchLine, long int searchBorder, QRe
     }
     matcher.setHeaderSearchEnabled(getHeader());
     matcher.setPayloadSearchEnabled(getPayload());
-    const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    // Only decode when payload search is actually enabled; matching header/APID/CTID
+    // never uses the decoded payload, so decoding for it is wasted work.
+    const bool pluginsEnabledSetting = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+    const bool decodeEnabled = pluginsEnabledSetting && getPayload();
 
     do
     {
@@ -916,12 +932,16 @@ void CSearchDialog::findMessages(long int searchLine, long int searchBorder, QRe
             continue;
         }
 
+        // findMessages() scans forward/backward and rarely revisits a message, so the
+        // shared decode cache's hit rate is structurally near zero here; bypass it
+        // entirely instead of paying its mutex/hash/eviction cost for no benefit.
         if(!m_decodeCacheService || !m_decodeCacheService->message(file,
                                          pluginManager,
                                          globalIndex,
                                          decodeEnabled,
                                          fSilentMode,
                                          msg,
+                                         true,
                                          true))
         {
             continue;
