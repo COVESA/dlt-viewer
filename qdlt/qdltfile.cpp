@@ -348,7 +348,6 @@ bool QDltFile::createIndex()
     ret = updateIndex();
 
     //qDebug() << "Create index finished - " << size() << "messages found";
-    calculateTotalSizes();
 
     return ret;
 }
@@ -430,6 +429,8 @@ bool QDltFile::updateIndex()
         qint64 next_message_pos = 0;
         int counter_header = 0;
         quint16 message_length = 0;
+        quint16 dltMessageLengthOnly = 0; // message_length before the storage-header offset is added
+        quint8 current_htyp = 0;
         qint64 file_size = files[numFile]->infile.size();
         qint64 errors_in_file  = 0;
 
@@ -464,6 +465,7 @@ bool QDltFile::updateIndex()
                     else if (counter_header==storageLength)
                     {
                         // Read DLT protocol version
+                        current_htyp = (unsigned char)cbuf[num];
                         version = (((unsigned char)cbuf[num])&0xe0)>>5;
                         if(version==1)
                         {
@@ -487,12 +489,15 @@ bool QDltFile::updateIndex()
                     {
                         // Read high byte of message length
                         counter_header = 0;
-                        message_length = (message_length<<8 | ((unsigned char)cbuf[num])) + storageLength;
+                        message_length = (message_length<<8 | ((unsigned char)cbuf[num]));
+                        dltMessageLengthOnly = message_length;
+                        message_length += storageLength;
                         next_message_pos = current_message_pos + message_length;
                         if(next_message_pos==file_size)
                         {
                             // last message found in file
                             files[numFile]->indexAll.append(current_message_pos);
+                            accumulateMessageSizeLocked(message_length, dltMessageLengthOnly, current_htyp);
                             break;
                         }
                         // speed up move directly to next message, if inside current buffer
@@ -544,6 +549,7 @@ bool QDltFile::updateIndex()
                     {
                         // Add message only when it is in the correct position in relationship to the last message
                         files[numFile]->indexAll.append(current_message_pos);
+                        accumulateMessageSizeLocked(message_length, dltMessageLengthOnly, current_htyp);
                         current_message_pos = pos+num-3;
                         counter_header = 3;
                         if(cbuf[num] == 0x01)
@@ -1382,15 +1388,21 @@ bool QDltFile::applyRegExStringMsg(QDltMsg &msg) const
     return filterList.applyRegExStringMsg(msg);
 }
 
+void QDltFile::accumulateMessageSizeLocked(quint32 totalMessageBytes, quint16 dltMessageLength, quint8 htyp)
+{
+    totalStorageSize += alignedStorageSize(totalMessageBytes);
+
+    const int headerSize = calculateHeaderSize(htyp);
+    const int payloadSize = static_cast<int>(dltMessageLength) - headerSize;
+    if (dltMessageLength == 0 || payloadSize < 0)
+        return; // storage size still counted above; message/payload size unknown for a corrupt header
+
+    totalMessageSize += dltMessageLength;
+    totalPayloadSize += static_cast<quint32>(payloadSize);
+}
+
 void QDltFile::calculateTotalSizes()
 {
-    // Structure to hold per-message size info
-    struct QDltMsgSizeInfo {
-        quint32 storageSize;
-        quint32 messageSize;
-        quint32 payloadSize;
-    };
-
     // Get total number of indexed messages
     const int totalMessages = size();
     if (totalMessages == 0) {
@@ -1400,8 +1412,14 @@ void QDltFile::calculateTotalSizes()
         return;
     }
 
-    // Create cache for per-message size info
-    QVector<QDltMsgSizeInfo> msgSizeCache(totalMessages);
+    // Large enough to cover the largest possible storage header (DLTv2: 14 +
+    // up to 255-byte ECU id) plus the DLT protocol header, without reading the
+    // full (potentially large) message payload just to compute size statistics.
+    static const int kMaxPrefixBytes = 512;
+
+    quint64 storageTotal = 0;
+    quint64 messageTotal = 0;
+    quint64 payloadTotal = 0;
 
     // Progress reporting interval for large files
     const int progressInterval = qMax(1, qMin(totalMessages / 20, 10000));
@@ -1412,22 +1430,25 @@ void QDltFile::calculateTotalSizes()
             qDebug() << "Caching sizes:" << percentage << "% (" << msgIndex << "/" << totalMessages << ")";
         }
 
-        QByteArray msgData = getMsg(msgIndex);
-        QDltMsgSizeInfo info = {0, 0, 0};
-        if (msgData.isEmpty() || msgData.size() < 20) {
-            msgSizeCache[msgIndex] = info;
+        quint32 storageSize = 0;
+        QByteArray prefix;
+        if (!messagePrefixAndSizeLocked(msgIndex, kMaxPrefixBytes, storageSize, prefix))
+            continue;
+
+        if (prefix.isEmpty() || prefix.size() < 20) {
+            storageTotal += alignedStorageSize(storageSize);
             continue;
         }
 
         // Parse storage header
-        const char *data = msgData.constData();
-        const int msgDataSize = msgData.size();
+        const char *data = prefix.constData();
+        const int prefixSize = prefix.size();
         const quint8 storageHeaderVersion = static_cast<quint8>(data[3]);
         int storageHeaderSize = 16;
         if (storageHeaderVersion == 2) {
             // DLTv2: storage header size depends on ECU ID length
-            if (msgDataSize < 14) {
-                msgSizeCache[msgIndex] = info;
+            if (prefixSize < 14) {
+                storageTotal += alignedStorageSize(storageSize);
                 continue;
             }
             const quint8 ecuIdLength = static_cast<quint8>(data[13]);
@@ -1435,8 +1456,8 @@ void QDltFile::calculateTotalSizes()
         }
 
         // Validate enough data for DLT header
-        if (msgDataSize < storageHeaderSize + 4) {
-            msgSizeCache[msgIndex] = info;
+        if (prefixSize < storageHeaderSize + 4) {
+            storageTotal += alignedStorageSize(storageSize);
             continue;
         }
 
@@ -1446,10 +1467,10 @@ void QDltFile::calculateTotalSizes()
         const quint16 dltMessageLength = (static_cast<quint8>(dltHeaderData[2]) << 8) |
                                          static_cast<quint8>(dltHeaderData[3]);
 
-        // Validate message length
+        // Validate message length against the message's true total byte size
         if (dltMessageLength == 0 ||
-            dltMessageLength > (msgDataSize - storageHeaderSize)) {
-            msgSizeCache[msgIndex] = info;
+            dltMessageLength > (static_cast<int>(storageSize) - storageHeaderSize)) {
+            storageTotal += alignedStorageSize(storageSize);
             continue;
         }
 
@@ -1457,26 +1478,67 @@ void QDltFile::calculateTotalSizes()
         const int headerSize = calculateHeaderSize(htyp);
         const int payloadSize = dltMessageLength - headerSize;
         if (payloadSize < 0) {
-            msgSizeCache[msgIndex] = info;
+            storageTotal += alignedStorageSize(storageSize);
             continue;
         }
 
-        info.storageSize = alignedStorageSize(msgDataSize);
-        info.messageSize = dltMessageLength;
-        info.payloadSize = payloadSize;
-        msgSizeCache[msgIndex] = info;
+        storageTotal += alignedStorageSize(storageSize);
+        messageTotal += dltMessageLength;
+        payloadTotal += static_cast<quint32>(payloadSize);
     }
     if (totalMessages > 10000) {
         qDebug() << "Size caching completed: processed" << totalMessages << "messages";
     }
 
-    // Accumulate totals from cache
-    totalStorageSize = 0;
-    totalMessageSize = 0;
-    totalPayloadSize = 0;
-    for (int i = 0; i < msgSizeCache.size(); ++i) {
-        totalStorageSize += msgSizeCache[i].storageSize;
-        totalMessageSize += msgSizeCache[i].messageSize;
-        totalPayloadSize += msgSizeCache[i].payloadSize;
+    totalStorageSize = storageTotal;
+    totalMessageSize = messageTotal;
+    totalPayloadSize = payloadTotal;
+}
+
+bool QDltFile::messagePrefixAndSizeLocked(int index, int maxPrefixBytes, quint32 &storageSize, QByteArray &prefix) const
+{
+    storageSize = 0;
+    prefix.clear();
+
+    if (index < 0)
+        return false;
+
+    QMutexLocker locker(&mutexQDlt);
+
+    int num = 0;
+    for (; num < files.size(); num++)
+    {
+        if (index < files[num]->indexAll.size())
+            break;
+        index -= files[num]->indexAll.size();
     }
+
+    if (num >= files.size())
+        return false;
+
+    QDltFileItem *file = files[num];
+    if (!file->infile.isOpen())
+        return false;
+
+    const qint64 positionForIndex = file->indexAll[index];
+    qint64 readLength;
+    if (index == (file->indexAll.size() - 1))
+        readLength = file->infile.size() - positionForIndex;
+    else
+        readLength = file->indexAll[index + 1] - positionForIndex;
+
+    if (readLength < 0)
+        return false;
+
+    if (!file->infile.seek(positionForIndex))
+        return false;
+
+    const qint64 prefixLength = qMin<qint64>(readLength, maxPrefixBytes);
+    prefix.resize(static_cast<int>(prefixLength));
+    const qint64 bytesRead = file->infile.read(prefix.data(), prefixLength);
+    if (bytesRead != prefixLength)
+        prefix.resize(static_cast<int>(qMax<qint64>(bytesRead, 0)));
+
+    storageSize = static_cast<quint32>(readLength);
+    return true;
 }

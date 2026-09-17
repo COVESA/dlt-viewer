@@ -397,13 +397,25 @@ public:
 
 private:
     // Calculates total storage, message, and payload sizes for all indexed DLT messages.
+    // Fallback only: updateIndex() accumulates these sizes inline as it scans; this is
+    // used when getTotalStorageSize()/etc. are called before any scan has populated them.
     void calculateTotalSizes();
+    // Accumulates totalStorageSize/totalMessageSize/totalPayloadSize for one newly-indexed
+    // message, using values already known to updateIndex()'s scan (no extra I/O).
+    void accumulateMessageSizeLocked(quint32 totalMessageBytes, quint16 dltMessageLength, quint8 htyp);
     void recomputeEffectiveIndexFilterLocked();
     void bumpSearchSnapshotGenerationLocked();
     // Lock-free counterparts of size()/getMsg(int) for callers that already hold mutexQDlt
     // (e.g. mergeIndexFilterBaseWithMarkers, invoked from the *Locked recompute path).
     int sizeLocked() const;
     QByteArray getMsgLocked(int index) const;
+
+    // Reads only a bounded prefix of the message at `index` (enough to cover the
+    // storage + DLT protocol headers) instead of the full message body, and
+    // reports the message's true total byte size via `storageSize`. Used by
+    // calculateTotalSizes() to avoid copying full (potentially large) message
+    // payloads just to compute size statistics.
+    bool messagePrefixAndSizeLocked(int index, int maxPrefixBytes, quint32 &storageSize, QByteArray &prefix) const;
 
     // Returns true when cache lookup/insert should be used for this access pattern.
     bool shouldUseMessageCache(int index) const;
