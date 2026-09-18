@@ -700,6 +700,10 @@ void MainWindow::initView()
     connect(applyConfig, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
     addAction(applyConfig);
 
+    /* The toolbar/menu "Apply Configuration" action is a separate QAction from the
+     * shortcut above and from the applyConfig button, so it needs its own connection. */
+    connect(ui->actionApply_Configuration, SIGNAL(triggered()), this, SLOT(on_applyConfig_clicked()));
+
     /* Add shortcut to add filter */
     QAction *addFilter = new QAction(this);
     addFilter->setShortcut((Qt::SHIFT | Qt::CTRL) | Qt::Key_A);
@@ -7713,7 +7717,8 @@ void MainWindow::onactionmenuFilter_SetAllActiveTriggered()
         }
     }
 
-    filterCountChanged();
+    /* Defer the actual (re-)filtering/marker update until Apply Configuration is clicked. */
+    applyConfigEnabled(true);
 }
 
 void MainWindow::onactionmenuFilter_SetAllInactiveTriggered()
@@ -7746,7 +7751,8 @@ void MainWindow::onactionmenuFilter_SetAllInactiveTriggered()
         }
     }
 
-    filterCountChanged();
+    /* Defer the actual (re-)filtering/marker update until Apply Configuration is clicked. */
+    applyConfigEnabled(true);
 }
 
 void MainWindow::on_action_menuFilter_Clear_all_triggered()
@@ -8214,7 +8220,11 @@ void MainWindow::on_filterWidget_itemClicked(QTreeWidgetItem *item, int column)
         {
             tmp->filter.enableFilter = true;
         }
-        filterCountChanged();
+        /* Do not touch qfile's active filter list or repaint the table here.
+         * Toggling the checkbox must only be a pending change - it must not
+         * take effect (e.g. remove marker colours) until the user explicitly
+         * clicks "Apply Configuration", which re-runs the CFI. */
+        applyConfigEnabled(true);
     }
     else
     {
