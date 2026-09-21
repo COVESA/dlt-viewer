@@ -22,6 +22,7 @@
 #include "export_rules.h"
 #include "qdltmsg.h"
 
+#include <QByteArray>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
@@ -71,6 +72,12 @@ public:
      */
     virtual bool message(MessageId messageId, QDltMsg &msg, bool useCache = true) const = 0;
 
+    //! Decode a message and return its serialized bytes from the same read.
+    virtual bool messageWithBytes(MessageId messageId,
+                                  QDltMsg &msg,
+                                  QByteArray &bytes,
+                                  bool useCache = false) const = 0;
+
     //! Return all message ids currently available.
     virtual std::vector<MessageId> snapshotAllMessageIds() const = 0;
     //! Return message ids currently visible in the filtered view.
@@ -110,6 +117,10 @@ public:
     std::vector<char> rawMessage(MessageId messageId) const override;
     //! Decode a message by id into QDltMsg.
     bool message(MessageId messageId, QDltMsg &msg, bool useCache = true) const override;
+    bool messageWithBytes(MessageId messageId,
+                          QDltMsg &msg,
+                          QByteArray &bytes,
+                          bool useCache = false) const override;
 
     //! Return all message ids currently available.
     std::vector<MessageId> snapshotAllMessageIds() const override;

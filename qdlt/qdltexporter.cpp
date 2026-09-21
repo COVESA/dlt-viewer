@@ -472,14 +472,12 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
             return false;
         }
 
-        result = messageStore.message(messageId, msg);
+        result = messageStore.messageWithBytes(messageId, msg, buf, false);
         if (!result)
         {
             qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
             return false;
         }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
         msg.setIndex(static_cast<int>(num));
     }
     else if(exportSelection == QDltExporter::SelectionFiltered)
@@ -491,14 +489,12 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
             return false;
         }
 
-        result = messageStore.message(messageId, msg);
+        result = messageStore.messageWithBytes(messageId, msg, buf, false);
         if (!result)
         {
             qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
             return false;
         }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
         msg.setIndex(messageStore.globalIndexForMessageId(messageId));
     }
     else if(exportSelection == QDltExporter::SelectionSelected)
@@ -511,14 +507,12 @@ bool QDltExporter::getMsg(unsigned long int num,QDltMsg &msg,QByteArray &buf)
             return false;
         }
 
-        result = messageStore.message(messageId, msg);
+        result = messageStore.messageWithBytes(messageId, msg, buf, false);
         if (!result)
         {
             qDebug() << "Failed to read message in" << __FILE__ << __LINE__;
             return false;
         }
-        const std::vector<char> raw = messageStore.rawMessage(messageId);
-        buf = QByteArray(raw.data(), static_cast<int>(raw.size()));
         msg.setIndex(messageStore.globalIndexForMessageId(messageId));
     }
     else
@@ -748,24 +742,7 @@ void QDltExporter::exportMessages()
             //FIXME: The following does not work for non verbose messages, must be fixed
             if(pluginManager)
             {
-                QDltMsg decoded;
-                const bool decodeEnabled = true;
-                const int index = msg.getIndex();
-                const bool hasGlobalIndex = (from != nullptr) && index >= 0;
-                if (hasGlobalIndex && decodeCacheService.message(from,
-                                                                 pluginManager,
-                                                                 index,
-                                                                 decodeEnabled,
-                                                                 silentMode,
-                                                                 decoded,
-                                                                 true))
-                {
-                    msg = decoded;
-                }
-                else
-                {
-                    (void)decodeCacheService.decode(pluginManager, silentMode, msg);
-                }
+                (void)decodeCacheService.decode(pluginManager, silentMode, msg);
             }
             if (exportFormat == QDltExporter::FormatDltDecoded)
             {

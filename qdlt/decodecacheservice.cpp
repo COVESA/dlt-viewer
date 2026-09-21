@@ -47,7 +47,7 @@ bool CDecodeCacheService::message(const QDltFile *file,
     if (singlePassBypass)
     {
         QDltMsg loaded;
-        if (!messageStore.message(static_cast<MessageId>(globalIndex), loaded))
+        if (!messageStore.message(static_cast<MessageId>(globalIndex), loaded, false))
             return false;
         if (decodeEnabled && !decode(pluginManager, triggeredByUser, loaded))
             return false;
