@@ -91,6 +91,31 @@ bool CQDltFileMessageStoreAdapter::message(MessageId messageId, QDltMsg &msg, bo
     return true;
 }
 
+bool CQDltFileMessageStoreAdapter::messageWithBytes(MessageId messageId,
+                                                    QDltMsg &msg,
+                                                    QByteArray &bytes,
+                                                    bool useCache) const
+{
+    bytes.clear();
+    if (!contains(messageId))
+        return false;
+
+    const int globalIndex = static_cast<int>(messageId);
+    if (!useCache)
+    {
+        QByteArray buffer;
+        if (!const_cast<QDltFile *>(m_file)->getMsgNoCache(globalIndex, msg, buffer))
+            return false;
+        bytes = buffer;
+        return true;
+    }
+
+    if (!m_file->messageAt(globalIndex, msg, true))
+        return false;
+    bytes = m_file->messageBytesAt(globalIndex);
+    return !bytes.isEmpty();
+}
+
 std::vector<MessageId> CQDltFileMessageStoreAdapter::snapshotAllMessageIds() const
 {
     std::vector<MessageId> ids;

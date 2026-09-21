@@ -950,6 +950,8 @@ bool QDltFile::getMsgNoCache(int index, QDltMsg &msg, QByteArray &buffer)
         return false;
 
     bool result = msg.setMsg(buffer,true,dltv2Support);
+    if(!result && !dltv2Support)
+        result = msg.setMsg(buffer,true,true);
     msg.setIndex(originalIndex);
     return result;
 }
@@ -1017,15 +1019,8 @@ bool QDltFile::messageAt(int index, QDltMsg &msg, bool useCache) const
     if (useCache)
         return const_cast<QDltFile*>(this)->getMsg(index, msg);
 
-    const QByteArray data = getMsg(index);
-    if (data.isEmpty())
-        return false;
-
-    bool parsed = msg.setMsg(data, true, dltv2Support);
-    if (!parsed && !dltv2Support)
-        parsed = msg.setMsg(data, true, true);
-    msg.setIndex(index);
-    return parsed;
+    QByteArray data;
+    return const_cast<QDltFile*>(this)->getMsgNoCache(index, msg, data);
 }
 
 QByteArray QDltFile::messageBytesAt(int index) const
