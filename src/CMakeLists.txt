@@ -120,12 +120,6 @@ target_link_libraries(dlt-viewer
     ${QT_PREFIX}::Widgets
     ${QT_PREFIX}::SerialPort)
 
-if(CMAKE_COMPILER_IS_GNUCXX)
-    # https://stackoverflow.com/questions/45329372/ubuntu-recognizes-executable-as-shared-library-and-wont-run-it-by-clicking
-    # https://forum.juce.com/t/cmake-executable-build-shows-up-as-shared-library-on-linux-mint/45503/6
-    target_link_options(dlt-viewer PRIVATE "-no-pie")
-endif()
-
 set_target_properties(dlt-viewer PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
     INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
