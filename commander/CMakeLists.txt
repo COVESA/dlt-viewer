@@ -33,10 +33,4 @@ set_target_properties(dlt-commander PROPERTIES
     # Underscore for NSIS compatibility https://gitlab.kitware.com/cmake/cmake/-/issues/19982
     COMPONENT dlt_cmd)
 
-if(WIN32)
-    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH "${DLT_EXECUTABLE_INSTALLATION_PATH}")
-else()
-    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
-endif()
-
 include(cmake/${CMAKE_SYSTEM_NAME}.cmake OPTIONAL)

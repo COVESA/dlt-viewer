@@ -138,30 +138,23 @@ endif()
     # Underscore for NSIS compatibility https://gitlab.kitware.com/cmake/cmake/-/issues/19982
     COMPONENT dlt_viewer)
 
-if(WIN32)
-    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH "${DLT_EXECUTABLE_INSTALLATION_PATH}")
-else()
-    if(NOT DLT_ADDITIONAL_FILES_INSTALLATION_PATH)
-        # Default to current directory for non-Windows systems
-        # This is where additional files will be installed
-        # e.g., documentation, examples, etc.
-        # It can be overridden by the user via CMake options
-        set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
-    endif()
-endif()
-
 if(DLT_INSTALL_SDK)
+    if(DLT_USE_STANDARD_INSTALLATION_LOCATION)
+        set(DLT_ROOT_DOC_INSTALLATION_PATH "${DLT_DOC_INSTALLATION_PATH}")
+    else()
+        set(DLT_ROOT_DOC_INSTALLATION_PATH "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}")
+    endif()
     install(FILES
         ../LICENSE.txt
         ../MPL.txt
         ../README.md
         ../ReleaseNotes_Viewer.txt
-        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
+        DESTINATION "${DLT_ROOT_DOC_INSTALLATION_PATH}"
         COMPONENT dlt_viewer)
     install(FILES
         ../doc/dlt_viewer_user_manual.pdf
         ../doc/dlt_viewer_plugins_programming_guide.pdf
-        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/doc"
+        DESTINATION "${DLT_DOC_INSTALLATION_PATH}"
         COMPONENT documentation)
 endif()
 
