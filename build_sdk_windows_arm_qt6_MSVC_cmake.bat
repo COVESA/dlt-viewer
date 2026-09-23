@@ -59,7 +59,9 @@ echo ************************************
 echo ***  Configure MSVC environment  ***
 echo ************************************
 
-call vcvarsall.bat arm64
+REM Call by full path: PATH lookup for vcvarsall.bat is unreliable on this runner.
+REM windows-11-arm only ships the amd64_arm64 cross toolset, not a native arm64 host compiler.
+call "%MSVC_DIR%\vcvarsall.bat" amd64_arm64
 if %ERRORLEVEL% NEQ 0 goto ERROR_HANDLER
 echo configuring was successful
 
