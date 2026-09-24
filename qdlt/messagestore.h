@@ -57,9 +57,6 @@ public:
     //! Resolve a stable message id to its global index.
     virtual int globalIndexForMessageId(MessageId messageId) const = 0;
 
-    //! Return the raw serialized message payload bytes for a message id.
-    virtual std::vector<char> rawMessage(MessageId messageId) const = 0;
-    
     //! Decode a message by id into QDltMsg.
     /*! \param messageId Stable message identifier
      *  \param msg Output parameter for decoded message
@@ -94,10 +91,10 @@ class QDLT_EXPORT CQDltFileMessageStoreAdapter final : public CMessageStore
 {
 public:
     //! Create an adapter bound to an optional QDltFile.
-    explicit CQDltFileMessageStoreAdapter(const QDltFile *file = nullptr);
+    explicit CQDltFileMessageStoreAdapter(QDltFile *file = nullptr);
 
     //! Update the bound file instance used for message queries.
-    void setFile(const QDltFile *file);
+    void setFile(QDltFile *file);
     //! Return the currently bound file instance.
     const QDltFile *file() const;
 
@@ -113,8 +110,6 @@ public:
     //! Resolve a stable message id to its global index.
     int globalIndexForMessageId(MessageId messageId) const override;
 
-    //! Return the raw serialized message payload bytes for a message id.
-    std::vector<char> rawMessage(MessageId messageId) const override;
     //! Decode a message by id into QDltMsg.
     bool message(MessageId messageId, QDltMsg &msg, bool useCache = true) const override;
     bool messageWithBytes(MessageId messageId,
@@ -128,7 +123,7 @@ public:
     std::vector<MessageId> snapshotFilteredMessageIds() const override;
 
 private:
-    const QDltFile *m_file;
+    QDltFile *m_file;
 };
 
 #endif // MESSAGESTORE_H
