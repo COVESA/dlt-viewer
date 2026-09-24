@@ -20,12 +20,12 @@
 
 #include "qdltfile.h"
 
-CQDltFileMessageStoreAdapter::CQDltFileMessageStoreAdapter(const QDltFile *file)
+CQDltFileMessageStoreAdapter::CQDltFileMessageStoreAdapter(QDltFile *file)
     : m_file(file)
 {
 }
 
-void CQDltFileMessageStoreAdapter::setFile(const QDltFile *file)
+void CQDltFileMessageStoreAdapter::setFile(QDltFile *file)
 {
     m_file = file;
 }
@@ -70,21 +70,12 @@ int CQDltFileMessageStoreAdapter::globalIndexForMessageId(MessageId messageId) c
     return contains(messageId) ? static_cast<int>(messageId) : -1;
 }
 
-std::vector<char> CQDltFileMessageStoreAdapter::rawMessage(MessageId messageId) const
-{
-    if (!contains(messageId))
-        return {};
-
-    const QByteArray data = m_file->messageBytesAt(static_cast<int>(messageId));
-    return std::vector<char>(data.cbegin(), data.cend());
-}
-
 bool CQDltFileMessageStoreAdapter::message(MessageId messageId, QDltMsg &msg, bool useCache) const
 {
-    if (!contains(messageId))
+    const int globalIndex = globalIndexForMessageId(messageId);
+    if (globalIndex < 0)
         return false;
 
-    const int globalIndex = static_cast<int>(messageId);
     if (!m_file->messageAt(globalIndex, msg, useCache))
         return false;
 
@@ -97,21 +88,23 @@ bool CQDltFileMessageStoreAdapter::messageWithBytes(MessageId messageId,
                                                     bool useCache) const
 {
     bytes.clear();
-    if (!contains(messageId))
+    const int globalIndex = globalIndexForMessageId(messageId);
+    if (globalIndex < 0)
         return false;
 
-    const int globalIndex = static_cast<int>(messageId);
     if (!useCache)
     {
         QByteArray buffer;
-        if (!const_cast<QDltFile *>(m_file)->getMsgNoCache(globalIndex, msg, buffer))
+        if (!m_file->getMsgNoCache(globalIndex, msg, buffer))
             return false;
         bytes = buffer;
         return true;
     }
 
     if (!m_file->messageAt(globalIndex, msg, true))
+    {
         return false;
+    }
     bytes = m_file->messageBytesAt(globalIndex);
     return !bytes.isEmpty();
 }
