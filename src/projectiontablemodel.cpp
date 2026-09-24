@@ -102,9 +102,7 @@ void ProjectionTableModel::onSourceDataChanged(const QModelIndex &topLeft,
     if (lower == end || *lower > bottomRight.row())
         return;
 
-    auto upper = lower;
-    while (upper != end && *upper <= bottomRight.row())
-        ++upper;
+    const auto upper = std::upper_bound(lower, end, bottomRight.row());
 
     const int firstProjectedRow = static_cast<int>(std::distance(begin, lower));
     const int lastProjectedRow = static_cast<int>(std::distance(begin, upper)) - 1;

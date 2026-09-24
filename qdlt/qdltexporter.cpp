@@ -33,32 +33,6 @@ QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginMan
     this->signature = signature;
 }
 
-int QDltExporter::globalIndexForSelectionRow(unsigned long int num) const
-{
-    if (!from)
-        return -1;
-
-    if (exportSelection == QDltExporter::SelectionAll)
-        return static_cast<int>(num);
-
-    if (exportSelection == QDltExporter::SelectionFiltered)
-    {
-        const MessageId messageId = messageStore.messageIdForFilteredRow(static_cast<int>(num));
-        return (messageId == kInvalidMessageId) ? -1 : messageStore.globalIndexForMessageId(messageId);
-    }
-
-    if (exportSelection == QDltExporter::SelectionSelected)
-    {
-        if (num >= static_cast<unsigned long int>(selectedRows.size()))
-            return -1;
-
-        const MessageId messageId = messageStore.messageIdForFilteredRow(selectedRows[static_cast<int>(num)]);
-        return (messageId == kInvalidMessageId) ? -1 : messageStore.globalIndexForMessageId(messageId);
-    }
-
-    return -1;
-}
-
 void QDltExporter::run()
 {
     QString result;
