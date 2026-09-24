@@ -392,8 +392,8 @@ QVariant CTableModel::headerData(int section, Qt::Orientation orientation,
      /* last search index must be deleted because model changed */
      lastSearchIndex = -1;
 
-    // Rebuild the projection snapshot because appended rows can reorder filtered or sorted views.
-     invalidateMessageCaches(false);
+    // Projection cache is extended incrementally in resolveGlobalIndexForRow() instead of being
+    // cleared here, so scrolling/selecting during live logging doesn't pay a full rebuild per tick.
 
      if(firstModelNotification || m_lastKnownColumnCount != currentColumnCount || currentRowCount < previousRowCount)
      {
@@ -449,12 +449,33 @@ int CTableModel::resolveGlobalIndexForRow(int row) const
         return row;
     }
     // Filter is ON
-    if (m_filteredProjectionCache.size() !=
-        static_cast<std::vector<int>::size_type>(qfile->sizeFilter()))
+    const auto currentFilterSize = static_cast<std::vector<int>::size_type>(qfile->sizeFilter());
+    if (m_filteredProjectionCache.size() != currentFilterSize)
     {
-        CIndexService indexService;
-        m_filteredProjectionCache =
-            indexService.snapshotProjection(buildActiveFilteredProjection(qfile));
+        // Live logging only ever appends to the filtered index (manual markers, the one case
+        // that can reorder it, are forced empty while live logging is active), so extend the
+        // existing snapshot instead of paying a full O(n) rebuild on every redraw tick.
+        bool extended = false;
+        if (currentFilterSize > m_filteredProjectionCache.size() && !m_filteredProjectionCache.empty())
+        {
+            const QVector<qint64> fullFilter = qfile->getIndexFilter();
+            if (static_cast<std::vector<int>::size_type>(fullFilter.size()) == currentFilterSize
+                && fullFilter.at(static_cast<int>(m_filteredProjectionCache.size()) - 1) == m_filteredProjectionCache.back())
+            {
+                const auto oldSize = m_filteredProjectionCache.size();
+                m_filteredProjectionCache.reserve(currentFilterSize);
+                for (auto i = oldSize; i < currentFilterSize; ++i)
+                    m_filteredProjectionCache.push_back(static_cast<int>(fullFilter.at(static_cast<int>(i))));
+                extended = true;
+            }
+        }
+
+        if (!extended)
+        {
+            CIndexService indexService;
+            m_filteredProjectionCache =
+                indexService.snapshotProjection(buildActiveFilteredProjection(qfile));
+        }
     }
 
     if (static_cast<std::vector<int>::size_type>(row) < m_filteredProjectionCache.size())

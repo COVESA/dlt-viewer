@@ -183,6 +183,10 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* auto connect */
+    // Redraw only when new data actually arrived (armed from updateIndex()), not on a fixed poll.
+    drawTimer.setSingleShot(true);
+    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
+
     if( (settings->autoConnect != 0) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
@@ -4205,12 +4209,6 @@ void MainWindow::connectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         connectECU(ecuitem);
     }
-
-    // periodically update table view to account for the new incoming messages
-    const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
-                                                         : 1000 / DEFAULT_REFRESH_RATE;
-    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView, Qt::UniqueConnection);
-    drawTimer.start(drawInterval);
 }
 
 void MainWindow::disconnectAll()
@@ -4868,9 +4866,13 @@ void MainWindow::read(EcuItem* ecuitem)
                 }
             }
             //ecuitem->ipcon.add(data);
-            ecuitem->connected= true;
-            ecuitem->tryToConnect = true;
-            ecuitem->update();
+            // Skip the redundant tree-widget update once already connected; state doesn't change per datagram.
+            if(!ecuitem->connected || !ecuitem->tryToConnect)
+            {
+                ecuitem->connected= true;
+                ecuitem->tryToConnect = true;
+                ecuitem->update();
+            }
             udpMessageCounter++;
 
             /* analyse received message, check if DLT control message response */
@@ -5130,6 +5132,14 @@ void MainWindow::updateIndex()
 
         /* Repoint m_messageStore to updated file after live index growth */
         m_messageStore.setFile(&qfile);
+
+        // Arm one redraw, coalescing any further growth until it fires; stays dormant when idle.
+        if(!drawTimer.isActive())
+        {
+            const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                                 : 1000 / DEFAULT_REFRESH_RATE;
+            drawTimer.start(drawInterval);
+        }
     }
 }
 
