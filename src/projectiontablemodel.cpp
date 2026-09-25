@@ -1,5 +1,8 @@
 ﻿#include "projectiontablemodel.h"
 
+#include <algorithm>
+#include <iterator>
+
 ProjectionTableModel::ProjectionTableModel(QObject *parent)
     : QAbstractTableModel(parent)
 {
@@ -89,22 +92,20 @@ void ProjectionTableModel::onSourceDataChanged(const QModelIndex &topLeft,
     if (!m_sourceModel || topLeft.parent().isValid() || bottomRight.parent().isValid())
         return;
 
-    int firstProjectedRow = -1;
-    int lastProjectedRow = -1;
-
-    for (int row = 0; row < static_cast<int>(m_projectionRows.size()); ++row)
-    {
-        const int sourceRow = m_projectionRows.at(static_cast<std::size_t>(row));
-        if (sourceRow < topLeft.row() || sourceRow > bottomRight.row())
-            continue;
-
-        if (firstProjectedRow < 0)
-            firstProjectedRow = row;
-        lastProjectedRow = row;
-    }
-
-    if (firstProjectedRow < 0 || lastProjectedRow < 0)
+    // m_projectionRows holds source-row indices in ascending order (every
+    // setProjectionRows() caller builds/sorts it that way), so the affected
+    // projected range can be found with a binary search instead of scanning
+    // every projected row on every source dataChanged signal.
+    const auto begin = m_projectionRows.cbegin();
+    const auto end = m_projectionRows.cend();
+    const auto lower = std::lower_bound(begin, end, topLeft.row());
+    if (lower == end || *lower > bottomRight.row())
         return;
+
+    const auto upper = std::upper_bound(lower, end, bottomRight.row());
+
+    const int firstProjectedRow = static_cast<int>(std::distance(begin, lower));
+    const int lastProjectedRow = static_cast<int>(std::distance(begin, upper)) - 1;
 
     const QModelIndex projectedTopLeft = index(firstProjectedRow, topLeft.column());
     const QModelIndex projectedBottomRight = index(lastProjectedRow, bottomRight.column());

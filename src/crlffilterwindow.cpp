@@ -10,6 +10,12 @@
 #include <QCoreApplication>
 #include <QTimer>
 #include <QFileDialog>
+#include <QEventLoop>
+#include <QFuture>
+#include <QFutureWatcher>
+#include <QtConcurrentRun>
+
+#include <atomic>
 
 #include "crlffilterwindow.h"
 #include "mainwindow.h"
@@ -621,19 +627,17 @@ std::vector<int> CrlfFilterWindow::buildCrlfProjectionRows(QWidget *progressPare
                                                            const QString &progressLabel,
                                                            bool *wasCancelled)
 {
-    std::vector<int> rows;
     if (wasCancelled)
         *wasCancelled = false;
 
     if (!m_dltFile)
-        return rows;
+        return {};
 
     CIndexService localIndexService;
     const CIndexService *activeIndexService = m_indexService ? m_indexService : &localIndexService;
     const std::vector<int> filteredProjection =
         activeIndexService->snapshotProjection(buildActiveFilteredProjection(m_dltFile));
     const int totalFilteredMessages = static_cast<int>(filteredProjection.size());
-    rows.reserve(static_cast<std::size_t>(qMax(0, totalFilteredMessages / 8)));
 
     const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
     const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
@@ -643,62 +647,90 @@ std::vector<int> CrlfFilterWindow::buildCrlfProjectionRows(QWidget *progressPare
     buildProgress.setMinimumDuration(0);
     buildProgress.show();
 
-    // Detect the owning file being swapped or torn down by reentrant processEvents() calls below.
-    QDltFile * const capturedDltFile = m_dltFile;
+    // Detect the owning file being swapped or torn down while we wait below.
+    QDltFile* const capturedDltFile = m_dltFile;
     CDecodeCacheService *activeDecodeCache = m_externalDecodeCacheService ? m_externalDecodeCacheService : &m_decodeCacheService;
-    QDltMsg msg;
-    for (int sourceRow = 0; sourceRow < totalFilteredMessages; ++sourceRow) {
-        if (buildProgress.wasCanceled() || m_dltFile != capturedDltFile) {
-            if (wasCancelled)
-                *wasCancelled = true;
-            break;
-        }
+    CMessageStore *activeMessageStore = m_messageStore;
+    QDltPluginManager *pluginManager = m_pluginManager;
 
-        const int globalIndex = filteredProjection.at(static_cast<std::size_t>(sourceRow));
-        if (globalIndex < 0)
-            continue;
+    std::atomic<int> processedCount{0};
+    std::atomic<bool> cancelRequested{false};
 
-        bool gotMessage = false;
-        if (activeDecodeCache) {
-            gotMessage = activeDecodeCache->message(capturedDltFile,
-                                                    m_pluginManager,
-                                                    globalIndex,
-                                                    decodeEnabled,
-                                                    triggeredByUser,
-                                                    msg,
-                                                    true);
-        }
-
-        if (!gotMessage && m_messageStore) {
-            const MessageId messageId = m_messageStore->messageIdForGlobalIndex(globalIndex);
-            gotMessage = (messageId != kInvalidMessageId) && m_messageStore->message(messageId, msg);
-            // The message store only loads raw messages; decode explicitly to match the primary path.
-            if (gotMessage && decodeEnabled && m_pluginManager)
-                m_pluginManager->decodeMsg(msg, triggeredByUser);
-        }
-
-        if (!gotMessage)
-            continue;
-
-        if (containsCrlf(msg.toStringPayload()))
-            rows.push_back(sourceRow);
-
-        if ((sourceRow % 100) == 0) {
-            buildProgress.setValue(sourceRow);
-            const bool wasRebuildInProgress = m_rebuildInProgress;
-            m_rebuildInProgress = true;
-            QCoreApplication::processEvents();
-            m_rebuildInProgress = wasRebuildInProgress;
-
-            if (m_dltFile != capturedDltFile) {
-                if (wasCancelled)
-                    *wasCancelled = true;
+    // The decode-heavy scan now runs on a worker thread instead of blocking the
+    // UI thread (finding 3.15); only thread-safe accessors (the mutex-protected
+    // decode cache / message store / locked filter-index copy) are touched here.
+    QFuture<std::vector<int>> future = QtConcurrent::run([=, &processedCount, &cancelRequested]() {
+        std::vector<int> rows;
+        rows.reserve(static_cast<std::size_t>(qMax(0, totalFilteredMessages / 8)));
+        QDltMsg msg;
+        for (int sourceRow = 0; sourceRow < totalFilteredMessages; ++sourceRow) {
+            if (cancelRequested.load(std::memory_order_relaxed))
                 break;
+
+            processedCount.store(sourceRow, std::memory_order_relaxed);
+
+            const int globalIndex = filteredProjection.at(static_cast<std::size_t>(sourceRow));
+            if (globalIndex < 0)
+                continue;
+
+            bool gotMessage = false;
+            if (activeDecodeCache) {
+                gotMessage = activeDecodeCache->message(capturedDltFile,
+                                                        pluginManager,
+                                                        globalIndex,
+                                                        decodeEnabled,
+                                                        triggeredByUser,
+                                                        msg,
+                                                        true);
             }
+
+            if (!gotMessage && activeMessageStore) {
+                const MessageId messageId = activeMessageStore->messageIdForGlobalIndex(globalIndex);
+                gotMessage = (messageId != kInvalidMessageId) && activeMessageStore->message(messageId, msg);
+                // The message store only loads raw messages; decode explicitly to match the primary path.
+                if (gotMessage && decodeEnabled && pluginManager)
+                    pluginManager->decodeMsg(msg, triggeredByUser);
+            }
+
+            if (!gotMessage)
+                continue;
+
+            if (containsCrlf(msg.toStringPayload()))
+                rows.push_back(sourceRow);
         }
+        return rows;
+    });
+
+    // Keep the UI thread responsive (progress bar + Cancel button) while the
+    // worker runs, without doing any decode/plugin work here.
+    QFutureWatcher<std::vector<int>> watcher;
+    QEventLoop waitLoop;
+    connect(&watcher, &QFutureWatcherBase::finished, &waitLoop, &QEventLoop::quit);
+    watcher.setFuture(future);
+
+    QTimer pollTimer;
+    pollTimer.setInterval(50);
+    connect(&pollTimer, &QTimer::timeout, [&]() {
+        buildProgress.setValue(processedCount.load(std::memory_order_relaxed));
+        if (buildProgress.wasCanceled() || m_dltFile != capturedDltFile) {
+            cancelRequested.store(true, std::memory_order_relaxed);
+            waitLoop.quit();
+        }
+    });
+    pollTimer.start();
+    // Guard against a reentrant rebuild trigger firing while the event loop below
+    // pumps events (same intent as the previous processEvents()-based guard).
+    const bool wasRebuildInProgress = m_rebuildInProgress;
+    m_rebuildInProgress = true;
+    waitLoop.exec();
+    m_rebuildInProgress = wasRebuildInProgress;
+    future.waitForFinished();
+
+    if (buildProgress.wasCanceled() || m_dltFile != capturedDltFile) {
+        if (wasCancelled)
+            *wasCancelled = true;
+        return {};
     }
 
-    buildProgress.setValue(totalFilteredMessages);
-    buildProgress.close();
-    return rows;
+    return future.result();
 }

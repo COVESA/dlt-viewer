@@ -426,7 +426,8 @@ private:
 
 
 
-    void findFilteredLines();
+    //! Recomputes filterCountMap; returns false if the user cancelled the progress dialog.
+    bool findFilteredLines();
 
 
 protected:

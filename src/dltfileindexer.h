@@ -140,6 +140,8 @@ public:
     QMap<QString, int> getMarkerCounts() const;
     void addMarkerCount(const QString &filterName);
     void recomputeMarkerCounts(const QDltFilterList &filterList, const QVector<qint64> &indices);
+    //! Request early exit from an in-progress recomputeMarkerCounts() call.
+    void cancelMarkerCount();
 
     // let worker thread append to getLogInfoList
     void appendToGetLogInfoList(int value);
@@ -229,6 +231,7 @@ private:
 
     mutable QMutex markerCountLock;
     QMap<QString, int> markerCounts;
+    std::atomic<bool> markerCountCancelRequested{false};
 
     void resetMarkerCounts(const QDltFilterList &filterList);
     void computeMarkerCountsFromIndex(const QDltFilterList &filterList, const QVector<qint64> &indices);

@@ -70,6 +70,14 @@ int CQDltFileMessageStoreAdapter::globalIndexForMessageId(MessageId messageId) c
     return contains(messageId) ? static_cast<int>(messageId) : -1;
 }
 
+QByteArray CQDltFileMessageStoreAdapter::rawMessageBytes(MessageId messageId) const
+{
+    if (!contains(messageId))
+        return QByteArray();
+
+    return m_file->messageBytesAt(static_cast<int>(messageId));
+}
+
 bool CQDltFileMessageStoreAdapter::message(MessageId messageId, QDltMsg &msg, bool useCache) const
 {
     const int globalIndex = globalIndexForMessageId(messageId);
@@ -132,7 +140,7 @@ std::vector<MessageId> CQDltFileMessageStoreAdapter::snapshotFilteredMessageIds(
         return snapshotAllMessageIds();
 
     std::vector<MessageId> ids;
-    const auto &filterRef = m_file->getIndexFilterRef();
+    const QVector<qint64> filterRef = m_file->getIndexFilter();
     ids.reserve(filterRef.size());
     for (const auto &index : filterRef)
     {

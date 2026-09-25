@@ -110,6 +110,8 @@ public:
     //! Resolve a stable message id to its global index.
     int globalIndexForMessageId(MessageId messageId) const override;
 
+    //! Return the raw serialized message payload bytes for export.
+    QByteArray rawMessageBytes(MessageId messageId) const;
     //! Decode a message by id into QDltMsg.
     bool message(MessageId messageId, QDltMsg &msg, bool useCache = true) const override;
     bool messageWithBytes(MessageId messageId,

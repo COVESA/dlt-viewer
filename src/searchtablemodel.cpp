@@ -55,7 +55,7 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
 
         /* get the message with the selected item id */
-        if(!m_decodeCacheService->message(qfile,
+        if(!m_decodeCacheService || !m_decodeCacheService->message(qfile,
                                          pluginManager,
                                          globalIndex,
                                          decodeEnabled,
@@ -205,7 +205,7 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
         const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
 
-        if(m_decodeCacheService->message(qfile,
+        if(m_decodeCacheService && m_decodeCacheService->message(qfile,
                                         pluginManager,
                                         globalIndex,
                                         decodeEnabled,
@@ -233,7 +233,7 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
         const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
 
-        if(m_decodeCacheService->message(qfile,
+        if(m_decodeCacheService && m_decodeCacheService->message(qfile,
                                         pluginManager,
                                         globalIndex,
                                         decodeEnabled,

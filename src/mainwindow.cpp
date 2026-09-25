@@ -183,6 +183,10 @@ MainWindow::MainWindow(QWidget *parent) :
     }
 
     /* auto connect */
+    // Redraw only when new data actually arrived (armed from updateIndex()), not on a fixed poll.
+    drawTimer.setSingleShot(true);
+    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView);
+
     if( (settings->autoConnect != 0) ) // in convertion mode we do not need any connection ...)
     {
         connectAll();
@@ -2011,7 +2015,7 @@ void MainWindow::rebuildMarkedRowCache()
         for(const auto &idx : selectedMarkerRows)
             marked.insert(static_cast<qint64>(idx));
 
-        const QVector<qint64> &viewIndices = qfile.getIndexFilterRef();
+        const QVector<qint64> viewIndices = qfile.getIndexFilter();
         const int limit = qMin(rowCount, viewIndices.size());
 
         markedRowsInView.reserve(marked.size());
@@ -4205,12 +4209,6 @@ void MainWindow::connectAll()
         EcuItem *ecuitem = (EcuItem*)project.ecu->topLevelItem(num);
         connectECU(ecuitem);
     }
-
-    // periodically update table view to account for the new incoming messages
-    const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
-                                                         : 1000 / DEFAULT_REFRESH_RATE;
-    connect(&drawTimer, &QTimer::timeout, this, &MainWindow::drawUpdatedView, Qt::UniqueConnection);
-    drawTimer.start(drawInterval);
 }
 
 void MainWindow::disconnectAll()
@@ -4868,9 +4866,13 @@ void MainWindow::read(EcuItem* ecuitem)
                 }
             }
             //ecuitem->ipcon.add(data);
-            ecuitem->connected= true;
-            ecuitem->tryToConnect = true;
-            ecuitem->update();
+            // Skip the redundant tree-widget update once already connected; state doesn't change per datagram.
+            if(!ecuitem->connected || !ecuitem->tryToConnect)
+            {
+                ecuitem->connected= true;
+                ecuitem->tryToConnect = true;
+                ecuitem->update();
+            }
             udpMessageCounter++;
 
             /* analyse received message, check if DLT control message response */
@@ -5130,6 +5132,14 @@ void MainWindow::updateIndex()
 
         /* Repoint m_messageStore to updated file after live index growth */
         m_messageStore.setFile(&qfile);
+
+        // Arm one redraw, coalescing any further growth until it fires; stays dormant when idle.
+        if(!drawTimer.isActive())
+        {
+            const int drawInterval = (settings->RefreshRate > 0) ? 1000 / settings->RefreshRate
+                                                                 : 1000 / DEFAULT_REFRESH_RATE;
+            drawTimer.start(drawInterval);
+        }
     }
 }
 
@@ -7479,29 +7489,19 @@ void MainWindow::filterDialogRead(FilterDialog &dlg,FilterItem* item)
     }
     if(item->filter.isMarker())
     {
+        // Row highlighting comes from qfile->checkMarker() per message and takes
+        // effect immediately; the aggregate marker count is only ever displayed
+        // by the on-demand "Marked Message Count" action (findFilteredLines()),
+        // which always recomputes it fresh. Recomputing it here too would just
+        // repeat a full-file scan for a result nothing reads.
         m_tableModel->modelChanged();
-        QVector<qint64> indices;
-        if(qfile.isFilter())
-        {
-            indices = qfile.getIndexFilter();
-        }
-        else
-        {
-            indices.reserve(qfile.size());
-            for(int i = 0; i < qfile.size(); i++)
-            {
-                indices.append(i);
-            }
-        }
-
-        dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
     }
 }
 
 //findFiltered Lines is used for segregating the number of lines filtered per filter.
 //previousFilterMap is used for checking if the same color is used for the same filter.
 //If same color is used it will not be counted else, it will check the count again.
-void MainWindow::findFilteredLines()
+bool MainWindow::findFilteredLines()
 {
     filterCountMap.clear();
 
@@ -7540,12 +7540,34 @@ void MainWindow::findFilteredLines()
                 QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
             });
 
+        // QProgressDialog::closeEvent() (title-bar close, since there's no visible
+        // Cancel button) only emits canceled() directly - it does not go through
+        // the cancel() slot, so QProgressDialog::wasCanceled() stays false for that
+        // path. Track cancellation ourselves instead of relying on wasCanceled().
+        bool cancelledByUser = false;
+        QMetaObject::Connection c3 = connect(
+            &progress, &QProgressDialog::canceled,
+            this, [&](){
+                cancelledByUser = true;
+                dltIndexer->cancelMarkerCount();
+            });
+
         progress.show();
         dltIndexer->recomputeMarkerCounts(qfile.getFilterList(), indices);
+        const bool wasCancelled = cancelledByUser;
         progress.setValue(progress.maximum());
 
         disconnect(c1);
         disconnect(c2);
+        disconnect(c3);
+
+        if(wasCancelled)
+        {
+            // Counts are incomplete; keep whatever was shown before rather than
+            // presenting a partial scan as if it were the final result.
+            return false;
+        }
+
         const QMap<QString, int> markerCounts = dltIndexer->getMarkerCounts();
 
         // Rebuild marker list from currently loaded filters (including .dlf loaded ones).
@@ -7566,6 +7588,7 @@ void MainWindow::findFilteredLines()
     }
 
     totalMessages = (ui->tableView->model() != nullptr) ? ui->tableView->model()->rowCount() : 0;
+    return true;
 }
 
 //The function is triggered when "Marked Message Count" is clicked in the filter's custom menu.
@@ -7573,7 +7596,8 @@ void MainWindow::findFilteredLines()
 //generates a dialog for displaying the marked messages count.
 void MainWindow::on_actionFiltered_Message_Count_triggered(){
 
-  findFilteredLines();
+  if(!findFilteredLines())
+      return; // user cancelled the progress dialog; nothing complete to show
 
   QDialog *dialog = new QDialog(this);
      dialog->setWindowTitle("Filtered Message Counts");
