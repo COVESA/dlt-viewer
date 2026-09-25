@@ -648,7 +648,7 @@ std::vector<int> CrlfFilterWindow::buildCrlfProjectionRows(QWidget *progressPare
     buildProgress.show();
 
     // Detect the owning file being swapped or torn down while we wait below.
-    QDltFile * const capturedDltFile = m_dltFile;
+    QDltFile* const capturedDltFile = m_dltFile;
     CDecodeCacheService *activeDecodeCache = m_externalDecodeCacheService ? m_externalDecodeCacheService : &m_decodeCacheService;
     CMessageStore *activeMessageStore = m_messageStore;
     QDltPluginManager *pluginManager = m_pluginManager;

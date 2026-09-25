@@ -1148,6 +1148,14 @@ QVector<qint64> QDltFile::getIndexFilter() const
     return indexFilter;
 }
 
+QVector<qint64> QDltFile::getIndexFilterTail(int startIndex) const
+{
+    QMutexLocker locker(&mutexQDlt);
+    if (startIndex < 0 || startIndex >= indexFilter.size())
+        return {};
+    return indexFilter.mid(startIndex);
+}
+
 void QDltFile::setIndexFilter(QVector<qint64> _indexFilter)
 {
     QMutexLocker locker(&mutexQDlt);

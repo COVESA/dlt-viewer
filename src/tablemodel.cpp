@@ -458,14 +458,15 @@ int CTableModel::resolveGlobalIndexForRow(int row) const
         bool extended = false;
         if (currentFilterSize > m_filteredProjectionCache.size() && !m_filteredProjectionCache.empty())
         {
-            const QVector<qint64> fullFilter = qfile->getIndexFilter();
-            if (static_cast<std::vector<int>::size_type>(fullFilter.size()) == currentFilterSize
-                && fullFilter.at(static_cast<int>(m_filteredProjectionCache.size()) - 1) == m_filteredProjectionCache.back())
+            const auto oldSize = m_filteredProjectionCache.size();
+            const QVector<qint64> filterTail = qfile->getIndexFilterTail(static_cast<int>(oldSize) - 1);
+            const auto expectedTailSize = currentFilterSize - oldSize + 1;
+            if (static_cast<std::vector<int>::size_type>(filterTail.size()) == expectedTailSize
+                && filterTail.front() == m_filteredProjectionCache.back())
             {
-                const auto oldSize = m_filteredProjectionCache.size();
                 m_filteredProjectionCache.reserve(currentFilterSize);
-                for (auto i = oldSize; i < currentFilterSize; ++i)
-                    m_filteredProjectionCache.push_back(static_cast<int>(fullFilter.at(static_cast<int>(i))));
+                for (auto i = std::size_t{1}; i < filterTail.size(); ++i)
+                    m_filteredProjectionCache.push_back(static_cast<int>(filterTail.at(static_cast<int>(i))));
                 extended = true;
             }
         }

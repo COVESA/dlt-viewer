@@ -312,6 +312,10 @@ public:
      **/
     QVector<qint64> getIndexFilter() const;
 
+    //! Get the matching filter entries starting at the requested index.
+    /*! The returned vector contains only the requested tail and is copied under lock. */
+    QVector<qint64> getIndexFilterTail(int startIndex) const;
+
     //! Capture a stable copy of the currently searchable rows.
     SearchSnapshot captureSearchSnapshot() const;
 
