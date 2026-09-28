@@ -5,7 +5,7 @@ Gernot Wirschal <Gernot.Wirschal@bmw.de>
 Shubham Shaha <Shubham.Shaha@bti.bmwgroup.com>
 Version
 -------
-Version 2.30.0 UNSTABLE
+Version 2.31.0 UNSTABLE
 
 Known issues
 ------------
@@ -14,6 +14,29 @@ Known issues
 
 Changes
 -------
+
+2.31.0
+
+* Single data model: unify message store, index/decode services, and UI updates across all views (#840)
+* Phase2 live log delink (#826)
+* Phase 4 Render Cache Delink (#827)
+* Phase 5: filter worker, incremental proxy index, and lightweight CRLF view (#823)
+* Phase 3: search delink with stable snapshot and threaded find-all (#825)
+* Fix DLT file append failure and resolve path encoding for non-Latin1 characters (#790)
+* Unload plugins before QApplication shutdown (#830)
+* Fix CLI plugin configuration and read-only log handling (#828)
+* Plugin pane filename in sync with plugin widget filename (#812)
+* DLT File Splitting Settings (#694)
+* Feedback Submission (#809)
+* Fix CRLF window performance (#792)
+* Add offscreen platform plugin to macOS bundle (#798)
+* Centralise Configuration settings (#806)
+* Fix crashes under high-volume ECU data ingestion (#800)
+* Remove dead code / commander projectfile loading (#787)
+* Add Windows ARM64 build support (#795)
+* Replace Qt5 with Qt6 for macOS x86_64 build (#794)
+* Bump GitHub Actions dependencies: actions/checkout, softprops/action-gh-release, jimschubert/query-tag-action (#797, #820, #838)
+
 
 2.30.0
 
