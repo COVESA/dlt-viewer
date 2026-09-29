@@ -24,7 +24,8 @@
 
 PluginDialog::PluginDialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::PluginDialog) {
+    ui(new Ui::PluginDialog),
+    multiSelectEnabled(false) {
     ui->setupUi(this);
 }
 
@@ -61,6 +62,10 @@ void PluginDialog::setFilename(QString filename) {
     ui->lineEditFilename->setText(filename);
 }
 
+void PluginDialog::setMultiSelectionEnabled(bool enabled) {
+    multiSelectEnabled = enabled;
+}
+
 int PluginDialog::getMode() {
     return ui->comboBoxMode->currentIndex();
 }
@@ -76,33 +81,64 @@ QString PluginDialog::getFilename() {
 void PluginDialog::on_toolButton_clicked() {
     QString name = ui->lineEditName->text();
     QString fileName;
+    QString lastPickedPath;
 
     if(ui->comboBoxType->currentIndex()==0)
     {
         // filename
-        QStringList fileNames = QFileDialog::getOpenFileNames(this,
-            QString("Open ")+name+QString(" configuration file"),
-            workingDirectory.getPluginDirectory(name),
-            tr("Plugin configuration (*.*)"));
-        if(fileNames.size()==1)
-            fileName = fileNames[0];
-        else if(fileNames.size()>1)
+        if(multiSelectEnabled)
+        {
+            QStringList fileNames = QFileDialog::getOpenFileNames(this,
+                QString("Open ")+name+QString(" configuration file"),
+                workingDirectory.getPluginDirectory(name),
+                tr("Plugin configuration (*.*)"));
+            if(fileNames.isEmpty())
+                return;
             fileName = fileNames.join('|');
+            lastPickedPath = fileNames.first();
+        }
+        else
+        {
+            fileName = QFileDialog::getOpenFileName(this,
+                QString("Open ")+name+QString(" configuration file"),
+                workingDirectory.getPluginDirectory(name),
+                tr("Plugin configuration (*.*)"));
+            lastPickedPath = fileName;
+        }
     }
     else
     {
         // directory
-        fileName = QFileDialog::getExistingDirectory(this,
+        QString dirName = QFileDialog::getExistingDirectory(this,
                                                      QString("Open ")+name+QString(" configuration file"),
                                                      workingDirectory.getPluginDirectory(name),
                                                      QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        if(dirName.isEmpty())
+            return;
+        lastPickedPath = dirName;
+
+        if(multiSelectEnabled)
+        {
+            // Native dialogs only support picking one directory at a time, so
+            // accumulate directories across repeated clicks of the browse
+            // button instead, joined by '|' (same separator used for multiple
+            // files above).
+            QStringList dirs = ui->lineEditFilename->text().split('|', Qt::SkipEmptyParts);
+            if(!dirs.contains(dirName))
+                dirs.append(dirName);
+            fileName = dirs.join('|');
+        }
+        else
+        {
+            fileName = dirName;
+        }
     }
 
     if(fileName.isEmpty())
         return;
 
     /* change current working directory */
-    workingDirectory.setPluginDirectory(name, QFileInfo(fileName).absolutePath());
+    workingDirectory.setPluginDirectory(name, QFileInfo(lastPickedPath).absolutePath());
 
     ui->lineEditFilename->setText(fileName);
 }
