@@ -39,6 +39,6 @@ install(TARGETS dlt-parser
 if(DLT_INSTALL_SDK)
     install(FILES
         ../ReleaseNotes_Parser.txt
-        DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
+        DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}"
         COMPONENT dlt_parser)
 endif()
