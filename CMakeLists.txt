@@ -110,6 +110,13 @@ if(NOT WIN32)
             set(DLT_LIBRARY_INSTALLATION_PATH "${DLT_APP_DIR_NAME}/usr/lib")
         endif()
     endif()
+    if(NOT DLT_ADDITIONAL_FILES_INSTALLATION_PATH)
+        # Default to current directory for non-Windows systems
+        # This is where additional files will be installed
+        # e.g., documentation, examples, etc.
+        # It can be overridden by the user via CMake options
+        set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
+    endif()
 else()
     if(NOT DLT_APP_DIR_NAME)
         set(DLT_APP_DIR_NAME "./")
@@ -132,6 +139,7 @@ else()
     if(NOT DLT_LIBRARY_INSTALLATION_PATH)
         set(DLT_LIBRARY_INSTALLATION_PATH ".")
     endif()
+    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH "${DLT_EXECUTABLE_INSTALLATION_PATH}")
 endif()
 
 if(OVERWRITE_PLUGIN_INSTALLATION_PATH)
