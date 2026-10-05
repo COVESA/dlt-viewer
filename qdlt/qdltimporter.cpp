@@ -54,7 +54,10 @@ QByteArray QDltImporter::reverseMf4Transposition(const QByteArray &data, quint32
     {
         for(qsizetype row = 0; row < lines; ++row)
         {
-            result[row * static_cast<qsizetype>(columns) + static_cast<qsizetype>(column)] = data[static_cast<qsizetype>(column) * lines + row];
+            // Explicit int cast avoids ambiguous QByteArray::operator[](int|uint) overload resolution on Qt5
+            const int destIndex = static_cast<int>(row * static_cast<qsizetype>(columns) + static_cast<qsizetype>(column));
+            const int srcIndex = static_cast<int>(static_cast<qsizetype>(column) * lines + row);
+            result[destIndex] = data[srcIndex];
         }
     }
 
