@@ -115,13 +115,13 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
                     // QMessageBox::warning(0, QString("DLT Viewer"),QString("Error: Plugin could not be loaded!\nMismatch with plugin interface version of DLT Viewer.\n\nPlugin name: %1\nPlugin version: %2\nPlugin interface version: %3\nPlugin path: %4\n\nDLT Viewer - Plugin interface version: %5").arg(plugininterface->name()).arg(plugininterface->pluginVersion()).arg(plugininterface->pluginInterfaceVersion()).arg(dir.absolutePath()).arg(PLUGIN_INTERFACE_VERSION));
                     QString s;
                     QTextStream errStr(&s);
-                    errStr << "-------------"
+                    errStr << "-------------\n"
                            << "Error: Plugin could not be loaded!\n"
                            << "Mismatch with plugin interface version of DLT Viewer.\n\n"
                            << "Plugin name: " << plugininterface->name() << "\n"
                            << "Plugin version: " << plugininterface->pluginVersion() << "\n"
                            << "Plugin interface version: " << plugininterface->pluginInterfaceVersion() << "\n"
-                           << "Plugin path: " << dir.absolutePath() << "\n\n"
+                           << "Plugin path: " << dir.absoluteFilePath(fileName) << "\n\n"
                            << "DLT Viewer - Plugin interface version: " << PLUGIN_INTERFACE_VERSION  << "\n";
                     errorStrings.append(s);
                 }
@@ -131,8 +131,8 @@ QStringList QDltPluginManager::loadPluginsPath(QDir &dir)
             //QMessageBox::warning(0, QString("DLT Viewer"),QString("The plugin %1 cannot be loaded.\n\nError: %2").arg(dir.absoluteFilePath(fileName)).arg(pluginLoader.errorString()));
             QString s;
             QTextStream  errStr(&s);
-            errStr << "-------------"
-                    << "The plugin " << dir.absoluteFilePath(fileName) << "cannot be loaded.\n\n"
+            errStr << "-------------\n"
+                    << "The plugin " << dir.absoluteFilePath(fileName) << " cannot be loaded.\n\n"
                     << "Error: " << pluginLoader->errorString() << "\n";
             errorStrings.append(s);
 
