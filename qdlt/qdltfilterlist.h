@@ -125,6 +125,9 @@ public:
     */
     QString getFilename() const { return filename; }
 
+    //! Return the last filter loading error, if any.
+    QString getLastLoadError() const { return lastLoadError; }
+
     //! Update the presorted list for performance improvement.
     /*!
     */
@@ -151,6 +154,9 @@ private:
 
     //! The filename of the filter list including complete path.
     QString filename;
+
+  //! The last filter loading error, if any.
+  QString lastLoadError;
 
     //! List of mfilters.
     QList<QDltFilter*> mfilters;

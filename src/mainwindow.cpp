@@ -944,17 +944,6 @@ void MainWindow::initFileHandling()
                 filterUpdate();
                 setCurrentFilters(filter);
             }
-            else
-            {
-               if (QDltOptManager::getInstance()->issilentMode())
-                {
-                    qDebug() << "Loading DLT Filter file failed!";
-                }
-                else
-                {
-                    QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-                }
-            }
         }
     }
 
@@ -3183,12 +3172,10 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
         setCurrentFilters(fileName);
         filterCountChanged();
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+        return true;
     }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-    }
-    return true;
+
+    return false;
 }
 
 bool MainWindow::openDlpFile(QString fileName)
@@ -8826,6 +8813,34 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
 
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
+
+    if(!QDltOptManager::getInstance()->issilentMode() && !defaultFilter.malformedFilterFiles.isEmpty())
+    {
+        QStringList malformedFilterFiles;
+        QStringList malformedFilterDescriptions;
+        for (int numFilter = 0; numFilter < defaultFilter.malformedFilterFiles.size(); ++numFilter)
+        {
+            const QString malformedFile = QDir::toNativeSeparators(defaultFilter.malformedFilterFiles.at(numFilter));
+            malformedFilterFiles.append(malformedFile);
+
+            QString description = malformedFile;
+            if (numFilter < defaultFilter.malformedFilterErrors.size() && !defaultFilter.malformedFilterErrors.at(numFilter).isEmpty())
+            {
+                description.append(QString("\n%1").arg(defaultFilter.malformedFilterErrors.at(numFilter)));
+            }
+            malformedFilterDescriptions.append(description);
+        }
+
+        QMessageBox msgBox(
+            QMessageBox::Warning,
+            QString("DLT Viewer"),
+            QString("The following default filter file(s) contain errors and were skipped:\n\n%1")
+                .arg(malformedFilterFiles.join("\n")),
+            QMessageBox::Ok,
+            this);
+        msgBox.setDetailedText(malformedFilterDescriptions.join("\n\n"));
+        msgBox.exec();
+    }
 
     // default filter list update combobox
     for (const auto *filterList : defaultFilter.defaultFilterList) {
