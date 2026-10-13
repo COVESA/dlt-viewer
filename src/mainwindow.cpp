@@ -6779,6 +6779,11 @@ void MainWindow::updatePlugin(PluginItem *item)
          {
             qDebug() << "Trigger autoload with version" << target_version_string;
             pluginsAutoload(target_version_string);
+            // Generic autoload only globs the version string; let the plugin run its own detection if nothing was loaded.
+            if ( item->getFilename().isEmpty() )
+              {
+              ret = item->getPlugin()->loadConfig(conffilename);
+              }
          }
      else // we eventually provoke an error message, but sometimes even a decoder plugin works with default settings
        {
