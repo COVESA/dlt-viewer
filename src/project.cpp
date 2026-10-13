@@ -18,6 +18,7 @@
  */
 
 #include <QFile>
+#include <QDir>
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 #include <QMessageBox>
@@ -1178,11 +1179,21 @@ bool Project::LoadFilter(QString filename, bool replace){
     {
         if ( QDltOptManager::getInstance()->issilentMode() == false )
         {
-            QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
+            QMessageBox msgBox(
+                QMessageBox::Critical,
+                QString("DLT Viewer"),
+                QString("Loading DLT filter file failed:\n%1").arg(QDir::toNativeSeparators(filename)),
+                QMessageBox::Ok);
+            if(!filterList.getLastLoadError().isEmpty())
+            {
+                msgBox.setDetailedText(filterList.getLastLoadError());
+            }
+            msgBox.exec();
         }
         else
         {
-            qDebug() << "Loading" << filterList.getFilename() << " DLT Filter file failed !";
+            qDebug() << "Loading" << QDir::toNativeSeparators(filename) << "DLT filter file failed!"
+                     << filterList.getLastLoadError();
         }
         return false;
     }
