@@ -6966,8 +6966,8 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             if (reloadCurrentLog)
             {
                 clearSelection();
-                tableModel->setForceEmpty(true);
-                tableModel->modelChanged();
+                m_tableModel->setForceEmpty(true);
+                m_tableModel->modelChanged();
             }
 
             item->setFilename( dlg.getFilename() );
