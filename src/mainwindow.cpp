@@ -8742,6 +8742,10 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
+    else
+    {
+        ui->dockWidgetSearchIndex->setWindowTitle("Search Results");
+    }
 }
 
 
