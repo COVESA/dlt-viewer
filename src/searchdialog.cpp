@@ -491,7 +491,7 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
             if (dlg)
             {
-                const int progress = qMin(99, end * 99 / total);
+                const int progress = qMin(99, static_cast<int>(static_cast<qint64>(end) * 99 / total));
                 QMetaObject::invokeMethod(dlg, [dlg, progress]() {
                     if (dlg) dlg->reportProgress(progress);
                 }, Qt::QueuedConnection);
@@ -522,9 +522,19 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
 void CSearchDialog::onFindAllFinished()
 {
+    const bool cancelled = m_findAllWatcher.isCanceled() || isSearchCancelled.load(std::memory_order_relaxed);
     std::vector<std::uint64_t> matches;
     if (!m_findAllWatcher.isCanceled())
         matches = m_findAllWatcher.future().result();
+
+    if (cancelled)
+    {
+        // Keep the partial results already published incrementally.
+        emit refreshedSearchIndex();
+        emit searchProgressChanged(false);
+        match = m_searchtablemodel && m_searchtablemodel->rowCount(QModelIndex()) > 0;
+        return;
+    }
 
     // Replace whatever was shown incrementally with the authoritative, correctly-ordered result.
     if (m_searchtablemodel)
