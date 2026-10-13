@@ -2598,7 +2598,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       target_version_string = version;
       statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
       statusFileVersion->setToolTip(versionString);
-      if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ))
+            if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ) && !m_suppressPluginAutoload)
        {
           qDebug() << "Trigger plugin autoload for ECU" << ecuId << "with version" << version;
           pluginsAutoload(version);
@@ -2719,6 +2719,8 @@ void MainWindow::reloadLogFileFinishFilter()
 
 void MainWindow::onIndexerRunFinished()
 {
+    m_suppressPluginAutoload = false;
+
     if(!m_liveFilterRefreshInProgress)
     {
         return;
@@ -2777,6 +2779,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         autoloadPluginsVersionEcus.clear();
         autoloadPluginsVersionStrings.clear();
+        target_version_string.clear();
         statusFileVersion->setText("Version: <n.a.>");
     }
 
@@ -6957,7 +6960,8 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                 callInitFile = false;
             if(dlg.getMode() == QDltPlugin::ModeShow && item->getMode() != QDltPlugin::ModeDisable)
                 callInitFile = false;
-            if(item->getFilename() != dlg.getFilename())
+            const bool pluginFilenameChanged = item->getFilename() != dlg.getFilename();
+            if(pluginFilenameChanged)
                 callInitFile = true;
 
             const bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
@@ -6983,8 +6987,8 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                 syncCheckBoxesAndMenu();
                 applyConfigEnabled(false);
                 filterUpdate();
+                m_suppressPluginAutoload = pluginFilenameChanged;
                 reloadLogFile(false);
-                triggerPluginsAutoload();
                 callInitFile = false;
             }
 
