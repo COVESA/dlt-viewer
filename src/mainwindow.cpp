@@ -1120,6 +1120,19 @@ void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString me
 
 }
 
+void MainWindow::showPluginLoadConfigError(const QString& pluginName, const QString& error, bool silentMode)
+{
+    QString header = silentMode ? "Plugin " : "Plugin Error: ";
+    header.append(pluginName);
+
+    QString body = header;
+    body.append(silentMode ? " returned error: " : " returned error:\n");
+    body.append(error);
+    body.append(silentMode ? " in loadConfig!" : "\nin loadConfig!");
+
+    ErrorMessage(QMessageBox::Critical, header, body);
+}
+
 void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList params)
 {
     QDltPlugin *plugin = pluginManager.findPlugin(name);
@@ -6740,7 +6753,7 @@ void MainWindow::updatePlugins() {
 }
 
 /* is called when the status of a plugin was changed ( disabled/enabled/show )  */
-void MainWindow::updatePlugin(PluginItem *item)
+bool MainWindow::updatePlugin(PluginItem *item)
 {
     item->takeChildren();
     bool ret = true;
@@ -6787,26 +6800,8 @@ void MainWindow::updatePlugin(PluginItem *item)
         //qDebug() << "Enable or show" << item->getPlugin()->getName() << __LINE__ << __FILE__;
         if ( false == ret )
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-              QString err_header = "Plugin ";
-              err_header.append(item->getName());
-              QString err_body = err_header;
-              err_body.append(" returned error: ");
-              err_body.append(item->getPlugin()->error());
-              err_body.append(" in loadConfig!");
-              ErrorMessage(QMessageBox::Critical,err_header,err_body);
-             }
-             else
-             {
-              QString err_header = "Plugin Error: ";
-              err_header.append(item->getName());
-              QString err_body = err_header;
-              err_body.append(" returned error:\n");
-              err_body.append(item->getPlugin()->error());
-              err_body.append("\nin loadConfig!");
-              ErrorMessage(QMessageBox::Critical,err_header,err_body);
-             }
+            showPluginLoadConfigError(item->getName(), item->getPlugin()->error(),
+                                      QDltOptManager::getInstance()->issilentMode());
         }
         else if ( 0 < err_text.length() )
         {
@@ -6841,6 +6836,8 @@ void MainWindow::updatePlugin(PluginItem *item)
             item->dockWidget->hide();
         }
     }
+
+    return ret;
 }
 
 void MainWindow::versionString(const QDltMsg &msg)
@@ -6974,12 +6971,20 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                 m_tableModel->modelChanged();
             }
 
+            const QString previousFilename = item->getFilename();
+            const int previousMode = item->getMode();
+            const int previousType = item->getType();
             item->setFilename( dlg.getFilename() );
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
 
             /* update plugin item */
-            updatePlugin(item);
+            if (!updatePlugin(item)) {
+                item->setFilename(previousFilename);
+                item->setMode(previousMode);
+                item->setType(previousType);
+                item->update();
+            }
             item->savePluginModeToSettings();
 
             if (reloadCurrentLog)
@@ -8190,22 +8195,29 @@ void MainWindow::dropEvent(QDropEvent *event)
                     QDltPlugin* plugin = pluginManager.findPlugin(item);
                     if(plugin)
                     {
-                        plugin->loadConfig(filename);
-                        for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+                        // Report load failures; otherwise drag-and-drop silently appears successful.
+                        if (!plugin->loadConfig(filename))
                         {
-                            PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
-                            if(pluginitem->getPlugin() == plugin)
+                            showPluginLoadConfigError(plugin->name(), plugin->error(), false);
+                        }
+                        else
+                        {
+                            for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
                             {
-                                /* update plugin */
-                                pluginitem->setFilename( filename );
+                                PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
+                                if(pluginitem->getPlugin() == plugin)
+                                {
+                                    /* update plugin */
+                                    pluginitem->setFilename( filename );
 
-                                /* update plugin item */
-                                updatePlugin(pluginitem);
-                                applyConfigEnabled(true);
+                                    /* update plugin item */
+                                    updatePlugin(pluginitem);
+                                    applyConfigEnabled(true);
 
-                                ui->tabWidget->setCurrentWidget(ui->tabPlugin);
+                                    ui->tabWidget->setCurrentWidget(ui->tabPlugin);
 
-                                break;
+                                    break;
+                                }
                             }
                         }
                     }
