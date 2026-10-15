@@ -1,9 +1,0 @@
----
-BasedOnStyle: LLVM
-ColumnLimit:     100
-IndentWidth:     4
-ReferenceAlignment: Pointer
-PointerAlignment: Left
-IndentAccessModifiers: false
-AccessModifierOffset: -4
-...

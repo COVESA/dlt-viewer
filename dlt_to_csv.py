@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# This file is part of COVESA Project Dlt Viewer.
+# Author: Michael Male <michael.male@met.police.uk>
+# Copyright (c) 2026 Crown Copyright (Metropolitan Police Service)
+#
+# Produced using an AI coding assistant (Google Antigravity).
+#
+# This file is part of dlt-to-csv, derived from COVESA Project Dlt Viewer
+# (https://github.com/COVESA/dlt-viewer).
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this

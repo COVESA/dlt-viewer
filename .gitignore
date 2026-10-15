@@ -1,55 +1,23 @@
-# C++ / Qt build artifacts
-.gitconfig
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles/
-build/
-.project
-Makefile
-buildlib/
-release/
-.cproject
-.settings
-*.orig
-*~
-.idea
-.cache
-.vscode/
-compile_commands.json
-
-# deb packaging directories
-debian/
-debtmp/
-
-# Python cache & virtual environments
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+
+# Virtual environments
+.env
+.venv
 env/
 venv/
 ENV/
-.venv/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
 
-# PyInstaller & binary executables
+# PyInstaller build artifacts
+build/
 *.spec
 *.manifest
 *.exe
+dist/*
+!dist/dlt-to-csv.exe
 
 # Testing & coverage
 .pytest_cache/
@@ -65,8 +33,11 @@ htmlcov/
 *.sqlite
 *.sqlite3
 
-# Operating System files
+# Editor & OS files
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 Desktop.ini
-
+*.orig
+*~

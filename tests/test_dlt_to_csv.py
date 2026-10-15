@@ -1,6 +1,12 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of COVESA Project Dlt Viewer.
+# Author: Michael Male <michael.male@met.police.uk>
+# Copyright (c) 2026 Crown Copyright (Metropolitan Police Service)
+#
+# Produced using an AI coding assistant (Google Antigravity).
+#
+# This file is part of dlt-to-csv, derived from COVESA Project Dlt Viewer
+# (https://github.com/COVESA/dlt-viewer).
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -122,12 +128,12 @@ class TestDltParser(unittest.TestCase):
     """Test suite for DLT message parsing."""
 
     def test_parse_dlt_v2_sample_file(self):
-        """Verify parsing of the bundled qdlt/tests/testfile.dlt (DLT v2 message)."""
-        sample_path = Path("qdlt/tests/testfile.dlt")
-        self.assertTrue(sample_path.exists(), "testfile.dlt must exist")
-
-        with open(sample_path, "rb") as f:
-            data = f.read()
+        """Verify parsing of DLT v2 message bytes."""
+        # 71-byte DLT v2 message (ECU1, logd, RBUF, "Start logging after ECU startup")
+        data = (
+            b'L\x00\x00\x00\x01\x00GA\x01\xb4\x1e\x87\xac\x00\x00\x00\x00\x02\x04'
+            b'ECU1\x04logd\x04RBUF\x00\x82\x00\x00 \x00Start logging after ECU startup\x00'
+        )
 
         res = parse_dlt_message(data, 0)
         self.assertIsNotNone(res)

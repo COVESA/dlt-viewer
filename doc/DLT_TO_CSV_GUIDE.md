@@ -1,8 +1,14 @@
 # DLT to CSV Forensic CLI Tool
 
-A forensic-grade Python CLI application and library designed to parse automotive **DLT (Diagnostic Log and Trace)** binary files and convert them into CSV format.
+A forensic-grade Python CLI application, SQLite analytical engine, and library designed to parse automotive **DLT (Diagnostic Log and Trace)** binary files and convert them into CSV or indexed SQLite format.
 
-Based on the [COVESA/dlt-viewer](https://github.com/COVESA/dlt-viewer) architecture and the AUTOSAR DLT protocol specification, this tool operates with **zero external dependencies** (pure standard library Python 3.8+), making it ideal for restricted, air-gapped digital forensic workstations.
+* **Author:** Michael Male <michael.male@met.police.uk>
+* **Copyright:** © 2026 Crown Copyright (Metropolitan Police Service)
+* **License:** [Mozilla Public License, v. 2.0 (MPL-2.0)](../LICENSE.txt)
+* **Upstream Attribution:** Derived from [COVESA/dlt-viewer](https://github.com/COVESA/dlt-viewer) ([COVESA](http://www.covesa.global/))
+* **AI Attribution:** Developed with the assistance of an AI coding assistant (Google Antigravity).
+
+Operates with **zero external dependencies** (pure standard library Python 3.8+), making it ideal for restricted, air-gapped digital forensic workstations.
 
 ---
 
