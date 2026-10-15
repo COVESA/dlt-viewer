@@ -18,7 +18,7 @@ import argparse
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from .constants import DEFAULT_COLUMNS, FORENSIC_COLUMNS
 from .exporter import DltFilter, process_dlt_files
@@ -58,6 +58,46 @@ def parse_timestamp_arg(val: Optional[str]) -> Optional[int]:
     )
 
 
+def expand_db_paths(db_specs: Union[str, Path, List[Union[str, Path]]]) -> List[Path]:
+    """Expand string specs, lists, wildcards (*.db), and directories into resolved SQLite database paths."""
+    if not isinstance(db_specs, list):
+        db_specs = [db_specs]
+
+    found: List[Path] = []
+    seen = set()
+
+    for item in db_specs:
+        raw = str(item).strip()
+        if not raw:
+            continue
+        p = Path(raw)
+
+        # Check for glob wildcard characters (*, ?, [])
+        if any(char in raw for char in ("*", "?", "[")):
+            parent_dir = p.parent if str(p.parent) not in ("", ".") else Path(".")
+            pattern = p.name
+            matches = sorted(parent_dir.glob(pattern))
+            for m in matches:
+                if m.is_file() and m.resolve() not in seen:
+                    seen.add(m.resolve())
+                    found.append(m)
+        elif p.is_dir():
+            for ext in ("*.db", "*.sqlite", "*.sqlite3"):
+                for m in sorted(p.glob(ext)):
+                    if m.is_file() and m.resolve() not in seen:
+                        seen.add(m.resolve())
+                        found.append(m)
+        elif p.is_file():
+            if p.resolve() not in seen:
+                seen.add(p.resolve())
+                found.append(p)
+        else:
+            # File might not exist yet if specified as export target
+            found.append(p)
+
+    return found
+
+
 def create_parser() -> argparse.ArgumentParser:
     """Construct argument parser with forensic and batch conversion options."""
     parser = argparse.ArgumentParser(
@@ -80,6 +120,9 @@ Examples:
 
   # Perform an in-place batch update transaction to decode all hex payloads to ASCII:
   dlt-to-csv.exe --sqlite evidence.db --update-ascii
+
+  # Parallel bulk decode across multiple databases using 80% CPU and 50k batch size:
+  dlt-to-csv.exe --sqlite *.db --update-ascii --cpu-percent 80 --batch-size 50000
 
   # Query messages on a specific date or inspect daily breakdown:
   dlt-to-csv.exe --sqlite evidence.db --query-dates
@@ -128,16 +171,42 @@ Examples:
     db_group.add_argument(
         "--sqlite",
         "--db",
-        type=Path,
+        nargs="+",
         default=None,
         dest="sqlite",
-        help="Export parsed DLT messages into an indexed SQLite database (.db / .sqlite).",
+        metavar="DB_PATH",
+        help="Export parsed DLT messages into SQLite, or target SQLite database(s)/wildcards (*.db) for queries/updates.",
     )
     db_group.add_argument(
+        "--batch-size",
         "--sqlite-batch-size",
         type=int,
         default=20000,
-        help="Batch size for bulk SQLite transactions (default: 20000 rows).",
+        dest="sqlite_batch_size",
+        metavar="N",
+        help="Batch size for bulk SQLite transactions and updates (default: 20000 rows).",
+    )
+    db_group.add_argument(
+        "-j",
+        "--workers",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Number of parallel worker processes for hex decoding (default: 75%% of CPU cores; 1 for single-process).",
+    )
+    db_group.add_argument(
+        "--cpu-percent",
+        type=float,
+        default=None,
+        metavar="PCT",
+        help="Percentage of system CPU cores to allocate to worker processes (e.g. 50 for 50%%, 80 for 80%%).",
+    )
+    db_group.add_argument(
+        "--ram-cache-mb",
+        type=int,
+        default=128,
+        metavar="MB",
+        help="SQLite RAM page cache size in MB (default: 128 MB).",
     )
     db_group.add_argument(
         "--no-csv",
@@ -312,73 +381,97 @@ Examples:
 
 
 def run_sqlite_query_cli(args: argparse.Namespace) -> int:
-    """Execute interactive or automated SQL queries against SQLite database."""
+    """Execute interactive or automated SQL queries / in-place updates against SQLite database(s)."""
     from .sqlite_exporter import SqliteExporter
 
-    exporter = SqliteExporter(
-        db_path=args.sqlite,
-        batch_size=args.sqlite_batch_size,
-        use_utc=(args.timezone == "utc"),
-        tz_offset_seconds=args.tz_offset * 3600,
-    )
+    db_specs = args.sqlite or []
+    if isinstance(db_specs, (str, Path)):
+        db_specs = [db_specs]
 
-    if getattr(args, "update_ascii", False):
-        exporter.update_payload_ascii_in_place(batch_size=args.sqlite_batch_size, quiet=args.quiet)
+    db_paths = expand_db_paths(db_specs)
+    existing_paths = [p for p in db_paths if p.exists() and p.is_file()]
+    if not existing_paths:
+        sys.stderr.write(f"[!] Error: No SQLite database files found matching: {args.sqlite}\n")
+        return 1
 
-    if args.query_dates:
-        summary_rows = exporter.get_date_summary()
-        if not summary_rows:
-            sys.stdout.write(f"[*] No timestamped messages found in {args.sqlite}.\n")
-        else:
-            sys.stdout.write(f"\n{'=' * 116}\n")
-            sys.stdout.write(f"DLT Dataset Summary by Date: {args.sqlite.name}\n")
-            sys.stdout.write(f"{'=' * 116}\n")
-            sys.stdout.write(
-                f"{'Log Date':<12} | {'Total Msgs':>12} | {'ECUs':>6} | {'Fatal':>7} | {'Error':>7} | {'Warn':>7} | {'First Timestamp (UTC)':<26} | {'Last Timestamp (UTC)':<26}\n"
+    exit_code = 0
+    total_dbs = len(existing_paths)
+
+    for idx, db_path in enumerate(existing_paths, 1):
+        if total_dbs > 1 and not args.quiet:
+            sys.stderr.write(f"\n[{idx}/{total_dbs}] Target Database: {db_path.name}\n")
+
+        exporter = SqliteExporter(
+            db_path=db_path,
+            batch_size=args.sqlite_batch_size,
+            use_utc=(args.timezone == "utc"),
+            tz_offset_seconds=args.tz_offset * 3600,
+        )
+
+        if getattr(args, "update_ascii", False):
+            exporter.update_payload_ascii_in_place(
+                batch_size=args.sqlite_batch_size,
+                workers=getattr(args, "workers", None),
+                cpu_percent=getattr(args, "cpu_percent", None),
+                ram_cache_mb=getattr(args, "ram_cache_mb", 128),
+                quiet=args.quiet,
             )
-            sys.stdout.write(f"{'-' * 116}\n")
-            for r in summary_rows:
-                sys.stdout.write(
-                    f"{r.get('log_date', ''):<12} | "
-                    f"{r.get('total_messages', 0):>12,d} | "
-                    f"{r.get('distinct_ecus', 0):>6d} | "
-                    f"{r.get('fatal_count', 0):>7,d} | "
-                    f"{r.get('error_count', 0):>7,d} | "
-                    f"{r.get('warn_count', 0):>7,d} | "
-                    f"{str(r.get('start_time', '')):<26} | "
-                    f"{str(r.get('end_time', '')):<26}\n"
-                )
-            sys.stdout.write(f"{'-' * 116}\n\n")
 
-    if args.query:
-        sql = args.query
-        if args.query_export:
-            count = exporter.export_query_to_csv(
-                sql=sql,
-                output_path=args.query_export,
-                delimiter=args.delimiter,
-                quote_all=args.quote_all,
-            )
-            sys.stderr.write(f"[+] Query returned {count:,d} row(s) exported to: {args.query_export}\n")
-        else:
-            rows = exporter.query(sql)
-            if not rows:
-                sys.stdout.write("[*] Query returned 0 rows.\n")
+        if args.query_dates:
+            summary_rows = exporter.get_date_summary()
+            if not summary_rows:
+                sys.stdout.write(f"[*] No timestamped messages found in {db_path.name}.\n")
             else:
-                keys = list(rows[0].keys())
-                header_str = " | ".join(keys)
-                sys.stdout.write(f"\n{header_str}\n")
-                sys.stdout.write(f"{'-' * len(header_str)}\n")
-                for r in rows[:100]:
-                    sys.stdout.write(" | ".join(str(r.get(k, "")) for k in keys) + "\n")
-                if len(rows) > 100:
+                sys.stdout.write(f"\n{'=' * 116}\n")
+                sys.stdout.write(f"DLT Dataset Summary by Date: {db_path.name}\n")
+                sys.stdout.write(f"{'=' * 116}\n")
+                sys.stdout.write(
+                    f"{'Log Date':<12} | {'Total Msgs':>12} | {'ECUs':>6} | {'Fatal':>7} | {'Error':>7} | {'Warn':>7} | {'First Timestamp (UTC)':<26} | {'Last Timestamp (UTC)':<26}\n"
+                )
+                sys.stdout.write(f"{'-' * 116}\n")
+                for r in summary_rows:
                     sys.stdout.write(
-                        f"... [Truncated. Total rows: {len(rows):,d}. Use --query-export <file.csv> to save full results]\n"
+                        f"{r.get('log_date', ''):<12} | "
+                        f"{r.get('total_messages', 0):>12,d} | "
+                        f"{r.get('distinct_ecus', 0):>6d} | "
+                        f"{r.get('fatal_count', 0):>7,d} | "
+                        f"{r.get('error_count', 0):>7,d} | "
+                        f"{r.get('warn_count', 0):>7,d} | "
+                        f"{str(r.get('start_time', '')):<26} | "
+                        f"{str(r.get('end_time', '')):<26}\n"
                     )
-                sys.stdout.write("\n")
+                sys.stdout.write(f"{'-' * 116}\n\n")
 
-    exporter.close(build_indexes=False)
-    return 0
+        if args.query:
+            sql = args.query.strip()
+            if args.query_export:
+                count = exporter.export_query_to_csv(
+                    sql=sql,
+                    output_path=args.query_export,
+                    delimiter=args.delimiter,
+                    quote_all=args.quote_all,
+                )
+                sys.stderr.write(f"[+] Query returned {count:,d} row(s) exported to: {args.query_export}\n")
+            else:
+                rows = exporter.query(sql)
+                if not rows:
+                    sys.stdout.write(f"[*] Query returned 0 rows for {db_path.name}.\n")
+                else:
+                    keys = list(rows[0].keys())
+                    header_str = " | ".join(keys)
+                    sys.stdout.write(f"\n{header_str}\n")
+                    sys.stdout.write(f"{'-' * len(header_str)}\n")
+                    for r in rows[:100]:
+                        sys.stdout.write(" | ".join(str(r.get(k, "")) for k in keys) + "\n")
+                    if len(rows) > 100:
+                        sys.stdout.write(
+                            f"... [Truncated. Total rows: {len(rows):,d}. Use --query-export <file.csv> to save full results]\n"
+                        )
+                    sys.stdout.write("\n")
+
+        exporter.close(build_indexes=False)
+
+    return exit_code
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -387,14 +480,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     # Check for direct SQLite query or in-place update on existing database without new inputs
-    if not args.inputs:
-        if args.sqlite and (args.query or args.query_dates or getattr(args, "update_ascii", False)):
-            if not args.sqlite.exists():
-                sys.stderr.write(f"[!] Error: SQLite database not found: {args.sqlite}\n")
-                return 1
+    is_sqlite_op = bool(args.query or args.query_dates or getattr(args, "update_ascii", False))
+    if is_sqlite_op:
+        if args.sqlite:
             return run_sqlite_query_cli(args)
-        else:
-            parser.error("the following arguments are required: inputs")
+        # Check if user passed .db / .sqlite files as positional inputs
+        if args.inputs:
+            resolved_dbs = expand_db_paths([str(p) for p in args.inputs])
+            existing_dbs = [
+                p for p in resolved_dbs if p.exists() and p.is_file() and p.suffix.lower() in (".db", ".sqlite", ".sqlite3")
+            ]
+            if existing_dbs:
+                args.sqlite = existing_dbs
+                return run_sqlite_query_cli(args)
+
+    if not args.inputs:
+        parser.error("the following arguments are required: inputs")
 
     # Discover target files
     files = discover_dlt_files(args.inputs, recursive=args.recursive)
@@ -433,8 +534,14 @@ def main(argv: Optional[List[str]] = None) -> int:
             end_time_epoch=args.end_time,
         )
 
+    # Resolve destination SQLite database if specified
+    sqlite_dest = None
+    if args.sqlite:
+        expanded = expand_db_paths(args.sqlite)
+        sqlite_dest = expanded[0] if expanded else Path(str(args.sqlite[0]))
+
     # Determine CSV suppression when exporting to SQLite
-    no_csv = args.no_csv or (args.sqlite is not None and args.output is None and not args.stdout and not args.combined)
+    no_csv = args.no_csv or (sqlite_dest is not None and args.output is None and not args.stdout and not args.combined)
 
     # Handle output target default if CSV is being generated
     output_target = args.output
@@ -458,7 +565,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             report_path=args.report,
             stdout=args.stdout,
             quiet=args.quiet,
-            sqlite_path=args.sqlite,
+            sqlite_path=sqlite_dest,
             sqlite_batch_size=args.sqlite_batch_size,
             no_csv=no_csv,
         )
@@ -480,7 +587,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 sys.stderr.write(f"    Forensic audit report:   {args.report}\n")
 
         # If user also requested queries or database updates immediately after import
-        if args.sqlite and (args.query or args.query_dates or getattr(args, "update_ascii", False)):
+        if sqlite_dest and (args.query or args.query_dates or getattr(args, "update_ascii", False)):
+            args.sqlite = [sqlite_dest]
             run_sqlite_query_cli(args)
 
         return 0

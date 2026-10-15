@@ -16,9 +16,11 @@ Designed for high-throughput batch ingestion of large forensic log datasets
 
 import csv
 import json
+import os
 import re
 import sqlite3
 import unicodedata
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -147,6 +149,31 @@ def decode_hex_payload(val: Any) -> str:
 
     # Case C: Plain text -> sanitize control characters and null bytes
     return sanitize_ascii_payload(val)
+
+
+def _worker_decode_batch(items: List[Tuple[int, Any]]) -> List[Tuple[str, int, bool]]:
+    """Worker function to decode a slice of (row_id, payload) in parallel."""
+    results: List[Tuple[str, int, bool]] = []
+    for row_id, payload in items:
+        decoded = decode_hex_payload(payload)
+        results.append((decoded, row_id, decoded != payload))
+    return results
+
+
+def resolve_workers(workers: Optional[int] = None, cpu_percent: Optional[float] = None) -> int:
+    """Determine optimal worker process count based on CPU percentage or explicit count.
+
+    Defaults to 75% of available CPU cores (e.g. 10 cores on 14-core CPU) to maximize
+    throughput while leaving the system responsive. Use workers=1 for single-threaded.
+    """
+    total_cpus = os.cpu_count() or 4
+    if workers is not None and workers > 0:
+        return min(workers, total_cpus * 2)
+    if cpu_percent is not None and cpu_percent > 0:
+        ratio = min(max(cpu_percent, 5.0), 100.0) / 100.0
+        return max(1, int(round(total_cpus * ratio)))
+    # Default: 75% of available CPU cores
+    return max(1, int(round(total_cpus * 0.75)))
 
 
 class SqliteExporter:
@@ -507,13 +534,20 @@ class SqliteExporter:
     def update_payload_ascii_in_place(
         self,
         batch_size: int = DEFAULT_BATCH_SIZE,
+        workers: Optional[int] = None,
+        cpu_percent: Optional[float] = None,
+        ram_cache_mb: int = 128,
         quiet: bool = False,
     ) -> int:
         """Perform an in-place batch transaction on the database to decode all hex payloads.
 
         Decodes space-separated hex byte strings into ASCII/UTF-8 text and stores them
-        directly in the indexed 'payload_ascii' column. Commits in chunks of batch_size
-        for performance on large multi-million row datasets.
+        directly in the indexed 'payload_ascii' column.
+
+        Performance Optimizations:
+          * Multi-core multiprocessing pool scaled to CPU percentage or worker count.
+          * Configurable SQLite memory cache and 2GB memory-mapped I/O.
+          * Drops B-tree index during updates and rebuilds sequentially in a single pass.
         """
         import sys
         self.flush()
@@ -527,11 +561,29 @@ class SqliteExporter:
             self.cursor.execute("ALTER TABLE messages ADD COLUMN payload_ascii TEXT;")
             self.conn.commit()
 
+        # Drop index during bulk updates to eliminate B-tree rebalance overhead on every batch
+        self.cursor.execute("DROP INDEX IF EXISTS idx_messages_payload_ascii;")
+        self.conn.commit()
+
+        # Configure high-performance PRAGMAs for in-place batch updates
+        self.cursor.execute(f"PRAGMA cache_size = -{max(16, ram_cache_mb) * 1000};")
+        self.cursor.execute("PRAGMA synchronous = OFF;")
+        self.cursor.execute("PRAGMA temp_store = MEMORY;")
+        try:
+            self.cursor.execute("PRAGMA mmap_size = 2147483648;")
+        except sqlite3.OperationalError:
+            pass
+
         self.cursor.execute("SELECT COUNT(*) FROM messages;")
         total_count = self.cursor.fetchone()[0]
+
+        num_workers = resolve_workers(workers=workers, cpu_percent=cpu_percent)
+        effective_batch = max(500, batch_size)
+
         if not quiet:
             sys.stderr.write(
-                f"[*] Processing {total_count:,d} messages in batches of {batch_size:,d} for ASCII decoding...\n"
+                f"[*] Processing {total_count:,d} messages in batches of {effective_batch:,d}\n"
+                f"    Workers: {num_workers} processes | RAM cache: {ram_cache_mb}MB\n"
             )
 
         read_cur = self.conn.cursor()
@@ -539,33 +591,62 @@ class SqliteExporter:
 
         updated_count = 0
         hex_converted_count = 0
-        batch: List[Tuple[str, int]] = []
 
-        while True:
-            rows = read_cur.fetchmany(batch_size)
-            if not rows:
-                break
+        if num_workers > 1:
+            with ProcessPoolExecutor(max_workers=num_workers) as executor:
+                while True:
+                    rows = read_cur.fetchmany(effective_batch)
+                    if not rows:
+                        break
 
-            for row_id, payload in rows:
-                decoded = decode_hex_payload(payload)
-                if decoded != payload:
-                    hex_converted_count += 1
-                batch.append((decoded, row_id))
+                    # Convert sqlite3.Row objects to standard tuples for pickling across worker processes
+                    plain_rows = [(r[0], r[1]) for r in rows]
+                    chunk_size = max(250, len(plain_rows) // num_workers)
+                    sub_chunks = [plain_rows[i : i + chunk_size] for i in range(0, len(plain_rows), chunk_size)]
 
-            self.cursor.executemany("UPDATE messages SET payload_ascii = ? WHERE id = ?;", batch)
-            self.conn.commit()
-            updated_count += len(batch)
-            batch.clear()
+                    update_tuples: List[Tuple[str, int]] = []
+                    for worker_res in executor.map(_worker_decode_batch, sub_chunks):
+                        for decoded, row_id, is_hex in worker_res:
+                            if is_hex:
+                                hex_converted_count += 1
+                            update_tuples.append((decoded, row_id))
 
-            if not quiet and total_count > 0:
-                pct = (updated_count / total_count) * 100
-                sys.stderr.write(f"\r    [+] Updated {updated_count:,d} / {total_count:,d} rows ({pct:.1f}%)...")
-                sys.stderr.flush()
+                    self.cursor.executemany("UPDATE messages SET payload_ascii = ? WHERE id = ?;", update_tuples)
+                    self.conn.commit()
+                    updated_count += len(update_tuples)
+
+                    if not quiet and total_count > 0:
+                        pct = (updated_count / total_count) * 100
+                        sys.stderr.write(f"\r    [+] Updated {updated_count:,d} / {total_count:,d} rows ({pct:.1f}%)...")
+                        sys.stderr.flush()
+        else:
+            # Single-process fallback (workers=1)
+            batch: List[Tuple[str, int]] = []
+            while True:
+                rows = read_cur.fetchmany(effective_batch)
+                if not rows:
+                    break
+
+                for row_id, payload in rows:
+                    decoded = decode_hex_payload(payload)
+                    if decoded != payload:
+                        hex_converted_count += 1
+                    batch.append((decoded, row_id))
+
+                self.cursor.executemany("UPDATE messages SET payload_ascii = ? WHERE id = ?;", batch)
+                self.conn.commit()
+                updated_count += len(batch)
+                batch.clear()
+
+                if not quiet and total_count > 0:
+                    pct = (updated_count / total_count) * 100
+                    sys.stderr.write(f"\r    [+] Updated {updated_count:,d} / {total_count:,d} rows ({pct:.1f}%)...")
+                    sys.stderr.flush()
 
         read_cur.close()
 
         if not quiet:
-            sys.stderr.write("\n[*] Creating index idx_messages_payload_ascii...\n")
+            sys.stderr.write("\n[*] Rebuilding index idx_messages_payload_ascii...\n")
             sys.stderr.flush()
 
         self.cursor.execute("CREATE INDEX IF NOT EXISTS idx_messages_payload_ascii ON messages(payload_ascii);")

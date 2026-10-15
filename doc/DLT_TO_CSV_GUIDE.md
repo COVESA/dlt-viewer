@@ -156,8 +156,11 @@ usage: dlt-to-csv [-h] [-o OUTPUT] [-r] [-c] [--forensic] [--sqlite SQLITE]
 ### SQLite Database & Analytical Query Options (2M+ Rows)
 | Option | Description |
 | :--- | :--- |
-| `--sqlite, --db <path>` | Ingest parsed DLT messages into an indexed SQLite database (`.db` / `.sqlite`). |
-| `--sqlite-batch-size <N>` | Number of rows per SQLite transaction during bulk loading and in-place updates (default: `20000`). |
+| `--sqlite, --db <path...>` | Ingest parsed DLT messages into SQLite, or target SQLite database(s) / wildcards (`*.db`) for queries and updates. |
+| `--batch-size, --sqlite-batch-size <N>` | Number of rows per SQLite transaction during bulk loading and in-place updates (default: `20000`). |
+| `-j, --workers <N>` | Number of parallel worker processes for hex decoding (default: 75% of available CPU cores; `1` for single-process). |
+| `--cpu-percent <PCT>` | Percentage of system CPU cores to allocate to worker processes (e.g. `80` for 80%, `50` for 50%). |
+| `--ram-cache-mb <MB>` | SQLite RAM page cache size in MB (default: `128` MB). |
 | `--no-csv` | Suppress CSV generation when exporting to SQLite. |
 | `--query "<SQL>"` | Execute an SQL query against the SQLite database and display results in terminal. |
 | `--query-dates` | Query and display a summary table of all dates, message counts, active ECUs, and error breakdown. |
@@ -266,15 +269,40 @@ The standalone `dlt-to-csv.exe` executable includes an in-place batch update eng
 
 ### In-Place Database Update Command
 
-Run the update transaction directly on any existing SQLite database:
+Run the update transaction directly on any existing SQLite database or wildcard pattern:
 
 ```cmd
+# Single database update (defaults to 75% CPU and 20k batch size):
 dist\dlt-to-csv.exe --sqlite evidence.db --update-ascii
+
+# Multi-database wildcard update with 80% CPU allocation and 50k batch size:
+dist\dlt-to-csv.exe --sqlite *.db --update-ascii --cpu-percent 80 --batch-size 50000
+
+# Explicit worker process count and 256MB RAM cache:
+dist\dlt-to-csv.exe --sqlite *.db --update-ascii --workers 8 --ram-cache-mb 256
+
+# Positional database argument shorthand:
+dist\dlt-to-csv.exe *.db --update-ascii
 ```
 
-* **Batch Transaction Safety:** Updates records in chunked transactions (default: 20,000 rows per transaction, configurable via `--sqlite-batch-size`) to ensure optimal performance and minimal memory usage on 2M+ row databases.
+### Performance & Multi-Core Optimizations
+
+To maximize throughput across multi-million row databases:
+
+* **Multi-Core Multiprocessing (`--cpu-percent`, `--workers` / `-j`):**
+  * Automatically defaults to **75% of available CPU cores** (e.g. 10 worker processes on a 14-core workstation) to saturate CPU decoding throughput while leaving the desktop responsive.
+  * You can tune the exact CPU allocation percentage (e.g. `--cpu-percent 80` or `--cpu-percent 50`) or set an explicit worker count (e.g. `-j 8`). Use `-j 1` for single-process execution.
+  * In benchmarks, multi-core multiprocessing accelerates decoding from **~75,000 rows/sec to over 313,000 rows/sec (>4x CPU speedup)**.
+* **Configurable Batch Transaction Size (`--batch-size` / `--sqlite-batch-size`):**
+  * Rather than hardcoded constants, the batch transaction chunk size is fully configurable (e.g. `--batch-size 50000`).
+* **RAM Cache & Memory-Mapped I/O (`--ram-cache-mb`):**
+  * Configures SQLite's in-memory page cache (default: 128 MB) and enables 2GB memory-mapped file I/O (`PRAGMA mmap_size = 2147483648`).
+* **Deferred Index Rebuilding:**
+  * Updating indexed columns row-by-row forces SQLite to perform random disk I/O and rebalance B-trees on every batch.
+  * The engine automatically drops `idx_messages_payload_ascii` during bulk updates and rebuilds it in a single sequential pass at the end, eliminating disk thrashing and yielding a massive I/O speedup.
+* **Wildcard & Multi-DB Globbing:**
+  * Supports wildcards on both Windows CMD and PowerShell (e.g. `--sqlite *.db` or `logs_*.sqlite`), processing each database sequentially with per-database progress metrics.
 * **Schema Migration:** Automatically adds the `payload_ascii` column via `ALTER TABLE` if missing from an older database.
-* **Automatic Indexing:** Builds the `idx_messages_payload_ascii` index and checkpoints WAL upon completion.
 * **Built-in SQL Function:** Registers `hex_to_ascii(payload)` so interactive queries can convert raw strings on the fly:
   ```cmd
   dist\dlt-to-csv.exe --sqlite evidence.db --query "SELECT time_utc, ecu_id, hex_to_ascii(payload) FROM messages LIMIT 20"

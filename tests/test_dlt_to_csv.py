@@ -881,6 +881,70 @@ class TestCsvExporterAndCli(unittest.TestCase):
         cur.close()
         conn.close()
 
+    def test_cli_update_ascii_multiprocessing_and_wildcard(self):
+        """Verify multiprocessing (--workers, --cpu-percent, --batch-size) and wildcard globbing (*.db)."""
+        wildcard_dir = self.temp_path / "wildcard_dbs"
+        wildcard_dir.mkdir(parents=True, exist_ok=True)
+
+        db1 = wildcard_dir / "target_a.db"
+        db2 = wildcard_dir / "target_b.db"
+
+        for db_file, hex_val in [(db1, "46 69 72 73 74"), (db2, "53 65 63 6f 6e 64")]:  # "First", "Second"
+            conn = sqlite3.connect(str(db_file))
+            conn.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, payload TEXT);")
+            conn.execute("INSERT INTO messages (payload) VALUES (?);", (hex_val,))
+            conn.commit()
+            conn.close()
+
+        # Run with wildcard pattern, workers=2, cpu-percent=50, batch-size=500, ram-cache-mb=64
+        pattern = str(wildcard_dir / "*.db")
+        exit_code = main([
+            "--sqlite", pattern,
+            "--update-ascii",
+            "--workers", "2",
+            "--cpu-percent", "50",
+            "--batch-size", "500",
+            "--ram-cache-mb", "64",
+            "-q",
+        ])
+        self.assertEqual(exit_code, 0)
+
+        # Verify DB 1
+        conn1 = sqlite3.connect(str(db1))
+        cur1 = conn1.cursor()
+        cur1.execute("SELECT payload_ascii FROM messages LIMIT 1;")
+        self.assertEqual(cur1.fetchone()[0], "First")
+        cur1.close()
+        conn1.close()
+
+        # Verify DB 2
+        conn2 = sqlite3.connect(str(db2))
+        cur2 = conn2.cursor()
+        cur2.execute("SELECT payload_ascii FROM messages LIMIT 1;")
+        self.assertEqual(cur2.fetchone()[0], "Second")
+        cur2.close()
+        conn2.close()
+
+    def test_cli_update_ascii_positional_db(self):
+        """Verify that passing a .db file directly as positional argument with --update-ascii works seamlessly."""
+        db_file = self.temp_path / "positional_test.db"
+        conn = sqlite3.connect(str(db_file))
+        conn.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY AUTOINCREMENT, payload TEXT);")
+        conn.execute("INSERT INTO messages (payload) VALUES ('4f 6e 65 20 54 77 6f');")  # "One Two"
+        conn.commit()
+        conn.close()
+
+        # Run with positional DB file without explicit --sqlite flag
+        exit_code = main([str(db_file), "--update-ascii", "-q"])
+        self.assertEqual(exit_code, 0)
+
+        conn = sqlite3.connect(str(db_file))
+        cur = conn.cursor()
+        cur.execute("SELECT payload_ascii FROM messages LIMIT 1;")
+        self.assertEqual(cur.fetchone()[0], "One Two")
+        cur.close()
+        conn.close()
+
 
 if __name__ == "__main__":
     unittest.main()

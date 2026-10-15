@@ -18,8 +18,10 @@ For help:
     python dlt_to_csv.py --help
 """
 
+import multiprocessing
 import sys
 from dlt_to_csv.cli import main
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     sys.exit(main())

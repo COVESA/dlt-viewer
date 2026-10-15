@@ -263,6 +263,35 @@ Examples:
         help="Add and populate a 'payload_ascii' column directly into the SQLite messages table.",
     )
     action_group.add_argument(
+        "--batch-size",
+        type=int,
+        default=20000,
+        metavar="N",
+        help="Batch size for bulk updates (default: 20000 rows).",
+    )
+    action_group.add_argument(
+        "-j",
+        "--workers",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Number of parallel worker processes for hex decoding (default: 75% of CPU cores; 1 for single-process).",
+    )
+    action_group.add_argument(
+        "--cpu-percent",
+        type=float,
+        default=None,
+        metavar="PCT",
+        help="Percentage of system CPU cores to allocate to worker processes (e.g. 50 for 50%, 80 for 80%).",
+    )
+    action_group.add_argument(
+        "--ram-cache-mb",
+        type=int,
+        default=128,
+        metavar="MB",
+        help="SQLite RAM page cache size in MB (default: 128 MB).",
+    )
+    action_group.add_argument(
         "--limit",
         type=int,
         default=50,
@@ -343,77 +372,27 @@ def build_query(args: argparse.Namespace) -> Tuple[str, List[Any]]:
     return sql, params
 
 
-def update_database_in_place(db_path: Path, quiet: bool = False, batch_size: int = 20000) -> int:
-    """Add payload_ascii column and populate it in bulk across all messages."""
-    if not quiet:
-        sys.stderr.write(f"[*] Connecting to {db_path.name} for in-place ASCII payload enrichment...\n")
+def update_database_in_place(
+    db_path: Path,
+    batch_size: int = 20000,
+    workers: Optional[int] = None,
+    cpu_percent: Optional[float] = None,
+    ram_cache_mb: int = 128,
+    quiet: bool = False,
+) -> int:
+    """Add payload_ascii column and populate it in bulk across all messages using multi-core processing."""
+    from dlt_to_csv.sqlite_exporter import SqliteExporter
 
-    conn = sqlite3.connect(str(db_path))
-    conn.execute("PRAGMA journal_mode = WAL;")
-    conn.execute("PRAGMA synchronous = OFF;")
-    conn.execute("PRAGMA cache_size = -64000;")
-    cur = conn.cursor()
-
-    # Check if payload_ascii column already exists
-    cur.execute("PRAGMA table_info(messages);")
-    columns = [row[1] for row in cur.fetchall()]
-    if "payload_ascii" not in columns:
-        if not quiet:
-            sys.stderr.write("[*] Adding column 'payload_ascii' to messages table...\n")
-        cur.execute("ALTER TABLE messages ADD COLUMN payload_ascii TEXT;")
-        conn.commit()
-
-    # Stream all messages and update
-    cur.execute("SELECT COUNT(*) FROM messages;")
-    total_count = cur.fetchone()[0]
-    if not quiet:
-        sys.stderr.write(f"[*] Processing {total_count:,d} messages in batches of {batch_size:,d}...\n")
-
-    read_cur = conn.cursor()
-    read_cur.execute("SELECT id, payload FROM messages;")
-
-    updated_count = 0
-    hex_converted_count = 0
-    batch: List[Tuple[str, int]] = []
-
-    while True:
-        rows = read_cur.fetchmany(batch_size)
-        if not rows:
-            break
-
-        for row_id, payload in rows:
-            decoded = decode_hex_payload(payload)
-            if decoded != payload:
-                hex_converted_count += 1
-            batch.append((decoded, row_id))
-
-        cur.executemany("UPDATE messages SET payload_ascii = ? WHERE id = ?;", batch)
-        conn.commit()
-        updated_count += len(batch)
-        batch.clear()
-
-        if not quiet and total_count > 0:
-            pct = (updated_count / total_count) * 100
-            sys.stderr.write(f"\r    [+] Updated {updated_count:,d} / {total_count:,d} rows ({pct:.1f}%)...")
-            sys.stderr.flush()
-
-    if not quiet:
-        sys.stderr.write("\n[*] Creating index idx_messages_payload_ascii...\n")
-        sys.stderr.flush()
-
-    cur.execute("CREATE INDEX IF NOT EXISTS idx_messages_payload_ascii ON messages(payload_ascii);")
-    cur.execute("PRAGMA optimize;")
-    cur.execute("PRAGMA wal_checkpoint(TRUNCATE);")
-    conn.commit()
-    conn.close()
-
-    if not quiet:
-        sys.stderr.write(
-            f"[+] Database enrichment complete:\n"
-            f"    Total rows updated:           {updated_count:,d}\n"
-            f"    Hex payloads decoded to ASCII: {hex_converted_count:,d}\n"
-        )
-    return updated_count
+    exporter = SqliteExporter(db_path=db_path, batch_size=batch_size)
+    updated = exporter.update_payload_ascii_in_place(
+        batch_size=batch_size,
+        workers=workers,
+        cpu_percent=cpu_percent,
+        ram_cache_mb=ram_cache_mb,
+        quiet=quiet,
+    )
+    exporter.close(build_indexes=False)
+    return updated
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -427,7 +406,14 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     # In-place update mode
     if args.update_db:
-        update_database_in_place(args.database, quiet=args.quiet)
+        update_database_in_place(
+            args.database,
+            batch_size=args.batch_size,
+            workers=args.workers,
+            cpu_percent=args.cpu_percent,
+            ram_cache_mb=args.ram_cache_mb,
+            quiet=args.quiet,
+        )
         return 0
 
     # Query mode
@@ -533,4 +519,6 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 
 if __name__ == "__main__":
+    import multiprocessing
+    multiprocessing.freeze_support()
     sys.exit(main())
