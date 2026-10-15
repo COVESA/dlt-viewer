@@ -482,15 +482,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     # Check for direct SQLite query or in-place update on existing database without new inputs
     is_sqlite_op = bool(args.query or args.query_dates or getattr(args, "update_ascii", False))
     if is_sqlite_op:
-        if args.sqlite:
-            return run_sqlite_query_cli(args)
-        # Check if user passed .db / .sqlite files as positional inputs
-        if args.inputs:
+        if not args.inputs:
+            if args.sqlite:
+                return run_sqlite_query_cli(args)
+        else:
+            # Check if user passed .db / .sqlite files as positional inputs instead of DLT files
             resolved_dbs = expand_db_paths([str(p) for p in args.inputs])
             existing_dbs = [
                 p for p in resolved_dbs if p.exists() and p.is_file() and p.suffix.lower() in (".db", ".sqlite", ".sqlite3")
             ]
-            if existing_dbs:
+            if existing_dbs and not args.sqlite:
                 args.sqlite = existing_dbs
                 return run_sqlite_query_cli(args)
 

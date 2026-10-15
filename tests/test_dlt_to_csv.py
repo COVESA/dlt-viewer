@@ -942,6 +942,26 @@ class TestCsvExporterAndCli(unittest.TestCase):
         cur = conn.cursor()
         cur.execute("SELECT payload_ascii FROM messages LIMIT 1;")
         self.assertEqual(cur.fetchone()[0], "One Two")
+    def test_cli_ingest_and_update_ascii_in_single_shot(self):
+        """Verify building DB from scratch from DLT files AND running --update-ascii in one shot."""
+        new_db = self.temp_path / "single_shot.db"
+        self.assertFalse(new_db.exists())
+
+        exit_code = main([
+            str(self.temp_path),
+            "--sqlite", str(new_db),
+            "--no-csv",
+            "--update-ascii",
+            "-q",
+        ])
+        self.assertEqual(exit_code, 0)
+        self.assertTrue(new_db.exists())
+
+        conn = sqlite3.connect(str(new_db))
+        cur = conn.cursor()
+        cur.execute("SELECT COUNT(*) FROM messages WHERE payload_ascii IS NOT NULL;")
+        count = cur.fetchone()[0]
+        self.assertGreater(count, 0)
         cur.close()
         conn.close()
 
