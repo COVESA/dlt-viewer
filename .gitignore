@@ -1,5 +1,8 @@
+# C++ / Qt build artifacts
 .gitconfig
 CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles/
 build/
 .project
 Makefile
@@ -11,7 +14,59 @@ release/
 *~
 .idea
 .cache
+.vscode/
 compile_commands.json
+
 # deb packaging directories
 debian/
 debtmp/
+
+# Python cache & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller & binary executables
+*.spec
+*.manifest
+*.exe
+
+# Testing & coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+
+# SQLite databases & temp journal files
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+
+# Operating System files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
