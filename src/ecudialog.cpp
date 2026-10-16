@@ -178,6 +178,9 @@ unsigned int EcuDialog::port()
       case EcuItem::INTERFACETYPE_UDP:
            return  ui->comboBoxPortIP_UDP->currentText().toUInt();
            break;
+      case EcuItem::INTERFACETYPE_TCP_SERVER:
+           return  ui->comboBoxPortIP->currentText().toUInt();
+           break;
      default:
         break;
     }
@@ -416,6 +419,17 @@ void EcuDialog::on_comboBoxInterface_currentIndexChanged(int index)
             ui->checkBoxSendSerialHeaderSerial->setVisible(false);
             ui->checkBoxSyncToSerialHeaderSerial->setVisible(false);
             break;
+
+        case EcuItem::INTERFACETYPE_TCP_SERVER:
+            //we have TCP Server set -> disable serial, enable TCP tab for listen config
+            ui->tabWidget->setTabEnabled(1,true);
+            ui->tabWidget->setTabEnabled(2,false);
+            ui->tabWidget->setTabEnabled(3,false);
+            ui->comboBoxNetworkIF->setVisible(false);
+            ui->checkBoxMulticast->setVisible(false);
+            ui->label_3->setText(QString("Listen Address:"));
+            ui->label_3->setToolTip(QString("Local IP address to listen on.\nUse 0.0.0.0 or leave empty to listen on all interfaces."));
+        break;
 
     }
 }
