@@ -80,6 +80,12 @@ public:
     /* Default Filter Index */
     QList<QDltFilterIndex*> defaultFilterIndex;
 
+    /* Malformed default filter files skipped during the last load. */
+    QStringList malformedFilterFiles;
+
+    /* Detailed error text for malformed default filter files. */
+    QStringList malformedFilterErrors;
+
 protected:
 private:
 
