@@ -2,6 +2,10 @@
 #include <QDebug>
 #include <QtEndian>
 #include <QString>
+#include <QVector>
+
+#include <cstring>
+#include <limits>
 
 extern "C" {
     #include "dlt_common.h"
@@ -32,6 +36,150 @@ QDltImporter::QDltImporter(QFile *outputfile, QString fileName,QObject *parent) 
 QDltImporter::~QDltImporter()
 {
 
+}
+
+bool QDltImporter::hasMf4BlockId(const mdf_hdr_t &header, char id0, char id1)
+{
+    return header.id[0] == '#' && header.id[1] == '#' && header.id[2] == id0 && header.id[3] == id1;
+}
+
+QByteArray QDltImporter::reverseMf4Transposition(const QByteArray &data, quint32 columns)
+{
+    if(columns == 0 || (data.size() % static_cast<qsizetype>(columns)) != 0)
+        return data;
+
+    const qsizetype lines = data.size() / static_cast<qsizetype>(columns);
+    QByteArray result(data.size(), Qt::Uninitialized);
+    for(quint32 column = 0; column < columns; ++column)
+    {
+        for(qsizetype row = 0; row < lines; ++row)
+        {
+            // Explicit int cast avoids ambiguous QByteArray::operator[](int|uint) overload resolution on Qt5
+            const int destIndex = static_cast<int>(row * static_cast<qsizetype>(columns) + static_cast<qsizetype>(column));
+            const int srcIndex = static_cast<int>(static_cast<qsizetype>(column) * lines + row);
+            result[destIndex] = data[srcIndex];
+        }
+    }
+
+    return result;
+}
+
+bool QDltImporter::resolveMf4DataList(QFile &inputfile, quint64 dataOffset, quint64 &resolvedDataOffset, mdf_hdr_t &header, int &numberOfLinks, bool &isDataBlock)
+{
+    resolvedDataOffset = dataOffset;
+    inputfile.seek(resolvedDataOffset);
+    if(inputfile.read(reinterpret_cast<char*>(&header), sizeof(mdf_hdr_t)) != sizeof(mdf_hdr_t))
+        return false;
+
+    if(hasMf4BlockId(header, 'H', 'L'))
+    {
+        quint64 hlDataListOffset = 0;
+        if(header.link_count < 1 || inputfile.read(reinterpret_cast<char*>(&hlDataListOffset), sizeof(quint64)) != sizeof(quint64))
+            return false;
+
+        resolvedDataOffset = hlDataListOffset;
+        inputfile.seek(resolvedDataOffset);
+        if(inputfile.read(reinterpret_cast<char*>(&header), sizeof(mdf_hdr_t)) != sizeof(mdf_hdr_t))
+            return false;
+    }
+
+    if(hasMf4BlockId(header, 'D', 'L'))
+    {
+        numberOfLinks = static_cast<int>(header.link_count);
+        isDataBlock = false;
+        return true;
+    }
+
+    if(hasMf4BlockId(header, 'D', 'T') || hasMf4BlockId(header, 'R', 'D') || hasMf4BlockId(header, 'S', 'D') || hasMf4BlockId(header, 'D', 'Z'))
+    {
+        numberOfLinks = 2;
+        isDataBlock = true;
+        return true;
+    }
+
+    return false;
+}
+
+bool QDltImporter::loadMf4DataBlock(QFile &inputfile, quint64 blockOffset, QByteArray &payload, QByteArray &blockType)
+{
+    payload.clear();
+    blockType.clear();
+
+    mdf_hdr_t blockHeader = {};
+    inputfile.seek(blockOffset);
+    if(inputfile.read(reinterpret_cast<char*>(&blockHeader), sizeof(mdf_hdr_t)) != sizeof(mdf_hdr_t))
+        return false;
+
+    const quint64 dataOffset = blockOffset + sizeof(mdf_hdr_t) + blockHeader.link_count * sizeof(quint64);
+
+    if(hasMf4BlockId(blockHeader, 'D', 'T') || hasMf4BlockId(blockHeader, 'R', 'D') || hasMf4BlockId(blockHeader, 'S', 'D'))
+    {
+        if(blockHeader.length < (sizeof(mdf_hdr_t) + blockHeader.link_count * sizeof(quint64)))
+            return false;
+
+        const quint64 payloadSize = blockHeader.length - sizeof(mdf_hdr_t) - blockHeader.link_count * sizeof(quint64);
+        if(payloadSize > static_cast<quint64>(std::numeric_limits<qsizetype>::max()))
+            return false;
+
+        inputfile.seek(dataOffset);
+        payload = inputfile.read(static_cast<qsizetype>(payloadSize));
+        if(payload.size() != static_cast<qsizetype>(payloadSize))
+            return false;
+
+        blockType = QByteArray(blockHeader.id + 2, 2);
+        return true;
+    }
+
+    if(!hasMf4BlockId(blockHeader, 'D', 'Z'))
+        return false;
+
+    mdf_dzblock_t dzBlock = {};
+    inputfile.seek(dataOffset);
+    if(inputfile.read(reinterpret_cast<char*>(&dzBlock), sizeof(mdf_dzblock_t)) != sizeof(mdf_dzblock_t))
+        return false;
+
+    if(dzBlock.dz_org_data_length > static_cast<quint64>(std::numeric_limits<qsizetype>::max()) ||
+       dzBlock.dz_data_length > static_cast<quint64>(std::numeric_limits<qsizetype>::max()))
+        return false;
+
+    QByteArray compressedPayload = inputfile.read(static_cast<qsizetype>(dzBlock.dz_data_length));
+    if(compressedPayload.size() != static_cast<qsizetype>(dzBlock.dz_data_length))
+        return false;
+
+    if(dzBlock.dz_org_data_length > static_cast<quint64>(std::numeric_limits<quint32>::max()))
+        return false;
+
+    QByteArray qtCompressedPayload(4, Qt::Uninitialized);
+    qToBigEndian(static_cast<quint32>(dzBlock.dz_org_data_length), reinterpret_cast<uchar*>(qtCompressedPayload.data()));
+    qtCompressedPayload.append(compressedPayload);
+
+    QByteArray uncompressedPayload = qUncompress(reinterpret_cast<const uchar*>(qtCompressedPayload.constData()), qtCompressedPayload.size());
+    if(uncompressedPayload.isEmpty() && dzBlock.dz_org_data_length != 0)
+        return false;
+    if(dzBlock.dz_zip_type == 1)
+    {
+        if(dzBlock.dz_zip_parameter == 0)
+            return false;
+
+        const qsizetype columns = static_cast<qsizetype>(dzBlock.dz_zip_parameter);
+        const qsizetype transposedBytes = (uncompressedPayload.size() / columns) * columns;
+        payload = reverseMf4Transposition(uncompressedPayload.left(transposedBytes), dzBlock.dz_zip_parameter);
+        payload.append(uncompressedPayload.mid(transposedBytes));
+    }
+    else if(dzBlock.dz_zip_type == 0)
+    {
+        payload = uncompressedPayload;
+    }
+    else
+    {
+        return false;
+    }
+
+    if(payload.size() != static_cast<qsizetype>(dzBlock.dz_org_data_length))
+        return false;
+
+    blockType = QByteArray(dzBlock.dz_org_block_type, 2);
+    return blockType == "DT" || blockType == "RD" || blockType == "SD";
 }
 
 void QDltImporter::run()
@@ -319,43 +467,72 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                 ptrDg=0;
         }
     }
-    // seek to and read data list header
-    inputfile.seek(mdfDgBlockLinks.dg_data);
-    if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
-    {
-        inputfile.close();
-        outputfile->close();
-        qDebug() << "fromMF4: Cannot read datalist header";
-        return;
-    }
+    quint64 dataListOffset = 0;
     int numberOfLinks = 0;
     bool isDataBlock = false;
-    if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='L')
-    {
-        // Datalist detected, get number of datablocks
-        numberOfLinks = mdfHeader.link_count;
-        qDebug() << "fromMF4: Datalist detected";
-    }
-    else if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
-    {
-        // Only one Datalblock detected
-        numberOfLinks = 2;
-        isDataBlock = true;
-        qDebug() << "fromMF4: Datablock detected";
-    }
-    else
+    if(!resolveMf4DataList(inputfile, mdfDgBlockLinks.dg_data, dataListOffset, mdfHeader, numberOfLinks, isDataBlock))
     {
         inputfile.close();
         outputfile->close();
         qDebug() << "fromMF4: Cannot find Datalist or Datablock";
         return;
     }
-    for(int num=1;num<numberOfLinks;num++)
-    {
-        if(!isDataBlock)
+
+    qDebug() << "fromMF4:" << (isDataBlock ? "Datablock detected" : "Datalist detected");
+
+    QVector<quint64> dataBlockOffsets;
+    quint64 totalPayloadBytes = 0;
+    auto appendDataBlock = [&](quint64 blockOffset) -> bool {
+        mdf_hdr_t blockHeader = {};
+        inputfile.seek(blockOffset);
+        if(inputfile.read(reinterpret_cast<char*>(&blockHeader), sizeof(mdf_hdr_t)) != sizeof(mdf_hdr_t))
+            return false;
+
+        quint64 payloadSize = 0;
+        if(hasMf4BlockId(blockHeader, 'D', 'T') || hasMf4BlockId(blockHeader, 'R', 'D') || hasMf4BlockId(blockHeader, 'S', 'D'))
         {
-            quint64 addressOfDataBlock;
-            inputfile.seek(mdfDgBlockLinks.dg_data+sizeof(mdf_hdr_t)+num*sizeof(quint64));
+            const quint64 metadataSize = sizeof(mdf_hdr_t) + blockHeader.link_count * sizeof(quint64);
+            if(blockHeader.length < metadataSize)
+                return false;
+
+            payloadSize = blockHeader.length - metadataSize;
+        }
+        else if(hasMf4BlockId(blockHeader, 'D', 'Z'))
+        {
+            const quint64 dataOffset = blockOffset + sizeof(mdf_hdr_t) + blockHeader.link_count * sizeof(quint64);
+            mdf_dzblock_t dzBlock = {};
+            inputfile.seek(dataOffset);
+            if(inputfile.read(reinterpret_cast<char*>(&dzBlock), sizeof(mdf_dzblock_t)) != sizeof(mdf_dzblock_t))
+                return false;
+
+            payloadSize = dzBlock.dz_org_data_length;
+        }
+        else
+        {
+            return false;
+        }
+
+        dataBlockOffsets.append(blockOffset);
+        totalPayloadBytes += payloadSize;
+        return true;
+    };
+
+    if(isDataBlock)
+    {
+        if(!appendDataBlock(dataListOffset))
+        {
+            inputfile.close();
+            outputfile->close();
+            qDebug() << "fromMF4: Cannot inspect datablock payload size";
+            return;
+        }
+    }
+    else
+    {
+        for(int num=1;num<numberOfLinks;num++)
+        {
+            quint64 addressOfDataBlock = 0;
+            inputfile.seek(dataListOffset+sizeof(mdf_hdr_t)+num*sizeof(quint64));
             if(inputfile.read((char*)&addressOfDataBlock,sizeof(quint64))!=sizeof(quint64))
             {
                 inputfile.close();
@@ -363,18 +540,34 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                 qDebug() << "fromMF4: Cannot read datablock address";
                 return;
             }
-            inputfile.seek(addressOfDataBlock);
-            if(inputfile.read((char*)&mdfHeader,sizeof(mdf_hdr_t))!=sizeof(mdf_hdr_t))
+
+            if(!appendDataBlock(addressOfDataBlock))
             {
                 inputfile.close();
                 outputfile->close();
-                qDebug() << "fromMF4: Cannot read datablock header";
+                qDebug() << "fromMF4: Cannot inspect datablock payload size";
                 return;
             }
         }
-        if(mdfHeader.id[0]=='#' && mdfHeader.id[1]=='#' && mdfHeader.id[2]=='D' && mdfHeader.id[3]=='T')
+    }
+
+    quint64 processedPayloadBytes = 0;
+    for(int blockIndex = 0; blockIndex < dataBlockOffsets.size(); ++blockIndex)
+    {
+        const quint64 addressOfDataBlock = dataBlockOffsets[blockIndex];
+
+        QByteArray blockData;
+        QByteArray blockType;
+        if(!loadMf4DataBlock(inputfile, addressOfDataBlock, blockData, blockType))
         {
-            const auto pos = inputfile.pos() - sizeof(mdf_hdr_t);
+            inputfile.close();
+            outputfile->close();
+            qDebug() << "fromMF4: Cannot read compressed or uncompressed datablock payload";
+            return;
+        }
+
+        if(blockType == "DT" || blockType == "RD" || blockType == "SD")
+        {
             quint64 posDt=0;
             quint16 recordId;
             quint32 lengthVLSD;
@@ -382,10 +575,22 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
             mdf_plpRaw_t plpRaw;
             mdf_dltFrame_t dltFrameBlock;
             QByteArray recordData;
-            quint64 fileSize = inputfile.size();
-            while(posDt<(mdfHeader.length-sizeof(mdf_hdr_t)))
+            auto readBlockBytes = [&](void* destination, qsizetype size) -> bool {
+                if(posDt + static_cast<quint64>(size) > static_cast<quint64>(blockData.size()))
+                    return false;
+
+                std::memcpy(destination, blockData.constData() + static_cast<qsizetype>(posDt), static_cast<size_t>(size));
+                posDt += static_cast<quint64>(size);
+                return true;
+            };
+
+            while(posDt < static_cast<quint64>(blockData.size()))
             {
-                int percent = inputfile.pos()*100/fileSize;
+                quint64 progressNumerator = processedPayloadBytes + posDt;
+                if(progressNumerator > totalPayloadBytes)
+                    progressNumerator = totalPayloadBytes;
+
+                const int percent = totalPayloadBytes == 0 ? 100 : static_cast<int>((progressNumerator * 100) / totalPayloadBytes);
                 if(percent>=progressCounter)
                 {
                     progressCounter += 1;
@@ -399,17 +604,14 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
 
                 // TODO: Handle cancel operation
 
-                //qDebug() << "posDt =" << posDt;
-                inputfile.seek(pos+sizeof(mdf_hdr_t)+posDt);
                 counterRecords++;
-                if(inputfile.read((char*)&recordId,sizeof(quint16))!=sizeof(quint16))
+                if(!readBlockBytes(&recordId, sizeof(quint16)))
                 {
                     inputfile.close();
                     outputfile->close();
                     qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                     return;
                 }
-                posDt += sizeof(quint16);
                 if(channelGroupLength.contains(recordId))
                 {
                     QString name;
@@ -417,78 +619,85 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                         name = channelGroupName[recordId];
                     if(channelGroupLength[recordId]==-1)
                     {
-                        if(inputfile.read((char*)&lengthVLSD,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&lengthVLSD, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        posDt += sizeof(quint32);
-                        posDt += lengthVLSD;
-                        recordData = inputfile.read(lengthVLSD);
+                        if(posDt + static_cast<quint64>(lengthVLSD) > static_cast<quint64>(blockData.size()))
+                        {
+                            inputfile.close();
+                            outputfile->close();
+                            qDebug() << "fromMF4:" << "Size Error: Cannot read VLSD payload";
+                            return;
+                        }
+
+                        recordData = blockData.mid(static_cast<qsizetype>(posDt), static_cast<qsizetype>(lengthVLSD));
+                        posDt += static_cast<quint64>(lengthVLSD);
                         //qDebug() << "recordId =" << recordId << "length =" << lengthVLSD;
                     }
                     else if(channelGroupLength[recordId]==43)
                     {
                         // Ethernet Group
-                        if(inputfile.read((char*)&ethFrame.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&ethFrame.timeStamp, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        if(!readBlockBytes(&ethFrame.asynchronous, sizeof(quint8)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.source,6)!=6)
+                        if(!readBlockBytes(&ethFrame.source, 6))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.destination,6)!=6)
+                        if(!readBlockBytes(&ethFrame.destination, 6))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.etherType,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&ethFrame.etherType, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.crc,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.crc, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.receivedDataByteCount,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.receivedDataByteCount, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.dataLength,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.dataLength, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.dataBytes,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&ethFrame.dataBytes, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
@@ -514,75 +723,74 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                             }
                             recordData.clear();
                         }
-                        posDt += channelGroupLength[recordId];
                     }
                     else if(channelGroupLength[recordId]==51)
                     {
                         // Ethernet Group
-                        if(inputfile.read((char*)&ethFrame.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&ethFrame.timeStamp, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        if(!readBlockBytes(&ethFrame.asynchronous, sizeof(quint8)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.source,6)!=6)
+                        if(!readBlockBytes(&ethFrame.source, 6))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.destination,6)!=6)
+                        if(!readBlockBytes(&ethFrame.destination, 6))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.etherType,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&ethFrame.etherType, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.crc,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.crc, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.receivedDataByteCount,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.receivedDataByteCount, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.beaconTimeStamp,sizeof(quint64))!=sizeof(quint64)) // TODO: Beacon Time Stamp
+                        if(!readBlockBytes(&ethFrame.beaconTimeStamp, sizeof(quint64))) // TODO: Beacon Time Stamp
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.dataLength,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&ethFrame.dataLength, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&ethFrame.dataBytes,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&ethFrame.dataBytes, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
@@ -610,54 +818,53 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                             }
                             recordData.clear();
                         }
-                        posDt += channelGroupLength[recordId];
                     }
                     else if(channelGroupLength[recordId]==29 && name=="DLT_Frame")
                     {
                         // DLT Frame
-                        if(inputfile.read((char*)&dltFrameBlock.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&dltFrameBlock.timeStamp, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        if(!readBlockBytes(&dltFrameBlock.asynchronous, sizeof(quint8)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.currentFragmentNumber,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&dltFrameBlock.currentFragmentNumber, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.lastFragmentNumber,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&dltFrameBlock.lastFragmentNumber, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.ecuId,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&dltFrameBlock.ecuId, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.dataLength,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&dltFrameBlock.dataLength, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&dltFrameBlock.dataBytes,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&dltFrameBlock.dataBytes, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
@@ -677,68 +884,67 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                             }
                             recordData.clear();
                         }
-                        posDt += channelGroupLength[recordId];
                     }
                     else if(channelGroupLength[recordId]==29)
                     {
                         // PLP Raw
-                        if(inputfile.read((char*)&plpRaw.timeStamp,sizeof(quint64))!=sizeof(quint64))
+                        if(!readBlockBytes(&plpRaw.timeStamp, sizeof(quint64)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.asynchronous,sizeof(quint8))!=sizeof(quint8))
+                        if(!readBlockBytes(&plpRaw.asynchronous, sizeof(quint8)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.probeId,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.probeId, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.msgType,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.msgType, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.probeFlags,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.probeFlags, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.dataFlags,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.dataFlags, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.dataCounter,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.dataCounter, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.dataLength,sizeof(quint16))!=sizeof(quint16))
+                        if(!readBlockBytes(&plpRaw.dataLength, sizeof(quint16)))
                         {
                             inputfile.close();
                             outputfile->close();
                             qDebug() << "fromMF4:" << "Size Error: Cannot read Record";
                             return;
                         }
-                        if(inputfile.read((char*)&plpRaw.dataBytes,sizeof(quint32))!=sizeof(quint32))
+                        if(!readBlockBytes(&plpRaw.dataBytes, sizeof(quint32)))
                         {
                             inputfile.close();
                             outputfile->close();
@@ -757,7 +963,6 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                             }
                             recordData.clear();
                         }
-                        posDt += channelGroupLength[recordId];
                     }
                     else
                     {
@@ -772,6 +977,8 @@ void QDltImporter::dltIpcFromMF4(QString fileName)
                     break;
                 }
             }
+
+            processedPayloadBytes += static_cast<quint64>(blockData.size());
         }
     }
 
