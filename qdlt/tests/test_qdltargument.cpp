@@ -20,7 +20,12 @@ TEST(QDltArgument, string_ascii) {
                                        0xc3, 0xbc, 'b',  'e'};
     QByteArray payload = QByteArray::fromRawData((const char*)payloadData, sizeof(payloadData));
     unsigned int offset = 0;
+#if (BYTE_ORDER==LITTLE_ENDIAN)
     arg.setArgument(payload, offset, QDlt::DltEndiannessLittleEndian);
+#else
+    arg.setArgument(payload, offset, QDlt::DltEndiannessBigEndian);
+#endif
+
     ASSERT_EQ(arg.getTypeInfo(), QDltArgument::DltTypeInfoStrg);
     ASSERT_EQ(arg.getDataSize(), 4);
     // argument type is DltTypeInfoStrg (aka ASCII), the data is interpreted as UTF-8 encoded
@@ -44,7 +49,11 @@ TEST(QDltArgument, string_utf8) {
                                        0xc3, 0xbc, 'b',  'e'};
     QByteArray payload = QByteArray::fromRawData((const char*)asc_data2, sizeof(asc_data2));
     unsigned int offset = 0;
+#if (BYTE_ORDER==LITTLE_ENDIAN)
     arg.setArgument(payload, offset, QDlt::DltEndiannessLittleEndian);
+#else
+    arg.setArgument(payload, offset, QDlt::DltEndiannessBigEndian);
+#endif
     ASSERT_EQ(arg.getTypeInfo(), QDltArgument::DltTypeInfoUtf8);
     ASSERT_EQ(arg.getDataSize(), 4);
     ASSERT_EQ(arg.toString().length(), 3);
