@@ -45,7 +45,52 @@
 #include <mutex>
 #include <utility>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#elif defined(Q_OS_UNIX)
+#include <sys/resource.h>
+#include <sys/time.h>
+#endif
+#endif
+
 namespace {
+
+constexpr int findAllUiHeartbeatIntervalMs = 100;
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+static std::int64_t processCpuTimeUsec()
+{
+#if defined(Q_OS_WIN)
+    FILETIME creationTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    if (!GetProcessTimes(GetCurrentProcess(), &creationTime, &exitTime, &kernelTime, &userTime))
+        return -1;
+
+    const auto toTicks = [](const FILETIME &time) {
+        return (static_cast<std::uint64_t>(time.dwHighDateTime) << 32)
+            | static_cast<std::uint64_t>(time.dwLowDateTime);
+    };
+    return static_cast<std::int64_t>((toTicks(kernelTime) + toTicks(userTime)) / 10);
+#elif defined(Q_OS_UNIX)
+    struct rusage usage {};
+    if (getrusage(RUSAGE_SELF, &usage) != 0)
+        return -1;
+
+    const auto toUsec = [](const timeval &time) {
+        return static_cast<std::int64_t>(time.tv_sec) * 1000000 + time.tv_usec;
+    };
+    return toUsec(usage.ru_utime) + toUsec(usage.ru_stime);
+#else
+    return -1;
+#endif
+}
+#endif
 
 class SearchProjectionSnapshot
 {
@@ -97,7 +142,7 @@ static QThreadPool &findAllThreadPool()
     static QThreadPool pool;
     static std::once_flag configured;
     std::call_once(configured, []() {
-        pool.setMaxThreadCount(qMax(1, qMin(4, QThread::idealThreadCount())));
+        pool.setMaxThreadCount(qMax(1, QThread::idealThreadCount()));
     });
     return pool;
 }
@@ -124,6 +169,23 @@ CSearchDialog::CSearchDialog(QWidget *parent) :
 
     connect(&m_findAllWatcher, &QFutureWatcher<std::vector<std::uint64_t>>::finished,
             this, &CSearchDialog::onFindAllFinished);
+
+    m_findAllUiHeartbeatTimer.setInterval(findAllUiHeartbeatIntervalMs);
+    connect(&m_findAllUiHeartbeatTimer, &QTimer::timeout, this, [this]() {
+        const std::int64_t nowMs = m_findAllUiUpdateTimer.elapsed();
+        if (m_findAllLastUiUpdateMs > 0)
+        {
+            const std::int64_t intervalMs = nowMs - m_findAllLastUiUpdateMs;
+            const int eventLoopStallMs = static_cast<int>(
+                qMax<std::int64_t>(0, intervalMs - findAllUiHeartbeatIntervalMs));
+            m_findAllMaxUiEventLoopStallMs = qMax(m_findAllMaxUiEventLoopStallMs, eventLoopStallMs);
+        }
+        m_findAllLastUiUpdateMs = nowMs;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        m_findAllMaxActiveWorkers = qMax(m_findAllMaxActiveWorkers,
+                                         findAllThreadPool().activeThreadCount());
+#endif
+    });
 
     regexpCheckBox = ui->checkBoxRegExp;
     match = false;
@@ -262,8 +324,6 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
-    m_findAllUiUpdateTimer.restart();
-    m_findAllLastUiUpdateMs = 0;
     m_findAllAddedSinceLastUiUpdate = 0;
 
     m_searchtablemodel->clear_SearchResults();
@@ -329,6 +389,19 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     QDltPluginManager* pluginPtr = pluginManager;
     CDecodeCacheService* decodeCache = m_decodeCacheService;
     QThreadPool *findAllPool = &findAllThreadPool();
+
+    m_findAllUiUpdateTimer.restart();
+    m_findAllLastUiUpdateMs = 0;
+    m_findAllStartProcessCpuUsec = processCpuTimeUsec();
+    m_findAllMaxActiveWorkers = 0;
+    m_findAllMaxUiEventLoopStallMs = 0;
+    m_findAllBenchmarkActive = true;
+    m_findAllUiHeartbeatTimer.start();
+    qInfo().noquote() << QStringLiteral(
+        "FindAllBenchmark event=start messages=%1 idealThreads=%2 maxThreads=%3")
+        .arg(total)
+        .arg(QThread::idealThreadCount())
+        .arg(findAllPool->maxThreadCount());
 
     auto future = QtConcurrent::run([=]() -> std::vector<std::uint64_t> {
         if (!doDecode)
