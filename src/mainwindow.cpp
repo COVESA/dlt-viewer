@@ -2893,7 +2893,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         }
     }
     //qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    if(!liveFilterRefresh)
+    // A live refresh keeps the old filter active until finishFilter() swaps in the new one, but with
+    // filters disabled the indexer runs modeNone and never emits finishFilter(), so drop it here.
+    if(!liveFilterRefresh || dltIndexer->getMode() == DltFileIndexer::modeNone)
     {
         qfile.enableFilter(false);
     }
