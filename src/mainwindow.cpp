@@ -2845,8 +2845,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     if(!liveFilterRefresh)
     {
         ui->tableView->selectionModel()->clear();
+        m_searchtableModel->clear_SearchResults();
     }
-    m_searchtableModel->clear_SearchResults();
 
     QString title = "Search Results";
     ui->dockWidgetSearchIndex->setWindowTitle(title);
