@@ -11,11 +11,11 @@ on:
 jobs:
   buildMac:
     name: "Build MacOS ${{ matrix.osversion }} with Qt 6"
-    runs-on: macos-${{ matrix.osversion }}
+    runs-on: ${{ matrix.osversion }}
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ 14, 15, 15-intel ]
+        osversion: [ macos-15, macos-15-intel, macos-26-intel, macos-26, xcode-27 ]
 
     steps:
     - name: Checkout source
@@ -217,11 +217,19 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: DLTViewer-macos15-qt6
+      - name: Download DLT macOS 26 artifacts arm64
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-macos26-qt6
 
-      - name: Download DLT macOS artifacts x86
+      - name: Download DLT macOS 15 artifacts x86
         uses: actions/download-artifact@v8
         with:
           name: DLTViewer-macos15-intel-qt6
+      - name: Download DLT macOS 26 artifacts x86
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-macos26-intel-qt6
 
       - name: Download DLT Windows artifacts
         uses: actions/download-artifact@v8
