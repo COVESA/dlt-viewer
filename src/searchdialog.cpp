@@ -262,7 +262,6 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
-    m_findAllUiUpdateTimer.restart();
     m_findAllLastUiUpdateMs = 0;
     m_findAllAddedSinceLastUiUpdate = 0;
 
@@ -430,6 +429,9 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                 rows.push_back(row);
 
             auto loadMessage = [=, &workerReaders](int row) -> LoadedSearchMessage {
+                if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
+                    return {std::numeric_limits<std::uint64_t>::max(), {}};
+
                 const int msgIndex = projection.globalIndexAt(row);
                 if (msgIndex < 0)
                     return {std::numeric_limits<std::uint64_t>::max(), {}};
@@ -508,6 +510,8 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
             if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
                 break;
         }
+
+        nextChunkFuture.waitForFinished();
 
         if (dlg)
             QMetaObject::invokeMethod(dlg, [dlg]() {
