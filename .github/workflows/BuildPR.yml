@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ 14, 15, 15-intel ]
+        osversion: [ 14, 15, 26, 15-intel, 26-intel ]
 
     steps:
     - name: Checkout source
@@ -25,6 +25,7 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         host: 'mac'
+        version: '6.12.*'
         target: 'desktop'
         arch: 'clang_64'
         modules: 'qtserialport'
@@ -218,10 +219,20 @@ jobs:
         with:
           name: DLTViewer-macos15-qt6
 
+      - name: Download DLT macOS 26 artifacts arm64
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-macos26-qt6
+
       - name: Download DLT macOS artifacts x86
         uses: actions/download-artifact@v8
         with:
           name: DLTViewer-macos15-intel-qt6
+
+      - name: Download DLT macOS artifacts x86
+        uses: actions/download-artifact@v8
+        with:
+          name: DLTViewer-macos26-intel-qt6
 
       - name: Download DLT Windows artifacts
         uses: actions/download-artifact@v8
