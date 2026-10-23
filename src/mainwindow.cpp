@@ -5111,7 +5111,10 @@ void MainWindow::updateIndex()
         pluginManager.decodeMsg(qmsg,silentMode);
       }
 
-     if(qfile.checkFilter(qmsg))
+     // Like a re-filter, keep live messages outside the filter index range out of the view.
+     const bool inFilterIndexRange = !dltIndexer->getFilterIndexEnabled() ||
+         (num >= dltIndexer->getFilterIndexStart() && num <= dltIndexer->getFilterIndexEnd());
+     if(inFilterIndexRange && qfile.checkFilter(qmsg))
       {
             qfile.addFilterIndex(num);
       }
