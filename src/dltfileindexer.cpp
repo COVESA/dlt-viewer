@@ -857,8 +857,10 @@ void DltFileIndexer::run()
     // indexFilter
     if(mode == modeIndexAndFilter || mode == modeFilter)
     {
-        // Whether a genuine positive/negative filter is active; drives dltFile->enableFilter().
-        effectiveFilteringEnabled = filtersEnabled && hasActivePositiveOrNegativeFilters(dltFile->getFilterList());
+        // Whether a genuine positive/negative filter or the filter index range is active;
+        // drives dltFile->enableFilter().
+        effectiveFilteringEnabled = filtersEnabled &&
+            (filterIndexEnabled || hasActivePositiveOrNegativeFilters(dltFile->getFilterList()));
 
         // Always run the full CFI pass when opening a file (modeIndexAndFilter): it also drives
         // marker/colour computation, ECU/App/Context discovery and viewer-plugin init hooks that
