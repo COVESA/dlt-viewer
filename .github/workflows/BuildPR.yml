@@ -25,7 +25,7 @@ jobs:
       uses: jurplel/install-qt-action@v4
       with:
         host: 'mac'
-        version: '6.12.x'
+        version: '6.12.*'
         target: 'desktop'
         arch: 'clang_64'
         modules: 'qtserialport'
