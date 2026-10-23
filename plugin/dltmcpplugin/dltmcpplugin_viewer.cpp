@@ -1,3 +1,5 @@
+// Implements the plugin status panel showing server state, connected clients, and tool activity.
+
 #include "dltmcpplugin.h"
 #include "dltmcpserver.h"
 
@@ -39,6 +41,8 @@ void DltMcpPlugin::performViewerRefresh() {
 }
 
 QJsonArray DltMcpPlugin::connectedClientSnapshot() const {
+    // Called on the GUI thread: copy client state on its owning server thread
+    // instead of reading socket/session containers across threads directly.
     if (!mcpServer || !serverThread || !serverThread->isRunning())
         return QJsonArray();
 

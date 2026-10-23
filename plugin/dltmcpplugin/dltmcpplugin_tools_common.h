@@ -26,15 +26,26 @@ constexpr int InternalError = -32603;
 //! Use together with `response["error"] = makeJsonRpcError(...)` in tool handlers.
 QJsonObject makeJsonRpcError(int code, const QString& message);
 
+//! Converts storage-header time to local wall-clock time at millisecond precision.
+//! Returns false when both timestamp fields are zero or the resulting date is invalid.
 bool readWallClockDateTime(const QDltMsg& msg, QDateTime& dateTime);
+
+//! Shortest distance in milliseconds between valid times, wrapping across midnight.
 qint64 timeOfDayDistanceMs(const QTime& lhs, const QTime& rhs);
+
+//! Raw DLT boot timestamp in 0.1 ms ticks, distinct from storage-header wall-clock time.
 qint64 monotonicTimestampValue(const QDltMsg& msg);
 QString monotonicTimestampSecondsString(const QDltMsg& msg);
 QString monotonicTimestampSecondsString(qint64 rawTimestamp);
+
+//! Compiles a case-insensitive regex; a blank pattern means no payload restriction.
 bool compileSearchPatternRegex(const QString& pattern, QRegularExpression& regex,
                                QString& errorMessage);
 bool matchesSearchPattern(const QString& payload, const QString& pattern,
                           const QRegularExpression& regex);
+
+//! Caller supplies the decoded message and its index in the requested view.
+//! global_index comes from msg.getIndex(), which must identify the underlying file message.
 QJsonObject buildMessageObject(const QDltMsg& msg, int requestedIndex, bool useFilter);
 
 #endif // DLTMCPPLUGIN_TOOLS_COMMON_H

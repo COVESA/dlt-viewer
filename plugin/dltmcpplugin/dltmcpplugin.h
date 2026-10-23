@@ -36,6 +36,9 @@ class QWidget;
 //! allowing any MCP-compatible AI assistant to query and navigate DLT log data
 //! in real time via an HTTP/SSE endpoint using JSON-RPC 2.0 tool calls.
 //!
+//! Tool handlers and chunked scans run on the GUI thread; network I/O runs
+//! on the server thread. Queued signals carry requests and responses between them.
+//!
 //! It implements:
 //!   - QDLTPluginInterface        : mandatory base interface for all DLT Viewer plugins
 //!   - QDltPluginViewerInterface  : provides the QDltFile* handle via initFileStart(),
@@ -378,9 +381,8 @@ private:
     void handleGetErrorMessages(const QString&, const QJsonObject&, const QJsonObject&,
                                 QJsonObject&);
 
-    QJsonObject makeTextResult(const QString& text, const QJsonObject& data = QJsonObject()) const;
+    QJsonObject makeTextResult(const QString& text) const;
     QJsonObject buildContextData() const;
-    QString buildContextText() const;
     QString buildDictionaryText(const QString& term) const;
     QString messageTypeToString(QDltMsg::DltTypeDef type) const;
     QList<DictionaryEntry> builtInDictionaryEntries() const;

@@ -1,3 +1,5 @@
+// Shared helpers for tool errors, payload searches, timestamp conversion, and message JSON.
+
 #include "dltmcpplugin_tools_common.h"
 
 QJsonObject makeJsonRpcError(int code, const QString& message) {

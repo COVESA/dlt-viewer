@@ -1,3 +1,6 @@
+// Integrates MCP with DLT Viewer: plugin lifecycle, configuration, and host callbacks.
+// Starts and stops the network server on a separate thread.
+
 #include "dltmcpplugin.h"
 #include "dltmcpserver.h"
 #include <QDebug>
@@ -374,6 +377,8 @@ void DltMcpPlugin::stopServer() {
 }
 
 void DltMcpPlugin::tryStartServer() {
+    // Host initialization can arrive in either order. Wait for both callbacks so
+    // the listener uses the loaded settings and tool calls have a control interface.
     if (!controlInitialized || !configLoaded || mcpServer || serverThread)
         return;
 

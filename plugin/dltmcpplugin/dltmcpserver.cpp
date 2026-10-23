@@ -1,3 +1,6 @@
+// Handles HTTP/SSE connections, MCP sessions, and tool discovery on the server thread.
+// Forwards tool calls to DltMcpPlugin and routes its replies to the originating session.
+
 #include "dltmcpserver.h"
 #include <QDebug>
 #include <QJsonArray>
@@ -837,8 +840,8 @@ QJsonArray DltMcpServer::buildToolsArray() const {
     return tools;
 }
 
-// Public slot called by DltMcpPlugin::onServerMessage() (on the GUI thread)
-// to send a completed JSON-RPC response back to the originating client.
+// Runs on the server thread via the plugin's queued responseReady signal,
+// sending a completed JSON-RPC response back to the originating client.
 // Looks up the active SSE socket by session id. If the client has already
 // disconnected the call is silently ignored.
 void DltMcpServer::sendResponseToClient(const QString& clientId, const QJsonObject& response) {
@@ -907,6 +910,9 @@ void DltMcpServer::sendSseComment(QTcpSocket* socket, const QByteArray& comment)
     // Do not flush; let Qt's event loop handle asynchronous transmission
 }
 
+// Parses one HTTP request per socket, retaining partial headers/bodies between reads.
+// POST requires Content-Length; chunked transfer and pipelining are unsupported.
+// Size limits and Host/Origin/token checks are enforced before waiting for the body.
 bool DltMcpServer::tryProcessBufferedRequest(QTcpSocket* client) {
     if (!clientStates.contains(client)) {
         return false;
@@ -1066,6 +1072,9 @@ bool DltMcpServer::isHostAllowed(const QByteArray& hostHeader) const {
     return h == "127.0.0.1" || h == "localhost";
 }
 
+// GET creates the SSE session and advertises its POST endpoint. POST receives only
+// an HTTP acceptance response; JSON-RPC replies use the existing SSE session.
+// Session IDs are routing keys, not credentials: bearer authentication is separate.
 void DltMcpServer::handleHttpRequest(QTcpSocket* socket, const ClientState& state) {
     const QByteArray originHeader = state.headers.value("origin");
     const QByteArray hostHeader = state.headers.value("host");

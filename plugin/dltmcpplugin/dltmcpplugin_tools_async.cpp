@@ -1,3 +1,13 @@
+// Long-running scans use asynchronous jobs rather than blocking until completion.
+// Between chunks, the GUI thread handles events so the viewer stays responsive.
+// The reply is sent when the job finishes.
+//
+// The handle...() functions in dltmcpplugin_tools.cpp initialize each job and schedule it.
+// Each process<Name>Chunk() advances the corresponding job's saved scan state, then
+// schedules another chunk or calls finish<Name>Job() when done or a limit is reached.
+// finish<Name>Job() formats the accumulated result; finishJobWithText() resets the
+// job and emits its reply. Errors and cancellations use failJob() instead.
+
 #include "dltmcpplugin.h"
 #include "dltmcpplugin_tools_common.h"
 

@@ -1,3 +1,6 @@
+// Dispatches MCP tool calls and validates their arguments before accessing DLT Viewer.
+// Short operations run synchronously and return their response immediately.
+
 #include "dltmcpplugin.h"
 #include "dltmcpplugin_tools_common.h"
 #include <QAbstractItemModel>
@@ -110,6 +113,8 @@ bool DltMcpPlugin::ensureIndexInRange(int index, int size, const QString& label,
 }
 
 bool DltMcpPlugin::readMessageAt(int index, bool useFilter, QDltMsg& msg) const {
+    // The input index belongs to the requested view; msg.index always identifies
+    // the underlying file message, even when filters hide preceding rows.
     bool ok = false;
     if (useFilter) {
         const QByteArray buf = dltFile->getMsgFilter(index);
@@ -127,6 +132,8 @@ bool DltMcpPlugin::readMessageAt(int index, bool useFilter, QDltMsg& msg) const 
 }
 
 bool DltMcpPlugin::isMonotonicOrderLikelySorted(bool useFilter, int total) const {
+    // Sampling detects some timestamp resets or interleaving, but does not prove
+    // ordering. Around-index window expansion uses this only as a heuristic.
     if (total <= 1)
         return true;
 
@@ -276,7 +283,8 @@ void DltMcpPlugin::handleGetContext(const QString& clientId, const QJsonObject& 
     Q_UNUSED(clientId);
     Q_UNUSED(message);
     Q_UNUSED(arguments);
-    response["result"] = makeTextResult(buildContextText(), buildContextData());
+    const QJsonDocument doc(buildContextData());
+    response["result"] = makeTextResult(QString::fromUtf8(doc.toJson(QJsonDocument::Indented)));
 }
 
 void DltMcpPlugin::handleGetDictionary(const QString& clientId, const QJsonObject& message,

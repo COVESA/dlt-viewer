@@ -1,13 +1,11 @@
+// Builds trace summaries and the DLT terminology dictionary returned by MCP tools.
+
 #include "dltmcpplugin.h"
 #include <QMap>
-#include <algorithm>
 
-QJsonObject DltMcpPlugin::makeTextResult(const QString& text, const QJsonObject& data) const {
+QJsonObject DltMcpPlugin::makeTextResult(const QString& text) const {
     QJsonObject result;
     result["content"] = QJsonArray{{QJsonObject{{"type", "text"}, {"text", text}}}};
-    if (!data.isEmpty()) {
-        result["data"] = data;
-    }
     return result;
 }
 
@@ -108,94 +106,6 @@ QString DltMcpPlugin::messageTypeToString(QDltMsg::DltTypeDef type) const {
     default:
         return "Unknown";
     }
-}
-
-QString DltMcpPlugin::buildContextText() const {
-    const int total = dltFile ? dltFile->size() : 0;
-    const int filtered = dltFile ? dltFile->sizeFilter() : 0;
-    const bool filterActive = (filtered != total);
-    const QString fileName = dltFile ? dltFile->getFileName() : QString();
-
-    QDltFilterList filterList = dltFile ? dltFile->getFilterList() : QDltFilterList();
-    int enabledFilters = 0;
-    for (int i = 0; i < filterList.filters.size(); ++i) {
-        if (filterList.filters.at(i)->enableFilter)
-            ++enabledFilters;
-    }
-
-    // Mirror buildContextData sampling while formatting a concise human-readable summary.
-    const int sampleLimit = qMin(total, 2000);
-    QMap<QString, int> typeCounts;
-    QMap<QString, int> ecuCounts;
-    QMap<QString, int> apidCounts;
-    QMap<QString, int> ctidCounts;
-
-    for (int i = 0; i < sampleLimit; ++i) {
-        QDltMsg msg;
-        if (!dltFile || !dltFile->getMsg(i, msg))
-            continue;
-
-        if (messageDecoder)
-            messageDecoder->decodeMsg(msg, 0);
-
-        typeCounts[messageTypeToString(msg.getType())] =
-            typeCounts.value(messageTypeToString(msg.getType())) + 1;
-
-        const QString ecuid = msg.getEcuid().trimmed();
-        const QString apid = msg.getApid().trimmed();
-        const QString ctid = msg.getCtid().trimmed();
-
-        if (!ecuid.isEmpty())
-            ecuCounts[ecuid] = ecuCounts.value(ecuid) + 1;
-        if (!apid.isEmpty())
-            apidCounts[apid] = apidCounts.value(apid) + 1;
-        if (!ctid.isEmpty())
-            ctidCounts[ctid] = ctidCounts.value(ctid) + 1;
-    }
-
-    auto topKeys = [](const QMap<QString, int>& counts, int limit) -> QString {
-        QList<QPair<QString, int>> pairs;
-        for (QMap<QString, int>::const_iterator it = counts.constBegin(); it != counts.constEnd();
-             ++it)
-            pairs.append(qMakePair(it.key(), it.value()));
-
-        std::sort(pairs.begin(), pairs.end(),
-                  [](const QPair<QString, int>& lhs, const QPair<QString, int>& rhs) {
-                      if (lhs.second != rhs.second)
-                          return lhs.second > rhs.second;
-                      return lhs.first < rhs.first;
-                  });
-
-        QStringList parts;
-        const int actualLimit = qMin(limit, pairs.size());
-        for (int i = 0; i < actualLimit; ++i)
-            parts << QString("%1 (%2)").arg(pairs.at(i).first).arg(pairs.at(i).second);
-
-        return parts.isEmpty() ? QString("none") : parts.join(", ");
-    };
-
-    QStringList lines;
-    lines << QString("Trace: %1").arg(fileName.isEmpty() ? "<unknown>" : fileName);
-    lines << QString("Total: %1 | Filtered: %2 | Active: %3")
-                 .arg(total)
-                 .arg(filtered)
-                 .arg(filterActive ? "yes" : "no");
-    lines << QString("Filters: %1 configured (%2 enabled)")
-                 .arg(filterList.filters.size())
-                 .arg(enabledFilters);
-    lines << "";
-    lines << QString("Sample (first %1 messages):").arg(sampleLimit);
-    lines << QString("  Types: %1").arg(topKeys(typeCounts, 8));
-    lines
-        << QString("  ECUs: %1 unique | Top: %2").arg(ecuCounts.size()).arg(topKeys(ecuCounts, 5));
-    lines << QString("  APIDs: %1 unique | Top: %2")
-                 .arg(apidCounts.size())
-                 .arg(topKeys(apidCounts, 5));
-    lines << QString("  CTIDs: %1 unique | Top: %2")
-                 .arg(ctidCounts.size())
-                 .arg(topKeys(ctidCounts, 5));
-
-    return lines.join("\n");
 }
 
 QString DltMcpPlugin::buildDictionaryText(const QString& term) const {
