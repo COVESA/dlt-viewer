@@ -2827,6 +2827,13 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         clearSelection();
     }
 
+    // A full reload covers the whole log again: reloadLogFileFinishIndex()
+    // resets the range to it, so turn the range off before it is applied.
+    if(!update)
+    {
+        ui->checkBoxFilterRange->setChecked(false);
+    }
+
     // set index filter range
     if(ui->checkBoxFilterRange->isChecked())
     {
