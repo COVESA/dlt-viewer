@@ -22,7 +22,7 @@ target_link_libraries(dlt-parser ${QT_PREFIX}::Widgets -lstdc++)
 
 set_target_properties(dlt-parser PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-    INSTALL_RPATH "$ORIGIN/../lib;$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
+    INSTALL_RPATH "$<$<BOOL:${LINUX}>:$ORIGIN/../lib;>$<$<BOOL:${APPLE}>:@loader_path/../Frameworks;>$<$<BOOL:${DLT_USE_QT_RPATH}>:${DLT_QT_LIB_DIR}>")
 
 install(TARGETS dlt-parser
     DESTINATION "${DLT_EXECUTABLE_INSTALLATION_PATH}"
