@@ -262,7 +262,6 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
     }
 
     isSearchCancelled.store(false, std::memory_order_relaxed);
-    m_findAllUiUpdateTimer.restart();
     m_findAllLastUiUpdateMs = 0;
     m_findAllAddedSinceLastUiUpdate = 0;
 
@@ -430,6 +429,9 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                 rows.push_back(row);
 
             auto loadMessage = [=, &workerReaders](int row) -> LoadedSearchMessage {
+                if (dlg && dlg->isSearchCancelled.load(std::memory_order_relaxed))
+                    return {std::numeric_limits<std::uint64_t>::max(), {}};
+
                 const int msgIndex = projection.globalIndexAt(row);
                 if (msgIndex < 0)
                     return {std::numeric_limits<std::uint64_t>::max(), {}};
@@ -491,7 +493,7 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
             if (dlg)
             {
-                const int progress = qMin(99, end * 99 / total);
+                const int progress = qMin(99, static_cast<int>(static_cast<qint64>(end) * 99 / total));
                 QMetaObject::invokeMethod(dlg, [dlg, progress]() {
                     if (dlg) dlg->reportProgress(progress);
                 }, Qt::QueuedConnection);
@@ -509,6 +511,8 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
                 break;
         }
 
+        nextChunkFuture.waitForFinished();
+
         if (dlg)
             QMetaObject::invokeMethod(dlg, [dlg]() {
                 if (dlg) dlg->reportProgress(100);
@@ -522,9 +526,19 @@ void CSearchDialog::startParallelFindAll(QRegularExpression searchTextRegExp)
 
 void CSearchDialog::onFindAllFinished()
 {
+    const bool cancelled = m_findAllWatcher.isCanceled() || isSearchCancelled.load(std::memory_order_relaxed);
     std::vector<std::uint64_t> matches;
     if (!m_findAllWatcher.isCanceled())
         matches = m_findAllWatcher.future().result();
+
+    if (cancelled)
+    {
+        // Keep the partial results already published incrementally.
+        emit refreshedSearchIndex();
+        emit searchProgressChanged(false);
+        match = m_searchtablemodel && m_searchtablemodel->rowCount(QModelIndex()) > 0;
+        return;
+    }
 
     // Replace whatever was shown incrementally with the authoritative, correctly-ordered result.
     if (m_searchtablemodel)
@@ -1029,11 +1043,14 @@ void CSearchDialog::findPreviousClicked()
 
 void CSearchDialog::on_lineEditSearch_textEdited(QString newText)
 {
+        if (lineEdits.size() > 1)
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(0)!
             QSignalBlocker signalBlocker(lineEdits.at(1));
             lineEdits.at(1)->setText(newText);
         }
+        if (lineEdits.isEmpty())
+            return;
         for(int i=0; i<lineEdits.size();i++){
             if(lineEdits.at(0)->text().isEmpty())
                 setSearchColour(lineEdits.at(i),1);
@@ -1041,6 +1058,8 @@ void CSearchDialog::on_lineEditSearch_textEdited(QString newText)
 }
 void CSearchDialog::textEditedFromToolbar(QString newText)
 {
+        if (lineEdits.isEmpty())
+            return;
         {
             // block signal so that it does not trigger a setText back on lineEdits->at(1)!
             QSignalBlocker signalBlocker(lineEdits.at(0));

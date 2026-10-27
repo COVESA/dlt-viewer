@@ -1,6 +1,7 @@
 #ifndef QDLTIMPORTER_H
 #define QDLTIMPORTER_H
 
+#include <QByteArray>
 #include <QMap>
 #include <QThread>
 #include <QObject>
@@ -84,6 +85,21 @@ typedef struct mdf_dlblocklinks {
     quint8 reserved[3];
     quint32 dl_count;
 } PACKED mdf_dlblocklinks_t;
+
+typedef struct mdf_hlblocklinks {
+        quint16 hl_flags;
+        quint8 hl_zip_type;
+        quint8 reserved[5];
+} PACKED mdf_hlblocklinks_t;
+
+typedef struct mdf_dzblock {
+        char dz_org_block_type[2];
+        quint8 dz_zip_type;
+        quint8 reserved;
+        quint32 dz_zip_parameter;
+        quint64 dz_org_data_length;
+        quint64 dz_data_length;
+} PACKED mdf_dzblock_t;
 
 typedef struct mdf_cgblocklinks {
         quint64 cg_cg_next;
@@ -189,6 +205,10 @@ public:
     bool ipcFromPlpRaw(mdf_plpRaw_t *plpRaw, QByteArray &record,quint32 sec = 0,quint32 usec = 0);
 
     void writeDLTMessageToFile(QByteArray &bufferHeader,char* bufferPayload,quint32 bufferPayloadSize,QString ecuId,quint32 sec = 0,quint32 usec = 0);
+        static bool hasMf4BlockId(const mdf_hdr_t &header, char id0, char id1);
+        bool resolveMf4DataList(QFile &inputfile, quint64 dataOffset, quint64 &resolvedDataOffset, mdf_hdr_t &header, int &numberOfLinks, bool &isDataBlock);
+        bool loadMf4DataBlock(QFile &inputfile, quint64 blockOffset, QByteArray &payload, QByteArray &blockType);
+        static QByteArray reverseMf4Transposition(const QByteArray &data, quint32 columns);
 
     mdf_idblock_t mdfIdblock;
     mdf_hdblocklinks_t hdBlockLinks;

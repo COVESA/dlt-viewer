@@ -23,6 +23,13 @@
 #include "dlt_protocol.h"
 #include "qdltoptmanager.h"
 
+namespace {
+bool needsDecodedMessage(int column)
+{
+    return column == FieldNames::Payload || column >= FieldNames::Arg0;
+}
+}
+
 
 
 CSearchTableModel::CSearchTableModel(QObject *parent) :
@@ -50,8 +57,14 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole)
     {
+        if(index.column() == FieldNames::Index)
+        {
+            return QString("%L1").arg((m_searchResultList.at(index.row())));
+        }
+
         const int globalIndex = static_cast<int>(m_searchResultList.at(index.row()));
-        const bool decodeEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+        const bool pluginsEnabled = QDltSettingsManager::getInstance()->value("startup/pluginsEnabled", true).toBool();
+        const bool decodeEnabled = pluginsEnabled && needsDecodedMessage(index.column());
         const int triggeredByUser = !QDltOptManager::getInstance()->issilentMode();
 
         /* get the message with the selected item id */
@@ -63,11 +76,7 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
                                          msg,
                                          true))
         {
-            if(index.column() == FieldNames::Index)
-            {
-                return QString("%1").arg((m_searchResultList.at(index.row())));
-            }
-            else if(index.column() == FieldNames::Payload)
+            if(index.column() == FieldNames::Payload)
             {
                 return QString("!!CORRUPTED MESSAGE!!");
             }
@@ -77,9 +86,6 @@ QVariant CSearchTableModel::data(const QModelIndex &index, int role) const
         QString visu_data;
         switch(index.column())
         {
-        case FieldNames::Index:
-            /* display index */            
-            return QString("%L1").arg((m_searchResultList.at(index.row())));
         case FieldNames::Time:
             if( project->settings->automaticTimeSettings == 0 )
                return QString("%1.%2").arg(msg.getGmTimeWithOffsetString(project->settings->utcOffset,project->settings->dst)).arg(msg.getMicroseconds(),6,10,QLatin1Char('0'));

@@ -810,7 +810,7 @@ void MainWindow::initSearchTable()
 
 
     /* set table size and en */
-   for  (int col=0;col <= m_searchresultsTable->model()->columnCount();col++)
+         for  (int col=0;col < m_searchresultsTable->model()->columnCount();col++)
    {
      m_searchresultsTable->setColumnWidth(col,FieldNames::getColumnWidth((FieldNames::Fields)col,settings));
    }
@@ -943,17 +943,6 @@ void MainWindow::initFileHandling()
                 // qDebug() << QString("Loading default filter %1").arg(settings->defaultFilterPath);
                 filterUpdate();
                 setCurrentFilters(filter);
-            }
-            else
-            {
-               if (QDltOptManager::getInstance()->issilentMode())
-                {
-                    qDebug() << "Loading DLT Filter file failed!";
-                }
-                else
-                {
-                    QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-                }
             }
         }
     }
@@ -1129,6 +1118,19 @@ void MainWindow::ErrorMessage(QMessageBox::Icon level, QString title, QString me
         QMessageBox::critical(this, "ErrorMessage problem", "unhandled case");
     }
 
+}
+
+void MainWindow::showPluginLoadConfigError(const QString& pluginName, const QString& error, bool silentMode)
+{
+    QString header = silentMode ? "Plugin " : "Plugin Error: ";
+    header.append(pluginName);
+
+    QString body = header;
+    body.append(silentMode ? " returned error: " : " returned error:\n");
+    body.append(error);
+    body.append(silentMode ? " in loadConfig!" : "\nin loadConfig!");
+
+    ErrorMessage(QMessageBox::Critical, header, body);
 }
 
 void MainWindow::commandLineExecutePlugin(QString name, QString cmd, QStringList params)
@@ -2609,7 +2611,7 @@ void MainWindow::reloadLogFileVersionString(QString ecuId, QString version)
       target_version_string = version;
       statusFileVersion->setText(fm.elidedText(versionString.simplified(), Qt::ElideRight, statusFileVersion->width()));
       statusFileVersion->setToolTip(versionString);
-      if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ))
+            if( (settings->pluginsAutoloadPath != 0 ) && ( pluginsEnabled == true ) && !m_suppressPluginAutoload)
        {
           qDebug() << "Trigger plugin autoload for ECU" << ecuId << "with version" << version;
           pluginsAutoload(version);
@@ -2730,6 +2732,8 @@ void MainWindow::reloadLogFileFinishFilter()
 
 void MainWindow::onIndexerRunFinished()
 {
+    m_suppressPluginAutoload = false;
+
     if(!m_liveFilterRefreshInProgress)
     {
         return;
@@ -2788,6 +2792,7 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     {
         autoloadPluginsVersionEcus.clear();
         autoloadPluginsVersionStrings.clear();
+        target_version_string.clear();
         statusFileVersion->setText("Version: <n.a.>");
     }
 
@@ -2840,8 +2845,8 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
     if(!liveFilterRefresh)
     {
         ui->tableView->selectionModel()->clear();
+        m_searchtableModel->clear_SearchResults();
     }
-    m_searchtableModel->clear_SearchResults();
 
     QString title = "Search Results";
     ui->dockWidgetSearchIndex->setWindowTitle(title);
@@ -2888,7 +2893,9 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         }
     }
     //qfile.enableFilter(QDltSettingsManager::getInstance()->value("startup/filtersEnabled", true).toBool());
-    if(!liveFilterRefresh)
+    // A live refresh keeps the old filter active until finishFilter() swaps in the new one, but with
+    // filters disabled the indexer runs modeNone and never emits finishFilter(), so drop it here.
+    if(!liveFilterRefresh || dltIndexer->getMode() == DltFileIndexer::modeNone)
     {
         qfile.enableFilter(false);
     }
@@ -3183,12 +3190,10 @@ bool MainWindow::openDlfFile(QString fileName,bool replace)
         setCurrentFilters(fileName);
         filterCountChanged();
         ui->tabWidget->setCurrentWidget(ui->tabPFilter);
+        return true;
     }
-    else
-    {
-        QMessageBox::critical(0, QString("DLT Viewer"),QString("Loading DLT Filter file failed!"));
-    }
-    return true;
+
+    return false;
 }
 
 bool MainWindow::openDlpFile(QString fileName)
@@ -5166,6 +5171,11 @@ void MainWindow::drawUpdatedView()
 void MainWindow::onTableViewSelectionChanged(const QItemSelection & selected, const QItemSelection & deselected)
 {
     Q_UNUSED(deselected);
+    if(m_suppressPluginSelectionRefresh)
+    {
+        return;
+    }
+
     if(selected.size()>0)
     {
         /* With Autoscroll= false the tableview doesn't jump to the right edge,
@@ -6745,7 +6755,7 @@ void MainWindow::updatePlugins() {
 }
 
 /* is called when the status of a plugin was changed ( disabled/enabled/show )  */
-void MainWindow::updatePlugin(PluginItem *item)
+bool MainWindow::updatePlugin(PluginItem *item)
 {
     item->takeChildren();
     bool ret = true;
@@ -6779,6 +6789,11 @@ void MainWindow::updatePlugin(PluginItem *item)
          {
             qDebug() << "Trigger autoload with version" << target_version_string;
             pluginsAutoload(target_version_string);
+            // Generic autoload only globs the version string; let the plugin run its own detection if nothing was loaded.
+            if ( item->getFilename().isEmpty() )
+              {
+              ret = item->getPlugin()->loadConfig(conffilename);
+              }
          }
      else // we eventually provoke an error message, but sometimes even a decoder plugin works with default settings
        {
@@ -6787,26 +6802,8 @@ void MainWindow::updatePlugin(PluginItem *item)
         //qDebug() << "Enable or show" << item->getPlugin()->getName() << __LINE__ << __FILE__;
         if ( false == ret )
         {
-            if ( true == QDltOptManager::getInstance()->issilentMode() )
-             {
-              QString err_header = "Plugin ";
-              err_header.append(item->getName());
-              QString err_body = err_header;
-              err_body.append(" returned error: ");
-              err_body.append(item->getPlugin()->error());
-              err_body.append(" in loadConfig!");
-              ErrorMessage(QMessageBox::Critical,err_header,err_body);
-             }
-             else
-             {
-              QString err_header = "Plugin Error: ";
-              err_header.append(item->getName());
-              QString err_body = err_header;
-              err_body.append(" returned error:\n");
-              err_body.append(item->getPlugin()->error());
-              err_body.append("\nin loadConfig!");
-              ErrorMessage(QMessageBox::Critical,err_header,err_body);
-             }
+            showPluginLoadConfigError(item->getName(), item->getPlugin()->error(),
+                                      QDltOptManager::getInstance()->issilentMode());
         }
         else if ( 0 < err_text.length() )
         {
@@ -6841,6 +6838,8 @@ void MainWindow::updatePlugin(PluginItem *item)
             item->dockWidget->hide();
         }
     }
+
+    return ret;
 }
 
 void MainWindow::versionString(const QDltMsg &msg)
@@ -6960,16 +6959,47 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                 callInitFile = false;
             if(dlg.getMode() == QDltPlugin::ModeShow && item->getMode() != QDltPlugin::ModeDisable)
                 callInitFile = false;
-            if(item->getFilename() != dlg.getFilename())
+            const bool pluginFilenameChanged = item->getFilename() != dlg.getFilename();
+            if(pluginFilenameChanged)
                 callInitFile = true;
 
+            const bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
+            m_suppressPluginSelectionRefresh = reloadCurrentLog;
+
+            if (reloadCurrentLog)
+            {
+                clearSelection();
+                m_tableModel->setForceEmpty(true);
+                m_tableModel->modelChanged();
+            }
+
+            const QString previousFilename = item->getFilename();
+            const int previousMode = item->getMode();
+            const int previousType = item->getType();
             item->setFilename( dlg.getFilename() );
             item->setMode( dlg.getMode() );
             item->setType( dlg.getType() );
 
             /* update plugin item */
-            updatePlugin(item);
+            if (!updatePlugin(item)) {
+                item->setFilename(previousFilename);
+                item->setMode(previousMode);
+                item->setType(previousType);
+                item->update();
+            }
             item->savePluginModeToSettings();
+
+            if (reloadCurrentLog)
+            {
+                syncCheckBoxesAndMenu();
+                applyConfigEnabled(false);
+                filterUpdate();
+                m_suppressPluginAutoload = pluginFilenameChanged;
+                reloadLogFile(false);
+                callInitFile = false;
+            }
+
+            m_suppressPluginSelectionRefresh = false;
         }
         if(callInitFile)
         {
@@ -8167,22 +8197,29 @@ void MainWindow::dropEvent(QDropEvent *event)
                     QDltPlugin* plugin = pluginManager.findPlugin(item);
                     if(plugin)
                     {
-                        plugin->loadConfig(filename);
-                        for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
+                        // Report load failures; otherwise drag-and-drop silently appears successful.
+                        if (!plugin->loadConfig(filename))
                         {
-                            PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
-                            if(pluginitem->getPlugin() == plugin)
+                            showPluginLoadConfigError(plugin->name(), plugin->error(), false);
+                        }
+                        else
+                        {
+                            for(int num = 0; num < project.plugin->topLevelItemCount (); num++)
                             {
-                                /* update plugin */
-                                pluginitem->setFilename( filename );
+                                PluginItem *pluginitem = (PluginItem*)project.plugin->topLevelItem(num);
+                                if(pluginitem->getPlugin() == plugin)
+                                {
+                                    /* update plugin */
+                                    pluginitem->setFilename( filename );
 
-                                /* update plugin item */
-                                updatePlugin(pluginitem);
-                                applyConfigEnabled(true);
+                                    /* update plugin item */
+                                    updatePlugin(pluginitem);
+                                    applyConfigEnabled(true);
 
-                                ui->tabWidget->setCurrentWidget(ui->tabPlugin);
+                                    ui->tabWidget->setCurrentWidget(ui->tabPlugin);
 
-                                break;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -8742,6 +8779,10 @@ void MainWindow::searchTableRenewed()
         ui->dockWidgetSearchIndex->show();
         ui->dockWidgetSearchIndex->setWindowTitle(hits);
     }
+    else
+    {
+        ui->dockWidgetSearchIndex->setWindowTitle("Search Results");
+    }
 }
 
 
@@ -8817,6 +8858,34 @@ void MainWindow::on_actionDefault_Filter_Reload_triggered()
 
     /* load the default filter list */
     defaultFilter.load(dir.absolutePath());
+
+    if(!QDltOptManager::getInstance()->issilentMode() && !defaultFilter.malformedFilterFiles.isEmpty())
+    {
+        QStringList malformedFilterFiles;
+        QStringList malformedFilterDescriptions;
+        for (int numFilter = 0; numFilter < defaultFilter.malformedFilterFiles.size(); ++numFilter)
+        {
+            const QString malformedFile = QDir::toNativeSeparators(defaultFilter.malformedFilterFiles.at(numFilter));
+            malformedFilterFiles.append(malformedFile);
+
+            QString description = malformedFile;
+            if (numFilter < defaultFilter.malformedFilterErrors.size() && !defaultFilter.malformedFilterErrors.at(numFilter).isEmpty())
+            {
+                description.append(QString("\n%1").arg(defaultFilter.malformedFilterErrors.at(numFilter)));
+            }
+            malformedFilterDescriptions.append(description);
+        }
+
+        QMessageBox msgBox(
+            QMessageBox::Warning,
+            QString("DLT Viewer"),
+            QString("The following default filter file(s) contain errors and were skipped:\n\n%1")
+                .arg(malformedFilterFiles.join("\n")),
+            QMessageBox::Ok,
+            this);
+        msgBox.setDetailedText(malformedFilterDescriptions.join("\n\n"));
+        msgBox.exec();
+    }
 
     // default filter list update combobox
     for (const auto *filterList : defaultFilter.defaultFilterList) {
