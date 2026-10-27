@@ -140,6 +140,9 @@ jobs:
         uses: jurplel/install-qt-action@v4
         with:
           version: '6.12.0'
+          # https://github.com/miurahr/aqtinstall/pull/1000 is not released yet. Temporary workaround to use the specific commit.
+          # Once https://github.com/miurahr/aqtinstall/pull/1000 is released, this workaround can be removed.
+          aqtsource: git+https://github.com/miurahr/aqtinstall.git@8c3695d4a4e1ceabf6a74dc6c79681656dc6b74b
           modules: qtserialport
       - name: Build with CMake ${{ matrix.task }}
         run: >
