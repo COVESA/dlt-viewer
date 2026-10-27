@@ -91,7 +91,7 @@ jobs:
       uses: actions/upload-artifact@v7
       if: ${{ success() }}
       with:
-        name: DLTViewer-macos${{ matrix.osversion }}-qt6
+        name: DLTViewer-${{ matrix.osversion }}-qt6
         path: build/dist/DLTViewer*.tgz
 
   buildUbuntu:
