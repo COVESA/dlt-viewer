@@ -27,6 +27,7 @@
 #include <QHash>
 
 #include "qdltfile.h"
+#include "qdltoptmanager.h"
 
 extern "C"
 {
@@ -437,9 +438,12 @@ bool QDltFile::updateIndex()
         quint8 progressNextCmdOutput=10;
         while(true)
         {
+            // Progress for command line conversions; in the GUI this runs on
+            // every update of a live connection.
             if( (file_size>0) && ((pos*100/file_size)>=progressNextCmdOutput))
             {
-                qDebug() << "CI:" << pos*100/file_size << "%";
+                if(QDltOptManager::getInstance()->isCommandlineMode())
+                    qDebug() << "CI:" << pos*100/file_size << "%";
                 progressNextCmdOutput+=10;
             }
 
