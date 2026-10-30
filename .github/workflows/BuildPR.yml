@@ -85,7 +85,7 @@ jobs:
       run: |
         cd $(pwd)/build
         mkdir -p dist
-        tar -czvf "dist/DLTViewer-qt6-macos${{ matrix.osversion }}.tgz" -C $(pwd)/install .
+        tar -czvf "dist/DLTViewer-qt6-${{ matrix.osversion }}.tgz" -C $(pwd)/install .
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v7
