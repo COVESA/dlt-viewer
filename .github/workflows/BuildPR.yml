@@ -28,7 +28,7 @@ jobs:
         target: 'desktop'
         arch: 'clang_64'
         modules: 'qtserialport'
-        version: '6.12.0'
+        version: '6.12.*'
 
     - name: Configure project with CMake
       run: |
