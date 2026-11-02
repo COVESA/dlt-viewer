@@ -54,6 +54,19 @@ public:
 
 };
 
+//! A batch of raw bytes for several consecutive messages, read in a single seek()+read() call.
+/*! See QDltFile::getMsgBatch() / QDltFile::sliceMsgFromBatch(). */
+class QDLT_EXPORT QDltMsgBatch
+{
+public:
+    QByteArray data;           //!< raw bytes covering [startIndex, startIndex+count)
+    int startIndex = -1;       //!< global index of the first message in this batch
+    int count = 0;             //!< how many messages this batch covers
+    QVector<qint64> offsets;   //!< offsets[i] = start of message i within data; offsets[count] = data.size()
+
+    bool contains(int index) const { return count > 0 && index >= startIndex && index < startIndex + count; }
+};
+
 //! Access to a DLT log file.
 /*!
   This class provide access to DLT log file.
@@ -184,6 +197,18 @@ public:
      *           Typical usage: each thread maintains its own QFile reader to avoid lock contention.
      */
     QByteArray getMsg(int index, QFile &reader);
+
+    //! Read up to maxBytes worth of consecutive messages starting at index, in one seek()+read().
+    /*! Same short-lock pattern as getMsg(index, QFile&): mutexQDlt is only held briefly to look
+     *  up offsets in indexAll; the actual seek()/read() happens outside the lock on the caller's
+     *  own QFile. A batch never spans two files opened via addFile(). Intended for sequential
+     *  parallel scans (see DltFileIndexer::indexFilterParallel()).
+     *  \warning Thread-unsafe: reader must be thread-local, same as getMsg(index, QFile&).
+     */
+    QDltMsgBatch getMsgBatch(int index, QFile &reader, qint64 maxBytes) const;
+
+    //! Slice one message's raw bytes out of an already-fetched batch - no disk access.
+    static QByteArray sliceMsgFromBatch(const QDltMsgBatch &batch, int index);
 
     //! Service-oriented alias for loading serialized message bytes at a global index.
     QByteArray messageBytesAt(int index) const;

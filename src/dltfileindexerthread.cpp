@@ -131,7 +131,7 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
     }
 
     /* Process all decoderplugins using pre-snapshotted list to avoid lock contention in hot path */
-    if(pluginsEnabled && activeDecoderPlugins != nullptr && pluginManager != nullptr)
+    if(pluginsEnabled && activeDecoderPlugins != nullptr && !activeDecoderPlugins->isEmpty() && pluginManager != nullptr)
     {
         pluginManager->decodeMsgUsingPlugins(*activeDecoderPlugins, msg, silentMode);
     }
