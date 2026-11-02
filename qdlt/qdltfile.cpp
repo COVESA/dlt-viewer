@@ -1020,6 +1020,107 @@ QByteArray QDltFile::getMsg(int index, QFile &reader)
     return reader.read(length);
 }
 
+QDltMsgBatch QDltFile::getMsgBatch(int index, QFile &reader, qint64 maxBytes) const
+{
+    QDltMsgBatch result;
+    if (index < 0 || maxBytes <= 0)
+        return result;
+
+    QString fileName;
+    qint64 batchStartPos = 0;
+    qint64 batchEndPos = 0;
+    QVector<qint64> offsets; // relative to batchStartPos; last entry is the end sentinel
+
+    {
+        QMutexLocker locker(&mutexQDlt);
+        int localIndex = index;
+        int fileIndex = 0;
+        for (; fileIndex < files.size(); ++fileIndex)
+        {
+            if (localIndex < files[fileIndex]->indexAll.size())
+                break;
+            localIndex -= files[fileIndex]->indexAll.size();
+        }
+
+        if (fileIndex >= files.size())
+            return result;
+
+        const QDltFileItem *file = files[fileIndex];
+        if (!file->infile.isOpen())
+            return result;
+
+        const qint64 fileSize = file->infile.size();
+        batchStartPos = file->indexAll[localIndex];
+        fileName = file->infile.fileName();
+
+        // Walk forward within this one file only, accumulating consecutive messages until the
+        // byte budget is spent. Always include at least one message, even if it alone is bigger
+        // than maxBytes, so a single oversized message can never stall the scan.
+        qint64 pos = batchStartPos;
+        int li = localIndex;
+        while (li < file->indexAll.size())
+        {
+            const qint64 endPos = (li + 1 < file->indexAll.size()) ? file->indexAll[li + 1] : fileSize;
+            const qint64 len = endPos - pos;
+            if (len < 0)
+                break;
+
+            if (!offsets.isEmpty() && (pos + len - batchStartPos) > maxBytes)
+                break;
+
+            offsets.push_back(pos - batchStartPos);
+            pos = endPos;
+            ++li;
+
+            if ((pos - batchStartPos) >= maxBytes)
+                break;
+        }
+        offsets.push_back(pos - batchStartPos); // end sentinel
+        batchEndPos = pos;
+    }
+
+    const int count = offsets.size() - 1;
+    if (count <= 0)
+        return result;
+
+    if (reader.fileName() != fileName)
+    {
+        if (reader.isOpen())
+            reader.close();
+        reader.setFileName(fileName);
+        if (!reader.open(QIODevice::ReadOnly))
+        {
+            // Ensure reader is left in clean state on error
+            if (reader.isOpen())
+                reader.close();
+            return result;
+        }
+    }
+
+    if (!reader.seek(batchStartPos))
+        return result;
+
+    result.data = reader.read(batchEndPos - batchStartPos);
+    result.startIndex = index;
+    result.count = count;
+    result.offsets = offsets;
+    return result;
+}
+
+QByteArray QDltFile::sliceMsgFromBatch(const QDltMsgBatch &batch, int index)
+{
+    if (!batch.contains(index))
+        return {};
+
+    const int i = index - batch.startIndex;
+    const qint64 off = batch.offsets[i];
+    const qint64 len = batch.offsets[i + 1] - off;
+    if (len < 0 || off < 0 || (off + len) > batch.data.size())
+        return {};
+
+    return batch.data.mid(off, len);
+}
+
 bool QDltFile::messageAt(int index, QDltMsg &msg, bool useCache) const
 {
     if (useCache)
