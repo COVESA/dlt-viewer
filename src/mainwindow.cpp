@@ -3002,8 +3002,7 @@ void MainWindow::applySettings()
     QFont font;// = ui->tableView->font();
     font.fromString(settings->fontName);
     ui->tableView->setFont(font);
-    // Qt clamps the default section size to minimumSectionSize (font/style dependent, e.g. 19),
-    // so lower the minimum to let small row heights from the settings take effect.
+    // Lower Qt minimumSectionSize to let small row heights from the settings take effect.
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
     m_searchresultsTable->setFont(font);
