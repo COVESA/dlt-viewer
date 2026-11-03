@@ -7877,7 +7877,8 @@ void MainWindow::filterUpdate()
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
     const QModelIndex clickedIndex = ui->tableView->indexAt(pos);
-    if(clickedIndex.isValid() && ui->tableView->selectionModel())
+    if(clickedIndex.isValid() && ui->tableView->selectionModel() &&
+       !ui->tableView->selectionModel()->isRowSelected(clickedIndex.row(), clickedIndex.parent()))
     {
         ui->tableView->selectionModel()->setCurrentIndex(
             clickedIndex,
