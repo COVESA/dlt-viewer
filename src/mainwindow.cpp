@@ -2827,6 +2827,13 @@ void MainWindow::reloadLogFile(bool update, bool multithreaded)
         clearSelection();
     }
 
+    // A full reload covers the whole log again: reloadLogFileFinishIndex()
+    // resets the range to it, so turn the range off before it is applied.
+    if(!update)
+    {
+        ui->checkBoxFilterRange->setChecked(false);
+    }
+
     // set index filter range
     if(ui->checkBoxFilterRange->isChecked())
     {
@@ -5111,7 +5118,10 @@ void MainWindow::updateIndex()
         pluginManager.decodeMsg(qmsg,silentMode);
       }
 
-     if(qfile.checkFilter(qmsg))
+     // Like a re-filter, keep live messages outside the filter index range out of the view.
+     const bool inFilterIndexRange = !dltIndexer->getFilterIndexEnabled() ||
+         (num >= dltIndexer->getFilterIndexStart() && num <= dltIndexer->getFilterIndexEnd());
+     if(inFilterIndexRange && qfile.checkFilter(qmsg))
       {
             qfile.addFilterIndex(num);
       }
