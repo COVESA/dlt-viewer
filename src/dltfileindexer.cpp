@@ -6,7 +6,6 @@
 #include <QMessageBox>
 #include <QApplication>
 #include <QTime>
-#include <QElapsedTimer>
 #include <QCryptographicHash>
 #include <QMutexLocker>
 #include <QDir>
@@ -138,10 +137,6 @@ bool DltFileIndexer::index(int num)
         qDebug() << "Successfully loaded index cache for file" << dltFile->getFileName(num);// << __LINE__;
         return true;
     }
-
-    // Diagnostic timing - logged at "Create index: Finish" below.
-    QElapsedTimer ciTimer;
-    ciTimer.start();
 
     // prepare indexing
     QFile f(dltFile->getFileName(num));
@@ -380,7 +375,6 @@ bool DltFileIndexer::index(int num)
     }
     while(length>0); // overall "do loop"
     qDebug() << "Create index: Finish";
-    qDebug() << "CI timing: total" << ciTimer.elapsed() << "ms," << indexAllList.size() << "messages found";
 
     if ( errors_in_file != 0 )
     {
@@ -483,11 +477,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     // get silent mode
     bool silentMode = !QDltOptManager::getInstance()->issilentMode();
-
-    // Diagnostic timing - logged at "Create filter index: Finish" below, to help narrow down
-    // where CFI time is actually spent (parallel scan vs merge vs something else entirely).
-    QElapsedTimer cfiOverallTimer;
-    cfiOverallTimer.start();
 
     const bool useIndexerThread = false;
 
@@ -617,9 +606,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     // update performance counter
     //msecsFilterCounter = time.elapsed();
 
-    qDebug() << "CFI timing: total" << cfiOverallTimer.elapsed() << "ms," << indexFilterList.size()
-             << "messages," << (useParallelFilterIndexing ? "parallel" : "sequential") << "mode" << mode;
-
     // use sorted values if sort by time enabled
     if(sortByTimeEnabled || sortByTimestampEnabled)
         indexFilterList = QVector<qint64>::fromList(indexFilterListSorted.values());
@@ -652,9 +638,6 @@ struct FilterChunkResult
 
 bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterList &filterList, bool silentMode)
 {
-    QElapsedTimer stageTimer;
-    stageTimer.start();
-
     const qint64 rangeStart = static_cast<qint64>(start);
     const qint64 rangeEnd = static_cast<qint64>(end);
     const qint64 total = rangeEnd - rangeStart;
@@ -673,9 +656,6 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
     QVector<FilterChunk> chunks;
     for(qint64 b = rangeStart; b < rangeEnd; b += chunkSize)
         chunks.push_back({b, qMin(b + chunkSize, rangeEnd)});
-
-    qDebug() << "CFI timing: chunk setup" << stageTimer.restart() << "ms," << chunks.size()
-             << "chunks of up to" << chunkSize << "messages each, workerCount" << workerCount;
 
     std::atomic<int> completedChunks{0};
     std::atomic<bool> cancelled{false};
@@ -764,12 +744,20 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
             acc.indexFilterListSorted.insert(it.key(), it.value());
     };
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // pool is always QThreadPool::globalInstance(), so omit it: the explicit-pool
+    // overload of blockingMappedReduced() is Qt6-only and breaks the Qt5 build.
     FilterChunkResult merged = QtConcurrent::blockingMappedReduced<FilterChunkResult>(
-                pool, chunks, mapChunk, reduceResults,
+                chunks, mapChunk, reduceResults,
                 QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce);
-
-    qDebug() << "CFI timing: parallel scan+reduce" << stageTimer.restart() << "ms,"
-             << merged.indexFilterList.size() << "matched messages";
+#else
+    // Qt5's QtConcurrent::blockingMappedReduced() requires map functors to expose a
+    // legacy result_type typedef, which a C++ lambda doesn't provide - so on Qt5 the
+    // chunks are simply run sequentially here instead (same map/reduce, no threading).
+    FilterChunkResult merged;
+    for(const FilterChunk &chunk : chunks)
+        reduceResults(merged, mapChunk(chunk));
+#endif
 
     if(cancelled.load(std::memory_order_relaxed))
         return false;
@@ -779,8 +767,6 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
     indexFilterList += merged.indexFilterList;
     for(auto it = merged.indexFilterListSorted.constBegin(); it != merged.indexFilterListSorted.constEnd(); ++it)
         indexFilterListSorted.insert(it.key(), it.value());
-
-    qDebug() << "CFI timing: final merge into shared list" << stageTimer.elapsed() << "ms";
 
     return true;
 }
