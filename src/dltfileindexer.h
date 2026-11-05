@@ -20,6 +20,9 @@
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 2
 
+// Batch read budget used by indexFilterParallel()'s workers (Method 1: batch reads, per design doc).
+#define DLT_FILE_INDEXER_FILTER_BATCH_BYTES (8*1024*1024)
+
 class DltFileIndexerKey
 {
 public:
@@ -81,6 +84,9 @@ public:
     bool indexFilter(QStringList filenames);
     bool indexDefaultFilter();
 
+    // run the filter scan on multiple worker threads, each owning its own file handle and local result lists
+    bool indexFilterParallel(quint64 start, quint64 end, QDltFilterList &filterList, bool silentMode);
+
     // load/save filter index from/to file
     bool loadFilterIndexCache(QDltFilterList &filterList, QVector<qint64> &index, QStringList filenames);
     bool saveFilterIndexCache(QDltFilterList &filterList, QVector<qint64> index, QStringList filenames);
@@ -127,6 +133,10 @@ public:
     // enable/disable multithreaded
     void setMultithreaded(bool enable) { multithreaded = enable; }
     bool getMultithreaded() { return multithreaded; }
+
+    // enable/disable parallel chunked filter indexing (Apply Filter path, mode == modeFilter)
+    void setParallelFilterIndexingEnabled(bool enable) { parallelFilterIndexingEnabled = enable; }
+    bool getParallelFilterIndexingEnabled() { return parallelFilterIndexingEnabled; }
 
     // get and set filter cache
     void setFilterCacheEnabled(bool enabled) { filterCacheEnabled = enabled; }
@@ -199,7 +209,8 @@ private:
     QVector<qint64> indexFilterList;
     QMap<DltFileIndexerKey,qint64> indexFilterListSorted;
 
-    // getLogInfoList
+    // getLogInfoList (appendToGetLogInfoList() guards writes with this mutex)
+    QMutex getLogInfoListLock;
     QList<int> getLogInfoList;
 
     // some flags
@@ -209,6 +220,7 @@ private:
     bool multithreaded;
     bool sortByTimeEnabled;
     bool sortByTimestampEnabled;
+    bool parallelFilterIndexingEnabled;
 
     // filter cache enabled
     bool filterCacheEnabled;
