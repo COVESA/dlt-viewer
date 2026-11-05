@@ -25,6 +25,7 @@
 #include <QFile>
 #include <QDir>
 #include <QList>
+#include <QVector>
 #include "globals.h"
 #include "qdlt.h"
 
@@ -75,7 +76,7 @@ private:
     unsigned int sizeInBytes;
     unsigned int buffer;
 
-    QList<int> *dltFileIndex;
+    QVector<int> dltFileIndex;
     QDltFile *dltFile;
     QByteArray *fileData;
 };
