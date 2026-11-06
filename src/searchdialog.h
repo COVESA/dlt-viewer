@@ -31,6 +31,7 @@
 #include <QRegularExpression>
 #include <QStringList>
 #include <QTableView>
+#include <QTimer>
 
 #include <atomic>
 #include <cstdint>
@@ -137,8 +138,13 @@ private:
     std::atomic_bool isSearchCancelled{false};
     QFutureWatcher<std::vector<std::uint64_t>> m_findAllWatcher;
     QElapsedTimer m_findAllUiUpdateTimer;
+    QTimer m_findAllUiHeartbeatTimer;
     std::int64_t m_findAllLastUiUpdateMs{0};
     int m_findAllAddedSinceLastUiUpdate{0};
+    std::int64_t m_findAllStartProcessCpuUsec{-1};
+    int m_findAllMaxActiveWorkers{0};
+    int m_findAllMaxUiEventLoopStallMs{0};
+    bool m_findAllBenchmarkActive{false};
 
     long int startLine{-1};
     bool nextClicked{true};
