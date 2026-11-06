@@ -20,8 +20,7 @@
 
 
 \setlength{\parindent}{0pt}
-\raggedright
-\renewcommand*{\thesection}{\arabic{section}}
+\raggedright\renewcommand*{\thesection}{\arabic{section}}
 \titleformat{\paragraph}
 {\normalfont\normalsize\bfseries}{\theparagraph}{1em}{}
 \titlespacing*{\paragraph}
@@ -33,16 +32,17 @@
 \begin{document}
 
 \title{DLT Viewer User Manual}
-\author{Gernot Wirschal \textless Gernot.Wirschal@bmw.de \textgreater }
+\author{Gernot Wirschal \textless{Gernot.Wirschal@bmw.de}\textgreater}
 
 
 \maketitle
 
 \begin{center}
-( Alexander Wenzel, Simon Brandner, Lassi Marttala, Sven Hassler ) \linebreak
+(Alexander Wenzel, Simon Brandner, Lassi Marttala, Sven Hassler) \linebreak
 \end{center}
 
 Changelog:\linebreak
+v1.0.3, Oct 2026: Fixed typo\linebreak
 v1.0.2, June 2020: updated Show Argument Columns section\linebreak
 v1.0.1, March 2020: add sort by timestamp and filetransfer autosave documentation\linebreak
 v1.0.0, July 2019: adjust for 2.19.0 Release\linebreak
@@ -80,7 +80,7 @@ the tester of the device to view and control the log and trace information. It i
 not the goal of GENIVI to provide full functional analyzing tools for traces,
 but to provide a basic set of utilities to visualize, control and test all features of the
 DLT Daemon component in a simple way. The DLT Daemon component and the DLT Viewer
-are based on the AUTOSAR 4.0 standard DLT.
+are based on the AUTOSAR 4.0 standard DLT.\@
 
 We try to keep the GUI simple for an effective and efficient workflow, but also to
 integrate as much functionality as needed.
@@ -88,9 +88,9 @@ integrate as much functionality as needed.
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Restrictions and limitations}
 The DLT Viewer once was created as an example application how to receive and display messages delivered by a DLT Daemon running on a
-Linux DUT ( device under test ). Do not regard it as a perfect reference implementation.
-The only existing requirement when starting the DLT Viewer development was "we need something like a DLT Viewer".
-So depending on the used hardware ( RAM and hard disk size ), the amount of messages send by the daemon and the amount of connected
+Linux DUT (device under test). Do not regard it as a perfect reference implementation.
+The only existing requirement when starting the DLT Viewer development was ``we need something like a DLT Viewer''.
+So depending on the used hardware (RAM and hard disk size), the amount of messages send by the daemon and the amount of connected
 devices or the pure size of a logfile limits performance.
 
 
@@ -186,8 +186,8 @@ devices or the pure size of a logfile limits performance.
         \item DLT Viewer Plugin
         \item Non Verbose Mode Plugin
         \item Filetransfer Plugin
-        \item DLT Logstorage Config Creator Plugin ( outdated )
-        \item DLT System Viewer Plugin ( outdated )
+        \item DLT Logstorage Config Creator Plugin (outdated)
+        \item DLT System Viewer Plugin (outdated)
         \item DLT DBus plugin
      \end{itemize}
    \end{itemize}
@@ -234,7 +234,7 @@ below marks the relevant areas followed by a description.
   %\includegraphics[width=1.1\textwidth]{images/main_window_annotated.png}
   \includegraphics[width=1.1\textwidth]{images/dltviewermain_sections_annotated.png}
   \caption{Main DLT Window sections}
- \label{fig:mainwindowsections}
+\label{fig:mainwindowsections}
 \end{figure}
 
 
@@ -249,7 +249,7 @@ below marks the relevant areas followed by a description.
 
 \begin{longtable}{| l | m{3cm}  | m{11cm} |}
 \caption[GUI section description]{GUI section description} \label{guisectiondescription} \\
- \hline
+\hline
    \textbf{Nr} & \textbf{Title} & \textbf{Description} \\
 \hline
 %1 Zeile
@@ -283,7 +283,7 @@ below marks the relevant areas followed by a description.
      Select the visible components of the DLT Viewer.
     \item \begin{bf}Help\end{bf}
     Get information and help for the DLT Viewer. Find here detailed version information, the support email address as well as
-    an overview of the comandline options.
+    an overview of the commandline options.
  \end{itemize}
 
 The menu provides main functions to the user. Many menu functions are also easily accessible through the toolbar.
@@ -299,13 +299,13 @@ Hover the cursor over toolbar buttons to see their functions. \\
    load an existing project, save a changed configuration to the DLT Daemon and
    more. The project panel is split into three tabs:
    \begin{itemize}
-    \item The "Config" tab, which contains all connected ECUs/Devices.
+    \item The ``Config'' tab, which contains all connected ECUs/Devices.
      Each Device contains its connected applications.
      Each application contains its used contexts.
-    \item The "Filter" tab lets you configure filters and markers,
+    \item The ``Filter'' tab lets you configure filters and markers,
     which are used to show or
     mark only a defined subset of DLT messages in the message table.
-    \item The "Plugin" tab shows the available DLT Viewer plugins. The development team provides a
+    \item The ``Plugin'' tab shows the available DLT Viewer plugins. The development team provides a
     plugin SDK to you. You are able to write your own DLT Viewer plugins to decode
     messages, display an extra GUI panel or control the Viewer and target applications.
    \end{itemize}
@@ -329,17 +329,17 @@ Hover the cursor over toolbar buttons to see their functions. \\
      Time when the message was sent, measured since the startup of the target.
    \item \begin{bf}Count\end{bf}
     Cyclical counter, one per context. Can be used to detect lost messages. The count value ist of one byte size. That means after 
-    reaching "255" the count is switching back to "0". So if the count does not increase exactly by "1" it indicates a message loss.
+    reaching ``255'' the count is switching back to ``0''. So if the count does not increase exactly by ``1'' it indicates a message loss.
     But note: in case applications are dynamically registering and unregistering or in case one and the same CTID ist used from
-    different threads on the logging target this counter may not count ab subsequently too !
+    different threads on the logging target this counter may not count absolutely subsequently too!
    \item \begin{bf}Ecuid\end{bf}
-    Name of the sending ECU. Defined in the "Projects" tab.
+    Name of the sending ECU. Defined in the ``Projects'' tab.
    \item \begin{bf}Apid\end{bf}
-    Indetifier of the message sender application. Defined by the sending application.
+    Identifier of the message sender application. Defined by the sending application.
    \item \begin{bf}Ctid\end{bf}
     Context indentifier of the message sender. Defined by the sending application.
    \item \begin{bf}Sessionid\end{bf}
-    Process ID of the target process / application submitting the message.
+    Process ID of the target process/application submitting the message.
    \item \begin{bf}Type\end{bf}
     Type of the message (Log / Trace).
    \item \begin{bf}Subtype\end{bf}
@@ -360,7 +360,7 @@ DLT log files can be loaded and saved in the file menu.
    \hline
    \includegraphics[width=0.05\textwidth]{images/Mark4.png}
    & Plugin Widget
-   & Provides one or more widgets to display additional data. You can choose which plugins are to be shown in the "Plugin" tab.
+   & Provides one or more widgets to display additional data. You can choose which plugins are to be shown in the ``Plugin'' tab.
    See section \autoref{plugintab} and chapter \autoref{plugins} for more information.   \\
    \hline
    \includegraphics[width=0.05\textwidth]{images/Mark5.png}
@@ -435,7 +435,7 @@ Right click on an application to configure an application
 
 \vspace{0.1cm}
 
-Right click on a context to configure a context\linebreak
+Right click on a context to configure a context\linebreak{}
 
 \vspace{0.1cm}
 
@@ -465,20 +465,20 @@ By right clicking ( or select Menu bar \ensuremath{\rightarrow} Filter ) you get
 \includegraphics[width=0.2\textwidth]{images/filter_context_menu.png}
 \linebreak
 
-"Save Filter" lets you store your filter configuration to a file with extension *.dlf.
-Both the "Load Filter" and the "Append Filter" option will load a saved filter file, but "Load Filter" will reset your current filter list while appending keeps it.
+``Save Filter'' lets you store your filter configuration to a file with extension *.dlf.
+Both the ``Load Filter'' and the ``Append Filter'' option will load a saved filter file, but ``Load Filter'' will reset your current filter list while appending keeps it.
 
 The filters you set will apply to all incoming or loaded DLT messages. If you also want to apply the filters to previously logged messages, hit the
-"Apply Configuration" button on the top of the "Filter" tab.
+``Apply Configuration'' button on the top of the ``Filter'' tab.
 
-Seel also \autoref{workingwithfilters} for more information on how working with filters.
+See also \autoref{workingwithfilters} for more information on how working with filters.
 
 \paragraph{Filter Quickselect}
 \label{filterquickselect}
 %You can use the quick select bar to choose and enable your favourite filters placed in the default filter path ( see in Section "\ref{defaultfilterpath} Viewer Configuration Settings" ).
 You can use the quick select bar to choose and enable your favourite filters placed in the default filter path.
-The filters can be selected from the drop down list. If you place a new filter there, it will be recognized at start up or after pressing "Refresh".
-To set the default filter path see also \autoref{defaultfilterpath}{ Viewer Configuration Settings }.
+The filters can be selected from the drop down list. If you place a new filter there, it will be recognized at start up or after pressing ``Refresh''.
+To set the default filter path see also \autoref{defaultfilterpath}{``Viewer Configuration Settings''}.
 
 \begin{figure}[H]
  \centering
@@ -512,18 +512,18 @@ Double clicking on a plugin item creates a popup window which lets you enable/di
 
 
 \begin{itemize}
- \item The "Name" column shows the name of each plugin. This name is provided by the plugin itself.
+ \item The ``Name'' column shows the name of each plugin. This name is provided by the plugin itself.
  %\item The "Interface" column tells you the type of the plugin (or more precisely: what interfaces it implements). For each plugin this column shows a combination of "View", "Decode", "Ctrl" and "Command".
- \item The "Status" column shows which plugins are enabled and visible. Only plugins that implement the "View" interface can have the status "Visible".
+ \item The ``Status'' column shows which plugins are enabled and visible. Only plugins that implement the ``View'' interface can have the status ``Visible''.
  %\item The "Info" column lists the number of description items for each plugin. The description items can be seen by expanding plugin items that have an arrow next to them.
- \item The "File" column tells you the path of the configuration file or files for plugins that have such a file or files selected. Double click on plugin items to choose configuration files for them.
+ \item The ``File'' column tells you the path of the configuration file or files for plugins that have such a file or files selected. Double click on plugin items to choose configuration files for them.
 \end{itemize}
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 \pagebreak
 \subsection{Viewer Configuration Settings}
-Access via "File \ensuremath{\rightarrow} Settings Menu".
+Access via ``File \ensuremath{\rightarrow} Settings Menu''.
 \linebreak
 Set general behaviour of the viewer like temp file locations.
 
@@ -532,7 +532,7 @@ Set general behaviour of the viewer like temp file locations.
 
 \subsubsection{Global Settings}
 \label{globalsettings}
-Here the "file behaviour" like e.g. locations and usage of log files or index files can be configured.
+Here the ``file behaviour'' like e.g. locations and usage of log files or index files can be configured.
 
 \begin{figure}[H]
  \centering
@@ -548,26 +548,26 @@ Here find some selected descriptions:
 \item{Temporary File Behaviour}
 
 \label{temporaryfile}
-In "Temporary File Behaviour" you can set some parameters concerning the temporary file
+In ``Temporary File Behaviour'' you can set some parameters concerning the temporary file
 which is always created during live tracing.
 You can just use the system default location or define a custom folder of your choice.
 
-\caution{Keep in mind that in case "Save temporary file on clear" is selected the amount of files in your tmp path increases
+\caution{Keep in mind that in case ``Save temporary file on clear'' is selected the amount of files in your tmp path increases
 and your hard disk will easily run out of space. So take care about this temp path !}
 
 \item{Default log File}
 
-If enabled, the given log file will always be opened instead of creating a new tmp file at Viewer startup.
+If enabled, the given log file will always be opened instead of creating a new tmp file at ``Viewer'' startup.
 Live tracing messages are appended to this file.
 The changes to this setting take place the next time the viewer is started. In case the file does not exist it is created.
 
 \caution{In case you do not remove/change the logfile e.g. in an automated setup, it may easily increase and cause the viewer to take a long time loading the file
-at next start !}
+at next start!}
 
 \item{Default Project}
 
 \label{defaultproject}
-If enabled, the given project file will always be opened at viewer startup. The settings in the project file rules
+If enabled, the given project file will always be opened at ``Viewer'' startup. The settings in the project file rules
 the default viewer configuration settings.
 The changes to this setting take place the next time the viewer is started.
 On project files see \autoref{projectfiles}.
@@ -589,7 +589,7 @@ On details how to use plugins autoload see \autoref{usingautoload}
 \item{Default Filter Path}
 
 \label{defaultfilterpath}
-If the default filter path is enabled and set accordingly you can use the "Filter quick select bar" in the Filter Tab.
+If the default filter path is enabled and set accordingly you can use the ``Filter quick select bar'' in the Filter Tab.
 Also see \autoref{filterquickselect}{ Filter Quickselect }.
 \nopagebreak
 
@@ -597,13 +597,13 @@ Also see \autoref{filterquickselect}{ Filter Quickselect }.
 
 When the index cache is enabled, reloading of previous loaded files is much faster because the index is cached in additional files.
 To reduce disk space consumption these files can be automatically deleted after the specified amount of days of last access.
-The deleting takes place the next time the viewer is started. The index files have the extension "*.dix" and are located in the specified folder.
+The deleting takes place the next time the viewer is started. The index files have the extension ``*.dix'' and are located in the specified folder.
 \caution{If this option is enabled, additional disk space is used. Take care to observe the size of the index file directory, especially in case you perform 
          frequent comandline conversions e.g. in an automated setup. So it is recommended to disable index caching for commandline usage. }
 
 \item{Performance Settings}
 
-When "Start up Minimized" is enabled the viewer window is not shown diretly. Most propably makes sense when using logging only mode.
+When ``Start up Minimized'' is enabled the viewer window is not shown diretly. Most propably makes sense when using logging only mode.
 
 The Refresh Frequency specifies the amount of viewer GUI refreshes per second.
 \end{enumerate}
@@ -633,14 +633,14 @@ See also \autoref{messagetablecolumns} on information about the columns.
 
 \item{Show Arguments}
 
-This setting may be only interesting for dlt application/plugin developers. The column "Args" shows the number of payload arguments contained in the DLT message.
+This setting may be only interesting for dlt application/plugin developers. The column ``Args'' shows the number of payload arguments contained in the DLT message.
 
 \item{Show Argument Columns}
 Show the payload arguments split each to a seperate column instead of squashed into one single payload text column.
 This is convinient for fast reading of logs with variable text messages but same arguments, as every n-th argument is aligned in the n-th argument column.
 Choose the maximum number of shown columns in the main table. 
-Good to combine with "Show Payload" = Off
-The "ArgX" columns are found always at the right end of the table. 
+Good to combine with ``Show Payload'' = Off
+The ``ArgX'' columns are found always at the right end of the table. 
 \begin{figure}[H]
  \centering
  \includegraphics[width=0.6\textwidth]{images/tableview_arguments.png}
@@ -650,15 +650,15 @@ The "ArgX" columns are found always at the right end of the table.
 
 \item{Show Application}
 
-Select if the Apid shall be shown, if so you can choose the Apid itself or the description string which comes with the application registration message.
+Select if the ``Apid'' shall be shown, if so you can choose the Apid itself or the description string which comes with the application registration message.
 
 \item{Show Context}
 
-Select if the Ctid shall be shown, if so you can choose the Ctid itself or the description string which comes with the context registration message.
+Select if the ``Ctid'' shall be shown, if so you can choose the Ctid itself or the description string which comes with the context registration message.
 
 \item{Show Session/Process Id}
 
-Process ID of the target process submitting the message. "Session Name" only is available if transmited by the daemon.
+Process ID of the target process submitting the message. ``Session Name'' only is available if transmited by the daemon.
 
 \item{Set time column automatic to local recording time}
 
@@ -692,12 +692,12 @@ In case you are using a project file this setting may be overruled !
 
 \item{Auto mark fatal/error messages}
 
-Automatically mark all messages of subtype ( loglevel ) "fatal" and "error" with red color.
+Automatically mark all messages of subtype ( loglevel ) ``fatal'' and ``error'' with red color.
 
 Note: in case you use a filter using a marker the filter overcolor rules this setting.
 
 \item{Auto mark warn messages}
-Automatically mark all messages of subtype ( loglevel ) "warn" with yellow color.
+Automatically mark all messages of subtype ( loglevel ) ``warn'' with yellow color.
 
 Note: in case you use a filter using a marker, the filter color overrules this setting.
 
@@ -729,7 +729,7 @@ The list of contexts is updated automatically when a context is deleted.
 
 \item{Logging only mode}
 \label{enableloggingonlymode}
-When enabling this check box you activate the "logging only" mode, see \autoref{Loggingonlymode}:
+When enabling this check box you activate the ``logging only'' mode, see \autoref{Loggingonlymode}:
 
 \item{Append Date/Time to filename when closing DLT Viewer}
 
@@ -759,7 +759,7 @@ Select your favourite color for marking selected lines in the table view.
 Right mouse click on the table view to highlight the selected lines. Marking only has a visual effect, 
 there will be no additional information stored in a file. The coloring refers to the line index, not to the message index. In case you
 change the order of the messages e.g. by filtering or loading another logfile, the highlighting will remain on this line index anyway.
-To completely remove the highlighting again also use "File clear".
+To completely remove the highlighting again also use ``File clear''.
 
 \begin{figure}[H]
  \centering
@@ -773,7 +773,7 @@ To completely remove the highlighting again also use "File clear".
 
 \subsubsection{Viewer Configuration File}
 
-The basic viewer configuration file is "config.ini". It e.g. stores the Viewer Settings, plugin states as well as size and windows position.
+The basic viewer configuration file is ``config.ini''. It e.g. stores the Viewer Settings, plugin states as well as size and windows position.
 Its default location is:
 
 \begin{verbatim}
@@ -821,13 +821,13 @@ Description:
 
 
 If you receive DLT messages in non verbose mode, you need to decode them
-to see their plain text. To do this, go to the "Plugin" tab in the "Project" panel.
-Double click on the plugin "Non Verbose Mode Plugin". In the dialog that appears,
+to see their plain text. To do this, go to the ``Plugin'' tab in the ``Project'' panel.
+Double click on the plugin ``Non Verbose Mode Plugin''. In the dialog that appears,
 you can open a configuration file to load. Use this to load a non verbose XML description file,
-which corresponds to your software on the ECU. Hit "OK" and the Plugin shows a list of all available
+which corresponds to your software on the ECU. Hit ``OK'' and the Plugin shows a list of all available
 non verbose messages. As soon as you select a DLT message you can view the
 decoded information. Incoming messages that fit the description file will now get decoded. To also
-decode the already received messages, hit "Apply Configuration" on the top of the "Plugin" tab.
+decode the already received messages, hit ``Apply Configuration'' on the top of the ``Plugin'' tab.
 This plugin has no visible widget.
 
 
@@ -846,7 +846,7 @@ Decoded nonverbose messages example:\linebreak
 
 \subsubsection{DLT Parser}
 To create an input file for this plugin based on your target DLT Daemon configuration in nonverbose mode, have a look on the tool
-"DLT Parser". Also see the DLT Daemon documentation on the non verbose mode.
+``DLT Parser''. Also see the DLT Daemon documentation on the non verbose mode.
 
 \begin{figure}[H]
  \centering
@@ -988,7 +988,7 @@ On more information about the command line mode see \autoref{commandlinemode}.
 \subsubsection{Configuration file}
 In the subdirectory plugins/examples you find an example configuration file called \begin{verbatim}"filetransferplugin_configuration.xml"\end{verbatim}.
 In case the target uses the default values to indicate file transfers you do not need to change anything here.
-The default file transfer will work without additional configuration. Default APID/CTID of a filetransfer "SYS"/"FILE".
+The default file transfer will work without additional configuration. Default APID/CTID of a filetransfer ``SYS''/``FILE''.
 
 \subsubsection{Autosave feature}
 In case you want to save transfered files automatically to a dedicated directory you can use the configuration file to
@@ -1030,25 +1030,25 @@ This is especially helpful if you work with traces of different ECUs or software
 See also \autoref{versionstring} for information about the version string.\\
 
 To use the autolaod feature you need to create a subdirectory whichs name equals exactly the name of the choosen plugin, e.g.
-"DLT DBus Plugin". In this directory you can place plugin configuration files whichs names exactly equal
+``DLT DBus Plugin''. In this directory you can place plugin configuration files whichs names exactly equal
 the version string send by your target. So if you process logs with different target software versions
 the correct configuration is automatically loaded accordingly.
 
 \subsubsection{Plugin autoload example}
 
 \begin{enumerate}
-\item E.g. the  version string is "Aspire\_SW123":\linebreak
+\item E.g. the  version string is ``Aspire\_SW123'':\linebreak
 \vspace{0.2cm}
 \includegraphics[width=0.2\textwidth]{images/versionstring_ecu.png}
 
 
-\item Create a directory named "E:\textbackslash viewertests\textbackslash DLT DBus Plugin"
-and place a configuration file namend "Aspire\_SW123.xml", ( or so named folder which contains this file ) there.\\
+\item Create a directory named ``E:\textbackslash viewertests\textbackslash DLT DBus Plugin''
+and place a configuration file named ``Aspire\_SW123.xml'', ( or so named folder which contains this file ) there.\\
 
 \vspace{0.2cm}
 \includegraphics[width=0.4\textwidth]{images/autoloadexample_filename.png}
 
-\item Set the plugins autoload path accordingly to "E:\textbackslash viewertests" and set the checkbox, see \autoref{enableautoload} \linebreak
+\item Set the plugins autoload path accordingly to ``E:\textbackslash viewertests'' and set the checkbox, see \autoref{enableautoload} \linebreak
 
 
 \item Enable the plugin itself and load the dlt file or connect to the target
@@ -1067,25 +1067,25 @@ and place a configuration file namend "Aspire\_SW123.xml", ( or so named folder 
 
 \subsubsection{Windows}
 The DLT Viewer will look for plugins in two places. The first place is the
-"plugins" folder inside the main application path. After that, if a plugins path is
+``plugins'' folder inside the main application path. After that, if a plugins path is
 defined in the DLT Viewer settings ( see \autoref{pluginspath} ), the application will also look in this specified location for plugins.
 
 You can install plugins by putting them into one of the directories mentioned,
 and uninstall them by removing them from these directories.
 
 It also is possible to enable or disable plugins in the DLT Viewer itself.
-To do this, double-click or right-click on a plugin in the "Plugins" tab. You will get a
+To do this, double-click or right-click on a plugin in the ``Plugins'' tab. You will get a
 drop-down menu for enabling and disabling the plugin. When enabled,
 messages are passed to the plugin. When disabled, the plugin will be ignored in
-the message processing chain. For plugins that implement the "viewer" interface,
-there is also a third selection, "Enable and Show", which brings up the UI widget of
+the message processing chain. For plugins that implement the ``viewer'' interface,
+there is also a third selection, ``Enable and Show'', which brings up the UI widget of
 this plugin.
 
 \subsubsection{Linux}
 
 
 On Linux, organizing plugins works in a similar fashion. In addition to the previously mentioned folders,
-the Linux version will also look into "/usr/share/dlt-Viewer/plugins" for any plugins.
+the Linux version will also look into ``/usr/share/dlt-Viewer/plugins'' for any plugins.
 You will need to have root permissions to modify the plugin directories that are installed system-wide.
 To organize plugins without root permissions, you can set the user defined plugin directory in the DLT Viewer
 settings to some other path, e.g. somewhere in your home directory.
@@ -1102,15 +1102,15 @@ settings to some other path, e.g. somewhere in your home directory.
 Press the connect button \includegraphics[width=0.03\textwidth]{images/connect_button.png} to connect to the target:\linebreak
 
 If no ECU is configured, the ECU configuration dialog appears.
-Select the "Interface Type" you want to use (TCP, UDP or serial).
-The ECU configuration dialog also can be envoked by selecting right mouse button "ECU add"
+Select the ``Interface Type'' you want to use (TCP, UDP or serial).
+The ECU configuration dialog also can be envoked by selecting right mouse button ``ECU add''
 in the Project Config Panel.
 
 \begin{figure}[H]
  \centering
  %\includegraphics[width=0.6\textwidth]{images/ecu_dialog_2_19_0.png}
  \includegraphics[width=0.6\textwidth]{images/ECU_dialog.png}
- \caption{ECU dialog}
+ \caption{``ECU'' dialog}
  \label{fig:ecudialog}
 \end{figure}
 
@@ -1119,16 +1119,16 @@ in the Project Config Panel.
 Here you can set some basic parameters like
 
 \begin{itemize}
- \item Id\linebreak Identifier of the "Electronic Control Unit" used in the config tab. If it is left at its default value (ECU1) it will automatically be set by the ECU messages which come with the connection.
+ \item Id\linebreak Identifier of the ``Electronic Control Unit'' used in the config tab. If it is left at its default value (ECU1) it will automatically be set by the ECU messages which come with the connection.
  \item Description\linebreak Description of the ECU Id used in the config tab
  \item Interface Type\linebreak You can choose TCP, UDP or Serial
- \item Default Log Level ( equals "Subtype" in the message table ), see also \autoref{loglevels}
+ \item Default Log Level ( equals ``Subtype'' in the message table ), see also \autoref{loglevels}
  \item Default Trace Status ( on / off )
  \item Verbose Mode ( yes / no )\linebreak See also \autoref{nonverbosemode}
  \item Timing packets from ECU\linebreak Request the ECU to send additional timing messages ( see daemon documentation )
- \item Send "Get Log Info" if online\linebreak See \autoref{getallcontexts}
- \item Send "Get SW Version" if online\linebreak Request SW version from daemon, see also \autoref{versionstring}
- \item Send "Default Log Level,Trace Status and Verbose Mode" if online
+ \item Send ``Get Log Info'' if online\linebreak See \autoref{getallcontexts}
+ \item Send ``Get SW Version'' if online\linebreak Request SW version from daemon, see also \autoref{versionstring}
+ \item Send ``Default Log Level,Trace Status and Verbose Mode'' if online
  \item Update data in DLT if online\linebreak Send the above selected request to the ECU always when connecting to it
 \end{itemize}
 
@@ -1155,12 +1155,12 @@ IPv4 example:
 \subsubsection{UDP}
 
 In case of UDP reception you are able to specify the interface and the IP port where you expect the 
-UDP datagrams to be received. The selection box "Receiving interface" will offer you all available 
+|UDP datagrams to be received. The selection box ``Receiving interface'' will offer you all available 
 ethernet interfaces of your machine. In case of AnyIP the oprating system will choose an interface for you.
-To receive multicast messages you can activate "Multicast on network interface" and specify the UDP multicast address
+To receive multicast messages you can activate ``Multicast on network interface'' and specify the UDP multicast address
 to join the multicast group accordingly.
 
-\caution{On Windows machines it was observed that the selection of the specific IF instead of AnyIP is essential}
+\caution{On Windows machines it was observed that the selection of the specific IF instead of ``AnyIP'' is essential}
 
 IPv4 example:
 
@@ -1188,8 +1188,8 @@ list provides a list of examples for the port configuration.
  \label{fig:serialconfigurationtab}
 \end{figure}
 
-If you select "OK" the DLT Viewer will try to connect to the ECU.
-The ECU Id shows "online" (green) as soon as the DLT Viewer is connected to the
+If you select ``OK'' the DLT Viewer will try to connect to the ECU.
+The ECU Id shows ``online'' (green) as soon as the DLT Viewer is connected to the
 specified device.
 All received DLT messages should then be displayed in DLT message table.
 
@@ -1212,10 +1212,10 @@ tree of an ECU.
 
 \label{getallcontexts}
 In case you are connected to the ECU you can get all used contexts by double click on the
-ECU item in the Project/Config tab and select menu item "DLT Get log info".
+ECU item in the Project/Config tab and select menu item ``DLT Get log info''.
 The DLT Viewer then sends a request to the target and receives a response message
 with all available contexts and their log levels. The list of available contexts is added
-to your "Config" list.
+to your ``Config'' list.
 
 \begin{figure}[H]
  \centering
@@ -1233,8 +1233,8 @@ There are several possibilities how to automatically update the list of contexts
 \paragraph{Get context list when connected to ECU}
 
 Each time you connect to the ECU you can get a list of all used context.
-You can activate this feature in the ECU configuration by activating "Send Get Log Info if
-online". See \autoref{fig:ecudialog}.
+You can activate this feature in the ECU configuration by activating ``Send Get Log Info if
+online''. See \autoref{fig:ecudialog}.
 
 \paragraph{ECU sends automatically new registered contexts}
 
@@ -1314,9 +1314,9 @@ Request the current default log level directly from the ECU.
 
 The default log level can be set for each ECU connection separately. Just open a current ECU
 configuration by double click on the ECU item in the Project/Config tab.
-You can change the value of "Default Log Level" and "Default Trace Status" and press OK.
+You can change the value of ``Default Log Level'' and ``Default Trace Status'' and press OK.
 If you are connected the new default values are send to the ECU immediately. All Contexts
-which are set to "default" get the new default values. The option "Update data in DLT if online"
+which are set to ``default'' get the new default values. The option ``Update data in DLT if online''
 must be activated.
 When you connect to the ECU the configured default values are send immediately.
 See \autoref{fig:ecudialog}.
@@ -1324,15 +1324,15 @@ See \autoref{fig:ecudialog}.
 \subsubsection{Edit all log levels}
 
 Here you can edit and set the loglevels for all contexts at once.
-If the checkbox "Update data in DLT if online" then the log level for all contexts is set.
-E.g. you can switch off tracing for all log levels at once. In this case the DLT daemen does not send out
+If the checkbox ``Update data in DLT if online'' then the log level for all contexts is set.
+E.g. you can switch off tracing for all log levels at once. In this case the DLT daemon does not send out
 any messages except DLT control messages.
 
 
 \subsubsection{Set individual log levels}
 
 To set individual log levels and trace status for a dedicated context you can to double click on the context item in the
-"Project/Config" tab. A Context configuration dialog is opened where you can set individual
+``Project/Config'' tab. A Context configuration dialog is opened where you can set individual
 log level and trace status. Press Ok to send the changed log level to the ECU.
 
 \begin{figure}[H]
@@ -1346,7 +1346,7 @@ log level and trace status. Press Ok to send the changed log level to the ECU.
 \subsubsection{Set all configured log levels of all contexts}
 
 You can send all configured log levels, e.g. when you stored the log levels in the project file.
-Right click on a ECU item in the "Project/Config" tab and press the menu item "DLT Set All Log levels":
+Right click on a ECU item in the ``Project/Config'' tab and press the menu item ``DLT Set All Log levels'':
 
 \begin{figure}[H]
  \centering
@@ -1360,7 +1360,7 @@ Right click on a ECU item in the "Project/Config" tab and press the menu item "D
 
 You can store the current configuration of all log levels on the ECU. After restart of the ECU
 the current set log levels and trace status are available again.
-Right click on a ECU item in the "Project/Config" tab and press the menu item "Store Config":
+Right click on a ECU item in the ``Project/Config'' tab and press the menu item ``Store Config'':
 
 \begin{figure}[H]
  \centering
@@ -1373,14 +1373,14 @@ Right click on a ECU item in the "Project/Config" tab and press the menu item "S
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsection{Status line information}
 
-In the GIU status line you find sveral additional information
+In the GUI status line you find sveral additional information
 
 \subsubsection{Logfile location}
 
 
 \subsubsection{The version string}
 \label{versionstring}
-Depending on the setting "ECU Software version info" in dlt.conf configuration of the DLT Daemon
+Depending on the setting ``ECU Software version info'' in dlt.conf configuration of the DLT Daemon
 the daemon sends either the daemon version or the content of a given file on the target periodically.
 The version is transmitted by a special control message, for example:
 
@@ -1391,7 +1391,7 @@ ERROR in file detected at index 0 msg length 71 file position 42
 
 You also can request the version string manually:
 
-Right click on a ECU item in the "Project/Config" tab and press the menu item "Get software version".
+Right click on a ECU item in the ``Project/Config'' tab and press the menu item ``Get software version''.
 
 
 The version string is shown in the status line (see \autoref{footer}) of the dlt viewer.
@@ -1422,10 +1422,10 @@ you get more detailed information in case file error was detected. E.g.:
  
 
 \subsubsection{Receive counter}
-In live tracing mode the tab "Recv:" shows the amount of currently received data in messages
+In live tracing mode the tab ``Recv:'' shows the amount of currently received data in messages
 
 \subsubsection{Receive error counter}
-In live tracing mode the tab "Recv Errors:" shows the number of envcountered receive errors
+In live tracing mode the tab ``Recv Errors:'' shows the number of envcountered receive errors
 
 \subsubsection{Sync found}
 In serial connection mode this counter shows ...
@@ -1442,15 +1442,15 @@ ECUs are stored in the same file.
 %\vspace{5cm}
 
 \subsubsection{Save as}
-Select the menu option "File"\ensuremath{\rightarrow}"Save as" or \includegraphics[width=0.03\textwidth]{images/saveas_icon.png} to save a file.
+Select the menu option ``File''\ensuremath{\rightarrow}``Save as'' or \includegraphics[width=0.03\textwidth]{images/saveas_icon.png} to save a file.
 Saving a file just renames the current tmp file and stores it to the selected destination, the received messages are still
 added to this file and the file is processed / accessed by the DLT Viewer. A saved file also contains information about ECU configuration, Apids, Ctids
 and log levels.
 
-\caution{In case you did open multiple files to concatenate them, e.g. by Drag\&Drop then only the last opened file will be saved. If you want to save all files in one please use "Export ..."}
+\caution{In case you did open multiple files to concatenate them, e.g. by Drag\&Drop then only the last opened file will be saved. If you want to save all files in one please use ``Export ...''}
 
 \subsubsection{Export}
-Select the menu option "File"\ensuremath{\rightarrow}"Export... ". 
+Select the menu option ``File''\ensuremath{\rightarrow}``Export... ''. 
 There are several options for exporting messages:
 \vspace{0.3cm}
 
@@ -1470,44 +1470,44 @@ There are several options for exporting messages:
        by DLT Viewer. In case a decoder plugin was active, the decoded message payload is stored in human readable way.
    \item UTF8: stores the selection as UTF8 text file.
    \item ASCII: stores the selection as ASCII text file.
-   \item CSV: like ASCII but columns are seperated by semicolon.
+   \item CSV: like ASCII but columns are separated by semicolon.
  \end{enumerate}
  \item Selection: choose which messages to be exported
   \begin{enumerate}
    \item All: all messages in the current logfile.
    \item Filtered: only messages which apply to the active filters.
    \item Marked: all marked lines are exported. Marked lines are either manually marked in the table view or lines marked by a filter.
-        "Automarked" lines like warn/error or marker messages are not taken into account.
+        ``Automarked'' lines like warn/error or marker messages are not taken into account.
   \end{enumerate}
 \end{enumerate}
 
 \subsubsection{New file or open file}
-Select the menu option "File"\ensuremath{\rightarrow}"New/Open" to create a new or open an existing log file.
+Select the menu option ``File''\ensuremath{\rightarrow}``New/Open'' to create a new or open an existing log file.
 
 \subsubsection{Import DLT Stream}
-Select the menu option "File"\ensuremath{\rightarrow}"Import DLT Stream" to import a an existing log file
+Select the menu option ``File''\ensuremath{\rightarrow}``Import DLT Stream'' to import a an existing log file
 which does not contain DLT file storage headers.
 The logfile messages are imported into the currently opened dlt file.
 
 \subsubsection{Import DLT Stream Serial}
-Select the menu option "File"\ensuremath{\rightarrow}"Import DLT Stream" to import an exiting serial log file.
+Select the menu option ``File''\ensuremath{\rightarrow}``Import DLT Stream'' to import an exiting serial log file.
 Just the logfile messages are imported without an ECU configuration or Apid / Ctid informations.
 
 \subsubsection{Append DLT File}
-Select the menu option "File"\ensuremath{\rightarrow}"Append DLT File" to append the message content of the
+Select the menu option ``File''\ensuremath{\rightarrow}``Append DLT File'' to append the message content of the
 selected file to a current file.
 The message index is automatically increased but the messages may not be in the correct order regarding reception time stamp.
-This can be achieved by "Filters Enabled" with "Sorted by Time". See \autoref{sortbytime}.
+This can be achieved by ``Filters Enabled'' with ``Sorted by Time''. See \autoref{sortbytime}.
 
 \subsubsection{File clear}
-Select "File"\ensuremath{\rightarrow}"Clear" or \includegraphics[width=0.02\textwidth]{images/clean_icon.png}
+Select ``File''\ensuremath{\rightarrow}``Clear'' or \includegraphics[width=0.02\textwidth]{images/clean_icon.png}
 to clear the current log file. The message table view and the indexes as well as the search result windows are cleared.
 If configured, a new tmp file is automatically opened.
 
 \subsubsection{Open multiple files}
 
 Data logging devices usually create logfiles of a determined size. So for analyzing a trace you may need to concatenate
-these files to one single file. On a Linux machine you e.g. could do that with:\linebreak "cat *.dlt >> resulting.dlt"\linebreak
+these files to one single file. On a Linux machine you e.g. could do that with:\linebreak ``cat *.dlt >> resulting.dlt''\linebreak
 cat *.dlt accesses the files sorted by the file name, that means the correct order of the file must be determined
 by the file name.
 
@@ -1522,14 +1522,14 @@ RAUSFINDEN  wie das funnktioniert: creation time stamp und access time stamp
 
 \subsubsection{Searching and navigating in the logfile}
 \paragraph{Jump to line / index}
-Select Menu "Search"\ensuremath{\rightarrow}"Jump to" or keypress combination "STRG + G" to directly navigate to the desired line / index number in the table view.
+Select Menu ``Search''\ensuremath{\rightarrow}``Jump to'' or keypress combination ``STRG + G'' to directly navigate to the desired line / index number in the table view.
 
 \paragraph{Quicksearch}
 Using the input field in the menu bar you can perform a quicksearch, the string entered is used a search pattern to find matches in the payload of all messages as configured in the Search Dialog. Use the 
 green arrows \includegraphics[width=0.06\textwidth]{images/green_arrows.png} in the menu bar to navigate in single step mode or fill the search results window.
 
 \paragraph{Advanced search}
-If you want to specify more details and other search parameters you can use the Menu "Search"\ensuremath{\rightarrow}"Find" or
+If you want to specify more details and other search parameters you can use the Menu ``Search''\ensuremath{\rightarrow}``Find'' or
 search icon \includegraphics[width=0.03\textwidth]{images/searchicon.png} in the toolbar to open the search dialog.
 
 \begin{figure}[H]
@@ -1559,14 +1559,14 @@ search icon \includegraphics[width=0.03\textwidth]{images/searchicon.png} in the
 
 
 \paragraph{Search history}
-You can use the menu "Search"\ensuremath{\rightarrow}"History" to select the last used search strings.
+You can use the menu ``Search''\ensuremath{\rightarrow}``History'' to select the last used search strings.
 There also is a drop - down menu in the search input field of the toolbar to select the last used search strings.
 
 
 \subsubsection{Setting a Marker}
 
 \label{settingmarker}
-When you set a marker in the logfile using DLT \ensuremath{\rightarrow} Marker, or just click on the icon: \includegraphics[width=0.02\textwidth]{images/marker_icon.png},
+When you set a marker in the logfile using DLT \ensuremath{\rightarrow}``Marker'', or just click on the icon: \includegraphics[width=0.02\textwidth]{images/marker_icon.png},
 a marker line is added to the bottom of the current trace, this is especially meaningfull when live tracing
 to mark a certain point in the log.\linebreak
 
@@ -1577,21 +1577,21 @@ The marker line looks like this:\linebreak
 
 These marker messages can be automatically highlighted in green color, see in \autoref{automarkmarker} in Settings / Project Other.
 
-But keep in mind: Marker messages are "control messages". So they are not displayed in case "Write Control Messages to log file" is not enabled.
+But keep in mind: Marker messages are ``control messages''. So they are not displayed in case ``Write Control Messages to log file'' is not enabled.
 See \autoref{controlmessagestolog} in Settings / Project Other.
 
-%\caution{You will NOT see the marker messages in case "Write Control Messages to log file" is not enabled}
+%\caution{You will NOT see the marker messages in case ``Write Control Messages to log file'' is not enabled}
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 \subsubsection{Logging only mode}
 \label{Loggingonlymode}
 In case you only want to record traces for later analysis without viewing them in the DLT message table,
-it is recommended to enable the "Logging only mode". All plugins and the main table view are disabled.
+it is recommended to enable the ``Logging only mode''. All plugins and the main table view are disabled.
 So you reduce performance impact and the probability of a viewer crash e.g. due to a faulty plugin.
 
-See \autoref{enableloggingonlymode}, "Viewer Configuration Settings/Project Other", how to enable it.
+See \autoref{enableloggingonlymode}, ``Viewer Configuration Settings/Project Other'', how to enable it.
 
-Basically you also can use the commandline tool dlt-receive to receive dlt messages and write them to a file.
+Basically you also can use the commandline tool ``dlt-receive'' to receive dlt messages and write them to a file.
 It is part of the dlt-daemon and so only is available on Linux systems.
 
 Example:
@@ -1611,7 +1611,7 @@ dlt-receive -o ./logit.dlt 160.48.199.99
 
 \subsubsection{Sort by Time}
 \label{sortbytime}
-If the filters are enabled, even if there is no active filter applied, you can select "Sorted by Time" in the
+If the filters are enabled, even if there is no active filter applied, you can select ``Sorted by Time'' in the
 Filter tab of the Project Panel. In this case all messages will be sorted by received time.
 
 E.g. in case you load several logfiles which contain messages from different ECUs you will get the messages sorted by the recveive time instead by the message index.
@@ -1621,7 +1621,7 @@ like they are emitted by the specific application on the target but like they ar
 
 \subsubsection{Sort by Timestamp}
 \label{sortbytimestamp}
-You can select either "Sorted by Time" or "Sorted by Timestamp" in the
+You can select either ``Sorted by Time'' or ``Sorted by Timestamp'' in the
 Filter tab of the Project Panel. In this case all messages will be sorted by the timestamp the messages get when issued
 by the sending application on the target. 
 
@@ -1632,7 +1632,7 @@ several timestamps from different lifecycles which might be confusing}
 
 \subsubsection{How to create a filter}
 
-You can find some example filters in your viewer installation directories and in the source code in directory "filters":
+You can find some example filters in your viewer installation directories and in the source code in directory ``filters'':
 \begin{verbatim}
  * control_messages.dlf
  * error_fatal_messages.dlf
@@ -1647,10 +1647,10 @@ When searching for payload content you can improve performance if you also limit
 
 There are several ways to add a filter:
 \begin{enumerate}
-\item Menu "Filter"\ensuremath{\rightarrow}"Filter Add"
-\item On a context or application item in the Config tab of the Project Panel: selecting right mouse button "Filter Add".
-The avaiable Ecuid, Apid, Ctid will be filled in already.
-\item On a message in the message table view select a line and right mouse button "Filter Add". All message elements except log levels are filled in already.
+\item Menu ``Filter''\ensuremath{\rightarrow}``Filter Add''
+\item On a context or application item in the Config tab of the Project Panel: selecting right mouse button ``Filter Add''.
+The available ``Ecuid'', ``Apid'', ``Ctid'' will be filled in already.
+\item On a message in the message table view select a line and right mouse button ``Filter Add''. All message elements except log levels are filled in already.
 \end{enumerate}
 
 
@@ -1684,27 +1684,27 @@ The avaiable Ecuid, Apid, Ctid will be filled in already.
 
 \subsubsection{Using regular expressions}
 You can create more complex filters by making use of the Qt regular expressions, e.g. using wildcards and so on.
-To enable regular expressions select the checkboxes "regex" available for Ctid, Header Text and Payload Text.
+To enable regular expressions select the checkboxes ``regex'' available for Ctid, Header Text and Payload Text.
 
 \caution{Regular expressions allow complex and conditional search criteria but can slow down the filter performance tremendously}
 
 \subsubsection{Recommendations and examples}
 
 \paragraph{Filtering for multiple context IDs}
-For filtering mutilple Ctids use one filter with "TC|HADT|PRER|GNRL" as a regular expression in "Context Id" instead of defining four seperate filters.
+For filtering mutilple Ctids use one filter with ``TC|HADT|PRER|GNRL'' as a regular expression in ``Context Id'' instead of defining four seperate filters.
 
 \paragraph{Filtering for message payload containing multiple strings}
 
-E.g. in case you want to filter out all lines where the payload contains the strings "getBatterieData" or "message start" use:
+E.g. in case you want to filter out all lines where the payload contains the strings ``getBatterieData'' or ``message start'' use:
 
 \begin{verbatim}
 (getBatterieData|message start)
 \end{verbatim}
 
-as "Payload Text" and enable RegExp in the filter configuration
+as ``Payload Text'' and enable RegExp in the filter configuration
 
 \paragraph{Filtering for certain loglevel only}
-If you only want to see messages between loglevels fatal and warn you should set Log Level Min to warn and Log Level Max to fatal
+If you only want to see messages between loglevels ``fatal'' and ``warn'' you should set ``Log Level Min'' to ``warn'' and ``Log Level Max'' to ``fatal''
 
 
 \pagebreak
@@ -1712,12 +1712,12 @@ If you only want to see messages between loglevels fatal and warn you should set
 \subsection{Project Files}
 \label{projectfiles}
 You can save project specific settings like the status of plugins ( including used configuration files ), active filters, ECU autoconnet and so on for later reuse
-in a project file. The project file extension is "*.dlp".
+in a project file. The project file extension is ``*.dlp''.
 The project file rules the standard configuration settings of config.ini.
 You also can specify a project file as default to be automatically loaded at viewer start, see \autoref{defaultproject} in \autoref{globalsettings}.
 
 Projectfiles can also be specified in a command line call and are especially helpful here.
-Select Menu "Project" to manage project files. To save the current settings you also can press the "save project" icon \includegraphics[width=0.02\textwidth]{images/saveprojecticon.png}
+Select Menu ``Project'' to manage project files. To save the current settings you also can press the ``save project'' icon \includegraphics[width=0.02\textwidth]{images/saveprojecticon.png}
 
 \pagebreak
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1806,11 +1806,11 @@ dlt\_viewer.exe -p x.dlp -l y.dlt -e "Filetransfer Plugin{\textbar}export{\textb
     Path to a dlt trace file containing embedded files which shall be extracted
     \item -e:\linebreak
     triggers the plugin internal command ( depending on plugin implementation )
-    \item "Filetransfer Plugin":\linebreak
+    \item ``Filetransfer Plugin'':\linebreak
     Filetransfer Plugin will be called for the command interface
-    \item export:\linebreak
-    the plugin internal function "export" is addressed
-    \item {[path\_to\_extract]}:\linebreak
+    \item ``export'':\linebreak
+    the plugin internal function ``export'' is addressed
+    \item ``[path\_to\_extract]'':\linebreak
     Path to the folder where you want to extract all file dumps. If you apply this for a lot of files,
     think about using individual paths, to avoid overwriting files with identical names.
 \end{itemize}
@@ -1893,9 +1893,9 @@ So you can change variable values in a running application or just trigger any k
 For more details see the DLT Daemon documentation.\linebreak
 %The mechanism works like a call back function
 To open the injection dialog select the choosen Ctid the Control tab of the Project Panel and
-select right mouse button "Send injection".
+select right mouse button ``Send injection''.
 
-E.g. your application ID is "myid", context ID is "myct" you can send some data by opening the injection dialog.
+E.g. your application ID is ``myid'', context ID is ``myct'' you can send some data by opening the injection dialog.
 
 
 
@@ -1909,7 +1909,7 @@ E.g. your application ID is "myid", context ID is "myct" you can send some data 
 \begin{enumerate}
 \item Application ID
 \item Context ID
-\item Service ID - vaild service IDs start from 4096
+\item Service ID - vaild service IDs start from ``4096''
 \item Text Data / Binary Data - any data you want to be processed in your application
  \end{enumerate}
 
@@ -1918,8 +1918,8 @@ You can also evaluate the example implementation dlt-speed-app to see how the me
 \subsubsection{DLT injection via command line}
 
 Allthough this subject is not part of the DLT Viewer I would like to emphasize that DLT injections also can 
-be issued by aid of the command line tool dlt-control coming with the dlt daemon.  You can use it e.g. in
-a test script. So the restriction is: it only is avaliable for Linux.
+be issued by aid of the command line tool ``dlt-control'' coming with the dlt daemon.  You can use it e.g. in
+a test script. So the restriction is: it only is available for Linux.
 
 Example:
 
@@ -2018,7 +2018,7 @@ make
 or
 make install
 \end{verbatim}
-You find the dlt\_viewer and the dlt\_parser in subdirectory "bin" ...
+You find the dlt\_viewer and the dlt\_parser in subdirectory ``bin'' ...
 
 \paragraph{Using qmake}
 In the Viewer root directory call
@@ -2028,7 +2028,7 @@ cmake
 make
 \end{verbatim}
 
-Find the resulting binaries in the subdirectory "release"
+Find the resulting binaries in the subdirectory ``release''
 
 
 \paragraph{Using qmake building deb packages}
@@ -2144,7 +2144,7 @@ You will find the Viewer in build/dlt-viewer and the plugin in build/plugins/lib
 
 \subsubsection{Build qwt}
 
-For Windows download "qwt-6.1.3.zip", build and install it using the bat file provided:
+For Windows download ``qwt-6.1.3.zip'', build and install it using the bat file provided:
 build\_qwt\_windows\_qt5\_MSVC.bat
 
 Example:

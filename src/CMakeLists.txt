@@ -139,11 +139,6 @@ endif()
     COMPONENT dlt_viewer)
 
 if(DLT_INSTALL_SDK)
-    if(DLT_USE_STANDARD_INSTALLATION_LOCATION)
-        set(DLT_ROOT_DOC_INSTALLATION_PATH "${DLT_DOC_INSTALLATION_PATH}")
-    else()
-        set(DLT_ROOT_DOC_INSTALLATION_PATH "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}")
-    endif()
     install(FILES
         ../LICENSE.txt
         ../MPL.txt

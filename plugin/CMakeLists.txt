@@ -34,6 +34,7 @@ add_subdirectory(dlttestrobotplugin)
 add_subdirectory(dltviewerplugin)
 add_subdirectory(filetransferplugin)
 add_subdirectory(nonverboseplugin)
+add_subdirectory(dltmcpplugin)
 
 option(DLT_NON_FUNCTIONAL_PLUGINS "Build Non Functional Plugins" OFF)
 if(DLT_NON_FUNCTIONAL_PLUGINS)
