@@ -1,0 +1,39 @@
+bazel_dep(name = "bazel_skylib", version = "1.9.2")
+bazel_dep(name = "toolchains_llvm", version = "1.13.0")
+
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    llvm_version = "23.1.5",
+)
+use_repo(llvm, "llvm_toolchain")
+
+register_toolchains("@llvm_toolchain//:all")
+
+bazel_dep(name = "rules_cc", version = "0.2.27")
+bazel_dep(name = "platforms", version = "1.1.0")
+bazel_dep(name = "rules_qt", version = "0.0.7")
+
+register_toolchains("@rules_qt//tools:all")
+
+qt = use_extension("@rules_qt//extension:qt.bzl", "fetch")
+qt.install(
+    name = "qt_linux_x86_64",
+    build_file = "@rules_qt//extension:qt/6.8.3/linux_x86_64.BUILD",
+)
+qt.install(
+    name = "qt_windows_x86_64",
+    build_file = "@rules_qt//extension:qt/6.8.3/windows_x86_64.BUILD",
+)
+qt.install(
+    name = "qt_mac_aarch64",
+    build_file = "@rules_qt//extension:qt/6.8.3/mac_aarch64.BUILD",
+)
+qt.install(
+    name = "qt_linux_aarch64",
+    build_file = "@rules_qt//extension:qt/6.8.3/linux_aarch64.BUILD",
+)
+qt.install(
+    name = "qt_mac_x86_64",
+    build_file = "@rules_qt//extension:qt/6.8.3/mac_x86_64.BUILD",
+)
+use_repo(qt, "qt_linux_aarch64", "qt_linux_x86_64", "qt_mac_aarch64", "qt_mac_x86_64", "qt_windows_x86_64")
