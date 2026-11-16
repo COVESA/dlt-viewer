@@ -13,6 +13,7 @@
 #include <QFile>
 #include <QThreadPool>
 #include <QtConcurrent/QtConcurrent>
+#include <algorithm>
 #include <vector>
 #include <limits>
 
@@ -480,13 +481,9 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     const bool useIndexerThread = false;
 
-    // Parallel chunked filtering always runs for the repeated "Apply Filter" action (mode ==
-    // modeFilter). It also runs for modeIndexAndFilter (initial file open) as long as no viewer
-    // plugins are active - viewer plugin initMsg()/initMsgDecoded() calls are not synchronized
-    // across threads and may assume strictly increasing message order, so with active viewer
-    // plugins this falls back to the original single-threaded loop instead.
-    // See doc/implementationChanges.md for details.
+    // Parallel filtering runs for modeFilter, and for modeIndexAndFilter only without active viewer plugins (thread-unsafe message ordering).
     const bool noActiveViewerPlugins = activeViewerPlugins.isEmpty();
+    // Add multithreaded check to parallel-path gate; reloadLogFile(false, false) expects synchronous execution
     const bool useParallelFilterIndexing = parallelFilterIndexingEnabled && !useIndexerThread &&
             (mode == modeFilter || (mode == modeIndexAndFilter && noActiveViewerPlugins));
 
@@ -526,11 +523,6 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
                     &activeDecoderPlugins,
                     silentMode
                 );
-
-        if(!sortByTimeEnabled && !sortByTimestampEnabled)
-        {
-            indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
-        }
 
         if(useIndexerThread)
         {
@@ -632,6 +624,8 @@ struct FilterChunkResult
 {
     QVector<qint64> indexFilterList;
     QMap<DltFileIndexerKey,qint64> indexFilterListSorted;
+    QMap<QString, int> markerCounts;  // Collect marker counts from parallel workers
+    QList<int> getLogInfoIndices;      // Collect GET_LOG_INFO indices in chunk order
 };
 
 } // namespace
@@ -673,32 +667,9 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
         if(!wantSortedByTime && !wantSortedByTimestamp)
             result.indexFilterList.reserve(static_cast<int>(chunk.end - chunk.begin));
 
-        // Own file handle per worker - QDltFile::getMsgBatch() only briefly locks mutexQDlt to
-        // look up offsets, the actual seek()+read() runs outside the lock (Method 1: batch reads).
+        // Own file handle per worker - QDltFile::getMsgBatch() briefly locks mutexQDlt only to look up offsets, the seek()+read() itself runs outside the lock.
         QFile workerReader;
         QDltMsgBatch batch;
-
-        // Reused only for its processMessage() logic - never start()ed as a QThread.
-        // activeViewerPlugins is guaranteed empty here (gated by noActiveViewerPlugins in
-        // indexFilter() for modeIndexAndFilter, and always cleared for modeFilter), so handing
-        // it over for real (instead of nullptr) is safe and keeps the loop in processMessage()
-        // a no-op either way. activeDecoderPlugins is populated for modeIndexAndFilter and must
-        // be passed for real so decode-dependent filters/version parsing work during file load -
-        // decodeMsgUsingPlugins() now skips its mutex entirely when the list is empty, so this
-        // no longer causes lock contention for the common no-decoder-plugin case.
-        DltFileIndexerThread workerThread
-                (
-                    self,
-                    &filterList,
-                    wantSortedByTime,
-                    wantSortedByTimestamp,
-                    &result.indexFilterList,
-                    &result.indexFilterListSorted,
-                    plugins,
-                    &self->activeViewerPlugins,
-                    &self->activeDecoderPlugins,
-                    silentMode
-                );
 
         const bool dltv2Support = file->getDLTv2Support();
 
@@ -710,8 +681,7 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
                 break;
             }
 
-            // Refill the local batch buffer only when it is empty/exhausted - no extra disk
-            // access for messages already covered by the current batch.
+            // Refill the local batch buffer only when it is empty/exhausted - no extra disk access for messages already covered.
             if(!batch.contains(static_cast<int>(ix)))
             {
                 batch = file->getMsgBatch(static_cast<int>(ix), workerReader, DLT_FILE_INDEXER_FILTER_BATCH_BYTES);
@@ -728,7 +698,7 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
                 continue;
             msg.setIndex(static_cast<int>(ix));
 
-            workerThread.processMessage(msg, static_cast<int>(ix));
+            DltFileIndexerThread::processMessageStatic(msg, static_cast<int>(ix), self, &filterList, wantSortedByTime, wantSortedByTimestamp, &result.indexFilterList, &result.indexFilterListSorted, plugins, &self->activeViewerPlugins, &self->activeDecoderPlugins, silentMode);
         }
 
         const int done = completedChunks.fetch_add(1, std::memory_order_relaxed) + 1;
@@ -742,18 +712,18 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
         acc.indexFilterList += chunkResult.indexFilterList;
         for(auto it = chunkResult.indexFilterListSorted.constBegin(); it != chunkResult.indexFilterListSorted.constEnd(); ++it)
             acc.indexFilterListSorted.insert(it.key(), it.value());
+        // Collect metadata in results and apply before completion
+        for(auto it = chunkResult.markerCounts.constBegin(); it != chunkResult.markerCounts.constEnd(); ++it)
+            acc.markerCounts[it.key()] = acc.markerCounts.value(it.key(), 0) + it.value();
     };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    // pool is always QThreadPool::globalInstance(), so omit it: the explicit-pool
-    // overload of blockingMappedReduced() is Qt6-only and breaks the Qt5 build.
+    // pool is always QThreadPool::globalInstance(), so omit it: the explicit-pool overload of blockingMappedReduced() is Qt6-only and breaks the Qt5 build.
     FilterChunkResult merged = QtConcurrent::blockingMappedReduced<FilterChunkResult>(
                 chunks, mapChunk, reduceResults,
                 QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce);
 #else
-    // Qt5's QtConcurrent::blockingMappedReduced() requires map functors to expose a
-    // legacy result_type typedef, which a C++ lambda doesn't provide - so on Qt5 the
-    // chunks are simply run sequentially here instead (same map/reduce, no threading).
+    // Qt5's QtConcurrent::blockingMappedReduced() requires a legacy result_type typedef that a C++ lambda doesn't provide, so chunks run sequentially here instead.
     FilterChunkResult merged;
     for(const FilterChunk &chunk : chunks)
         reduceResults(merged, mapChunk(chunk));
@@ -762,11 +732,24 @@ bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterL
     if(cancelled.load(std::memory_order_relaxed))
         return false;
 
-    // Chunks are contiguous and processed in index order, so a plain concatenation (in chunk
-    // order) reproduces the single-threaded scan's order exactly for the unsorted case.
+    // Chunks are contiguous and processed in index order, so a plain concatenation reproduces the single-threaded scan's order for the unsorted case.
     indexFilterList += merged.indexFilterList;
     for(auto it = merged.indexFilterListSorted.constBegin(); it != merged.indexFilterListSorted.constEnd(); ++it)
         indexFilterListSorted.insert(it.key(), it.value());
+
+    // Apply collected metadata from parallel workers before completion
+    if (!merged.markerCounts.isEmpty())
+    {
+        QMutexLocker locker(&markerCountLock);
+        for(auto it = merged.markerCounts.constBegin(); it != merged.markerCounts.constEnd(); ++it)
+            markerCounts[it.key()] = markerCounts.value(it.key(), 0) + it.value();
+    }
+
+    // Sort GET_LOG_INFO indices to restore order, since they were appended in worker arrival order
+    {
+        QMutexLocker locker(&getLogInfoListLock);
+        std::sort(getLogInfoList.begin(), getLogInfoList.end());
+    }
 
     return true;
 }

@@ -20,7 +20,7 @@
 #define DLT_FILE_INDEXER_SEG_SIZE (1024*1024)
 #define DLT_FILE_INDEXER_FILE_VERSION 2
 
-// Batch read budget used by indexFilterParallel()'s workers (Method 1: batch reads, per design doc).
+// Batch read budget used by indexFilterParallel()'s workers.
 #define DLT_FILE_INDEXER_FILTER_BATCH_BYTES (8*1024*1024)
 
 class DltFileIndexerKey
