@@ -1053,9 +1053,7 @@ QDltMsgBatch QDltFile::getMsgBatch(int index, QFile &reader, qint64 maxBytes) co
         batchStartPos = file->indexAll[localIndex];
         fileName = file->infile.fileName();
 
-        // Walk forward within this one file only, accumulating consecutive messages until the
-        // byte budget is spent. Always include at least one message, even if it alone is bigger
-        // than maxBytes, so a single oversized message can never stall the scan.
+        // Walk forward within this one file, accumulating messages until the byte budget is spent (always at least one message).
         qint64 pos = batchStartPos;
         int li = localIndex;
         while (li < file->indexAll.size())
@@ -1083,7 +1081,7 @@ QDltMsgBatch QDltFile::getMsgBatch(int index, QFile &reader, qint64 maxBytes) co
     if (count <= 0)
         return result;
 
-    if (reader.fileName() != fileName)
+    if (reader.fileName() != fileName || !reader.isOpen())
     {
         if (reader.isOpen())
             reader.close();
@@ -1113,6 +1111,11 @@ QByteArray QDltFile::sliceMsgFromBatch(const QDltMsgBatch &batch, int index)
         return {};
 
     const int i = index - batch.startIndex;
+    
+    // Validate that both offset entries exist before indexing; public batches can have invalid count/offsets
+    if (i < 0 || (i + 1) >= batch.offsets.size())
+        return {};
+    
     const qint64 off = batch.offsets[i];
     const qint64 len = batch.offsets[i + 1] - off;
     if (len < 0 || off < 0 || (off + len) > batch.data.size())
