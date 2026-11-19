@@ -3002,8 +3002,11 @@ void MainWindow::applySettings()
     QFont font;// = ui->tableView->font();
     font.fromString(settings->fontName);
     ui->tableView->setFont(font);
+    // Lower Qt minimumSectionSize to let small row heights from the settings take effect.
+    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
     m_searchresultsTable->setFont(font);
+    m_searchresultsTable->verticalHeader()->setMinimumSectionSize(1);
     m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
 
     for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
