@@ -24,7 +24,6 @@
 #include <QTreeWidgetItem>
 #include <QFile>
 #include <QDir>
-#include <QList>
 #include <QVector>
 #include "globals.h"
 #include "qdlt.h"
