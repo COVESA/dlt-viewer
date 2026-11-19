@@ -1547,13 +1547,14 @@ int dltv2_file_read_header_raw(DltFile *file,int resync,int verbose)
         return -1;
      };
 
+    file->msg.baseheaderv2.htyp2 = DLT_LETOH_32(file->msg.baseheaderv2.htyp2);
     if (file->msg.baseheaderv2.htyp2 !=0x4c ){
         dlt_log(LOG_ERR,"header not found \n");
         /* go back to last file position */
             fseek(file->handle,file->file_position,SEEK_SET);
      }
     //swap endianess of the length and htyp 
-    file->msg.baseheaderv2.len=(file->msg.baseheaderv2.len >> 8) | (file->msg.baseheaderv2.len << 8);
+    file->msg.baseheaderv2.len=DLT_BETOH_16(file->msg.baseheaderv2.len);
     
     if(((file->msg.baseheaderv2.htyp2 & 0x03)==0)||((file->msg.baseheaderv2.htyp2 & 0x03)==2)){// 0x0 = verbose, 0x1 = non verbose, 0x2 = control
         //has MSIN and NOAR
@@ -2071,7 +2072,7 @@ int dltv2_file_read_raw(DltFile *file,int resync,int verbose){
 
     file->msg.datasize=file->msg.baseheaderv2.len-headerlen;
     //swap endianess of the length
-    file->msg.baseheaderv2.len=(file->msg.baseheaderv2.len >> 8) | (file->msg.baseheaderv2.len << 8);
+    file->msg.baseheaderv2.len=DLT_BETOH_16(file->msg.baseheaderv2.len);
     /* read the data */
      if (dlt_file_read_data(file,verbose)<0)
     {
