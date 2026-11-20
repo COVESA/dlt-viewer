@@ -28,7 +28,7 @@
 
 #include <QString>
 
-#define PLUGIN_INTERFACE_VERSION "1.0.1"
+#define PLUGIN_INTERFACE_VERSION "1.1.0"
 
 class QTableView;
 
@@ -115,6 +115,20 @@ public:
     */
     virtual QStringList infoConfig() = 0;
 
+    //! Whether the plugin configuration dialog may select multiple files/directories.
+    /*!
+      By default, the generic plugin configuration dialog only lets the user
+      pick a single file or a single directory, which is passed as-is to
+      loadConfig()/saveConfig(). Plugins whose loadConfig()/saveConfig()
+      implementation can handle several paths at once may override this to
+      return true; the dialog will then allow selecting multiple files
+      (or accumulating multiple directories) and join them into a single
+      string separated by '|' before passing it to loadConfig()/saveConfig().
+      This feature is disabled by default and must be explicitly enabled by
+      the plugin.
+      \return True if the plugin supports multiple files/directories, false (default) otherwise.
+    */
+    virtual bool allowsMultipleFiles() { return false; }
 
 };
 
