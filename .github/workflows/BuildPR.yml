@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        osversion: [ 14, 15, 15-intel ]
+        osversion: [ 15, 15-intel ]
 
     steps:
     - name: Checkout source
@@ -207,11 +207,6 @@ jobs:
       #   with:
       #     name: DLT-Linux
       #   continue-on-error: true
-        
-      - name: Download DLT macOS 14 artifacts arm64
-        uses: actions/download-artifact@v8
-        with:
-          name: DLTViewer-macos14-qt6
 
       - name: Download DLT macOS 15 artifacts arm64
         uses: actions/download-artifact@v8
