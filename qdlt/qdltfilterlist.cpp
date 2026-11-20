@@ -389,6 +389,19 @@ bool QDltFilterList::LoadFilter(QString _filename, bool replace){
     /* update sorted filter list immediately after loading new filter */
     updateSortedFilter();
 
+    /* Compile regular expressions for every loaded filter.
+     * QDltFilter::match() uses the compiled QRegularExpression objects
+     * (payloadRegularExpression, headerRegularExpression, ...) rather than
+     * the raw QString fields. Without compiling them, the enableRegexp_*
+     * flags loaded from the .dlf file have no effect. The GUI used to be
+     * the only caller that compiled regexps (MainWindow::filterUpdate); the
+     * command line path (DltFileExporter / QDltExporter) never did, which
+     * silently disabled regexp filtering. */
+    for(int numfilter=0; numfilter<filters.size(); numfilter++)
+    {
+        filters[numfilter]->compileRegexps();
+    }
+
     return true;
 }
 
