@@ -10,6 +10,10 @@
 #include <QMutexLocker>
 #include <QDir>
 #include <QFileInfo>
+#include <QFile>
+#include <QThreadPool>
+#include <QtConcurrent/QtConcurrent>
+#include <algorithm>
 #include <vector>
 #include <limits>
 
@@ -69,6 +73,7 @@ DltFileIndexer::DltFileIndexer(QObject *parent) :
     multithreaded = true;
     sortByTimeEnabled = false;
     sortByTimestampEnabled = false;
+    parallelFilterIndexingEnabled = true;
 
     maxRun = 0;
     currentRun = 0;
@@ -98,6 +103,7 @@ DltFileIndexer::DltFileIndexer(QDltFile *dltFile, QDltPluginManager *pluginManag
     multithreaded = true;
     sortByTimeEnabled = 0;
     sortByTimestampEnabled = 0;
+    parallelFilterIndexingEnabled = true;
     errors_in_file  = 0;
 
     maxRun = 0;
@@ -475,93 +481,118 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
 
     const bool useIndexerThread = false;
 
-    DltFileIndexerThread indexerThread
-            (
-                this,
-                &filterList,
-                sortByTimeEnabled,
-                sortByTimestampEnabled,
-                &indexFilterList,
-                &indexFilterListSorted,
-                pluginManager,
-                &activeViewerPlugins,
-                &activeDecoderPlugins,
-                silentMode
-            );
+    // Parallel filtering runs for modeFilter, and for modeIndexAndFilter only without active viewer plugins (thread-unsafe message ordering).
+    const bool noActiveViewerPlugins = activeViewerPlugins.isEmpty();
+    // Add multithreaded check to parallel-path gate; reloadLogFile(false, false) expects synchronous execution
+    const bool useParallelFilterIndexing = parallelFilterIndexingEnabled && !useIndexerThread &&
+            (mode == modeFilter || (mode == modeIndexAndFilter && noActiveViewerPlugins));
 
-    if(!sortByTimeEnabled && !sortByTimestampEnabled)
+    if(useParallelFilterIndexing)
     {
-        indexFilterList.reserve(static_cast<int>(qMax<quint64>(indexFilterList.size(), end - start)));
+        qDebug() << "### Create filter index (parallel)";
+        qDebug() << "Create filter index: Start";
+
+        // Single-pass scan optimization: skip cache bookkeeping during full CFI traversal.
+        if(dltFile)
+            dltFile->setCacheSinglePassBypass(true);
+
+        emit progress(0);
+        const bool finishedWithoutCancel = indexFilterParallel(start, end, filterList, silentMode);
+
+        if(dltFile)
+            dltFile->setCacheSinglePassBypass(false);
+
+        if(!finishedWithoutCancel)
+            return false; // cancelled mid-flight
+
+        emit(progress(100));
+        qDebug() << "CFI:" << 100 << "%";
     }
-
-    if(useIndexerThread)
+    else
     {
-        indexerThread.start(); // thread starts reading its queue
-    }
+        DltFileIndexerThread indexerThread
+                (
+                    this,
+                    &filterList,
+                    sortByTimeEnabled,
+                    sortByTimestampEnabled,
+                    &indexFilterList,
+                    &indexFilterListSorted,
+                    pluginManager,
+                    &activeViewerPlugins,
+                    &activeDecoderPlugins,
+                    silentMode
+                );
 
-    qDebug() << "### Create filter index";
-    qDebug() << "Create filter index: Start";
-
-    /* init fileprogress */
-    unsigned int progressCounter = 1;
-    emit progress(0);
-
-    // Single-pass scan optimization: skip cache bookkeeping during full CFI traversal.
-    if(dltFile)
-        dltFile->setCacheSinglePassBypass(true);
-
-    // Start reading messages
-    for(ix=start;ix<end;ix++)
-    {
-        if(!dltFile->getMsgNoCache(ix, msg, msgBuffer))
-            continue; // Skip broken messages
-
-        if(true == useIndexerThread)
+        if(useIndexerThread)
         {
-            QSharedPointer<QDltMsg> msgShared = QSharedPointer<QDltMsg>::create(msg);
-            indexerThread.enqueueMessage(msgShared, ix);
-        }
-        else
-        {
-            indexerThread.processMessage(msg, ix);
+            indexerThread.start(); // thread starts reading its queue
         }
 
-        if((end-start)!=0)
-            iPercent = ( (ix-start)*100 )/(end-start);
-        if(iPercent>=progressCounter)
-        {
-            progressCounter += 1;
-            emit progress(iPercent); // every 1%
-            if((iPercent>0) && ((iPercent%10)==0))
-                qDebug() << "CFI:" << iPercent << "%"; // every 10%
-        }
+        qDebug() << "### Create filter index";
+        qDebug() << "Create filter index: Start";
 
-        // stop if requested
-        if(stopFlag)
-        {
-            if(dltFile)
-                dltFile->setCacheSinglePassBypass(false);
+        /* init fileprogress */
+        unsigned int progressCounter = 1;
+        emit progress(0);
 
-            if(useIndexerThread)
+        // Single-pass scan optimization: skip cache bookkeeping during full CFI traversal.
+        if(dltFile)
+            dltFile->setCacheSinglePassBypass(true);
+
+        // Start reading messages
+        for(ix=start;ix<end;ix++)
+        {
+            if(!dltFile->getMsgNoCache(ix, msg, msgBuffer))
+                continue; // Skip broken messages
+
+            if(true == useIndexerThread)
             {
-                indexerThread.requestStop();
-                indexerThread.wait();
+                QSharedPointer<QDltMsg> msgShared = QSharedPointer<QDltMsg>::create(msg);
+                indexerThread.enqueueMessage(msgShared, ix);
+            }
+            else
+            {
+                indexerThread.processMessage(msg, ix);
             }
 
-            return false;
+            if((end-start)!=0)
+                iPercent = ( (ix-start)*100 )/(end-start);
+            if(iPercent>=progressCounter)
+            {
+                progressCounter += 1;
+                emit progress(iPercent); // every 1%
+                if((iPercent>0) && ((iPercent%10)==0))
+                    qDebug() << "CFI:" << iPercent << "%"; // every 10%
+            }
+
+            // stop if requested
+            if(stopFlag)
+            {
+                if(dltFile)
+                    dltFile->setCacheSinglePassBypass(false);
+
+                if(useIndexerThread)
+                {
+                    indexerThread.requestStop();
+                    indexerThread.wait();
+                }
+
+                return false;
+            }
         }
-    }
 
-    if(dltFile)
-        dltFile->setCacheSinglePassBypass(false);
+        if(dltFile)
+            dltFile->setCacheSinglePassBypass(false);
 
-    emit(progress(100));
-    qDebug() << "CFI:" << 100 << "%";
-    // destroy threads
-    if(true == useIndexerThread)
-    {
-        indexerThread.requestStop();
-        indexerThread.wait();
+        emit(progress(100));
+        qDebug() << "CFI:" << 100 << "%";
+        // destroy threads
+        if(true == useIndexerThread)
+        {
+            indexerThread.requestStop();
+            indexerThread.wait();
+        }
     }
 
     // update performance counter
@@ -579,6 +610,146 @@ bool DltFileIndexer::indexFilter(QStringList filenames)
     }
 
     qDebug() << "Create filter index: Finish";
+
+    return true;
+}
+
+namespace {
+
+// One contiguous range of message indices handed to a single worker.
+struct FilterChunk { qint64 begin; qint64 end; };
+
+// Results produced by one worker for its own chunk - never touches another worker's data.
+struct FilterChunkResult
+{
+    QVector<qint64> indexFilterList;
+    QMap<DltFileIndexerKey,qint64> indexFilterListSorted;
+    QMap<QString, int> markerCounts;  // Collect marker counts from parallel workers
+    QList<int> getLogInfoIndices;      // Collect GET_LOG_INFO indices in chunk order
+};
+
+} // namespace
+
+bool DltFileIndexer::indexFilterParallel(quint64 start, quint64 end, QDltFilterList &filterList, bool silentMode)
+{
+    const qint64 rangeStart = static_cast<qint64>(start);
+    const qint64 rangeEnd = static_cast<qint64>(end);
+    const qint64 total = rangeEnd - rangeStart;
+
+    if(total <= 0)
+        return true;
+
+    // Same chunk-sizing formula as searchdialog.cpp's "Find All" (proven parallel precedent).
+    QThreadPool *pool = QThreadPool::globalInstance();
+    const int workerCount = qMax(1, pool->maxThreadCount());
+    const qint64 maxChunkSize = 20000;
+    const qint64 chunkCount = qMax<qint64>(1, qMax(qMin<qint64>(total, workerCount),
+                                                    (total + maxChunkSize - 1) / maxChunkSize));
+    const qint64 chunkSize = qMax<qint64>(1, (total + chunkCount - 1) / chunkCount);
+
+    QVector<FilterChunk> chunks;
+    for(qint64 b = rangeStart; b < rangeEnd; b += chunkSize)
+        chunks.push_back({b, qMin(b + chunkSize, rangeEnd)});
+
+    std::atomic<int> completedChunks{0};
+    std::atomic<bool> cancelled{false};
+    const int nChunks = chunks.size();
+
+    QDltFile *file = dltFile;
+    QDltPluginManager *plugins = pluginManager;
+    DltFileIndexer *self = this;
+    const bool wantSortedByTime = sortByTimeEnabled;
+    const bool wantSortedByTimestamp = sortByTimestampEnabled;
+
+    auto mapChunk = [=, &filterList, &completedChunks, &cancelled](const FilterChunk &chunk) -> FilterChunkResult
+    {
+        FilterChunkResult result;
+        if(!wantSortedByTime && !wantSortedByTimestamp)
+            result.indexFilterList.reserve(static_cast<int>(chunk.end - chunk.begin));
+
+        // Own file handle per worker - QDltFile::getMsgBatch() briefly locks mutexQDlt only to look up offsets, the seek()+read() itself runs outside the lock.
+        QFile workerReader;
+        QDltMsgBatch batch;
+
+        const bool dltv2Support = file->getDLTv2Support();
+
+        for(qint64 ix = chunk.begin; ix < chunk.end; ++ix)
+        {
+            if(self->stopFlag || cancelled.load(std::memory_order_relaxed))
+            {
+                cancelled.store(true, std::memory_order_relaxed);
+                break;
+            }
+
+            // Refill the local batch buffer only when it is empty/exhausted - no extra disk access for messages already covered.
+            if(!batch.contains(static_cast<int>(ix)))
+            {
+                batch = file->getMsgBatch(static_cast<int>(ix), workerReader, DLT_FILE_INDEXER_FILTER_BATCH_BYTES);
+                if(!batch.contains(static_cast<int>(ix)))
+                    continue; // unreadable message, skip (same as the single-threaded path)
+            }
+
+            const QByteArray data = QDltFile::sliceMsgFromBatch(batch, static_cast<int>(ix));
+            if(data.isEmpty())
+                continue; // skip broken messages, same as the single-threaded path
+
+            QDltMsg msg;
+            if(!msg.setMsg(data, true, dltv2Support) && (dltv2Support || !msg.setMsg(data, true, true)))
+                continue;
+            msg.setIndex(static_cast<int>(ix));
+
+            DltFileIndexerThread::processMessageStatic(msg, static_cast<int>(ix), self, &filterList, wantSortedByTime, wantSortedByTimestamp, &result.indexFilterList, &result.indexFilterListSorted, plugins, &self->activeViewerPlugins, &self->activeDecoderPlugins, silentMode);
+        }
+
+        const int done = completedChunks.fetch_add(1, std::memory_order_relaxed) + 1;
+        emit self->progress((done * 99) / qMax(1, nChunks));
+
+        return result;
+    };
+
+    auto reduceResults = [](FilterChunkResult &acc, const FilterChunkResult &chunkResult)
+    {
+        acc.indexFilterList += chunkResult.indexFilterList;
+        for(auto it = chunkResult.indexFilterListSorted.constBegin(); it != chunkResult.indexFilterListSorted.constEnd(); ++it)
+            acc.indexFilterListSorted.insert(it.key(), it.value());
+        // Collect metadata in results and apply before completion
+        for(auto it = chunkResult.markerCounts.constBegin(); it != chunkResult.markerCounts.constEnd(); ++it)
+            acc.markerCounts[it.key()] = acc.markerCounts.value(it.key(), 0) + it.value();
+    };
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    // pool is always QThreadPool::globalInstance(), so omit it: the explicit-pool overload of blockingMappedReduced() is Qt6-only and breaks the Qt5 build.
+    FilterChunkResult merged = QtConcurrent::blockingMappedReduced<FilterChunkResult>(
+                chunks, mapChunk, reduceResults,
+                QtConcurrent::OrderedReduce | QtConcurrent::SequentialReduce);
+#else
+    // Qt5's QtConcurrent::blockingMappedReduced() requires a legacy result_type typedef that a C++ lambda doesn't provide, so chunks run sequentially here instead.
+    FilterChunkResult merged;
+    for(const FilterChunk &chunk : chunks)
+        reduceResults(merged, mapChunk(chunk));
+#endif
+
+    if(cancelled.load(std::memory_order_relaxed))
+        return false;
+
+    // Chunks are contiguous and processed in index order, so a plain concatenation reproduces the single-threaded scan's order for the unsorted case.
+    indexFilterList += merged.indexFilterList;
+    for(auto it = merged.indexFilterListSorted.constBegin(); it != merged.indexFilterListSorted.constEnd(); ++it)
+        indexFilterListSorted.insert(it.key(), it.value());
+
+    // Apply collected metadata from parallel workers before completion
+    if (!merged.markerCounts.isEmpty())
+    {
+        QMutexLocker locker(&markerCountLock);
+        for(auto it = merged.markerCounts.constBegin(); it != merged.markerCounts.constEnd(); ++it)
+            markerCounts[it.key()] = markerCounts.value(it.key(), 0) + it.value();
+    }
+
+    // Sort GET_LOG_INFO indices to restore order, since they were appended in worker arrival order
+    {
+        QMutexLocker locker(&getLogInfoListLock);
+        std::sort(getLogInfoList.begin(), getLogInfoList.end());
+    }
 
     return true;
 }
@@ -795,6 +966,7 @@ bool DltFileIndexer::tryLock()
 
 void DltFileIndexer::appendToGetLogInfoList(int value)
 {
+    QMutexLocker locker(&getLogInfoListLock);
     getLogInfoList.append(value);
 }
 
