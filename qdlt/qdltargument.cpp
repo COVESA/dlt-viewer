@@ -171,10 +171,18 @@ bool QDltArgument::setArgument(QByteArray &payload,unsigned int &offset, QDlt::D
                 length3 = DLT_SWAP_16((*((unsigned short*) (payload.constData()+offset))));
             offset += sizeof(unsigned short);
         }
+        // length2/length3 come from the wire and are uncapped uint16_t.
+        // Without these checks Qt's QByteArray::mid() silently truncates
+        // when (offset + lengthN) exceeds payload.size(), producing a
+        // shorter-than-claimed name/unit string instead of failing.
+        if((unsigned int)payload.size()<(offset+length2))
+            return false;
         name = QString(payload.mid(offset,length2));
         offset += length2;
         if(typeInfo == DltTypeInfoSInt || typeInfo == DltTypeInfoUInt || typeInfo == DltTypeInfoFloa)
         {
+            if((unsigned int)payload.size()<(offset+length3))
+                return false;
             unit = QString(payload.mid(offset,length3));
             offset += length3;
         }
