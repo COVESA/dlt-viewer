@@ -31,7 +31,6 @@ File::File():QTreeWidgetItem()
     receivedPackages = 0;
     sizeInBytes = 0;
     buffer = 0;
-    dltFileIndex = NULL;
     dltFile = NULL;
     fileData = NULL;
 }
@@ -43,7 +42,6 @@ File::File(QDltFile *qfile,QTreeWidgetItem *parent):QTreeWidgetItem(parent)
     packages = 0;
     sizeInBytes = 0;
     buffer = 0;
-    dltFileIndex = NULL;
     dltFile = qfile;
     fileData = NULL;
 
@@ -107,7 +105,8 @@ void File::setFileSerialNumber(QString s)
 
 void File::setPackages(QString p){
     packages = p.toUInt();
-    dltFileIndex = new QList<int>[packages];
+    // -1 marks a package that has not been received yet
+    dltFileIndex.fill(-1, packages);
     this->setText(COLUMN_PACKAGES, p);
 }
 void File::increaseReceivedPackages(){
@@ -159,16 +158,16 @@ bool File::isComplete(){
 
 void File::setQFileIndexForPackage(QString packageNumber, int index){
     int i = packageNumber.toInt();
-    // Package numbers are 1-based; i-1 must be a valid 0-based index into dltFileIndex.
-    // The old check (i-1) <= length() allowed i==0 (i-1==-1) and inserts past the end.
-    if(i >= 1 && dltFileIndex != nullptr && (unsigned int)(i-1) < packages)
+    if(i < 1 || i > dltFileIndex.size())
     {
-        dltFileIndex->insert(i-1, index);
+        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is out of range [1.." << dltFileIndex.size() << "] FileSerialNumber" << fileSerialNumber;
+        return;
     }
-    else
+    if(dltFileIndex[i-1] != -1)
     {
-        qDebug() << "ERROR in setQFileIndexForPackage: i" << i << "is out of range [1.." << packages << "] FileSerialNumber" << fileSerialNumber;
+        return; // duplicate package
     }
+    dltFileIndex[i-1] = index;
     increaseReceivedPackages();
 }
 
@@ -221,7 +220,7 @@ QByteArray* File::getFileData(){
    fileData = new QByteArray();
 
     for(unsigned int i=0; i<packages;i++){
-       int qfileIdx = dltFileIndex->value(i);
+       int qfileIdx = dltFileIndex.value(i);
        msgBuffer =  dltFile->getMsg(qfileIdx);
        msg.setMsg(msgBuffer);
        msg.setIndex(qfileIdx);
