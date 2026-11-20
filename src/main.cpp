@@ -21,10 +21,36 @@
 #include <QApplication>
 #include <QStyleFactory>
 #include <QThread>
+#include <QFile>
+#include <QDateTime>
+#include <QDebug>
 
 #include <qdltoptmanager.h>
 
 #include "mainwindow.h"
+
+/* Custom message handler: writes qDebug to a log file for debugging */
+static QFile s_logFile;
+static QtMessageHandler s_defaultHandler = nullptr;
+void debugMessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    if (s_logFile.isOpen()) {
+        QString txt = QDateTime::currentDateTime().toString("hh:mm:ss.zzz") + " ";
+        switch (type) {
+            case QtDebugMsg:    txt += "DBG "; break;
+            case QtInfoMsg:     txt += "INF "; break;
+            case QtWarningMsg:  txt += "WRN "; break;
+            case QtCriticalMsg: txt += "CRT "; break;
+            case QtFatalMsg:    txt += "FTL "; break;
+        }
+        txt += msg + "\n";
+        s_logFile.write(txt.toUtf8());
+        s_logFile.flush();
+    }
+    /* forward to default handler so console output is preserved */
+    if (s_defaultHandler)
+        s_defaultHandler(type, context, msg);
+}
 
 int main(int argc, char *argv[])
 {
@@ -49,6 +75,16 @@ int main(int argc, char *argv[])
     // Keep the UI responsive under heavy background processing.
     QThread::currentThread()->setPriority(QThread::HighestPriority);
     QDltOptManager::getInstance()->parse(a.arguments());
+
+    /* Install debug log file handler (only with --debug-log flag) */
+    if (a.arguments().contains("--debug-log")) {
+        QString logPath = QCoreApplication::applicationDirPath() + "/debug_tcp_server.log";
+        s_logFile.setFileName(logPath);
+        if (s_logFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+            s_defaultHandler = qInstallMessageHandler(debugMessageHandler);
+            qDebug() << "Debug logging started ->" << logPath;
+        }
+    }
 
     MainWindow w;
     w.show();
