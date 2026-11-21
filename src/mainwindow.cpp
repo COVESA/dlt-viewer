@@ -101,6 +101,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     dltIndexer = NULL;
+    // updateIndex() runs on every update of a live connection. Only print its progress for command line conversions.
+    qfile.setProgressOutputEnabled(QDltOptManager::getInstance()->isCommandlineMode());
     settings = QDltSettingsManager::getInstance();
     ui->setupUi(this);
     ui->enableConfigFrame->setVisible(false);

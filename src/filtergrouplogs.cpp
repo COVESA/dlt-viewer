@@ -77,6 +77,7 @@ QStringList CFilterGroupLogs::extractEcuIds(const QString& dltFilePath) {
     }
 
     QDltFile dltFile;
+    dltFile.setProgressOutputEnabled(false);
     QSet<QString> uniqueEcuIds;
     if (!dltFile.open(dltFilePath)) {
         return QStringList();
