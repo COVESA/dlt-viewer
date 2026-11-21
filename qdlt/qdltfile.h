@@ -131,6 +131,20 @@ public:
     */
     bool updateIndex();
 
+    //! Enable or disable the "CI: X %" progress output of createIndex() and updateIndex().
+    /*!
+      Enabled by default. Disable it where indexing runs repeatedly, such as on every
+      update of a live connection, to keep the debug output quiet.
+      \param enabled true to print progress, false to stay silent.
+    */
+    void setProgressOutputEnabled(bool enabled) { progressOutputEnabled = enabled; }
+
+    //! Whether createIndex() and updateIndex() print "CI: X %" progress output.
+    /*!
+      \return true if progress output is enabled.
+    */
+    bool isProgressOutputEnabled() const { return progressOutputEnabled; }
+
     //! Create an internal index of all filtered DLT messages of the currently opened DLT log file.
     /*!
       \return true if the operation was successful, false if an error occurred.
@@ -459,6 +473,9 @@ private:
       false filtering is disabled.
     */
     bool filterFlag;
+
+    //! Print "CI: X %" progress while indexing, see setProgressOutputEnabled().
+    bool progressOutputEnabled{true};
 
     //! Enabling sortByTime.
     /*!
