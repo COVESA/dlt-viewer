@@ -345,6 +345,7 @@ private:
     void disconnectECU(EcuItem *ecuitem);
     void checkConnectionState();
     void read(EcuItem *ecuitem);
+    bool writeLiveMessage(EcuItem *ecuitem, QDltMsg &message);
     void updateIndex();
     void drawUpdatedView();
 

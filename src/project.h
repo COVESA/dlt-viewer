@@ -65,6 +65,8 @@ public:
     QString description;
     int interfacetype;
     int loglevel;
+    int liveLogLevel = QDltMsg::DltLogDefault;
+    bool liveLogLevelRequested = false;
     int tracestatus;
     int verbosemode;
     bool timingPackets;
@@ -102,6 +104,7 @@ public:
     void updateAutoReconnectTimestamp();
 
     ApplicationItem* find(const QString& apid) const;
+    int liveLogLevelForContext(const QString &apid, const QString &ctid) const;
 
 private:
     QDateTime autoReconnectTimestamp;
@@ -171,6 +174,7 @@ public:
 
     QString id;
     QString description;
+    int liveLogLevel = QDltMsg::DltLogUnknown;
 
     void update();
 
@@ -190,6 +194,7 @@ public:
     QString id;
     QString description;
     int loglevel;
+    int liveLogLevel = QDltMsg::DltLogUnknown;
     int tracestatus;
 
     void update();

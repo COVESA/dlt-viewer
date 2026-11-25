@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <qdltmsgwrapper.h>
+#include <qdltmsg.h>
+
+#include <utility>
 
 TEST(QDltMsgWrapper, uint32Serialization) {
     uint32_t value = 0x12345678;
@@ -45,4 +48,47 @@ TEST(QDltMsgWrapper, structWithContainerSerialization) {
     std::vector<uint8_t> extractedContainer(containerSize);
     memcpy(extractedContainer.data(), msg.databuffer + offset, containerSize);
     ASSERT_EQ(extractedContainer, container);
+}
+
+TEST(QDltMsg, liveLogLevelIncludesAllMoreSevereLogs) {
+    QDltMsg message;
+    message.setType(QDltMsg::DltTypeLog);
+    for(int maximumLevel = QDltMsg::DltLogOff; maximumLevel <= QDltMsg::DltLogVerbose; ++maximumLevel) {
+        for(unsigned char severity = QDltMsg::DltLogOff; severity <= QDltMsg::DltLogVerbose; ++severity) {
+            message.setSubtype(severity);
+            EXPECT_EQ(message.matchesLogLevel(maximumLevel),
+                      severity >= QDltMsg::DltLogFatal && severity <= maximumLevel)
+                << "selected=" << maximumLevel << ", incoming=" << static_cast<int>(severity);
+        }
+    }
+}
+
+TEST(QDltMsg, fatalWithoutMatchingLogsStaysIdleAndOtherLevelsResume) {
+    QDltMsg messages[5];
+    messages[0].setType(QDltMsg::DltTypeLog);
+    messages[0].setSubtype(QDltMsg::DltLogInfo);
+    messages[1].setType(QDltMsg::DltTypeNwTrace);
+    messages[1].setSubtype(QDltMsg::DltNetworkTraceIpc);
+    messages[2].setType(QDltMsg::DltTypeLog);
+    messages[2].setSubtype(QDltMsg::DltLogError);
+    messages[3].setType(QDltMsg::DltTypeLog);
+    messages[3].setSubtype(QDltMsg::DltLogWarn);
+    messages[4].setType(QDltMsg::DltTypeControl);
+    messages[4].setSubtype(QDltMsg::DltControlResponse);
+
+    const std::pair<int, int> cases[] = {
+        {QDltMsg::DltLogFatal, 0}, {QDltMsg::DltLogError, 1},
+        {QDltMsg::DltLogWarn, 2}, {QDltMsg::DltLogInfo, 3},
+        {QDltMsg::DltLogOff, 0}, {QDltMsg::DltLogVerbose, 3},
+        {QDltMsg::DltLogDefault, 5}
+    };
+    for(const auto &testCase : cases) {
+        int accepted = 0;
+        for(const auto &message : messages) {
+            if(message.matchesLogLevel(testCase.first)) {
+                ++accepted;
+            }
+        }
+        EXPECT_EQ(accepted, testCase.second) << "selected=" << testCase.first;
+    }
 }
