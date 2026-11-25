@@ -97,7 +97,7 @@ static QThreadPool &findAllThreadPool()
     static QThreadPool pool;
     static std::once_flag configured;
     std::call_once(configured, []() {
-        pool.setMaxThreadCount(qMax(1, qMin(4, QThread::idealThreadCount())));
+        pool.setMaxThreadCount(qMax(1, QThread::idealThreadCount()));
     });
     return pool;
 }
