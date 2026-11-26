@@ -1,7 +1,7 @@
 #ifndef QDLTCTRLMSG_H
 #define QDLTCTRLMSG_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <vector>
 #include <variant>

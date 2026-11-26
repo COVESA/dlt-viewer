@@ -8,4 +8,7 @@ cc_library(
     hdrs = [
         "version.h",
     ],
+    visibility = [
+        "//qdlt:__pkg__",
+    ],
 )

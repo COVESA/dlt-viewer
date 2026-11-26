@@ -24,9 +24,9 @@
 
 #include <QString>
 
-#include "export_rules.h"
-#include "qdltbase.h"
-#include "qdltargument.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltbase.h"
+#include "qdlt/qdltargument.h"
 
 //! Access to a DLT message.
 /*!

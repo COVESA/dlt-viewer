@@ -25,8 +25,8 @@
 #include <QString>
 #include <QVariant>
 
-#include "qdltbase.h"
-#include "export_rules.h"
+#include "qdlt/qdltbase.h"
+#include "qdlt/export_rules.h"
 
 //! One argument of a DLT message.
 /*!

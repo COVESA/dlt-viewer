@@ -26,7 +26,7 @@
 
 #include <QHash>
 
-#include "qdltfile.h"
+#include "qdlt/qdltfile.h"
 
 extern "C"
 {

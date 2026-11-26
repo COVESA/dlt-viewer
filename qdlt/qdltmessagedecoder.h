@@ -22,8 +22,8 @@
 #ifndef QDLTMESSAGEDECODER_HPP
 #define QDLTMESSAGEDECODER_HPP
 
-#include "export_rules.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltmsg.h"
 
 class QDltMsg;
 

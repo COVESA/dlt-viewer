@@ -3,10 +3,10 @@
 #include <QFile>
 #include <QFileInfo>
 
-#include "qdltexporter.h"
-#include "fieldnames.h"
-#include "qdltoptmanager.h"
-#include "qdltimporter.h"
+#include "qdlt/qdltexporter.h"
+#include "qdlt/fieldnames.h"
+#include "qdlt/qdltoptmanager.h"
+#include "qdlt/qdltimporter.h"
 
 QDltExporter::QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                            QDltExporter::DltExportFormat exportFormat,

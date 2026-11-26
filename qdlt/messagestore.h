@@ -19,8 +19,8 @@
 #ifndef MESSAGESTORE_H
 #define MESSAGESTORE_H
 
-#include "export_rules.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltmsg.h"
 
 #include <QByteArray>
 #include <cstddef>

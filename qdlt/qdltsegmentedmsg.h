@@ -22,9 +22,9 @@
 #ifndef QDLTSEGMENTEDMSG_H
 #define QDLTSEGMENTEDMSG_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
-#include <qdltmsg.h>
+#include "qdlt/qdltmsg.h"
 
 //! Combine segmented network messages
 /*!

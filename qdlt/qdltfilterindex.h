@@ -29,8 +29,8 @@
 #include <QMutex>
 #include <time.h>
 
-#include "export_rules.h"
-#include "qdltfilterlist.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltfilterlist.h"
 
 class QDLT_EXPORT QDltFilterIndex
 {

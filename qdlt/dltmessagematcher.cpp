@@ -1,6 +1,6 @@
-#include "dltmessagematcher.h"
+#include "qdlt/dltmessagematcher.h"
 
-#include <qdltmsg.h>
+#include "qdlt/qdltmsg.h"
 
 DltMessageMatcher::DltMessageMatcher() {}
 

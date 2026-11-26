@@ -25,7 +25,7 @@
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 QDltControl::QDltControl(QObject *_server)

@@ -19,7 +19,7 @@
  * @licence end@
  */
 
-#include "qdltsegmentedmsg.h"
+#include "qdlt/qdltsegmentedmsg.h"
 
 QDltSegmentedMsg::QDltSegmentedMsg()
 {
@@ -198,4 +198,3 @@ int QDltSegmentedMsg::add(QDltMsg &msg)
 
     return 0;
 }
-

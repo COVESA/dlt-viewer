@@ -31,9 +31,9 @@
 #include <QXmlStreamReader>
 #include <QXmlStreamWriter>
 
-#include "export_rules.h"
-#include "qdltfilterindex.h"
-#include "qdltfilterlist.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltfilterindex.h"
+#include "qdlt/qdltfilterlist.h"
 
 
 class QDLT_EXPORT QDltDefaultFilter

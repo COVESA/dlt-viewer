@@ -16,9 +16,9 @@
  * @licence end@
  */
 
-#include "qdltfileprojection.h"
+#include "qdlt/qdltfileprojection.h"
 
-#include "qdltfile.h"
+#include "qdlt/qdltfile.h"
 
 #include <limits>
 

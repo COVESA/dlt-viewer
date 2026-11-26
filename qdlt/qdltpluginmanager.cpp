@@ -1,5 +1,5 @@
-#include "qdltplugin.h"
-#include "qdltpluginmanager.h"
+#include "qdlt/qdltplugin.h"
+#include "qdlt/qdltpluginmanager.h"
 
 #include <QDir>
 #include <QDebug>
@@ -386,4 +386,3 @@ bool QDltPluginManager::initConnections(QStringList list)
 
     return true;
 }
-

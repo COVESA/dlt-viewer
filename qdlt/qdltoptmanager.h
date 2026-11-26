@@ -23,7 +23,7 @@
 #include <QStringList>
 #include <QCommandLineParser>
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 enum e_convertionmode
 {

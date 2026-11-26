@@ -20,11 +20,11 @@
 #ifndef PLUGININTERFACE_H
 #define PLUGININTERFACE_H
 
-#include "qdltconnection.h"
-#include "qdltcontrol.h"
-#include "qdltfile.h"
-#include "qdltmessagedecoder.h"
-#include "qdltmsg.h"
+#include "qdlt/qdltconnection.h"
+#include "qdlt/qdltcontrol.h"
+#include "qdlt/qdltfile.h"
+#include "qdlt/qdltmessagedecoder.h"
+#include "qdlt/qdltmsg.h"
 
 #include <QString>
 

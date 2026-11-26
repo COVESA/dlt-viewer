@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 #include "dltmessagematcher.h"
-#include <qdltmsg.h>
+#include "qdlt/qdltmsg.h"
 
 TEST(DltMessageMatcher, matchAppId) {
     QDltMsg msg;

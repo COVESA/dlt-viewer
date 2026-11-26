@@ -16,11 +16,11 @@
  * @licence end@
  */
 
-#include "decodecacheservice.h"
+#include "qdlt/decodecacheservice.h"
 
-#include "messagestore.h"
-#include "qdltfile.h"
-#include "qdltpluginmanager.h"
+#include "qdlt/messagestore.h"
+#include "qdlt/qdltfile.h"
+#include "qdlt/qdltpluginmanager.h"
 
 #include <utility>
 

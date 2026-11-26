@@ -20,7 +20,7 @@
 #ifndef SEARCHSNAPSHOT_H
 #define SEARCHSNAPSHOT_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <QMutex>
 #include <QStringList>
@@ -39,6 +39,8 @@ public:
     qint64 byteCount{0};
 };
 
+class SearchSnapshotManager;
+
 class QDLT_EXPORT SearchSnapshot
 {
 public:
@@ -55,17 +57,6 @@ private:
     QVector<SearchSnapshotRow> m_rows;
     QStringList m_fileNames;
     quint64 m_generation{0};
-};
-
-class QDLT_EXPORT SearchSnapshotManager
-{
-public:
-    std::shared_ptr<const SearchSnapshot> capture(const QDltFile *file);
-
-private:
-    mutable QMutex m_mutex;
-    const QDltFile *m_cachedFile{nullptr};
-    std::shared_ptr<const SearchSnapshot> m_cachedSnapshot;
 };
 
 #endif // SEARCHSNAPSHOT_H

@@ -71,7 +71,7 @@
   \{
 */
 
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 
 #ifdef __cplusplus
 extern "C" {

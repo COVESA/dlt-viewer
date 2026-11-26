@@ -19,7 +19,7 @@
 #ifndef QDLTFILEPROJECTION_H
 #define QDLTFILEPROJECTION_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <vector>
 

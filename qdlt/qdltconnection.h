@@ -29,8 +29,8 @@
 #include <QMutex>
 #include <time.h>
 
-#include "export_rules.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltmsg.h"
 
 class QDLT_EXPORT QDltDataView
 {

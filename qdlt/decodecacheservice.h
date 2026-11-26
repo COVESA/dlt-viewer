@@ -19,8 +19,8 @@
 #ifndef DECODECACHESERVICE_H
 #define DECODECACHESERVICE_H
 
-#include "export_rules.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltmsg.h"
 
 #include <cstddef>
 #include <cstdint>

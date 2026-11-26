@@ -1,9 +1,9 @@
 #ifndef QDLTMSGWRAPPER_H
 #define QDLTMSGWRAPPER_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 
 #include <cstdlib>
 #include <cstring>

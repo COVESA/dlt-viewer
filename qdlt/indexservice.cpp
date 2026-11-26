@@ -16,7 +16,7 @@
  * @licence end@
  */
 
-#include "indexservice.h"
+#include "qdlt/indexservice.h"
 
 std::size_t CIndexService::fullRowCount(const std::vector<int> &fullProjection) const
 {

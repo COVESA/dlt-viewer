@@ -29,8 +29,8 @@
 #include <QMutex>
 #include <time.h>
 
-#include "export_rules.h"
-#include "qdltipconnection.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltipconnection.h"
 
 class QTcpSocket;
 

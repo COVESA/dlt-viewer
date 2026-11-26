@@ -11,8 +11,8 @@ extern "C" {
     #include "dlt_common.h"
 }
 
-#include "qdltmsg.h"
-#include "qdltimporter.h"
+#include "qdlt/qdltmsg.h"
+#include "qdlt/qdltimporter.h"
 
 #include <chrono>
 #include <time.h>
@@ -1508,4 +1508,3 @@ void QDltImporter::setPcapPorts(const QString &importPcapPorts)
             pcapPorts.append(item.toUShort());
     }
 }
-
