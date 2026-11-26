@@ -128,18 +128,6 @@ install(TARGETS qdlt
 
 # Install QDLT SDK
 
-if(WIN32)
-    set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH "${DLT_EXECUTABLE_INSTALLATION_PATH}")
-else()
-    if(NOT DLT_ADDITIONAL_FILES_INSTALLATION_PATH)
-        # Default to current directory for non-Windows systems
-        # This is where additional files will be installed
-        # e.g., documentation, examples, etc.
-        # It can be overridden by the user via CMake options
-        set(DLT_ADDITIONAL_FILES_INSTALLATION_PATH ".")
-    endif()
-endif()
-
 if(DLT_INSTALL_SDK)
     install(TARGETS qdlt
         DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/sdk/lib"
@@ -164,7 +152,7 @@ if(DLT_INSTALL_SDK)
 endif()
 
 install(DIRECTORY "."
-    DESTINATION "${DLT_ADDITIONAL_FILES_INSTALLATION_PATH}/include/qdlt"
+    DESTINATION "${DLT_INCLUDE_INSTALLATION_PATH}"
     COMPONENT qdlt_sdk
     FILES_MATCHING PATTERN "*.h"
     PATTERN "tests" EXCLUDE

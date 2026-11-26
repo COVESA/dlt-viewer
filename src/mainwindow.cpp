@@ -3002,8 +3002,11 @@ void MainWindow::applySettings()
     QFont font;// = ui->tableView->font();
     font.fromString(settings->fontName);
     ui->tableView->setFont(font);
+    // Lower Qt minimumSectionSize to let small row heights from the settings take effect.
+    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
     m_searchresultsTable->setFont(font);
+    m_searchresultsTable->verticalHeader()->setMinimumSectionSize(1);
     m_searchresultsTable->verticalHeader()->setDefaultSectionSize(settings->sectionSize);
 
     for  (int col=0;col <= ui->tableView->model()->columnCount();col++)
@@ -6877,6 +6880,9 @@ void MainWindow::triggerPluginsAutoload()
 
 void MainWindow::pluginsAutoload(QString version)
 {
+    if (version.trimmed().isEmpty())
+        return;
+
     // Iterate through all enabled decoder plugins
     for(int num = 0; num < project.plugin->topLevelItemCount(); num++)
     {
@@ -6963,15 +6969,8 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
             if(pluginFilenameChanged)
                 callInitFile = true;
 
-            const bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
+            bool reloadCurrentLog = callInitFile && !openFileNames.isEmpty();
             m_suppressPluginSelectionRefresh = reloadCurrentLog;
-
-            if (reloadCurrentLog)
-            {
-                clearSelection();
-                m_tableModel->setForceEmpty(true);
-                m_tableModel->modelChanged();
-            }
 
             const QString previousFilename = item->getFilename();
             const int previousMode = item->getMode();
@@ -6986,11 +6985,16 @@ void MainWindow::on_action_menuPlugin_Edit_triggered() {
                 item->setMode(previousMode);
                 item->setType(previousType);
                 item->update();
+                reloadCurrentLog = false;
+                callInitFile = false;
             }
             item->savePluginModeToSettings();
 
             if (reloadCurrentLog)
             {
+                clearSelection();
+                m_tableModel->setForceEmpty(true);
+                m_tableModel->modelChanged();
                 syncCheckBoxesAndMenu();
                 applyConfigEnabled(false);
                 filterUpdate();
@@ -7877,7 +7881,8 @@ void MainWindow::filterUpdate()
 void MainWindow::on_tableView_customContextMenuRequested(QPoint pos)
 {
     const QModelIndex clickedIndex = ui->tableView->indexAt(pos);
-    if(clickedIndex.isValid() && ui->tableView->selectionModel())
+    if(clickedIndex.isValid() && ui->tableView->selectionModel() &&
+       !ui->tableView->selectionModel()->isRowSelected(clickedIndex.row(), clickedIndex.parent()))
     {
         ui->tableView->selectionModel()->setCurrentIndex(
             clickedIndex,

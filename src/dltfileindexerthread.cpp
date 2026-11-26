@@ -60,7 +60,7 @@ void DltFileIndexerThread::run()
 }
 
 
-void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
+void DltFileIndexerThread::processMessageStatic(QDltMsg &msg, int index, DltFileIndexer *indexer, QDltFilterList *filterList, bool sortByTimeEnabled, bool sortByTimestampEnabled, QVector<qint64> *indexFilterList, QMap<DltFileIndexerKey,qint64> *indexFilterListSorted, QDltPluginManager *pluginManager, QList<QDltPlugin*> *activeViewerPlugins, QList<QDltPlugin*> *activeDecoderPlugins, bool silentMode)
 {
     DltFileIndexer::IndexingMode mode = indexer->getMode();
     bool pluginsEnabled = indexer->getPluginsEnabled();
@@ -121,7 +121,7 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
     }
 
     /* Process all viewer plugins */
-    if((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled)
+    if((mode == DltFileIndexer::modeIndexAndFilter) && pluginsEnabled && activeViewerPlugins != nullptr && !activeViewerPlugins->isEmpty())
     {
         for(int ivp = 0; ivp < activeViewerPlugins->size(); ivp++)
         {
@@ -131,7 +131,7 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
     }
 
     /* Process all decoderplugins using pre-snapshotted list to avoid lock contention in hot path */
-    if(pluginsEnabled && activeDecoderPlugins != nullptr && pluginManager != nullptr)
+    if(pluginsEnabled && activeDecoderPlugins != nullptr && !activeDecoderPlugins->isEmpty() && pluginManager != nullptr)
     {
         pluginManager->decodeMsgUsingPlugins(*activeDecoderPlugins, msg, silentMode);
     }
@@ -188,6 +188,11 @@ void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
             indexer->appendToGetLogInfoList(index);
         }
     }
+}
+
+void DltFileIndexerThread::processMessage(QDltMsg &msg, int index)
+{
+    processMessageStatic(msg, index, indexer, filterList, sortByTimeEnabled, sortByTimestampEnabled, indexFilterList, indexFilterListSorted, pluginManager, activeViewerPlugins, activeDecoderPlugins, silentMode);
 }
 
 void DltFileIndexerThread::processMessage(QSharedPointer<QDltMsg> &msg, int index)

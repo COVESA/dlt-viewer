@@ -16,6 +16,8 @@ public:
     void processMessage(QSharedPointer<QDltMsg> &msg, int index);
     void requestStop();
 
+    static void processMessageStatic(QDltMsg &msg, int index, DltFileIndexer *indexer, QDltFilterList *filterList, bool sortByTimeEnabled, bool sortByTimestampEnabled, QVector<qint64> *indexFilterList, QMap<DltFileIndexerKey,qint64> *indexFilterListSorted, QDltPluginManager *pluginManager, QList<QDltPlugin*> *activeViewerPlugins, QList<QDltPlugin*> *activeDecoderPlugins, bool silentMode);
+
 protected:
     void run();
 
