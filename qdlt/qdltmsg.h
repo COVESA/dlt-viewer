@@ -251,6 +251,14 @@ public:
     */
     void setSubtype(unsigned char _subtype) { subtype = _subtype; }
 
+    //! Match a live severity threshold. Default accepts all types; Off accepts none.
+    bool matchesLogLevel(int maximumLevel) const
+    {
+        return maximumLevel == DltLogDefault ||
+               (maximumLevel >= DltLogFatal && maximumLevel <= DltLogVerbose &&
+                type == DltTypeLog && subtype >= DltLogFatal && subtype <= maximumLevel);
+    }
+
     //! Get the text of the subtype.
     /*!
       \return The text of the subtype.

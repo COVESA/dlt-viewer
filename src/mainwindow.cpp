@@ -3680,6 +3680,17 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
 
         QList<QTreeWidgetItem *> list = project.ecu->selectedItems();
 
+        if(list.isEmpty())
+        {
+            return;
+        }
+
+        if(dlg.update() && drawTimer.isActive())
+        {
+            drawUpdatedView();
+            drawTimer.stop();
+        }
+
         // Capture selected values for next time dialog opens
         logLevel = dlg.loglevel() + 1;
         traceStatus = dlg.tracestatus() + 1;
@@ -3693,6 +3704,11 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
             ApplicationItem *applicationItem;
             for(int i=0; i<list.count(); i++){
                 applicationItem = (ApplicationItem*) list.at(i);
+                if(dlg.update())
+                {
+                    applicationItem->liveLogLevel = dlg.loglevel();
+                    static_cast<EcuItem *>(applicationItem->parent())->liveLogLevelRequested = true;
+                }
                 ContextItem *contextItem;
                 for(int j=0; j<applicationItem->childCount();j++){
                     contextItem = (ContextItem*)applicationItem->child(j);
@@ -3707,9 +3723,18 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
             EcuItem *ecuItem;
             for(int i=0; i<list.count(); i++){
                 ecuItem = (EcuItem*) list.at(i);
+                if(dlg.update())
+                {
+                    ecuItem->liveLogLevel = dlg.loglevel();
+                    ecuItem->liveLogLevelRequested = true;
+                }
                 ApplicationItem *applicationItem;
                 for(int j=0; j<ecuItem->childCount(); j++){
                     applicationItem = (ApplicationItem*) ecuItem->child(j);
+                    if(dlg.update())
+                    {
+                        applicationItem->liveLogLevel = QDltMsg::DltLogUnknown;
+                    }
                     ContextItem *contextItem;
                     for(int k=0; k<applicationItem->childCount();k++){
                         contextItem = (ContextItem*)applicationItem->child(k);
@@ -3742,6 +3767,8 @@ void MainWindow::on_action_menuDLT_Edit_All_Log_Levels_triggered()
                     {
                         ApplicationItem* appitem = (ApplicationItem*) conitem->parent();
                         EcuItem* ecuitem = (EcuItem*) appitem->parent();
+                        conitem->liveLogLevel = dlg.loglevel();
+                        ecuitem->liveLogLevelRequested = true;
 
                         if(ecuitem->connected)
                         {
@@ -4801,6 +4828,7 @@ void MainWindow::read(EcuItem* ecuitem)
 {
     int udpMessageCounter = 0;
     long int bytesRcvd = 0;
+    bool receivedMessagesStored = false;
 
     if (nullptr == ecuitem)
     {
@@ -4837,25 +4865,25 @@ void MainWindow::read(EcuItem* ecuitem)
                 {
                     // DLT message found, write it with storage header
                     QByteArray empty;
-                    if(settings->loggingOnlyFilteredMessages)
+                    if(settings->loggingOnlyFilteredMessages || ecuitem->liveLogLevelRequested)
                     {
-                        // write only messages which match filter
-                        bool silentMode = !QDltOptManager::getInstance()->issilentMode();
-                        QDltMsg qmsg;
-                        qmsg.setMsg(QByteArray(dataPtr,sizeMsg),false,settings->supportDLTv2Decoding);
-                        if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
+                        QDltMsg message;
+                        if(message.setMsg(QByteArray(dataPtr,sizeMsg),false,settings->supportDLTv2Decoding))
                         {
-                           pluginManager.decodeMsg(qmsg,silentMode);
+                            if(writeLiveMessage(ecuitem, message))
+                            {
+                                receivedMessagesStored = true;
+                            }
                         }
-                        if(qfile.checkFilter(qmsg))
+                        else
                         {
-                            writeDLTMessageToFile(empty,{dataPtr,sizeMsg}, ecuitem);
                         }
                     }
                     else
                     {
                         // write all messages
                         writeDLTMessageToFile(empty, {dataPtr,sizeMsg}, ecuitem);
+                        receivedMessagesStored = true;
                     }
                     totalBytesRcvd+=sizeMsg;
                     if(sizeMsg<=dataSize)
@@ -4919,40 +4947,9 @@ void MainWindow::read(EcuItem* ecuitem)
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_DLT && ecuitem->serialcon.parseDlt(qmsg,settings->supportDLTv2Decoding)) ||
             (ecuitem->interfacetype == EcuItem::INTERFACETYPE_SERIAL_ASCII && ecuitem->serialcon.parseAscii(qmsg)) )
         {
-            /* analyse received message, check if DLT control message response */
-            if ( (qmsg.getType()==QDltMsg::DltTypeControl) && (qmsg.getSubtype()==QDltMsg::DltControlResponse))
+            if(writeLiveMessage(ecuitem, qmsg))
             {
-                controlMessage_ReceiveControlMessage(ecuitem,qmsg);
-            }
-
-            /* write message to file */
-            const QByteArray bufferHeader = qmsg.getHeader();
-            const QByteArray bufferPayload = qmsg.getPayload();
-            if(settings->loggingOnlyFilteredMessages)
-            {
-                // write only messages which match filter
-                bool silentMode = !QDltOptManager::getInstance()->issilentMode();
-                if ( true == pluginsEnabled ) // we check the general plugin enabled/disabled switch
-                {
-                   pluginManager.decodeMsg(qmsg,silentMode);
-                }
-                if(qfile.checkFilter(qmsg))
-                {
-                    writeDLTMessageToFile(
-                                bufferHeader,
-                                {bufferPayload.data(),
-                                 static_cast<std::string_view::size_type>(bufferPayload.size())},
-                                ecuitem);
-                }
-            }
-            else
-            {
-                // write all messages
-                writeDLTMessageToFile(
-                            bufferHeader,
-                            {bufferPayload.data(),
-                             static_cast<std::string_view::size_type>(bufferPayload.size())},
-                            ecuitem);
+                receivedMessagesStored = true;
             }
 
         } //end while
@@ -4981,13 +4978,46 @@ void MainWindow::read(EcuItem* ecuitem)
 
      //if(outputfile.isOpen()) //&& ( settings->loggingOnlyMode == 0 )  )
      //   {
-            if(false == dltIndexer->isRunning())
+            if(receivedMessagesStored && false == dltIndexer->isRunning())
             {
                 updateIndex();
             }
      //   }
 }
 
+
+bool MainWindow::writeLiveMessage(EcuItem *ecuitem, QDltMsg &message)
+{
+    if(message.getType() == QDltMsg::DltTypeControl &&
+       message.getSubtype() == QDltMsg::DltControlResponse)
+    {
+        controlMessage_ReceiveControlMessage(ecuitem, message);
+    }
+
+    if(!message.matchesLogLevel(ecuitem->liveLogLevelForContext(message.getApid(), message.getCtid())))
+    {
+        return false;
+    }
+
+    const QByteArray header = message.getHeader();
+    const QByteArray payload = message.getPayload();
+    if(settings->loggingOnlyFilteredMessages)
+    {
+        if(pluginsEnabled)
+        {
+            pluginManager.decodeMsg(message, !QDltOptManager::getInstance()->issilentMode());
+        }
+        if(!qfile.checkFilter(message))
+        {
+            return false;
+        }
+    }
+
+    writeDLTMessageToFile(header,
+                         {payload.data(), static_cast<std::string_view::size_type>(payload.size())},
+                         ecuitem);
+    return true;
+}
 
 void MainWindow::createsplitfile()
 {
@@ -5322,8 +5352,9 @@ void MainWindow::controlMessage_ReceiveControlMessage(EcuItem *ecuitem, const QD
                         [&](const qdlt::msg::payload::UnregisterContext& payload) {
                             controlMessage_UnregisterContext(msg.getEcuid(), payload.appid, payload.ctxid);
                         },
-                        [](const qdlt::msg::payload::SetLogLevel&) {
-                            // nothing to do
+                        [&](const qdlt::msg::payload::SetLogLevel& payload) {
+                            if(payload.status != 0) {
+                            }
                         },
                         [](const qdlt::msg::payload::Uninteresting& payload) {
                             qDebug() << "Received control message with id: " << payload.serviceId;
@@ -5427,6 +5458,12 @@ void MainWindow::controlMessage_SendControlMessage(EcuItem* ecuitem,DltMessage &
     {
         /* ECU is not connected */
         qDebug() << "ECU is not connected !!";
+        return;
+    }
+
+    qmsg.setType(QDltMsg::DltTypeControl);
+    if(!qmsg.matchesLogLevel(ecuitem->liveLogLevelForContext(appid, contid)))
+    {
         return;
     }
 
@@ -5660,6 +5697,20 @@ void MainWindow::on_action_menuDLT_Get_Log_Info_triggered()
 
 void MainWindow::controlMessage_SetLogLevel(EcuItem* ecuitem, QString app, QString con,
                                             int log_level) {
+    ecuitem->liveLogLevelRequested = true;
+    if(auto *appitem = ecuitem->find(app))
+    {
+        for(int i = 0; i < appitem->childCount(); ++i)
+        {
+            auto *context = static_cast<ContextItem *>(appitem->child(i));
+            if(context->id == con)
+            {
+                context->liveLogLevel = log_level;
+                break;
+            }
+        }
+    }
+
     DltServiceSetLogLevel req;
     req.service_id = DLT_SERVICE_ID_SET_LOG_LEVEL;
     dlt_set_id(req.apid, app.toLatin1());

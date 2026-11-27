@@ -260,6 +260,31 @@ ApplicationItem *EcuItem::find(const QString &apid) const {
     return nullptr;
 }
 
+int EcuItem::liveLogLevelForContext(const QString &apid, const QString &ctid) const
+{
+    int level = liveLogLevel;
+    if(auto *appitem = find(apid))
+    {
+        if(appitem->liveLogLevel != QDltMsg::DltLogUnknown)
+        {
+            level = appitem->liveLogLevel;
+        }
+        for(int i = 0; i < appitem->childCount(); ++i)
+        {
+            const auto *context = static_cast<ContextItem *>(appitem->child(i));
+            if(context->id == ctid)
+            {
+                if(context->liveLogLevel != QDltMsg::DltLogUnknown)
+                {
+                    level = context->liveLogLevel;
+                }
+                break;
+            }
+        }
+    }
+    return level;
+}
+
 ApplicationItem::ApplicationItem(QTreeWidgetItem *parent)
     : QTreeWidgetItem(parent,application_type)
 {
