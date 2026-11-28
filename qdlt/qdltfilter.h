@@ -31,8 +31,8 @@
 #include <QXmlStreamWriter>
 #include <QRegularExpression>
 
-#include "export_rules.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltmsg.h"
 
 // Caches per-message toStringHeader()/toStringPayload() across multiple match() calls on the same message
 class QDLT_EXPORT QDltFilterMatchCache

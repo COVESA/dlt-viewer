@@ -19,11 +19,11 @@
  * @licence end@
  */
 
-#include "qdltargument.h"
+#include "qdlt/qdltargument.h"
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 namespace {
@@ -713,4 +713,3 @@ bool QDltArgument::setValue(QVariant value, bool verboseMode)
 
     return false;
 }
-

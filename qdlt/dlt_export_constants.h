@@ -1,0 +1,10 @@
+#ifndef QDLT_DLT_EXPORT_CONSTANTS
+#define QDLT_DLT_EXPORT_CONSTANTS
+
+namespace qdlt
+{
+constexpr auto DEFAULT_EXPORT_SIGNATURE = "ITSOEACNYUMRP";
+constexpr char DEFAULT_EXPORT_DELIMITER = ',';
+}
+
+#endif // QDLT_DLT_EXPORT_CONSTANTS

@@ -67,10 +67,10 @@
 #include <string.h> /* for strlen(), memcmp(), memmove() */
 #include <time.h>   /* for localtime(), strftime() */
 
-#include "dlt_common.h"
-#include "dlt_common_cfg.h"
+#include "qdlt/dlt_common.h"
+#include "qdlt/dlt_common_cfg.h"
 
-#include "version.h"
+#include "src/version.h"
 
 #if defined (__WIN32__) || defined (_MSC_VER)
 #include <winsock2.h> /* for socket(), connect(), send(), and recv() */

@@ -22,9 +22,9 @@
 #ifndef QDLT_FILTER_LIST_H
 #define QDLT_FILTER_LIST_H
 
-#include "export_rules.h"
-#include "qdltfilter.h"
-#include "qdltmsg.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltfilter.h"
+#include "qdlt/qdltmsg.h"
 
 #include <QObject>
 #include <QString>

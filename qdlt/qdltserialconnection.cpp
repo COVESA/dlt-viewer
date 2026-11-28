@@ -22,7 +22,7 @@
 #include <QtDebug>
 
 #include <QSerialPort>
-#include "qdltserialconnection.h"
+#include "qdlt/qdltserialconnection.h"
 
 extern "C"
 {

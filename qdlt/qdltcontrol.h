@@ -30,7 +30,7 @@
 #include <QMutex>
 #include <time.h>
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 class QDLT_EXPORT QDltControl : public QObject
 {

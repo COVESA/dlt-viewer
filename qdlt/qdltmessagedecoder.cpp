@@ -19,7 +19,7 @@
  * @licence end@
  */
 
-#include "qdltmessagedecoder.h"
+#include "qdlt/qdltmessagedecoder.h"
 
 QDltMessageDecoder::QDltMessageDecoder()
 {

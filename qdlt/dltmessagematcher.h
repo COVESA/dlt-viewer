@@ -1,7 +1,7 @@
 #ifndef DLTMESSAGEMATCHER_H
 #define DLTMESSAGEMATCHER_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <QString>
 #include <QRegularExpression>

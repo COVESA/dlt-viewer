@@ -19,11 +19,11 @@
  * @licence end@
  */
 
-#include "qdltmsg.h"
+#include "qdlt/qdltmsg.h"
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 #include <QtEndian>

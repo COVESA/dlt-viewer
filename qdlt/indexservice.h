@@ -19,7 +19,7 @@
 #ifndef INDEXSERVICE_H
 #define INDEXSERVICE_H
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <cstddef>
 #include <vector>

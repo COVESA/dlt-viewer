@@ -1,4 +1,4 @@
-#include "qdltplugin.h"
+#include "qdlt/qdltplugin.h"
 
 #include <QDir>
 #include <QCoreApplication>

@@ -72,7 +72,7 @@ add_library(qdlt SHARED
     fieldnames.cpp
     dltmessagematcher.cpp
     dltmessagematcher.h
-    qdltlrucache.hpp
+    qdltlrucache.h
     export_c_rules.h
     export_rules.h
     qdltctrlmsg.cpp

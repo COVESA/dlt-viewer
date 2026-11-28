@@ -64,7 +64,7 @@
 #ifndef DLT_COMMON_H
 #define DLT_COMMON_H
 
-#include "export_c_rules.h"
+#include "qdlt/export_c_rules.h"
 
 /**
   \defgroup commonapi DLT Common API
@@ -85,8 +85,8 @@
 typedef unsigned int speed_t;
 #endif
 
-#include "dlt_types.h"
-#include "dlt_protocol.h"
+#include "qdlt/dlt_types.h"
+#include "qdlt/dlt_protocol.h"
 
 #if !defined (PACKED)
 #define PACKED __attribute__((aligned(1),packed))

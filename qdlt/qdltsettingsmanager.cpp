@@ -25,9 +25,9 @@
 #include <QDateTime>
 #include <QStandardPaths>
 
-#include "version.h"
+#include "src/version.h"
 
-#include "qdltsettingsmanager.h"
+#include "qdlt/qdltsettingsmanager.h"
 
 #include <ctime>
 
@@ -527,4 +527,3 @@ void QDltSettingsManager::readSettings()
         }
     }
 }
-

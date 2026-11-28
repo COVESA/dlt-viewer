@@ -7,8 +7,8 @@
 #include <QObject>
 #include <QFile>
 
-#include "export_rules.h"
-#include "dlt_common.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/dlt_common.h"
 
 #include <optional>
 

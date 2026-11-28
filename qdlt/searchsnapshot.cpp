@@ -17,9 +17,8 @@
  * @licence end@
  */
 
-#include "searchsnapshot.h"
+#include "qdlt/searchsnapshot.h"
 
-#include "qdltfile.h"
 
 #include <QMutexLocker>
 
@@ -46,19 +45,4 @@ const QString &SearchSnapshot::fileName(int fileIndex) const
 const SearchSnapshotRow &SearchSnapshot::rowAt(int rowIndex) const
 {
     return m_rows.at(rowIndex);
-}
-
-std::shared_ptr<const SearchSnapshot> SearchSnapshotManager::capture(const QDltFile *file)
-{
-    if(file == nullptr)
-        return std::shared_ptr<const SearchSnapshot>();
-
-    QMutexLocker locker(&m_mutex);
-    if(m_cachedFile == file && m_cachedSnapshot && file->isSearchSnapshotCurrent(m_cachedSnapshot->generationId()))
-        return m_cachedSnapshot;
-
-    auto snapshot = std::make_shared<SearchSnapshot>(file->captureSearchSnapshot());
-    m_cachedFile = file;
-    m_cachedSnapshot = snapshot;
-    return snapshot;
 }

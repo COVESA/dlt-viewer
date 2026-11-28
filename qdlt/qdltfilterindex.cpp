@@ -21,11 +21,11 @@
 
 #include <QtDebug>
 
-#include "qdltfilterindex.h"
+#include "qdlt/qdltfilterindex.h"
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 void QDltFilterIndex::setIndexFilter(QVector<qint64> _indexFilter)

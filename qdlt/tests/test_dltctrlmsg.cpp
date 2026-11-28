@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <qdltctrlmsg.h>
+#include "qdlt/qdltctrlmsg.h"
 
 #include <QByteArray>
 

@@ -24,7 +24,7 @@
 
 #include <QString>
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 constexpr const auto DLT_MAX_MESSAGE_LEN = 1024*64;
 

@@ -26,7 +26,7 @@
 #include <QXmlStreamWriter>
 #include <QXmlStreamReader>
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #define DEFAULT_REFRESH_RATE 20
 

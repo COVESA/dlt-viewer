@@ -22,11 +22,11 @@
 #include <QtDebug>
 #include <QTcpSocket>
 
-#include "qdlttcpconnection.h"
+#include "qdlt/qdlttcpconnection.h"
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 QDltTCPConnection::QDltTCPConnection()

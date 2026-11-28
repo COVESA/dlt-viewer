@@ -21,11 +21,11 @@
 
 #include <QtDebug>
 
-#include "qdltconnection.h"
+#include "qdlt/qdltconnection.h"
 
 extern "C"
 {
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 }
 
 QDltConnection::QDltConnection()

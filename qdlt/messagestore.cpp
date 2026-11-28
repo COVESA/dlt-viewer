@@ -16,9 +16,9 @@
  * @licence end@
  */
 
-#include "messagestore.h"
+#include "qdlt/messagestore.h"
 
-#include "qdltfile.h"
+#include "qdlt/qdltfile.h"
 
 CQDltFileMessageStoreAdapter::CQDltFileMessageStoreAdapter(QDltFile *file)
     : m_file(file)

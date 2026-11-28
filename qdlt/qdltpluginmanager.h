@@ -1,11 +1,11 @@
 #ifndef QDLTPLUGINMANAGER_H
 #define QDLTPLUGINMANAGER_H
 
-#include "qdltconnection.h"
-#include "qdltcontrol.h"
-#include "qdltmessagedecoder.h"
+#include "qdlt/qdltconnection.h"
+#include "qdlt/qdltcontrol.h"
+#include "qdlt/qdltmessagedecoder.h"
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <QDir>
 #include <atomic>

@@ -6,16 +6,15 @@
 #include <QFile>
 #include <QModelIndexList>
 
-#include "export_rules.h"
-#include "qdltfile.h"
-#include "qdltmsg.h"
-#include "qdltpluginmanager.h"
-#include "messagestore.h"
-#include "decodecacheservice.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltfile.h"
+#include "qdlt/qdltmsg.h"
+#include "qdlt/qdltpluginmanager.h"
+#include "qdlt/messagestore.h"
+#include "qdlt/decodecacheservice.h"
+#include "qdlt/dlt_export_constants.h"
 
 
-#define QDLT_DEFAULT_EXPORT_SIGNATURE "ITSOEACNYUMRP"
-#define QDLT_DEFAULT_EXPORT_DELIMITER ','
 
 class QDLT_EXPORT QDltExporter : public QThread
 {
@@ -63,7 +62,7 @@ public:
      */
     explicit QDltExporter(QDltFile *from, QString outputfileName, QDltPluginManager *pluginManager,
                         QDltExporter::DltExportFormat exportFormat,
-                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char delimiter=QDLT_DEFAULT_EXPORT_DELIMITER,QString signature=QDLT_DEFAULT_EXPORT_SIGNATURE,QObject *parent = 0);
+                        QDltExporter::DltExportSelection exportSelection, QModelIndexList *selection, int _automaticTimeSettings,qlonglong _utcOffset,int _dst,char delimiter=qdlt::DEFAULT_EXPORT_DELIMITER,QString signature=qdlt::DEFAULT_EXPORT_SIGNATURE,QObject *parent = 0);
 
     void run() override;
 

@@ -1,4 +1,4 @@
-#include "fieldnames.h"
+#include "qdlt/fieldnames.h"
 
 FieldNames::FieldNames(QObject *parent) :
     QObject(parent)

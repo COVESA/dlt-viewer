@@ -1,6 +1,6 @@
-#include "qdltctrlmsg.h"
+#include "qdlt/qdltctrlmsg.h"
 
-#include "dlt_common.h"
+#include "qdlt/dlt_common.h"
 
 #include <exception>
 #include <stdexcept>

@@ -1,11 +1,11 @@
 #ifndef QDLTPLUGIN_H
 #define QDLTPLUGIN_H
 
-#include "plugininterface.h"
+#include "qdlt/plugininterface.h"
 
 #include <QDir>
 
-#include "export_rules.h"
+#include "qdlt/export_rules.h"
 
 #include <functional>
 

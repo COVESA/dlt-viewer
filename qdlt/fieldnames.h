@@ -1,8 +1,8 @@
 #ifndef FIELDNAMES_H
 #define FIELDNAMES_H
 
-#include "export_rules.h"
-#include "qdltsettingsmanager.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltsettingsmanager.h"
 #include <QObject>
 #include <QString>
 

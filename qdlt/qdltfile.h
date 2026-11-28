@@ -22,11 +22,11 @@
 #ifndef QDLT_FILE_H
 #define QDLT_FILE_H
 
-#include "export_rules.h"
-#include "qdltfilter.h"
-#include "qdltfilterlist.h"
-#include "qdltmsg.h"
-#include "searchsnapshot.h"
+#include "qdlt/export_rules.h"
+#include "qdlt/qdltfilter.h"
+#include "qdlt/qdltfilterlist.h"
+#include "qdlt/qdltmsg.h"
+#include "qdlt/searchsnapshot.h"
 
 #include <QObject>
 #include <QString>
