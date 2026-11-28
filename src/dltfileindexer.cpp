@@ -368,7 +368,8 @@ bool DltFileIndexer::index(int num)
             {
                 progressCounter += 1;
                 emit(progress(percent));
-                if((percent>0) && ((percent%10)==0))
+                // Progress for command line conversions; the GUI shows its own.
+                if((percent>0) && ((percent%10)==0) && QDltOptManager::getInstance()->isCommandlineMode())
                     qDebug() << "CI:" << percent << "%";
             }
 

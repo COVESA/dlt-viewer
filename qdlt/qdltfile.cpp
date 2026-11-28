@@ -437,9 +437,11 @@ bool QDltFile::updateIndex()
         quint8 progressNextCmdOutput=10;
         while(true)
         {
+            // Progress for command line conversions; callers can turn it off with setProgressOutputEnabled().
             if( (file_size>0) && ((pos*100/file_size)>=progressNextCmdOutput))
             {
-                qDebug() << "CI:" << pos*100/file_size << "%";
+                if(progressOutputEnabled)
+                    qDebug() << "CI:" << pos*100/file_size << "%";
                 progressNextCmdOutput+=10;
             }
 
